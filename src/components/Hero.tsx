@@ -11,16 +11,16 @@ const Hero = () => (
       className="max-w-3xl"
     >
       <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-        UX Designer · E-commerce Expert
+        E-commerce Manager · Marketplace Specialist
       </p>
       <h1 className="mb-6 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
-        Designing digital experiences that{" "}
-        <em className="text-primary">convert</em> &amp; delight.
+        Driving e-commerce growth through{" "}
+        <em className="text-primary">strategy</em> &amp; design.
       </h1>
       <p className="mb-10 max-w-xl text-lg leading-relaxed text-muted-foreground">
-        I'm Hans — a UX designer based in Amsterdam, specializing in e-commerce
-        and AI-powered product experiences. I help businesses turn complexity
-        into clarity.
+        I'm Hans — an e-commerce manager based in Amersfoort, specializing in
+        Amazon, Bol.com, and marketplace growth strategies. I help businesses
+        turn digital channels into revenue engines.
       </p>
       <div className="flex flex-wrap gap-4">
         <Link
