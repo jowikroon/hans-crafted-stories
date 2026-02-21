@@ -1,4 +1,8 @@
-import { Link } from "react-router-dom";
+const socialLinks = [
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/hansvl3" },
+  { label: "Behance", href: "https://www.behance.net/jowikroon" },
+  { label: "BeHans.nl", href: "https://www.behans.nl" },
+];
 
 const Footer = () => (
   <footer className="border-t border-border">
@@ -7,9 +11,15 @@ const Footer = () => (
         © {new Date().getFullYear()} Hans van Leeuwen
       </p>
       <div className="flex gap-6">
-        {["LinkedIn", "Dribbble", "Twitter"].map((s) => (
-          <a key={s} href="#" className="nav-link text-xs uppercase tracking-widest">
-            {s}
+        {socialLinks.map((s) => (
+          <a
+            key={s.label}
+            href={s.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nav-link text-xs uppercase tracking-widest"
+          >
+            {s.label}
           </a>
         ))}
       </div>

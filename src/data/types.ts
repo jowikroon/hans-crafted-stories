@@ -5,6 +5,7 @@ export interface CaseStudy {
   description: string;
   image: string;
   year: string;
+  externalUrl?: string;
 }
 
 export interface BlogPost {

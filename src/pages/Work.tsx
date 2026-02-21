@@ -14,7 +14,7 @@ const Work = () => (
         Case Studies
       </h1>
       <p className="mb-14 max-w-xl text-base leading-relaxed text-muted-foreground">
-        A selection of projects where research-driven design met measurable business outcomes.
+        A collection of design and creative projects — from e-commerce concepts to 3D experiments and VR games.
       </p>
     </motion.div>
 
