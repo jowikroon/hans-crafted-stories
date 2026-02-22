@@ -156,7 +156,7 @@ const Portal = () => {
                 >
                   <button
                     onClick={(e) => { e.stopPropagation(); setSettingsTool(tool); }}
-                    className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground/40 opacity-0 transition-all hover:bg-secondary hover:text-foreground group-hover:opacity-100"
+                    className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground/40 opacity-100 transition-all hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
                     aria-label="Tool settings"
                   >
                     <Settings size={14} />
