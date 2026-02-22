@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { ExternalLink, LogOut, Wrench, Workflow, Globe, Plus, Settings } from "lucide-react";
@@ -25,15 +25,17 @@ const Portal = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
 
+  const seedingRef = useRef(false);
+
   // Load tools from DB, seed defaults if empty
   useEffect(() => {
-    if (!user) return;
+    if (!user || seedingRef.current) return;
+    seedingRef.current = true;
     const loadTools = async () => {
       setToolsLoading(true);
       try {
         let dbTools = await portalApi.getTools();
         if (dbTools.length === 0) {
-          // Seed default tools
           for (const t of defaultTools) {
             await portalApi.addTool({ ...t, user_id: user.id, config: {}, description: t.description });
           }
@@ -43,6 +45,7 @@ const Portal = () => {
       } catch (err) {
         console.error("Failed to load tools:", err);
         toast({ title: "Error", description: "Failed to load tools", variant: "destructive" });
+        seedingRef.current = false;
       } finally {
         setToolsLoading(false);
       }
