@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      portal_tools: {
+        Row: {
+          color: string | null
+          config: Json | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          sort_order: number | null
+          tool_type: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          config?: Json | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          sort_order?: number | null
+          tool_type: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          config?: Json | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          sort_order?: number | null
+          tool_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
