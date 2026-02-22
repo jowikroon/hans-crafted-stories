@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const links = [
   { to: "/", label: "Home" },
@@ -13,6 +14,7 @@ const links = [
 const Navbar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <nav className="fixed top-0 z-50 w-full bg-background/80 backdrop-blur-md">
@@ -32,6 +34,27 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          <Link
+            to="/portal"
+            className={`inline-flex items-center gap-1.5 nav-link ${location.pathname === "/portal" ? "active" : ""}`}
+          >
+            {user ? (
+              <>
+                <img
+                  src={user.user_metadata?.avatar_url || ""}
+                  alt=""
+                  className="h-5 w-5 rounded-full"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+                Portal
+              </>
+            ) : (
+              <>
+                <LogIn size={14} />
+                Login
+              </>
+            )}
+          </Link>
         </div>
 
         {/* Mobile toggle */}
@@ -64,6 +87,14 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              <Link
+                to="/portal"
+                onClick={() => setMobileOpen(false)}
+                className={`nav-link text-base inline-flex items-center gap-2 ${location.pathname === "/portal" ? "active" : ""}`}
+              >
+                <LogIn size={14} />
+                {user ? "Portal" : "Login"}
+              </Link>
             </div>
           </motion.div>
         )}
