@@ -1,18 +1,62 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
-import { ExternalLink, LogOut, Wrench, Workflow, Globe, Plus } from "lucide-react";
+import { ExternalLink, LogOut, Wrench, Workflow, Globe, Plus, Settings } from "lucide-react";
+import { portalApi, PortalTool } from "@/lib/api/portal";
+import { useToast } from "@/hooks/use-toast";
+import SiteAuditModal from "@/components/portal/SiteAuditModal";
+import WebhookTriggerModal from "@/components/portal/WebhookTriggerModal";
+import KeywordResearchModal from "@/components/portal/KeywordResearchModal";
 
-interface ToolCard {
-  id: string;
-  name: string;
-  description: string;
-  icon: typeof Wrench;
-  action: () => void;
-  color: string;
-}
+const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe };
+const getIcon = (name: string) => iconMap[name] || Wrench;
+
+const defaultTools = [
+  { tool_type: "keyword", name: "Keyword Research", description: "AI-powered keyword analysis and content suggestions.", icon: "Globe", color: "text-blue-500", sort_order: 0 },
+  { tool_type: "webhook", name: "N8N Workflows", description: "Trigger and manage your automation workflows.", icon: "Workflow", color: "text-orange-500", sort_order: 1 },
+  { tool_type: "site-audit", name: "Site Audit", description: "Run a quick SEO audit on any website.", icon: "Wrench", color: "text-green-500", sort_order: 2 },
+];
 
 const Portal = () => {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
+  const { toast } = useToast();
+  const [tools, setTools] = useState<PortalTool[]>([]);
+  const [toolsLoading, setToolsLoading] = useState(false);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [webhookUrl, setWebhookUrl] = useState("");
+
+  // Load tools from DB, seed defaults if empty
+  useEffect(() => {
+    if (!user) return;
+    const loadTools = async () => {
+      setToolsLoading(true);
+      try {
+        let dbTools = await portalApi.getTools();
+        if (dbTools.length === 0) {
+          // Seed default tools
+          for (const t of defaultTools) {
+            await portalApi.addTool({ ...t, user_id: user.id, config: {}, description: t.description });
+          }
+          dbTools = await portalApi.getTools();
+        }
+        setTools(dbTools);
+      } catch (err) {
+        console.error("Failed to load tools:", err);
+        toast({ title: "Error", description: "Failed to load tools", variant: "destructive" });
+      } finally {
+        setToolsLoading(false);
+      }
+    };
+    loadTools();
+  }, [user]);
+
+  const handleToolClick = (tool: PortalTool) => {
+    if (tool.tool_type === "webhook") {
+      const url = (tool.config as Record<string, string>)?.webhook_url || "";
+      setWebhookUrl(url);
+    }
+    setActiveModal(tool.tool_type);
+  };
 
   if (loading) {
     return (
@@ -52,36 +96,6 @@ const Portal = () => {
     );
   }
 
-  const tools: ToolCard[] = [
-    {
-      id: "keyword-research",
-      name: "Keyword Research",
-      description: "Analyze search volume, competition, and keyword opportunities.",
-      icon: Globe,
-      action: () => window.open("https://www.google.com/search?q=keyword+research+tool", "_blank"),
-      color: "text-blue-500",
-    },
-    {
-      id: "n8n-workflow",
-      name: "N8N Workflows",
-      description: "Trigger and manage your automation workflows.",
-      icon: Workflow,
-      action: () => {
-        // Placeholder: trigger n8n webhook
-        console.log("Triggering n8n workflow...");
-      },
-      color: "text-orange-500",
-    },
-    {
-      id: "site-audit",
-      name: "Site Audit",
-      description: "Run a quick SEO audit on any website.",
-      icon: Wrench,
-      action: () => console.log("Site audit tool"),
-      color: "text-green-500",
-    },
-  ];
-
   return (
     <section className="section-container pt-28 pb-20">
       <motion.div
@@ -107,39 +121,53 @@ const Portal = () => {
         </div>
 
         {/* Tools Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {tools.map((tool, i) => (
-            <motion.button
-              key={tool.id}
+        {toolsLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <p className="text-muted-foreground">Loading tools...</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {tools.map((tool, i) => {
+              const Icon = getIcon(tool.icon);
+              return (
+                <motion.button
+                  key={tool.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                  onClick={() => handleToolClick(tool)}
+                  className="group rounded-lg border border-border p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+                >
+                  <Icon size={24} className={`mb-4 ${tool.color}`} />
+                  <h3 className="mb-1 font-display text-lg font-medium text-foreground">
+                    {tool.name}
+                    <ExternalLink size={12} className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-100" />
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{tool.description}</p>
+                </motion.button>
+              );
+            })}
+
+            {/* Add Tool Card */}
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              onClick={tool.action}
-              className="group rounded-lg border border-border p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+              transition={{ duration: 0.4, delay: tools.length * 0.1 }}
+              className="flex items-center justify-center rounded-lg border border-dashed border-border p-6 text-muted-foreground/50"
             >
-              <tool.icon size={24} className={`mb-4 ${tool.color}`} />
-              <h3 className="mb-1 font-display text-lg font-medium text-foreground">
-                {tool.name}
-                <ExternalLink size={12} className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-100" />
-              </h3>
-              <p className="text-sm text-muted-foreground">{tool.description}</p>
-            </motion.button>
-          ))}
-
-          {/* Add Tool Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: tools.length * 0.1 }}
-            className="flex items-center justify-center rounded-lg border border-dashed border-border p-6 text-muted-foreground/50"
-          >
-            <div className="text-center">
-              <Plus size={24} className="mx-auto mb-2" />
-              <p className="text-sm">Add more tools</p>
-            </div>
-          </motion.div>
-        </div>
+              <div className="text-center">
+                <Plus size={24} className="mx-auto mb-2" />
+                <p className="text-sm">Add more tools</p>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </motion.div>
+
+      {/* Modals */}
+      <SiteAuditModal open={activeModal === "site-audit"} onClose={() => setActiveModal(null)} />
+      <WebhookTriggerModal open={activeModal === "webhook"} onClose={() => setActiveModal(null)} defaultWebhookUrl={webhookUrl} />
+      <KeywordResearchModal open={activeModal === "keyword"} onClose={() => setActiveModal(null)} />
     </section>
   );
 };

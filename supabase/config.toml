@@ -1,1 +1,10 @@
 project_id = "oejeojzaakfhculcoqdh"
+
+[functions.site-audit]
+verify_jwt = false
+
+[functions.trigger-webhook]
+verify_jwt = false
+
+[functions.keyword-research]
+verify_jwt = false
