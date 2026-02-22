@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import SiteAuditModal from "@/components/portal/SiteAuditModal";
 import WebhookTriggerModal from "@/components/portal/WebhookTriggerModal";
 import KeywordResearchModal from "@/components/portal/KeywordResearchModal";
+import ToolSettingsModal from "@/components/portal/ToolSettingsModal";
 
 const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe };
 const getIcon = (name: string) => iconMap[name] || Wrench;
@@ -24,6 +25,7 @@ const Portal = () => {
   const [toolsLoading, setToolsLoading] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
+  const [settingsTool, setSettingsTool] = useState<PortalTool | null>(null);
 
   const seedingRef = useRef(false);
 
@@ -52,6 +54,16 @@ const Portal = () => {
     };
     loadTools();
   }, [user]);
+
+  const reloadTools = async () => {
+    const dbTools = await portalApi.getTools();
+    setTools(dbTools);
+  };
+
+  const visibleTools = tools.filter((t) => {
+    const config = (t.config || {}) as Record<string, unknown>;
+    return config.enabled !== false;
+  });
 
   const handleToolClick = (tool: PortalTool) => {
     if (tool.tool_type === "webhook") {
@@ -130,24 +142,32 @@ const Portal = () => {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tools.map((tool, i) => {
+            {visibleTools.map((tool, i) => {
               const Icon = getIcon(tool.icon);
               return (
-                <motion.button
+                <motion.div
                   key={tool.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  onClick={() => handleToolClick(tool)}
-                  className="group rounded-lg border border-border p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+                  className="group relative rounded-lg border border-border p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-md"
                 >
-                  <Icon size={24} className={`mb-4 ${tool.color}`} />
-                  <h3 className="mb-1 font-display text-lg font-medium text-foreground">
-                    {tool.name}
-                    <ExternalLink size={12} className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-100" />
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{tool.description}</p>
-                </motion.button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setSettingsTool(tool); }}
+                    className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground/40 opacity-0 transition-all hover:bg-secondary hover:text-foreground group-hover:opacity-100"
+                    aria-label="Tool settings"
+                  >
+                    <Settings size={14} />
+                  </button>
+                  <button onClick={() => handleToolClick(tool)} className="w-full text-left">
+                    <Icon size={24} className={`mb-4 ${tool.color}`} />
+                    <h3 className="mb-1 font-display text-lg font-medium text-foreground">
+                      {tool.name}
+                      <ExternalLink size={12} className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-100" />
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{tool.description}</p>
+                  </button>
+                </motion.div>
               );
             })}
 
@@ -155,7 +175,7 @@ const Portal = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: tools.length * 0.1 }}
+              transition={{ duration: 0.4, delay: visibleTools.length * 0.1 }}
               className="flex items-center justify-center rounded-lg border border-dashed border-border p-6 text-muted-foreground/50"
             >
               <div className="text-center">
@@ -171,6 +191,7 @@ const Portal = () => {
       <SiteAuditModal open={activeModal === "site-audit"} onClose={() => setActiveModal(null)} />
       <WebhookTriggerModal open={activeModal === "webhook"} onClose={() => setActiveModal(null)} defaultWebhookUrl={webhookUrl} />
       <KeywordResearchModal open={activeModal === "keyword"} onClose={() => setActiveModal(null)} />
+      <ToolSettingsModal open={!!settingsTool} onClose={() => setSettingsTool(null)} tool={settingsTool} totalTools={tools.length} onUpdated={reloadTools} />
     </section>
   );
 };
