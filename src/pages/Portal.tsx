@@ -9,6 +9,7 @@ import WebhookTriggerModal from "@/components/portal/WebhookTriggerModal";
 import KeywordResearchModal from "@/components/portal/KeywordResearchModal";
 import ToolSettingsModal from "@/components/portal/ToolSettingsModal";
 import AddToolModal from "@/components/portal/AddToolModal";
+import ToolPreviewModal from "@/components/portal/ToolPreviewModal";
 
 const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe };
 const getIcon = (name: string) => iconMap[name] || Wrench;
@@ -28,6 +29,7 @@ const Portal = () => {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [settingsTool, setSettingsTool] = useState<PortalTool | null>(null);
   const [showAddTool, setShowAddTool] = useState(false);
+  const [previewTool, setPreviewTool] = useState<PortalTool | null>(null);
 
   const seedingRef = useRef(false);
 
@@ -68,11 +70,21 @@ const Portal = () => {
   });
 
   const handleToolClick = (tool: PortalTool) => {
+    setPreviewTool(tool);
+  };
+
+  const handleOpenTool = (tool: PortalTool) => {
+    setPreviewTool(null);
     if (tool.tool_type === "webhook") {
       const url = (tool.config as Record<string, string>)?.webhook_url || "";
       setWebhookUrl(url);
     }
     setActiveModal(tool.tool_type);
+  };
+
+  const handleEditFromPreview = (tool: PortalTool) => {
+    setPreviewTool(null);
+    setSettingsTool(tool);
   };
 
   if (loading) {
@@ -152,8 +164,10 @@ const Portal = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="group relative rounded-lg border border-border p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+                  className="group relative cursor-pointer rounded-xl border border-border bg-card p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5"
+                  onClick={() => handleToolClick(tool)}
                 >
+                  {/* Settings gear */}
                   <button
                     onClick={(e) => { e.stopPropagation(); setSettingsTool(tool); }}
                     className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground/40 opacity-100 transition-all hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
@@ -161,14 +175,25 @@ const Portal = () => {
                   >
                     <Settings size={14} />
                   </button>
-                  <button onClick={() => handleToolClick(tool)} className="w-full text-left">
-                    <Icon size={24} className={`mb-4 ${tool.color}`} />
-                    <h3 className="mb-1 font-display text-lg font-medium text-foreground">
-                      {tool.name}
-                      <ExternalLink size={12} className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-100" />
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{tool.description}</p>
-                  </button>
+
+                  {/* Icon in container */}
+                  <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary ${tool.color}`}>
+                    <Icon size={20} />
+                  </div>
+
+                  {/* Category label */}
+                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+                    {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : "Tool"}
+                  </p>
+
+                  {/* Title */}
+                  <h3 className="mb-1.5 font-display text-lg font-medium text-foreground">
+                    {tool.name}
+                    <ExternalLink size={11} className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-60" />
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">{tool.description}</p>
                 </motion.div>
               );
             })}
@@ -189,6 +214,14 @@ const Portal = () => {
           </div>
         )}
       </motion.div>
+
+      {/* Preview overlay */}
+      <ToolPreviewModal
+        tool={previewTool}
+        onClose={() => setPreviewTool(null)}
+        onEdit={handleEditFromPreview}
+        onOpen={handleOpenTool}
+      />
 
       {/* Modals */}
       <SiteAuditModal open={activeModal === "site-audit"} onClose={() => setActiveModal(null)} />
