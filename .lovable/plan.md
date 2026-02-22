@@ -1,70 +1,107 @@
 
 
-# Integrating CV and Behance Portfolio
+# Portal Backend: Full Implementation Plan
 
-## What we're doing
-Replacing the placeholder content across the site with Hans's real CV data and Behance portfolio projects, creating an authentic personal portfolio.
+## Overview
 
-## Changes Overview
+The Google sign-in is already wired up and functional. This plan focuses on building real, working backend tools behind the portal and making the system extensible for future additions.
 
-### 1. Update About Page with Real CV Content
-Replace the placeholder bio with real information from the CVs:
-- **Profile**: Use the English CV profile text about being a dynamic E-commerce Manager with 6+ years experience
-- **Work Experience Timeline**: Add a visual timeline showing all roles (Alpine Hearing Protection, Webhelp/GGD, IGM Badkamerwinkel, Intergamma)
-- **Education**: B.A.Sc. Communication & Media Studies at HU Utrecht (2012-2016), ICT Manager MBO at ROC Hilversum (2007-2011)
-- **Core Competencies**: Display skills like Amazon & Bol Marketplaces, SEO/PPC, Project Management, etc. as styled tags
-- **Key Achievements**: Highlight metrics like 70% market share, +40% organic traffic, +35% SEO visibility
-- **Contact details**: Update email to hansvl3@gmail.com, location to Amersfoort, LinkedIn to linkedin.com/in/hansvl3
+---
 
-### 2. Update Hero Section
-- Change subtitle from "UX Designer / E-commerce Expert" to "E-commerce Manager / Marketplace Specialist"
-- Update intro text to reflect real expertise in Amazon, Bol.com, and e-commerce platforms
-- Update location from Amsterdam to Amersfoort
+## What We'll Build
 
-### 3. Replace Case Studies with Behance Projects
-Replace the 6 placeholder case studies in `content.ts` with real Behance projects. Each will link out to the Behance project page:
+### 1. Database: Portal Tools Configuration
 
-| Project | Category |
-|---------|----------|
-| Concept webshop muismatwinkel.nl | E-commerce / UX |
-| De zuilenchallenge | Creative / Campaign |
-| New pokemon game concept | Game Design |
-| Small world | 3D / Creative |
-| Infographic Stopbierbelasting | Infographic |
-| Ordina VR game | VR / Game Design |
-| 3D experiments | 3D Design |
-| Cinema 4D experiments | 3D Design |
-| Edelman website | Web Design |
+Create a `portal_tools` table so you can manage your n8n webhook URLs and tool configurations without code changes.
 
-We'll use the Behance thumbnail images directly (hosted on Behance CDN) and link each card to the full Behance project.
+- **portal_tools** table: stores tool name, webhook URL, description, icon, and sort order
+- Secured with RLS so only your authenticated account can read/write
+- Pre-seeded with the three existing tools
 
-### 4. Update Footer Links
-- LinkedIn: link to linkedin.com/in/hansvl3
-- Behance: link to behance.net/jowikroon
-- Replace "Dribbble" and "Twitter" with relevant links (Behance, personal site www.BeHans.nl)
+### 2. Site Audit Tool (powered by Firecrawl)
 
-### 5. Update Work/Case Study Types
-- Add optional `externalUrl` field to the `CaseStudy` type so cards can link to Behance
-- Update `CaseStudyCard` to open external links in new tabs
+Connect the **Firecrawl** connector (already available in your workspace) to enable real website crawling and SEO auditing.
 
-### 6. Store CV PDFs
-- Copy both PDF files to `public/` so they can be downloaded from the About page via a "Download CV" button
+- A backend function that accepts a URL, calls Firecrawl to scrape and analyze it
+- Returns page title, meta description, headings structure, links count, images without alt text, and other SEO signals
+- Results displayed in a clean modal/drawer in the portal
+
+### 3. N8N Workflow Trigger
+
+A backend function that acts as a proxy to trigger your n8n webhooks securely.
+
+- Webhook URLs stored in the database (not hardcoded)
+- The portal sends a request to the backend function, which forwards it to the n8n webhook
+- Supports passing custom payload data
+- Shows success/error feedback in the UI
+
+### 4. Keyword Research Tool (AI-powered)
+
+Use Lovable AI (no API key needed) to provide keyword analysis.
+
+- A backend function that takes a seed keyword and uses AI to generate related keywords, estimated search intent, competition level, and content suggestions
+- Results displayed in a structured table in the portal
+
+### 5. Portal UI Upgrade
+
+- Replace hardcoded tool cards with dynamic cards from the database
+- Add modals/drawers for each tool's input and output
+- Add a settings section to manage webhook URLs
+- Keep the extensible "Add more tools" card
+
+---
+
+## Implementation Sequence
+
+1. **Connect Firecrawl** -- link the existing Firecrawl connector to this project
+2. **Database migration** -- create `portal_tools` table with seed data
+3. **Edge function: `site-audit`** -- Firecrawl-powered SEO audit
+4. **Edge function: `trigger-webhook`** -- generic n8n webhook proxy
+5. **Edge function: `keyword-research`** -- AI-powered keyword analysis
+6. **Portal UI** -- dynamic tool loading, input modals, result displays, webhook settings
 
 ---
 
 ## Technical Details
 
-**Files to modify:**
-- `src/data/types.ts` -- add `externalUrl` to CaseStudy
-- `src/data/content.ts` -- replace case studies with Behance projects, update profile data
-- `src/components/Hero.tsx` -- update title, subtitle, description
-- `src/pages/About.tsx` -- full rewrite with real CV data, work experience timeline, skills, education, download CV button
-- `src/components/CaseStudyCard.tsx` -- support external links
-- `src/components/Footer.tsx` -- update social links
-- Copy PDFs to `public/` for download
+### Database Schema
 
-**New data structure for About page:**
-- Work experience entries as a typed array with company, role, dates, highlights
-- Skills/competencies as a list
-- Education entries with institution, degree, years
+```text
+portal_tools
++--------------+----------+------------------------------------------+
+| Column       | Type     | Notes                                    |
++--------------+----------+------------------------------------------+
+| id           | uuid     | PK, auto-generated                       |
+| user_id      | uuid     | references auth.users, NOT NULL           |
+| name         | text     | Tool display name                        |
+| description  | text     | Short description                        |
+| tool_type    | text     | "site-audit" | "webhook" | "keyword"     |
+| config       | jsonb    | Webhook URL, default params, etc.        |
+| icon         | text     | Lucide icon name                         |
+| color        | text     | Tailwind color class                     |
+| sort_order   | int      | Display order                            |
+| created_at   | timestamptz | default now()                         |
++--------------+----------+------------------------------------------+
+
+RLS: Users can only SELECT/INSERT/UPDATE/DELETE their own rows
+```
+
+### Edge Functions
+
+- **`site-audit`**: Receives `{ url }`, calls Firecrawl, returns structured SEO data
+- **`trigger-webhook`**: Receives `{ webhook_url, payload }`, forwards POST request, returns response
+- **`keyword-research`**: Receives `{ keyword }`, calls Lovable AI, returns keyword suggestions
+
+### Portal UI Components
+
+- `SiteAuditModal` -- URL input, displays crawl results (headings, meta, issues)
+- `WebhookTriggerModal` -- select workflow, optional payload, trigger button with status
+- `KeywordResearchModal` -- keyword input, results table with intent/competition
+- `ToolSettingsDrawer` -- manage webhook URLs, add/remove tools
+
+---
+
+## Connectors Needed
+
+- **Firecrawl**: Already available in your workspace, just needs to be linked to this project
 
