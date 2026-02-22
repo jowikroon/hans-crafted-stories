@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Workflow, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { X, Workflow, Loader2, CheckCircle, XCircle, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,14 +11,25 @@ interface WebhookTriggerModalProps {
   open: boolean;
   onClose: () => void;
   defaultWebhookUrl?: string;
+  toolId?: string;
+  toolConfig?: Record<string, unknown>;
+  onWebhookSaved?: () => void;
 }
 
-const WebhookTriggerModal = ({ open, onClose, defaultWebhookUrl = "" }: WebhookTriggerModalProps) => {
+const WebhookTriggerModal = ({ open, onClose, defaultWebhookUrl = "", toolId, toolConfig, onWebhookSaved }: WebhookTriggerModalProps) => {
   const [webhookUrl, setWebhookUrl] = useState(defaultWebhookUrl);
   const [payload, setPayload] = useState("{}");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; status: number; data: unknown } | null>(null);
   const { toast } = useToast();
+
+  // Sync when defaultWebhookUrl changes
+  useEffect(() => {
+    if (open) {
+      setWebhookUrl(defaultWebhookUrl);
+      setResult(null);
+    }
+  }, [open, defaultWebhookUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +49,18 @@ const WebhookTriggerModal = ({ open, onClose, defaultWebhookUrl = "" }: WebhookT
       const res = await portalApi.triggerWebhook(webhookUrl, parsedPayload as Record<string, unknown>);
       if (res.success && res.data) {
         setResult(res.data);
+
+        // Save webhook URL back to tool config if changed
+        if (toolId && webhookUrl !== defaultWebhookUrl) {
+          try {
+            await portalApi.updateTool(toolId, {
+              config: { ...(toolConfig || {}), webhook_url: webhookUrl },
+            });
+            onWebhookSaved?.();
+          } catch {
+            // silent – non-critical
+          }
+        }
       } else {
         toast({ title: "Failed", description: res.error || "Webhook failed", variant: "destructive" });
       }
@@ -73,6 +96,20 @@ const WebhookTriggerModal = ({ open, onClose, defaultWebhookUrl = "" }: WebhookT
                 <h2 className="font-display text-xl font-medium">Trigger Webhook</h2>
               </div>
               <p className="text-sm text-muted-foreground">Send a POST request to an n8n webhook or any URL</p>
+            </div>
+
+            {/* n8n setup guidance */}
+            <div className="mb-5 rounded-lg border border-border bg-secondary/30 p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <Info size={12} />
+                n8n Setup Guide
+              </div>
+              <ol className="space-y-1 text-xs leading-relaxed text-muted-foreground">
+                <li>1. Add a <strong>Webhook</strong> node as your first node in n8n</li>
+                <li>2. Set HTTP Method to <strong>POST</strong></li>
+                <li>3. Set Response Mode to <strong>"When Last Node Finishes"</strong></li>
+                <li>4. Copy the <strong>Production URL</strong> and paste it below</li>
+              </ol>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
