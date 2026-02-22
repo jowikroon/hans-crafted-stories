@@ -221,11 +221,19 @@ const Portal = () => {
         onClose={() => setPreviewTool(null)}
         onEdit={handleEditFromPreview}
         onOpen={handleOpenTool}
+        onToolUpdated={reloadTools}
       />
 
       {/* Modals */}
       <SiteAuditModal open={activeModal === "site-audit"} onClose={() => setActiveModal(null)} />
-      <WebhookTriggerModal open={activeModal === "webhook"} onClose={() => setActiveModal(null)} defaultWebhookUrl={webhookUrl} />
+      <WebhookTriggerModal
+        open={activeModal === "webhook"}
+        onClose={() => setActiveModal(null)}
+        defaultWebhookUrl={webhookUrl}
+        toolId={tools.find(t => t.tool_type === "webhook")?.id}
+        toolConfig={(tools.find(t => t.tool_type === "webhook")?.config || {}) as Record<string, unknown>}
+        onWebhookSaved={reloadTools}
+      />
       <KeywordResearchModal open={activeModal === "keyword"} onClose={() => setActiveModal(null)} />
       <ToolSettingsModal open={!!settingsTool} onClose={() => setSettingsTool(null)} tool={settingsTool} totalTools={tools.length} onUpdated={reloadTools} />
       {user && <AddToolModal open={showAddTool} onClose={() => setShowAddTool(false)} userId={user.id} nextSortOrder={tools.length} onAdded={reloadTools} />}

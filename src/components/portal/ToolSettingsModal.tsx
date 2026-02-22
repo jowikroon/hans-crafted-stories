@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PortalTool, portalApi } from "@/lib/api/portal";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2, CheckCircle, XCircle, Info } from "lucide-react";
 
 interface ToolSettingsModalProps {
   open: boolean;
@@ -32,6 +32,67 @@ const colorOptions = [
   { value: "text-purple-500", label: "Purple" },
   { value: "text-primary", label: "Primary" },
 ];
+
+// Inline webhook config section with test button
+const WebhookConfigSection = ({ webhookUrl, onUrlChange }: { webhookUrl: string; onUrlChange: (v: string) => void }) => {
+  const { toast } = useToast();
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
+
+  const handleTest = async () => {
+    if (!webhookUrl.trim()) {
+      toast({ title: "No URL", description: "Enter a webhook URL first.", variant: "destructive" });
+      return;
+    }
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await portalApi.triggerWebhook(webhookUrl, { test: true });
+      setTestResult(res.success && res.data ? "success" : "error");
+    } catch {
+      setTestResult("error");
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3 rounded-lg border border-border bg-secondary/20 p-3">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        <Info size={12} />
+        Webhook Configuration
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="webhook-url">Webhook URL</Label>
+        <Input
+          id="webhook-url"
+          value={webhookUrl}
+          onChange={(e) => { onUrlChange(e.target.value); setTestResult(null); }}
+          placeholder="https://your-n8n-instance.com/webhook/..."
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={handleTest} disabled={testing} className="gap-1.5 text-xs">
+          {testing ? <Loader2 size={12} className="animate-spin" /> : null}
+          Test Webhook
+        </Button>
+        {testResult === "success" && (
+          <span className="flex items-center gap-1 text-xs text-green-600">
+            <CheckCircle size={12} /> OK
+          </span>
+        )}
+        {testResult === "error" && (
+          <span className="flex items-center gap-1 text-xs text-destructive">
+            <XCircle size={12} /> Failed
+          </span>
+        )}
+      </div>
+      <p className="text-[11px] leading-relaxed text-muted-foreground">
+        Use a Webhook node in n8n with HTTP Method: POST, Response Mode: "When Last Node Finishes".
+      </p>
+    </div>
+  );
+};
 
 const ToolSettingsModal = ({ open, onClose, tool, totalTools, onUpdated }: ToolSettingsModalProps) => {
   const { toast } = useToast();
@@ -121,10 +182,7 @@ const ToolSettingsModal = ({ open, onClose, tool, totalTools, onUpdated }: ToolS
           </div>
 
           {tool?.tool_type === "webhook" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="webhook-url">Webhook URL</Label>
-              <Input id="webhook-url" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://your-n8n-instance.com/webhook/..." />
-            </div>
+            <WebhookConfigSection webhookUrl={webhookUrl} onUrlChange={setWebhookUrl} />
           )}
 
           <div className="grid grid-cols-2 gap-4">
