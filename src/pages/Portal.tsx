@@ -8,6 +8,7 @@ import SiteAuditModal from "@/components/portal/SiteAuditModal";
 import WebhookTriggerModal from "@/components/portal/WebhookTriggerModal";
 import KeywordResearchModal from "@/components/portal/KeywordResearchModal";
 import ToolSettingsModal from "@/components/portal/ToolSettingsModal";
+import AddToolModal from "@/components/portal/AddToolModal";
 
 const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe };
 const getIcon = (name: string) => iconMap[name] || Wrench;
@@ -26,6 +27,7 @@ const Portal = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [settingsTool, setSettingsTool] = useState<PortalTool | null>(null);
+  const [showAddTool, setShowAddTool] = useState(false);
 
   const seedingRef = useRef(false);
 
@@ -172,17 +174,18 @@ const Portal = () => {
             })}
 
             {/* Add Tool Card */}
-            <motion.div
+            <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: visibleTools.length * 0.1 }}
-              className="flex items-center justify-center rounded-lg border border-dashed border-border p-6 text-muted-foreground/50"
+              onClick={() => setShowAddTool(true)}
+              className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-border p-6 text-muted-foreground/50 transition-all hover:border-primary/30 hover:text-muted-foreground"
             >
               <div className="text-center">
                 <Plus size={24} className="mx-auto mb-2" />
                 <p className="text-sm">Add more tools</p>
               </div>
-            </motion.div>
+            </motion.button>
           </div>
         )}
       </motion.div>
@@ -192,6 +195,7 @@ const Portal = () => {
       <WebhookTriggerModal open={activeModal === "webhook"} onClose={() => setActiveModal(null)} defaultWebhookUrl={webhookUrl} />
       <KeywordResearchModal open={activeModal === "keyword"} onClose={() => setActiveModal(null)} />
       <ToolSettingsModal open={!!settingsTool} onClose={() => setSettingsTool(null)} tool={settingsTool} totalTools={tools.length} onUpdated={reloadTools} />
+      {user && <AddToolModal open={showAddTool} onClose={() => setShowAddTool(false)} userId={user.id} nextSortOrder={tools.length} onAdded={reloadTools} />}
     </section>
   );
 };
