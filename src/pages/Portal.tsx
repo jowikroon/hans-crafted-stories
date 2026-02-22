@@ -90,17 +90,17 @@ const Portal = () => {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Header */}
-        <div className="mb-12 flex items-start justify-between">
+        <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">Portal</p>
-            <h1 className="mb-2 font-display text-4xl font-medium tracking-tight text-foreground">
+            <h1 className="mb-2 font-display text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
               Welcome back{user.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(" ")[0]}` : ""}
             </h1>
             <p className="text-muted-foreground">Your tools and workflows, all in one place.</p>
           </div>
           <button
             onClick={signOut}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="inline-flex w-fit items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <LogOut size={14} /> Sign out
           </button>
