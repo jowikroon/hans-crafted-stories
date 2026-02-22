@@ -1,107 +1,44 @@
 
 
-# Portal Backend: Full Implementation Plan
+# N8N Workflow Selector on Tool Cards
 
-## Overview
+## What We're Building
+Adding the ability to configure and select N8N webhook workflows directly from the tool card preview popup -- so you can set a webhook URL, give it a name, and trigger it without needing to dig into settings each time.
 
-The Google sign-in is already wired up and functional. This plan focuses on building real, working backend tools behind the portal and making the system extensible for future additions.
+## Changes
 
----
+### 1. Enhance the Tool Preview Modal (`ToolPreviewModal.tsx`)
+- For webhook-type tools, show the currently configured webhook URL (or a prompt to set one if none exists)
+- Add a "Configure Webhook" inline section that lets you paste/edit the n8n webhook URL right from the preview
+- Show a quick-trigger button that sends a POST to the configured webhook with a default or custom payload
+- Display a status indicator (configured vs. not configured)
 
-## What We'll Build
+### 2. Update the Webhook Trigger Modal (`WebhookTriggerModal.tsx`)
+- Pre-fill the webhook URL from the tool's saved config (already partially done via `defaultWebhookUrl`)
+- After a successful trigger, save the webhook URL back to the tool's config if it was changed
+- Add a helper text section explaining the n8n setup steps (HTTP Method: POST, Response Mode, etc.)
 
-### 1. Database: Portal Tools Configuration
+### 3. Update Tool Settings Modal (`ToolSettingsModal.tsx`)
+- Add a dedicated "Webhook Configuration" section for webhook-type tools with:
+  - Webhook URL field (already exists)
+  - A "Test Webhook" button that sends a test POST and shows success/failure inline
+  - Helper text explaining expected n8n webhook format
 
-Create a `portal_tools` table so you can manage your n8n webhook URLs and tool configurations without code changes.
-
-- **portal_tools** table: stores tool name, webhook URL, description, icon, and sort order
-- Secured with RLS so only your authenticated account can read/write
-- Pre-seeded with the three existing tools
-
-### 2. Site Audit Tool (powered by Firecrawl)
-
-Connect the **Firecrawl** connector (already available in your workspace) to enable real website crawling and SEO auditing.
-
-- A backend function that accepts a URL, calls Firecrawl to scrape and analyze it
-- Returns page title, meta description, headings structure, links count, images without alt text, and other SEO signals
-- Results displayed in a clean modal/drawer in the portal
-
-### 3. N8N Workflow Trigger
-
-A backend function that acts as a proxy to trigger your n8n webhooks securely.
-
-- Webhook URLs stored in the database (not hardcoded)
-- The portal sends a request to the backend function, which forwards it to the n8n webhook
-- Supports passing custom payload data
-- Shows success/error feedback in the UI
-
-### 4. Keyword Research Tool (AI-powered)
-
-Use Lovable AI (no API key needed) to provide keyword analysis.
-
-- A backend function that takes a seed keyword and uses AI to generate related keywords, estimated search intent, competition level, and content suggestions
-- Results displayed in a structured table in the portal
-
-### 5. Portal UI Upgrade
-
-- Replace hardcoded tool cards with dynamic cards from the database
-- Add modals/drawers for each tool's input and output
-- Add a settings section to manage webhook URLs
-- Keep the extensible "Add more tools" card
-
----
-
-## Implementation Sequence
-
-1. **Connect Firecrawl** -- link the existing Firecrawl connector to this project
-2. **Database migration** -- create `portal_tools` table with seed data
-3. **Edge function: `site-audit`** -- Firecrawl-powered SEO audit
-4. **Edge function: `trigger-webhook`** -- generic n8n webhook proxy
-5. **Edge function: `keyword-research`** -- AI-powered keyword analysis
-6. **Portal UI** -- dynamic tool loading, input modals, result displays, webhook settings
-
----
+### 4. Update Portal Page (`Portal.tsx`)
+- When opening a webhook tool from the preview, pass the saved webhook URL from config
+- After editing/triggering, persist the webhook URL back to the tool's config in the database via `portalApi.updateTool`
 
 ## Technical Details
 
-### Database Schema
+### Data Flow
+The webhook URL is stored in `portal_tools.config` as `{ webhook_url: "https://...", enabled: true }`. The preview modal reads it, the trigger modal uses it, and any changes get saved back via `portalApi.updateTool`.
 
-```text
-portal_tools
-+--------------+----------+------------------------------------------+
-| Column       | Type     | Notes                                    |
-+--------------+----------+------------------------------------------+
-| id           | uuid     | PK, auto-generated                       |
-| user_id      | uuid     | references auth.users, NOT NULL           |
-| name         | text     | Tool display name                        |
-| description  | text     | Short description                        |
-| tool_type    | text     | "site-audit" | "webhook" | "keyword"     |
-| config       | jsonb    | Webhook URL, default params, etc.        |
-| icon         | text     | Lucide icon name                         |
-| color        | text     | Tailwind color class                     |
-| sort_order   | int      | Display order                            |
-| created_at   | timestamptz | default now()                         |
-+--------------+----------+------------------------------------------+
+### Files Modified
+- `src/components/portal/ToolPreviewModal.tsx` -- Add webhook URL display and inline config for webhook tools
+- `src/components/portal/WebhookTriggerModal.tsx` -- Add save-back logic and n8n setup guidance
+- `src/components/portal/ToolSettingsModal.tsx` -- Add "Test Webhook" button
+- `src/pages/Portal.tsx` -- Wire up save-back after webhook URL changes
 
-RLS: Users can only SELECT/INSERT/UPDATE/DELETE their own rows
-```
-
-### Edge Functions
-
-- **`site-audit`**: Receives `{ url }`, calls Firecrawl, returns structured SEO data
-- **`trigger-webhook`**: Receives `{ webhook_url, payload }`, forwards POST request, returns response
-- **`keyword-research`**: Receives `{ keyword }`, calls Lovable AI, returns keyword suggestions
-
-### Portal UI Components
-
-- `SiteAuditModal` -- URL input, displays crawl results (headings, meta, issues)
-- `WebhookTriggerModal` -- select workflow, optional payload, trigger button with status
-- `KeywordResearchModal` -- keyword input, results table with intent/competition
-- `ToolSettingsDrawer` -- manage webhook URLs, add/remove tools
-
----
-
-## Connectors Needed
-
-- **Firecrawl**: Already available in your workspace, just needs to be linked to this project
+### No Database Changes Required
+All configuration is stored in the existing `config` JSONB column on `portal_tools`.
 
