@@ -92,7 +92,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card p-8 shadow-2xl"
+            className="fixed inset-4 z-50 m-auto h-fit max-h-[85vh] max-w-md overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-2xl sm:p-8"
           >
             <button
               onClick={onClose}
