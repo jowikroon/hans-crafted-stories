@@ -2,16 +2,18 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
+import PortalUsersManager from "@/components/portal/PortalUsersManager";
 
-type Tab = "tools" | "content" | "status";
+type Tab = "tools" | "content" | "status" | "users";
 
 const tabs: { id: Tab; label: string; icon: typeof Wrench }[] = [
   { id: "tools", label: "Tools", icon: Wrench },
   { id: "content", label: "Content", icon: FileText },
+  { id: "users", label: "Users", icon: Users },
   { id: "status", label: "Status", icon: Activity },
 ];
 
@@ -129,6 +131,7 @@ const Portal = () => {
         {/* Tab Content */}
         {activeTab === "tools" && <PortalToolsTab userId={user.id} />}
         {activeTab === "content" && <PortalContentTab />}
+        {activeTab === "users" && <PortalUsersManager adminUserId={user.id} />}
         {activeTab === "status" && <PortalStatusTab />}
       </motion.div>
     </section>
