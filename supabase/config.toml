@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.keyword-research]
 verify_jwt = false
+
+[functions.portal-api]
+verify_jwt = false
