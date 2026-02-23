@@ -14,6 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          excerpt: string
+          id: string
+          published: boolean
+          read_time: string
+          slug: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string
+          id?: string
+          published?: boolean
+          read_time?: string
+          slug: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string
+          id?: string
+          published?: boolean
+          read_time?: string
+          slug?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      case_studies: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          description: string
+          external_url: string | null
+          id: string
+          image: string
+          published: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+          year: string
+        }
+        Insert: {
+          category?: string
+          content?: string
+          created_at?: string
+          description?: string
+          external_url?: string | null
+          id?: string
+          image?: string
+          published?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+          year?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          description?: string
+          external_url?: string | null
+          id?: string
+          image?: string
+          published?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          year?: string
+        }
+        Relationships: []
+      }
       portal_tools: {
         Row: {
           color: string | null
