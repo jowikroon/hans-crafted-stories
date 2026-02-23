@@ -101,6 +101,42 @@ export type Database = {
         }
         Relationships: []
       }
+      page_elements: {
+        Row: {
+          created_at: string
+          element_group: string
+          element_key: string
+          element_label: string
+          id: string
+          is_visible: boolean
+          page: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          element_group?: string
+          element_key: string
+          element_label: string
+          id?: string
+          is_visible?: boolean
+          page: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          element_group?: string
+          element_key?: string
+          element_label?: string
+          id?: string
+          is_visible?: boolean
+          page?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       portal_profiles: {
         Row: {
           avatar_url: string | null
