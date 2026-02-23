@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { Home, ChevronRight } from "lucide-react";
 import { getBlogPost, BlogPostRow } from "@/lib/api/content";
 
 const renderMarkdown = (md: string) =>
@@ -50,12 +50,19 @@ const BlogPostPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Link
-          to="/writing"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        <nav
+          className="mb-8 flex items-center gap-1.5 text-xs text-muted-foreground"
+          aria-label="Breadcrumb"
         >
-          <ArrowLeft size={14} /> Back to Writing
-        </Link>
+          <Link to="/" className="flex items-center gap-1 transition-colors hover:text-foreground">
+            <Home size={12} />
+            <span>Home</span>
+          </Link>
+          <ChevronRight size={11} className="text-muted-foreground/40" />
+          <Link to="/writing" className="transition-colors hover:text-foreground">Writing</Link>
+          <ChevronRight size={11} className="text-muted-foreground/40" />
+          <span className="font-medium text-foreground line-clamp-1">{post.title}</span>
+        </nav>
 
         <div className="mb-6 flex flex-wrap gap-2">
           {post.tags.map((tag) => (

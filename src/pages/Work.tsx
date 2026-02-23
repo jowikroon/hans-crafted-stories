@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Home, ChevronRight } from "lucide-react";
 import { getCaseStudies, CaseStudyRow } from "@/lib/api/content";
 import CaseStudyCard from "@/components/CaseStudyCard";
 import { usePageElements } from "@/hooks/usePageElements";
@@ -32,7 +34,24 @@ const Work = () => {
   }
 
   return (
-    <section className="section-container pt-28">
+    <section className="section-container pt-28 pb-20">
+      {isVisible("breadcrumb") && (
+        <motion.nav
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-8 flex items-center gap-1.5 text-xs text-muted-foreground"
+          aria-label="Breadcrumb"
+        >
+          <Link to="/" className="flex items-center gap-1 transition-colors hover:text-foreground">
+            <Home size={12} />
+            <span>Home</span>
+          </Link>
+          <ChevronRight size={11} className="text-muted-foreground/40" />
+          <span className="font-medium text-foreground">Work</span>
+        </motion.nav>
+      )}
+
       {isVisible("page_header") && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
