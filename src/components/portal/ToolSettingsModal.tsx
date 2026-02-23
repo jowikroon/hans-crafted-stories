@@ -6,9 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PortalTool, portalApi } from "@/lib/api/portal";
+import { PortalTool, ToolAttribute, portalApi } from "@/lib/api/portal";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, Loader2, CheckCircle, XCircle, Info } from "lucide-react";
+import AttributeEditor, { AttributeEntry } from "./AttributeEditor";
 
 interface ToolSettingsModalProps {
   open: boolean;
@@ -106,6 +107,7 @@ const ToolSettingsModal = ({ open, onClose, tool, totalTools, onUpdated }: ToolS
   const [sortOrder, setSortOrder] = useState(0);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [enabled, setEnabled] = useState(true);
+  const [attributes, setAttributes] = useState<AttributeEntry[]>([]);
 
   useEffect(() => {
     if (tool) {
@@ -117,6 +119,7 @@ const ToolSettingsModal = ({ open, onClose, tool, totalTools, onUpdated }: ToolS
       const config = (tool.config || {}) as Record<string, unknown>;
       setWebhookUrl((config.webhook_url as string) || "");
       setEnabled(config.enabled !== false);
+      setAttributes((tool.attributes || []).map((a) => ({ id: a.id, key: a.key, value: a.value })));
     }
   }, [tool]);
 
@@ -222,6 +225,26 @@ const ToolSettingsModal = ({ open, onClose, tool, totalTools, onUpdated }: ToolS
               </SelectContent>
             </Select>
           </div>
+
+          <AttributeEditor
+            attributes={attributes}
+            onChange={setAttributes}
+            onAdd={async (key, value) => {
+              if (!tool) return;
+              const attr = await portalApi.addAttribute(tool.id, key, value);
+              setAttributes((prev) => [...prev, { id: attr.id, key: attr.key, value: attr.value }]);
+              onUpdated();
+            }}
+            onDelete={async (id) => {
+              await portalApi.deleteAttribute(id);
+              setAttributes((prev) => prev.filter((a) => a.id !== id));
+              onUpdated();
+            }}
+            onUpdate={async (id, value) => {
+              await portalApi.updateAttribute(id, value);
+              onUpdated();
+            }}
+          />
 
           <div className="flex items-center justify-between rounded-md border border-border p-3">
             <Label htmlFor="tool-enabled" className="cursor-pointer">Visible on dashboard</Label>

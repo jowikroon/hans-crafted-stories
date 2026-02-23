@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings } from "lucide-react";
 import { portalApi, PortalTool } from "@/lib/api/portal";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import SiteAuditModal from "./SiteAuditModal";
 import WebhookTriggerModal from "./WebhookTriggerModal";
@@ -125,6 +126,20 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
                 <ExternalLink size={11} className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-60" />
               </h3>
               <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">{tool.description}</p>
+              {tool.attributes && tool.attributes.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {tool.attributes.slice(0, 3).map((attr) => (
+                    <Badge key={attr.id} variant="secondary" className="text-[10px] font-normal">
+                      {attr.key}: {attr.value}
+                    </Badge>
+                  ))}
+                  {tool.attributes.length > 3 && (
+                    <Badge variant="outline" className="text-[10px] font-normal text-muted-foreground">
+                      +{tool.attributes.length - 3}
+                    </Badge>
+                  )}
+                </div>
+              )}
             </motion.div>
           );
         })}

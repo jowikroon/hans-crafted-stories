@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { portalApi } from "@/lib/api/portal";
 import { useToast } from "@/hooks/use-toast";
+import AttributeEditor, { AttributeEntry } from "./AttributeEditor";
 
 interface AddToolModalProps {
   open: boolean;
@@ -47,6 +48,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
   const [icon, setIcon] = useState("Wrench");
   const [color, setColor] = useState("text-primary");
   const [webhookUrl, setWebhookUrl] = useState("");
+  const [newAttributes, setNewAttributes] = useState<AttributeEntry[]>([]);
 
   const reset = () => {
     setName("");
@@ -55,6 +57,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
     setIcon("Wrench");
     setColor("text-primary");
     setWebhookUrl("");
+    setNewAttributes([]);
   };
 
   const handleSave = async () => {
@@ -66,7 +69,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
     try {
       const config: Record<string, unknown> = { enabled: true };
       if (toolType === "webhook") config.webhook_url = webhookUrl;
-      await portalApi.addTool({
+      const created = await portalApi.addTool({
         user_id: userId,
         name: name.trim(),
         description: description.trim() || null,
@@ -76,6 +79,12 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
         sort_order: nextSortOrder,
         config,
       });
+      // Add attributes
+      for (const attr of newAttributes) {
+        if (attr.key.trim() && attr.value.trim()) {
+          await portalApi.addAttribute(created.id, attr.key.trim(), attr.value.trim());
+        }
+      }
       toast({ title: "Created", description: `"${name.trim()}" added to your portal.` });
       reset();
       onAdded();
@@ -149,6 +158,8 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
               </Select>
             </div>
           </div>
+
+          <AttributeEditor attributes={newAttributes} onChange={setNewAttributes} />
         </div>
 
         <DialogFooter>
