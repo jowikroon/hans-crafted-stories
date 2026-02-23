@@ -1,70 +1,70 @@
 
-# Add Product-Style Attributes to Tool Cards
 
-## Overview
-Transform portal tool cards into rich, product-like entries by creating a new `tool_attributes` table in the database. Each tool (identified by its unique name) can have multiple key-value attributes like SKU, EAN, version, category, URL, etc. These attributes are displayed on the tool cards and in the preview modal.
+# Central Tools API -- Expose Portal Data to All Systems
 
-## Database Changes
+## Problem
+Right now, tool/card data is only accessible through the frontend Supabase client (which requires browser auth). Your other systems -- Claude Code on VPS, n8n workflows, Cloudflare Workers -- can't read or write tool data. You need a single API endpoint that serves as the central source of truth.
 
-### New table: `tool_attributes`
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid (PK) | Auto-generated |
-| tool_id | uuid (FK) | References `portal_tools.id` ON DELETE CASCADE |
-| key | text | Attribute name (e.g. "SKU", "EAN", "Version") |
-| value | text | Attribute value |
-| created_at | timestamptz | Default `now()` |
+## Solution
+Create a new **`portal-api`** edge function that provides a REST-style API for all tool and attribute CRUD operations. Any system with the correct API key can call it.
 
-- Unique constraint on `(tool_id, key)` -- no duplicate attribute names per tool
-- RLS policies mirroring `portal_tools`: users can only CRUD attributes for their own tools (joined via `portal_tools.user_id`)
+```
+Claude Code (VPS) ──┐
+n8n Hostinger    ──┤
+n8n Cloud        ──┤──→  /functions/v1/portal-api  ──→  portal_tools + tool_attributes
+Cloudflare       ──┤                                     (Supabase DB)
+Lovable Frontend ──┘
+```
 
-## UI Changes
+## API Design
 
-### 1. Tool Cards on Portal Dashboard (`Portal.tsx`)
-- Show up to 2-3 attributes as small key:value badges below the description on each card
-- Truncate gracefully if there are many attributes
+**Endpoint:** `POST /functions/v1/portal-api`
 
-### 2. Tool Preview Modal (`ToolPreviewModal.tsx`)
-- Display all attributes in a clean list between the description and the webhook config section
-- Each attribute shown as a label-value pair in a subtle grid layout
+All requests use a JSON body with an `action` field:
 
-### 3. Tool Settings Modal (`ToolSettingsModal.tsx`)
-- Add an "Attributes" section below the existing fields
-- List existing attributes with inline edit and delete
-- "Add Attribute" row with key + value inputs
-- Save/delete attributes via API calls
+| Action | Description | Params |
+|--------|-------------|--------|
+| `list_tools` | Get all tools + attributes | -- |
+| `get_tool` | Get one tool by id or name | `id` or `name` |
+| `create_tool` | Create a new tool | `name`, `description`, `tool_type`, `icon`, `color`, `config`, `attributes[]` |
+| `update_tool` | Update a tool | `id`, fields to update |
+| `delete_tool` | Delete a tool | `id` |
+| `list_attributes` | Get attributes for a tool | `tool_id` |
+| `add_attribute` | Add attribute | `tool_id`, `key`, `value` |
+| `update_attribute` | Update attribute | `id`, `value` |
+| `delete_attribute` | Delete attribute | `id` |
 
-### 4. Add Tool Modal (`AddToolModal.tsx`)
-- Add a simple "Attributes" section where users can add initial key-value pairs during creation
+**Auth:** Uses the `SUPABASE_SERVICE_ROLE_KEY` server-side (bypasses RLS), secured by requiring the anon key in the `Authorization` header so only your systems can call it.
 
-### 5. API Layer (`src/lib/api/portal.ts`)
-- Add `ToolAttribute` interface
-- Add CRUD functions: `getAttributes(toolId)`, `addAttribute(toolId, key, value)`, `updateAttribute(id, value)`, `deleteAttribute(id)`
-- Update `getTools` to optionally fetch attributes alongside tools
+**Example call from n8n / curl:**
+```
+POST https://oejeojzaakfhculcoqdh.supabase.co/functions/v1/portal-api
+Authorization: Bearer <anon_key>
+Content-Type: application/json
+
+{ "action": "list_tools" }
+```
 
 ## Technical Details
 
-### Data Model
-```text
-portal_tools (1) ----< (many) tool_attributes
-  id                          id
-  name (unique identifier)    tool_id (FK)
-  description                 key (e.g. "SKU")
-  tool_type                   value (e.g. "WH-001")
-  config                      created_at
-  ...
-```
+### New file: `supabase/functions/portal-api/index.ts`
+- Single edge function handling all actions via a switch on `action`
+- Uses `SUPABASE_SERVICE_ROLE_KEY` to create a service-role Supabase client (bypasses RLS for server-to-server calls)
+- `list_tools` and `get_tool` return tools with their attributes joined
+- `create_tool` accepts an optional `attributes` array to create tool + attributes in one call
+- CORS headers for browser compatibility
+- JWT verification disabled (like other functions) -- relies on anon key in header
 
-### RLS Policies for `tool_attributes`
-- SELECT: `EXISTS (SELECT 1 FROM portal_tools WHERE id = tool_id AND user_id = auth.uid())`
-- INSERT: same check
-- UPDATE: same check  
-- DELETE: same check
+### Update: `supabase/config.toml`
+- Add `[functions.portal-api]` with `verify_jwt = false`
 
-### Files Modified
-- **Migration**: New `tool_attributes` table with RLS
-- `src/lib/api/portal.ts` -- Add `ToolAttribute` type and CRUD functions
-- `src/pages/Portal.tsx` -- Fetch and display attributes on cards
-- `src/components/portal/ToolPreviewModal.tsx` -- Show full attribute list
-- `src/components/portal/ToolSettingsModal.tsx` -- Attribute management UI
-- `src/components/portal/AddToolModal.tsx` -- Initial attribute entry during creation
+### No frontend changes needed
+- The frontend continues using `portalApi` via the Supabase JS client as before
+- This new endpoint is purely for external system access
+
+### Files
+| File | Action |
+|------|--------|
+| `supabase/functions/portal-api/index.ts` | Create |
+| `supabase/config.toml` | Add function config |
+
