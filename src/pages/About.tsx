@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap } from "lucide-react";
+import hansProfile from "@/assets/hans-profile.jpg";
 import { Badge } from "@/components/ui/badge";
 
 const experience = [
@@ -81,10 +82,12 @@ const About = () => (
       {/* Header */}
       <div className="mb-16 grid gap-12 md:grid-cols-5">
         <div className="md:col-span-2">
-          <div className="aspect-[3/4] overflow-hidden rounded-lg bg-gradient-to-br from-secondary to-muted">
-            <div className="flex h-full w-full items-center justify-center">
-              <span className="font-display text-xl text-muted-foreground/30">Photo</span>
-            </div>
+          <div className="aspect-[3/4] overflow-hidden rounded-lg bg-muted">
+            <img
+              src={hansProfile}
+              alt="Hans van Leeuwen"
+              className="h-full w-full object-cover object-top"
+            />
           </div>
         </div>
 
