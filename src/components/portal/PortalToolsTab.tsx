@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow } from "lucide-react";
 import { portalApi, PortalTool } from "@/lib/api/portal";
+import { usersApi, UserToolAccess } from "@/lib/api/users";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import SiteAuditModal from "./SiteAuditModal";
@@ -24,9 +25,10 @@ const defaultTools = [
 
 interface PortalToolsTabProps {
   userId: string;
+  isAdmin?: boolean;
 }
 
-const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
+const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
   const { toast } = useToast();
   const [tools, setTools] = useState<PortalTool[]>([]);
   const [toolsLoading, setToolsLoading] = useState(false);
@@ -35,6 +37,7 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
   const [settingsTool, setSettingsTool] = useState<PortalTool | null>(null);
   const [showAddTool, setShowAddTool] = useState(false);
   const [previewTool, setPreviewTool] = useState<PortalTool | null>(null);
+  const [accessMap, setAccessMap] = useState<Record<string, UserToolAccess> | null>(null);
   const seedingRef = useRef(false);
 
   useEffect(() => {
@@ -51,6 +54,14 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
           dbTools = await portalApi.getTools();
         }
         setTools(dbTools);
+
+        // Load access rights for non-admin users
+        if (!isAdmin) {
+          const access = await usersApi.getToolAccess(userId);
+          const map: Record<string, UserToolAccess> = {};
+          for (const a of access) map[a.tool_id] = a;
+          setAccessMap(map);
+        }
       } catch (err) {
         console.error("Failed to load tools:", err);
         toast({ title: "Error", description: "Failed to load tools", variant: "destructive" });
@@ -60,7 +71,7 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
       }
     };
     loadTools();
-  }, [userId]);
+  }, [userId, isAdmin]);
 
   const reloadTools = async () => {
     const dbTools = await portalApi.getTools();
@@ -69,7 +80,13 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
 
   const visibleTools = tools.filter((t) => {
     const config = (t.config || {}) as Record<string, unknown>;
-    return config.enabled !== false;
+    if (config.enabled === false) return false;
+    // Admins see everything, non-admins only see tools they have can_view access to
+    if (!isAdmin && accessMap !== null) {
+      const access = accessMap[t.id];
+      return access?.can_view === true;
+    }
+    return true;
   });
 
   const handleToolClick = (tool: PortalTool) => setPreviewTool(tool);
@@ -116,13 +133,15 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
               className="group relative cursor-pointer rounded-xl border border-border bg-card p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5"
               onClick={() => handleToolClick(tool)}
             >
-              <button
-                onClick={(e) => { e.stopPropagation(); setSettingsTool(tool); }}
-                className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground/40 opacity-100 transition-all hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
-                aria-label="Tool settings"
-              >
-                <Settings size={14} />
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setSettingsTool(tool); }}
+                  className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground/40 opacity-100 transition-all hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
+                  aria-label="Tool settings"
+                >
+                  <Settings size={14} />
+                </button>
+              )}
               <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary ${tool.color}`}>
                 <Icon size={20} />
               </div>
@@ -152,18 +171,20 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
           );
         })}
 
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: visibleTools.length * 0.1 }}
-          onClick={() => setShowAddTool(true)}
-          className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-border p-6 text-muted-foreground/50 transition-all hover:border-primary/30 hover:text-muted-foreground"
-        >
-          <div className="text-center">
-            <Plus size={24} className="mx-auto mb-2" />
-            <p className="text-sm">Add more tools</p>
-          </div>
-        </motion.button>
+        {isAdmin && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: visibleTools.length * 0.1 }}
+            onClick={() => setShowAddTool(true)}
+            className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-border p-6 text-muted-foreground/50 transition-all hover:border-primary/30 hover:text-muted-foreground"
+          >
+            <div className="text-center">
+              <Plus size={24} className="mx-auto mb-2" />
+              <p className="text-sm">Add more tools</p>
+            </div>
+          </motion.button>
+        )}
       </div>
 
       <ToolPreviewModal
