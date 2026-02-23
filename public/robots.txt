@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://hans-crafted-stories.lovable.app/sitemap.xml
+Sitemap: https://hansvanleeuwen.com/sitemap.xml
