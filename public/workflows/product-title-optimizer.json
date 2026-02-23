@@ -1,0 +1,213 @@
+{
+  "name": "🏷️ Product Title Optimizer — ConnectCarParts",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "product-title-optimizer",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "product-title-optimizer"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "typeValidation": "strict" },
+                "conditions": [{ "leftValue": "={{ $json.body.action }}", "rightValue": "get_categories", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get_categories"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "typeValidation": "strict" },
+                "conditions": [{ "leftValue": "={{ $json.body.action }}", "rightValue": "export_csv", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "export_csv"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "typeValidation": "strict" },
+                "conditions": [{ "leftValue": "={{ $json.body.action }}", "rightValue": "export_channable", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "export_channable"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "name": "Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [460, 300]
+    },
+
+    {
+      "parameters": {
+        "operation": "readAllRows",
+        "documentId": { "__rl": true, "value": "1XhFgdJNY_y0QfCTtJbdoSEZBRSMe0EQ3O5Jek0jYKLY", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "gid=0", "mode": "id" },
+        "options": { "headerRow": 1 }
+      },
+      "id": "a1b2c3d4-0003-0003-0003-000000000003",
+      "name": "Read Sheet [categories]",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [700, 160],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const products = $input.all().map(i => i.json);\n\n// Build category map — tries every common Magento column name\nconst getCategory = (p) => {\n  return p.categories || p.category || p.product_categories ||\n         p['Product Categories'] || p.Category || '';\n};\n\nconst getBrand = (p) => {\n  return p.manufacturer || p.brand || p.Brand || p.Manufacturer ||\n         p['attribute_set_name'] || '';\n};\n\nconst getTitle = (p) => {\n  return p.name || p.title || p.product_name || p['Product Name'] || p.Name || '';\n};\n\nconst map = {};\n\nfor (const p of products) {\n  const raw = getCategory(p);\n  // top level only — split by / or , or >\n  const tops = raw.split(/[/,>]/).map(s => s.trim()).filter(Boolean);\n  const top = tops[0] || 'Overig';\n\n  if (!map[top]) {\n    map[top] = { name: top, count: 0, total_len: 0, no_brand: 0, no_year: 0 };\n  }\n  const e = map[top];\n  e.count++;\n  const title = getTitle(p);\n  e.total_len += title.length;\n  const brand = getBrand(p);\n  if (!brand || !title.toLowerCase().includes(brand.toLowerCase())) e.no_brand++;\n  if (!/\\d{4}/.test(title)) e.no_year++;\n}\n\nconst categories = Object.values(map)\n  .filter(c => c.count >= 1)\n  .map(c => {\n    const avg = c.count ? Math.round(c.total_len / c.count) : 0;\n    const score = Math.min(100, Math.round(\n      (c.no_brand / c.count) * 50 +\n      (c.no_year  / c.count) * 30 +\n      (avg < 25 ? 20 : 0)\n    ));\n    return {\n      name: c.name,\n      count: c.count,\n      avg_title_length: avg,\n      missing_brand: c.no_brand,\n      missing_year: c.no_year,\n      score\n    };\n  })\n  .sort((a, b) => b.score - a.score);\n\nreturn [{ json: { categories, total_products: products.length } }];\n"
+      },
+      "id": "a1b2c3d4-0004-0004-0004-000000000004",
+      "name": "Build Category List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [940, 160]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "a1b2c3d4-0005-0005-0005-000000000005",
+      "name": "Respond — Categories",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1180, 160]
+    },
+
+    {
+      "parameters": {
+        "operation": "readAllRows",
+        "documentId": { "__rl": true, "value": "1XhFgdJNY_y0QfCTtJbdoSEZBRSMe0EQ3O5Jek0jYKLY", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "gid=0", "mode": "id" },
+        "options": { "headerRow": 1 }
+      },
+      "id": "a1b2c3d4-0006-0006-0006-000000000006",
+      "name": "Read Sheet [csv]",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [700, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const category = $('Webhook').first().json.body.category || '';\nconst products = $input.all().map(i => i.json);\n\nconst getCategory = (p) => p.categories || p.category || p.product_categories || p['Product Categories'] || p.Category || '';\nconst getBrand    = (p) => p.manufacturer || p.brand || p.Brand || p.Manufacturer || p.attribute_set_name || '';\nconst getTitle    = (p) => p.name || p.title || p.product_name || p['Product Name'] || p.Name || '';\nconst getSku      = (p) => p.sku || p.SKU || p['Product SKU'] || p.product_sku || '';\n\nconst filtered = products.filter(p => {\n  if (!category) return true;\n  const cat = getCategory(p).toLowerCase();\n  return cat.includes(category.toLowerCase());\n});\n\nconst rows = filtered.map(p => {\n  const sku = getSku(p);\n  const original = getTitle(p);\n  const brand = getBrand(p);\n\n  // Build improved title:\n  // 1. Prepend brand if not already there\n  // 2. Trim to 70 chars max (Google Shopping limit)\n  let improved = original;\n  if (brand && !improved.toLowerCase().startsWith(brand.toLowerCase())) {\n    improved = brand + ' ' + improved;\n  }\n  if (improved.length > 70) improved = improved.substring(0, 70).trimEnd();\n\n  return '\"' + sku.replace(/\"/g,'\"\"') + '\",\"' +\n         original.replace(/\"/g,'\"\"') + '\",\"' +\n         improved.replace(/\"/g,'\"\"') + '\"';\n});\n\nconst csv = 'sku,current_title,improved_title\\n' + rows.join('\\n');\nconst filename = (category || 'all').toLowerCase().replace(/[^a-z0-9]/g,'_') + '_titles.csv';\n\nreturn [{\n  json: {\n    content: csv,\n    filename,\n    row_count: filtered.length,\n    category: category || 'all'\n  }\n}];\n"
+      },
+      "id": "a1b2c3d4-0007-0007-0007-000000000007",
+      "name": "Build CSV",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [940, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "a1b2c3d4-0008-0008-0008-000000000008",
+      "name": "Respond — CSV",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1180, 300]
+    },
+
+    {
+      "parameters": {
+        "operation": "readAllRows",
+        "documentId": { "__rl": true, "value": "1XhFgdJNY_y0QfCTtJbdoSEZBRSMe0EQ3O5Jek0jYKLY", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "gid=0", "mode": "id" },
+        "options": { "headerRow": 1 }
+      },
+      "id": "a1b2c3d4-0009-0009-0009-000000000009",
+      "name": "Read Sheet [channable]",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [700, 440],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const category = $('Webhook').first().json.body.category || '';\nconst products = $input.all().map(i => i.json);\n\nconst getCategory = (p) => p.categories || p.category || p.product_categories || p['Product Categories'] || p.Category || '';\nconst getBrand    = (p) => p.manufacturer || p.brand || p.Brand || p.Manufacturer || p.attribute_set_name || '';\nconst getTitle    = (p) => p.name || p.title || p.product_name || p['Product Name'] || p.Name || '';\n\nconst filtered = products.filter(p => {\n  if (!category) return true;\n  return getCategory(p).toLowerCase().includes(category.toLowerCase());\n});\n\n// Collect unique brands in this category\nconst brands = [...new Set(\n  filtered.map(p => getBrand(p)).filter(Boolean)\n)].sort();\n\nconst avgLen = filtered.length\n  ? Math.round(filtered.reduce((s,p) => s + getTitle(p).length, 0) / filtered.length)\n  : 0;\n\n// Count how many products already have brand in title\nconst withBrand = filtered.filter(p => {\n  const b = getBrand(p);\n  const t = getTitle(p).toLowerCase();\n  return b && t.includes(b.toLowerCase());\n}).length;\n\nconst pctMissingBrand = filtered.length\n  ? Math.round((1 - withBrand / filtered.length) * 100)\n  : 0;\n\nconst rules = {\n  meta: {\n    generated_at: new Date().toISOString(),\n    category: category || 'all categories',\n    product_count: filtered.length,\n    avg_title_length: avgLen,\n    pct_missing_brand: pctMissingBrand,\n    unique_brands: brands.length,\n    brands: brands.slice(0, 30)\n  },\n  channable_rules: [\n    {\n      id: 1,\n      name: 'Prepend brand to title if missing',\n      description: `Applies to ${pctMissingBrand}% of products in this category`,\n      condition: {\n        AND: [\n          { field: 'categories', operator: 'contains', value: category || '' },\n          { field: 'brand',      operator: 'is not empty' },\n          { field: 'title',      operator: 'does not contain', value: '[brand]' }\n        ]\n      },\n      action: {\n        field: 'title',\n        transformation: 'set',\n        value: '[brand] [title]'\n      }\n    },\n    {\n      id: 2,\n      name: 'Truncate title to 70 characters',\n      description: 'Google Shopping title limit — prevents truncation in ads',\n      condition: {\n        AND: [\n          { field: 'categories', operator: 'contains', value: category || '' },\n          { field: 'title',      operator: 'length greater than', value: 70 }\n        ]\n      },\n      action: {\n        field: 'title',\n        transformation: 'truncate',\n        value: 70\n      }\n    },\n    {\n      id: 3,\n      name: 'Remove double spaces in title',\n      description: 'Cleans up titles after brand prepend',\n      condition: {\n        AND: [\n          { field: 'categories', operator: 'contains', value: category || '' },\n          { field: 'title',      operator: 'contains', value: '  ' }\n        ]\n      },\n      action: {\n        field: 'title',\n        transformation: 'replace',\n        find: '  ',\n        replace_with: ' '\n      }\n    }\n  ]\n};\n\nconst filename = 'channable_rules_' +\n  (category || 'all').toLowerCase().replace(/[^a-z0-9]/g,'_') + '.json';\n\nreturn [{\n  json: {\n    content: JSON.stringify(rules, null, 2),\n    filename,\n    row_count: filtered.length,\n    category: category || 'all'\n  }\n}];\n"
+      },
+      "id": "a1b2c3d4-0010-0010-0010-000000000010",
+      "name": "Build Channable Rules",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [940, 440]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "a1b2c3d4-0011-0011-0011-000000000011",
+      "name": "Respond — Channable",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1180, 440]
+    }
+  ],
+
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Route", "type": "main", "index": 0 }]]
+    },
+    "Route": {
+      "main": [
+        [{ "node": "Read Sheet [categories]", "type": "main", "index": 0 }],
+        [{ "node": "Read Sheet [csv]",        "type": "main", "index": 0 }],
+        [{ "node": "Read Sheet [channable]",  "type": "main", "index": 0 }]
+      ]
+    },
+    "Read Sheet [categories]": { "main": [[{ "node": "Build Category List",    "type": "main", "index": 0 }]] },
+    "Build Category List":     { "main": [[{ "node": "Respond — Categories",   "type": "main", "index": 0 }]] },
+    "Read Sheet [csv]":        { "main": [[{ "node": "Build CSV",              "type": "main", "index": 0 }]] },
+    "Build CSV":               { "main": [[{ "node": "Respond — CSV",          "type": "main", "index": 0 }]] },
+    "Read Sheet [channable]":  { "main": [[{ "node": "Build Channable Rules",  "type": "main", "index": 0 }]] },
+    "Build Channable Rules":   { "main": [[{ "node": "Respond — Channable",    "type": "main", "index": 0 }]] }
+  },
+
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "any"
+  },
+  "active": false,
+  "tags": [{ "name": "connectcarparts" }, { "name": "portal" }]
+}

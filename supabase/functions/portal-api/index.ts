@@ -284,6 +284,36 @@ serve(async (req) => {
         return json({ success: true });
       }
 
+      // ── User Management ────────────────────────────────
+      case "create_user": {
+        const { email, password, display_name, role, tab_access } = body;
+        if (!email || !password) return err("email and password required");
+        
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+        });
+        if (authError) return err(authError.message, 500);
+        
+        const userId = authData.user.id;
+        
+        // Create portal profile
+        await supabase.from("portal_profiles").insert({
+          user_id: userId,
+          display_name: display_name || email.split("@")[0],
+          email,
+          tab_access: tab_access || ["tools"],
+        });
+        
+        // Add role
+        if (role) {
+          await supabase.from("user_roles").insert({ user_id: userId, role });
+        }
+        
+        return json({ data: { user_id: userId, email } }, 201);
+      }
+
       default:
         return err(`Unknown action: ${action}`);
     }
