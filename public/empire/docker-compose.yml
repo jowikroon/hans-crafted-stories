@@ -1,0 +1,77 @@
+# Sovereign AI Empire — MCP Gateway + Observability Stack
+# Location: /opt/hansai/docker-compose.yml
+# Usage: docker compose up -d
+
+version: "3.8"
+
+services:
+  # ── MCP Gateway ─────────────────────────────────────
+  mcp-gateway:
+    image: node:20-alpine
+    container_name: mcp-gateway
+    working_dir: /app
+    volumes:
+      - ./mcp-servers:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "3100:3100"
+    environment:
+      - MCP_PORT=3100
+      - N8N_URL=https://n8n.hansvanleeuwen.com
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+    restart: unless-stopped
+    networks:
+      - empire
+
+  # ── Loki (Log Aggregation) ─────────────────────────
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    ports:
+      - "3101:3100"
+    volumes:
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    networks:
+      - empire
+
+  # ── Promtail (Log Collector) ───────────────────────
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    volumes:
+      - /var/log:/var/log:ro
+      - ./promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    restart: unless-stopped
+    networks:
+      - empire
+
+  # ── Grafana (Visualization) ────────────────────────
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-empire2024}
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - loki
+    restart: unless-stopped
+    networks:
+      - empire
+
+volumes:
+  loki-data:
+  grafana-data:
+
+networks:
+  empire:
+    driver: bridge

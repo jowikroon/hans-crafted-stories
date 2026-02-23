@@ -7,6 +7,7 @@ import Writing from "@/pages/Writing";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
 import Portal from "@/pages/Portal";
+import Empire from "@/pages/Empire";
 import NotFound from "@/pages/NotFound";
 
 const AnimatedRoutes = () => {
@@ -21,6 +22,7 @@ const AnimatedRoutes = () => {
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
+        <Route path="/empire" element={<PageTransition><Empire /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
