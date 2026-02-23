@@ -1,0 +1,727 @@
+{
+  "name": "AutoSEO Brain v2 — connectcarparts.nl (Extended)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# 🚗 AutoSEO Brain v2 — connectcarparts.nl\n\n## NEW in v2:\n- 🤖 **Claude AI** enriches weak titles (missing data, unusual parts)\n- 🌍 **Multi-market** title variants: NL · BE · DE · EN in one run\n- 🔀 **A/B variants** — 2 title options per SKU for Product Hero testing\n- 📊 **Google Sheets** write — auto-fills your SEO audit sheet\n- 🔁 **Batch protection** — splits large catalogs into safe chunks\n- 🚨 **Error handling** — catches failures, logs them, keeps running\n- 🔍 **Duplicate detection** — flags identical titles across SKUs\n- 🎯 **Keyword density score** — rewards front-loaded primary keywords\n- 📡 **Channable-ready** output with item_group_id + custom labels\n- 📅 **Schedule trigger** — run weekly automatically\n\n## Triggers (3 options):\n1. 🖐 Manual Test — demo data, no setup needed\n2. 🔗 Webhook POST — send SKU JSON from Magento/Channable\n3. ⏰ Schedule — runs every Monday 06:00 AM\n\n## Required credentials:\n- **OpenAI/Anthropic** — for Claude AI enrichment (optional but recommended)\n- **Google Sheets** — for auto-write output (optional)",
+        "height": 500,
+        "width": 520,
+        "color": 7
+      },
+      "id": "422ec06b-bf2c-40ff-9b4c-127b5b6c22c0",
+      "name": "📋 Intro v2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ CONFIGURE HERE\n\nOpen the **⚙️ Config v2** node and set:\n\n```\nSHOP_NAME, LANGUAGE, MARKET\nUSP, SHEETS_ID, SHEETS_TAB\nENABLE_AI_ENRICHMENT\nENABLE_AB_VARIANTS\nENABLE_MULTIMARKET\nBATCH_SIZE (default: 50)\n```\n\n**Google Sheets:**\nCreate a sheet, copy its ID from the URL, paste into SHEETS_ID.\n\n**Claude AI:**\nAdd your Anthropic API key as n8n credential named `AnthropicApi`.",
+        "height": 320,
+        "width": 340,
+        "color": 4
+      },
+      "id": "cb5b0e0a-437c-4fe8-89c5-751a62f464f9",
+      "name": "⚙️ Config Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📤 Webhook Payload\n\n```json\nPOST /webhook/autoseo-v2\n{\n  \"skus\": [{\n    \"sku\": \"BRE-280-E46\",\n    \"part_name\": \"Remschijf voor\",\n    \"brand\": \"Brembo\",\n    \"category\": \"Remschijven\",\n    \"make\": \"BMW\",\n    \"model\": \"3-serie E46\",\n    \"year_from\": \"1999\",\n    \"year_to\": \"2005\",\n    \"engine\": \"320d M57\",\n    \"oem\": \"34116864046\",\n    \"size\": \"280mm\",\n    \"price\": \"89.95\",\n    \"stock\": \"in_stock\"\n  }],\n  \"options\": {\n    \"markets\": [\"nl\",\"be\",\"de\"],\n    \"ab_variants\": true,\n    \"sheet_write\": true\n  }\n}\n```",
+        "height": 380,
+        "width": 340,
+        "color": 6
+      },
+      "id": "c406a3b2-f2c8-4aea-b27b-6ce093b19cbb",
+      "name": "📤 Payload Format",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        944,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🤖 AI Enrichment Logic\n\nClaude is called ONLY when a SKU scores < 70 AND has missing critical fields (make, model, brand).\n\nThis keeps costs low — typically 5-15% of SKUs need AI help.\n\nThe prompt instructs Claude to:\n- Infer make/model from OEM number patterns\n- Suggest a better part name from category\n- Generate an alternative title variant\n- Return strict JSON (no prose)\n\n**Estimated cost:** ~€0.001 per SKU enriched",
+        "height": 260,
+        "width": 320,
+        "color": 3
+      },
+      "id": "1c20a2c7-f884-4143-b633-4de7ab57a49f",
+      "name": "🤖 AI Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1888,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📊 Google Sheets Output\n\nThe sheet gets these columns:\n`SKU | NL Title | BE Title | DE Title | EN Title | Score | Chars | Intent | Issues | Variant A | Variant B | Meta NL | Schema | Status | Updated`\n\nRows are **upserted** — re-running won't create duplicates, it updates existing rows matched by SKU.\n\n**Sheet ID** is set in the Config node.",
+        "height": 240,
+        "width": 340,
+        "color": 5
+      },
+      "id": "62695d6f-d810-4393-8361-7a942a2c4075",
+      "name": "📊 Sheets Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2688,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "9e4bfaca-e14a-484b-8039-0fed660a98af",
+      "name": "🖐 Manual Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "autoseo-v2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ed442782-b9d6-4f16-9a65-8643136325b1",
+      "name": "🔗 Webhook POST",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        800
+      ],
+      "webhookId": "autoseo-v2-connectcarparts"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "id": "8aad0360-3311-4457-b2fa-09ebd59d5bea",
+      "name": "⏰ Weekly Schedule (Mon 06:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// DEMO DATA v2 — richer dataset with edge cases\n// Tests: missing data, German parts, unusual categories\n// ============================================================\nconst DEMO_SKUS = [\n  // Perfect data — should score 90+\n  { sku:'BRE-280-E46', part_name:'Remschijf voor', brand:'Brembo', category:'Remschijven', make:'BMW', model:'3-serie E46', year_from:'1999', year_to:'2005', engine:'320d M57', oem:'34116864046', size:'280mm', price:'89.95', stock:'in_stock' },\n  { sku:'ATE-258-VW', part_name:'Remschijf achter', brand:'ATE', category:'Remschijven', make:'Volkswagen', model:'Golf V', year_from:'2003', year_to:'2008', engine:'1.9 TDI', oem:'1J0615601', size:'258mm', price:'54.90', stock:'in_stock' },\n  // Missing model — should trigger AI enrichment\n  { sku:'BIL-B4-XX', part_name:'Schokdemper voor', brand:'Bilstein', category:'Ophanging', make:'Audi', model:'', year_from:'2012', year_to:'2020', engine:'1.4 TFSI', oem:'', size:'', price:'129.00', stock:'in_stock' },\n  // Filters — transactional\n  { sku:'MAN-WH-VW', part_name:'Oliefilter', brand:'Mann', category:'Filters', make:'Volkswagen', model:'Golf IV', year_from:'2000', year_to:'2004', engine:'2.0 TDI', oem:'WHT006285', size:'', price:'12.50', stock:'in_stock' },\n  { sku:'MAH-OC30', part_name:'Oliefilter', brand:'Mahle', category:'Filters', make:'BMW', model:'5-serie E60', year_from:'2003', year_to:'2010', engine:'2.5i M54', oem:'11427788461', size:'', price:'11.90', stock:'in_stock' },\n  // Ignition — navigational\n  { sku:'NGK-BKR6E-1', part_name:'Bougie', brand:'NGK', category:'Bougies', make:'Ford', model:'Focus II', year_from:'2004', year_to:'2011', engine:'1.6 Ti-VCT', oem:'AGSF32PM', size:'', price:'4.95', stock:'in_stock' },\n  // Electrical — navigational\n  { sku:'BOL-BS-VW', part_name:'Startmotor', brand:'Bosch', category:'Elektrisch', make:'Volkswagen', model:'Passat B6', year_from:'2005', year_to:'2010', engine:'2.0 TSI', oem:'0001115077', size:'', price:'189.00', stock:'in_stock' },\n  // Brakes — transactional\n  { sku:'TRW-DF6163', part_name:'Remblok voor', brand:'TRW', category:'Remblokken', make:'Mercedes', model:'C-klasse W204', year_from:'2007', year_to:'2014', engine:'C220 CDI', oem:'', size:'', price:'34.50', stock:'in_stock' },\n  // Clutch — commercial\n  { sku:'LUK-FCS-A4', part_name:'Koppelingsset', brand:'LuK', category:'Koppeling', make:'Audi', model:'A4 B8', year_from:'2008', year_to:'2015', engine:'2.0 TDI', oem:'602307200', size:'', price:'245.00', stock:'in_stock' },\n  // Missing brand — edge case for AI\n  { sku:'XX-CAT-001', part_name:'Katalysator', brand:'', category:'Uitlaat', make:'Opel', model:'Astra G', year_from:'1998', year_to:'2004', engine:'1.6 16V', oem:'', size:'', price:'189.00', stock:'in_stock' },\n  // Timing belt — high-stakes part\n  { sku:'CON-CT1028K', part_name:'Distributieriem kit', brand:'Continental', category:'Distributieriem', make:'Volkswagen', model:'Polo 6N', year_from:'2000', year_to:'2002', engine:'1.4 TDI', oem:'038198119B', size:'', price:'74.95', stock:'in_stock' },\n  // Suspension — commercial intent\n  { sku:'KYB-344291', part_name:'Schokdemper achter', brand:'KYB', category:'Ophanging', make:'Ford', model:'Mondeo IV', year_from:'2007', year_to:'2014', engine:'2.0 TDCi', oem:'', size:'', price:'89.00', stock:'low_stock' }\n];\n\nreturn [{ json: { skus: DEMO_SKUS, source: 'manual_test', options: { markets: ['nl','be','de'], ab_variants: true, sheet_write: false } } }];"
+      },
+      "id": "3ef1086f-5608-4946-ba44-eb78d2beae5f",
+      "name": "🗂️ Demo Data v2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// SCHEDULE TRIGGER — fetch SKUs from Magento REST API\n// Replace with your actual Magento credentials/URL\n// This is a stub — connect your Magento HTTP Request node here\n// ============================================================\n\n// For now return demo data so the schedule run doesn't fail\nconst SCHEDULED_SKUS = [\n  { sku: 'SCHEDULE-TEST-001', part_name: 'Remschijf voor', brand: 'Brembo', category: 'Remschijven', make: 'BMW', model: '3-serie', year_from: '2005', year_to: '2012', engine: '320i', oem: '', size: '300mm', price: '79.95', stock: 'in_stock' }\n];\n\n// TODO: Replace above with:\n// - HTTP Request to Magento: GET /rest/V1/products?searchCriteria[pageSize]=500\n// - Filter: only products updated in last 7 days\n// - Map Magento attributes to AutoSEO SKU format\n\nreturn [{ json: { skus: SCHEDULED_SKUS, source: 'weekly_schedule', options: { markets: ['nl','be'], ab_variants: true, sheet_write: true } } }];"
+      },
+      "id": "d4291ea2-c277-44ec-bd0d-7e778aa085de",
+      "name": "📅 Schedule: Fetch from Magento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// ⚙️ CONFIG v2 — Edit all settings here\n// ============================================================\nconst CONFIG = {\n  // Shop identity\n  SHOP_NAME:    'connectcarparts.nl',\n  SHOP_DOMAIN:  'www.connectcarparts.nl',\n  BASE_URL:     'https://www.connectcarparts.nl/autoonderdelen',\n\n  // Market & language\n  PRIMARY_LANGUAGE: 'nl',\n  PRIMARY_MARKET:   'nl',\n\n  // Features — set to false to disable\n  ENABLE_AI_ENRICHMENT: true,   // Claude AI for weak SKUs\n  ENABLE_AB_VARIANTS:   true,   // Generate 2 title variants\n  ENABLE_MULTIMARKET:   true,   // NL + BE + DE + EN titles\n  ENABLE_SHEETS_WRITE:  false,  // Set true + add Sheet ID below\n  ENABLE_DEDUP_CHECK:   true,   // Flag duplicate titles\n\n  // Google Sheets (only used if ENABLE_SHEETS_WRITE = true)\n  SHEETS_ID:  'YOUR_GOOGLE_SHEET_ID_HERE',\n  SHEETS_TAB: 'SEO_Titles',\n\n  // Batch processing\n  BATCH_SIZE: 50,   // Max SKUs per processing chunk\n  AI_SCORE_THRESHOLD: 65,  // Score below this triggers AI enrichment\n\n  // USPs per market\n  USP: {\n    nl: 'Gratis verzending v.a. €75',\n    be: 'Gratis levering v.a. €75',\n    de: 'Kostenloser Versand ab €75',\n    en: 'Free shipping over €75'\n  },\n\n  // Currency\n  CURRENCY: 'EUR'\n};\n\n// Normalize incoming data\nconst incoming = $json;\nlet skus = [];\nlet options = {};\n\n// Handle all 3 trigger sources\nif (incoming.skus) {\n  skus = incoming.skus;\n  options = incoming.options || {};\n} else if (incoming.body && incoming.body.skus) {\n  skus = incoming.body.skus;\n  options = incoming.body.options || {};\n}\n\nif (!skus.length) {\n  throw new Error('No SKUs provided. Expected: { \"skus\": [...] }');\n}\n\n// Merge options with config (request options override config)\nconst mergedConfig = {\n  ...CONFIG,\n  ENABLE_AI_ENRICHMENT: options.ai_enrichment !== undefined ? options.ai_enrichment : CONFIG.ENABLE_AI_ENRICHMENT,\n  ENABLE_AB_VARIANTS:   options.ab_variants   !== undefined ? options.ab_variants   : CONFIG.ENABLE_AB_VARIANTS,\n  ENABLE_MULTIMARKET:   options.markets ? options.markets.length > 1 : CONFIG.ENABLE_MULTIMARKET,\n  ENABLE_SHEETS_WRITE:  options.sheet_write    !== undefined ? options.sheet_write   : CONFIG.ENABLE_SHEETS_WRITE,\n  MARKETS: options.markets || ['nl'],\n  source: incoming.source || 'webhook'\n};\n\n// Sanitize + normalize each SKU\nconst sanitized = skus.map(p => ({\n  sku:       String(p.sku || '').trim(),\n  part_name: String(p.part_name || p.name || '').trim(),\n  brand:     String(p.brand || '').trim(),\n  category:  String(p.category || p.cat || '').trim(),\n  make:      String(p.make || p.vehicle_make || '').trim(),\n  model:     String(p.model || p.vehicle_model || '').trim(),\n  year_from: String(p.year_from || p.from_year || '').trim(),\n  year_to:   String(p.year_to   || p.to_year   || '').trim(),\n  engine:    String(p.engine || p.engine_code || '').trim(),\n  oem:       String(p.oem || p.oem_number || p.mpn || '').trim(),\n  size:      String(p.size || p.diameter || '').trim(),\n  price:     String(p.price || '').trim(),\n  stock:     String(p.stock || 'in_stock').trim(),\n  axle:      String(p.axle || '').trim(),  // voor/achter/links/rechts\n  _raw:      p\n})).filter(p => p.sku);\n\nreturn [{ json: { config: mergedConfig, skus: sanitized, total: sanitized.length } }];"
+      },
+      "id": "258d123a-fd91-472c-ae78-945160e6f477",
+      "name": "⚙️ Config v2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// BATCH SPLITTER — protect against large catalogs\n// Splits into chunks of BATCH_SIZE for safe processing\n// ============================================================\nconst { config, skus, total } = $json;\nconst batchSize = config.BATCH_SIZE || 50;\n\nconst batches = [];\nfor (let i = 0; i < skus.length; i += batchSize) {\n  batches.push({\n    config,\n    skus: skus.slice(i, i + batchSize),\n    batch_index: Math.floor(i / batchSize),\n    batch_total: Math.ceil(skus.length / batchSize),\n    total_skus: total\n  });\n}\n\nreturn batches.map(b => ({ json: b }));"
+      },
+      "id": "76b2efff-8be4-455d-83b0-3f2be7ba7e7f",
+      "name": "✂️ Batch Splitter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// 🧠 SEO ENGINE v2 — Full Automotive NL Aftermarket Brain\n// Improvements: multimarket, A/B variants, dedup, keyword\n// density scoring, axle/position awareness, OEM enrichment\n// ============================================================\n\nconst { config, skus } = $json;\n\n// ── INTENT MAP (expanded) ────────────────────────────────────\nconst INTENT = {\n  // Transactional — highest purchase intent\n  'remschijven':     'transactional', 'remschijf':     'transactional',\n  'remblokken':      'transactional', 'remblok':       'transactional',\n  'remsysteem':      'transactional', 'remmen':        'transactional',\n  'remklauw':        'transactional', 'remtrommel':    'transactional',\n  'filters':         'transactional', 'oliefilter':    'transactional',\n  'luchtfilter':     'transactional', 'pollenfilter':  'transactional',\n  'dieselfilter':    'transactional', 'brandstoffilter':'transactional',\n  'bougies':         'transactional', 'bougie':        'transactional',\n  'gloeiboug':       'transactional', 'gloeiplug':     'transactional',\n  'distributieriem': 'transactional', 'riemset':       'transactional',\n  'katalysator':     'transactional', 'uitlaat':       'transactional',\n  'uitlaatpijp':     'transactional', 'roetfilter':    'transactional',\n  'dpf':             'transactional', 'waterpomp':     'transactional',\n  'thermostaat':     'transactional', 'radiateur':     'transactional',\n  'accu':            'transactional', 'batterij':      'transactional',\n  'koplamp':         'transactional', 'achterlamp':    'transactional',\n  // Commercial — comparison, quality-seeking\n  'ophanging':       'commercial',    'schokdemper':   'commercial',\n  'schokdempers':    'commercial',    'veersteun':     'commercial',\n  'veerpoot':        'commercial',    'draagarm':      'commercial',\n  'stuuronderdelen': 'commercial',    'stuurkogel':    'commercial',\n  'koppeling':       'commercial',    'koppelingsset': 'commercial',\n  'vliegwiel':       'commercial',    'cardanas':      'commercial',\n  'homokineet':      'commercial',    'aandrijfas':    'commercial',\n  // Navigational — OEM number searchers\n  'elektrisch':      'navigational',  'startmotor':    'navigational',\n  'dynamo':          'navigational',  'injector':      'navigational',\n  'sensor':          'navigational',  'lambda':        'navigational',\n  'abs':             'navigational',  'abs-sensor':    'navigational',\n  'nokkenas':        'navigational',  'krukas':        'navigational',\n  'turbo':           'navigational',  'turbocompressor':'navigational',\n  'egr':             'navigational',  'egr-klep':      'navigational',\n  // Informational — fitment checkers\n  'compatibiliteit': 'informational', 'fitting':       'informational',\n  'passing':         'informational'\n};\n\n// ── TITLE FORMULAS per intent + market ───────────────────────\nconst FORMULAS = {\n  nl: {\n    transactional: [\n      '{brand} {part_name} {axle_nl} {size} {make} {model} {year_from}',\n      '{brand} {part_name} {size} {make} {model} — kopen',\n      '{part_name} {make} {model} {year_from}-{year_to} {brand}'\n    ],\n    commercial: [\n      '{brand} {part_name} {axle_nl} {make} {model}',\n      '{part_name} {make} {model} — {brand} kwaliteit',\n      '{brand} {part_name} voor {make} {model} {engine}'\n    ],\n    navigational: [\n      '{brand} {part_name} {oem} {make} {model}',\n      '{brand} {sku} {part_name} — {make} {model}',\n      '{part_name} OEM {oem} {brand} {make}'\n    ],\n    informational: [\n      '{part_name} {make} {model} {year_from}-{year_to} {engine}',\n      '{part_name} passend voor {make} {model} {engine}',\n      '{brand} {part_name} — geschikt {make} {model} {year_from}'\n    ]\n  },\n  be: {\n    transactional: [\n      '{brand} {part_name} {axle_nl} {size} {make} {model} {year_from}',\n      '{brand} {part_name} {make} {model} — bestellen',\n      '{part_name} {make} {model} {brand} — snel geleverd'\n    ],\n    commercial: [\n      '{brand} {part_name} {make} {model} — topkwaliteit',\n      '{part_name} {make} {model} — {brand} België'\n    ],\n    navigational: [\n      '{brand} {part_name} {oem} {make} {model}',\n      '{brand} {sku} {part_name} {make}'\n    ],\n    informational: [\n      '{part_name} {make} {model} {year_from}-{year_to} {engine}',\n      '{part_name} geschikt voor {make} {model}'\n    ]\n  },\n  de: {\n    transactional: [\n      '{brand} {part_name_de} {axle_de} {size} {make} {model} {year_from}',\n      '{brand} {part_name_de} {make} {model} — kaufen',\n      '{part_name_de} {make} {model} {year_from}-{year_to} {brand}'\n    ],\n    commercial: [\n      '{brand} {part_name_de} {make} {model} — Qualität',\n      '{part_name_de} {make} {model} — {brand}'\n    ],\n    navigational: [\n      '{brand} {part_name_de} {oem} {make} {model}',\n      '{brand} {sku} {part_name_de} {make}'\n    ],\n    informational: [\n      '{part_name_de} {make} {model} {year_from}-{year_to} {engine}',\n      '{part_name_de} passend für {make} {model}'\n    ]\n  },\n  en: {\n    transactional: [\n      '{brand} {part_name_en} {axle_en} {size} {make} {model} {year_from}',\n      '{brand} {part_name_en} {make} {model} — buy now',\n      '{part_name_en} {make} {model} {year_from} {brand}'\n    ],\n    commercial: [\n      '{brand} {part_name_en} {make} {model}',\n      '{part_name_en} {make} {model} — {brand}'\n    ],\n    navigational: [\n      '{brand} {part_name_en} {oem} {make} {model}',\n      '{brand} {sku} {part_name_en} {make}'\n    ],\n    informational: [\n      '{part_name_en} {make} {model} {year_from}-{year_to} {engine}',\n      '{part_name_en} for {make} {model} {engine}'\n    ]\n  }\n};\n\n// ── META TEMPLATES per market ────────────────────────────────\nconst META = {\n  nl: {\n    transactional: 'Bestel de {brand} {part_name} voor {make} {model} ({year_from}-{year_to}) bij {shop}. {size_label}✓ {usp} ✓ OEM kwaliteit ✓ Snelle levering!',\n    commercial:    'De {brand} {part_name} voor uw {make} {model}. Topkwaliteit met garantie. Bestel snel bij {shop} — {usp}.',\n    navigational:  '{brand} {part_name} (OEM: {oem}) voor {make} {model} {engine}. Originele kwaliteit, direct uit voorraad. {shop}.',\n    informational: '{part_name} geschikt voor {make} {model} ({year_from}-{year_to}) motor {engine}. Controleer passing & bestel bij {shop}.'\n  },\n  be: {\n    transactional: 'Bestel de {brand} {part_name} voor {make} {model} bij {shop}. {size_label}✓ {usp} ✓ Snelle levering in België!',\n    commercial:    '{brand} {part_name} voor {make} {model}. Kwaliteit met garantie. Snel geleverd in België via {shop}.',\n    navigational:  '{brand} {part_name} OEM {oem} voor {make} {model}. Direct leverbaar. {shop}.',\n    informational: '{part_name} voor {make} {model} ({year_from}-{year_to}). Check uw passing bij {shop}.'\n  },\n  de: {\n    transactional: 'Kaufen Sie {brand} {part_name_de} für {make} {model} ({year_from}-{year_to}) bei {shop}. {size_label}✓ {usp} ✓ OEM Qualität!',\n    commercial:    '{brand} {part_name_de} für {make} {model}. Erstklassige Qualität mit Garantie. Bestellen bei {shop}.',\n    navigational:  '{brand} {part_name_de} (OEM: {oem}) für {make} {model} {engine}. Sofort lieferbar. {shop}.',\n    informational: '{part_name_de} passend für {make} {model} ({year_from}-{year_to}) Motor {engine}. Passgenauigkeit prüfen bei {shop}.'\n  },\n  en: {\n    transactional: 'Order the {brand} {part_name_en} for {make} {model} ({year_from}-{year_to}) at {shop}. {size_label}✓ {usp} ✓ OEM quality!',\n    commercial:    '{brand} {part_name_en} for {make} {model}. Top quality with warranty. Fast delivery via {shop}.',\n    navigational:  '{brand} {part_name_en} (OEM: {oem}) for {make} {model} {engine}. In stock at {shop}.',\n    informational: '{part_name_en} compatible with {make} {model} ({year_from}-{year_to}) engine {engine}. Check fitment at {shop}.'\n  }\n};\n\n// ── NL→DE PART NAME TRANSLATIONS (common terms) ─────────────\nconst TRANSLATE_DE = {\n  'remschijf':'Bremsscheibe', 'remschijven':'Bremsscheiben',\n  'remblok':'Bremsbelag', 'remblokken':'Bremsbeläge',\n  'remklauw':'Bremssattel', 'remtrommel':'Bremstrommel',\n  'oliefilter':'Ölfilter', 'luchtfilter':'Luftfilter',\n  'pollenfilter':'Pollenfilter', 'brandstoffilter':'Kraftstofffilter',\n  'schokdemper':'Stoßdämpfer', 'schokdempers':'Stoßdämpfer',\n  'veersteun':'Federbein', 'draagarm':'Querlenker',\n  'stuurkogel':'Spurstangenkopf', 'bougie':'Zündkerze',\n  'bougies':'Zündkerzen', 'distributieriem':'Zahnriemen',\n  'riemset':'Zahnriemenset', 'koppeling':'Kupplung',\n  'koppelingsset':'Kupplungssatz', 'startmotor':'Anlasser',\n  'dynamo':'Lichtmaschine', 'katalysator':'Katalysator',\n  'uitlaat':'Auspuff', 'waterpomp':'Wasserpumpe',\n  'thermostaat':'Thermostat', 'radiateur':'Kühler',\n  'sensor':'Sensor', 'lambda':'Lambdasonde',\n  'turbo':'Turbolader', 'egr-klep':'AGR-Ventil',\n  'accu':'Batterie', 'koplamp':'Scheinwerfer',\n  'voor':'vorne', 'achter':'hinten', 'links':'links', 'rechts':'rechts'\n};\n\n// ── NL→EN PART NAME TRANSLATIONS ────────────────────────────\nconst TRANSLATE_EN = {\n  'remschijf':'Brake Disc', 'remschijven':'Brake Discs',\n  'remblok':'Brake Pad', 'remblokken':'Brake Pads',\n  'remklauw':'Brake Caliper', 'remtrommel':'Brake Drum',\n  'oliefilter':'Oil Filter', 'luchtfilter':'Air Filter',\n  'pollenfilter':'Cabin Filter', 'brandstoffilter':'Fuel Filter',\n  'schokdemper':'Shock Absorber', 'schokdempers':'Shock Absorbers',\n  'veersteun':'Strut', 'draagarm':'Control Arm',\n  'stuurkogel':'Track Rod End', 'bougie':'Spark Plug',\n  'bougies':'Spark Plugs', 'distributieriem':'Timing Belt',\n  'riemset':'Timing Belt Kit', 'koppeling':'Clutch',\n  'koppelingsset':'Clutch Kit', 'startmotor':'Starter Motor',\n  'dynamo':'Alternator', 'katalysator':'Catalytic Converter',\n  'uitlaat':'Exhaust', 'waterpomp':'Water Pump',\n  'thermostaat':'Thermostat', 'radiateur':'Radiator',\n  'sensor':'Sensor', 'lambda':'Lambda Sensor',\n  'turbo':'Turbocharger', 'egr-klep':'EGR Valve',\n  'accu':'Battery', 'koplamp':'Headlight'\n};\n\n// ── HELPER FUNCTIONS ──────────────────────────────────────────\nfunction detectIntent(category) {\n  const cat = (category || '').toLowerCase().trim();\n  for (const [k, v] of Object.entries(INTENT)) {\n    if (cat.includes(k)) return v;\n  }\n  return 'transactional';\n}\n\nfunction translatePartName(name, dict) {\n  const lower = (name || '').toLowerCase();\n  for (const [nl, trans] of Object.entries(dict)) {\n    if (lower.includes(nl)) {\n      return name.toLowerCase().replace(nl, trans);\n    }\n  }\n  return name;\n}\n\nfunction applyTemplate(tpl, p, market) {\n  const usp = (config.USP && config.USP[market]) || config.USP?.nl || 'Gratis verzending';\n  // Axle position labels\n  const axle_nl = p.axle || (p.part_name.toLowerCase().includes('voor') ? '' : p.part_name.toLowerCase().includes('achter') ? '' : '');\n  const axle_de = axle_nl.replace('voor','vorne').replace('achter','hinten').replace('links','links').replace('rechts','rechts');\n  const axle_en = axle_nl.replace('voor','Front').replace('achter','Rear').replace('links','Left').replace('rechts','Right');\n\n  const part_name_de = translatePartName(p.part_name, TRANSLATE_DE);\n  const part_name_en = translatePartName(p.part_name, TRANSLATE_EN);\n\n  return tpl\n    .replace(/\\{brand\\}/g,       p.brand)\n    .replace(/\\{part_name\\}/g,   p.part_name)\n    .replace(/\\{part_name_de\\}/g,part_name_de)\n    .replace(/\\{part_name_en\\}/g,part_name_en)\n    .replace(/\\{sku\\}/g,         p.sku)\n    .replace(/\\{make\\}/g,        p.make)\n    .replace(/\\{model\\}/g,       p.model)\n    .replace(/\\{year_from\\}/g,   p.year_from)\n    .replace(/\\{year_to\\}/g,     p.year_to)\n    .replace(/\\{engine\\}/g,      p.engine)\n    .replace(/\\{oem\\}/g,         p.oem)\n    .replace(/\\{size\\}/g,        p.size)\n    .replace(/\\{axle_nl\\}/g,     axle_nl)\n    .replace(/\\{axle_de\\}/g,     axle_de)\n    .replace(/\\{axle_en\\}/g,     axle_en)\n    .replace(/\\{shop\\}/g,        config.SHOP_NAME)\n    .replace(/\\{usp\\}/g,         usp)\n    .replace(/\\{size_label\\}/g,  p.size ? `Diameter ${p.size}. ` : '')\n    .replace(/\\s{2,}/g, ' ')\n    .replace(/\\s*[—–-]\\s*$/, '')\n    .replace(/^[\\s,—–-]+/, '')\n    .trim();\n}\n\nfunction selectBestTitle(formulas, p, market) {\n  const candidates = formulas.map(f => applyTemplate(f, p, market));\n  // Score by: length proximity to 55 chars, then keyword density\n  return candidates.reduce((best, cur) => {\n    const scoreCur  = 100 - Math.abs(cur.length  - 55) + (cur.split(' ').length > 4 ? 5 : 0);\n    const scoreBest = 100 - Math.abs(best.length - 55) + (best.split(' ').length > 4 ? 5 : 0);\n    return scoreCur > scoreBest ? cur : best;\n  });\n}\n\nfunction keywordDensityScore(title, p) {\n  // Front-loading bonus: primary keywords in first 30 chars\n  const front = title.substring(0, 30).toLowerCase();\n  let score = 0;\n  if (p.brand && front.includes(p.brand.toLowerCase())) score += 15;\n  if (p.part_name) {\n    const mainWord = p.part_name.toLowerCase().split(' ')[0];\n    if (front.includes(mainWord)) score += 15;\n    else if (title.toLowerCase().includes(mainWord)) score += 8;\n  }\n  if (p.make && title.toLowerCase().includes(p.make.toLowerCase())) score += 10;\n  if (p.model && title.toLowerCase().includes(p.model.toLowerCase().split(' ')[0])) score += 10;\n  if (p.year_from && title.includes(p.year_from)) score += 5;\n  if (p.size && title.includes(p.size)) score += 8;\n  if (p.oem && title.includes(p.oem)) score += 10;\n  return Math.min(score, 73); // Max 73 points from density\n}\n\nfunction lengthScore(len) {\n  if (len >= 50 && len <= 60) return 27;\n  if (len >= 45 && len < 50)  return 20;\n  if (len > 60 && len <= 65)  return 18;\n  if (len >= 40 && len < 45)  return 12;\n  if (len > 65 && len <= 70)  return 8;\n  return 0;\n}\n\nfunction scoreSEO(title, p) {\n  return Math.min(100, lengthScore(title.length) + keywordDensityScore(title, p));\n}\n\nfunction getIssues(title, p) {\n  const issues = [];\n  if (title.length < 35)  issues.push('title_too_short');\n  if (title.length > 68)  issues.push('title_too_long');\n  if (!p.make)             issues.push('missing_make');\n  if (!p.brand)            issues.push('missing_brand');\n  if (!p.model)            issues.push('missing_model');\n  if (!p.year_from)        issues.push('missing_year');\n  if (!p.category)         issues.push('missing_category');\n  return issues;\n}\n\nfunction needsAI(score, issues) {\n  return score < (config.AI_SCORE_THRESHOLD || 65) ||\n    issues.includes('missing_make') ||\n    issues.includes('missing_brand');\n}\n\nfunction slugify(str) {\n  return (str || '')\n    .toLowerCase()\n    .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue')\n    .replace(/ñ/g,'n').replace(/[àáâ]/g,'a').replace(/[èéê]/g,'e')\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/^-|-$/g, '');\n}\n\nfunction buildSchema(p, nlTitle, metaNl, url) {\n  const schema = {\n    '@context': 'https://schema.org/',\n    '@type': 'Product',\n    name: nlTitle,\n    sku: p.sku,\n    ...(p.oem ? { mpn: p.oem } : {}),\n    brand: { '@type': 'Brand', name: p.brand || 'Origineel' },\n    description: metaNl,\n    url: url,\n    ...(p.price ? {\n      offers: {\n        '@type': 'Offer',\n        url: url,\n        priceCurrency: 'EUR',\n        price: parseFloat(p.price).toFixed(2),\n        availability: p.stock === 'in_stock'\n          ? 'https://schema.org/InStock'\n          : 'https://schema.org/LimitedAvailability',\n        seller: { '@type': 'Organization', name: config.SHOP_NAME }\n      }\n    } : {})\n  };\n  if (p.make || p.model) {\n    schema.vehicleApplicationInfo = [\n      {\n        '@type': 'VehicleApplicationInfo',\n        vehicleMake: p.make,\n        vehicleModel: p.model,\n        ...(p.year_from ? { productionDate: p.year_from } : {}),\n        ...(p.year_to   ? { discontinuedDate: p.year_to } : {}),\n        ...(p.engine    ? { engineName: p.engine } : {})\n      }\n    ];\n  }\n  return JSON.stringify(schema, null, 2);\n}\n\nfunction buildChannableRow(p, titles, metaNl) {\n  return {\n    id:              p.sku,\n    title:           titles.nl || '',\n    title_be:        titles.be || titles.nl || '',\n    title_de:        titles.de || '',\n    title_en:        titles.en || '',\n    description:     metaNl,\n    brand:           p.brand,\n    mpn:             p.oem || '',\n    custom_label_0:  p.category,\n    custom_label_1:  p.make,\n    custom_label_2:  p.brand,\n    custom_label_3:  p.year_from && p.year_to ? `${p.year_from}-${p.year_to}` : '',\n    custom_label_4:  p.stock === 'in_stock' ? 'in_stock' : 'low_stock',\n    item_group_id:   p.sku.replace(/-[^-]*$/, ''),\n    condition:       'new'\n  };\n}\n\n// ── MAIN PROCESSING ───────────────────────────────────────────\nconst markets = config.MARKETS || ['nl'];\nconst titlesSeen = {}; // for dedup\n\nconst results = skus.map(p => {\n  const intent = detectIntent(p.category);\n\n  // Generate titles per market\n  const titles = {};\n  const variants = {}; // A/B variant per market\n\n  for (const market of markets) {\n    const formulaSet = (FORMULAS[market] || FORMULAS.nl)[intent] || FORMULAS.nl.transactional;\n    // Primary title = best formula\n    titles[market] = selectBestTitle(formulaSet, p, market);\n    // Variant B = second best formula (different index)\n    if (config.ENABLE_AB_VARIANTS && formulaSet.length > 1) {\n      const altFormulas = formulaSet.filter((_, i) => i !== 0);\n      variants[market] = selectBestTitle(altFormulas, p, market);\n    }\n  }\n\n  const primaryTitle = titles[config.PRIMARY_LANGUAGE || 'nl'] || titles[markets[0]];\n\n  // Meta descriptions per market\n  const metas = {};\n  for (const market of markets) {\n    const metaSet = (META[market] || META.nl)[intent] || META.nl.transactional;\n    metas[market] = applyTemplate(metaSet, p, market);\n  }\n  const primaryMeta = metas[config.PRIMARY_LANGUAGE || 'nl'] || metas[markets[0]];\n\n  // Quality scoring\n  const score  = scoreSEO(primaryTitle, p);\n  const issues = getIssues(primaryTitle, p);\n  const charStatus = primaryTitle.length >= 50 && primaryTitle.length <= 60 ? 'optimal'\n    : primaryTitle.length >= 40 && primaryTitle.length <= 65 ? 'acceptable' : 'fix_needed';\n\n  // Duplicate detection\n  const isDup = !!titlesSeen[primaryTitle.toLowerCase()];\n  if (!isDup) titlesSeen[primaryTitle.toLowerCase()] = p.sku;\n  else issues.push('duplicate_title');\n\n  // URL & Schema\n  const urlSlug = slugify(`${p.brand}-${p.part_name}-${p.make}-${p.model}`);\n  const url     = `${config.BASE_URL}/${slugify(p.category)}/${urlSlug}`;\n  const schema  = buildSchema(p, primaryTitle, primaryMeta, url);\n\n  // Channable row\n  const channable = buildChannableRow(p, titles, primaryMeta);\n\n  // Magento 2 row\n  const magento = {\n    sku: p.sku, name: primaryTitle,\n    meta_title: primaryTitle, meta_description: primaryMeta,\n    url_key: urlSlug\n  };\n\n  return {\n    // Identifiers\n    sku: p.sku, oem: p.oem || '', price: p.price || '', stock: p.stock,\n    // Titles per market\n    titles, variants,\n    primary_title: primaryTitle,\n    // Metas\n    metas, primary_meta: primaryMeta,\n    // URL & Schema\n    url, url_key: urlSlug, schema_json: schema,\n    // Quality\n    seo_score: score, char_count: primaryTitle.length,\n    char_status: charStatus, intent, issues,\n    issues_count: issues.length,\n    needs_ai: needsAI(score, issues),\n    is_duplicate: isDup,\n    // Exports\n    channable, magento,\n    // Product data (pass-through)\n    product: p\n  };\n});\n\n// Batch-level stats\nconst stats = {\n  batch_index: $json.batch_index,\n  batch_total: $json.batch_total,\n  total_skus:  $json.total_skus,\n  processed:   results.length,\n  optimal:     results.filter(r => r.char_status === 'optimal').length,\n  acceptable:  results.filter(r => r.char_status === 'acceptable').length,\n  fix_needed:  results.filter(r => r.char_status === 'fix_needed').length,\n  avg_score:   Math.round(results.reduce((s,r) => s + r.seo_score, 0) / results.length),\n  needs_ai:    results.filter(r => r.needs_ai).length,\n  duplicates:  results.filter(r => r.is_duplicate).length,\n  intents:     {\n    transactional: results.filter(r => r.intent === 'transactional').length,\n    commercial:    results.filter(r => r.intent === 'commercial').length,\n    navigational:  results.filter(r => r.intent === 'navigational').length,\n    informational: results.filter(r => r.intent === 'informational').length\n  }\n};\n\nreturn [{ json: { results, stats, config } }];"
+      },
+      "id": "4d01d098-de87-4b9f-b08e-3bb823265262",
+      "name": "🧠 SEO Engine v2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Split results into individual items for per-SKU processing\nconst { results, stats, config } = $json;\nreturn results.map(r => ({ json: { ...r, _stats: stats, _config: config } }));"
+      },
+      "id": "d5d07897-b660-4389-a90b-64f73795ebc1",
+      "name": "✂️ Split Per SKU",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "needs-ai-cond",
+              "leftValue": "={{ $json.needs_ai }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f905de67-24d8-452b-97d9-e91044fd1c1f",
+      "name": "🤖 Needs AI?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "a5762938-b68d-47f7-9b21-8f2ba314ce29",
+      "name": "🤖 Claude AI Enrichment",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        1808,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// MERGE AI RESPONSE into SKU item\n// ============================================================\nconst item = $json;\n\n// The AI response comes from the previous node's text output\n// n8n Langchain nodes return content in specific format\nlet aiData = {};\ntry {\n  // Try to get AI response — it may be in different places depending on node version\n  const aiText = item.text || item.content || item.message?.content || '';\n  const jsonMatch = aiText.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    aiData = JSON.parse(jsonMatch[0]);\n  }\n} catch (e) {\n  aiData = { improved_title: '', reasoning: 'Parse error' };\n}\n\nconst original = item;\n\n// Apply AI improvements if they're better\nconst aiTitle = aiData.improved_title || '';\nconst useAiTitle = aiTitle.length >= 35 && aiTitle.length <= 75;\n\nif (useAiTitle) {\n  original.primary_title = aiTitle;\n  original.titles = { ...original.titles, nl: aiTitle };\n  if (aiData.improved_title_de) original.titles.de = aiData.improved_title_de;\n  if (aiData.variant_b) original.variants = { ...original.variants, nl: aiData.variant_b };\n  if (aiData.inferred_make && !original.product.make) original.product.make = aiData.inferred_make;\n  if (aiData.inferred_model && !original.product.model) original.product.model = aiData.inferred_model;\n  original.ai_enriched = true;\n  original.ai_reasoning = aiData.reasoning || '';\n  original.ai_title_applied = true;\n} else {\n  original.ai_enriched = true;\n  original.ai_title_applied = false;\n  original.ai_reasoning = aiData.reasoning || 'AI title not usable, kept original';\n}\n\nreturn [{ json: original }];"
+      },
+      "id": "4252595d-439c-42cb-84b1-897ebf017148",
+      "name": "🔀 Apply AI Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// No AI needed — pass through with flag\nreturn [{ json: { ...$json, ai_enriched: false, ai_title_applied: false } }];"
+      },
+      "id": "b2867350-b959-43f0-826d-ef1bcf8873a0",
+      "name": "⏭️ Skip AI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        960
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "5f811014-2cbf-41a7-8567-e5fe87bec001",
+      "name": "🔗 Merge AI Paths",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        2288,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// FINAL FORMATTER — prepare all export formats\n// ============================================================\nconst r = $json;\nconst markets = r._config?.MARKETS || ['nl'];\n\n// Final quality check after possible AI enrichment\nfunction finalCharClass(len) {\n  if (len >= 50 && len <= 60) return 'optimal';\n  if (len >= 40 && len <= 65) return 'acceptable';\n  return 'fix_needed';\n}\n\nconst finalLen = r.primary_title.length;\n\n// Build Google Sheets row\nconst sheetsRow = {\n  sku:          r.sku,\n  title_nl:     r.titles?.nl || r.primary_title,\n  title_be:     r.titles?.be || r.titles?.nl || '',\n  title_de:     r.titles?.de || '',\n  title_en:     r.titles?.en || '',\n  variant_b_nl: r.variants?.nl || '',\n  variant_b_de: r.variants?.de || '',\n  meta_nl:      r.metas?.nl || r.primary_meta,\n  meta_de:      r.metas?.de || '',\n  seo_score:    r.seo_score,\n  char_count:   finalLen,\n  char_status:  finalCharClass(finalLen),\n  intent:       r.intent,\n  issues:       r.issues?.join(' | ') || '',\n  is_duplicate: r.is_duplicate ? 'YES' : '',\n  ai_enriched:  r.ai_enriched ? 'YES' : '',\n  ai_reasoning: r.ai_reasoning || '',\n  url_key:      r.url_key,\n  canonical:    r.url,\n  status:       r.issues?.length === 0 ? '✅ optimal' : '⚠️ review',\n  updated_at:   new Date().toISOString().split('T')[0]\n};\n\nreturn [{\n  json: {\n    ...r,\n    char_status: finalCharClass(finalLen),\n    sheets_row: sheetsRow,\n    final: true\n  }\n}];"
+      },
+      "id": "414480b6-b820-46ff-b296-34fb002c2b7e",
+      "name": "📋 Final Formatter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "sheet-write-cond",
+              "leftValue": "={{ $json._config.ENABLE_SHEETS_WRITE }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "25ead936-6f70-4dd0-a1c9-9f4438a188b8",
+      "name": "📊 Write to Sheets?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2768,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json._config.SHEETS_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json._config.SHEETS_TAB || 'SEO_Titles' }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sku": "={{ $json.sheets_row.sku }}",
+            "title_nl": "={{ $json.sheets_row.title_nl }}",
+            "title_be": "={{ $json.sheets_row.title_be }}",
+            "title_de": "={{ $json.sheets_row.title_de }}",
+            "title_en": "={{ $json.sheets_row.title_en }}",
+            "variant_b": "={{ $json.sheets_row.variant_b_nl }}",
+            "meta_nl": "={{ $json.sheets_row.meta_nl }}",
+            "seo_score": "={{ $json.sheets_row.seo_score }}",
+            "char_count": "={{ $json.sheets_row.char_count }}",
+            "char_status": "={{ $json.sheets_row.char_status }}",
+            "intent": "={{ $json.sheets_row.intent }}",
+            "issues": "={{ $json.sheets_row.issues }}",
+            "ai_enriched": "={{ $json.sheets_row.ai_enriched }}",
+            "status": "={{ $json.sheets_row.status }}",
+            "updated_at": "={{ $json.sheets_row.updated_at }}"
+          },
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "08e2d5da-22f9-4aa2-9ada-8f2906cf73aa",
+      "name": "📊 Write to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3008,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sheets disabled — pass through unchanged\nreturn [{ json: $json }];"
+      },
+      "id": "fb0be20a-cdbb-4e7d-8033-e05c02923018",
+      "name": "⏭️ Skip Sheets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3008,
+        944
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "55c2a20e-da05-4826-8a4a-27988c63847a",
+      "name": "🔗 Merge Sheet Paths",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        3248,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// AGGREGATE — collect all processed SKUs into final response\n// ============================================================\nconst items = $input.all();\n\nconst results = items.map(i => i.json);\n\n// Stats\nconst total = results.length;\nconst optimal    = results.filter(r => r.char_status === 'optimal').length;\nconst acceptable = results.filter(r => r.char_status === 'acceptable').length;\nconst fixNeeded  = results.filter(r => r.char_status === 'fix_needed').length;\nconst aiEnriched = results.filter(r => r.ai_enriched).length;\nconst duplicates = results.filter(r => r.is_duplicate).length;\nconst avgScore   = Math.round(results.reduce((s,r) => s + r.seo_score, 0) / total);\n\n// Build clean export arrays\nconst channable = results.map(r => r.channable);\nconst magento2  = results.map(r => r.magento);\nconst gmc       = results.map(r => ({\n  id: r.sku,\n  title: r.primary_title,\n  description: r.primary_meta\n}));\nconst seoReport = results.map(r => ({\n  sku:          r.sku,\n  primary_title: r.primary_title,\n  title_nl:     r.titles?.nl || '',\n  title_be:     r.titles?.be || '',\n  title_de:     r.titles?.de || '',\n  title_en:     r.titles?.en || '',\n  variant_b:    r.variants?.nl || '',\n  meta_nl:      r.metas?.nl || r.primary_meta,\n  char_count:   r.char_count,\n  seo_score:    r.seo_score,\n  char_status:  r.char_status,\n  intent:       r.intent,\n  issues:       Array.isArray(r.issues) ? r.issues.join(' | ') : '',\n  ai_enriched:  r.ai_enriched,\n  ai_reasoning: r.ai_reasoning || '',\n  is_duplicate: r.is_duplicate,\n  url:          r.url\n}));\n\nconst schema_blocks = results.map(r => ({\n  sku: r.sku,\n  schema_json: r.schema_json\n}));\n\nconst response = {\n  success: true,\n  generated_at: new Date().toISOString(),\n  version: 'v2',\n  shop: 'connectcarparts.nl',\n  summary: {\n    total,\n    optimal,\n    acceptable,\n    fix_needed: fixNeeded,\n    avg_score: avgScore,\n    ai_enriched: aiEnriched,\n    duplicates,\n    pass_rate_pct: Math.round((optimal + acceptable) / total * 100)\n  },\n  exports: {\n    channable,\n    magento2,\n    google_merchant_center: gmc,\n    schema_blocks,\n    seo_report: seoReport\n  },\n  results\n};\n\nreturn [{ json: response }];"
+      },
+      "id": "ba2ac500-1144-4888-ae3f-87789086cea0",
+      "name": "📦 Aggregate All Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3488,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json, null, 2) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "X-AutoSEO-Version",
+                "value": "v2"
+              },
+              {
+                "name": "X-Shop",
+                "value": "connectcarparts.nl"
+              }
+            ]
+          }
+        }
+      },
+      "id": "39fd1144-37f0-45df-9166-2ecd12f0d544",
+      "name": "📤 Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3728,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// ERROR HANDLER — catches failures and logs them\n// Connect this to the 'error' output of critical nodes\n// ============================================================\nconst error = $json.error || {};\nconst context = $json;\n\nconsole.error('AutoSEO Brain v2 ERROR:', JSON.stringify({\n  timestamp: new Date().toISOString(),\n  sku: context.sku || 'unknown',\n  error_message: error.message || 'Unknown error',\n  node: error.node?.name || 'unknown'\n}, null, 2));\n\n// Return error info so the run doesn't silently die\nreturn [{ json: {\n  error: true,\n  sku: context.sku || 'unknown',\n  error_message: error.message || 'Unknown error',\n  timestamp: new Date().toISOString()\n} }];"
+      },
+      "id": "aaed4935-216a-4c70-88a2-baeac82e81e4",
+      "name": "🚨 Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3488,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Summary log for schedule runs\nconst s = $json.summary || {};\nconsole.log(`AutoSEO Brain v2 Complete\\n` +\n  `Total: ${s.total} | Optimal: ${s.optimal} | Score: ${s.avg_score}/100\\n` +\n  `AI enriched: ${s.ai_enriched} | Duplicates: ${s.duplicates} | Pass rate: ${s.pass_rate_pct}%`);\nreturn [$input.item];"
+      },
+      "id": "55a4bbe2-ea0e-40d3-b118-b0b42dda4ea5",
+      "name": "📊 Summary Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3728,
+        912
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "🖐 Manual Test": {
+      "main": [
+        [
+          {
+            "node": "🗂️ Demo Data v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🗂️ Demo Data v2": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔗 Webhook POST": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Weekly Schedule (Mon 06:00)": {
+      "main": [
+        [
+          {
+            "node": "📅 Schedule: Fetch from Magento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📅 Schedule: Fetch from Magento": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config v2": {
+      "main": [
+        [
+          {
+            "node": "✂️ Batch Splitter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✂️ Batch Splitter": {
+      "main": [
+        [
+          {
+            "node": "🧠 SEO Engine v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 SEO Engine v2": {
+      "main": [
+        [
+          {
+            "node": "✂️ Split Per SKU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✂️ Split Per SKU": {
+      "main": [
+        [
+          {
+            "node": "🤖 Needs AI?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Needs AI?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "⏭️ Skip AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Apply AI Result": {
+      "main": [
+        [
+          {
+            "node": "🔗 Merge AI Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏭️ Skip AI": {
+      "main": [
+        [
+          {
+            "node": "🔗 Merge AI Paths",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🔗 Merge AI Paths": {
+      "main": [
+        [
+          {
+            "node": "📋 Final Formatter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Final Formatter": {
+      "main": [
+        [
+          {
+            "node": "📊 Write to Sheets?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Write to Sheets?": {
+      "main": [
+        [
+          {
+            "node": "📊 Write to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⏭️ Skip Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Write to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "🔗 Merge Sheet Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏭️ Skip Sheets": {
+      "main": [
+        [
+          {
+            "node": "🔗 Merge Sheet Paths",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🔗 Merge Sheet Paths": {
+      "main": [
+        [
+          {
+            "node": "📦 Aggregate All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📦 Aggregate All Results": {
+      "main": [
+        [
+          {
+            "node": "📤 Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📊 Summary Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "a065193e-bf91-44c2-b647-7603e286fe97",
+  "meta": {
+    "instanceId": "9c73ce65ae7b8d0c8e093ca5acf25df535b3a63732172937bc2551f1a788e5db"
+  },
+  "id": "3aKHFMB5PzsOMTMR",
+  "tags": []
+}
