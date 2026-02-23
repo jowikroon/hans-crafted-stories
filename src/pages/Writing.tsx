@@ -1,18 +1,18 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, SlidersHorizontal } from "lucide-react";
+import { Search, X, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import { blogPosts } from "@/data/content";
 import BlogPostCard from "@/components/BlogPostCard";
 
 type Filter = "all" | "professional" | "personal";
 type TagFilter = string | null;
-
-const allTags = Array.from(new Set(blogPosts.flatMap((p) => p.tags)));
+type SortOrder = "newest" | "oldest";
 
 const Writing = () => {
   const [filter, setFilter] = useState<Filter>("all");
   const [tagFilter, setTagFilter] = useState<TagFilter>(null);
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortOrder>("newest");
 
   const filtered = useMemo(() => {
     let posts = blogPosts;
@@ -27,8 +27,13 @@ const Writing = () => {
           p.tags.some((t) => t.toLowerCase().includes(q))
       );
     }
+    posts = [...posts].sort((a, b) =>
+      sort === "newest"
+        ? new Date(b.date).getTime() - new Date(a.date).getTime()
+        : new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
     return posts;
-  }, [filter, tagFilter, search]);
+  }, [filter, tagFilter, search, sort]);
 
   const activeTags = useMemo(() => {
     const postsForCategory =
@@ -95,33 +100,44 @@ const Writing = () => {
             )}
           </div>
 
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1 rounded-lg border border-border bg-secondary/30 p-0.5">
-            {filters.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => {
-                  setFilter(f.value);
-                  setTagFilter(null);
-                }}
-                className={`relative rounded-md px-3 py-1.5 text-xs font-medium tracking-wide transition-all duration-200 ${
-                  filter === f.value
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {f.label}
-                <span
-                  className={`ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums ${
+          <div className="flex items-center gap-2">
+            {/* Sort Toggle */}
+            <button
+              onClick={() => setSort(sort === "newest" ? "oldest" : "newest")}
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 text-xs font-medium text-muted-foreground transition-all hover:text-foreground"
+            >
+              <ArrowUpDown size={13} />
+              <span className="hidden sm:inline">{sort === "newest" ? "Newest" : "Oldest"}</span>
+            </button>
+
+            {/* Category Tabs */}
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-secondary/30 p-0.5">
+              {filters.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => {
+                    setFilter(f.value);
+                    setTagFilter(null);
+                  }}
+                  className={`relative rounded-md px-3 py-1.5 text-xs font-medium tracking-wide transition-all duration-200 ${
                     filter === f.value
-                      ? "bg-primary/10 text-primary"
-                      : "bg-muted text-muted-foreground/60"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {f.count}
-                </span>
-              </button>
-            ))}
+                  {f.label}
+                  <span
+                    className={`ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums ${
+                      filter === f.value
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground/60"
+                    }`}
+                  >
+                    {f.count}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
