@@ -1,0 +1,179 @@
+{
+  "name": "AutoSEO Brain v2 — connectcarparts.nl (Extended)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# 🚗 AutoSEO Brain v2 — connectcarparts.nl\n\n## NEW in v2:\n- 🤖 **Claude AI** enriches weak titles (missing data, unusual parts)\n- 🌍 **Multi-market** title variants: NL · BE · DE · EN in one run\n- 🔀 **A/B variants** — 2 title options per SKU for Product Hero testing\n- 📊 **Google Sheets** write — auto-fills your SEO audit sheet\n- 🔁 **Batch protection** — splits large catalogs into safe chunks\n- 🚨 **Error handling** — catches failures, logs them, keeps running\n- 🔍 **Duplicate detection** — flags identical titles across SKUs\n- 🎯 **Keyword density score** — rewards front-loaded primary keywords\n- 📡 **Channable-ready** output with item_group_id + custom labels\n- 📅 **Schedule trigger** — run weekly automatically\n\n## Triggers (3 options):\n1. 🖐 Manual Test — demo data, no setup needed\n2. 🔗 Webhook POST — send SKU JSON from Magento/Channable\n3. ⏰ Schedule — runs every Monday 06:00 AM",
+        "height": 500,
+        "width": 520,
+        "color": 7
+      },
+      "id": "sticky-intro",
+      "name": "📋 Intro v2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "🖐 Manual Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "autoseo-v2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "🔗 Webhook POST",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        600
+      ],
+      "webhookId": "autoseo-v2-connectcarparts"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 6,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "⏰ Weekly Schedule (Mon 06:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const DEMO=[{sku:'BRE-280-E46',part_name:'Remschijf voor',brand:'Brembo',category:'Remschijven',make:'BMW',model:'3-serie E46',year_from:'1999',year_to:'2005',engine:'320d M57',oem:'34116864046',size:'280mm',price:'89.95',stock:'in_stock'},{sku:'ATE-258-VW',part_name:'Remschijf achter',brand:'ATE',category:'Remschijven',make:'Volkswagen',model:'Golf V',year_from:'2003',year_to:'2008',engine:'1.9 TDI',oem:'1J0615601',size:'258mm',price:'54.90',stock:'in_stock'},{sku:'BIL-B4-XX',part_name:'Schokdemper voor',brand:'Bilstein',category:'Ophanging',make:'Audi',model:'',year_from:'2012',year_to:'2020',engine:'1.4 TFSI',oem:'',size:'',price:'129.00',stock:'in_stock'},{sku:'MAN-WH-VW',part_name:'Oliefilter',brand:'Mann',category:'Filters',make:'Volkswagen',model:'Golf IV',year_from:'2000',year_to:'2004',engine:'2.0 TDI',oem:'WHT006285',size:'',price:'12.50',stock:'in_stock'},{sku:'NGK-BKR6E-1',part_name:'Bougie',brand:'NGK',category:'Bougies',make:'Ford',model:'Focus II',year_from:'2004',year_to:'2011',engine:'1.6 Ti-VCT',oem:'AGSF32PM',size:'',price:'4.95',stock:'in_stock'},{sku:'BOL-BS-VW',part_name:'Startmotor',brand:'Bosch',category:'Elektrisch',make:'Volkswagen',model:'Passat B6',year_from:'2005',year_to:'2010',engine:'2.0 TSI',oem:'0001115077',size:'',price:'189.00',stock:'in_stock'},{sku:'TRW-DF6163',part_name:'Remblok voor',brand:'TRW',category:'Remblokken',make:'Mercedes',model:'C-klasse W204',year_from:'2007',year_to:'2014',engine:'C220 CDI',oem:'',size:'',price:'34.50',stock:'in_stock'},{sku:'LUK-FCS-A4',part_name:'Koppelingsset',brand:'LuK',category:'Koppeling',make:'Audi',model:'A4 B8',year_from:'2008',year_to:'2015',engine:'2.0 TDI',oem:'602307200',size:'',price:'245.00',stock:'in_stock'},{sku:'XX-CAT-001',part_name:'Katalysator',brand:'',category:'Uitlaat',make:'Opel',model:'Astra G',year_from:'1998',year_to:'2004',engine:'1.6 16V',oem:'',size:'',price:'189.00',stock:'in_stock'},{sku:'CON-CT1028K',part_name:'Distributieriem kit',brand:'Continental',category:'Distributieriem',make:'Volkswagen',model:'Polo 6N',year_from:'2000',year_to:'2002',engine:'1.4 TDI',oem:'038198119B',size:'',price:'74.95',stock:'in_stock'},{sku:'KYB-344291',part_name:'Schokdemper achter',brand:'KYB',category:'Ophanging',make:'Ford',model:'Mondeo IV',year_from:'2007',year_to:'2014',engine:'2.0 TDCi',oem:'',size:'',price:'89.00',stock:'low_stock'},{sku:'MAH-OC30',part_name:'Oliefilter',brand:'Mahle',category:'Filters',make:'BMW',model:'5-serie E60',year_from:'2003',year_to:'2010',engine:'2.5i M54',oem:'11427788461',size:'',price:'11.90',stock:'in_stock'}];\nreturn [{json:{skus:DEMO,source:'manual_test',options:{markets:['nl','be','de'],ab_variants:true,sheet_write:false}}}];"
+      },
+      "id": "demo-data",
+      "name": "🗂️ Demo Data v2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{skus:[{sku:'SCHEDULE-TEST-001',part_name:'Remschijf voor',brand:'Brembo',category:'Remschijven',make:'BMW',model:'3-serie',year_from:'2005',year_to:'2012',engine:'320i',oem:'',size:'300mm',price:'79.95',stock:'in_stock'}],source:'weekly_schedule',options:{markets:['nl','be'],ab_variants:true,sheet_write:true}}}];"
+      },
+      "id": "schedule-data",
+      "name": "📅 Schedule: Fetch from Magento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        800
+      ]
+    }
+  ],
+  "connections": {
+    "🖐 Manual Test": {
+      "main": [
+        [
+          {
+            "node": "🗂️ Demo Data v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🗂️ Demo Data v2": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔗 Webhook POST": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Weekly Schedule (Mon 06:00)": {
+      "main": [
+        [
+          {
+            "node": "📅 Schedule: Fetch from Magento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📅 Schedule: Fetch from Magento": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "tags": [
+    {
+      "name": "SEO"
+    },
+    {
+      "name": "Automotive"
+    },
+    {
+      "name": "connectcarparts.nl"
+    },
+    {
+      "name": "Claude AI"
+    },
+    {
+      "name": "Multi-market"
+    }
+  ]
+}

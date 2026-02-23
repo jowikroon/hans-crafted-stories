@@ -1,0 +1,379 @@
+{
+  "name": "Analyze any website with OpenAI and get on-page SEO audit",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Conversion Rate Optimizer",
+        "formDescription": "Your Landing Page is Leaking Sales—Fix It Now",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Landing Page Url",
+              "placeholder": "https://yuzuu.co",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f4a971be-a961-4ad6-b38d-830c5fca5407",
+      "name": "Landing Page Url",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        368,
+        240
+      ],
+      "webhookId": "afe067a5-4878-4c9d-b746-691f77190f54",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json['Landing Page Url'] }}",
+        "options": {}
+      },
+      "id": "e280139f-94b8-49dc-91e7-c6ffa0c04716",
+      "name": "Scrape Website",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        576,
+        240
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "o1",
+          "mode": "list",
+          "cachedResultName": "o1"
+        },
+        "options": {}
+      },
+      "id": "de9ff0da-4ef9-4878-af0d-5733e010402c",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        880,
+        272
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "K6BcdLmg5csDdEHs",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "o1",
+          "mode": "list",
+          "cachedResultName": "o1"
+        },
+        "options": {}
+      },
+      "id": "25969781-4b1c-42ad-969c-efbb605be9e5",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        912,
+        640
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "K6BcdLmg5csDdEHs",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the best SEO Manager in the country—a world-class expert in optimizing websites to rank on Google.\n\nIn this task, you will analyze the content of the webpage and perform a detailed and structured SEO Content Audit.\n\nAudit Structure\nYou will divide your audit in 2 parts:\n- The first part is the Analysis\n- The second is the Recommendations\n\nIn the Analysis, you will include:\n- Content Quality Assessment – Evaluate the content's overall quality, accuracy, and relevance to the target audience.\n- Keyword Research and Analysis – Identify primary and secondary keywords, keyword density, and keyword placement strategies.\n- Readability Analysis – Assess the content's readability score using metrics such as Flesch-Kincaid Grade Level, Flesch Reading Ease, and Gunning-Fog Index.\n\nIn the Recommendations, you will present your recommendations and actionable suggestions in clear, organized bullet points. Recommendations must improve the rankings in Google but also the user engagement. \n\nEnsure the output is properly formatted, clean, and highly readable. Do not include any introductory or explanatory text—only the audit findings.\n\nHere is the content of my landing page: {{ $json.data }}",
+        "options": {}
+      },
+      "id": "0f135a2d-156c-43ee-b254-581c7d543a8c",
+      "name": "Content Audit",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        928,
+        448
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the best SEO Manager in the country—a world-class expert in optimizing websites to rank on Google.\nIn this task, you will analyze the HTML code of a webpage and perform a detailed and structured On-Page Technical SEO Audit.\n\nAudit Structure\nYou will review all technical SEO aspects of the page. Once completed, you will present your findings and recommendations in clear, organized bullet points, categorized into three sections:\n- Critical Issues – Must be fixed immediately.\n- Quick Wins – Easy fixes with a big impact.\n- Opportunities for Improvement – Require more effort but offer potential benefits.\n\nEnsure the output is properly formatted, clean, and highly readable. Do not include any introductory or explanatory text—only the audit findings.\n\nHere is the content of my landing page: {{ $json.data }}",
+        "options": {}
+      },
+      "id": "b693e35c-c0d4-4202-8c5e-2a5646a16cc4",
+      "name": "Technical Audit",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        928,
+        48
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {},
+      "id": "3d172f93-7d94-4a43-9403-5cec799bbe47",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1440,
+        240
+      ],
+      "typeVersion": 3,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2081bf62-0e47-497e-8a3e-d30d330f6a9d",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        1632,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "=# On-Page Technical Audit\n{{ $json.output[0] }}\n\n# On-Page SEO Content Audit\n{{ $json.output[1] }}",
+        "options": {}
+      },
+      "id": "e1cfc16e-e0dc-4298-9b94-ffb7f23b45aa",
+      "name": "Markdown",
+      "type": "n8n-nodes-base.markdown",
+      "position": [
+        1840,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Send Email \nConnect your credentials & Easily send emails from a Gmail address. ",
+        "height": 100,
+        "width": 360,
+        "color": 3
+      },
+      "id": "7dc41215-e276-439c-be11-92278b1c3a60",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1920,
+        80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Open AI Setup\n- Add your credentials\n- Select o1 model for (way) better results. \n- One run = one page audit = around $0.3 with o1",
+        "height": 140,
+        "width": 420,
+        "color": 3
+      },
+      "id": "28aea6bd-beef-4116-97c2-e8b88e96d5ac",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        880,
+        -144
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "sendTo": "user@example.com",
+        "subject": "=On-Page SEO Audit -  {{ $('Landing Page Url').item.json['Landing Page Url'] }}",
+        "message": "={{ $json.data }}",
+        "options": {}
+      },
+      "id": "3242a0c3-4439-4ad1-8185-47185046080d",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        2032,
+        240
+      ],
+      "webhookId": "2979e4dc-1689-447e-8cd4-eb907b4eedf4",
+      "typeVersion": 2.1,
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m8zHwo4b2LMy6U6Z",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": "hansvl3@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        640
+      ],
+      "id": "d3ea70f8-3108-4b04-974d-c6db30e383f5",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m8zHwo4b2LMy6U6Z",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Audit": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Scrape Website": {
+      "main": [
+        [
+          {
+            "node": "Content Audit",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Technical Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Technical Audit": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Landing Page Url": {
+      "main": [
+        [
+          {
+            "node": "Scrape Website",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Technical Audit",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Content Audit",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8b82f7d8-3ffd-4677-8a9f-048c449c8e1b",
+  "meta": {
+    "templateId": "3224",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9c73ce65ae7b8d0c8e093ca5acf25df535b3a63732172937bc2551f1a788e5db"
+  },
+  "id": "CmEIBfHH6tDM5PvT",
+  "tags": []
+}

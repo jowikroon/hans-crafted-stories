@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Channable Campaign Architect — Performance Marketer</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root{
+      --bg:#0B0E11;
+      --surface:#12161B;
+      --surface-2:#0F1317;
+      --surface-hover:#171C22;
+      --border:#232A33;
+      --border-soft:#1B222B;
+      --border-focus:#3B82F6;
+
+      --text:#E8ECF1;
+      --text-muted:#7C8DA3;
+      --text-dim:#445365;
+
+      --accent:#3B82F6;
+      --accent-glow:rgba(59,130,246,.14);
+      --accent-bright:#7DB4FF;
+
+      --green:#22C55E;
+      --green-bg:rgba(34,197,94,.08);
+      --green-border:rgba(34,197,94,.25);
+
+      --amber:#F59E0B;
+      --amber-bg:rgba(245,158,11,.08);
+      --amber-border:rgba(245,158,11,.22);
+
+      --red:#EF4444;
+      --red-bg:rgba(239,68,68,.08);
+      --red-border:rgba(239,68,68,.22);
+
+      --radius:12px;
+      --radius-sm:10px;
+      --radius-xs:8px;
+
+      --font:'DM Sans', -apple-system, sans-serif;
+      --mono:'Space Mono','SF Mono',monospace;
+
+      /* Dense mode knobs */
+      --pad-1:12px;
+      --pad-2:16px;
+      --pad-3:20px;
+      --gap-1:10px;
+      --gap-2:14px;
+      --gap-3:18px;
+
+      --fz-1:12px;
+      --fz-2:13px;
+      --fz-3:14px;
+
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    html { scroll-behavior: smooth; }
+    body{
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* LAYOUT */
+    .app{ display:flex; min-height:100vh; }
+    .sidebar{
+      width: 300px;
+      background: var(--surface);
+      border-right:1px solid var(--border);
+      position:fixed; top:0; left:0; bottom:0;
+      display:flex; flex-direction:column;
+      z-index:100;
+      transition: transform .25s ease;
+    }
+
+    .sidebar-header{
+      padding: 18px 16px 14px;
+      border-bottom:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(59,130,246,.10), transparent 60%);
+    }
+    .sidebar-header h1{
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .sidebar-header p{
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-meta{
+      padding: 12px 16px;
+      border-bottom:1px solid var(--border-soft);
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .meta-chip{
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-muted);
+      border:1px solid var(--border);
+      background: var(--surface-2);
+      border-radius: 999px;
+      padding: 6px 10px;
+      display:flex; gap:8px; align-items:center;
+      user-select:none;
+    }
+    .meta-chip b{ color: var(--text); font-weight: 700; }
+
+    .sidebar-nav{ flex:1; padding: 10px 10px; overflow:auto; }
+
+    .nav-item{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 12px;
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
+      cursor:pointer;
+      transition: background .12s ease, border-color .12s ease;
+      border: 1px solid transparent;
+      margin-bottom: 4px;
+    }
+    .nav-left{ display:flex; align-items:center; gap: 10px; min-width:0; }
+    .nav-item:hover{ background: var(--surface-hover); }
+    .nav-item.active{
+      background: var(--accent-glow);
+      border-color: rgba(59,130,246,.18);
+    }
+    .nav-item.completed:not(.active) .nav-number{ background: var(--green); color: white; }
+    .nav-number{
+      width: 22px; height: 22px;
+      border-radius: 7px;
+      background: var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      flex: 0 0 auto;
+    }
+    .nav-title{
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-sub{
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-right{
+      display:flex; align-items:center; gap: 8px;
+      flex: 0 0 auto;
+    }
+    .nav-badge{
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-muted);
+    }
+    .nav-badge.ok{ border-color: var(--green-border); background: var(--green-bg); color: var(--green); }
+    .nav-badge.warn{ border-color: var(--amber-border); background: var(--amber-bg); color: var(--amber); }
+    .nav-badge.bad{ border-color: var(--red-border); background: var(--red-bg); color: var(--red); }
+
+    .sidebar-footer{
+      padding: 12px 12px;
+      border-top:1px solid var(--border);
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: rgba(0,0,0,.12);
+    }
+    .btn{
+      appearance:none;
+      border:1px solid transparent;
+      border-radius: var(--radius-xs);
+      padding: 10px 10px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+      font-family: var(--font);
+      line-height: 1;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn-primary{
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover{ background:#2563EB; }
+    .btn-ghost{
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover{ border-color: var(--text-muted); color: var(--text); }
+    .btn-danger{
+      background: var(--red-bg);
+      border-color: var(--red-border);
+      color: var(--red);
+    }
+    .btn-danger:hover{ border-color: var(--red); color: #FFD0D0; }
+
+    .main{
+      flex:1;
+      margin-left: 300px;
+      padding: 18px 20px 72px;
+      max-width: 1240px;
+    }
+
+    /* TOP BAR */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: linear-gradient(180deg, rgba(11,14,17,.92), rgba(11,14,17,.80) 65%, rgba(11,14,17,0));
+      padding: 14px 0 18px;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(35,42,51,.35);
+      margin-bottom: 14px;
+    }
+    .topbar-row{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 12px;
+    }
+    .topbar-left{
+      min-width:0;
+    }
+    .topbar-title{
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .topbar-sub{
+      margin-top: 3px;
+      font-family: var(--mono);
+      color: var(--text-muted);
+      font-size: 11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .topbar-actions{
+      display:flex; align-items:center; gap: 10px;
+      flex: 0 0 auto;
+    }
+    .kbd{
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
+
+    .progress-wrap{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+    }
+    .progress{
+      flex: 1;
+      height: 6px;
+      background: var(--border-soft);
+      border: 1px solid rgba(35,42,51,.55);
+      border-radius: 999px;
+      overflow:hidden;
+    }
+    .progress-fill{
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width .2s ease;
+    }
+    .progress-text{
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* STEP PANELS */
+    .step-panel{ display:none; }
+    .step-panel.active{ display:block; }
+    .step-head{
+      margin: 10px 0 14px;
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap: 14px;
+    }
+    .step-tag{
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent-bright);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .step-h2{
+      margin-top: 4px;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+    .step-desc{
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 72ch;
+    }
+
+    .step-tools{
+      display:flex; align-items:center; gap: 10px;
+      flex: 0 0 auto;
+      justify-content:flex-end;
+    }
+
+    /* FORM */
+    .form-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: var(--gap-2);
+      margin-top: 10px;
+    }
+    @media (min-width: 1024px){
+      .form-grid.cols-2{ grid-template-columns: 1fr 1fr; }
+      .form-grid.cols-3{ grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .form-block{
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--pad-2);
+    }
+    .form-block.compact{ padding: var(--pad-1); }
+    .form-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .form-title{
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+    .form-hint{
+      margin-top: 3px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .req{
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-muted);
+    }
+    .req.required{ border-color: rgba(239,68,68,.25); background: rgba(239,68,68,.06); color: #FF9A9A; }
+    .req.optional{ border-color: rgba(245,158,11,.22); background: rgba(245,158,11,.06); color: #FFD099; }
+    .req.ok{ border-color: var(--green-border); background: var(--green-bg); color: var(--green); }
+
+    .text-input{
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12.5px;
+      outline: none;
+      transition: border-color .12s ease, box-shadow .12s ease;
+    }
+    .text-input:focus{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .text-input::placeholder{ color: var(--text-dim); }
+
+    .pill-grid{
+      display:flex; flex-wrap:wrap; gap: 8px;
+      margin-top: 8px;
+    }
+    .attr-pill{
+      display:inline-flex; align-items:center; gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor:pointer;
+      user-select:none;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      transition: background .12s ease, border-color .12s ease, color .12s ease;
+      line-height: 1;
+    }
+    .attr-pill:hover{ border-color: var(--accent); color: var(--text); background: var(--accent-glow); }
+    .attr-pill.selected{
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      box-shadow: 0 8px 20px rgba(59,130,246,.14);
+    }
+    .pill-icon{
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      display:flex; align-items:center; justify-content:center;
+      font-size: 8px;
+    }
+    .attr-pill.selected .pill-icon{
+      background: white; border-color: white; color: var(--accent);
+    }
+    .attr-pill.selected .pill-icon::after{ content: '✓'; }
+
+    /* COMBO */
+    .combo{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      margin-top: 8px;
+    }
+    .combo .text-input{ width: 200px; flex: 0 0 auto; }
+    .combo-plus{
+      font-family: var(--mono);
+      color: var(--text-dim);
+      margin-top: 8px;
+      font-weight: 800;
+    }
+
+    /* STRATEGY */
+    .strategy-grid{ display:grid; grid-template-columns: 1fr; gap: 10px; margin-top: 8px; }
+    @media (min-width: 1024px){ .strategy-grid{ grid-template-columns: 1fr 1fr; } }
+    .strategy-card{
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 14px;
+      cursor:pointer;
+      transition: border-color .12s ease, background .12s ease;
+    }
+    .strategy-card:hover{ border-color: rgba(124,141,163,.55); }
+    .strategy-card.selected{
+      border-color: var(--accent);
+      background: linear-gradient(145deg, rgba(59,130,246,.12), rgba(59,130,246,.04));
+    }
+    .sc-badge{
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--green-bg);
+      color: var(--green);
+      display:inline-block;
+      margin-bottom: 8px;
+    }
+    .strategy-card h4{ font-size: 13px; font-weight: 900; }
+    .strategy-card p{ margin-top: 4px; font-size: 12px; color: var(--text-muted); line-height: 1.45; }
+
+    /* RULES (collapsible) */
+    .rules-group{ border-top: 1px solid var(--border-soft); margin-top: 12px; padding-top: 12px; }
+    .rules-group:first-child{ border-top: none; margin-top: 0; padding-top: 0; }
+    .rules-head{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 10px;
+      cursor:pointer;
+      user-select:none;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      background: rgba(0,0,0,.10);
+      border: 1px solid var(--border-soft);
+    }
+    .rules-head:hover{ border-color: rgba(124,141,163,.45); }
+    .rules-left{ display:flex; align-items:center; gap: 10px; min-width:0; }
+    .chev{ width: 18px; height: 18px; border: 1px solid var(--border); border-radius: 6px; display:flex; align-items:center; justify-content:center; color: var(--text-muted); background: var(--surface-2); font-family: var(--mono); font-size: 12px; }
+    .rules-title{ font-size: 12.5px; font-weight: 900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rules-meta{ font-family: var(--mono); font-size: 10.5px; color: var(--text-muted); }
+    .rules-body{ margin-top: 10px; }
+    .rule-card{
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display:flex; align-items:center; gap: 12px;
+      margin-bottom: 8px;
+      cursor:pointer; /* whole row clickable */
+    }
+    .rule-card:hover{ border-color: rgba(59,130,246,.35); }
+    .rule-toggle{
+      width: 38px; height: 20px;
+      background: var(--border);
+      border-radius: 999px;
+      position: relative;
+      flex: 0 0 auto;
+    }
+    .rule-toggle.on{ background: var(--green); }
+    .rule-toggle::after{
+      content:'';
+      position:absolute;
+      width: 14px; height: 14px;
+      background: white;
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: transform .12s ease;
+    }
+    .rule-toggle.on::after{ transform: translateX(18px); }
+    .rule-info{ flex:1; min-width:0; }
+    .rule-info h4{ font-size: 12.5px; font-weight: 900; }
+    .rule-logic{
+      margin-top: 3px;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .rule-logic em{ color: var(--amber); font-style: normal; }
+    .rule-cat{
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-muted);
+      flex: 0 0 auto;
+    }
+    .rule-cat.budget{ border-color: var(--red-border); background: var(--red-bg); color: var(--red); }
+    .rule-cat.title{ border-color: rgba(59,130,246,.22); background: var(--accent-glow); color: var(--accent-bright); }
+    .rule-cat.hygiene{ border-color: var(--amber-border); background: var(--amber-bg); color: var(--amber); }
+
+    /* PREVIEW */
+    .preview{
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow:hidden;
+    }
+    .preview-head{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,.18);
+    }
+    .preview-head b{ font-size: 12.5px; }
+    .preview-body{
+      padding: 12px 12px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      max-height: 360px;
+      overflow:auto;
+    }
+    .pv-k{ color: var(--accent-bright); }
+    .pv-v{ color: var(--green); }
+    .pv-d{ color: var(--text-dim); }
+
+    /* CHECKS */
+    .check-item{
+      display:flex; align-items:center; gap: 10px;
+      padding: 10px 2px;
+      border-bottom: 1px solid var(--border-soft);
+      cursor:pointer;
+      user-select:none;
+    }
+    .check-item:last-child{ border-bottom:none; }
+    .check-box{
+      width: 18px; height: 18px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-size: 10px;
+      color: transparent;
+      flex: 0 0 auto;
+    }
+    .check-box.checked{
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+    .check-text{ font-size: 12.5px; }
+    .check-text.done{ text-decoration: line-through; color: var(--text-muted); }
+
+    /* ACTION BAR */
+    .actionbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 10px;
+      padding-top: 14px;
+      margin-top: 14px;
+      border-top: 1px solid var(--border-soft);
+    }
+    .btn-next{ padding: 11px 14px; }
+    .btn-publish{
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+      padding: 12px 16px;
+      box-shadow: 0 0 22px rgba(34,197,94,.22);
+    }
+    .btn-publish:hover{ background: #16A34A; }
+    .btn:disabled{ opacity: .45; cursor:not-allowed; transform:none; }
+
+    /* TOAST */
+    .toast{
+      position: fixed;
+      bottom: 18px; right: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      transform: translateY(90px);
+      opacity: 0;
+      transition: all .22s ease;
+      z-index: 1000;
+      box-shadow: var(--shadow);
+      max-width: min(520px, 92vw);
+    }
+    .toast.visible{ transform: translateY(0); opacity: 1; }
+
+    /* MOBILE */
+    .mobile-header{ display:none; }
+    @media (max-width: 860px){
+      .mobile-header{
+        display:flex;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: 54px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        align-items:center;
+        padding: 0 12px;
+        z-index: 120;
+      }
+      .burger{
+        width: 34px; height: 34px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        display:flex; align-items:center; justify-content:center;
+        margin-right: 10px;
+        cursor:pointer;
+        background: var(--surface-2);
+      }
+      .burger div{
+        width: 18px; height: 2px; background: var(--text);
+        position: relative;
+      }
+      .burger div::before,.burger div::after{
+        content:''; position:absolute; left:0;
+        width:18px; height:2px; background: var(--text);
+      }
+      .burger div::before{ top:-6px; }
+      .burger div::after{ top:6px; }
+      .mobile-title{ font-size: 13px; font-weight: 900; }
+      .sidebar{ transform: translateX(-100%); width: 280px; z-index: 140; }
+      .sidebar.open{ transform: translateX(0); }
+      .main{ margin-left: 0; padding-top: 62px; }
+      .topbar{ top: 54px; }
+      .combo .text-input{ width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-header" onclick="event.stopPropagation()">
+    <div class="burger" role="button" aria-label="Toggle navigation" onclick="toggleSidebar(); event.stopPropagation();"><div></div></div>
+    <div class="mobile-title">Campaign Architect</div>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="sidebar-header">
+        <h1>Campaign Architect</h1>
+        <p>Channable → Google Ads</p>
+      </div>
+
+      <div class="sidebar-meta" id="sidebarMeta"></div>
+
+      <nav class="sidebar-nav" id="sidebarNav"></nav>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost" id="resetBtn" onclick="resetState()">Reset</button>
+        <button class="btn btn-primary" id="exportBtn" onclick="exportConfig()">Export</button>
+      </div>
+    </aside>
+
+    <main class="main" id="mainContent"></main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ==========================
+   PERFORMANCE MARKETER UI
+   Minimal UI • Max density
+   ========================== */
+
+const STEPS = [
+  {
+    id:'channel',
+    label:'Kanaal',
+    tag:'STAP 1',
+    title:'Kanaal & Identificatie',
+    desc:'Kies kanaal, account en primary key. Dit bepaalt sync-logica & deduplicatie.',
+    layout:'cols-2',
+    fields:[
+      { id:'channel_type', type:'pills', label:'Kanaal', hint:'Waar publiceer je naartoe?', options:['Google Ads','Microsoft Ads','Meta Ads'], single:true, required:true },
+      { id:'connection', type:'pills', label:'Account', hint:'Gekoppeld advertentieaccount.', options:['Account 1','Account 2','Nieuw koppelen'], single:true, required:true },
+      { id:'project_name', type:'text', label:'Projectnaam', hint:'Conventie: [Land]_[Type]_[Categorie]', placeholder:'[NL]_Shopping_Stabilisatorstangen', required:true },
+      { id:'primary_key', type:'pills', label:'Primary key', hint:'Unieke product-id in de feed.', options:['id','ean','sku','item_group_id'], single:true, required:true }
+    ]
+  },
+  {
+    id:'rules',
+    label:'Regels',
+    tag:'STAP 2',
+    title:'Regels (toggle snel)',
+    desc:'Snel aan/uit om budget te beschermen en output te schonen. Klik op een regelrij om te togglen.',
+    layout:'cols-1',
+    fields:[
+      {
+        id:'rules_budget', type:'rules', label:'Budgetbescherming', category:'budget', collapsible:true,
+        rules:[
+          { id:'r1', name:'Voorraad-check', logic:'ALS <em>stock</em> < 1 → Uitsluiten', default:true },
+          { id:'r2', name:'Marge-filter', logic:'ALS <em>price</em> < €10 → Uitsluiten', default:false },
+          { id:'r3', name:'Afbeelding-check', logic:'ALS <em>image_link</em> leeg → Uitsluiten', default:true },
+        ]
+      },
+      {
+        id:'rules_title', type:'rules', label:'Titel-optimalisatie', category:'title', collapsible:true,
+        rules:[
+          { id:'r4', name:'Merk vooraan', logic:'Combineer <em>brand</em> + " " + <em>title</em>', default:true },
+          { id:'r5', name:'Kleur toevoegen', logic:'Combineer <em>title</em> + " - " + <em>color</em>', default:false }
+        ]
+      },
+      {
+        id:'rules_hygiene', type:'rules', label:'Data-hygiëne', category:'hygiene', collapsible:true,
+        rules:[
+          { id:'r6', name:'HTML verwijderen', logic:'Strip tags uit <em>description</em>', default:true },
+          { id:'r7', name:'Hoofdletter-fix', logic:'ALS <em>title</em> = UPPER → Title Case', default:true }
+        ]
+      },
+      { id:'custom_rule', type:'text', label:'Custom regel', hint:'Optioneel: eigen ALS/DAN-regel.', placeholder:'ALS [attribuut] = waarde DAN [actie]', required:false }
+    ]
+  },
+  {
+    id:'campaigns',
+    label:'Campagnes',
+    tag:'STAP 3',
+    title:'Campagne structuur',
+    desc:'Naamgeving + splitsing + economics (budget/bidding).',
+    layout:'cols-2',
+    fields:[
+      { id:'campaign_name', type:'combo', label:'Campagnenaam', hint:'Prefix + dynamisch veld.', textPlaceholder:'Shopping_', options:['brand','category_level_1','product_type','custom_label_0'], required:true },
+      { id:'campaign_type', type:'pills', label:'Type', hint:'Campagnetype.', options:['Shopping (PMax)','Shopping (Standard)','Search / Tekst','Display'], single:true, required:true },
+      { id:'campaign_country', type:'pills', label:'Land', hint:'Doelland.', options:['Nederland','België','Duitsland','Frankrijk','EU-breed'], single:true, required:true },
+      { id:'daily_budget', type:'text', label:'Dagbudget (€)', hint:'Per campagne.', placeholder:'25.00', required:true },
+      { id:'bid_strategy', type:'pills', label:'Biedstrategie', hint:'Optimalisatie doel.', options:['Handmatige CPC','Conversies max.','Doel-ROAS','Doel-CPA'], single:true, required:true }
+    ]
+  },
+  {
+    id:'adgroups',
+    label:'Adgroups',
+    tag:'STAP 4',
+    title:'Advertentiegroepen',
+    desc:'Granulariteit + naming + tracking.',
+    layout:'cols-2',
+    fields:[
+      {
+        id:'grouping_strategy', type:'strategy', label:'Groepering', hint:'Snelheid vs controle.',
+        options:[
+          { value:'item_id', title:'SPAG (per product)', badge:'MAX CONTROLE', desc:'1 product = 1 adgroup. Beste voor bids/queries per SKU.' },
+          { value:'parent_id', title:'Per variant-groep', badge:'SNEL DATA', desc:'Varianten bundelen. Sneller volume/learning.' }
+        ],
+        required:true
+      },
+      { id:'adgroup_name', type:'combo', label:'Adgroup naam', hint:'Prefix + dynamisch veld.', textPlaceholder:'AG_', options:['title','brand','item_id','product_type'], required:true },
+      { id:'default_cpc', type:'text', label:'Default CPC (€)', hint:'Startbod.', placeholder:'0.50', required:true },
+      { id:'utm_params', type:'combo', label:'UTM', hint:'Tracking in URL.', textPlaceholder:'utm_campaign=', options:['campaign_name','brand','product_type','item_id'], required:true }
+    ]
+  },
+  {
+    id:'review',
+    label:'Review',
+    tag:'STAP 5',
+    title:'Validate & Launch',
+    desc:'Alles in 1 scherm: settings + impact + checklist. Publish wordt pas actief als alles OK is.',
+    layout:'cols-2',
+    fields:[
+      { id:'review_preview', type:'preview' },
+      { id:'review_checks', type:'checks' }
+    ]
+  }
+];
+
+const CHECKS = [
+  'Projectnaam volgt [Land]_[Type]_[Categorie]',
+  'Primary key ingesteld (voorkeur: id of sku)',
+  'Voorraad-check actief',
+  'Afbeelding-check actief',
+  'Campagnenaam heeft dynamische splitsing',
+  'Biedstrategie gekozen',
+  'Groeperingsstrategie gekozen',
+  'UTM parameters geconfigureerd',
+  'Valuta correct (EUR)',
+  'Titellimiet gecontroleerd (≤150)'
+];
+
+let state = {
+  currentStep: 0,
+  values: {},
+  rules: {},
+  checks: {},
+  ui: { collapsedRules: { budget:false, title:true, hygiene:true } }
+};
+
+// Init rule defaults
+STEPS.forEach(step => step.fields.forEach(field => {
+  if (field.type === 'rules') field.rules.forEach(r => { state.rules[r.id] = r.default; });
+}));
+
+function safeJSONParse(s){ try { return JSON.parse(s); } catch { return null; } }
+
+function saveState(){
+  try { localStorage.setItem('campaignArchitectState_pm', JSON.stringify(state)); }
+  catch(e){ console.warn('Unable to save state', e); }
+}
+
+function loadState(){
+  try{
+    const stored = localStorage.getItem('campaignArchitectState_pm');
+    if(!stored) return;
+    const parsed = safeJSONParse(stored);
+    if(!parsed) return;
+    state.currentStep = parsed.currentStep ?? 0;
+    state.values = parsed.values ?? {};
+    state.rules = parsed.rules ?? state.rules;
+    state.checks = parsed.checks ?? {};
+    state.ui = parsed.ui ?? state.ui;
+  }catch(e){ console.warn('Unable to load state', e); }
+}
+
+/* ---------- Validation & summary ---------- */
+
+function fieldValuePresent(field){
+  const v = state.values;
+  if(field.type === 'text') return !!(v[field.id] || '').trim();
+  if(field.type === 'pills') return !!v[field.id];
+  if(field.type === 'combo') return !!v[field.id + '_attr'];
+  if(field.type === 'strategy') return !!v[field.id];
+  if(field.type === 'rules') return true;
+  if(field.type === 'preview' || field.type === 'checks') return true;
+  return true;
+}
+
+function stepRequiredFields(step){
+  return step.fields.filter(f => (f.required === true));
+}
+
+function isStepValid(stepIndex){
+  const step = STEPS[stepIndex];
+  if(step.id === 'review'){
+    return checksDoneCount() === CHECKS.length;
+  }
+  const required = stepRequiredFields(step);
+  if(required.length === 0) return true;
+  return required.every(f => fieldValuePresent(f));
+}
+
+function completionPct(){
+  // Count valid steps excluding review? For progress feel, include all steps.
+  const total = STEPS.length;
+  const validCount = STEPS.map((_,i)=>isStepValid(i)).filter(Boolean).length;
+  return Math.round((validCount/total)*100);
+}
+
+function checksDoneCount(){
+  return Object.values(state.checks).filter(Boolean).length;
+}
+
+function activeRulesCount(){
+  return Object.values(state.rules).filter(Boolean).length;
+}
+
+function quickMeta(){
+  const v = state.values;
+  return [
+    { k:'Kanaal', v: v.channel_type || '—' },
+    { k:'Land', v: v.campaign_country || '—' },
+    { k:'Bidding', v: v.bid_strategy || '—' },
+    { k:'Rules', v: activeRulesCount() + ' on' }
+  ];
+}
+
+function navBadgeForStep(i){
+  if(i === state.currentStep) return { txt:'active', cls:'warn' };
+  const valid = isStepValid(i);
+  if(valid) return { txt:'ok', cls:'ok' };
+  // show missing count for required fields
+  const step = STEPS[i];
+  const req = stepRequiredFields(step);
+  const missing = req.filter(f => !fieldValuePresent(f)).length;
+  if(step.id === 'review'){
+    const miss = CHECKS.length - checksDoneCount();
+    return { txt: miss + ' open', cls:'bad' };
+  }
+  return { txt: missing + ' miss', cls:'bad' };
+}
+
+/* ---------- Rendering ---------- */
+
+function render(){
+  renderSidebarMeta();
+  renderNav();
+  renderMain();
+  saveState();
+}
+
+function renderSidebarMeta(){
+  const el = document.getElementById('sidebarMeta');
+  const chips = quickMeta().map(x => `<span class="meta-chip"><span>${x.k}</span><b>${escapeHtml(String(x.v))}</b></span>`).join('');
+  el.innerHTML = chips;
+}
+
+function renderNav(){
+  const nav = document.getElementById('sidebarNav');
+  nav.innerHTML = STEPS.map((step,i)=>{
+    const isActive = i === state.currentStep;
+    const isCompleted = isStepValid(i) && !isActive;
+    const badge = navBadgeForStep(i);
+    return `
+      <div class="nav-item ${isActive?'active':''} ${isCompleted?'completed':''}" role="button"
+           aria-current="${isActive?'step':'false'}"
+           aria-label="Stap ${i+1}: ${step.label}"
+           onclick="goToStep(${i})">
+        <div class="nav-left">
+          <div class="nav-number">${isCompleted?'✓':(i+1)}</div>
+          <div style="min-width:0">
+            <div class="nav-title">${escapeHtml(step.label)}</div>
+            <div class="nav-sub">${escapeHtml(step.title)}</div>
+          </div>
+        </div>
+        <div class="nav-right">
+          <span class="nav-badge ${badge.cls}">${escapeHtml(badge.txt)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderMain(){
+  const main = document.getElementById('mainContent');
+  const step = STEPS[state.currentStep];
+
+  const pct = completionPct();
+  const shortcutHelp = `Enter: Next • Shift+Enter: Back • Ctrl+S: Export • Ctrl+Enter: Publish`;
+
+  main.innerHTML = `
+    <div class="topbar">
+      <div class="topbar-row">
+        <div class="topbar-left">
+          <div class="topbar-title">${escapeHtml(step.title)}</div>
+          <div class="topbar-sub">Stap ${state.currentStep+1}/${STEPS.length} • ${escapeHtml(step.label)} • ${escapeHtml(shortcutHelp)}</div>
+        </div>
+        <div class="topbar-actions">
+          <span class="kbd">Enter</span>
+          <span class="kbd">Shift+Enter</span>
+          <span class="kbd">Ctrl+S</span>
+          <span class="kbd">Ctrl+Enter</span>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-text">${pct}% config OK</div>
+      </div>
+    </div>
+
+    ${STEPS.map((s,i)=>`
+      <section class="step-panel ${i===state.currentStep?'active':''}" data-step="${i}">
+        <div class="step-head">
+          <div>
+            <div class="step-tag">${escapeHtml(s.tag)} — ${escapeHtml(s.label)}</div>
+            <div class="step-h2">${escapeHtml(s.title)}</div>
+            <div class="step-desc">${escapeHtml(s.desc)}</div>
+          </div>
+          <div class="step-tools">
+            ${renderStepStatus(i)}
+          </div>
+        </div>
+
+        <div class="form-grid ${s.layout || 'cols-1'}">
+          ${s.fields.map(f => renderField(f)).join('')}
+        </div>
+
+        <div class="actionbar">
+          ${i>0 ? `<button class="btn btn-ghost btn-next" onclick="goToStep(${i-1})">← Back</button>` : `<div></div>`}
+          ${i < STEPS.length - 1
+            ? `<button class="btn btn-primary btn-next" onclick="nextStep()">Next →</button>`
+            : `<button class="btn btn-publish" id="publishBtn" onclick="publish()" ${canPublish()?'':'disabled'}>🚀 Publish</button>`
+          }
+        </div>
+      </section>
+    `).join('')}
+  `;
+
+  // Ensure publish button is synced after render
+  const pb = document.getElementById('publishBtn');
+  if(pb) pb.disabled = !canPublish();
+}
+
+function renderStepStatus(i){
+  const ok = isStepValid(i);
+  if(ok) return `<span class="req ok">OK</span>`;
+  const step = STEPS[i];
+  if(step.id === 'review'){
+    const miss = CHECKS.length - checksDoneCount();
+    return `<span class="req required">${miss} open</span>`;
+  }
+  const req = stepRequiredFields(step);
+  const missing = req.filter(f => !fieldValuePresent(f)).length;
+  return `<span class="req required">${missing} missing</span>`;
+}
+
+function renderField(field){
+  switch(field.type){
+    case 'text': return renderText(field);
+    case 'pills': return renderPills(field);
+    case 'combo': return renderCombo(field);
+    case 'strategy': return renderStrategy(field);
+    case 'rules': return renderRules(field);
+    case 'preview': return renderPreview();
+    case 'checks': return renderChecks();
+    default: return '';
+  }
+}
+
+function fieldReqChip(field){
+  if(field.required === false) return `<span class="req optional">optional</span>`;
+  const ok = fieldValuePresent(field);
+  return ok ? `<span class="req ok">✓</span>` : `<span class="req required">req</span>`;
+}
+
+function renderText(f){
+  const val = state.values[f.id] || '';
+  return `
+    <div class="form-block">
+      <div class="form-row">
+        <div>
+          <div class="form-title">${escapeHtml(f.label)}</div>
+          <div class="form-hint">${escapeHtml(f.hint || '')}</div>
+        </div>
+        ${fieldReqChip(f)}
+      </div>
+      <input class="text-input" type="text" placeholder="${escapeHtml(f.placeholder || '')}" value="${escapeAttr(val)}"
+             oninput="updateValue('${f.id}', this.value)">
+    </div>
+  `;
+}
+
+function renderPills(f){
+  const selected = state.values[f.id] || (f.single ? '' : []);
+  return `
+    <div class="form-block">
+      <div class="form-row">
+        <div>
+          <div class="form-title">${escapeHtml(f.label)}</div>
+          <div class="form-hint">${escapeHtml(f.hint || '')}</div>
+        </div>
+        ${fieldReqChip(f)}
+      </div>
+      <div class="pill-grid">
+        ${f.options.map(opt=>{
+          const isSel = f.single ? selected === opt : (selected || []).includes(opt);
+          return `
+            <button class="attr-pill ${isSel?'selected':''}" aria-pressed="${isSel?'true':'false'}"
+                    onclick="togglePill('${f.id}', '${escapeJS(opt)}', ${f.single})">
+              <span class="pill-icon"></span>${escapeHtml(opt)}
+            </button>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderCombo(f){
+  const textVal = state.values[f.id + '_text'] || '';
+  const attrVal = state.values[f.id + '_attr'] || '';
+  return `
+    <div class="form-block">
+      <div class="form-row">
+        <div>
+          <div class="form-title">${escapeHtml(f.label)}</div>
+          <div class="form-hint">${escapeHtml(f.hint || '')}</div>
+        </div>
+        ${fieldReqChip(f)}
+      </div>
+      <div class="combo">
+        <input class="text-input" type="text" placeholder="${escapeHtml(f.textPlaceholder || '')}" value="${escapeAttr(textVal)}"
+               oninput="updateValue('${f.id}_text', this.value)">
+        <span class="combo-plus">+</span>
+        <div class="pill-grid" style="flex:1">
+          ${f.options.map(opt=>`
+            <button class="attr-pill ${attrVal===opt?'selected':''}" aria-pressed="${attrVal===opt?'true':'false'}"
+                    onclick="togglePill('${f.id}_attr', '${escapeJS(opt)}', true)">
+              <span class="pill-icon"></span>${escapeHtml(opt)}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStrategy(f){
+  const selected = state.values[f.id] || '';
+  return `
+    <div class="form-block">
+      <div class="form-row">
+        <div>
+          <div class="form-title">${escapeHtml(f.label)}</div>
+          <div class="form-hint">${escapeHtml(f.hint || '')}</div>
+        </div>
+        ${fieldReqChip(f)}
+      </div>
+      <div class="strategy-grid">
+        ${f.options.map(opt=>`
+          <div class="strategy-card ${selected===opt.value?'selected':''}" role="button"
+               aria-pressed="${selected===opt.value?'true':'false'}"
+               onclick="updateValue('${f.id}', '${escapeJS(opt.value)}'); render();">
+            <span class="sc-badge">${escapeHtml(opt.badge)}</span>
+            <h4>${escapeHtml(opt.title)}</h4>
+            <p>${escapeHtml(opt.desc)}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderRules(f){
+  const cat = f.category;
+  const collapsed = !!(state.ui && state.ui.collapsedRules && state.ui.collapsedRules[cat]);
+  const catLabel = cat === 'budget' ? 'BUDGET' : (cat === 'title' ? 'CTR' : 'POLICY');
+  const active = f.rules.filter(r => !!state.rules[r.id]).length;
+
+  return `
+    <div class="form-block">
+      <div class="form-row">
+        <div>
+          <div class="form-title">${escapeHtml(f.label)}</div>
+          <div class="form-hint">${escapeHtml(f.hint || 'Toggle per rij. Klik header om te collapse.')}</div>
+        </div>
+        <span class="req ${active>0?'ok':'optional'}">${active} on</span>
+      </div>
+
+      <div class="rules-group">
+        <div class="rules-head" onclick="toggleRulesCollapse('${escapeJS(cat)}')">
+          <div class="rules-left">
+            <div class="chev">${collapsed ? '›' : '⌄'}</div>
+            <div style="min-width:0">
+              <div class="rules-title">${escapeHtml(catLabel)} regels</div>
+              <div class="rules-meta">${active}/${f.rules.length} actief</div>
+            </div>
+          </div>
+          <span class="rule-cat ${escapeHtml(cat)}">${escapeHtml(catLabel)}</span>
+        </div>
+
+        ${collapsed ? '' : `
+          <div class="rules-body">
+            ${f.rules.map(r => `
+              <div class="rule-card" onclick="toggleRule('${escapeJS(r.id)}')">
+                <div class="rule-toggle ${state.rules[r.id] ? 'on' : ''}" role="switch" aria-checked="${state.rules[r.id] ? 'true' : 'false'}"></div>
+                <div class="rule-info">
+                  <h4>${escapeHtml(r.name)}</h4>
+                  <div class="rule-logic">${r.logic}</div>
+                </div>
+                <span class="rule-cat ${escapeHtml(cat)}">${escapeHtml(catLabel)}</span>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function renderPreview(){
+  const v = state.values;
+  const lines = [
+    ['Kanaal', v.channel_type || '—'],
+    ['Project', v.project_name || '—'],
+    ['Primary Key', v.primary_key || '—'],
+    ['Campagne', (v.campaign_name_text || '') + '{' + (v.campaign_name_attr || '…') + '}'],
+    ['Type', v.campaign_type || '—'],
+    ['Land', v.campaign_country || '—'],
+    ['Budget/dag', v.daily_budget ? '€' + v.daily_budget : '—'],
+    ['Biedstrategie', v.bid_strategy || '—'],
+    ['Groepering', v.grouping_strategy || '—'],
+    ['Adgroup', (v.adgroup_name_text || '') + '{' + (v.adgroup_name_attr || '…') + '}'],
+    ['Default CPC', v.default_cpc ? '€' + v.default_cpc : '—'],
+    ['UTM', (v.utm_params_text || '') + '{' + (v.utm_params_attr || '…') + '}'],
+  ];
+
+  const rulesOn = activeRulesCount();
+  const checkDone = checksDoneCount();
+
+  const impact = estimateImpact();
+
+  return `
+    <div class="form-block">
+      <div class="form-row">
+        <div>
+          <div class="form-title">Config snapshot</div>
+          <div class="form-hint">Operationale samenvatting + output indicatie.</div>
+        </div>
+        <span class="req ${canPublish()?'ok':'required'}">${canPublish()?'ready':'blocked'}</span>
+      </div>
+
+      <div class="preview">
+        <div class="preview-head">
+          <b>Summary</b>
+          <span class="req ${canPublish()?'ok':'required'}">${checkDone}/${CHECKS.length} checks</span>
+        </div>
+        <div class="preview-body">
+          ${lines.map(([k,val])=>`<span class="pv-k">${escapeHtml(k)}:</span> <span class="pv-v">${escapeHtml(String(val))}</span><br>`).join('')}
+          <br><span class="pv-d">── Rules ──</span><br>
+          <span class="pv-v">✓</span> ${rulesOn} actief<br>
+
+          <br><span class="pv-d">── Estimated output (heuristic) ──</span><br>
+          <span class="pv-k">Split field:</span> <span class="pv-v">${escapeHtml(impact.splitField)}</span><br>
+          <span class="pv-k">Structure:</span> <span class="pv-v">${escapeHtml(impact.structure)}</span><br>
+          <span class="pv-k">Campaign count:</span> <span class="pv-v">${escapeHtml(impact.campaigns)}</span><br>
+          <span class="pv-k">Ad groups:</span> <span class="pv-v">${escapeHtml(impact.adgroups)}</span><br>
+          <span class="pv-k">Budget total/day:</span> <span class="pv-v">${escapeHtml(impact.budgetTotal)}</span><br>
+          <span class="pv-d">Note: schatting — exacte aantallen komen uit feed distincts.</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function estimateImpact(){
+  const v = state.values;
+  const splitField = v.campaign_name_attr || '—';
+  const structure = v.grouping_strategy === 'item_id' ? 'SPAG' : (v.grouping_strategy === 'parent_id' ? 'Variant groups' : '—');
+
+  // Heuristic placeholders: we cannot know distinct values without feed.
+  // Provide realistic "unknown until feed" language for internal users.
+  const campaigns = splitField && splitField !== '—' ? `~ distinct(${splitField})` : '—';
+  const adgroups = structure === 'SPAG' ? '~ products' : '~ variant groups';
+
+  let budgetTotal = '—';
+  const b = parseFloat((v.daily_budget || '').replace(',','.'));
+  if (!Number.isNaN(b) && b > 0) budgetTotal = `€${b} × campaigns`;
+
+  return { splitField, structure, campaigns, adgroups, budgetTotal };
+}
+
+function renderChecks(){
+  return `
+    <div class="form-block">
+      <div class="form-row">
+        <div>
+          <div class="form-title">Checklist</div>
+          <div class="form-hint">Klik op rij om af te vinken. Publish activeert pas bij 10/10.</div>
+        </div>
+        <span class="req ${checksDoneCount()===CHECKS.length?'ok':'required'}">${checksDoneCount()}/${CHECKS.length}</span>
+      </div>
+      ${CHECKS.map((text,i)=>{
+        const checked = !!state.checks[i];
+        return `
+          <div class="check-item" onclick="toggleCheck(${i})">
+            <div class="check-box ${checked?'checked':''}" role="checkbox" aria-checked="${checked?'true':'false'}">✓</div>
+            <div class="check-text ${checked?'done':''}">${escapeHtml(text)}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ---------- Actions ---------- */
+
+function goToStep(i){
+  state.currentStep = Math.max(0, Math.min(STEPS.length-1, i));
+  render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  const sb = document.querySelector('.sidebar');
+  if(sb) sb.classList.remove('open');
+}
+
+function nextStep(){
+  const i = state.currentStep;
+  // In internal mode: allow moving forward, but warn if required missing
+  if(!isStepValid(i)){
+    showToast('⚠ Stap niet compleet (required missing). Je kunt door, maar publish blijft geblokkeerd.');
+  }
+  if(i < STEPS.length - 1) goToStep(i+1);
+}
+
+function updateValue(key, val){
+  state.values[key] = val;
+  render(); // dense mode: immediate feedback (badges / progress / publish)
+}
+
+function togglePill(key, val, single){
+  if(single){
+    state.values[key] = state.values[key] === val ? '' : val;
+  }else{
+    const arr = state.values[key] || [];
+    const idx = arr.indexOf(val);
+    if(idx>-1) arr.splice(idx,1); else arr.push(val);
+    state.values[key] = [...arr];
+  }
+  render();
+}
+
+function toggleRule(id){
+  state.rules[id] = !state.rules[id];
+  render();
+}
+
+function toggleRulesCollapse(cat){
+  if(!state.ui) state.ui = { collapsedRules:{} };
+  if(!state.ui.collapsedRules) state.ui.collapsedRules = {};
+  state.ui.collapsedRules[cat] = !state.ui.collapsedRules[cat];
+  render();
+}
+
+function toggleCheck(i){
+  state.checks[i] = !state.checks[i];
+  render();
+}
+
+function canPublish(){
+  // Hard gate for internal ops
+  const allRequiredStepsValid = [0,2,3].every(i => isStepValid(i));
+  const checksOk = checksDoneCount() === CHECKS.length;
+  return allRequiredStepsValid && checksOk;
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  window.clearTimeout(window.__toastTimer);
+  window.__toastTimer = window.setTimeout(()=>t.classList.remove('visible'), 2600);
+}
+
+function exportConfig(){
+  const config = {
+    generated: new Date().toISOString(),
+    tool: 'Channable Campaign Architect — Performance Marketer',
+    settings: state.values,
+    rules: state.rules,
+    checks_completed: checksDoneCount() + '/' + CHECKS.length
+  };
+  const blob = new Blob([JSON.stringify(config, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'channable-config-pm-' + Date.now() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ Exported JSON');
+}
+
+function publish(){
+  if(!canPublish()){
+    showToast('⛔ Publish blocked — complete required steps + 10/10 checks.');
+    return;
+  }
+  showToast('🚀 Ready for sync (config validated)');
+}
+
+function resetState(){
+  const ok = confirm('Reset configuratie? Dit wist alle inputs, rules en checks.');
+  if(!ok) return;
+  state.currentStep = 0;
+  state.values = {};
+  // reset rules to defaults
+  state.rules = {};
+  STEPS.forEach(step => step.fields.forEach(field => {
+    if(field.type === 'rules') field.rules.forEach(r => { state.rules[r.id] = r.default; });
+  }));
+  state.checks = {};
+  state.ui = { collapsedRules: { budget:false, title:true, hygiene:true } };
+  saveState();
+  render();
+  showToast('↺ Reset done');
+}
+
+/* ---------- Mobile sidebar ---------- */
+function toggleSidebar(){
+  const sidebar = document.querySelector('.sidebar');
+  if(sidebar) sidebar.classList.toggle('open');
+}
+
+/* ---------- Keyboard shortcuts ---------- */
+function isTypingTarget(el){
+  if(!el) return false;
+  const tag = (el.tagName || '').toLowerCase();
+  return tag === 'input' || tag === 'textarea' || el.isContentEditable;
+}
+
+document.addEventListener('keydown', (e)=>{
+  const typing = isTypingTarget(document.activeElement);
+
+  // Ctrl+S export
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's'){
+    e.preventDefault();
+    exportConfig();
+    return;
+  }
+
+  // Ctrl+Enter publish (on review step or anywhere)
+  if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+    e.preventDefault();
+    publish();
+    return;
+  }
+
+  // Esc closes sidebar on mobile
+  if(e.key === 'Escape'){
+    const sb = document.querySelector('.sidebar');
+    if(sb) sb.classList.remove('open');
+    return;
+  }
+
+  // Enter navigation (avoid stealing Enter while typing)
+  if(e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.altKey){
+    if(typing) return;
+    e.preventDefault();
+    if(e.shiftKey){
+      if(state.currentStep > 0) goToStep(state.currentStep-1);
+    }else{
+      if(state.currentStep < STEPS.length-1) nextStep();
+    }
+  }
+});
+
+/* ---------- helpers ---------- */
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function escapeAttr(str){
+  return String(str).replace(/"/g,'&quot;');
+}
+function escapeJS(str){
+  return String(str).replace(/\/g,'\\').replace(/'/g,"\'");
+}
+
+/* ---------- init ---------- */
+loadState();
+render();
+</script>
+</body>
+</html>

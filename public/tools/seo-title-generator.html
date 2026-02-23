@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Title Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161921;
+    --border: #252b38;
+    --accent: #00e5a0;
+    --accent2: #0091ff;
+    --text: #e8eaf0;
+    --muted: #5a6478;
+    --danger: #ff4d6d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .noise {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+
+  .glow {
+    position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(0,229,160,0.06) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 48px;
+    display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.12em;
+    color: var(--accent);
+    background: rgba(0,229,160,0.08);
+    border: 1px solid rgba(0,229,160,0.2);
+    padding: 4px 10px; border-radius: 4px;
+    margin-bottom: 12px; display: inline-block;
+  }
+
+  h1 {
+    font-size: clamp(24px, 4vw, 38px);
+    font-weight: 700; line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-size: 14px; color: var(--muted); margin-top: 8px; font-weight: 300;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 16px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  label {
+    display: block; font-size: 12px; color: var(--muted);
+    margin-bottom: 6px; font-weight: 500; letter-spacing: 0.04em;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    padding: 10px 14px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,160,0.08);
+  }
+
+  select option { background: var(--surface); }
+
+  textarea {
+    resize: vertical; min-height: 100px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .char-hint {
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    color: var(--muted); margin-top: 4px; text-align: right;
+  }
+
+  .pattern-builder {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+  }
+
+  .token {
+    background: rgba(0,145,255,0.1);
+    border: 1px solid rgba(0,145,255,0.25);
+    color: var(--accent2);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; padding: 4px 10px;
+    border-radius: 4px; cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .token:hover { background: rgba(0,145,255,0.2); transform: translateY(-1px); }
+
+  .pattern-input {
+    font-family: 'DM Mono', monospace !important;
+    font-size: 13px !important;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border-radius: 8px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none;
+    transition: all 0.2s; font-family: 'Sora', sans-serif;
+  }
+
+  .btn-primary {
+    background: var(--accent); color: #0d0f14;
+    width: 100%;
+    justify-content: center;
+    font-size: 15px; padding: 14px;
+  }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,229,160,0.25); }
+  .btn-primary:active { transform: none; }
+
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border);
+    font-size: 12px; padding: 6px 12px;
+  }
+
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  /* Results */
+  .results-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+  }
+
+  .result-row {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    gap: 12px; align-items: center;
+    transition: border-color 0.2s;
+  }
+
+  .result-row:hover { border-color: rgba(0,229,160,0.3); }
+
+  .result-sku {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .result-title {
+    font-size: 13px; line-height: 1.4;
+    cursor: text;
+  }
+
+  .result-title[contenteditable="true"] {
+    outline: none;
+    border-bottom: 1px dashed var(--accent);
+    padding-bottom: 2px;
+  }
+
+  .result-meta {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+
+  .char-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; padding: 2px 7px;
+    border-radius: 3px; font-weight: 500;
+  }
+
+  .char-ok { background: rgba(0,229,160,0.1); color: var(--accent); }
+  .char-warn { background: rgba(255,200,0,0.1); color: #ffc800; }
+  .char-bad { background: rgba(255,77,109,0.1); color: var(--danger); }
+
+  .copy-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); padding: 4px; border-radius: 4px;
+    transition: color 0.15s; font-size: 14px;
+  }
+
+  .copy-btn:hover { color: var(--accent); }
+
+  .empty-state {
+    text-align: center; padding: 40px;
+    color: var(--muted); font-size: 13px;
+  }
+
+  .empty-state .icon { font-size: 32px; margin-bottom: 12px; }
+
+  .export-row {
+    display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap;
+  }
+
+  .section-divider {
+    display: flex; align-items: center; gap: 12px; margin: 20px 0;
+  }
+
+  .section-divider span { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  .progress-bar {
+    height: 2px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%; border-radius: 2px;
+    transition: width 0.3s, background 0.3s;
+  }
+
+  .tag-group { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .tag {
+    font-size: 11px; padding: 3px 8px; border-radius: 3px;
+    border: 1px solid var(--border); color: var(--muted);
+    font-family: 'DM Mono', monospace; cursor: pointer; transition: all 0.15s;
+  }
+  .tag.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.07); }
+
+  @media (max-width: 600px) {
+    .two-col { grid-template-columns: 1fr; }
+    .result-row { grid-template-columns: 80px 1fr auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="glow"></div>
+
+<div class="container">
+  <header>
+    <div>
+      <div class="badge">SEO TOOL · ECOMMERCE</div>
+      <h1>SEO Title <span>Generator</span></h1>
+      <p class="subtitle">Magento 2 · Google Merchant Center · Channable ready</p>
+    </div>
+  </header>
+
+  <!-- Config Card -->
+  <div class="card">
+    <div class="card-title">Title Pattern</div>
+
+    <label>Click tokens to build your pattern — or type freely</label>
+    <div class="pattern-builder">
+      <div class="token" onclick="insertToken('{brand}')">&#123;brand&#125;</div>
+      <div class="token" onclick="insertToken('{product_name}')">&#123;product_name&#125;</div>
+      <div class="token" onclick="insertToken('{sku}')">&#123;sku&#125;</div>
+      <div class="token" onclick="insertToken('{category}')">&#123;category&#125;</div>
+      <div class="token" onclick="insertToken('{color}')">&#123;color&#125;</div>
+      <div class="token" onclick="insertToken('{size}')">&#123;size&#125;</div>
+      <div class="token" onclick="insertToken('{material}')">&#123;material&#125;</div>
+      <div class="token" onclick="insertToken('{year}')">&#123;year&#125;</div>
+      <div class="token" onclick="insertToken('{modifier}')">&#123;modifier&#125;</div>
+    </div>
+
+    <input type="text" id="pattern" class="pattern-input"
+      value="{brand} {product_name} {color} {size} | {category}"
+      placeholder="{brand} {product_name} {color} - {category}"
+      oninput="updatePatternPreview()">
+    <div class="char-hint">Pattern preview: <span id="pattern-preview" style="color:var(--text)">—</span></div>
+  </div>
+
+  <!-- Global Defaults -->
+  <div class="card">
+    <div class="card-title">Global Defaults <span style="color:var(--muted);font-weight:300">(applied when SKU row is empty)</span></div>
+    <div class="two-col">
+      <div>
+        <label>Brand</label>
+        <input type="text" id="g-brand" placeholder="e.g. Nike" oninput="updatePatternPreview()">
+      </div>
+      <div>
+        <label>Category</label>
+        <input type="text" id="g-category" placeholder="e.g. Running Shoes" oninput="updatePatternPreview()">
+      </div>
+      <div>
+        <label>Modifier / USP</label>
+        <input type="text" id="g-modifier" placeholder="e.g. Buy Now · Free Shipping" oninput="updatePatternPreview()">
+      </div>
+      <div>
+        <label>Year</label>
+        <input type="text" id="g-year" value="2025" oninput="updatePatternPreview()">
+      </div>
+    </div>
+  </div>
+
+  <!-- SKU Input -->
+  <div class="card">
+    <div class="card-title">SKU Input</div>
+
+    <div class="section-divider"><span>PASTE SKU LIST</span></div>
+
+    <label>One SKU per line, or comma-separated. Add tab/semicolon columns: SKU, Name, Color, Size, Material</label>
+    <textarea id="sku-input" placeholder="ABC-001&#10;ABC-002, Blue Sneaker, Navy, 42, Canvas&#10;XYZ-100; Trail Runner; Black; L; Mesh"></textarea>
+
+    <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:12px;color:var(--muted)">Column order: SKU · Product Name · Color · Size · Material</span>
+      <button class="btn btn-ghost" onclick="loadExample()">Load Example</button>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <button class="btn btn-primary" onclick="generate()">
+    ⚡ Generate SEO Titles
+  </button>
+
+  <!-- Results -->
+  <div id="results-section" style="display:none; margin-top:28px;">
+    <div class="card">
+      <div class="results-header">
+        <div class="card-title" style="margin:0">Results — <span id="result-count">0</span> titles</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="copyAll()">Copy All</button>
+          <button class="btn btn-ghost" onclick="exportCSV()">Export CSV</button>
+          <button class="btn btn-ghost" onclick="exportForChangeable()">Export Channable CSV</button>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px;font-family:'DM Mono',monospace;">
+        Titles are editable — click to modify inline
+      </div>
+
+      <div id="results-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const patternInput = document.getElementById('pattern');
+
+function insertToken(token) {
+  const el = patternInput;
+  const start = el.selectionStart;
+  const end = el.selectionEnd;
+  const val = el.value;
+  el.value = val.slice(0, start) + token + val.slice(end);
+  el.setSelectionRange(start + token.length, start + token.length);
+  el.focus();
+  updatePatternPreview();
+}
+
+function getGlobals() {
+  return {
+    brand: v('g-brand') || 'Brand',
+    category: v('g-category') || 'Category',
+    modifier: v('g-modifier') || '',
+    year: v('g-year') || '2025',
+  };
+}
+
+function v(id) { return document.getElementById(id).value.trim(); }
+
+function updatePatternPreview() {
+  const g = getGlobals();
+  const preview = applyPattern(patternInput.value, {
+    sku: 'SKU-001',
+    product_name: 'Sample Product',
+    color: 'Black',
+    size: 'M',
+    material: 'Cotton',
+    ...g
+  });
+  document.getElementById('pattern-preview').textContent = preview || '—';
+}
+
+function applyPattern(pattern, data) {
+  return pattern
+    .replace(/\{brand\}/g, data.brand || '')
+    .replace(/\{product_name\}/g, data.product_name || '')
+    .replace(/\{sku\}/g, data.sku || '')
+    .replace(/\{category\}/g, data.category || '')
+    .replace(/\{color\}/g, data.color || '')
+    .replace(/\{size\}/g, data.size || '')
+    .replace(/\{material\}/g, data.material || '')
+    .replace(/\{year\}/g, data.year || '')
+    .replace(/\{modifier\}/g, data.modifier || '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s*\|\s*$/g, '')
+    .replace(/\s*-\s*$/g, '')
+    .replace(/\s*·\s*$/g, '')
+    .trim();
+}
+
+function parseSKULine(line) {
+  const sep = line.includes('\t') ? '\t' : line.includes(';') ? ';' : ',';
+  const parts = line.split(sep).map(s => s.trim());
+  return {
+    sku:          parts[0] || '',
+    product_name: parts[1] || '',
+    color:        parts[2] || '',
+    size:         parts[3] || '',
+    material:     parts[4] || '',
+  };
+}
+
+let results = [];
+
+function generate() {
+  const raw = document.getElementById('sku-input').value.trim();
+  if (!raw) { alert('Please enter at least one SKU.'); return; }
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const g = getGlobals();
+  const pattern = patternInput.value;
+
+  results = lines.map(line => {
+    const parsed = parseSKULine(line);
+    const data = {
+      brand: parsed.brand || g.brand,
+      category: parsed.category || g.category,
+      modifier: parsed.modifier || g.modifier,
+      year: parsed.year || g.year,
+      ...parsed
+    };
+    return {
+      sku: parsed.sku,
+      title: applyPattern(pattern, data)
+    };
+  });
+
+  renderResults();
+}
+
+function charClass(n) {
+  if (n >= 50 && n <= 60) return 'char-ok';
+  if ((n >= 40 && n < 50) || (n > 60 && n <= 70)) return 'char-warn';
+  return 'char-bad';
+}
+
+function renderResults() {
+  const section = document.getElementById('results-section');
+  const list = document.getElementById('results-list');
+  document.getElementById('result-count').textContent = results.length;
+
+  if (!results.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><div>No results yet</div></div>';
+    section.style.display = 'block';
+    return;
+  }
+
+  list.innerHTML = results.map((r, i) => {
+    const len = r.title.length;
+    const cls = charClass(len);
+    const pct = Math.min((len / 70) * 100, 100);
+    const fillColor = cls === 'char-ok' ? 'var(--accent)' : cls === 'char-warn' ? '#ffc800' : 'var(--danger)';
+    return `
+    <div class="result-row" id="row-${i}">
+      <div class="result-sku" title="${r.sku}">${r.sku}</div>
+      <div>
+        <div class="result-title" contenteditable="true" id="title-${i}"
+          oninput="onTitleEdit(${i})">${r.title}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="bar-${i}" style="width:${pct}%;background:${fillColor}"></div>
+        </div>
+      </div>
+      <div class="result-meta">
+        <span class="char-badge ${cls}" id="badge-${i}">${len}</span>
+        <button class="copy-btn" title="Copy" onclick="copyOne(${i})">⎘</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  section.style.display = 'block';
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function onTitleEdit(i) {
+  const el = document.getElementById(`title-${i}`);
+  const title = el.textContent;
+  results[i].title = title;
+  const len = title.length;
+  const cls = charClass(len);
+  const pct = Math.min((len/70)*100, 100);
+  const fillColor = cls === 'char-ok' ? 'var(--accent)' : cls === 'char-warn' ? '#ffc800' : 'var(--danger)';
+  document.getElementById(`badge-${i}`).textContent = len;
+  document.getElementById(`badge-${i}`).className = `char-badge ${cls}`;
+  document.getElementById(`bar-${i}`).style.width = pct + '%';
+  document.getElementById(`bar-${i}`).style.background = fillColor;
+}
+
+function copyOne(i) {
+  navigator.clipboard.writeText(results[i].title).then(() => {
+    const btn = document.querySelectorAll('.copy-btn')[i];
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = '⎘', 1200);
+  });
+}
+
+function copyAll() {
+  const text = results.map(r => `${r.sku}\t${r.title}`).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy All', 1500);
+  });
+}
+
+function exportCSV() {
+  const rows = [['SKU', 'SEO Title', 'Char Count']];
+  results.forEach(r => rows.push([r.sku, r.title, r.title.length]));
+  downloadCSV(rows, 'seo-titles.csv');
+}
+
+function exportForChangeable() {
+  // Channable uses feed-style CSV with specific column names
+  const rows = [['id', 'title']];
+  results.forEach(r => rows.push([r.sku, r.title]));
+  downloadCSV(rows, 'channable-titles.csv');
+}
+
+function downloadCSV(rows, filename) {
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+function loadExample() {
+  document.getElementById('sku-input').value =
+`NKE-RUN-001, Air Max 270, Triple Black, 42, Mesh
+NKE-RUN-002, Air Max 270, White/Red, 43, Mesh
+ADI-SHOE-055, Ultraboost 23, Core Black, 44, Primeknit
+ADI-SHOE-056, Ultraboost 23, Cloud White, 41, Primeknit
+PUM-CLSC-009, Suede Classic, Forest Night, 42.5, Suede Leather
+LEV-DNM-501, 501 Original, Dark Indigo, W32/L32, Denim`;
+  document.getElementById('g-brand').value = 'Nike';
+  document.getElementById('g-category').value = 'Sneakers';
+  document.getElementById('g-modifier').value = 'Free Shipping';
+  document.getElementById('g-year').value = '2025';
+  updatePatternPreview();
+}
+
+// Init preview
+updatePatternPreview();
+</script>
+</body>
+</html>
