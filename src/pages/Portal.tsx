@@ -2,20 +2,22 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2 } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
 import PortalUsersManager from "@/components/portal/PortalUsersManager";
+import PortalPagesTab from "@/components/portal/PortalPagesTab";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-type Tab = "tools" | "content" | "status" | "users";
+type Tab = "tools" | "content" | "pages" | "status" | "users";
 
 const tabs: { id: Tab; label: string; icon: typeof Wrench }[] = [
   { id: "tools", label: "Tools", icon: Wrench },
   { id: "content", label: "Content", icon: FileText },
+  { id: "pages", label: "Pages", icon: LayoutDashboard },
   { id: "users", label: "Users", icon: Users },
   { id: "status", label: "Status", icon: Activity },
 ];
@@ -183,6 +185,7 @@ const Portal = () => {
         {/* Tab Content */}
         {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} />}
         {activeTab === "content" && <PortalContentTab userId={user.id} isAdmin={isAdmin} />}
+        {activeTab === "pages" && <PortalPagesTab />}
         {activeTab === "users" && <PortalUsersManager adminUserId={user.id} />}
         {activeTab === "status" && <PortalStatusTab />}
       </motion.div>
