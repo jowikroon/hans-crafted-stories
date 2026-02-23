@@ -130,7 +130,7 @@ const Portal = () => {
 
         {/* Tab Content */}
         {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} />}
-        {activeTab === "content" && <PortalContentTab />}
+        {activeTab === "content" && <PortalContentTab userId={user.id} isAdmin={isAdmin} />}
         {activeTab === "users" && <PortalUsersManager adminUserId={user.id} />}
         {activeTab === "status" && <PortalStatusTab />}
       </motion.div>
