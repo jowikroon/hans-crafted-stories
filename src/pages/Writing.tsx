@@ -1,41 +1,16 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, SlidersHorizontal, ArrowUpDown, Home, ChevronRight, Briefcase, Heart, LayoutGrid } from "lucide-react";
+import { Search, X, SlidersHorizontal, ArrowUpDown, Home, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import BlogPostCard from "@/components/BlogPostCard";
+import CategoryCards from "@/components/CategoryCards";
 import { usePageElements } from "@/hooks/usePageElements";
+import { useCategoryCards } from "@/hooks/useCategoryCards";
 
-type Filter = "all" | "professional" | "personal";
+type Filter = string;
 type TagFilter = string | null;
 type SortOrder = "newest" | "oldest";
-
-const categoryCards: { label: string; value: Filter; icon: React.ReactNode; color: string; activeColor: string; description: string }[] = [
-  {
-    label: "All",
-    value: "all",
-    icon: <LayoutGrid size={18} />,
-    color: "from-primary/5 to-primary/10 text-primary border-primary/15 hover:border-primary/30",
-    activeColor: "from-primary/15 to-primary/25 text-primary border-primary/40 shadow-md shadow-primary/10",
-    description: "Everything",
-  },
-  {
-    label: "Professional",
-    value: "professional",
-    icon: <Briefcase size={18} />,
-    color: "from-emerald-500/5 to-emerald-600/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/15 hover:border-emerald-500/30",
-    activeColor: "from-emerald-500/15 to-emerald-600/25 text-emerald-700 dark:text-emerald-400 border-emerald-500/40 shadow-md shadow-emerald-500/10",
-    description: "E-commerce & Strategy",
-  },
-  {
-    label: "Personal",
-    value: "personal",
-    icon: <Heart size={18} />,
-    color: "from-amber-500/5 to-amber-600/10 text-amber-700 dark:text-amber-400 border-amber-500/15 hover:border-amber-500/30",
-    activeColor: "from-amber-500/15 to-amber-600/25 text-amber-700 dark:text-amber-400 border-amber-500/40 shadow-md shadow-amber-500/10",
-    description: "Life & Reflections",
-  },
-];
 
 const Writing = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>([]);
@@ -45,6 +20,7 @@ const Writing = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOrder>("newest");
   const { isVisible } = usePageElements("writing");
+  const { cards: dbCards } = useCategoryCards("writing");
 
   useEffect(() => {
     getBlogPosts(true).then((p) => { setBlogPosts(p); setLoading(false); });
@@ -158,50 +134,13 @@ const Writing = () => {
       )}
 
       {/* Category Cards */}
-      {isVisible("category_cards") && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-8 grid grid-cols-3 gap-3"
-        >
-          {categoryCards.map((cat, i) => {
-            const isActive = filter === cat.value;
-            const count = getCategoryCount(cat.value);
-            return (
-              <motion.button
-                key={cat.value}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.12 + i * 0.06 }}
-                onClick={() => { setFilter(cat.value); setTagFilter(null); }}
-                className={`group relative overflow-hidden rounded-xl border bg-gradient-to-br p-4 text-left transition-all duration-300 ${
-                  isActive ? cat.activeColor : cat.color
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/60 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
-                    {cat.icon}
-                  </div>
-                  <span className={`inline-flex h-6 min-w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums ${
-                    isActive ? "bg-background/80 shadow-sm" : "bg-background/40"
-                  }`}>
-                    {count}
-                  </span>
-                </div>
-                <p className="mt-3 text-sm font-semibold">{cat.label}</p>
-                <p className="mt-0.5 text-[11px] opacity-60">{cat.description}</p>
-                {isActive && (
-                  <motion.div
-                    layoutId="categoryIndicator"
-                    className="absolute inset-x-0 bottom-0 h-0.5 bg-current opacity-40"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-              </motion.button>
-            );
-          })}
-        </motion.div>
+      {isVisible("category_cards") && dbCards.length > 0 && (
+        <CategoryCards
+          cards={dbCards}
+          activeValue={filter}
+          getCount={getCategoryCount}
+          onSelect={(value) => { setFilter(value); setTagFilter(null); }}
+        />
       )}
 
       {/* Search + Sort row */}

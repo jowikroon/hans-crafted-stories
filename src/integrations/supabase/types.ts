@@ -101,6 +101,66 @@ export type Database = {
         }
         Relationships: []
       }
+      category_cards: {
+        Row: {
+          active_border_color: string
+          active_color_from: string
+          active_color_to: string
+          border_color: string
+          color_from: string
+          color_to: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          is_visible: boolean
+          label: string
+          page: string
+          sort_order: number
+          text_color: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          active_border_color?: string
+          active_color_from?: string
+          active_color_to?: string
+          border_color?: string
+          color_from?: string
+          color_to?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          is_visible?: boolean
+          label: string
+          page: string
+          sort_order?: number
+          text_color?: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          active_border_color?: string
+          active_color_from?: string
+          active_color_to?: string
+          border_color?: string
+          color_from?: string
+          color_to?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          is_visible?: boolean
+          label?: string
+          page?: string
+          sort_order?: number
+          text_color?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       page_elements: {
         Row: {
           created_at: string
