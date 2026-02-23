@@ -119,6 +119,24 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
     );
   }
 
+  if (!isAdmin && visibleTools.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center"
+      >
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
+          <Wrench size={20} className="text-muted-foreground/50" />
+        </div>
+        <h3 className="mb-1.5 font-display text-lg font-medium text-foreground">No tools assigned</h3>
+        <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
+          You don't have access to any tools yet. Contact your administrator to get started.
+        </p>
+      </motion.div>
+    );
+  }
+
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
