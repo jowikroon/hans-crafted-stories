@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, SlidersHorizontal, ArrowUpDown } from "lucide-react";
-import { blogPosts } from "@/data/content";
+import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import BlogPostCard from "@/components/BlogPostCard";
 
 type Filter = "all" | "professional" | "personal";
@@ -9,13 +9,33 @@ type TagFilter = string | null;
 type SortOrder = "newest" | "oldest";
 
 const Writing = () => {
+  const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
   const [tagFilter, setTagFilter] = useState<TagFilter>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOrder>("newest");
 
+  useEffect(() => {
+    getBlogPosts(true).then((p) => { setBlogPosts(p); setLoading(false); });
+  }, []);
+
+  // Map DB rows to the shape BlogPostCard expects
+  const mappedPosts = useMemo(() =>
+    blogPosts.map((p) => ({
+      id: p.id,
+      title: p.title,
+      excerpt: p.excerpt,
+      category: p.category as "professional" | "personal",
+      tags: p.tags,
+      date: p.created_at,
+      readTime: p.read_time,
+      slug: p.slug,
+    })),
+  [blogPosts]);
+
   const filtered = useMemo(() => {
-    let posts = blogPosts;
+    let posts = mappedPosts;
     if (filter !== "all") posts = posts.filter((p) => p.category === filter);
     if (tagFilter) posts = posts.filter((p) => p.tags.includes(tagFilter));
     if (search.trim()) {
@@ -33,18 +53,18 @@ const Writing = () => {
         : new Date(a.date).getTime() - new Date(b.date).getTime()
     );
     return posts;
-  }, [filter, tagFilter, search, sort]);
+  }, [filter, tagFilter, search, sort, mappedPosts]);
 
   const activeTags = useMemo(() => {
     const postsForCategory =
-      filter === "all" ? blogPosts : blogPosts.filter((p) => p.category === filter);
+      filter === "all" ? mappedPosts : mappedPosts.filter((p) => p.category === filter);
     return Array.from(new Set(postsForCategory.flatMap((p) => p.tags)));
-  }, [filter]);
+  }, [filter, mappedPosts]);
 
   const filters: { label: string; value: Filter; count: number }[] = [
-    { label: "All", value: "all", count: blogPosts.length },
-    { label: "Professional", value: "professional", count: blogPosts.filter((p) => p.category === "professional").length },
-    { label: "Personal", value: "personal", count: blogPosts.filter((p) => p.category === "personal").length },
+    { label: "All", value: "all", count: mappedPosts.length },
+    { label: "Professional", value: "professional", count: mappedPosts.filter((p) => p.category === "professional").length },
+    { label: "Personal", value: "personal", count: mappedPosts.filter((p) => p.category === "personal").length },
   ];
 
   const clearAll = () => {
@@ -54,6 +74,14 @@ const Writing = () => {
   };
 
   const hasActiveFilters = filter !== "all" || tagFilter !== null || search.trim() !== "";
+
+  if (loading) {
+    return (
+      <section className="section-container pt-28 pb-20">
+        <p className="text-muted-foreground">Loading…</p>
+      </section>
+    );
+  }
 
   return (
     <section className="section-container pt-28 pb-20">
@@ -78,9 +106,7 @@ const Writing = () => {
         transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         className="mb-8 space-y-4"
       >
-        {/* Search + Category Row */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* Search */}
           <div className="relative w-full sm:max-w-xs">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
             <input
@@ -101,7 +127,6 @@ const Writing = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Sort Toggle */}
             <button
               onClick={() => setSort(sort === "newest" ? "oldest" : "newest")}
               className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 text-xs font-medium text-muted-foreground transition-all hover:text-foreground"
@@ -110,15 +135,11 @@ const Writing = () => {
               <span className="hidden sm:inline">{sort === "newest" ? "Newest" : "Oldest"}</span>
             </button>
 
-            {/* Category Tabs */}
             <div className="flex items-center gap-1 rounded-lg border border-border bg-secondary/30 p-0.5">
               {filters.map((f) => (
                 <button
                   key={f.value}
-                  onClick={() => {
-                    setFilter(f.value);
-                    setTagFilter(null);
-                  }}
+                  onClick={() => { setFilter(f.value); setTagFilter(null); }}
                   className={`relative rounded-md px-3 py-1.5 text-xs font-medium tracking-wide transition-all duration-200 ${
                     filter === f.value
                       ? "bg-card text-foreground shadow-sm"
@@ -141,7 +162,6 @@ const Writing = () => {
           </div>
         </div>
 
-        {/* Tag Filters */}
         <AnimatePresence mode="wait">
           {activeTags.length > 0 && (
             <motion.div
@@ -167,8 +187,6 @@ const Writing = () => {
                     {tag}
                   </button>
                 ))}
-
-                {/* Clear all */}
                 {hasActiveFilters && (
                   <button
                     onClick={clearAll}
@@ -184,7 +202,6 @@ const Writing = () => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Result count */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -194,7 +211,6 @@ const Writing = () => {
         {hasActiveFilters && " matching"}
       </motion.p>
 
-      {/* Posts */}
       <div>
         <AnimatePresence mode="popLayout">
           {filtered.map((post, i) => (

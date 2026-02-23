@@ -116,7 +116,6 @@ serve(async (req) => {
       case "delete_tool": {
         const { id } = body;
         if (!id) return err("id is required");
-        // Attributes cascade via FK, but delete explicitly to be safe
         await supabase.from("tool_attributes").delete().eq("tool_id", id);
         const { error } = await supabase.from("portal_tools").delete().eq("id", id);
         if (error) return err(error.message, 500);
@@ -166,6 +165,121 @@ serve(async (req) => {
         const { id } = body;
         if (!id) return err("id is required");
         const { error } = await supabase.from("tool_attributes").delete().eq("id", id);
+        if (error) return err(error.message, 500);
+        return json({ success: true });
+      }
+
+      // ── Blog Posts ────────────────────────────────────────
+
+      case "list_blog_posts": {
+        const { published_only } = body;
+        let query = supabase.from("blog_posts").select("*").order("created_at", { ascending: false });
+        if (published_only) query = query.eq("published", true);
+        const { data, error } = await query;
+        if (error) return err(error.message, 500);
+        return json({ data });
+      }
+
+      case "get_blog_post": {
+        const { id, slug } = body;
+        let query = supabase.from("blog_posts").select("*");
+        if (id) query = query.eq("id", id);
+        else if (slug) query = query.eq("slug", slug);
+        else return err("Provide id or slug");
+        const { data, error } = await query.maybeSingle();
+        if (error) return err(error.message, 500);
+        if (!data) return err("Blog post not found", 404);
+        return json({ data });
+      }
+
+      case "create_blog_post": {
+        const postData = { ...body };
+        delete postData.action;
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .insert(postData)
+          .select()
+          .single();
+        if (error) return err(error.message, 500);
+        return json({ data }, 201);
+      }
+
+      case "update_blog_post": {
+        const { id, ...updates } = body;
+        delete updates.action;
+        if (!id) return err("id is required");
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .update(updates)
+          .eq("id", id)
+          .select()
+          .single();
+        if (error) return err(error.message, 500);
+        return json({ data });
+      }
+
+      case "delete_blog_post": {
+        const { id } = body;
+        if (!id) return err("id is required");
+        const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+        if (error) return err(error.message, 500);
+        return json({ success: true });
+      }
+
+      // ── Case Studies ──────────────────────────────────────
+
+      case "list_case_studies": {
+        const { published_only } = body;
+        let query = supabase.from("case_studies").select("*").order("sort_order");
+        if (published_only) query = query.eq("published", true);
+        const { data, error } = await query;
+        if (error) return err(error.message, 500);
+        return json({ data });
+      }
+
+      case "get_case_study": {
+        const { id } = body;
+        if (!id) return err("id is required");
+        const { data, error } = await supabase
+          .from("case_studies")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+        if (error) return err(error.message, 500);
+        if (!data) return err("Case study not found", 404);
+        return json({ data });
+      }
+
+      case "create_case_study": {
+        const studyData = { ...body };
+        delete studyData.action;
+        const { data, error } = await supabase
+          .from("case_studies")
+          .insert(studyData)
+          .select()
+          .single();
+        if (error) return err(error.message, 500);
+        return json({ data }, 201);
+      }
+
+      case "update_case_study": {
+        const { id, ...updates } = body;
+        delete updates.action;
+        if (!id) return err("id is required");
+        const { data, error } = await supabase
+          .from("case_studies")
+          .update(updates)
+          .eq("id", id)
+          .select()
+          .single();
+        if (error) return err(error.message, 500);
+        return json({ data });
+      }
+
+      case "delete_case_study": {
+        const { id } = body;
+        if (!id) return err("id is required");
+        const { error } = await supabase.from("case_studies").delete().eq("id", id);
         if (error) return err(error.message, 500);
         return json({ success: true });
       }

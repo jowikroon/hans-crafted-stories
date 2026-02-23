@@ -1,21 +1,44 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { blogPosts } from "@/data/content";
-import { blogContent } from "@/data/blogContent";
+import { getBlogPost, BlogPostRow } from "@/lib/api/content";
+
+const renderMarkdown = (md: string) =>
+  md
+    .split("\n")
+    .map((line) => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("## ")) return `<h2>${trimmed.slice(3)}</h2>`;
+      if (trimmed.startsWith("### ")) return `<h3>${trimmed.slice(4)}</h3>`;
+      if (trimmed.startsWith("**") && trimmed.endsWith("**"))
+        return `<p><strong>${trimmed.slice(2, -2)}</strong></p>`;
+      if (trimmed.startsWith("- **"))
+        return `<li><strong>${trimmed.match(/\*\*(.*?)\*\*/)?.[1]}</strong>${trimmed.replace(/- \*\*.*?\*\*/, "")}</li>`;
+      if (trimmed.startsWith("- ")) return `<li>${trimmed.slice(2)}</li>`;
+      if (trimmed === "") return "";
+      return `<p>${trimmed.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</p>`;
+    })
+    .join("\n");
 
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const post = blogPosts.find((p) => p.slug === slug);
-  const content = slug ? blogContent[slug] : undefined;
+  const [post, setPost] = useState<BlogPostRow | null | undefined>(undefined);
+
+  useEffect(() => {
+    if (!slug) return;
+    getBlogPost(slug).then(setPost);
+  }, [slug]);
+
+  if (post === undefined) {
+    return <section className="section-container pt-28"><p className="text-muted-foreground">Loading…</p></section>;
+  }
 
   if (!post) {
     return (
       <section className="section-container pt-28 text-center">
         <h1 className="font-display text-3xl text-foreground">Post not found</h1>
-        <Link to="/writing" className="mt-4 inline-block text-primary hover:underline">
-          ← Back to Writing
-        </Link>
+        <Link to="/writing" className="mt-4 inline-block text-primary hover:underline">← Back to Writing</Link>
       </section>
     );
   }
@@ -36,9 +59,7 @@ const BlogPostPage = () => {
 
         <div className="mb-6 flex flex-wrap gap-2">
           {post.tags.map((tag) => (
-            <span key={tag} className="text-xs uppercase tracking-widest text-primary">
-              {tag}
-            </span>
+            <span key={tag} className="text-xs uppercase tracking-widest text-primary">{tag}</span>
           ))}
         </div>
 
@@ -48,37 +69,17 @@ const BlogPostPage = () => {
 
         <div className="mb-10 flex items-center gap-4 text-sm text-muted-foreground">
           <time>
-            {new Date(post.date).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
+            {new Date(post.created_at).toLocaleDateString("en-US", {
+              month: "long", day: "numeric", year: "numeric",
             })}
           </time>
           <span>·</span>
-          <span>{post.readTime}</span>
+          <span>{post.read_time}</span>
         </div>
 
         <div className="prose prose-stone mx-auto max-w-3xl dark:prose-invert prose-headings:font-display prose-headings:font-medium prose-h2:text-2xl prose-p:leading-relaxed prose-li:leading-relaxed">
-          {content ? (
-            <div
-              dangerouslySetInnerHTML={{
-                __html: content
-                  .split("\n")
-                  .map((line) => {
-                    const trimmed = line.trim();
-                    if (trimmed.startsWith("## ")) return `<h2>${trimmed.slice(3)}</h2>`;
-                    if (trimmed.startsWith("### ")) return `<h3>${trimmed.slice(4)}</h3>`;
-                    if (trimmed.startsWith("**") && trimmed.endsWith("**"))
-                      return `<p><strong>${trimmed.slice(2, -2)}</strong></p>`;
-                    if (trimmed.startsWith("- **"))
-                      return `<li><strong>${trimmed.match(/\*\*(.*?)\*\*/)?.[1]}</strong>${trimmed.replace(/- \*\*.*?\*\*/, "")}</li>`;
-                    if (trimmed.startsWith("- ")) return `<li>${trimmed.slice(2)}</li>`;
-                    if (trimmed === "") return "";
-                    return `<p>${trimmed.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</p>`;
-                  })
-                  .join("\n"),
-              }}
-            />
+          {post.content ? (
+            <div dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }} />
           ) : (
             <p className="text-muted-foreground italic">Full article coming soon.</p>
           )}
