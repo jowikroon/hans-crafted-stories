@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow } from "lucide-react";
+import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow, FileJson, Sparkles } from "lucide-react";
 import { portalApi, PortalTool } from "@/lib/api/portal";
 import { usersApi, UserToolAccess } from "@/lib/api/users";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +12,10 @@ import ToolSettingsModal from "./ToolSettingsModal";
 import AddToolModal from "./AddToolModal";
 import ToolPreviewModal from "./ToolPreviewModal";
 import IframeToolModal from "./IframeToolModal";
+import WorkflowViewerModal from "./WorkflowViewerModal";
+import N8nAgentModal from "./N8nAgentModal";
 
-const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow };
+const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles };
 const getIcon = (name: string) => iconMap[name] || Wrench;
 
 const defaultTools = [
@@ -92,11 +94,21 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
   const handleToolClick = (tool: PortalTool) => setPreviewTool(tool);
 
   const [iframeTool, setIframeTool] = useState<PortalTool | null>(null);
+  const [workflowTool, setWorkflowTool] = useState<PortalTool | null>(null);
+  const [showAgent, setShowAgent] = useState(false);
 
   const handleOpenTool = (tool: PortalTool) => {
     setPreviewTool(null);
     if (tool.tool_type === "iframe") {
       setIframeTool(tool);
+      return;
+    }
+    if (tool.tool_type === "workflow") {
+      setWorkflowTool(tool);
+      return;
+    }
+    if (tool.tool_type === "ai-agent") {
+      setShowAgent(true);
       return;
     }
     if (tool.tool_type === "webhook") {
@@ -164,7 +176,7 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
                 <Icon size={20} />
               </div>
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
-                {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : "Tool"}
+                {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : tool.tool_type === "workflow" ? "Workflow" : tool.tool_type === "ai-agent" ? "AI Agent" : "Tool"}
               </p>
               <h3 className="mb-1.5 font-display text-lg font-medium text-foreground">
                 {tool.name}
@@ -230,6 +242,15 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
         url={(iframeTool?.config as Record<string, string>)?.iframe_url || ""}
         title={iframeTool?.name || "Embedded Tool"}
       />
+      <WorkflowViewerModal
+        open={!!workflowTool}
+        onClose={() => setWorkflowTool(null)}
+        name={workflowTool?.name || ""}
+        description={workflowTool?.description || ""}
+        workflowFile={(workflowTool?.config as Record<string, string>)?.workflow_file || ""}
+        workflowName={(workflowTool?.config as Record<string, string>)?.workflow_name || ""}
+      />
+      <N8nAgentModal open={showAgent} onClose={() => setShowAgent(false)} />
     </>
   );
 };

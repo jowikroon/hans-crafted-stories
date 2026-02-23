@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.portal-api]
 verify_jwt = false
+
+[functions.n8n-agent]
+verify_jwt = false
