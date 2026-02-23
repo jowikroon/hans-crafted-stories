@@ -73,7 +73,7 @@ const IframeToolModal = ({ open, onClose, url, title }: IframeToolModalProps) =>
               title={title}
               className="h-[calc(100%-44px)] w-full border-none bg-background"
               allow="clipboard-write"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
             />
           </motion.div>
         </>
