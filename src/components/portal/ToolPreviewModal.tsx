@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, X, ExternalLink, CheckCircle, AlertCircle, Loader2, Link as LinkIcon } from "lucide-react";
 import { PortalTool, portalApi } from "@/lib/api/portal";
+import { Badge } from "@/components/ui/badge";
 import { Wrench, Workflow, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -127,7 +128,20 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
                 {tool.description || "No description provided."}
               </p>
 
-              {/* Webhook configuration section */}
+              {/* Attributes */}
+              {tool.attributes && tool.attributes.length > 0 && (
+                <div className="w-full rounded-lg border border-border bg-secondary/20 p-4">
+                  <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Attributes</p>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    {tool.attributes.map((attr) => (
+                      <div key={attr.id} className="flex items-baseline justify-between gap-2">
+                        <span className="text-xs text-muted-foreground">{attr.key}</span>
+                        <span className="text-xs font-medium text-foreground">{attr.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {isWebhook && (
                 <div className="w-full space-y-3 rounded-lg border border-border bg-secondary/30 p-4">
                   <div className="flex items-center justify-between">

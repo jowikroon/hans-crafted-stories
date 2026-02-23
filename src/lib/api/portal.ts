@@ -41,6 +41,14 @@ export interface WebhookResult {
   data: unknown;
 }
 
+export interface ToolAttribute {
+  id: string;
+  tool_id: string;
+  key: string;
+  value: string;
+  created_at: string;
+}
+
 export interface PortalTool {
   id: string;
   user_id: string;
@@ -52,6 +60,7 @@ export interface PortalTool {
   color: string;
   sort_order: number;
   created_at: string;
+  attributes?: ToolAttribute[];
 }
 
 const headers = () => ({
@@ -93,10 +102,28 @@ export const portalApi = {
       .select("*")
       .order("sort_order");
     if (error) throw error;
-    return (data as unknown as PortalTool[]) || [];
+    const tools = (data as unknown as PortalTool[]) || [];
+
+    // Fetch all attributes for these tools in one query
+    if (tools.length > 0) {
+      const toolIds = tools.map((t) => t.id);
+      const { data: attrs } = await supabase
+        .from("tool_attributes")
+        .select("*")
+        .in("tool_id", toolIds);
+      const attrMap = new Map<string, ToolAttribute[]>();
+      for (const a of (attrs as unknown as ToolAttribute[]) || []) {
+        if (!attrMap.has(a.tool_id)) attrMap.set(a.tool_id, []);
+        attrMap.get(a.tool_id)!.push(a);
+      }
+      for (const tool of tools) {
+        tool.attributes = attrMap.get(tool.id) || [];
+      }
+    }
+    return tools;
   },
 
-  async addTool(tool: Omit<PortalTool, "id" | "created_at">): Promise<PortalTool> {
+  async addTool(tool: Omit<PortalTool, "id" | "created_at" | "attributes">): Promise<PortalTool> {
     const { data, error } = await supabase
       .from("portal_tools")
       .insert(tool as never)
@@ -119,6 +146,44 @@ export const portalApi = {
 
   async deleteTool(id: string): Promise<void> {
     const { error } = await supabase.from("portal_tools").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  // --- Attribute CRUD ---
+
+  async getAttributes(toolId: string): Promise<ToolAttribute[]> {
+    const { data, error } = await supabase
+      .from("tool_attributes")
+      .select("*")
+      .eq("tool_id", toolId)
+      .order("created_at");
+    if (error) throw error;
+    return (data as unknown as ToolAttribute[]) || [];
+  },
+
+  async addAttribute(toolId: string, key: string, value: string): Promise<ToolAttribute> {
+    const { data, error } = await supabase
+      .from("tool_attributes")
+      .insert({ tool_id: toolId, key, value } as never)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as unknown as ToolAttribute;
+  },
+
+  async updateAttribute(id: string, value: string): Promise<ToolAttribute> {
+    const { data, error } = await supabase
+      .from("tool_attributes")
+      .update({ value } as never)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as unknown as ToolAttribute;
+  },
+
+  async deleteAttribute(id: string): Promise<void> {
+    const { error } = await supabase.from("tool_attributes").delete().eq("id", id);
     if (error) throw error;
   },
 };
