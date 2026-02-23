@@ -1,12 +1,40 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, SlidersHorizontal, ArrowUpDown } from "lucide-react";
+import { Search, X, SlidersHorizontal, ArrowUpDown, Home, ChevronRight, Briefcase, Heart, LayoutGrid } from "lucide-react";
+import { Link } from "react-router-dom";
 import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import BlogPostCard from "@/components/BlogPostCard";
 
 type Filter = "all" | "professional" | "personal";
 type TagFilter = string | null;
 type SortOrder = "newest" | "oldest";
+
+const categoryCards: { label: string; value: Filter; icon: React.ReactNode; color: string; activeColor: string; description: string }[] = [
+  {
+    label: "All",
+    value: "all",
+    icon: <LayoutGrid size={18} />,
+    color: "from-primary/5 to-primary/10 text-primary border-primary/15 hover:border-primary/30",
+    activeColor: "from-primary/15 to-primary/25 text-primary border-primary/40 shadow-md shadow-primary/10",
+    description: "Everything",
+  },
+  {
+    label: "Professional",
+    value: "professional",
+    icon: <Briefcase size={18} />,
+    color: "from-emerald-500/5 to-emerald-600/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/15 hover:border-emerald-500/30",
+    activeColor: "from-emerald-500/15 to-emerald-600/25 text-emerald-700 dark:text-emerald-400 border-emerald-500/40 shadow-md shadow-emerald-500/10",
+    description: "E-commerce & Strategy",
+  },
+  {
+    label: "Personal",
+    value: "personal",
+    icon: <Heart size={18} />,
+    color: "from-amber-500/5 to-amber-600/10 text-amber-700 dark:text-amber-400 border-amber-500/15 hover:border-amber-500/30",
+    activeColor: "from-amber-500/15 to-amber-600/25 text-amber-700 dark:text-amber-400 border-amber-500/40 shadow-md shadow-amber-500/10",
+    description: "Life & Reflections",
+  },
+];
 
 const Writing = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>([]);
@@ -20,7 +48,6 @@ const Writing = () => {
     getBlogPosts(true).then((p) => { setBlogPosts(p); setLoading(false); });
   }, []);
 
-  // Map DB rows to the shape BlogPostCard expects
   const mappedPosts = useMemo(() =>
     blogPosts.map((p) => ({
       id: p.id,
@@ -61,11 +88,8 @@ const Writing = () => {
     return Array.from(new Set(postsForCategory.flatMap((p) => p.tags)));
   }, [filter, mappedPosts]);
 
-  const filters: { label: string; value: Filter; count: number }[] = [
-    { label: "All", value: "all", count: mappedPosts.length },
-    { label: "Professional", value: "professional", count: mappedPosts.filter((p) => p.category === "professional").length },
-    { label: "Personal", value: "personal", count: mappedPosts.filter((p) => p.category === "personal").length },
-  ];
+  const getCategoryCount = (value: Filter) =>
+    value === "all" ? mappedPosts.length : mappedPosts.filter((p) => p.category === value).length;
 
   const clearAll = () => {
     setFilter("all");
@@ -85,6 +109,34 @@ const Writing = () => {
 
   return (
     <section className="section-container pt-28 pb-20">
+      {/* Breadcrumb */}
+      <motion.nav
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="mb-8 flex items-center gap-1.5 text-xs text-muted-foreground"
+        aria-label="Breadcrumb"
+      >
+        <Link to="/" className="flex items-center gap-1 transition-colors hover:text-foreground">
+          <Home size={12} />
+          <span>Home</span>
+        </Link>
+        <ChevronRight size={11} className="text-muted-foreground/40" />
+        <span className="font-medium text-foreground">Writing</span>
+        {filter !== "all" && (
+          <>
+            <ChevronRight size={11} className="text-muted-foreground/40" />
+            <span className="font-medium capitalize text-primary">{filter}</span>
+          </>
+        )}
+        {tagFilter && (
+          <>
+            <ChevronRight size={11} className="text-muted-foreground/40" />
+            <span className="uppercase tracking-wide text-primary/70">{tagFilter}</span>
+          </>
+        )}
+      </motion.nav>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -99,15 +151,61 @@ const Writing = () => {
         </p>
       </motion.div>
 
-      {/* Filter Bar */}
+      {/* Category Cards */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-8 space-y-4"
+        transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        className="mb-8 grid grid-cols-3 gap-3"
       >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-xs">
+        {categoryCards.map((cat, i) => {
+          const isActive = filter === cat.value;
+          const count = getCategoryCount(cat.value);
+          return (
+            <motion.button
+              key={cat.value}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.12 + i * 0.06 }}
+              onClick={() => { setFilter(cat.value); setTagFilter(null); }}
+              className={`group relative overflow-hidden rounded-xl border bg-gradient-to-br p-4 text-left transition-all duration-300 ${
+                isActive ? cat.activeColor : cat.color
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/60 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
+                  {cat.icon}
+                </div>
+                <span className={`inline-flex h-6 min-w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums ${
+                  isActive ? "bg-background/80 shadow-sm" : "bg-background/40"
+                }`}>
+                  {count}
+                </span>
+              </div>
+              <p className="mt-3 text-sm font-semibold">{cat.label}</p>
+              <p className="mt-0.5 text-[11px] opacity-60">{cat.description}</p>
+              {/* Active indicator bar */}
+              {isActive && (
+                <motion.div
+                  layoutId="categoryIndicator"
+                  className="absolute inset-x-0 bottom-0 h-0.5 bg-current opacity-40"
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
+              )}
+            </motion.button>
+          );
+        })}
+      </motion.div>
+
+      {/* Search + Sort row */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        className="mb-6 space-y-3"
+      >
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
             <input
               type="text"
@@ -126,40 +224,13 @@ const Writing = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSort(sort === "newest" ? "oldest" : "newest")}
-              className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 text-xs font-medium text-muted-foreground transition-all hover:text-foreground"
-            >
-              <ArrowUpDown size={13} />
-              <span className="hidden sm:inline">{sort === "newest" ? "Newest" : "Oldest"}</span>
-            </button>
-
-            <div className="flex items-center gap-1 rounded-lg border border-border bg-secondary/30 p-0.5">
-              {filters.map((f) => (
-                <button
-                  key={f.value}
-                  onClick={() => { setFilter(f.value); setTagFilter(null); }}
-                  className={`relative rounded-md px-3 py-1.5 text-xs font-medium tracking-wide transition-all duration-200 ${
-                    filter === f.value
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {f.label}
-                  <span
-                    className={`ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums ${
-                      filter === f.value
-                        ? "bg-primary/10 text-primary"
-                        : "bg-muted text-muted-foreground/60"
-                    }`}
-                  >
-                    {f.count}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <button
+            onClick={() => setSort(sort === "newest" ? "oldest" : "newest")}
+            className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 text-xs font-medium text-muted-foreground transition-all hover:text-foreground"
+          >
+            <ArrowUpDown size={13} />
+            <span className="hidden sm:inline">{sort === "newest" ? "Newest" : "Oldest"}</span>
+          </button>
         </div>
 
         <AnimatePresence mode="wait">
@@ -178,7 +249,7 @@ const Writing = () => {
                   <button
                     key={tag}
                     onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
-                    className={`rounded-md px-2.5 py-1 text-[11px] font-medium tracking-wide uppercase transition-all duration-200 ${
+                    className={`rounded-full px-3 py-1 text-[11px] font-medium tracking-wide uppercase transition-all duration-200 ${
                       tagFilter === tag
                         ? "bg-primary text-primary-foreground shadow-sm"
                         : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -190,7 +261,7 @@ const Writing = () => {
                 {hasActiveFilters && (
                   <button
                     onClick={clearAll}
-                    className="ml-2 flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground/60 transition-colors hover:text-foreground"
+                    className="ml-2 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium text-muted-foreground/60 transition-colors hover:text-foreground"
                   >
                     <X size={11} />
                     Clear
