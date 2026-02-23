@@ -2,11 +2,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2 } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
 import PortalUsersManager from "@/components/portal/PortalUsersManager";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 type Tab = "tools" | "content" | "status" | "users";
 
@@ -18,9 +21,26 @@ const tabs: { id: Tab; label: string; icon: typeof Wrench }[] = [
 ];
 
 const Portal = () => {
-  const { user, loading, signInWithGoogle, signOut } = useAuth();
+  const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [activeTab, setActiveTab] = useState<Tab>("tools");
+  const { toast } = useToast();
+
+  // Email login state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setEmailLoading(true);
+    const { error } = await signInWithEmail(email, password);
+    if (error) {
+      toast({ title: "Login failed", description: error, variant: "destructive" });
+    }
+    setEmailLoading(false);
+  };
 
   if (loading || adminLoading) {
     return (
@@ -37,15 +57,47 @@ const Portal = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center"
+          className="w-full max-w-sm text-center"
         >
           <h1 className="mb-4 font-display text-4xl font-medium text-foreground">Portal</h1>
-          <p className="mb-8 max-w-md text-muted-foreground">
+          <p className="mb-8 text-muted-foreground">
             Sign in to access your SEO tools, workflow triggers, and more.
           </p>
+
+          {/* Email/Password Login */}
+          <form onSubmit={handleEmailLogin} className="mb-6 space-y-3 text-left">
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="text-sm"
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="text-sm"
+            />
+            <Button type="submit" disabled={emailLoading} className="w-full">
+              {emailLoading ? <Loader2 size={16} className="mr-2 animate-spin" /> : null}
+              Sign in
+            </Button>
+          </form>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+
           <button
             onClick={signInWithGoogle}
-            className="inline-flex items-center gap-3 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
+            className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
           >
             <svg viewBox="0 0 24 24" width="18" height="18" className="shrink-0">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
