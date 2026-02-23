@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings } from "lucide-react";
+import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow } from "lucide-react";
 import { portalApi, PortalTool } from "@/lib/api/portal";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -10,14 +10,16 @@ import KeywordResearchModal from "./KeywordResearchModal";
 import ToolSettingsModal from "./ToolSettingsModal";
 import AddToolModal from "./AddToolModal";
 import ToolPreviewModal from "./ToolPreviewModal";
+import IframeToolModal from "./IframeToolModal";
 
-const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe };
+const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow };
 const getIcon = (name: string) => iconMap[name] || Wrench;
 
 const defaultTools = [
   { tool_type: "keyword", name: "Keyword Research", description: "AI-powered keyword analysis and content suggestions.", icon: "Globe", color: "text-blue-500", sort_order: 0 },
   { tool_type: "webhook", name: "N8N Workflows", description: "Trigger and manage your automation workflows.", icon: "Workflow", color: "text-orange-500", sort_order: 1 },
   { tool_type: "site-audit", name: "Site Audit", description: "Run a quick SEO audit on any website.", icon: "Wrench", color: "text-green-500", sort_order: 2 },
+  { tool_type: "iframe", name: "N8N Form", description: "Embedded automation form — submit data directly to your workflow.", icon: "AppWindow", color: "text-purple-500", sort_order: 3, config: { iframe_url: "https://hansvanleeuwen.app.n8n.cloud/form/afe067a5-4878-4c9d-b746-691f77190f54" } },
 ];
 
 interface PortalToolsTabProps {
@@ -72,8 +74,14 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
 
   const handleToolClick = (tool: PortalTool) => setPreviewTool(tool);
 
+  const [iframeTool, setIframeTool] = useState<PortalTool | null>(null);
+
   const handleOpenTool = (tool: PortalTool) => {
     setPreviewTool(null);
+    if (tool.tool_type === "iframe") {
+      setIframeTool(tool);
+      return;
+    }
     if (tool.tool_type === "webhook") {
       const url = (tool.config as Record<string, string>)?.webhook_url || "";
       setWebhookUrl(url);
@@ -119,7 +127,7 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
                 <Icon size={20} />
               </div>
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
-                {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : "Tool"}
+                {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : "Tool"}
               </p>
               <h3 className="mb-1.5 font-display text-lg font-medium text-foreground">
                 {tool.name}
@@ -177,6 +185,12 @@ const PortalToolsTab = ({ userId }: PortalToolsTabProps) => {
       <KeywordResearchModal open={activeModal === "keyword"} onClose={() => setActiveModal(null)} />
       <ToolSettingsModal open={!!settingsTool} onClose={() => setSettingsTool(null)} tool={settingsTool} totalTools={tools.length} onUpdated={reloadTools} />
       <AddToolModal open={showAddTool} onClose={() => setShowAddTool(false)} userId={userId} nextSortOrder={tools.length} onAdded={reloadTools} />
+      <IframeToolModal
+        open={!!iframeTool}
+        onClose={() => setIframeTool(null)}
+        url={(iframeTool?.config as Record<string, string>)?.iframe_url || ""}
+        title={iframeTool?.name || "Embedded Tool"}
+      />
     </>
   );
 };

@@ -21,6 +21,7 @@ const toolTypes = [
   { value: "webhook", label: "Webhook / Automation" },
   { value: "site-audit", label: "Site Audit" },
   { value: "keyword", label: "Keyword Research" },
+  { value: "iframe", label: "Embedded Form / Page" },
   { value: "custom", label: "Custom (link only)" },
 ];
 
@@ -28,6 +29,7 @@ const iconOptions = [
   { value: "Wrench", label: "Wrench" },
   { value: "Workflow", label: "Workflow" },
   { value: "Globe", label: "Globe" },
+  { value: "AppWindow", label: "App Window" },
 ];
 
 const colorOptions = [
@@ -48,6 +50,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
   const [icon, setIcon] = useState("Wrench");
   const [color, setColor] = useState("text-primary");
   const [webhookUrl, setWebhookUrl] = useState("");
+  const [iframeUrl, setIframeUrl] = useState("");
   const [newAttributes, setNewAttributes] = useState<AttributeEntry[]>([]);
 
   const reset = () => {
@@ -57,6 +60,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
     setIcon("Wrench");
     setColor("text-primary");
     setWebhookUrl("");
+    setIframeUrl("");
     setNewAttributes([]);
   };
 
@@ -69,6 +73,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
     try {
       const config: Record<string, unknown> = { enabled: true };
       if (toolType === "webhook") config.webhook_url = webhookUrl;
+      if (toolType === "iframe") config.iframe_url = iframeUrl;
       const created = await portalApi.addTool({
         user_id: userId,
         name: name.trim(),
@@ -131,6 +136,13 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
             <div className="space-y-1.5">
               <Label htmlFor="new-webhook-url">Webhook URL</Label>
               <Input id="new-webhook-url" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://..." />
+            </div>
+          )}
+
+          {toolType === "iframe" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="new-iframe-url">Page / Form URL</Label>
+              <Input id="new-iframe-url" value={iframeUrl} onChange={(e) => setIframeUrl(e.target.value)} placeholder="https://your-app.com/form/..." />
             </div>
           )}
 
