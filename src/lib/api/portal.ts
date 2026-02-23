@@ -59,6 +59,8 @@ export interface PortalTool {
   icon: string;
   color: string;
   sort_order: number;
+  category: string;
+  features: string[];
   created_at: string;
   attributes?: ToolAttribute[];
 }

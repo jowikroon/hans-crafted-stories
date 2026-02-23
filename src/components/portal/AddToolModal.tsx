@@ -18,13 +18,21 @@ interface AddToolModalProps {
 }
 
 const toolTypes = [
-  { value: "webhook", label: "Webhook / Automation" },
-  { value: "site-audit", label: "Site Audit" },
-  { value: "keyword", label: "Keyword Research" },
-  { value: "iframe", label: "Embedded Form / Page" },
-  { value: "workflow", label: "n8n Workflow (JSON)" },
-  { value: "ai-agent", label: "AI Agent" },
-  { value: "custom", label: "Custom (link only)" },
+  { value: "webhook", label: "Webhook / Automation", category: "automation" },
+  { value: "site-audit", label: "Site Audit", category: "seo" },
+  { value: "keyword", label: "Keyword Research", category: "seo" },
+  { value: "iframe", label: "Embedded Form / Page", category: "general" },
+  { value: "workflow", label: "n8n Workflow (JSON)", category: "automation" },
+  { value: "ai-agent", label: "AI Agent", category: "ai" },
+  { value: "custom", label: "Custom (link only)", category: "general" },
+];
+
+const categoryOptions = [
+  { value: "seo", label: "SEO" },
+  { value: "automation", label: "Automation" },
+  { value: "data", label: "Data & Feeds" },
+  { value: "ai", label: "AI" },
+  { value: "general", label: "General" },
 ];
 
 const iconOptions = [
@@ -76,6 +84,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
       const config: Record<string, unknown> = { enabled: true };
       if (toolType === "webhook") config.webhook_url = webhookUrl;
       if (toolType === "iframe") config.iframe_url = iframeUrl;
+      const autoCategory = toolTypes.find(t => t.value === toolType)?.category || "general";
       const created = await portalApi.addTool({
         user_id: userId,
         name: name.trim(),
@@ -85,6 +94,8 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
         color,
         sort_order: nextSortOrder,
         config,
+        category: autoCategory,
+        features: [],
       });
       // Add attributes
       for (const attr of newAttributes) {
