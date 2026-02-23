@@ -117,7 +117,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
 
               <div className="space-y-1.5">
                 <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                  {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : "Tool"}
+                  {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : tool.tool_type === "workflow" ? "Workflow" : tool.tool_type === "ai-agent" ? "AI Agent" : "Tool"}
                 </p>
                 <h2 className="font-display text-2xl font-medium text-foreground">
                   {tool.name}

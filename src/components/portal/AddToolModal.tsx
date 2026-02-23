@@ -22,6 +22,8 @@ const toolTypes = [
   { value: "site-audit", label: "Site Audit" },
   { value: "keyword", label: "Keyword Research" },
   { value: "iframe", label: "Embedded Form / Page" },
+  { value: "workflow", label: "n8n Workflow (JSON)" },
+  { value: "ai-agent", label: "AI Agent" },
   { value: "custom", label: "Custom (link only)" },
 ];
 
