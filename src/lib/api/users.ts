@@ -7,6 +7,7 @@ export interface PortalProfile {
   email: string;
   avatar_url: string;
   is_active: boolean;
+  tab_access: string[];
   created_at: string;
   updated_at: string;
 }

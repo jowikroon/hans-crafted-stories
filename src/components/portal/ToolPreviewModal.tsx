@@ -1,15 +1,23 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, X, ExternalLink, CheckCircle, AlertCircle, Loader2, Link as LinkIcon } from "lucide-react";
+import { Pencil, X, ExternalLink, CheckCircle, AlertCircle, Loader2, Link as LinkIcon, Check } from "lucide-react";
 import { PortalTool, portalApi } from "@/lib/api/portal";
 import { Badge } from "@/components/ui/badge";
-import { Wrench, Workflow, Globe, AppWindow } from "lucide-react";
+import { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow };
+const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles };
 const getIcon = (name: string) => iconMap[name] || Wrench;
+
+const categoryConfig: Record<string, { label: string; color: string }> = {
+  seo: { label: "SEO", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
+  automation: { label: "Automation", color: "bg-orange-500/10 text-orange-600 border-orange-500/20" },
+  data: { label: "Data & Feeds", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
+  ai: { label: "AI", color: "bg-violet-500/10 text-violet-600 border-violet-500/20" },
+  general: { label: "General", color: "bg-muted text-muted-foreground border-border" },
+};
 
 interface ToolPreviewModalProps {
   tool: PortalTool | null;
@@ -33,6 +41,8 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
   const webhookUrl = (config.webhook_url as string) || "";
   const isWebhook = tool.tool_type === "webhook";
   const isConfigured = isWebhook && !!webhookUrl;
+  const isWorkflow = tool.tool_type === "workflow";
+  const catCfg = categoryConfig[tool.category] || categoryConfig.general;
 
   const handleStartEdit = () => {
     setUrlValue(webhookUrl);
@@ -111,8 +121,13 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
             </button>
 
             <div className="flex flex-col items-start gap-5">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-secondary ${tool.color}`}>
-                <Icon size={24} />
+              <div className="flex w-full items-start justify-between">
+                <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-secondary ${tool.color}`}>
+                  <Icon size={24} />
+                </div>
+                <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${catCfg.color}`}>
+                  {catCfg.label}
+                </span>
               </div>
 
               <div className="space-y-1.5">
@@ -128,6 +143,21 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
                 {tool.description || "No description provided."}
               </p>
 
+              {/* Features list — skip for workflow type */}
+              {!isWorkflow && tool.features && tool.features.length > 0 && (
+                <div className="w-full space-y-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">What it does</p>
+                  <ul className="space-y-1.5">
+                    {tool.features.map((feat, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
+                        <Check size={14} className="mt-0.5 shrink-0 text-primary" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Attributes */}
               {tool.attributes && tool.attributes.length > 0 && (
                 <div className="w-full rounded-lg border border-border bg-secondary/20 p-4">
@@ -142,14 +172,14 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
                   </div>
                 </div>
               )}
+
+              {/* Webhook section */}
               {isWebhook && (
                 <div className="w-full space-y-3 rounded-lg border border-border bg-secondary/30 p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <LinkIcon size={14} className="text-muted-foreground" />
-                      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                        Webhook
-                      </span>
+                      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Webhook</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       {isConfigured ? (
@@ -168,32 +198,20 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
 
                   {editingUrl ? (
                     <div className="space-y-2">
-                      <Input
-                        type="url"
-                        placeholder="https://your-n8n.app/webhook/..."
-                        value={urlValue}
-                        onChange={(e) => setUrlValue(e.target.value)}
-                        className="text-sm"
-                      />
+                      <Input type="url" placeholder="https://your-n8n.app/webhook/..." value={urlValue} onChange={(e) => setUrlValue(e.target.value)} className="text-sm" />
                       <div className="flex gap-2">
                         <Button size="sm" onClick={handleSaveUrl} disabled={saving} className="flex-1">
                           {saving ? <Loader2 size={14} className="animate-spin" /> : "Save"}
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingUrl(false)}>
-                          Cancel
-                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingUrl(false)}>Cancel</Button>
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       {isConfigured ? (
-                        <p className="truncate rounded bg-secondary px-2 py-1.5 font-mono text-xs text-muted-foreground">
-                          {webhookUrl}
-                        </p>
+                        <p className="truncate rounded bg-secondary px-2 py-1.5 font-mono text-xs text-muted-foreground">{webhookUrl}</p>
                       ) : (
-                        <p className="text-xs text-muted-foreground">
-                          Paste your n8n webhook URL to get started.
-                        </p>
+                        <p className="text-xs text-muted-foreground">Paste your n8n webhook URL to get started.</p>
                       )}
                       <Button size="sm" variant="outline" onClick={handleStartEdit} className="w-full text-xs">
                         {isConfigured ? "Change URL" : "Configure Webhook"}
@@ -202,13 +220,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
                   )}
 
                   {isConfigured && !editingUrl && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={handleQuickTrigger}
-                      disabled={triggering}
-                      className="w-full text-xs"
-                    >
+                    <Button size="sm" variant="secondary" onClick={handleQuickTrigger} disabled={triggering} className="w-full text-xs">
                       {triggering ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : null}
                       Quick Trigger
                     </Button>

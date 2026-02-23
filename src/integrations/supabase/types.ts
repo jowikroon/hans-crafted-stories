@@ -109,6 +109,7 @@ export type Database = {
           email: string
           id: string
           is_active: boolean
+          tab_access: string[]
           updated_at: string
           user_id: string
         }
@@ -119,6 +120,7 @@ export type Database = {
           email?: string
           id?: string
           is_active?: boolean
+          tab_access?: string[]
           updated_at?: string
           user_id: string
         }
@@ -129,6 +131,7 @@ export type Database = {
           email?: string
           id?: string
           is_active?: boolean
+          tab_access?: string[]
           updated_at?: string
           user_id?: string
         }
@@ -136,10 +139,12 @@ export type Database = {
       }
       portal_tools: {
         Row: {
+          category: string
           color: string | null
           config: Json | null
           created_at: string
           description: string | null
+          features: string[]
           icon: string | null
           id: string
           name: string
@@ -148,10 +153,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category?: string
           color?: string | null
           config?: Json | null
           created_at?: string
           description?: string | null
+          features?: string[]
           icon?: string | null
           id?: string
           name: string
@@ -160,10 +167,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category?: string
           color?: string | null
           config?: Json | null
           created_at?: string
           description?: string | null
+          features?: string[]
           icon?: string | null
           id?: string
           name?: string
