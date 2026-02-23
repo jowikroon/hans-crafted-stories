@@ -129,7 +129,7 @@ const Portal = () => {
         </div>
 
         {/* Tab Content */}
-        {activeTab === "tools" && <PortalToolsTab userId={user.id} />}
+        {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} />}
         {activeTab === "content" && <PortalContentTab />}
         {activeTab === "users" && <PortalUsersManager adminUserId={user.id} />}
         {activeTab === "status" && <PortalStatusTab />}
