@@ -28,8 +28,7 @@ const CategoryCards = ({ cards, activeValue, getCount, onSelect }: CategoryCards
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className="mb-8 grid gap-3"
-      style={{ gridTemplateColumns: `repeat(${Math.min(cards.length, 4)}, minmax(0, 1fr))` }}
+      className={`mb-8 grid gap-3 grid-cols-2 ${cards.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'}`}
     >
       {cards.map((card, i) => {
         const isActive = activeValue === card.value;
