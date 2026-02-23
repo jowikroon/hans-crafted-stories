@@ -1,8 +1,9 @@
 import { useState, createContext, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn } from "lucide-react";
+import { Menu, X, LogIn, Terminal } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 
 type Lang = "nl" | "en";
 
@@ -21,6 +22,7 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [lang, setLang] = useState<Lang>("nl");
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
 
   const LangSwitch = () => (
     <div className="flex items-center gap-0.5 text-xs font-medium">
@@ -80,6 +82,15 @@ const Navbar = () => {
               </>
             )}
           </Link>
+          {isAdmin && (
+            <Link
+              to="/empire"
+              className={`inline-flex items-center gap-1.5 nav-link ${location.pathname === "/empire" ? "active" : ""}`}
+            >
+              <Terminal size={14} />
+              Empire
+            </Link>
+          )}
           <div className="ml-1 border-l border-border pl-3">
             <LangSwitch />
           </div>

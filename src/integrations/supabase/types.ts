@@ -161,6 +161,33 @@ export type Database = {
         }
         Relationships: []
       }
+      empire_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          message: string
+          metadata: Json | null
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          source?: string
+        }
+        Relationships: []
+      }
       page_elements: {
         Row: {
           created_at: string
