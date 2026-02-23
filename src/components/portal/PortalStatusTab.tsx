@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Activity, Database, Server, Zap, Globe, Shield, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Activity, Database, Server, Zap, Globe, Shield, Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type Status = "online" | "offline" | "checking";
@@ -7,184 +7,180 @@ type Status = "online" | "offline" | "checking";
 interface Resource {
   icon: typeof Server;
   label: string;
-  description: string;
   status: Status;
   latency?: number;
 }
 
-const StatusDot = ({ status }: { status: Status }) => {
-  const cls =
-    status === "online"
-      ? "bg-green-500"
-      : status === "offline"
-        ? "bg-destructive"
-        : "bg-muted-foreground animate-pulse";
-  return <span className={`inline-block h-2 w-2 rounded-full ${cls}`} />;
+const StatusIcon = ({ status, size = 10 }: { status: Status; size?: number }) => {
+  if (status === "checking") return <span className={`inline-block h-${size/4} w-${size/4} rounded-full bg-muted-foreground/30 animate-pulse`} style={{ width: size, height: size }} />;
+  if (status === "online") return <Wifi size={size} className="text-primary/70" />;
+  return <WifiOff size={size} className="text-destructive/60" />;
 };
 
 const PortalStatusTab = () => {
   const [resources, setResources] = useState<Resource[]>([
-    { icon: Database, label: "Database", description: "Primary data store", status: "checking" },
-    { icon: Shield, label: "Authentication", description: "User auth service", status: "checking" },
-    { icon: Zap, label: "Edge Functions", description: "Backend functions runtime", status: "checking" },
-    { icon: Globe, label: "Storage", description: "File storage bucket", status: "checking" },
-    { icon: Server, label: "API Gateway", description: "REST & Realtime API", status: "checking" },
+    { icon: Database, label: "Database", status: "checking" },
+    { icon: Shield, label: "Auth", status: "checking" },
+    { icon: Zap, label: "Functions", status: "checking" },
+    { icon: Globe, label: "Storage", status: "checking" },
+    { icon: Server, label: "API", status: "checking" },
   ]);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
 
   const checkAll = async () => {
-    const checks = [...resources].map((r) => ({ ...r, status: "checking" as Status }));
-    setResources(checks);
+    setResources((prev) => prev.map((r) => ({ ...r, status: "checking" as Status })));
 
     const results = await Promise.all([
-      // Database
       (async () => {
         const start = Date.now();
         try {
           const { error } = await supabase.from("portal_tools").select("id").limit(1);
           return { status: error ? "offline" : "online", latency: Date.now() - start } as const;
-        } catch {
-          return { status: "offline" as const, latency: 0 };
-        }
+        } catch { return { status: "offline" as const, latency: 0 }; }
       })(),
-      // Auth
       (async () => {
         const start = Date.now();
         try {
           const { error } = await supabase.auth.getSession();
           return { status: error ? "offline" : "online", latency: Date.now() - start } as const;
-        } catch {
-          return { status: "offline" as const, latency: 0 };
-        }
+        } catch { return { status: "offline" as const, latency: 0 }; }
       })(),
-      // Edge Functions
       (async () => {
         const start = Date.now();
         try {
-          // Simple health-check ping
-          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/site-audit`, {
-            method: "OPTIONS",
-          });
+          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/site-audit`, { method: "OPTIONS" });
           return { status: res.ok || res.status === 204 || res.status === 200 ? "online" : "offline", latency: Date.now() - start } as const;
-        } catch {
-          return { status: "offline" as const, latency: 0 };
-        }
+        } catch { return { status: "offline" as const, latency: 0 }; }
       })(),
-      // Storage
       (async () => {
         const start = Date.now();
         try {
           const { error } = await supabase.storage.from("bucket").list("", { limit: 1 });
           return { status: error ? "offline" : "online", latency: Date.now() - start } as const;
-        } catch {
-          return { status: "offline" as const, latency: 0 };
-        }
+        } catch { return { status: "offline" as const, latency: 0 }; }
       })(),
-      // API Gateway
       (async () => {
         const start = Date.now();
         try {
           const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/`, {
-            headers: {
-              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            },
+            headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
           });
           return { status: res.ok ? "online" : "offline", latency: Date.now() - start } as const;
-        } catch {
-          return { status: "offline" as const, latency: 0 };
-        }
+        } catch { return { status: "offline" as const, latency: 0 }; }
       })(),
     ]);
 
     setResources((prev) =>
-      prev.map((r, i) => ({
-        ...r,
-        status: results[i].status,
-        latency: results[i].latency,
-      }))
+      prev.map((r, i) => ({ ...r, status: results[i].status, latency: results[i].latency }))
     );
     setLastChecked(new Date());
   };
 
-  useEffect(() => {
-    checkAll();
-  }, []);
+  useEffect(() => { checkAll(); }, []);
 
   const onlineCount = resources.filter((r) => r.status === "online").length;
   const allOnline = onlineCount === resources.length;
   const checking = resources.some((r) => r.status === "checking");
 
   return (
-    <div className="space-y-6">
-      {/* Summary */}
+    <div className="space-y-8">
+      {/* Compact header row */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-display text-xl font-medium text-foreground">System Status</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {checking
-              ? "Checking services..."
-              : allOnline
-                ? "All systems operational"
-                : `${onlineCount}/${resources.length} services online`}
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-secondary/40">
+            <Activity size={16} className="text-muted-foreground" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground tracking-tight">
+              {checking ? "Checking…" : allOnline ? "All systems go" : `${onlineCount}/${resources.length} up`}
+            </p>
+            {lastChecked && (
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                {lastChecked.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </p>
+            )}
+          </div>
         </div>
         <button
           onClick={checkAll}
           disabled={checking}
-          className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-border/50 text-muted-foreground/50 transition-all hover:border-border hover:text-foreground disabled:opacity-30"
         >
-          <Activity size={12} className={checking ? "animate-spin" : ""} />
-          Refresh
+          <RefreshCw size={12} className={checking ? "animate-spin" : ""} />
         </button>
       </div>
 
-      {/* Overall indicator */}
-      <div className={`flex items-center gap-3 rounded-xl border p-4 ${allOnline && !checking ? "border-primary/30 bg-primary/5" : "border-border bg-card"}`}>
-        {checking ? (
-          <Clock size={20} className="text-muted-foreground animate-pulse" />
-        ) : allOnline ? (
-          <CheckCircle size={20} className="text-green-500" />
-        ) : (
-          <XCircle size={20} className="text-destructive" />
-        )}
-        <div className="flex-1">
-          <p className="text-sm font-medium text-foreground">
-            {checking ? "Running checks..." : allOnline ? "All Systems Operational" : "Some services degraded"}
-          </p>
-          {lastChecked && (
-            <p className="text-xs text-muted-foreground">
-              Last checked {lastChecked.toLocaleTimeString()}
-            </p>
-          )}
-        </div>
-        <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-foreground">
-          {onlineCount}/{resources.length}
-        </span>
-      </div>
-
-      {/* Resource list */}
-      <div className="space-y-2">
+      {/* Grid of service tiles — icon-dominant, minimal text */}
+      <div className="grid grid-cols-5 gap-3">
         {resources.map((r) => {
           const Icon = r.icon;
+          const isOnline = r.status === "online";
+          const isChecking = r.status === "checking";
           return (
             <div
               key={r.label}
-              className="flex items-center gap-4 rounded-lg border border-border bg-card px-4 py-3"
+              className={`group relative flex flex-col items-center gap-3 rounded-2xl border px-3 py-5 transition-all duration-500 ${
+                isOnline
+                  ? "border-primary/10 bg-primary/[0.03]"
+                  : isChecking
+                    ? "border-border/40 bg-secondary/20"
+                    : "border-destructive/10 bg-destructive/[0.02]"
+              }`}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-muted-foreground">
-                <Icon size={16} />
+              {/* Large icon */}
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-500 ${
+                  isOnline
+                    ? "bg-primary/[0.08] text-primary/60"
+                    : isChecking
+                      ? "bg-muted/50 text-muted-foreground/40"
+                      : "bg-destructive/[0.06] text-destructive/50"
+                }`}
+              >
+                <Icon size={20} strokeWidth={1.5} />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground">{r.label}</p>
-                <p className="text-xs text-muted-foreground">{r.description}</p>
+
+              {/* Label */}
+              <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground/70">
+                {r.label}
+              </span>
+
+              {/* Status dot + latency */}
+              <div className="flex items-center gap-1.5">
+                <StatusIcon status={r.status} size={10} />
+                {r.latency !== undefined && isOnline && (
+                  <span className="text-[10px] tabular-nums text-muted-foreground/40">{r.latency}ms</span>
+                )}
               </div>
-              {r.latency !== undefined && r.status === "online" && (
-                <span className="text-xs text-muted-foreground">{r.latency}ms</span>
+
+              {/* Subtle top-edge glow for online services */}
+              {isOnline && (
+                <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
               )}
-              <StatusDot status={r.status} />
             </div>
           );
         })}
+      </div>
+
+      {/* Minimal overall bar */}
+      <div className="flex items-center gap-2 rounded-full border border-border/30 bg-secondary/20 px-4 py-2">
+        <div className="flex gap-1">
+          {resources.map((r) => (
+            <span
+              key={r.label}
+              className={`inline-block h-1.5 w-5 rounded-full transition-all duration-700 ${
+                r.status === "online"
+                  ? "bg-primary/30"
+                  : r.status === "checking"
+                    ? "bg-muted-foreground/15 animate-pulse"
+                    : "bg-destructive/25"
+              }`}
+            />
+          ))}
+        </div>
+        <span className="ml-auto text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40">
+          {onlineCount}/{resources.length}
+        </span>
       </div>
     </div>
   );
