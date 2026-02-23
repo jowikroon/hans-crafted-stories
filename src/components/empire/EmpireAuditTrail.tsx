@@ -37,11 +37,37 @@ const EmpireAuditTrail = () => {
 
   useEffect(() => { fetchEvents(); }, []);
 
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel("empire-events-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "empire_events" },
+        (payload) => {
+          const newEvent = payload.new as EmpireEvent;
+          setEvents((prev) => [newEvent, ...prev].slice(0, 50));
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "empire_events" },
+        (payload) => {
+          const deletedId = (payload.old as { id: string }).id;
+          setEvents((prev) => prev.filter((e) => e.id !== deletedId));
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400/70">
           Audit Trail
+          <span className="ml-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" title="Live" />
         </h2>
         <button
           onClick={fetchEvents}
