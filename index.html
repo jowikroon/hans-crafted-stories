@@ -3,23 +3,105 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Lovable App</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    <meta property="og:title" content="Lovable App" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <!-- Primary Meta Tags -->
+    <title>Hans van Leeuwen – E-commerce Manager & Marketplace Specialist | Amersfoort</title>
+    <meta name="description" content="Hans van Leeuwen is an experienced e-commerce manager specializing in Amazon, Bol.com, and marketplace growth. Driving digital revenue through strategy, UX, and data-driven optimization." />
+    <meta name="author" content="Hans van Leeuwen" />
+    <link rel="canonical" href="https://hans-crafted-stories.lovable.app/" />
+
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:url" content="https://hans-crafted-stories.lovable.app/" />
+    <meta property="og:site_name" content="Hans van Leeuwen" />
+    <meta property="og:title" content="Hans van Leeuwen – E-commerce Manager & Marketplace Specialist" />
+    <meta property="og:description" content="Driving e-commerce growth through strategy & design. Specialized in Amazon, Bol.com, and marketplace optimization." />
+    <meta property="og:image" content="https://hans-crafted-stories.lovable.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:title" content="Hans van Leeuwen – E-commerce Manager & Marketplace Specialist" />
+    <meta name="twitter:description" content="Driving e-commerce growth through strategy & design. Specialized in Amazon, Bol.com, and marketplace optimization." />
+    <meta name="twitter:image" content="https://hans-crafted-stories.lovable.app/og-image.png" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "Hans van Leeuwen",
+          "url": "https://hans-crafted-stories.lovable.app/",
+          "description": "E-commerce manager specializing in marketplace growth, UX strategy, and digital commerce optimization."
+        },
+        {
+          "@type": "Person",
+          "name": "Hans van Leeuwen",
+          "url": "https://hans-crafted-stories.lovable.app/about",
+          "jobTitle": "E-commerce Manager",
+          "description": "E-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Amersfoort",
+            "addressCountry": "NL"
+          },
+          "sameAs": [
+            "https://www.linkedin.com/in/hansvl3",
+            "https://www.behance.net/jowikroon",
+            "https://www.behans.nl"
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://hans-crafted-stories.lovable.app/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Work",
+              "item": "https://hans-crafted-stories.lovable.app/work"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Writing",
+              "item": "https://hans-crafted-stories.lovable.app/writing"
+            },
+            {
+              "@type": "ListItem",
+              "position": 4,
+              "name": "About",
+              "item": "https://hans-crafted-stories.lovable.app/about"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- Preload critical font if applicable -->
+    <link rel="icon" href="/favicon.ico" />
   </head>
 
   <body>
+    <!-- SSR fallback: noscript content for crawlers -->
+    <noscript>
+      <h1>Hans van Leeuwen – E-commerce Manager & Marketplace Specialist</h1>
+      <p>Driving e-commerce growth through strategy and design. Specialized in Amazon, Bol.com, and marketplace optimization based in Amersfoort, Netherlands.</p>
+      <nav>
+        <a href="/work">View Work</a> |
+        <a href="/writing">Writing</a> |
+        <a href="/about">About</a>
+      </nav>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
