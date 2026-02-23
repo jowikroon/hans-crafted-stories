@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight } from "lucide-react";
+import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home } from "lucide-react";
+import { Link } from "react-router-dom";
 import hansProfile from "@/assets/hans-profile.jpg";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/components/Navbar";
@@ -45,6 +46,23 @@ const About = () => {
             </svg>
           </div>
         </>
+      )}
+
+      {isVisible("breadcrumb") && (
+        <motion.nav
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-8 flex items-center gap-1.5 text-xs text-muted-foreground"
+          aria-label="Breadcrumb"
+        >
+          <Link to="/" className="flex items-center gap-1 transition-colors hover:text-foreground">
+            <Home size={12} />
+            <span>Home</span>
+          </Link>
+          <ChevronRight size={11} className="text-muted-foreground/40" />
+          <span className="font-medium text-foreground">About</span>
+        </motion.nav>
       )}
 
       <motion.div {...fadeIn}>
