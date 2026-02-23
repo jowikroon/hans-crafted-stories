@@ -5,56 +5,97 @@ import { Badge } from "@/components/ui/badge";
 
 const experience = [
   {
+    company: "ABS All Brake Systems",
+    role: "E-commerce Manager",
+    period: "Dec 2025 – Present",
+    highlights: [
+      "Leading growth strategy for marketplaces and D2C webshop",
+      "Implementing A/B testing frameworks and automation",
+      "Forecasting revenue and delivering actionable KPI insights",
+    ],
+  },
+  {
+    company: "Alpine Hearing Protection",
+    role: "Marketplace Manager",
+    period: "Feb 2022 – Dec 2025",
+    highlights: [
+      "Achieved 70% market share in earplug category (Nielsen Data)",
+      "Launched Bol.com seller channel, transitioning from vendor model",
+      "20% weekly sales increase via Muffy Kids social campaign",
+    ],
+  },
+  {
     company: "Alpine Hearing Protection",
     role: "E-commerce Manager",
-    period: "2022 – Present",
+    period: "Oct 2021 – Mar 2022",
     highlights: [
-      "Achieved 70% market share on Amazon NL & BE",
-      "Expanded to 8 Amazon EU marketplaces",
-      "Managed Amazon, Bol.com, and full webshop operations",
+      "Cut out-of-stock rates below 2%",
+      "Outsourced customer service, improving NPS scores",
+      "Centralized data and refined shipping logistics",
     ],
   },
   {
-    company: "Webhelp / GGD",
-    role: "Team Lead & Corona Communications",
-    period: "2020 – 2022",
+    company: "Webhelp",
+    role: "Team Coach",
+    period: "Feb 2020 – Oct 2021",
     highlights: [
-      "Led a team managing public health communications",
-      "Coordinated high-volume contact center operations",
+      "Directed COVID-19 tracking, aiding national strategies",
+      "Implemented training to boost pandemic response skills",
     ],
   },
   {
-    company: "IGM Badkamerwinkel",
+    company: "IGM (badkamerwinkel.nl)",
+    role: "E-commerce Manager",
+    period: "Aug 2019 – Feb 2020",
+    highlights: [
+      "Enhanced organic traffic via SEO strategy",
+      "Improved content, UX, and product listings",
+    ],
+  },
+  {
+    company: "Intergamma (Karwei & Gamma)",
+    role: "E-Commerce Manager",
+    period: "Feb 2017 – Aug 2019",
+    highlights: [
+      "Managed online catalogs for KARWEI.nl, Gamma.nl & Gamma.be",
+      "Delivered company-wide e-commerce training",
+      "Grew organic search traffic with SEO tactics",
+    ],
+  },
+  {
+    company: "Talpa",
     role: "Online Marketeer",
-    period: "2018 – 2020",
+    period: "Jan 2015 – Jun 2015",
     highlights: [
-      "+40% organic traffic through SEO strategy",
-      "+35% SEO visibility improvement",
-      "Managed PPC campaigns and marketplace listings",
+      "Drove web and social media strategies for Dutch television",
     ],
   },
   {
-    company: "Intergamma (Gamma / Karwei)",
-    role: "Interaction Designer",
-    period: "2016 – 2018",
+    company: "Edelman",
+    role: "Graphic & UX Designer",
+    period: "Sep 2013 – Jan 2014",
     highlights: [
-      "Designed UX for e-commerce platform serving millions",
-      "Created wireframes, prototypes, and user flows",
+      "Spearheaded design projects at the world's largest PR agency",
     ],
   },
 ];
 
 const skills = [
-  "Amazon & Bol Marketplaces",
-  "SEO / PPC / SEM",
+  "Marketplace Management",
   "E-commerce Strategy",
-  "Project Management",
-  "Google Analytics",
-  "UX / Interaction Design",
-  "A/B Testing & CRO",
-  "Team Leadership",
+  "SEO & On-Page SEO",
+  "PPC Advertising",
   "Content Strategy",
-  "Data Analysis",
+  "Data-Driven Decision Making",
+  "A/B Testing & CRO",
+  "People Management",
+  "Growth Hacking",
+  "UX / Interaction Design",
+  "Agile Methodologies",
+  "Inventory & Supply Chain",
+  "Google Search Console",
+  "WooCommerce",
+  "Stakeholder Management",
 ];
 
 const education = [
@@ -98,15 +139,15 @@ const About = () => (
           </h1>
           <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
             <p>
-              Dynamic E-commerce Manager with 6+ years of experience in driving online sales,
-              managing marketplace strategies, and optimizing digital channels. Specializing in
-              Amazon, Bol.com, and full-stack e-commerce operations.
+              E-commerce Manager with 10+ years of experience accelerating digital commerce
+              performance across marketplaces and D2C channels. Specializing in Amazon, Bol.com,
+              and scalable revenue growth strategies.
             </p>
             <p>
-              I combine a strong background in interaction design with hands-on commercial
-              expertise to create data-driven strategies that deliver measurable results.
-              From achieving 70% market share on Amazon NL to boosting organic traffic by 40%,
-              I'm passionate about turning complexity into growth.
+              I combine a strong background in UX design with hands-on commercial expertise
+              to create data-driven strategies that deliver measurable results. From achieving
+              70% market share on Amazon NL to cutting out-of-stock rates below 2%, I turn
+              complexity into growth.
             </p>
           </div>
 
