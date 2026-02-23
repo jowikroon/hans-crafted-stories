@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
+import EmpireTerminalCard from "./components/empire/EmpireTerminalCard";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
             <AnimatedRoutes />
           </main>
           <Footer />
+          <EmpireTerminalCard />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
