@@ -101,6 +101,39 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portal_tools: {
         Row: {
           color: string | null
@@ -172,6 +205,36 @@ export type Database = {
           },
         ]
       }
+      user_content_access: {
+        Row: {
+          can_edit: boolean
+          can_view: boolean
+          content_type: string
+          granted_at: string
+          granted_by: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          can_edit?: boolean
+          can_view?: boolean
+          content_type: string
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          can_edit?: boolean
+          can_view?: boolean
+          content_type?: string
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -189,6 +252,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_tool_access: {
+        Row: {
+          can_use: boolean
+          can_view: boolean
+          granted_at: string
+          granted_by: string | null
+          id: string
+          tool_id: string
+          user_id: string
+        }
+        Insert: {
+          can_use?: boolean
+          can_view?: boolean
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          tool_id: string
+          user_id: string
+        }
+        Update: {
+          can_use?: boolean
+          can_view?: boolean
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          tool_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_tool_access_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "portal_tools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
