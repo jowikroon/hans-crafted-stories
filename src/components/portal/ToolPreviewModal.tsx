@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, X, ExternalLink, CheckCircle, AlertCircle, Loader2, Link as LinkIcon } from "lucide-react";
 import { PortalTool, portalApi } from "@/lib/api/portal";
 import { Badge } from "@/components/ui/badge";
-import { Wrench, Workflow, Globe } from "lucide-react";
+import { Wrench, Workflow, Globe, AppWindow } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe };
+const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow };
 const getIcon = (name: string) => iconMap[name] || Wrench;
 
 interface ToolPreviewModalProps {
@@ -117,7 +117,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
 
               <div className="space-y-1.5">
                 <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                  {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : "Tool"}
+                  {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : "Tool"}
                 </p>
                 <h2 className="font-display text-2xl font-medium text-foreground">
                   {tool.name}
