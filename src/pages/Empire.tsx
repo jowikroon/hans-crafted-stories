@@ -9,6 +9,7 @@ import EmpireQuickActions from "@/components/empire/EmpireQuickActions";
 import EmpireAuditTrail from "@/components/empire/EmpireAuditTrail";
 import EmpireClaudePanel from "@/components/empire/EmpireClaudePanel";
 import { Button } from "@/components/ui/button";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 const BOOTSTRAP_FILES = [
   { name: "CLAUDE.md", path: "/empire/CLAUDE.md" },
@@ -50,6 +51,7 @@ const Empire = () => {
       `}</style>
 
       <div className="empire-page mx-auto max-w-6xl px-6 pb-20 pt-28">
+        <PageBreadcrumb items={[{ label: "Empire" }]} className="text-emerald-400/60 [&_a]:text-emerald-400/60 [&_a:hover]:text-emerald-300 [&_span.font-medium]:text-emerald-300" />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}
