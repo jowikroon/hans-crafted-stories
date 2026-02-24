@@ -11,6 +11,7 @@ import PortalPagesTab from "@/components/portal/PortalPagesTab";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 type Tab = "tools" | "content" | "pages" | "status" | "users";
 
@@ -138,6 +139,7 @@ const Portal = () => {
 
   return (
     <section className="section-container pt-28 pb-20">
+      <PageBreadcrumb items={[{ label: "Portal" }]} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
