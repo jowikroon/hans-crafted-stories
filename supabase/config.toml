@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.empire-health]
 verify_jwt = false
+
+[functions.hansai-chat]
+verify_jwt = false

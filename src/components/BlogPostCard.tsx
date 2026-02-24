@@ -8,7 +8,7 @@ const BlogPostCard = ({ post, index }: { post: BlogPost; index: number }) => (
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -10 }}
     transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-    className="group border-b border-border py-6 transition-colors duration-300 first:border-t"
+    className="group border-b-2 border-border py-6 transition-colors duration-300 first:border-t-2 hover:border-primary/30"
   >
     <Link to={`/writing/${post.slug}`} className="block">
       <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-8">

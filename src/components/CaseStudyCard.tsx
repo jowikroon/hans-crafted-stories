@@ -15,7 +15,7 @@ const CaseStudyCard = ({ study, index }: { study: CaseStudy; index: number }) =>
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Wrapper {...linkProps} className="group block overflow-hidden rounded-xl border border-border/50 bg-card transition-all duration-500 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
+      <Wrapper {...linkProps} className="group block overflow-hidden rounded-xl border-2 border-border/50 bg-card transition-all duration-500 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
         {/* Image */}
         <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
           {study.image && !study.image.includes("placeholder") ? (
