@@ -1,6 +1,5 @@
 const socialLinks = [
   { label: "LinkedIn", href: "https://www.linkedin.com/in/hansvl3" },
-  { label: "Behance", href: "https://www.behance.net/jowikroon" },
   { label: "BeHans.nl", href: "https://www.behans.nl" },
 ];
 

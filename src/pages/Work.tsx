@@ -30,16 +30,24 @@ const Work = () => {
   const { cards: dbCards } = useCategoryCards("work");
 
   useSEO({
-    title: "Case Studies – E-commerce, 3D & UX Design Portfolio | Hans van Leeuwen",
-    description: "Explore Hans van Leeuwen's design portfolio: e-commerce UX, 3D creative work, VR game design, and branding projects. View case studies with real results.",
+    title: "Design Portfolio & Case Studies | E-commerce, 3D & UX | Hans van Leeuwen",
+    description: "Explore Hans van Leeuwen's portfolio: e-commerce UX case studies, 3D creative work, VR game design, and branding projects with measurable results. Amazon & Bol.com specialist.",
     url: "https://hansvanleeuwen.com/work",
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: "Case Studies – Design Portfolio",
-      description: "Explore Hans van Leeuwen's design portfolio: e-commerce UX, 3D creative work, VR game design, and branding projects.",
+      name: "Design Portfolio & Case Studies",
+      description: "A collection of e-commerce UX, 3D creative, VR game design, and branding case studies by Hans van Leeuwen.",
       url: "https://hansvanleeuwen.com/work",
-      author: { "@type": "Person", name: "Hans van Leeuwen", jobTitle: "E-commerce Manager" },
+      author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+      about: { "@type": "Thing", name: "E-commerce Design & Creative Portfolio" },
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+          { "@type": "ListItem", position: 2, name: "Work", item: "https://hansvanleeuwen.com/work" },
+        ],
+      },
     },
   });
 
@@ -115,14 +123,15 @@ const Work = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            Selected Work
+            Portfolio & Case Studies
           </p>
           <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
-            Case Studies
+            E-commerce, 3D & UX Design Work
           </h1>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
-            A collection of design and creative projects — from e-commerce concepts to 3D
-            experiments and VR games.
+            A curated collection of case studies — from Amazon & Bol.com e-commerce UX concepts 
+            to 3D creative experiments, VR games, and branding projects. Each project features 
+            real results and measurable outcomes.
           </p>
         </motion.div>
       )}

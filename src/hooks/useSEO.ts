@@ -28,8 +28,10 @@ export const useSEO = ({ title, description, url, type = "website", jsonLd }: SE
     setMeta("og:description", description, "property");
     setMeta("og:url", url, "property");
     setMeta("og:type", type, "property");
+    setMeta("og:image:alt", title, "property");
     setMeta("twitter:title", title);
     setMeta("twitter:description", description);
+    setMeta("twitter:image:alt", title);
 
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canonical) {

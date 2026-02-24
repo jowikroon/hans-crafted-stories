@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
     <!-- Primary Meta Tags -->
     <title>E-commerce Manager & Marketplace Specialist (Amazon & Bol.com) | Hans van Leeuwen</title>
@@ -21,6 +21,7 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Hans van Leeuwen – E-commerce Manager & Marketplace Specialist" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -38,16 +39,18 @@
           "@type": "WebSite",
           "name": "Hans van Leeuwen",
           "url": "https://hansvanleeuwen.com/",
-          "description": "E-commerce manager specializing in marketplace growth, UX strategy, and digital commerce optimization."
+          "description": "E-commerce manager specializing in marketplace growth, UX strategy, and digital commerce optimization.",
+          "inLanguage": "en"
         },
         {
           "@type": "Person",
+          "@id": "https://hansvanleeuwen.com/#person",
           "name": "Hans van Leeuwen",
           "url": "https://hansvanleeuwen.com/",
           "mainEntityOfPage": "https://hansvanleeuwen.com/about",
           "jobTitle": "E-commerce Manager",
           "description": "E-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
-          "knowsAbout": ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Conversion optimization", "Digital commerce"],
+          "knowsAbout": ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Conversion optimization", "Digital commerce", "SEO", "Google Ads", "Product listing optimization"],
           "address": {
             "@type": "PostalAddress",
             "addressLocality": "Amersfoort",
@@ -120,30 +123,38 @@
     </script>
 
     <!-- Preload critical fonts -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" as="style" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" /></noscript>
 
     <!-- Favicon set -->
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="apple-touch-icon" href="/og-image.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0a0a0a" />
   </head>
 
   <body>
     <!-- SSR fallback: rich crawlable content for search engines -->
     <noscript>
       <header>
-        <h1>Hans van Leeuwen – E-commerce Manager & Marketplace Specialist</h1>
-        <p>10+ years driving e-commerce growth through data-driven strategy and UX design. Based in Amersfoort, Netherlands.</p>
+        <nav>
+          <a href="/">Home</a> |
+          <a href="/work">Amazon & Bol.com Case Studies</a> |
+          <a href="/writing">E-commerce Insights & Articles</a> |
+          <a href="/about">About Hans van Leeuwen</a>
+        </nav>
       </header>
-      <nav>
-        <a href="/">Home</a> |
-        <a href="/work">Amazon & Bol.com Case Studies</a> |
-        <a href="/writing">E-commerce Insights & Articles</a> |
-        <a href="/about">About Hans van Leeuwen</a>
-      </nav>
       <main>
+        <section>
+          <h1>Hans van Leeuwen – E-commerce Manager & Marketplace Specialist</h1>
+          <p>10+ years driving e-commerce growth through data-driven strategy and UX design. Based in Amersfoort, Netherlands.</p>
+          <p>I help brands maximize their digital revenue through marketplace management, conversion optimization, and growth strategy on Amazon, Bol.com, and other digital channels.</p>
+          <a href="mailto:hansvl3@gmail.com">Get in touch</a> | <a href="https://www.linkedin.com/in/hansvl3">Connect on LinkedIn</a>
+        </section>
+
         <section>
           <h2>Marketplace Expertise</h2>
           <ul>
@@ -154,6 +165,22 @@
             <li><strong>Digital Commerce UX</strong> – User experience design focused on reducing friction and increasing customer lifetime value.</li>
           </ul>
         </section>
+
+        <section>
+          <h2>Case Studies & Portfolio</h2>
+          <p>Explore <a href="/work">my design portfolio</a> featuring e-commerce UX projects, 3D creative work, VR game design, and branding projects with real results and measurable outcomes.</p>
+          <ul>
+            <li><a href="/work">E-commerce & UX Design Case Studies</a></li>
+            <li><a href="/work">3D Creative & VR Game Design Projects</a></li>
+            <li><a href="/work">Branding & Visual Design Portfolio</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>E-commerce Insights & Articles</h2>
+          <p>Read <a href="/writing">my latest articles</a> on marketplace optimization, Amazon growth strategy, Bol.com best practices, and digital commerce trends.</p>
+        </section>
+
         <section>
           <h2>Why Work With Hans?</h2>
           <p>With over a decade of hands-on experience managing marketplaces and e-commerce operations, Hans combines strategic thinking with execution. From product listing optimization to full-channel growth strategies, he helps brands maximize their digital revenue.</p>
@@ -161,7 +188,13 @@
         </section>
       </main>
       <footer>
-        <p>© 2026 Hans van Leeuwen | Amersfoort, Netherlands</p>
+        <p>© 2026 Hans van Leeuwen | E-commerce Manager | Amersfoort, Netherlands</p>
+        <nav>
+          <a href="/">Home</a> |
+          <a href="/work">Work</a> |
+          <a href="/writing">Writing</a> |
+          <a href="/about">About</a>
+        </nav>
       </footer>
     </noscript>
     <div id="root"></div>
