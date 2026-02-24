@@ -16,6 +16,46 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://hansvanleeuwen.com/writing/hidden-cost-dark-patterns</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/designing-with-llms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/cycling-dutch-countryside</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/cro-design-problem</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/ai-search-ux-lessons</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/bookshelf-2024</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/ux-unit-economics</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/sourdough-products</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://hansvanleeuwen.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
