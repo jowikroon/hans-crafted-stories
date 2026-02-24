@@ -73,6 +73,37 @@ const Work = () => {
     [studies]
   );
 
+  // Inject CreativeWork JSON-LD for each case study
+  useEffect(() => {
+    const scriptId = "case-studies-jsonld";
+    let el = document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (!el) {
+      el = document.createElement("script");
+      el.id = scriptId;
+      el.type = "application/ld+json";
+      document.head.appendChild(el);
+    }
+    const items = mapped.map((s, i) => ({
+      "@type": "CreativeWork",
+      "@id": `https://hansvanleeuwen.com/work#${s.id}`,
+      position: i + 1,
+      name: s.title,
+      description: s.description,
+      image: s.image,
+      dateCreated: s.year,
+      genre: s.category,
+      author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+      ...(s.externalUrl ? { url: s.externalUrl } : {}),
+    }));
+    el.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Design Portfolio & Case Studies",
+      itemListElement: items,
+    });
+    return () => { document.getElementById(scriptId)?.remove(); };
+  }, [mapped]);
+
   const filtered = useMemo(() => {
     if (filter === "all") return mapped;
     return mapped.filter((s) => s.filterGroup === filter);
