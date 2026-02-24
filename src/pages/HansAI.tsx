@@ -1,156 +1,234 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Navigate } from "react-router-dom";
-import {
-  Terminal, Send, Plus, Trash2, Bot, Code, Search as SearchIcon, Pen, Crown,
-  Loader2, Sparkles, Maximize2, Minimize2, ExternalLink, X, MessageSquare
-} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import PageBreadcrumb from "@/components/PageBreadcrumb";
-import ReactMarkdown from "react-markdown";
 
-// ── Types ──────────────────────────────────────────────────────────
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
-
-interface ChatSession {
-  id: string;
-  name: string;
-  category: Category;
-  model: string;
-  messages: Message[];
-  createdAt: number;
-}
-
-type Category = "empire" | "seo" | "creative" | "code" | "general" | "claude";
-
-// ── Constants ──────────────────────────────────────────────────────
-const CATEGORIES: { id: Category; label: string; icon: typeof Bot; color: string; description: string }[] = [
-  { id: "empire", label: "Empire Ops", icon: Crown, color: "text-emerald-400", description: "Infrastructure & workflow management" },
-  { id: "seo", label: "SEO Strategy", icon: SearchIcon, color: "text-blue-400", description: "Keywords, audits & marketplace optimization" },
-  { id: "code", label: "Code Assistant", icon: Code, color: "text-purple-400", description: "Full-stack dev & DevOps help" },
-  { id: "creative", label: "Creative Writer", icon: Pen, color: "text-amber-400", description: "Blog posts, copy & brand content" },
-  { id: "general", label: "General AI", icon: Bot, color: "text-cyan-400", description: "General-purpose assistant" },
-  { id: "claude", label: "Claude (n8n)", icon: Terminal, color: "text-orange-400", description: "Send to Claude via webhook" },
-];
-
-const MODELS = [
-  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash", badge: "Fast" },
-  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash", badge: "Balanced" },
-  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro", badge: "Best" },
-  { id: "openai/gpt-5-mini", label: "GPT-5 Mini", badge: "Smart" },
-  { id: "openai/gpt-5", label: "GPT-5", badge: "Premium" },
-];
-
-const WEBHOOK_URL = "https://n8n.hansvanleeuwen.com/webhook/claude-chat";
-const TERMINAL_URL = "https://terminal.hansvanleeuwen.com";
+// ── Config ─────────────────────────────────────────────────────────
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hansai-chat`;
 
-// ── Helpers ─────────────────────────────────────────────────────────
-const createSession = (category: Category): ChatSession => ({
-  id: crypto.randomUUID(),
-  name: `New ${CATEGORIES.find(c => c.id === category)?.label || "Chat"}`,
-  category,
-  model: MODELS[0].id,
-  messages: [],
-  createdAt: Date.now(),
-});
+const workflows = [
+  { name: "autoseo", label: "AutoSEO Brain", webhook: "https://n8n.hansvanleeuwen.com/webhook/autoseo" },
+  { name: "product-titles", label: "Product Title Optimizer", webhook: "https://n8n.hansvanleeuwen.com/webhook/product-titles" },
+  { name: "health-check", label: "Health Check", webhook: "https://n8n.hansvanleeuwen.com/webhook/health-check" },
+  { name: "product-feed", label: "Product Feed Optimizer", webhook: "https://n8n.hansvanleeuwen.com/webhook/product-feed" },
+  { name: "campaign", label: "Campaign Generator", webhook: "https://n8n.hansvanleeuwen.com/webhook/campaign" },
+  { name: "scraper", label: "Web Scraper", webhook: "https://n8n.hansvanleeuwen.com/webhook/scraper" },
+];
+
+const SLASH_COMMANDS = [
+  { cmd: "/help", desc: "Show all commands" },
+  { cmd: "/idea", desc: "Save an idea" },
+  { cmd: "/task", desc: "Save a task" },
+  { cmd: "/tasks", desc: "Show all tasks & ideas" },
+  { cmd: "/prompt", desc: "Open prompt builder (seo/campaign/product/email)" },
+  { cmd: "/campaign", desc: "Launch campaign form" },
+  { cmd: "/run", desc: "Trigger n8n workflow" },
+  { cmd: "/workflows", desc: "List available workflows" },
+  { cmd: "/clear", desc: "Clear terminal" },
+  { cmd: "/ai", desc: "Chat with AI" },
+];
+
+// ── Types ──────────────────────────────────────────────────────────
+interface TerminalLine {
+  id: string;
+  type: "user" | "system" | "ai" | "workflow" | "saved" | "error" | "form";
+  content: string;
+  timestamp: number;
+  formType?: "campaign" | "prompt";
+}
+
+interface TaskItem {
+  id: string;
+  type: "task" | "idea";
+  text: string;
+  timestamp: number;
+  done: boolean;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────
+const uid = () => crypto.randomUUID();
+const ts = () => Date.now();
+const fmtTime = (t: number) => {
+  const d = new Date(t);
+  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+};
+
+const spinnerFrames = ["|", "/", "—", "\\"];
+
+// ── Natural language → command mapping ────────────────────────────
+const mapNaturalLanguage = (text: string): { cmd: string; arg: string } | null => {
+  const lower = text.toLowerCase().trim();
+  if (/^(capture |save |add )?idea[:\s]/i.test(lower)) {
+    return { cmd: "/idea", arg: text.replace(/^(capture |save |add )?idea[:\s]*/i, "").trim() };
+  }
+  if (/^(add |create |new )?task[:\s]/i.test(lower)) {
+    return { cmd: "/task", arg: text.replace(/^(add |create |new )?task[:\s]*/i, "").trim() };
+  }
+  if (/^(what |show |list |my )?(tasks|ideas|todo)/i.test(lower)) {
+    return { cmd: "/tasks", arg: "" };
+  }
+  if (/^(trigger|run|start|launch) (the )?/i.test(lower)) {
+    const wfName = lower.replace(/^(trigger|run|start|launch) (the )?/i, "").replace(/ workflow$/i, "").trim();
+    return { cmd: "/run", arg: wfName };
+  }
+  if (/^(write|create|generate|build) .*(seo|prompt|ad copy|email|product desc)/i.test(lower)) {
+    return { cmd: "/prompt", arg: "" };
+  }
+  if (/^clear/i.test(lower)) return { cmd: "/clear", arg: "" };
+  return null;
+};
 
 // ── Component ──────────────────────────────────────────────────────
 const HansAI = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
 
-  const [sessions, setSessions] = useState<ChatSession[]>(() => {
-    try {
-      const saved = localStorage.getItem("hansai-sessions");
-      return saved ? JSON.parse(saved) : [createSession("general")];
-    } catch { return [createSession("general")]; }
-  });
-  const [activeId, setActiveId] = useState<string>(sessions[0]?.id || "");
+  const [lines, setLines] = useState<TerminalLine[]>([
+    { id: uid(), type: "system", content: "HansAI Command Center v1.0", timestamp: ts() },
+    { id: uid(), type: "system", content: "Type /help to see all commands.", timestamp: ts() },
+    { id: uid(), type: "system", content: "Ready.", timestamp: ts() },
+  ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [terminalOpen, setTerminalOpen] = useState(false);
-  const [terminalMax, setTerminalMax] = useState(false);
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [suggestions, setSuggestions] = useState<typeof SLASH_COMMANDS>([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(0);
+  const [showForm, setShowForm] = useState<"campaign" | "prompt" | null>(null);
+  const [spinnerIdx, setSpinnerIdx] = useState(0);
+  const [clearFlash, setClearFlash] = useState(false);
 
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // AI conversation history (not displayed, for context)
+  const [aiMessages, setAiMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
 
-  const activeSession = sessions.find(s => s.id === activeId);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const spinnerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Persist sessions
+  // Auto-scroll
   useEffect(() => {
-    localStorage.setItem("hansai-sessions", JSON.stringify(sessions));
-  }, [sessions]);
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [lines, loading]);
 
+  // Focus input on mount
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeSession?.messages, loading]);
-
-  useEffect(() => {
-    document.title = "Hans AI — Command Center";
-    const el = document.querySelector('meta[name="robots"]') as HTMLMetaElement;
-    if (el) el.content = "noindex, nofollow";
+    setTimeout(() => inputRef.current?.focus(), 300);
+    document.title = "HansAI — Command Center";
+    const meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement;
+    if (meta) meta.content = "noindex, nofollow";
   }, []);
 
-  const updateSession = useCallback((id: string, updates: Partial<ChatSession>) => {
-    setSessions(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+  // Spinner animation
+  useEffect(() => {
+    if (loading) {
+      spinnerInterval.current = setInterval(() => setSpinnerIdx((i) => (i + 1) % 4), 100);
+    } else {
+      if (spinnerInterval.current) clearInterval(spinnerInterval.current);
+    }
+    return () => { if (spinnerInterval.current) clearInterval(spinnerInterval.current); };
+  }, [loading]);
+
+  const addLine = useCallback((type: TerminalLine["type"], content: string, formType?: "campaign" | "prompt") => {
+    setLines((prev) => [...prev, { id: uid(), type, content, timestamp: ts(), formType }]);
   }, []);
 
-  const addSession = (category: Category) => {
-    const s = createSession(category);
-    setSessions(prev => [...prev, s]);
-    setActiveId(s.id);
-  };
-
-  const deleteSession = (id: string) => {
-    setSessions(prev => {
-      const next = prev.filter(s => s.id !== id);
-      if (next.length === 0) {
-        const fresh = createSession("general");
-        setActiveId(fresh.id);
-        return [fresh];
+  const updateLastAiLine = useCallback((content: string) => {
+    setLines((prev) => {
+      const last = prev[prev.length - 1];
+      if (last?.type === "ai") {
+        return [...prev.slice(0, -1), { ...last, content }];
       }
-      if (activeId === id) setActiveId(next[0].id);
-      return next;
+      return [...prev, { id: uid(), type: "ai", content, timestamp: ts() }];
     });
+  }, []);
+
+  // ── Command handlers ────────────────────────────────────────────
+  const handleHelp = () => {
+    const helpText = SLASH_COMMANDS.map((c) => `  ${c.cmd.padEnd(16)} ${c.desc}`).join("\n");
+    addLine("system", `Available commands:\n${helpText}`);
   };
 
-  // ── Streaming send ──────────────────────────────────────────────
-  const sendMessage = async (text?: string) => {
-    const userMsg = text || input.trim();
-    if (!userMsg || loading || !activeSession) return;
-    setInput("");
+  const handleIdea = (text: string) => {
+    if (!text) { addLine("error", "Usage: /idea [your idea]"); return; }
+    setTasks((prev) => [...prev, { id: uid(), type: "idea", text, timestamp: ts(), done: false }]);
+    addLine("saved", `Idea saved: ${text}`);
+  };
 
-    const newMessages: Message[] = [...activeSession.messages, { role: "user", content: userMsg }];
-    updateSession(activeId, { messages: newMessages });
+  const handleTask = (text: string) => {
+    if (!text) { addLine("error", "Usage: /task [your task]"); return; }
+    setTasks((prev) => [...prev, { id: uid(), type: "task", text, timestamp: ts(), done: false }]);
+    addLine("saved", `Task saved: ${text}`);
+  };
 
-    // Auto-name on first message
-    if (activeSession.messages.length === 0) {
-      updateSession(activeId, { name: userMsg.slice(0, 40) + (userMsg.length > 40 ? "…" : "") });
+  const handleTasks = () => {
+    if (tasks.length === 0) { addLine("system", "No tasks or ideas yet. Use /task or /idea to add some."); return; }
+    const list = tasks
+      .map((t) => `  ${t.done ? "☑" : "☐"} [${t.type}] ${t.done ? `~~${t.text}~~` : t.text}`)
+      .join("\n");
+    addLine("system", `Tasks & Ideas (${tasks.length}):\n${list}\n\n  Click items in the list to toggle them.`);
+  };
+
+  const handleWorkflows = () => {
+    const list = workflows.map((w) => `  ● ${w.name.padEnd(18)} ${w.label}`).join("\n");
+    addLine("system", `Available n8n workflows:\n${list}\n\n  Use /run [name] to trigger.`);
+  };
+
+  const handleRun = async (name: string) => {
+    const wf = workflows.find((w) => w.name === name || w.label.toLowerCase().includes(name.toLowerCase()));
+    if (!wf) {
+      addLine("error", `Unknown workflow: "${name}". Use /workflows to see available ones.`);
+      return;
     }
 
+    addLine("workflow", `Running ${wf.label}...`);
+    setLoading(true);
+
+    try {
+      const res = await fetch(wf.webhook, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: "hansai", timestamp: new Date().toISOString() }),
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      let data: unknown;
+      const text = await res.text();
+      try { data = JSON.parse(text); } catch { data = text; }
+
+      addLine("workflow", `✓ ${wf.label} completed`);
+      if (data && typeof data === "object") {
+        addLine("system", "```json\n" + JSON.stringify(data, null, 2) + "\n```");
+      } else if (data) {
+        addLine("system", String(data));
+      }
+    } catch (err) {
+      addLine("error", `✗ Error running ${wf.label} — ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setClearFlash(true);
+    setTimeout(() => {
+      setLines([{ id: uid(), type: "system", content: "Terminal cleared. Ready.", timestamp: ts() }]);
+      setClearFlash(false);
+    }, 150);
+  };
+
+  // ── AI streaming ────────────────────────────────────────────────
+  const handleAI = async (text: string) => {
+    if (!text) { addLine("error", "Usage: /ai [message]"); return; }
+
+    addLine("user", text);
+    const newAiMessages = [...aiMessages, { role: "user" as const, content: text }];
+    setAiMessages(newAiMessages);
     setLoading(true);
 
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
-
-      const body: Record<string, unknown> = {
-        messages: newMessages,
-        category: activeSession.category,
-        model: activeSession.model,
-      };
-
-      if (activeSession.category === "claude") {
-        body.webhook_url = WEBHOOK_URL;
-      }
 
       const resp = await fetch(CHAT_URL, {
         method: "POST",
@@ -158,343 +236,522 @@ const HansAI = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ messages: newAiMessages }),
       });
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({ error: "Request failed" }));
-        updateSession(activeId, { messages: [...newMessages, { role: "assistant", content: `Error: ${err.error}` }] });
+        addLine("error", err.error || "AI request failed");
         setLoading(false);
         return;
       }
 
-      // Non-streaming (webhook/claude mode)
-      if (activeSession.category === "claude") {
-        const data = await resp.json();
-        updateSession(activeId, { messages: [...newMessages, { role: "assistant", content: data.reply || "No response." }] });
-        setLoading(false);
-        return;
-      }
-
-      // Streaming SSE
       if (!resp.body) throw new Error("No response body");
+
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
-      let textBuffer = "";
-      let assistantSoFar = "";
+      let buffer = "";
+      let fullResponse = "";
+      let streamDone = false;
 
-      const flush = (content: string) => {
-        assistantSoFar += content;
-        // Use functional update to always get latest state
-        setSessions(prev => prev.map(s => {
-          if (s.id !== activeId) return s;
-          const msgs = [...newMessages];
-          const lastIdx = msgs.length;
-          if (msgs[lastIdx - 1]?.role === "assistant") {
-            msgs[lastIdx - 1] = { role: "assistant", content: assistantSoFar };
-          } else {
-            msgs.push({ role: "assistant", content: assistantSoFar });
-          }
-          return { ...s, messages: msgs };
-        }));
-      };
-
-      let done = false;
-      while (!done) {
-        const { done: readerDone, value } = await reader.read();
-        if (readerDone) break;
-        textBuffer += decoder.decode(value, { stream: true });
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
 
         let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
           if (line.endsWith("\r")) line = line.slice(0, -1);
           if (line.startsWith(":") || line.trim() === "") continue;
           if (!line.startsWith("data: ")) continue;
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") { done = true; break; }
+          if (jsonStr === "[DONE]") { streamDone = true; break; }
           try {
             const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) flush(content);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullResponse += content;
+              updateLastAiLine(fullResponse);
+            }
           } catch {
-            textBuffer = line + "\n" + textBuffer;
+            buffer = line + "\n" + buffer;
             break;
           }
         }
       }
 
       // Final flush
-      if (textBuffer.trim()) {
-        for (let raw of textBuffer.split("\n")) {
-          if (!raw) continue;
-          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
-          if (!raw.startsWith("data: ")) continue;
+      if (buffer.trim()) {
+        for (let raw of buffer.split("\n")) {
+          if (!raw || !raw.startsWith("data: ")) continue;
           const jsonStr = raw.slice(6).trim();
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content;
-            if (content) flush(content);
+            if (content) { fullResponse += content; updateLastAiLine(fullResponse); }
           } catch { /* ignore */ }
         }
       }
+
+      setAiMessages([...newAiMessages, { role: "assistant", content: fullResponse }]);
     } catch (e) {
       console.error(e);
-      updateSession(activeId, { messages: [...newMessages, { role: "assistant", content: "Connection error." }] });
+      addLine("error", "Connection error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  // ── Campaign form submit ────────────────────────────────────────
+  const handleCampaignSubmit = async (data: Record<string, string>) => {
+    setShowForm(null);
+    addLine("workflow", `Launching campaign: ${data.product} → ${data.goal}...`);
+    setLoading(true);
+
+    try {
+      const wf = workflows.find((w) => w.name === "campaign");
+      if (!wf) throw new Error("Campaign workflow not configured");
+
+      const res = await fetch(wf.webhook, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, source: "hansai" }),
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      addLine("workflow", `✓ Campaign launched for "${data.product}"`);
+    } catch (err) {
+      addLine("error", `✗ Campaign error — ${err instanceof Error ? err.message : "Unknown"}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // ── Guard ────────────────────────────────────────────────────────
+  // ── Prompt builder submit ───────────────────────────────────────
+  const handlePromptSubmit = async (data: Record<string, string>) => {
+    setShowForm(null);
+    const prompt = `Write a ${data.type} for "${data.subject}" in a ${data.tone} tone. Be specific and actionable.`;
+    await handleAI(prompt);
+  };
+
+  // ── Main command router ─────────────────────────────────────────
+  const processInput = async (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+
+    // Check for slash commands
+    if (trimmed.startsWith("/")) {
+      const [cmd, ...rest] = trimmed.split(" ");
+      const arg = rest.join(" ").trim();
+
+      switch (cmd.toLowerCase()) {
+        case "/help": handleHelp(); break;
+        case "/idea": handleIdea(arg); break;
+        case "/task": handleTask(arg); break;
+        case "/tasks": handleTasks(); break;
+        case "/workflows": handleWorkflows(); break;
+        case "/run": await handleRun(arg); break;
+        case "/clear": handleClear(); break;
+        case "/ai": await handleAI(arg); break;
+        case "/campaign": setShowForm("campaign"); addLine("system", "Opening campaign builder..."); break;
+        case "/prompt": setShowForm("prompt"); addLine("system", "Opening prompt builder..."); break;
+        default: addLine("error", `Unknown command: ${cmd}. Type /help for available commands.`);
+      }
+      return;
+    }
+
+    // Natural language mapping
+    const mapped = mapNaturalLanguage(trimmed);
+    if (mapped) {
+      switch (mapped.cmd) {
+        case "/idea": handleIdea(mapped.arg); break;
+        case "/task": handleTask(mapped.arg); break;
+        case "/tasks": handleTasks(); break;
+        case "/run": await handleRun(mapped.arg); break;
+        case "/clear": handleClear(); break;
+        case "/prompt": setShowForm("prompt"); addLine("system", "Opening prompt builder..."); break;
+        default: break;
+      }
+      return;
+    }
+
+    // Default: send to AI
+    await handleAI(trimmed);
+  };
+
+  const handleSubmit = () => {
+    if (loading) return;
+    const val = input;
+    setInput("");
+    setSuggestions([]);
+    // Show as user command line
+    if (val.trim().startsWith("/")) {
+      addLine("user", val.trim());
+    }
+    processInput(val);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (suggestions.length > 0) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setSelectedSuggestion((i) => Math.min(i + 1, suggestions.length - 1)); return; }
+      if (e.key === "ArrowUp") { e.preventDefault(); setSelectedSuggestion((i) => Math.max(i - 1, 0)); return; }
+      if (e.key === "Tab" || e.key === "Enter") {
+        if (suggestions[selectedSuggestion]) {
+          e.preventDefault();
+          setInput(suggestions[selectedSuggestion].cmd + " ");
+          setSuggestions([]);
+          return;
+        }
+      }
+      if (e.key === "Escape") { setSuggestions([]); return; }
+    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
+  };
+
+  const handleInputChange = (val: string) => {
+    setInput(val);
+    if (val.startsWith("/") && val.length > 0) {
+      const matching = SLASH_COMMANDS.filter((c) => c.cmd.startsWith(val.split(" ")[0]));
+      setSuggestions(matching.length > 0 && val.split(" ").length === 1 ? matching : []);
+      setSelectedSuggestion(0);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const toggleTask = (id: string) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  };
+
+  // ── Guards ──────────────────────────────────────────────────────
   if (authLoading || adminLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[hsl(220,20%,6%)]">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500/30 border-t-emerald-400" />
+      <div className="flex h-screen items-center justify-center" style={{ background: "#0a0a0a" }}>
+        <div className="h-5 w-5 animate-spin rounded-full" style={{ border: "2px solid #1e1e1e", borderTopColor: "#00ff88" }} />
       </div>
     );
   }
   if (!user || !isAdmin) return <Navigate to="/portal" replace />;
 
-  const catInfo = CATEGORIES.find(c => c.id === activeSession?.category) || CATEGORIES[4];
-  const CatIcon = catInfo.icon;
-
+  // ── Render ──────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[hsl(220,20%,6%)] text-[hsl(160,20%,85%)]">
-      <style>{`
-        .hansai-page { --background: 220 20% 6%; --foreground: 160 20% 85%; --card: 220 18% 10%; --card-foreground: 160 20% 85%; --border: 220 15% 16%; --secondary: 220 15% 12%; --muted: 220 12% 18%; --muted-foreground: 160 10% 45%; }
-      `}</style>
+    <div className="flex h-screen flex-col overflow-hidden" style={{ background: "#0a0a0a", fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
+      {/* JetBrains Mono font */}
+      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-      <div className="hansai-page flex h-screen pt-[72px]">
-        {/* ── Sidebar ─────────────────────────────────────────── */}
-        <AnimatePresence>
-          {sidebarOpen && (
-            <motion.aside
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 280, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex h-full flex-col border-r border-[hsl(220,15%,16%)] bg-[hsl(220,18%,8%)] overflow-hidden"
-            >
-              {/* New chat buttons */}
-              <div className="p-3 border-b border-[hsl(220,15%,16%)]">
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-400/50">New Chat</p>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {CATEGORIES.map(cat => {
-                    const Icon = cat.icon;
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => addSession(cat.id)}
-                        className="flex items-center gap-1.5 rounded-lg border border-[hsl(220,15%,16%)] px-2 py-1.5 text-[11px] text-[hsl(160,10%,45%)] transition-all hover:border-emerald-500/30 hover:text-emerald-300"
-                      >
-                        <Icon size={12} className={cat.color} />
-                        <span className="truncate">{cat.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+      {/* ── Header ────────────────────────────────────────────── */}
+      <header
+        className="flex h-12 shrink-0 items-center justify-between px-4"
+        style={{ borderBottom: "1px solid #1e1e1e" }}
+      >
+        <div className="flex items-center gap-1 text-sm font-semibold" style={{ color: "#00ff88" }}>
+          HansAI
+          <span className="animate-pulse">_</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="inline-block h-2 w-2 rounded-full" style={{ background: "#00ff88" }} />
+          <span style={{ color: "#00ff88", opacity: 0.7 }}>Online</span>
+        </div>
+      </header>
 
-              {/* Session list */}
-              <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
-                {[...sessions].reverse().map(s => {
-                  const sCat = CATEGORIES.find(c => c.id === s.category);
-                  const SIcon = sCat?.icon || Bot;
-                  const isActive = s.id === activeId;
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => setActiveId(s.id)}
-                      className={`group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition-all ${
-                        isActive
-                          ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300"
-                          : "text-[hsl(160,10%,50%)] hover:bg-[hsl(220,15%,12%)] border border-transparent"
-                      }`}
-                    >
-                      <SIcon size={13} className={sCat?.color || "text-cyan-400"} />
-                      <span className="flex-1 truncate">{s.name}</span>
-                      <span className="text-[10px] text-[hsl(160,10%,30%)]">{s.messages.length}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}
-                        className="opacity-0 group-hover:opacity-100 rounded p-0.5 text-red-400/50 hover:text-red-400 transition-all"
-                      >
-                        <Trash2 size={11} />
-                      </button>
-                    </button>
-                  );
-                })}
-              </div>
+      {/* ── Terminal output ───────────────────────────────────── */}
+      <div
+        ref={scrollRef}
+        className={`flex-1 overflow-y-auto px-4 py-4 transition-all duration-150 ${clearFlash ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
+        style={{ scrollBehavior: "smooth" }}
+      >
+        <div className="mx-auto max-w-3xl space-y-1">
+          {lines.map((line) => (
+            <TerminalLineComponent key={line.id} line={line} tasks={tasks} onToggleTask={toggleTask} />
+          ))}
 
-              {/* Terminal shortcut */}
-              <div className="border-t border-[hsl(220,15%,16%)] p-3">
-                <button
-                  onClick={() => setTerminalOpen(true)}
-                  className="flex w-full items-center gap-2 rounded-lg border border-emerald-500/15 px-3 py-2 text-xs text-emerald-400/60 transition-all hover:border-emerald-500/30 hover:text-emerald-300"
-                >
-                  <Terminal size={13} />
-                  <span>Claude Terminal</span>
-                  <ExternalLink size={10} className="ml-auto" />
-                </button>
-              </div>
-            </motion.aside>
+          {/* Loading spinner */}
+          {loading && (
+            <div className="flex items-center gap-2 py-1 text-xs" style={{ color: "#00ff88", opacity: 0.6 }}>
+              <span className="w-3 text-center">{spinnerFrames[spinnerIdx]}</span>
+              <span>Processing...</span>
+            </div>
           )}
-        </AnimatePresence>
 
-        {/* ── Main chat area ──────────────────────────────────── */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Top bar */}
-          <div className="flex items-center gap-3 border-b border-[hsl(220,15%,16%)] bg-[hsl(220,18%,8%)] px-4 py-2.5">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="rounded-md p-1.5 text-[hsl(160,10%,45%)] transition-colors hover:bg-[hsl(220,15%,12%)] hover:text-emerald-300"
-            >
-              <MessageSquare size={16} />
-            </button>
-
-            <div className="flex items-center gap-2">
-              <CatIcon size={15} className={catInfo.color} />
-              <span className="text-sm font-medium text-emerald-300">{catInfo.label}</span>
-              <span className="text-[10px] text-[hsl(160,10%,35%)]">— {catInfo.description}</span>
-            </div>
-
-            <div className="ml-auto flex items-center gap-2">
-              {/* Model selector (not for claude webhook) */}
-              {activeSession?.category !== "claude" && (
-                <select
-                  value={activeSession?.model || MODELS[0].id}
-                  onChange={(e) => activeSession && updateSession(activeSession.id, { model: e.target.value })}
-                  className="rounded-md border border-[hsl(220,15%,16%)] bg-[hsl(220,18%,10%)] px-2 py-1 text-xs text-emerald-300 outline-none focus:border-emerald-500/30"
-                >
-                  {MODELS.map(m => (
-                    <option key={m.id} value={m.id}>{m.label} ({m.badge})</option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-6">
-            {activeSession?.messages.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center text-center">
-                <Sparkles size={36} className="mb-4 text-emerald-500/15" />
-                <h2 className="mb-1 font-mono text-lg font-bold text-emerald-300/70">Hans AI</h2>
-                <p className="mb-6 max-w-md text-xs text-[hsl(160,10%,40%)]">
-                  {catInfo.description}. Select a model and start chatting.
-                </p>
-              </div>
-            ) : (
-              <div className="mx-auto max-w-3xl space-y-4">
-                {activeSession?.messages.map((msg, i) => (
-                  <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    {msg.role === "assistant" && (
-                      <div className={`mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10`}>
-                        <CatIcon size={13} className={catInfo.color} />
-                      </div>
-                    )}
-                    <div className={`max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "bg-emerald-500/15 text-emerald-100"
-                        : "border border-[hsl(220,15%,16%)] bg-[hsl(220,18%,10%)] text-[hsl(160,15%,80%)]"
-                    }`}>
-                      {msg.role === "assistant" ? (
-                        <div className="prose prose-sm prose-invert max-w-none prose-headings:text-emerald-300 prose-code:text-emerald-400 prose-pre:bg-black/30 prose-pre:border prose-pre:border-[hsl(220,15%,16%)] prose-a:text-emerald-400">
-                          <ReactMarkdown>{msg.content}</ReactMarkdown>
-                        </div>
-                      ) : msg.content}
-                    </div>
-                  </div>
-                ))}
-                {loading && (
-                  <div className="flex gap-3">
-                    <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
-                      <Loader2 size={13} className="animate-spin text-emerald-400" />
-                    </div>
-                    <div className="rounded-xl border border-[hsl(220,15%,16%)] bg-[hsl(220,18%,10%)] px-4 py-3">
-                      <div className="flex gap-1">
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-emerald-400/40" style={{ animationDelay: "0ms" }} />
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-emerald-400/40" style={{ animationDelay: "150ms" }} />
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-emerald-400/40" style={{ animationDelay: "300ms" }} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={bottomRef} />
-              </div>
-            )}
-          </div>
-
-          {/* Input */}
-          <div className="border-t border-[hsl(220,15%,16%)] bg-[hsl(220,18%,8%)] p-3">
-            <div className="mx-auto flex max-w-3xl gap-2">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={`Message ${catInfo.label}...`}
-                rows={1}
-                className="flex-1 resize-none rounded-lg border border-[hsl(220,15%,16%)] bg-[hsl(220,18%,10%)] px-3 py-2.5 text-sm text-emerald-200 placeholder:text-[hsl(160,10%,30%)] focus:border-emerald-500/30 focus:outline-none"
-              />
-              <Button
-                size="icon"
-                onClick={() => sendMessage()}
-                disabled={!input.trim() || loading}
-                className="h-10 w-10 shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white"
-              >
-                <Send size={14} />
-              </Button>
-            </div>
-          </div>
+          {/* Inline forms */}
+          {showForm === "campaign" && (
+            <CampaignForm onSubmit={handleCampaignSubmit} onCancel={() => setShowForm(null)} />
+          )}
+          {showForm === "prompt" && (
+            <PromptForm onSubmit={handlePromptSubmit} onCancel={() => setShowForm(null)} />
+          )}
         </div>
       </div>
 
-      {/* ── Terminal overlay ────────────────────────────────────── */}
-      <AnimatePresence>
-        {terminalOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.95 }}
-            transition={{ duration: 0.25 }}
-            className={`fixed z-50 overflow-hidden rounded-xl border border-emerald-500/20 bg-[hsl(220,20%,6%)] shadow-2xl ${
-              terminalMax ? "inset-3" : "bottom-6 right-6 h-[500px] w-[600px] max-w-[calc(100vw-3rem)]"
-            }`}
-          >
-            <div className="flex items-center justify-between border-b border-emerald-500/10 bg-[hsl(220,18%,10%)] px-3 py-2">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500/70" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" />
-                </div>
-                <span className="ml-2 font-mono text-[11px] text-emerald-400/60">claude@srv1402218</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <a href={TERMINAL_URL} target="_blank" rel="noopener noreferrer" className="rounded p-1 text-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-300 transition-colors">
-                  <ExternalLink size={13} />
-                </a>
-                <button onClick={() => setTerminalMax(!terminalMax)} className="rounded p-1 text-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-300 transition-colors">
-                  {terminalMax ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+      {/* ── Input bar ─────────────────────────────────────────── */}
+      <div className="shrink-0 px-4 pb-4 pt-2" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
+        <div className="mx-auto max-w-3xl">
+          {/* Autocomplete suggestions */}
+          {suggestions.length > 0 && (
+            <div className="mb-1 rounded-lg border p-1" style={{ background: "#111111", borderColor: "#1e1e1e" }}>
+              {suggestions.map((s, i) => (
+                <button
+                  key={s.cmd}
+                  onClick={() => { setInput(s.cmd + " "); setSuggestions([]); inputRef.current?.focus(); }}
+                  className={`flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left text-xs transition-colors ${
+                    i === selectedSuggestion ? "" : ""
+                  }`}
+                  style={{
+                    color: i === selectedSuggestion ? "#00ff88" : "#666",
+                    background: i === selectedSuggestion ? "rgba(0,255,136,0.08)" : "transparent",
+                  }}
+                >
+                  <span className="font-semibold" style={{ color: "#00ff88" }}>{s.cmd}</span>
+                  <span>{s.desc}</span>
                 </button>
-                <button onClick={() => { setTerminalOpen(false); setTerminalMax(false); }} className="rounded p-1 text-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-300 transition-colors">
-                  <X size={13} />
-                </button>
-              </div>
+              ))}
             </div>
-            <iframe src={TERMINAL_URL} className="h-[calc(100%-36px)] w-full border-0 bg-black" allow="clipboard-read; clipboard-write" title="Claude Terminal" />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+
+          <div className="flex items-center gap-2 rounded-lg border px-3 py-2" style={{ background: "#111111", borderColor: "#1e1e1e" }}>
+            <span className="hidden text-xs sm:inline" style={{ color: "#00ff88", opacity: 0.5 }}>$</span>
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a command or message..."
+              disabled={loading}
+              className="flex-1 bg-transparent text-sm outline-none placeholder:opacity-30"
+              style={{ color: "#e0e0e0", fontFamily: "inherit" }}
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={!input.trim() || loading}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all disabled:opacity-20"
+              style={{ background: "rgba(0,255,136,0.15)", color: "#00ff88" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
+
+// ── Terminal Line Renderer ────────────────────────────────────────
+const TerminalLineComponent = ({
+  line,
+  tasks,
+  onToggleTask,
+}: {
+  line: TerminalLine;
+  tasks: TaskItem[];
+  onToggleTask: (id: string) => void;
+}) => {
+  const prefixMap: Record<string, { prefix: string; color: string }> = {
+    user: { prefix: "hans@hq:~$ ", color: "#00ff88" },
+    system: { prefix: "> ", color: "#888" },
+    ai: { prefix: "> ", color: "#e0e0e0" },
+    workflow: { prefix: "⚙ n8n: ", color: "#ffaa00" },
+    saved: { prefix: "✓ saved: ", color: "#00ff88" },
+    error: { prefix: "✗ ", color: "#ff4444" },
+    form: { prefix: "", color: "#888" },
+  };
+
+  const { prefix, color } = prefixMap[line.type] || prefixMap.system;
+
+  // Task list with toggleable items
+  if (line.type === "system" && line.content.startsWith("Tasks & Ideas")) {
+    return (
+      <div className="py-1">
+        <div className="flex items-start gap-0">
+          <span className="shrink-0 text-xs" style={{ color: "#888" }}>{">"} </span>
+          <div className="flex-1">
+            <div className="text-xs" style={{ color: "#888" }}>Tasks & Ideas ({tasks.length}):</div>
+            <div className="mt-1 space-y-0.5">
+              {tasks.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => onToggleTask(t.id)}
+                  className="flex w-full items-center gap-2 rounded px-1 py-0.5 text-left text-xs transition-colors hover:bg-white/5"
+                  style={{ color: t.done ? "#444" : "#ccc", textDecoration: t.done ? "line-through" : "none" }}
+                >
+                  <span>{t.done ? "☑" : "☐"}</span>
+                  <span className="opacity-50">[{t.type}]</span>
+                  <span>{t.text}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <TimeStamp timestamp={line.timestamp} />
+      </div>
+    );
+  }
+
+  // Code block detection
+  const hasCode = line.content.includes("```");
+
+  return (
+    <div className="group flex items-start gap-0 py-0.5">
+      <div className="flex-1 text-xs leading-relaxed" style={{ color }}>
+        <span style={{ color: line.type === "user" ? "#00ff88" : color, opacity: line.type === "user" ? 0.7 : 1 }}>
+          {prefix}
+        </span>
+        {hasCode ? <CodeRenderer content={line.content} /> : (
+          <span className="whitespace-pre-wrap">{line.content}</span>
+        )}
+      </div>
+      <TimeStamp timestamp={line.timestamp} />
+    </div>
+  );
+};
+
+const TimeStamp = ({ timestamp }: { timestamp: number }) => (
+  <span className="ml-2 shrink-0 text-[10px] opacity-0 transition-opacity group-hover:opacity-40" style={{ color: "#666" }}>
+    {fmtTime(timestamp)}
+  </span>
+);
+
+// ── Code block renderer ───────────────────────────────────────────
+const CodeRenderer = ({ content }: { content: string }) => {
+  const parts = content.split(/(```[\s\S]*?```)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith("```") && part.endsWith("```")) {
+          const lines = part.slice(3, -3).split("\n");
+          const lang = lines[0]?.trim() || "";
+          const code = (lang ? lines.slice(1) : lines).join("\n");
+          return (
+            <div key={i} className="my-2 overflow-x-auto rounded-md border text-xs" style={{ background: "rgba(0,0,0,0.4)", borderColor: "#1e1e1e" }}>
+              {lang && <div className="border-b px-3 py-1 text-[10px] uppercase tracking-wider" style={{ borderColor: "#1e1e1e", color: "#00ff88", opacity: 0.5 }}>{lang}</div>}
+              <pre className="p-3 leading-relaxed" style={{ color: "#b0e0b0" }}>{code}</pre>
+            </div>
+          );
+        }
+        return <span key={i} className="whitespace-pre-wrap">{part}</span>;
+      })}
+    </>
+  );
+};
+
+// ── Campaign Form ─────────────────────────────────────────────────
+const CampaignForm = ({
+  onSubmit,
+  onCancel,
+}: {
+  onSubmit: (data: Record<string, string>) => void;
+  onCancel: () => void;
+}) => {
+  const [product, setProduct] = useState("");
+  const [market, setMarket] = useState("Netherlands");
+  const [budget, setBudget] = useState("50");
+  const [goal, setGoal] = useState("Traffic");
+
+  return (
+    <div className="my-3 rounded-lg border p-4" style={{ background: "#111111", borderColor: "#00ff8830" }}>
+      <div className="mb-3 text-xs font-semibold" style={{ color: "#00ff88" }}>⚙ Campaign Builder</div>
+      <div className="space-y-2">
+        <FormField label="Product / Category" value={product} onChange={setProduct} placeholder="e.g. Car parts — brake pads" />
+        <FormField label="Target Market" value={market} onChange={setMarket} />
+        <FormField label="Budget / day (€)" value={budget} onChange={setBudget} type="number" />
+        <div>
+          <label className="mb-1 block text-[10px] uppercase tracking-wider" style={{ color: "#666" }}>Goal</label>
+          <select
+            value={goal}
+            onChange={(e) => setGoal(e.target.value)}
+            className="w-full rounded border bg-transparent px-2 py-1.5 text-xs outline-none"
+            style={{ borderColor: "#1e1e1e", color: "#e0e0e0" }}
+          >
+            <option value="Traffic">Traffic</option>
+            <option value="Leads">Leads</option>
+            <option value="Sales">Sales</option>
+          </select>
+        </div>
+        <div className="flex gap-2 pt-1">
+          <button onClick={() => onSubmit({ product, market, budget, goal })} disabled={!product} className="rounded px-3 py-1.5 text-xs font-medium transition-all disabled:opacity-30" style={{ background: "rgba(0,255,136,0.15)", color: "#00ff88" }}>
+            Launch Campaign
+          </button>
+          <button onClick={onCancel} className="rounded px-3 py-1.5 text-xs transition-all" style={{ color: "#666" }}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Prompt Builder Form ───────────────────────────────────────────
+const PromptForm = ({
+  onSubmit,
+  onCancel,
+}: {
+  onSubmit: (data: Record<string, string>) => void;
+  onCancel: () => void;
+}) => {
+  const [type, setType] = useState("SEO");
+  const [subject, setSubject] = useState("");
+  const [tone, setTone] = useState("Professional");
+
+  return (
+    <div className="my-3 rounded-lg border p-4" style={{ background: "#111111", borderColor: "#00ff8830" }}>
+      <div className="mb-3 text-xs font-semibold" style={{ color: "#00ff88" }}>✦ Prompt Builder</div>
+      <div className="space-y-2">
+        <div>
+          <label className="mb-1 block text-[10px] uppercase tracking-wider" style={{ color: "#666" }}>Type</label>
+          <select value={type} onChange={(e) => setType(e.target.value)} className="w-full rounded border bg-transparent px-2 py-1.5 text-xs outline-none" style={{ borderColor: "#1e1e1e", color: "#e0e0e0" }}>
+            <option value="SEO">SEO Content</option>
+            <option value="Product Description">Product Description</option>
+            <option value="Ad Copy">Ad Copy</option>
+            <option value="Email">Email</option>
+          </select>
+        </div>
+        <FormField label="Subject / Keyword" value={subject} onChange={setSubject} placeholder="e.g. brake pads OEM quality" />
+        <div>
+          <label className="mb-1 block text-[10px] uppercase tracking-wider" style={{ color: "#666" }}>Tone</label>
+          <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full rounded border bg-transparent px-2 py-1.5 text-xs outline-none" style={{ borderColor: "#1e1e1e", color: "#e0e0e0" }}>
+            <option value="Professional">Professional</option>
+            <option value="Casual">Casual</option>
+            <option value="Technical">Technical</option>
+          </select>
+        </div>
+        <div className="flex gap-2 pt-1">
+          <button onClick={() => onSubmit({ type, subject, tone })} disabled={!subject} className="rounded px-3 py-1.5 text-xs font-medium transition-all disabled:opacity-30" style={{ background: "rgba(0,255,136,0.15)", color: "#00ff88" }}>
+            Generate
+          </button>
+          <button onClick={onCancel} className="rounded px-3 py-1.5 text-xs transition-all" style={{ color: "#666" }}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Shared form field ─────────────────────────────────────────────
+const FormField = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+}) => (
+  <div>
+    <label className="mb-1 block text-[10px] uppercase tracking-wider" style={{ color: "#666" }}>{label}</label>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full rounded border bg-transparent px-2 py-1.5 text-xs outline-none placeholder:opacity-30"
+      style={{ borderColor: "#1e1e1e", color: "#e0e0e0" }}
+    />
+  </div>
+);
 
 export default HansAI;
