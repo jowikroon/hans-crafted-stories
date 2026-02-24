@@ -7,13 +7,7 @@ import CaseStudyCard from "@/components/CaseStudyCard";
 import CategoryCards from "@/components/CategoryCards";
 import { usePageElements } from "@/hooks/usePageElements";
 import { useCategoryCards } from "@/hooks/useCategoryCards";
-
-const WORK_META = {
-  title: "Case Studies – E-commerce, 3D & UX Design Portfolio | Hans van Leeuwen",
-  description:
-    "Explore Hans van Leeuwen's design portfolio: e-commerce UX, 3D creative work, VR game design, and branding projects. View case studies with real results.",
-  url: "https://hansvanleeuwen.com/work",
-};
+import { useSEO } from "@/hooks/useSEO";
 
 // Map detailed categories to filter groups
 const categoryGroupMap: Record<string, string> = {
@@ -35,68 +29,25 @@ const Work = () => {
   const { isVisible } = usePageElements("work");
   const { cards: dbCards } = useCategoryCards("work");
 
+  useSEO({
+    title: "Case Studies – E-commerce, 3D & UX Design Portfolio | Hans van Leeuwen",
+    description: "Explore Hans van Leeuwen's design portfolio: e-commerce UX, 3D creative work, VR game design, and branding projects. View case studies with real results.",
+    url: "https://hansvanleeuwen.com/work",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Case Studies – Design Portfolio",
+      description: "Explore Hans van Leeuwen's design portfolio: e-commerce UX, 3D creative work, VR game design, and branding projects.",
+      url: "https://hansvanleeuwen.com/work",
+      author: { "@type": "Person", name: "Hans van Leeuwen", jobTitle: "E-commerce Manager" },
+    },
+  });
+
   useEffect(() => {
     getCaseStudies(true).then((s) => {
       setStudies(s);
       setLoading(false);
     });
-  }, []);
-
-  // Dynamic SEO meta tags for /work
-  useEffect(() => {
-    document.title = WORK_META.title;
-    const setMeta = (name: string, content: string, attr = "name") => {
-      let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute(attr, name);
-        document.head.appendChild(el);
-      }
-      el.content = content;
-    };
-    setMeta("description", WORK_META.description);
-    setMeta("og:title", WORK_META.title, "property");
-    setMeta("og:description", WORK_META.description, "property");
-    setMeta("og:url", WORK_META.url, "property");
-    setMeta("og:type", "website", "property");
-    setMeta("twitter:title", WORK_META.title, "name");
-    setMeta("twitter:description", WORK_META.description, "name");
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
-    }
-    canonical.href = WORK_META.url;
-
-    // JSON-LD structured data for portfolio/work page
-    const ldId = "work-jsonld";
-    let ldScript = document.getElementById(ldId) as HTMLScriptElement | null;
-    if (!ldScript) {
-      ldScript = document.createElement("script");
-      ldScript.id = ldId;
-      ldScript.type = "application/ld+json";
-      document.head.appendChild(ldScript);
-    }
-    ldScript.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      "name": "Case Studies – Design Portfolio",
-      "description": WORK_META.description,
-      "url": WORK_META.url,
-      "author": {
-        "@type": "Person",
-        "name": "Hans van Leeuwen",
-        "jobTitle": "E-commerce Manager",
-      },
-    });
-
-    return () => {
-      // Restore defaults on unmount
-      document.title = "Hans van Leeuwen – E-commerce Manager & Marketplace Specialist | Amersfoort";
-      document.getElementById(ldId)?.remove();
-    };
   }, []);
 
   const mapped = useMemo(

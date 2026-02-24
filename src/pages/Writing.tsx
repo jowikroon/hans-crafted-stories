@@ -7,6 +7,7 @@ import BlogPostCard from "@/components/BlogPostCard";
 import CategoryCards from "@/components/CategoryCards";
 import { usePageElements } from "@/hooks/usePageElements";
 import { useCategoryCards } from "@/hooks/useCategoryCards";
+import { useSEO } from "@/hooks/useSEO";
 
 type Filter = string;
 type TagFilter = string | null;
@@ -21,6 +22,20 @@ const Writing = () => {
   const [sort, setSort] = useState<SortOrder>("newest");
   const { isVisible } = usePageElements("writing");
   const { cards: dbCards } = useCategoryCards("writing");
+
+  useSEO({
+    title: "E-commerce Insights & Articles | Hans van Leeuwen",
+    description: "Read Hans van Leeuwen's thoughts on e-commerce strategy, marketplace optimization, Amazon & Bol.com growth, UX design, and digital commerce trends.",
+    url: "https://hansvanleeuwen.com/writing",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Writing – E-commerce Insights",
+      description: "Articles on e-commerce strategy, marketplace optimization, and digital commerce.",
+      url: "https://hansvanleeuwen.com/writing",
+      author: { "@type": "Person", name: "Hans van Leeuwen" },
+    },
+  });
 
   useEffect(() => {
     getBlogPosts(true).then((p) => { setBlogPosts(p); setLoading(false); });

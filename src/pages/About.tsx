@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/components/Navbar";
 import { translations } from "@/data/translations";
 import { usePageElements } from "@/hooks/usePageElements";
+import { useSEO } from "@/hooks/useSEO";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -21,6 +22,12 @@ const About = () => {
   const { lang } = useLang();
   const t = translations[lang];
   const { isVisible } = usePageElements("about");
+
+  useSEO({
+    title: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
+    description: "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and digital commerce. Based in Amersfoort, NL.",
+    url: "https://hansvanleeuwen.com/about",
+  });
 
   return (
     <section className="relative section-container pt-28 pb-20 overflow-hidden">
