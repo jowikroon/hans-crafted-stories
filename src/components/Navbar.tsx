@@ -1,7 +1,7 @@
 import { useState, createContext, useContext, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Terminal, Search, Command } from "lucide-react";
+import { Menu, X, LogIn, Terminal, Search, Command, Bot } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 
@@ -24,6 +24,7 @@ const searchablePages = [
   { to: "/about", label: "About", keywords: ["about", "contact", "info", "cv"] },
   { to: "/portal", label: "Portal", keywords: ["portal", "dashboard", "login", "tools"] },
   { to: "/empire", label: "Empire", keywords: ["empire", "admin", "terminal", "system"] },
+  { to: "/hansai", label: "Hans AI", keywords: ["ai", "chat", "llm", "claude", "gemini", "gpt"] },
 ];
 
 const Navbar = () => {
@@ -212,6 +213,15 @@ const Navbar = () => {
               </Link>
               {isAdmin && (
                 <Link
+                  to="/hansai"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-500 transition-colors hover:bg-emerald-500/20"
+                >
+                  <Bot size={14} />
+                  Hans AI
+                </Link>
+              )}
+              {isAdmin && (
+                <Link
                   to="/empire"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
                 >
@@ -293,6 +303,16 @@ const Navbar = () => {
                   <LogIn size={14} />
                   {user ? "Portal" : "Login"}
                 </Link>
+                {isAdmin && (
+                  <Link
+                    to="/hansai"
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-md px-3 py-2.5 text-sm font-medium text-emerald-500 bg-emerald-500/10 inline-flex items-center gap-2"
+                  >
+                    <Bot size={14} />
+                    Hans AI
+                  </Link>
+                )}
                 {isAdmin && (
                   <Link
                     to="/empire"

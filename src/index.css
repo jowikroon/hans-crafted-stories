@@ -99,7 +99,7 @@
   }
   .nav-link::after {
     content: '';
-    @apply absolute -bottom-1 left-0 h-px w-0 bg-primary transition-all duration-300;
+    @apply absolute -bottom-1 left-0 h-[2px] w-0 bg-primary transition-all duration-300;
   }
   .nav-link:hover::after,
   .nav-link.active::after {
@@ -112,13 +112,13 @@
     @apply mx-auto max-w-6xl px-6 py-20 md:py-28;
   }
   .card-hover {
-    @apply transition-all duration-500 hover:-translate-y-1;
+    @apply transition-all duration-500 hover:-translate-y-1 hover:shadow-lg;
   }
   .text-balance {
     text-wrap: balance;
   }
   .filter-chip {
-    @apply cursor-pointer rounded-full border border-border px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-all duration-300;
+    @apply cursor-pointer rounded-full border-2 border-border px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-all duration-300;
   }
   .filter-chip.active {
     @apply border-primary bg-primary text-primary-foreground;
