@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, ChevronRight } from "lucide-react";
 import { getBlogPost, BlogPostRow } from "@/lib/api/content";
+import { useSEO } from "@/hooks/useSEO";
 
 const renderMarkdown = (md: string) =>
   md
@@ -29,6 +30,25 @@ const BlogPostPage = () => {
     if (!slug) return;
     getBlogPost(slug).then(setPost);
   }, [slug]);
+
+  useSEO({
+    title: post ? `${post.title} | Hans van Leeuwen` : "Loading... | Hans van Leeuwen",
+    description: post?.excerpt || "Read this article by Hans van Leeuwen on e-commerce, marketplace strategy, and digital commerce.",
+    url: `https://hansvanleeuwen.com/writing/${slug}`,
+    type: "article",
+    jsonLd: post ? {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: post.title,
+      description: post.excerpt,
+      url: `https://hansvanleeuwen.com/writing/${slug}`,
+      datePublished: post.created_at,
+      dateModified: post.updated_at,
+      author: { "@type": "Person", name: "Hans van Leeuwen" },
+      articleSection: post.category,
+      keywords: post.tags.join(", "),
+    } : undefined,
+  });
 
   if (post === undefined) {
     return <section className="section-container pt-28"><p className="text-muted-foreground">Loading…</p></section>;
