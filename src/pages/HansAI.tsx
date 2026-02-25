@@ -444,26 +444,25 @@ const HansAI = () => {
 
   // ── Render ──────────────────────────────────────────────────────
   return (
-    <div className="relative flex h-screen overflow-hidden" style={{ background: "#0a0a0a", fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
+    <div className="relative flex h-screen overflow-hidden pt-14" style={{ background: "#0a0a0a", fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
       {/* Main terminal area */}
       <div className="flex flex-1 flex-col overflow-hidden">
       {/* JetBrains Mono font */}
       <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-      {/* ── Header ────────────────────────────────────────────── */}
-      <header
-        className="flex h-12 shrink-0 items-center justify-between px-4"
+      {/* ── Compact status bar (replaces old header) ──────────── */}
+      <div
+        className="flex h-8 shrink-0 items-center justify-between px-4"
         style={{ borderBottom: "1px solid #1e1e1e" }}
       >
-        <div className="flex items-center gap-1 text-sm font-semibold" style={{ color: "#00ff88" }}>
-          HansAI
-          <span className="animate-pulse">_</span>
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest" style={{ color: "#00ff88", opacity: 0.5 }}>
+          Command Center
         </div>
         <div className="flex items-center gap-2 text-xs">
-          <span className="inline-block h-2 w-2 rounded-full" style={{ background: "#00ff88" }} />
-          <span style={{ color: "#00ff88", opacity: 0.7 }}>Online</span>
+          <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "#00ff88" }} />
+          <span style={{ color: "#00ff88", opacity: 0.5, fontSize: "10px" }}>Online</span>
         </div>
-      </header>
+      </div>
 
       {/* ── Terminal output ───────────────────────────────────── */}
       <div

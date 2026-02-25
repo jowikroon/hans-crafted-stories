@@ -50,7 +50,7 @@ const Empire = () => {
         .empire-page { --background: 220 20% 6%; --foreground: 160 20% 85%; --card: 220 18% 10%; --card-foreground: 160 20% 85%; --border: 220 15% 16%; --secondary: 220 15% 12%; --muted: 220 12% 18%; --muted-foreground: 160 10% 45%; }
       `}</style>
 
-      <div className="empire-page mx-auto max-w-6xl px-6 pb-20 pt-28">
+      <div className="empire-page mx-auto max-w-6xl px-6 pb-20 pt-20">
         <PageBreadcrumb items={[{ label: "Empire" }]} className="text-emerald-400/60 [&_a]:text-emerald-400/60 [&_a:hover]:text-emerald-300 [&_span.font-medium]:text-emerald-300" />
         {/* Header */}
         <motion.div
