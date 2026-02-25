@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
-import { Activity, Database, Server, Zap, Globe, Shield, Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { Activity, Database, Server, Zap, Globe, Shield, Wifi, WifiOff, RefreshCw, Plug, Unplug } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import InfoTooltip from "./InfoTooltip";
+
+interface ConnectorStatus {
+  id: string;
+  label: string;
+  connected: boolean;
+}
 
 type Status = "online" | "offline" | "checking";
 
@@ -30,6 +36,8 @@ const PortalStatusTab = () => {
     { icon: Server, label: "API", status: "checking", endpoint: "/rest/v1/" },
   ]);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const [connectors, setConnectors] = useState<ConnectorStatus[]>([]);
+  const [connectorsLoading, setConnectorsLoading] = useState(true);
 
   const checkAll = async () => {
     setResources((prev) => prev.map((r) => ({ ...r, status: "checking" as Status, lastError: undefined })));
@@ -81,6 +89,22 @@ const PortalStatusTab = () => {
   };
 
   useEffect(() => { checkAll(); }, []);
+
+  const checkConnectors = async () => {
+    setConnectorsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("connector-status");
+      if (!error && data?.data) {
+        setConnectors(data.data);
+      }
+    } catch (e) {
+      console.error("Failed to check connectors:", e);
+    } finally {
+      setConnectorsLoading(false);
+    }
+  };
+
+  useEffect(() => { checkConnectors(); }, []);
 
   const onlineCount = resources.filter((r) => r.status === "online").length;
   const allOnline = onlineCount === resources.length;
@@ -197,6 +221,54 @@ const PortalStatusTab = () => {
           <span className="ml-auto text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40">
             {onlineCount}/{resources.length}
           </span>
+        </div>
+
+        {/* Connectors Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-secondary/40">
+              <Plug size={16} className="text-muted-foreground" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1">
+                <p className="text-sm font-medium text-foreground tracking-tight">Connectors</p>
+                <InfoTooltip text="External API integrations linked to this project" />
+              </div>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                {connectorsLoading ? "Checking…" : `${connectors.filter(c => c.connected).length}/${connectors.length} linked`}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {connectors.map((c) => (
+              <div
+                key={c.id}
+                className={`flex items-center gap-3 rounded-2xl border px-4 py-4 transition-all duration-500 ${
+                  c.connected
+                    ? "border-primary/10 bg-primary/[0.03]"
+                    : "border-border/40 bg-secondary/20"
+                }`}
+              >
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all ${
+                  c.connected ? "bg-primary/[0.08] text-primary/60" : "bg-muted/50 text-muted-foreground/30"
+                }`}>
+                  {c.connected ? <Plug size={16} strokeWidth={1.5} /> : <Unplug size={16} strokeWidth={1.5} />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-foreground">{c.label}</p>
+                  <p className={`text-[10px] font-medium ${c.connected ? "text-primary/70" : "text-muted-foreground/40"}`}>
+                    {c.connected ? "Connected" : "Not linked"}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {connectorsLoading && connectors.length === 0 && (
+              <div className="col-span-full flex items-center justify-center py-4 text-xs text-muted-foreground/40">
+                Checking connectors…
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </TooltipProvider>
