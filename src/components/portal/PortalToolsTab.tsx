@@ -229,6 +229,15 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
                 <ExternalLink size={11} className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-60" />
               </h3>
               <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">{tool.description}</p>
+              {tool.tool_type === "ai-agent" && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleOpenTool(tool); }}
+                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-violet-500 bg-violet-500/10 px-3 py-2 text-xs font-medium text-violet-600 shadow-[0_0_12px_hsl(270_80%_55%/0.15)] transition-all hover:bg-violet-500/20 hover:shadow-[0_0_16px_hsl(270_80%_55%/0.25)]"
+                >
+                  <Sparkles size={13} />
+                  Connect AI Agent
+                </button>
+              )}
               {tool.attributes && tool.attributes.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {tool.attributes.slice(0, 3).map((attr) => (

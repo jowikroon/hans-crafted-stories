@@ -230,9 +230,14 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
 
               <button
                 onClick={() => onOpen(tool)}
-                className="mt-2 inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-80"
+                className={`mt-2 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
+                  tool.tool_type === "ai-agent"
+                    ? "border-2 border-violet-500 bg-violet-500/10 text-violet-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)] hover:bg-violet-500/20 hover:shadow-[0_0_16px_hsl(270_80%_55%/0.3)]"
+                    : "bg-foreground text-background hover:opacity-80"
+                }`}
               >
-                Open Tool
+                {tool.tool_type === "ai-agent" && <Sparkles size={14} />}
+                {tool.tool_type === "ai-agent" ? "Connect AI Agent" : "Open Tool"}
                 <ExternalLink size={14} />
               </button>
             </div>
