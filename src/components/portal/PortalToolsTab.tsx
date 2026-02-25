@@ -22,12 +22,6 @@ import SortableToolCard, { type CardSize, sizeCycle, categoryConfig } from "./So
 const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles };
 const getIcon = (name: string) => iconMap[name] || Wrench;
 
-const defaultTools = [
-  { tool_type: "keyword", name: "Keyword Research", description: "AI-powered keyword analysis and content suggestions.", icon: "Globe", color: "text-blue-500", sort_order: 0, category: "seo", features: ["AI-powered keyword analysis", "Search intent classification", "Content topic suggestions"] },
-  { tool_type: "webhook", name: "N8N Workflows", description: "Trigger and manage your automation workflows.", icon: "Workflow", color: "text-orange-500", sort_order: 1, category: "automation", features: ["Trigger n8n workflows", "Send custom payloads", "Monitor execution status"] },
-  { tool_type: "site-audit", name: "Site Audit", description: "Run a quick SEO audit on any website.", icon: "Wrench", color: "text-green-500", sort_order: 2, category: "seo", features: ["Analyze on-page SEO", "Check meta tags & headings", "Get actionable suggestions"] },
-  { tool_type: "iframe", name: "N8N Form", description: "Embedded automation form — submit data directly to your workflow.", icon: "AppWindow", color: "text-purple-500", sort_order: 3, category: "automation", features: ["Submit data via embedded form", "Direct workflow integration"], config: { iframe_url: "https://hansvanleeuwen.app.n8n.cloud/form/afe067a5-4878-4c9d-b746-691f77190f54" } },
-];
 
 interface PortalToolsTabProps {
   userId: string;
@@ -60,13 +54,7 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
     const loadTools = async () => {
       setToolsLoading(true);
       try {
-        let dbTools = await portalApi.getTools();
-        if (dbTools.length === 0) {
-          for (const t of defaultTools) {
-            await portalApi.addTool({ ...t, user_id: userId, config: {}, description: t.description, category: t.category, features: t.features });
-          }
-          dbTools = await portalApi.getTools();
-        }
+        const dbTools = await portalApi.getTools();
         setTools(dbTools);
 
         // Load saved card sizes from config
@@ -122,6 +110,11 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
 
   const handleOpenTool = (tool: PortalTool) => {
     setPreviewTool(null);
+    if (tool.tool_type === "external") {
+      const url = (tool.config as Record<string, string>)?.external_url || "";
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
     if (tool.tool_type === "iframe") { setIframeTool(tool); return; }
     if (tool.tool_type === "workflow") { setWorkflowTool(tool); return; }
     if (tool.tool_type === "ai-agent") { setShowAgent(true); return; }
