@@ -13,6 +13,17 @@ type Filter = string;
 type TagFilter = string | null;
 type SortOrder = "newest" | "oldest";
 
+const TAG_CATEGORY_COLORS: Record<string, { bg: string; active: string }> = {
+  professional: {
+    bg: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20",
+    active: "bg-emerald-500/25 text-emerald-800 dark:text-emerald-300 shadow-sm ring-1 ring-emerald-500/30",
+  },
+  personal: {
+    bg: "bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20",
+    active: "bg-amber-500/25 text-amber-800 dark:text-amber-300 shadow-sm ring-1 ring-amber-500/30",
+  },
+};
+
 const Writing = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,6 +91,28 @@ const Writing = () => {
       filter === "all" ? mappedPosts : mappedPosts.filter((p) => p.category === filter);
     return Array.from(new Set(postsForCategory.flatMap((p) => p.tags)));
   }, [filter, mappedPosts]);
+
+  // Map each tag to its dominant category for color coding
+  const tagCategoryMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const post of mappedPosts) {
+      for (const tag of post.tags) {
+        if (!map[tag]) map[tag] = post.category;
+      }
+    }
+    return map;
+  }, [mappedPosts]);
+
+  const getTagColors = (tag: string, isActive: boolean) => {
+    const category = tagCategoryMap[tag];
+    const colors = TAG_CATEGORY_COLORS[category];
+    if (!colors) {
+      return isActive
+        ? "bg-primary text-primary-foreground shadow-sm"
+        : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground";
+    }
+    return isActive ? colors.active : colors.bg;
+  };
 
   const getCategoryCount = (value: Filter) =>
     value === "all" ? mappedPosts.length : mappedPosts.filter((p) => p.category === value).length;
@@ -217,9 +250,7 @@ const Writing = () => {
                         key={tag}
                         onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
                         className={`rounded-full px-3 py-1 text-[11px] font-medium tracking-wide uppercase transition-all duration-200 ${
-                          tagFilter === tag
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                          getTagColors(tag, tagFilter === tag)
                         }`}
                       >
                         {tag}
