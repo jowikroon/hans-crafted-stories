@@ -170,7 +170,7 @@ const Navbar = () => {
         {/* Row 1: Brand + Search + Actions */}
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex items-center justify-between py-4">
-            <Link to="/" className="font-display text-lg font-semibold tracking-tight text-foreground">
+            <Link to="/" className="font-display text-lg font-bold tracking-tight text-foreground">
               Hans van Leeuwen
             </Link>
 
@@ -265,9 +265,9 @@ const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${
                   location.pathname === link.to
-                    ? "bg-accent text-accent-foreground"
+                    ? "bg-accent text-accent-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >

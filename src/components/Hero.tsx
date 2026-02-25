@@ -53,7 +53,7 @@ const Hero = () => (
         <div className="flex flex-wrap gap-4">
           <Link
             to="/work"
-            className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-all duration-300 hover:gap-3"
+            className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
             aria-label="View portfolio and case studies"
           >
             View my work
@@ -64,7 +64,7 @@ const Hero = () => (
           </Link>
           <Link
             to="/about"
-            className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-foreground transition-colors duration-300 hover:bg-secondary"
+            className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-sm font-bold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
             aria-label="Learn more about Hans van Leeuwen"
           >
             About me
@@ -87,7 +87,7 @@ const Hero = () => (
         <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
           What I do
         </h2>
-        <p className="mb-8 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
+        <p className="mb-8 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
           E-commerce expertise that drives results
         </p>
       </motion.div>
@@ -104,12 +104,12 @@ const Hero = () => (
               delay: i * 0.08,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="group rounded-xl border border-border/50 bg-card p-5 transition-all duration-300 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
+            className="group rounded-xl border-2 border-border/40 bg-card p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5"
           >
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
               {item.icon}
             </div>
-            <h3 className="mb-1.5 text-sm font-semibold text-foreground">
+            <h3 className="mb-1.5 text-sm font-bold text-foreground">
               {item.title}
             </h3>
             <p className="text-xs leading-relaxed text-muted-foreground">
@@ -129,19 +129,19 @@ const Hero = () => (
       >
         <Link
           to="/work"
-          className="transition-colors hover:text-foreground"
+          className="font-semibold transition-colors hover:text-foreground"
         >
           Case Studies →
         </Link>
         <Link
           to="/writing"
-          className="transition-colors hover:text-foreground"
+          className="font-semibold transition-colors hover:text-foreground"
         >
           Writing & Insights →
         </Link>
         <Link
           to="/about"
-          className="transition-colors hover:text-foreground"
+          className="font-semibold transition-colors hover:text-foreground"
         >
           About Hans →
         </Link>
