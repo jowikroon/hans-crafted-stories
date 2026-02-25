@@ -19,6 +19,7 @@ interface AddToolModalProps {
 
 const toolTypes = [
   { value: "external", label: "External App (opens in new tab)", category: "general" },
+  { value: "chrome-extension", label: "Chrome Extension (downloadable)", category: "general" },
   { value: "webhook", label: "Webhook / Automation", category: "automation" },
   { value: "site-audit", label: "Site Audit", category: "seo" },
   { value: "keyword", label: "Keyword Research", category: "seo" },
@@ -63,6 +64,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
   const [webhookUrl, setWebhookUrl] = useState("");
   const [iframeUrl, setIframeUrl] = useState("");
   const [externalUrl, setExternalUrl] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
   const [newAttributes, setNewAttributes] = useState<AttributeEntry[]>([]);
 
   const reset = () => {
@@ -74,6 +76,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
     setWebhookUrl("");
     setIframeUrl("");
     setExternalUrl("");
+    setDownloadUrl("");
     setNewAttributes([]);
   };
 
@@ -88,6 +91,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
       if (toolType === "webhook") config.webhook_url = webhookUrl;
       if (toolType === "iframe") config.iframe_url = iframeUrl;
       if (toolType === "external") config.external_url = externalUrl;
+      if (toolType === "chrome-extension") config.download_url = downloadUrl;
       const autoCategory = toolTypes.find(t => t.value === toolType)?.category || "general";
       const created = await portalApi.addTool({
         user_id: userId,
@@ -167,6 +171,13 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
             <div className="space-y-1.5">
               <Label htmlFor="new-external-url">External App URL</Label>
               <Input id="new-external-url" value={externalUrl} onChange={(e) => setExternalUrl(e.target.value)} placeholder="https://your-app.manus.space" />
+            </div>
+          )}
+
+          {toolType === "chrome-extension" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="new-download-url">Download URL (ZIP path)</Label>
+              <Input id="new-download-url" value={downloadUrl} onChange={(e) => setDownloadUrl(e.target.value)} placeholder="/extensions/my-extension.zip" />
             </div>
           )}
 

@@ -13,6 +13,7 @@ const categoryConfig: Record<string, { label: string; color: string; accent: str
   automation: { label: "Automation",   color: "bg-orange-500/10 text-orange-600 border-orange-500/20",   accent: "border-l-orange-500",  dot: "bg-orange-500" },
   data:       { label: "Data & Feeds", color: "bg-blue-500/10 text-blue-600 border-blue-500/20",         accent: "border-l-blue-500",    dot: "bg-blue-500" },
   ai:         { label: "AI",           color: "bg-violet-500/10 text-violet-600 border-violet-500/20",   accent: "border-l-violet-500",  dot: "bg-violet-500" },
+  infra:      { label: "Infra",        color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",   accent: "border-l-indigo-500",  dot: "bg-indigo-500" },
   general:    { label: "General",      color: "bg-muted text-muted-foreground border-border",             accent: "border-l-border",      dot: "bg-muted-foreground" },
 };
 
@@ -31,7 +32,7 @@ const toolTypeLabel = (type: string) => {
   const map: Record<string, string> = {
     webhook: "⚡ Automation", keyword: "🔍 Research", "site-audit": "🩺 Audit",
     iframe: "📦 Embedded", workflow: "🔄 Workflow", "ai-agent": "🧠 AI Agent",
-    external: "🌐 External App",
+    external: "🌐 External App", "chrome-extension": "🧩 Chrome Extension",
   };
   return map[type] || "🔧 Tool";
 };
@@ -44,6 +45,7 @@ const punchyDescriptions: Record<string, string> = {
   workflow: "Visualize the machine. See every node, every connection, every decision.",
   "ai-agent": "Your copilot awaits. Natural language in → structured actions out.",
   external: "Opens in a new tab. Click to launch this app.",
+  "chrome-extension": "Install once, analyze everywhere. Right-click any page for instant insights.",
 };
 
 /* ─── Mock run history ─── */

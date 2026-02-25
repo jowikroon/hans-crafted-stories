@@ -115,6 +115,18 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
       if (url) window.open(url, "_blank", "noopener,noreferrer");
       return;
     }
+    if (tool.tool_type === "chrome-extension") {
+      const downloadUrl = (tool.config as Record<string, string>)?.download_url || "";
+      if (downloadUrl) {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = downloadUrl.split("/").pop() || "extension.zip";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      return;
+    }
     if (tool.tool_type === "iframe") { setIframeTool(tool); return; }
     if (tool.tool_type === "workflow") { setWorkflowTool(tool); return; }
     if (tool.tool_type === "ai-agent") { setShowAgent(true); return; }

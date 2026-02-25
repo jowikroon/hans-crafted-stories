@@ -16,6 +16,7 @@ const categoryConfig: Record<string, { label: string; color: string }> = {
   automation: { label: "Automation", color: "bg-orange-500/10 text-orange-600 border-orange-500/20" },
   data: { label: "Data & Feeds", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
   ai: { label: "AI", color: "bg-violet-500/10 text-violet-600 border-violet-500/20" },
+  infra: { label: "Infra", color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20" },
   general: { label: "General", color: "bg-muted text-muted-foreground border-border" },
 };
 
@@ -40,6 +41,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
   const config = (tool.config || {}) as Record<string, unknown>;
   const webhookUrl = (config.webhook_url as string) || "";
   const isWebhook = tool.tool_type === "webhook";
+  const isChromeExt = tool.tool_type === "chrome-extension";
   const isConfigured = isWebhook && !!webhookUrl;
   const isWorkflow = tool.tool_type === "workflow";
   const catCfg = categoryConfig[tool.category] || categoryConfig.general;
@@ -132,7 +134,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
 
               <div className="space-y-1.5">
                 <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                  {tool.tool_type === "external" ? "External App" : tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : tool.tool_type === "workflow" ? "Workflow" : tool.tool_type === "ai-agent" ? "AI Agent" : "Tool"}
+                  {tool.tool_type === "chrome-extension" ? "Chrome Extension" : tool.tool_type === "external" ? "External App" : tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : tool.tool_type === "workflow" ? "Workflow" : tool.tool_type === "ai-agent" ? "AI Agent" : "Tool"}
                 </p>
                 <h2 className="font-display text-2xl font-medium text-foreground">
                   {tool.name}
@@ -228,6 +230,20 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
                 </div>
               )}
 
+              {/* Chrome Extension install instructions */}
+              {isChromeExt && (
+                <div className="w-full space-y-3 rounded-lg border border-border bg-secondary/30 p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">How to install</p>
+                  <ol className="space-y-1.5 text-sm text-foreground/80">
+                    <li className="flex items-start gap-2"><span className="shrink-0 font-bold text-primary">1.</span> Download the ZIP file below</li>
+                    <li className="flex items-start gap-2"><span className="shrink-0 font-bold text-primary">2.</span> Unzip the folder on your computer</li>
+                    <li className="flex items-start gap-2"><span className="shrink-0 font-bold text-primary">3.</span> Open <code className="rounded bg-secondary px-1 py-0.5 text-xs font-mono">chrome://extensions</code></li>
+                    <li className="flex items-start gap-2"><span className="shrink-0 font-bold text-primary">4.</span> Enable "Developer mode" (top right)</li>
+                    <li className="flex items-start gap-2"><span className="shrink-0 font-bold text-primary">5.</span> Click "Load unpacked" → select the unzipped folder</li>
+                  </ol>
+                </div>
+              )}
+
               <button
                 onClick={() => onOpen(tool)}
                 className={`mt-2 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
@@ -237,7 +253,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
                 }`}
               >
                 {tool.tool_type === "ai-agent" && <Sparkles size={14} />}
-                {tool.tool_type === "ai-agent" ? "Connect AI Agent" : tool.tool_type === "external" ? "Launch App" : "Open Tool"}
+                {tool.tool_type === "ai-agent" ? "Connect AI Agent" : isChromeExt ? "Download Extension" : tool.tool_type === "external" ? "Launch App" : "Open Tool"}
                 <ExternalLink size={14} />
               </button>
             </div>
