@@ -131,14 +131,18 @@ const SortableToolCard = ({
         )}
 
         {/* ═══ CARD FACE ═══ */}
-        <div className={`flex flex-1 flex-col p-3 sm:p-4 ${isEditMode ? "mt-5" : ""}`}>
+        <div className={`flex flex-1 flex-col p-4 sm:p-4 ${isEditMode ? "mt-5" : ""}`}>
 
-          {/* MOBILE: icon + title */}
-          <div className="flex items-center gap-2 sm:hidden">
-            <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-secondary ${tool.color}`}>
-              <IconComponent size={14} />
+          {/* MOBILE: icon + title + category */}
+          <div className="flex items-center gap-2.5 sm:hidden">
+            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary ${tool.color}`}>
+              <IconComponent size={15} />
             </div>
-            <h3 className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{tool.name}</h3>
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate text-sm font-semibold text-foreground">{tool.name}</h3>
+              <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/60">{toolTypeLabel(tool.tool_type)}</p>
+            </div>
+            <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${cat.color}`}>{cat.label}</span>
           </div>
 
           {/* SM+: Full header */}
@@ -158,7 +162,7 @@ const SortableToolCard = ({
           </div>
 
           {/* Description */}
-          <p className={`mt-2 hidden text-[11px] italic leading-relaxed text-muted-foreground/70 sm:block ${isLarge ? "line-clamp-3 not-italic text-xs" : "line-clamp-2"}`}>
+          <p className={`mt-2 text-[11px] italic leading-relaxed text-muted-foreground/60 sm:text-muted-foreground/70 ${isLarge ? "line-clamp-3 not-italic text-xs" : "line-clamp-2"}`}>
             {punchyDescriptions[tool.tool_type] || tool.description}
           </p>
 
@@ -202,7 +206,7 @@ const SortableToolCard = ({
           {!isEditMode && (
             <button
               onClick={(e) => { e.stopPropagation(); setShowHistory(true); }}
-              className="mt-auto flex items-center gap-1.5 self-start rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground/50 transition-all hover:bg-secondary hover:text-muted-foreground sm:text-[11px]"
+              className="mt-auto flex min-h-[36px] items-center gap-1.5 self-start rounded-md px-2 py-1.5 text-[10px] font-medium text-muted-foreground/50 transition-all hover:bg-secondary hover:text-muted-foreground active:scale-[0.97] sm:min-h-0 sm:py-1 sm:text-[11px]"
             >
               <div className="flex items-center gap-0.5">
                 {runs.slice(0, 5).map((r) => (

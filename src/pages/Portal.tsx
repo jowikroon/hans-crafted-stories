@@ -177,7 +177,7 @@ const Portal = () => {
   }
 
   return (
-    <section className="section-container pt-28 pb-20">
+    <section className="section-container pt-20 pb-20 sm:pt-28 px-4 sm:px-6">
       <PageBreadcrumb items={[{ label: "Portal" }]} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -185,18 +185,20 @@ const Portal = () => {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Header */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-5 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">Portal</p>
-            <h1 className="mb-2 font-display text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
+            <p className="mb-1.5 text-sm font-medium uppercase tracking-[0.2em] text-primary sm:mb-2">Portal</p>
+            <h1 className="mb-1.5 font-display text-2xl font-medium tracking-tight text-foreground sm:mb-2 sm:text-4xl">
               Welcome back{user.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(" ")[0]}` : ""}
             </h1>
-            <p className="text-muted-foreground">Admin dashboard — manage tools, content, and system health.</p>
+            <p className="text-sm leading-relaxed text-muted-foreground/80 sm:text-base sm:leading-normal sm:text-muted-foreground">
+              Admin dashboard — manage tools, content, and system health.
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
             <button
               onClick={() => setEmpireOpen((v) => !v)}
-              className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+              className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
                 empireOpen
                   ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_12px_hsl(160_80%_45%/0.2)]"
                   : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:text-foreground"
@@ -209,7 +211,7 @@ const Portal = () => {
             </button>
             <button
               onClick={() => setN8nOpen((v) => !v)}
-              className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+              className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
                 n8nOpen
                   ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)]"
                   : "border border-border text-muted-foreground hover:border-purple-500/40 hover:text-foreground"
@@ -222,7 +224,7 @@ const Portal = () => {
             </button>
             <button
               onClick={signOut}
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97] sm:min-h-0 sm:py-2"
             >
               <LogOut size={14} />
             </button>
@@ -274,7 +276,7 @@ const Portal = () => {
         </AnimatePresence>
 
         {/* Tab Navigation */}
-        <div className="mb-6 flex gap-1 rounded-lg border border-border bg-secondary/50 p-0.5">
+        <div className="mb-5 flex gap-1 overflow-x-auto rounded-lg border border-border bg-secondary/50 p-0.5 sm:mb-6 sm:overflow-visible">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -282,13 +284,13 @@ const Portal = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all ${
+                className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:py-2 ${
                   isActive
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon size={13} />
+                <Icon size={14} />
                 <span className="hidden sm:inline">{tab.label}</span>
                 <InfoTooltip text={tab.hint} />
               </button>
