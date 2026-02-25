@@ -8,12 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import InfoTooltip from "./InfoTooltip";
 
 /* ─── Category visual config ─── */
-const categoryConfig: Record<string, { label: string; color: string; bg: string; border: string; text: string }> = {
-  seo:        { label: "SEO",        color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", bg: "bg-emerald-500/[0.08]",  border: "border-emerald-500/25", text: "text-emerald-700 dark:text-emerald-400" },
-  automation: { label: "Automation", color: "bg-orange-500/10 text-orange-600 border-orange-500/20",   bg: "bg-orange-500/[0.08]",   border: "border-orange-500/25",  text: "text-orange-700 dark:text-orange-400" },
-  data:       { label: "Data & Feeds", color: "bg-blue-500/10 text-blue-600 border-blue-500/20",       bg: "bg-blue-500/[0.08]",     border: "border-blue-500/25",    text: "text-blue-700 dark:text-blue-400" },
-  ai:         { label: "AI",         color: "bg-violet-500/10 text-violet-600 border-violet-500/20",    bg: "bg-violet-500/[0.08]",   border: "border-violet-500/25",  text: "text-violet-700 dark:text-violet-400" },
-  general:    { label: "General",    color: "bg-muted text-muted-foreground border-border",             bg: "bg-muted/60",            border: "border-border",         text: "text-foreground" },
+const categoryConfig: Record<string, { label: string; color: string; bg: string; border: string; text: string; gradient: string }> = {
+  seo:        { label: "SEO",          color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", bg: "bg-emerald-500/[0.08]",  border: "border-emerald-500/25", text: "text-emerald-700 dark:text-emerald-400", gradient: "from-emerald-50/80 via-emerald-100/40 to-emerald-900/[0.12] dark:from-emerald-950/30 dark:via-emerald-900/20 dark:to-emerald-950/60" },
+  automation: { label: "Automation",   color: "bg-orange-500/10 text-orange-600 border-orange-500/20",   bg: "bg-orange-500/[0.08]",   border: "border-orange-500/25",  text: "text-orange-700 dark:text-orange-400",  gradient: "from-orange-50/80 via-orange-100/40 to-orange-900/[0.12] dark:from-orange-950/30 dark:via-orange-900/20 dark:to-orange-950/60" },
+  data:       { label: "Data & Feeds", color: "bg-blue-500/10 text-blue-600 border-blue-500/20",         bg: "bg-blue-500/[0.08]",     border: "border-blue-500/25",    text: "text-blue-700 dark:text-blue-400",      gradient: "from-blue-50/80 via-blue-100/40 to-blue-900/[0.12] dark:from-blue-950/30 dark:via-blue-900/20 dark:to-blue-950/60" },
+  ai:         { label: "AI",           color: "bg-violet-500/10 text-violet-600 border-violet-500/20",    bg: "bg-violet-500/[0.08]",   border: "border-violet-500/25",  text: "text-violet-700 dark:text-violet-400",  gradient: "from-violet-50/80 via-violet-100/40 to-violet-900/[0.12] dark:from-violet-950/30 dark:via-violet-900/20 dark:to-violet-950/60" },
+  general:    { label: "General",      color: "bg-muted text-muted-foreground border-border",             bg: "bg-muted/60",            border: "border-border",         text: "text-foreground",                       gradient: "from-muted/60 via-muted/30 to-foreground/[0.06]" },
 };
 
 type CardSize = "1x1" | "2x1" | "2x2" | "1x2";
@@ -29,10 +29,20 @@ const sizeCycle: CardSize[] = ["1x1", "2x1", "2x2", "1x2"];
 
 const toolTypeLabel = (type: string) => {
   const map: Record<string, string> = {
-    webhook: "Automation", keyword: "Research", "site-audit": "Audit",
-    iframe: "Embedded", workflow: "Workflow", "ai-agent": "AI Agent",
+    webhook: "⚡ Automation", keyword: "🔍 Research", "site-audit": "🩺 Audit",
+    iframe: "📦 Embedded", workflow: "🔄 Workflow", "ai-agent": "🧠 AI Agent",
   };
-  return map[type] || "Tool";
+  return map[type] || "🔧 Tool";
+};
+
+/* ─── Punchy micro-copy per tool type ─── */
+const punchyDescriptions: Record<string, string> = {
+  keyword: "Uncover hidden gems. AI digs through search intent so you don't have to.",
+  webhook: "Fire & forget. Trigger any n8n workflow with one click — no tab-switching.",
+  "site-audit": "X-ray any URL. Get a brutally honest SEO health check in seconds.",
+  iframe: "Your workflow, embedded. Submit data without ever leaving the portal.",
+  workflow: "Visualize the machine. See every node, every connection, every decision.",
+  "ai-agent": "Your copilot awaits. Natural language in → structured actions out.",
 };
 
 /* ─── Mock run history (replace with real data later) ─── */
@@ -99,8 +109,8 @@ const SortableToolCard = ({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.04 }}
-        className={`group relative flex h-full cursor-pointer flex-col rounded-xl border-2 text-left transition-all duration-300 ${cat.border} ${cat.bg} ${
-          !isEditMode ? "hover:-translate-y-0.5 hover:shadow-lg" : ""
+        className={`group relative flex h-full cursor-pointer flex-col rounded-xl border-2 text-left transition-all duration-300 bg-gradient-to-b ${cat.gradient} ${cat.border} ${
+          !isEditMode ? "hover:-translate-y-1 hover:shadow-xl hover:shadow-current/5" : ""
         } ${isDragging ? "shadow-2xl" : ""} ${expanded ? "!row-span-2" : ""}`}
         onClick={handleCardClick}
       >
@@ -174,9 +184,9 @@ const SortableToolCard = ({
             </span>
           </div>
 
-          {/* ── Description: hidden on mobile, 1-line on sm, multi on large ── */}
-          <p className={`mt-1.5 hidden text-xs leading-relaxed text-muted-foreground sm:block ${isLarge ? "line-clamp-4" : "line-clamp-1"}`}>
-            {tool.description}
+          {/* ── Description: punchy micro-copy ── */}
+          <p className={`mt-2 hidden text-[11px] italic leading-relaxed text-muted-foreground/80 sm:block ${isLarge ? "line-clamp-3 not-italic text-xs" : "line-clamp-2"}`}>
+            {punchyDescriptions[tool.tool_type] || tool.description}
           </p>
 
           {/* ── Features: only on large cards at md+ ── */}
