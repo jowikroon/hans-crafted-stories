@@ -277,10 +277,10 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
       {/* Grid */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={visibleTools.map((t) => t.id)} strategy={rectSortingStrategy}>
-          <div className={`grid gap-2 sm:gap-3 ${
+          <div className={`grid gap-3 sm:gap-4 ${
             isEditMode
-              ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 auto-rows-[100px] sm:auto-rows-[120px] md:auto-rows-[140px]"
-              : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 auto-rows-auto"
+              ? "grid-cols-2 sm:grid-cols-3 auto-rows-[110px] sm:auto-rows-[130px] md:auto-rows-[150px]"
+              : "grid-cols-2 sm:grid-cols-3 auto-rows-auto"
           }`}>
             {visibleTools.map((tool, i) => (
               <SortableToolCard
