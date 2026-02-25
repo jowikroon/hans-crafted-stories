@@ -95,11 +95,11 @@
 
 @layer components {
   .nav-link {
-    @apply relative text-sm font-medium tracking-wide text-muted-foreground transition-colors duration-300 hover:text-foreground;
+    @apply relative text-sm font-semibold tracking-wide text-muted-foreground transition-all duration-300 hover:text-foreground;
   }
   .nav-link::after {
     content: '';
-    @apply absolute -bottom-1 left-0 h-[2px] w-0 bg-primary transition-all duration-300;
+    @apply absolute -bottom-1 left-0 h-[2.5px] w-0 bg-primary transition-all duration-300;
   }
   .nav-link:hover::after,
   .nav-link.active::after {
@@ -112,18 +112,25 @@
     @apply mx-auto max-w-6xl px-6 py-20 md:py-28;
   }
   .card-hover {
-    @apply transition-all duration-500 hover:-translate-y-1 hover:shadow-lg;
+    @apply transition-all duration-500 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30;
   }
   .text-balance {
     text-wrap: balance;
   }
   .filter-chip {
-    @apply cursor-pointer rounded-full border-2 border-border px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-all duration-300;
+    @apply cursor-pointer rounded-full border-2 border-border px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-all duration-300;
   }
   .filter-chip.active {
-    @apply border-primary bg-primary text-primary-foreground;
+    @apply border-primary bg-primary text-primary-foreground shadow-sm;
   }
   .filter-chip:not(.active):hover {
-    @apply border-foreground/30 text-foreground;
+    @apply border-foreground/40 text-foreground;
+  }
+  /* Thick interactive focus ring for buttons and links */
+  .interactive-thick {
+    @apply transition-all duration-200 hover:shadow-md;
+  }
+  .interactive-thick:hover {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.25);
   }
 }
