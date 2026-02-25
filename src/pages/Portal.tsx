@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+import InfoTooltip from "@/components/portal/InfoTooltip";
 
 const EMPIRE_SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
 You manage n8n workflows, Cloudflare Workers, VPS servers, Docker MCP Gateway, Supabase, and Claude Code CLI sessions.
@@ -35,12 +36,12 @@ const N8N_SUGGESTIONS = [
 
 type Tab = "tools" | "content" | "pages" | "status" | "users";
 
-const tabs: { id: Tab; label: string; icon: typeof Wrench }[] = [
-  { id: "tools", label: "Tools", icon: Wrench },
-  { id: "content", label: "Content", icon: FileText },
-  { id: "pages", label: "Pages", icon: LayoutDashboard },
-  { id: "users", label: "Users", icon: Users },
-  { id: "status", label: "Status", icon: Activity },
+const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
+  { id: "tools", label: "Tools", icon: Wrench, hint: "Manage SEO tools and integrations" },
+  { id: "content", label: "Content", icon: FileText, hint: "Blog posts and case studies" },
+  { id: "pages", label: "Pages", icon: LayoutDashboard, hint: "Page visibility and elements" },
+  { id: "users", label: "Users", icon: Users, hint: "Manage user roles and access" },
+  { id: "status", label: "Status", icon: Activity, hint: "System health and uptime" },
 ];
 
 const Portal = () => {
@@ -271,7 +272,7 @@ const Portal = () => {
         </AnimatePresence>
 
         {/* Tab Navigation */}
-        <div className="mb-8 flex gap-1 rounded-lg border border-border bg-secondary/50 p-1">
+        <div className="mb-6 flex gap-1 rounded-lg border border-border bg-secondary/50 p-0.5">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -279,14 +280,15 @@ const Portal = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all ${
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all ${
                   isActive
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon size={15} />
+                <Icon size={13} />
                 <span className="hidden sm:inline">{tab.label}</span>
+                <InfoTooltip text={tab.hint} />
               </button>
             );
           })}

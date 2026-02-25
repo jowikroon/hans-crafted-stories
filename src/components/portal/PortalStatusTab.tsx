@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Activity, Database, Server, Zap, Globe, Shield, Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import InfoTooltip from "./InfoTooltip";
 
 type Status = "online" | "offline" | "checking";
 
@@ -95,9 +96,12 @@ const PortalStatusTab = () => {
               <Activity size={16} className="text-muted-foreground" />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground tracking-tight">
-                {checking ? "Checking…" : allOnline ? "All systems go" : `${onlineCount}/${resources.length} up`}
-              </p>
+              <div className="flex items-center gap-1">
+                <p className="text-sm font-medium text-foreground tracking-tight">
+                  {checking ? "Checking…" : allOnline ? "All systems go" : `${onlineCount}/${resources.length} up`}
+                </p>
+                <InfoTooltip text="Real-time health check of all backend services" />
+              </div>
               {lastChecked && (
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
                   {lastChecked.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

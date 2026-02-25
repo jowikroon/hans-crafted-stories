@@ -14,6 +14,7 @@ import ToolPreviewModal from "./ToolPreviewModal";
 import IframeToolModal from "./IframeToolModal";
 import WorkflowViewerModal from "./WorkflowViewerModal";
 import N8nAgentModal from "./N8nAgentModal";
+import InfoTooltip from "./InfoTooltip";
 
 const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles };
 const getIcon = (name: string) => iconMap[name] || Wrench;
@@ -199,36 +200,41 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="group relative cursor-pointer rounded-xl border border-border bg-card p-6 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5"
+              className="group relative cursor-pointer rounded-xl border border-border bg-card p-4 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5"
               onClick={() => handleToolClick(tool)}
             >
               {isAdmin && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setSettingsTool(tool); }}
-                  className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground/40 opacity-100 transition-all hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
+                  className="absolute right-2.5 top-2.5 rounded-md p-1 text-muted-foreground/40 opacity-100 transition-all hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
                   aria-label="Tool settings"
                 >
-                  <Settings size={14} />
+                  <Settings size={13} />
                 </button>
               )}
-              <div className="mb-3 flex items-center justify-between">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-secondary ${tool.color}`}>
-                  <Icon size={20} />
+              <div className="mb-2 flex items-center gap-2.5">
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-secondary ${tool.color}`}>
+                  <Icon size={16} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1">
+                    <h3 className="truncate font-display text-sm font-medium text-foreground">
+                      {tool.name}
+                    </h3>
+                    <InfoTooltip text={tool.description || "Open this tool"} />
+                    <ExternalLink size={10} className="ml-auto shrink-0 opacity-0 transition-opacity group-hover:opacity-60" />
+                  </div>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                    {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : tool.tool_type === "workflow" ? "Workflow" : tool.tool_type === "ai-agent" ? "AI Agent" : "Tool"}
+                  </p>
                 </div>
                 {tool.category && categoryConfig[tool.category] && (
-                  <span className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${categoryConfig[tool.category].color}`}>
+                  <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${categoryConfig[tool.category].color}`}>
                     {categoryConfig[tool.category].label}
                   </span>
                 )}
               </div>
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
-                {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : tool.tool_type === "workflow" ? "Workflow" : tool.tool_type === "ai-agent" ? "AI Agent" : "Tool"}
-              </p>
-              <h3 className="mb-1.5 font-display text-lg font-medium text-foreground">
-                {tool.name}
-                <ExternalLink size={11} className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-60" />
-              </h3>
-              <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">{tool.description}</p>
+              <p className="text-xs leading-relaxed text-muted-foreground line-clamp-1">{tool.description}</p>
               {tool.tool_type === "ai-agent" && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleOpenTool(tool); }}

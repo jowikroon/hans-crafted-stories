@@ -11,6 +11,7 @@ import {
 import { usersApi, UserContentAccess } from "@/lib/api/users";
 import BlogPostFormModal from "./BlogPostFormModal";
 import CaseStudyFormModal from "./CaseStudyFormModal";
+import InfoTooltip from "./InfoTooltip";
 
 interface PortalContentTabProps {
   userId?: string;
@@ -122,9 +123,10 @@ const PortalContentTab = ({ userId, isAdmin = false }: PortalContentTabProps) =>
         <div>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BookOpen size={18} className="text-primary" />
-              <h2 className="font-display text-lg font-medium text-foreground">Blog Posts</h2>
-              <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">{posts.length}</span>
+              <BookOpen size={15} className="text-primary" />
+              <h2 className="font-display text-sm font-medium text-foreground">Blog Posts</h2>
+              <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">{posts.length}</span>
+              <InfoTooltip text="Manage blog articles, toggle visibility, and edit content" />
             </div>
             {canEditBlogs && (
               <Button size="sm" onClick={() => { setEditingPost(null); setPostModalOpen(true); }}>
@@ -176,9 +178,10 @@ const PortalContentTab = ({ userId, isAdmin = false }: PortalContentTabProps) =>
         <div>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FolderOpen size={18} className="text-primary" />
-              <h2 className="font-display text-lg font-medium text-foreground">Case Studies</h2>
-              <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">{studies.length}</span>
+              <FolderOpen size={15} className="text-primary" />
+              <h2 className="font-display text-sm font-medium text-foreground">Case Studies</h2>
+              <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">{studies.length}</span>
+              <InfoTooltip text="Portfolio case studies with images, categories, and publication status" />
             </div>
             {canEditStudies && (
               <Button size="sm" onClick={() => { setEditingStudy(null); setStudyModalOpen(true); }}>
