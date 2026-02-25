@@ -206,20 +206,10 @@ const SortableToolCard = ({
             </div>
           )}
 
-          {/* ─── History trigger button ─── */}
           {!isEditMode && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowHistory(true); }}
-              className="mt-auto flex min-h-[36px] items-center gap-1.5 self-start rounded-md px-2 py-1.5 text-[10px] font-medium text-muted-foreground/50 transition-all hover:bg-secondary hover:text-muted-foreground active:scale-[0.97] sm:min-h-0 sm:py-1 sm:text-[11px]"
-            >
-              <div className="flex items-center gap-0.5">
-                {runs.slice(0, 5).map((r) => (
-                  <span key={r.id} className={`h-1.5 w-1.5 rounded-full ${r.status === "success" ? "bg-emerald-500" : "bg-red-500"}`} />
-                ))}
-              </div>
-              <span>{successCount}/10</span>
-              <Clock size={9} />
-            </button>
+            <div className="mt-auto pt-2">
+              <span className={`inline-block rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${cat.color}`}>{cat.label}</span>
+            </div>
           )}
         </div>
 
