@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, ChevronRight } from "lucide-react";
 import { getBlogPost, BlogPostRow } from "@/lib/api/content";
+import { blogContent } from "@/data/blogContent";
 import { useSEO } from "@/hooks/useSEO";
 
 const renderMarkdown = (md: string) =>
@@ -31,6 +32,12 @@ const BlogPostPage = () => {
     getBlogPost(slug).then(setPost);
   }, [slug]);
 
+  const fullContent = post?.content || (slug ? blogContent[slug] : "") || "";
+  const wordCount = useMemo(
+    () => (fullContent ? fullContent.trim().split(/\s+/).length : 0),
+    [fullContent]
+  );
+
   useSEO({
     title: post ? `${post.title} | Hans van Leeuwen` : "Loading... | Hans van Leeuwen",
     description: post?.excerpt || "Read this article by Hans van Leeuwen on e-commerce, marketplace strategy, and digital commerce.",
@@ -42,11 +49,29 @@ const BlogPostPage = () => {
       headline: post.title,
       description: post.excerpt,
       url: `https://hansvanleeuwen.com/writing/${slug}`,
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": `https://hansvanleeuwen.com/writing/${slug}`,
+      },
       datePublished: post.created_at,
       dateModified: post.updated_at,
-      author: { "@type": "Person", name: "Hans van Leeuwen" },
+      author: {
+        "@type": "Person",
+        "@id": "https://hansvanleeuwen.com/#person",
+        name: "Hans van Leeuwen",
+        url: "https://hansvanleeuwen.com",
+      },
+      publisher: {
+        "@type": "Person",
+        "@id": "https://hansvanleeuwen.com/#person",
+        name: "Hans van Leeuwen",
+        url: "https://hansvanleeuwen.com",
+      },
+      image: "https://hansvanleeuwen.com/og-image.png",
       articleSection: post.category,
       keywords: post.tags.join(", "),
+      ...(wordCount > 0 ? { wordCount } : {}),
+      inLanguage: "en",
     } : undefined,
   });
 
