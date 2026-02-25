@@ -214,7 +214,11 @@ const Navbar = () => {
               {isAdmin && (
                 <Link
                   to="/hansai"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-500 transition-colors hover:bg-emerald-500/20"
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
+                    location.pathname === "/hansai"
+                      ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_12px_hsl(160_80%_45%/0.2)]"
+                      : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:text-emerald-600"
+                  }`}
                 >
                   <Bot size={14} />
                   Hans AI
@@ -223,7 +227,11 @@ const Navbar = () => {
               {isAdmin && (
                 <Link
                   to="/empire"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
+                    location.pathname === "/empire"
+                      ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)]"
+                      : "border border-border text-muted-foreground hover:border-purple-500/40 hover:bg-purple-500/5 hover:text-purple-600"
+                  }`}
                 >
                   <Terminal size={14} />
                   Empire
@@ -307,7 +315,11 @@ const Navbar = () => {
                   <Link
                     to="/hansai"
                     onClick={() => setMobileOpen(false)}
-                    className="rounded-md px-3 py-2.5 text-sm font-medium text-emerald-500 bg-emerald-500/10 inline-flex items-center gap-2"
+                    className={`rounded-md px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all ${
+                      location.pathname === "/hansai"
+                        ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_12px_hsl(160_80%_45%/0.2)]"
+                        : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:text-emerald-600"
+                    }`}
                   >
                     <Bot size={14} />
                     Hans AI
@@ -317,7 +329,11 @@ const Navbar = () => {
                   <Link
                     to="/empire"
                     onClick={() => setMobileOpen(false)}
-                    className="rounded-md px-3 py-2.5 text-sm font-medium text-primary bg-primary/10 inline-flex items-center gap-2"
+                    className={`rounded-md px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all ${
+                      location.pathname === "/empire"
+                        ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)]"
+                        : "border border-border text-muted-foreground hover:border-purple-500/40 hover:text-purple-600"
+                    }`}
                   >
                     <Terminal size={14} />
                     Empire
