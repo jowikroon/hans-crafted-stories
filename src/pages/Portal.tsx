@@ -1,17 +1,37 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
 import PortalUsersManager from "@/components/portal/PortalUsersManager";
 import PortalPagesTab from "@/components/portal/PortalPagesTab";
+import InlineChatPanel from "@/components/portal/InlineChatPanel";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+
+const EMPIRE_SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
+You manage n8n workflows, Cloudflare Workers, VPS servers, Docker MCP Gateway, Supabase, and Claude Code CLI sessions.
+Be concise, technical, and actionable. Format with markdown.`;
+
+const N8N_SYSTEM_PROMPT = `You are an expert n8n workflow automation engineer and AI agent. You specialize in building, fixing, and troubleshooting n8n workflows.
+Output complete, valid n8n JSON when building. When fixing, explain root cause clearly. Format code in markdown code blocks.`;
+
+const EMPIRE_SUGGESTIONS = [
+  { icon: Wrench, text: "Fix my AutoSEO workflow — it stopped triggering" },
+  { icon: Cpu, text: "Generate a new n8n workflow for Channable feed optimization" },
+  { icon: HeartPulse, text: "Run a full health check on all services" },
+];
+
+const N8N_SUGGESTIONS = [
+  { icon: Zap, text: "Build a Gmail → Slack alert workflow" },
+  { icon: Wrench, text: "Fix 'Cannot read property of undefined' in Code node" },
+  { icon: Bug, text: "Troubleshoot: my Schedule trigger isn't firing" },
+];
 
 type Tab = "tools" | "content" | "pages" | "status" | "users";
 
@@ -27,6 +47,8 @@ const Portal = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [activeTab, setActiveTab] = useState<Tab>("tools");
+  const [empireOpen, setEmpireOpen] = useState(false);
+  const [n8nOpen, setN8nOpen] = useState(false);
   const { toast } = useToast();
 
   // Email login state
@@ -146,7 +168,7 @@ const Portal = () => {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">Portal</p>
             <h1 className="mb-2 font-display text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
@@ -154,13 +176,81 @@ const Portal = () => {
             </h1>
             <p className="text-muted-foreground">Admin dashboard — manage tools, content, and system health.</p>
           </div>
-          <button
-            onClick={signOut}
-            className="inline-flex w-fit items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <LogOut size={14} /> Sign out
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setEmpireOpen((v) => !v)}
+              className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                empireOpen
+                  ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_12px_hsl(160_80%_45%/0.2)]"
+                  : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:text-foreground"
+              }`}
+            >
+              <Terminal size={14} />
+              Empire AI
+            </button>
+            <button
+              onClick={() => setN8nOpen((v) => !v)}
+              className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                n8nOpen
+                  ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)]"
+                  : "border border-border text-muted-foreground hover:border-purple-500/40 hover:text-foreground"
+              }`}
+            >
+              <Zap size={14} />
+              n8n Agent
+            </button>
+            <button
+              onClick={signOut}
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <LogOut size={14} />
+            </button>
+          </div>
         </div>
+
+        {/* Inline AI Panels */}
+        <AnimatePresence>
+          {empireOpen && (
+            <motion.div
+              key="empire-inline"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "33vh", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="mb-4 overflow-hidden rounded-xl border-2 border-emerald-500 bg-card shadow-lg"
+            >
+              <InlineChatPanel
+                systemPrompt={EMPIRE_SYSTEM_PROMPT}
+                suggestions={EMPIRE_SUGGESTIONS}
+                title="Empire Commander"
+                subtitle="Ask Claude · Manage Infrastructure"
+                icon={Terminal}
+                placeholder="Claude, fix my AutoSEO workflow..."
+                accentClass="emerald"
+              />
+            </motion.div>
+          )}
+          {n8nOpen && (
+            <motion.div
+              key="n8n-inline"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "33vh", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="mb-4 overflow-hidden rounded-xl border-2 border-purple-500 bg-card shadow-lg"
+            >
+              <InlineChatPanel
+                systemPrompt={N8N_SYSTEM_PROMPT}
+                suggestions={N8N_SUGGESTIONS}
+                title="n8n Workflow Agent"
+                subtitle="Build · Fix · Troubleshoot"
+                icon={Zap}
+                placeholder="Build a workflow for..."
+                accentClass="purple"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Tab Navigation */}
         <div className="mb-8 flex gap-1 rounded-lg border border-border bg-secondary/50 p-1">
