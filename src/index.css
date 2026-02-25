@@ -133,4 +133,11 @@
   .interactive-thick:hover {
     box-shadow: 0 0 0 2px hsl(var(--primary) / 0.25);
   }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }

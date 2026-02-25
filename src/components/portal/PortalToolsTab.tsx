@@ -211,32 +211,34 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
   return (
     <>
       {/* Top Bar: Filters + Edit Mode Toggle */}
-      <div className="mb-5 flex flex-wrap items-center gap-2">
+      <div className="mb-5 flex items-center gap-2">
         {availableCategories.length > 1 && (
-          <>
-            <button
-              onClick={() => setActiveFilter(null)}
-              className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
-                !activeFilter ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-              }`}
-            >
-              All
-            </button>
-            {availableCategories.map((cat) => {
-              const cfg = categoryConfig[cat] || categoryConfig.general;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setActiveFilter(activeFilter === cat ? null : cat)}
-                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
-                    activeFilter === cat ? cfg.color + " border-current" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                  }`}
-                >
-                  {cfg.label}
-                </button>
-              );
-            })}
-          </>
+          <div className="relative flex-1 overflow-hidden">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ maskImage: 'linear-gradient(to right, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)' }}>
+              <button
+                onClick={() => setActiveFilter(null)}
+                className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
+                  !activeFilter ? "border-primary bg-primary/10 text-primary shadow-sm" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                }`}
+              >
+                All
+              </button>
+              {availableCategories.map((cat) => {
+                const cfg = categoryConfig[cat] || categoryConfig.general;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveFilter(activeFilter === cat ? null : cat)}
+                    className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
+                      activeFilter === cat ? cfg.color + " border-current shadow-sm" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                    }`}
+                  >
+                    {cfg.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
 
         {/* Spacer */}
@@ -277,10 +279,10 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
       {/* Grid */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={visibleTools.map((t) => t.id)} strategy={rectSortingStrategy}>
-          <div className={`grid gap-3 sm:gap-4 ${
+          <div className={`grid gap-4 sm:gap-4 ${
             isEditMode
               ? "grid-cols-2 sm:grid-cols-3 auto-rows-[110px] sm:auto-rows-[130px] md:auto-rows-[150px]"
-              : "grid-cols-2 sm:grid-cols-3 auto-rows-auto"
+              : "grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 auto-rows-auto"
           }`}>
             {visibleTools.map((tool, i) => (
               <SortableToolCard
