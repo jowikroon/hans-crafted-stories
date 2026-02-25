@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
+import CommandSidebar from "@/components/hansai/CommandSidebar";
 
 // ── Config ─────────────────────────────────────────────────────────
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hansai-chat`;
@@ -97,6 +98,7 @@ const HansAI = () => {
   const [showForm, setShowForm] = useState<"campaign" | "prompt" | null>(null);
   const [spinnerIdx, setSpinnerIdx] = useState(0);
   const [clearFlash, setClearFlash] = useState(false);
+  const [commandHistory, setCommandHistory] = useState<{ text: string; timestamp: number; type: "slash" | "ai" | "workflow" }[]>([]);
 
   // AI conversation history (not displayed, for context)
   const [aiMessages, setAiMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -342,6 +344,10 @@ const HansAI = () => {
     const trimmed = raw.trim();
     if (!trimmed) return;
 
+    // Track command history
+    const cmdType: "slash" | "ai" | "workflow" = trimmed.startsWith("/run") ? "workflow" : trimmed.startsWith("/") ? "slash" : "ai";
+    setCommandHistory((prev) => [...prev, { text: trimmed, timestamp: Date.now(), type: cmdType }]);
+
     // Check for slash commands
     if (trimmed.startsWith("/")) {
       const [cmd, ...rest] = trimmed.split(" ");
@@ -438,7 +444,9 @@ const HansAI = () => {
 
   // ── Render ──────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen flex-col overflow-hidden" style={{ background: "#0a0a0a", fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
+    <div className="relative flex h-screen overflow-hidden" style={{ background: "#0a0a0a", fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
+      {/* Main terminal area */}
+      <div className="flex flex-1 flex-col overflow-hidden">
       {/* JetBrains Mono font */}
       <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
@@ -536,6 +544,16 @@ const HansAI = () => {
           </div>
         </div>
       </div>
+      </div>
+
+      {/* Command Sidebar */}
+      <CommandSidebar
+        commandHistory={commandHistory}
+        onReplayCommand={(cmd) => {
+          setInput(cmd);
+          inputRef.current?.focus();
+        }}
+      />
     </div>
   );
 };

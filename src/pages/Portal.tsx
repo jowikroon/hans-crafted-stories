@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -50,6 +50,22 @@ const Portal = () => {
   const [empireOpen, setEmpireOpen] = useState(false);
   const [n8nOpen, setN8nOpen] = useState(false);
   const { toast } = useToast();
+
+  // Keyboard shortcuts: Cmd+E → Empire AI, Cmd+N → n8n Agent
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      if (e.key === "e") {
+        e.preventDefault();
+        setEmpireOpen((v) => !v);
+      } else if (e.key === "j") {
+        e.preventDefault();
+        setN8nOpen((v) => !v);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
 
   // Email login state
   const [email, setEmail] = useState("");
@@ -187,6 +203,7 @@ const Portal = () => {
             >
               <Terminal size={14} />
               Empire AI
+              <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘E</kbd>
             </button>
             <button
               onClick={() => setN8nOpen((v) => !v)}
@@ -198,6 +215,7 @@ const Portal = () => {
             >
               <Zap size={14} />
               n8n Agent
+              <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘J</kbd>
             </button>
             <button
               onClick={signOut}
