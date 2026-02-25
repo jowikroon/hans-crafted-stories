@@ -13,16 +13,16 @@ const queryClient = new QueryClient();
 
 const AppShell = () => {
   const location = useLocation();
-  const isTerminal = location.pathname === "/hansai";
+  const isDarkPage = location.pathname === "/hansai" || location.pathname === "/empire";
 
   return (
     <AuthProvider>
-      {!isTerminal && <Navbar />}
-      <main className={isTerminal ? "" : "min-h-screen"}>
+      <Navbar variant={isDarkPage ? "dark" : "default"} />
+      <main className="min-h-screen">
         <AnimatedRoutes />
       </main>
-      {!isTerminal && <Footer />}
-      {!isTerminal && <EmpireTerminalCard />}
+      {!isDarkPage && <Footer />}
+      {!isDarkPage && <EmpireTerminalCard />}
     </AuthProvider>
   );
 };

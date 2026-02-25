@@ -204,6 +204,7 @@ const Portal = () => {
             >
               <Terminal size={14} />
               Empire AI
+              <InfoTooltip text="AI assistant for infrastructure management and n8n workflows" />
               <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘E</kbd>
             </button>
             <button
@@ -216,6 +217,7 @@ const Portal = () => {
             >
               <Zap size={14} />
               n8n Agent
+              <InfoTooltip text="Build, fix, and troubleshoot n8n automation workflows" />
               <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘J</kbd>
             </button>
             <button

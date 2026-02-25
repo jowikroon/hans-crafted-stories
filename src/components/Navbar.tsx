@@ -1,9 +1,10 @@
 import { useState, createContext, useContext, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Terminal, Search, Command, Bot } from "lucide-react";
+import { Menu, X, LogIn, Terminal, Search, Command, Bot, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import InfoTooltip from "@/components/portal/InfoTooltip";
 
 type Lang = "nl" | "en";
 
@@ -27,7 +28,11 @@ const searchablePages = [
   { to: "/hansai", label: "Hans AI", keywords: ["ai", "chat", "llm", "claude", "gemini", "gpt"] },
 ];
 
-const Navbar = () => {
+interface NavbarProps {
+  variant?: "default" | "dark";
+}
+
+const Navbar = ({ variant = "default" }: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -38,6 +43,8 @@ const Navbar = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
+
+  const isDark = variant === "dark";
 
   const filteredPages = searchQuery.trim()
     ? searchablePages.filter(
@@ -84,23 +91,40 @@ const Navbar = () => {
     }
   };
 
+  // Current page indicator for BJ Fogg "progress" signal
+  const currentPageLabel = [...links, { to: "/portal", label: "Portal" }, { to: "/hansai", label: "Hans AI" }, { to: "/empire", label: "Empire" }]
+    .find((l) => l.to === location.pathname)?.label;
+
   const LangSwitch = () => (
     <div className="flex items-center gap-0.5 text-xs font-medium">
       <button
         onClick={() => setLang("nl")}
-        className={`px-1.5 py-0.5 rounded transition-colors ${lang === "nl" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+        className={`px-1.5 py-0.5 rounded transition-colors ${lang === "nl" ? (isDark ? "text-emerald-300" : "text-foreground") : (isDark ? "text-emerald-400/40" : "text-muted-foreground") + " hover:text-foreground"}`}
       >
         NL
       </button>
-      <span className="text-border">|</span>
+      <span className={isDark ? "text-emerald-500/20" : "text-border"}>|</span>
       <button
         onClick={() => setLang("en")}
-        className={`px-1.5 py-0.5 rounded transition-colors ${lang === "en" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+        className={`px-1.5 py-0.5 rounded transition-colors ${lang === "en" ? (isDark ? "text-emerald-300" : "text-foreground") : (isDark ? "text-emerald-400/40" : "text-muted-foreground") + " hover:text-foreground"}`}
       >
         ENG
       </button>
     </div>
   );
+
+  // Shared nav link style
+  const navLinkClass = (to: string) => {
+    const active = location.pathname === to;
+    if (isDark) {
+      return `rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
+        active ? "bg-emerald-500/10 text-emerald-300" : "text-emerald-400/40 hover:bg-emerald-500/5 hover:text-emerald-300"
+      }`;
+    }
+    return `rounded-md px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${
+      active ? "bg-accent text-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+    }`;
+  };
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>
@@ -144,18 +168,16 @@ const Navbar = () => {
                   filteredPages.map((page, i) => (
                     <button
                       key={page.to}
-                      onClick={() => {
-                        navigate(page.to);
-                        setSearchOpen(false);
-                      }}
+                      onClick={() => { navigate(page.to); setSearchOpen(false); }}
                       onMouseEnter={() => setSelectedIndex(i)}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${
-                        i === selectedIndex
-                          ? "bg-accent text-accent-foreground"
-                          : "text-foreground hover:bg-accent/50"
+                        i === selectedIndex ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/50"
                       }`}
                     >
                       <span className="font-medium">{page.label}</span>
+                      {location.pathname === page.to && (
+                        <span className="ml-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                      )}
                       <span className="ml-auto text-xs text-muted-foreground">{page.to}</span>
                     </button>
                   ))
@@ -166,74 +188,116 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
-      <nav className="fixed top-0 z-50 w-full bg-background/80 backdrop-blur-md">
-        {/* Row 1: Brand + Search + Actions */}
+      <nav
+        className={`fixed top-0 z-50 w-full backdrop-blur-md transition-colors ${
+          isDark
+            ? "bg-[hsl(220,20%,6%)]/90 border-b border-emerald-500/10"
+            : "bg-background/80"
+        }`}
+      >
         <div className="mx-auto max-w-6xl px-6">
-          <div className="flex items-center justify-between py-4">
-            <Link to="/" className="font-display text-lg font-bold tracking-tight text-foreground">
-              Hans van Leeuwen
-            </Link>
+          {/* Single row: Brand + Breadcrumb + Nav + Actions */}
+          <div className="flex items-center justify-between h-14">
+            {/* Left: Brand + page indicator */}
+            <div className="flex items-center gap-3">
+              <Link
+                to="/"
+                className={`font-display text-lg font-bold tracking-tight ${isDark ? "text-emerald-300" : "text-foreground"}`}
+              >
+                Hans van Leeuwen
+              </Link>
+              {currentPageLabel && currentPageLabel !== "Home" && (
+                <div className={`hidden md:flex items-center gap-1.5 text-xs ${isDark ? "text-emerald-400/30" : "text-muted-foreground/50"}`}>
+                  <ChevronRight size={12} />
+                  <span className={`font-medium ${isDark ? "text-emerald-400/60" : "text-muted-foreground"}`}>
+                    {currentPageLabel}
+                  </span>
+                </div>
+              )}
+            </div>
 
-            {/* Search trigger — desktop */}
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="hidden md:flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground w-64"
-            >
-              <Search size={14} />
-              <span className="flex-1 text-left">Search...</span>
-              <kbd className="inline-flex items-center gap-0.5 rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-                <Command size={10} />K
-              </kbd>
-            </button>
+            {/* Center: Nav links — desktop */}
+            <div className="hidden md:flex items-center gap-0.5">
+              {links.map((link) => (
+                <Link key={link.to} to={link.to} className={navLinkClass(link.to)}>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
 
-            {/* Right actions */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Right: Search + AI links + Login */}
+            <div className="hidden md:flex items-center gap-2">
+              {/* Compact search */}
+              <button
+                onClick={() => setSearchOpen(true)}
+                className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${
+                  isDark
+                    ? "border-emerald-500/15 bg-emerald-500/5 text-emerald-400/40 hover:border-emerald-500/30 hover:text-emerald-300"
+                    : "border-border bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <Search size={12} />
+                <kbd className={`inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[9px] font-mono ${
+                  isDark ? "border-emerald-500/15 text-emerald-400/30" : "border-border bg-background text-muted-foreground"
+                }`}>
+                  <Command size={8} />K
+                </kbd>
+              </button>
+
               <LangSwitch />
-              <div className="h-4 w-px bg-border" />
+              <div className={`h-3.5 w-px ${isDark ? "bg-emerald-500/15" : "bg-border"}`} />
+
+              {/* Portal / Login */}
               <Link
                 to="/portal"
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  location.pathname === "/portal"
+                    ? (isDark ? "bg-emerald-500/10 text-emerald-300" : "bg-accent text-accent-foreground shadow-sm")
+                    : (isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground")
+                }`}
               >
                 {user ? (
                   <>
                     <img
                       src={user.user_metadata?.avatar_url || ""}
                       alt=""
-                      className="h-5 w-5 rounded-full"
+                      className="h-4 w-4 rounded-full"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                     />
                     Portal
                   </>
                 ) : (
                   <>
-                    <LogIn size={14} />
+                    <LogIn size={12} />
                     Login
                   </>
                 )}
               </Link>
+
+              {/* AI links */}
               {isAdmin && (
                 <Link
                   to="/hansai"
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
                     location.pathname === "/hansai"
                       ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_12px_hsl(160_80%_45%/0.2)]"
-                      : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:text-emerald-600"
+                      : `border ${isDark ? "border-emerald-500/15 text-emerald-400/40 hover:border-emerald-500/40 hover:text-emerald-300" : "border-border text-muted-foreground hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:text-emerald-600"}`
                   }`}
                 >
-                  <Bot size={14} />
-                  Hans AI
+                  <Bot size={12} />
+                  AI
                 </Link>
               )}
               {isAdmin && (
                 <Link
                   to="/empire"
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
                     location.pathname === "/empire"
                       ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)]"
-                      : "border border-border text-muted-foreground hover:border-purple-500/40 hover:bg-purple-500/5 hover:text-purple-600"
+                      : `border ${isDark ? "border-purple-500/15 text-purple-400/40 hover:border-purple-500/40 hover:text-purple-300" : "border-border text-muted-foreground hover:border-purple-500/40 hover:bg-purple-500/5 hover:text-purple-600"}`
                   }`}
                 >
-                  <Terminal size={14} />
+                  <Terminal size={12} />
                   Empire
                 </Link>
               )}
@@ -243,7 +307,7 @@ const Navbar = () => {
             <div className="flex items-center gap-2 md:hidden">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className={`rounded-lg p-2 transition-colors ${isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
                 aria-label="Search"
               >
                 <Search size={18} />
@@ -251,33 +315,16 @@ const Navbar = () => {
               <LangSwitch />
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="rounded-lg p-2 text-foreground"
+                className={`rounded-lg p-2 ${isDark ? "text-emerald-300" : "text-foreground"}`}
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
           </div>
-
-          {/* Row 2: Navigation links — desktop */}
-          <div className="hidden md:flex items-center gap-1 -mt-1 pb-2">
-            {links.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${
-                  location.pathname === link.to
-                    ? "bg-accent text-accent-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
         </div>
 
-        <div className="hidden md:block h-px bg-border" />
+        <div className={`hidden md:block h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />
 
         {/* Mobile menu */}
         <AnimatePresence>
@@ -286,7 +333,7 @@ const Navbar = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden border-b border-border bg-background md:hidden"
+              className={`overflow-hidden border-b md:hidden ${isDark ? "border-emerald-500/10 bg-[hsl(220,20%,6%)]" : "border-border bg-background"}`}
             >
               <div className="flex flex-col gap-1 px-4 py-4">
                 {links.map((link) => (
@@ -296,8 +343,8 @@ const Navbar = () => {
                     onClick={() => setMobileOpen(false)}
                     className={`rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                       location.pathname === link.to
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? (isDark ? "bg-emerald-500/10 text-emerald-300" : "bg-accent text-accent-foreground")
+                        : (isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground")
                     }`}
                   >
                     {link.label}
@@ -306,7 +353,9 @@ const Navbar = () => {
                 <Link
                   to="/portal"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground inline-flex items-center gap-2"
+                  className={`rounded-md px-3 py-2.5 text-sm font-medium transition-colors inline-flex items-center gap-2 ${
+                    isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
                 >
                   <LogIn size={14} />
                   {user ? "Portal" : "Login"}
@@ -318,7 +367,7 @@ const Navbar = () => {
                     className={`rounded-md px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all ${
                       location.pathname === "/hansai"
                         ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_12px_hsl(160_80%_45%/0.2)]"
-                        : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:text-emerald-600"
+                        : `border ${isDark ? "border-emerald-500/15 text-emerald-400/40" : "border-border text-muted-foreground"} hover:border-emerald-500/40 hover:text-emerald-600`
                     }`}
                   >
                     <Bot size={14} />
@@ -332,7 +381,7 @@ const Navbar = () => {
                     className={`rounded-md px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all ${
                       location.pathname === "/empire"
                         ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)]"
-                        : "border border-border text-muted-foreground hover:border-purple-500/40 hover:text-purple-600"
+                        : `border ${isDark ? "border-purple-500/15 text-purple-400/40" : "border-border text-muted-foreground"} hover:border-purple-500/40 hover:text-purple-600`
                     }`}
                   >
                     <Terminal size={14} />
