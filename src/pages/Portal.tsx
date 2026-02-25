@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug, Search } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
 import PortalUsersManager from "@/components/portal/PortalUsersManager";
 import PortalPagesTab from "@/components/portal/PortalPagesTab";
 import InlineChatPanel from "@/components/portal/InlineChatPanel";
+import PortalFloatingDock from "@/components/portal/PortalFloatingDock";
+import PortalCommandPalette from "@/components/portal/PortalCommandPalette";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -50,9 +52,10 @@ const Portal = () => {
   const [activeTab, setActiveTab] = useState<Tab>("tools");
   const [empireOpen, setEmpireOpen] = useState(false);
   const [n8nOpen, setN8nOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   const { toast } = useToast();
 
-  // Keyboard shortcuts: Cmd+E → Empire AI, Cmd+N → n8n Agent
+  // Keyboard shortcuts: Cmd+E → Empire AI, Cmd+J → n8n Agent, Cmd+K → Command Palette
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
@@ -62,6 +65,9 @@ const Portal = () => {
       } else if (e.key === "j") {
         e.preventDefault();
         setN8nOpen((v) => !v);
+      } else if (e.key === "k") {
+        e.preventDefault();
+        setCommandOpen((v) => !v);
       }
     };
     document.addEventListener("keydown", handler);
@@ -177,7 +183,7 @@ const Portal = () => {
   }
 
   return (
-    <section className="section-container pt-20 pb-20 sm:pt-28 px-4 sm:px-6">
+    <section className="section-container pt-20 pb-28 sm:pb-20 sm:pt-28 px-4 sm:px-6">
       <PageBreadcrumb items={[{ label: "Portal" }]} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -221,6 +227,14 @@ const Portal = () => {
               n8n Agent
               <InfoTooltip text="Build, fix, and troubleshoot n8n automation workflows" />
               <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘J</kbd>
+            </button>
+            {/* Command Palette trigger (desktop) */}
+            <button
+              onClick={() => setCommandOpen(true)}
+              className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
+            >
+              <Search size={13} />
+              <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground">⌘K</kbd>
             </button>
             <button
               onClick={signOut}
@@ -305,6 +319,23 @@ const Portal = () => {
         {activeTab === "users" && <PortalUsersManager adminUserId={user.id} />}
         {activeTab === "status" && <PortalStatusTab />}
       </motion.div>
+
+      {/* Mobile floating dock */}
+      <PortalFloatingDock
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onCommandOpen={() => setCommandOpen(true)}
+      />
+
+      {/* Command Palette */}
+      <PortalCommandPalette
+        open={commandOpen}
+        onClose={() => setCommandOpen(false)}
+        onTabChange={setActiveTab}
+        onEmpireOpen={() => setEmpireOpen((v) => !v)}
+        onN8nOpen={() => setN8nOpen((v) => !v)}
+        onSignOut={signOut}
+      />
     </section>
   );
 };
