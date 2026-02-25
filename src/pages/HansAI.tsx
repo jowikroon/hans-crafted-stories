@@ -444,7 +444,7 @@ const HansAI = () => {
 
   // ── Render ──────────────────────────────────────────────────────
   return (
-    <div className="relative flex h-screen overflow-hidden pt-14" style={{ background: "#0a0a0a", fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
+    <div className="relative flex h-screen overflow-hidden pt-[88px]" style={{ background: "#0a0a0a", fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
       {/* Main terminal area */}
       <div className="flex flex-1 flex-col overflow-hidden">
       {/* JetBrains Mono font */}
