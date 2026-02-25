@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, LogIn, Terminal, Search, Command, Bot } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import HansAIOverlay from "@/components/overlays/HansAIOverlay";
+import EmpireOverlay from "@/components/overlays/EmpireOverlay";
 
 type Lang = "nl" | "en";
 
@@ -37,6 +39,8 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [lang, setLang] = useState<Lang>("nl");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [empireOpen, setEmpireOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -236,28 +240,28 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
             {/* AI + Empire quick links */}
             {isAdmin && (
               <div className="flex items-center gap-1.5">
-                <Link
-                  to="/hansai"
+                <button
+                  onClick={() => setAiOpen(true)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
-                    isActive("/hansai")
+                    aiOpen
                       ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_10px_hsl(160_80%_45%/0.15)]"
                       : `${isDark ? "border-emerald-500/15 text-emerald-400/40 hover:border-emerald-500/40 hover:text-emerald-300" : "border-border text-muted-foreground hover:border-emerald-500/30 hover:bg-emerald-500/5 hover:text-emerald-600"}`
                   }`}
                 >
                   <Bot size={11} />
                   AI
-                </Link>
-                <Link
-                  to="/empire"
+                </button>
+                <button
+                  onClick={() => setEmpireOpen(true)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
-                    isActive("/empire")
+                    empireOpen
                       ? "border-violet-500 bg-violet-500/10 text-violet-600 shadow-[0_0_10px_hsl(270_80%_55%/0.15)]"
                       : `${isDark ? "border-violet-500/15 text-violet-400/40 hover:border-violet-500/40 hover:text-violet-300" : "border-border text-muted-foreground hover:border-violet-500/30 hover:bg-violet-500/5 hover:text-violet-600"}`
                   }`}
                 >
                   <Terminal size={11} />
                   Empire
-                </Link>
+                </button>
               </div>
             )}
           </div>
@@ -288,14 +292,14 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 </Link>
                 {isAdmin && (
                   <>
-                    <Link to="/hansai" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border ${isActive("/hansai") ? "border-emerald-500 bg-emerald-500/10 text-emerald-600" : `${isDark ? "border-emerald-500/15 text-emerald-400/40" : "border-border text-muted-foreground"} hover:border-emerald-500/40 hover:text-emerald-600`}`}>
+                    <button onClick={() => { setMobileOpen(false); setAiOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-emerald-500/15 text-emerald-400/40" : "border-border text-muted-foreground"} hover:border-emerald-500/40 hover:text-emerald-600`}>
                       <Bot size={14} />
                       Hans AI
-                    </Link>
-                    <Link to="/empire" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border ${isActive("/empire") ? "border-violet-500 bg-violet-500/10 text-violet-600" : `${isDark ? "border-violet-500/15 text-violet-400/40" : "border-border text-muted-foreground"} hover:border-violet-500/40 hover:text-violet-600`}`}>
+                    </button>
+                    <button onClick={() => { setMobileOpen(false); setEmpireOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-violet-500/15 text-violet-400/40" : "border-border text-muted-foreground"} hover:border-violet-500/40 hover:text-violet-600`}>
                       <Terminal size={14} />
                       Empire
-                    </Link>
+                    </button>
                   </>
                 )}
               </div>
@@ -303,6 +307,10 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
           )}
         </AnimatePresence>
       </nav>
+
+      {/* AI & Empire Overlays */}
+      <HansAIOverlay open={aiOpen} onClose={() => setAiOpen(false)} />
+      <EmpireOverlay open={empireOpen} onClose={() => setEmpireOpen(false)} />
     </LangContext.Provider>
   );
 };
