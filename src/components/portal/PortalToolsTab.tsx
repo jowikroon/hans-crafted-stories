@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow, FileJson, Sparkles } from "lucide-react";
+import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow, FileJson, Sparkles, Pencil, Check, X } from "lucide-react";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import { arrayMove, SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { portalApi, PortalTool } from "@/lib/api/portal";
 import { usersApi, UserToolAccess } from "@/lib/api/users";
 import { Badge } from "@/components/ui/badge";
@@ -15,17 +17,10 @@ import IframeToolModal from "./IframeToolModal";
 import WorkflowViewerModal from "./WorkflowViewerModal";
 import N8nAgentModal from "./N8nAgentModal";
 import InfoTooltip from "./InfoTooltip";
+import SortableToolCard, { type CardSize, sizeCycle, categoryConfig } from "./SortableToolCard";
 
 const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles };
 const getIcon = (name: string) => iconMap[name] || Wrench;
-
-const categoryConfig: Record<string, { label: string; color: string }> = {
-  seo: { label: "SEO", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
-  automation: { label: "Automation", color: "bg-orange-500/10 text-orange-600 border-orange-500/20" },
-  data: { label: "Data & Feeds", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
-  ai: { label: "AI", color: "bg-violet-500/10 text-violet-600 border-violet-500/20" },
-  general: { label: "General", color: "bg-muted text-muted-foreground border-border" },
-};
 
 const defaultTools = [
   { tool_type: "keyword", name: "Keyword Research", description: "AI-powered keyword analysis and content suggestions.", icon: "Globe", color: "text-blue-500", sort_order: 0, category: "seo", features: ["AI-powered keyword analysis", "Search intent classification", "Content topic suggestions"] },
@@ -50,7 +45,14 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
   const [previewTool, setPreviewTool] = useState<PortalTool | null>(null);
   const [accessMap, setAccessMap] = useState<Record<string, UserToolAccess> | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [cardSizes, setCardSizes] = useState<Record<string, CardSize>>({});
   const seedingRef = useRef(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor)
+  );
 
   useEffect(() => {
     if (seedingRef.current) return;
@@ -67,7 +69,16 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
         }
         setTools(dbTools);
 
-        // Load access rights for non-admin users
+        // Load saved card sizes from config
+        const sizes: Record<string, CardSize> = {};
+        for (const t of dbTools) {
+          const cfg = (t.config || {}) as Record<string, unknown>;
+          if (cfg.grid_size && sizeCycle.includes(cfg.grid_size as CardSize)) {
+            sizes[t.id] = cfg.grid_size as CardSize;
+          }
+        }
+        setCardSizes(sizes);
+
         if (!isAdmin) {
           const access = await usersApi.getToolAccess(userId);
           const map: Record<string, UserToolAccess> = {};
@@ -101,7 +112,6 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
     return true;
   });
 
-  // Derive available categories from all tools
   const availableCategories = [...new Set(tools.map(t => t.category || "general"))].sort();
 
   const handleToolClick = (tool: PortalTool) => setPreviewTool(tool);
@@ -112,18 +122,9 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
 
   const handleOpenTool = (tool: PortalTool) => {
     setPreviewTool(null);
-    if (tool.tool_type === "iframe") {
-      setIframeTool(tool);
-      return;
-    }
-    if (tool.tool_type === "workflow") {
-      setWorkflowTool(tool);
-      return;
-    }
-    if (tool.tool_type === "ai-agent") {
-      setShowAgent(true);
-      return;
-    }
+    if (tool.tool_type === "iframe") { setIframeTool(tool); return; }
+    if (tool.tool_type === "workflow") { setWorkflowTool(tool); return; }
+    if (tool.tool_type === "ai-agent") { setShowAgent(true); return; }
     if (tool.tool_type === "webhook") {
       const url = (tool.config as Record<string, string>)?.webhook_url || "";
       setWebhookUrl(url);
@@ -134,6 +135,51 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
   const handleEditFromPreview = (tool: PortalTool) => {
     setPreviewTool(null);
     setSettingsTool(tool);
+  };
+
+  // Drag end handler
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setTools((prev) => {
+      const oldIndex = prev.findIndex((t) => t.id === active.id);
+      const newIndex = prev.findIndex((t) => t.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      const newOrder = arrayMove(prev, oldIndex, newIndex);
+
+      // Persist sort order
+      newOrder.forEach((tool, i) => {
+        portalApi.updateTool(tool.id, { sort_order: i }).catch(console.error);
+      });
+
+      return newOrder;
+    });
+  }, []);
+
+  // Cycle card size
+  const handleCycleSize = useCallback((toolId: string) => {
+    setCardSizes((prev) => {
+      const current = prev[toolId] || "1x1";
+      const idx = sizeCycle.indexOf(current);
+      const next = sizeCycle[(idx + 1) % sizeCycle.length];
+      const newSizes = { ...prev, [toolId]: next };
+
+      // Persist to tool config
+      const tool = tools.find((t) => t.id === toolId);
+      if (tool) {
+        const cfg = { ...((tool.config || {}) as Record<string, unknown>), grid_size: next };
+        portalApi.updateTool(toolId, { config: cfg }).catch(console.error);
+      }
+
+      return newSizes;
+    });
+  }, [tools]);
+
+  // Save and exit edit mode
+  const handleSaveLayout = () => {
+    setIsEditMode(false);
+    toast({ title: "Layout saved", description: "Grid layout has been updated." });
   };
 
   if (toolsLoading) {
@@ -164,153 +210,116 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
 
   return (
     <>
-      {/* Category Filter Bar */}
-      {availableCategories.length > 1 && (
-        <div className="mb-5 flex flex-wrap gap-2">
-          <button
-            onClick={() => setActiveFilter(null)}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
-              !activeFilter ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-            }`}
-          >
-            All
-          </button>
-          {availableCategories.map((cat) => {
-            const cfg = categoryConfig[cat] || categoryConfig.general;
-            return (
-              <button
-                key={cat}
-                onClick={() => setActiveFilter(activeFilter === cat ? null : cat)}
-                className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
-                  activeFilter === cat ? cfg.color + " border-current" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                }`}
-              >
-                {cfg.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {visibleTools.map((tool, i) => {
-          const Icon = getIcon(tool.icon);
-          return (
-            <motion.div
-              key={tool.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="group relative cursor-pointer rounded-xl border border-border bg-card p-4 text-left transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5"
-              onClick={() => handleToolClick(tool)}
+      {/* Top Bar: Filters + Edit Mode Toggle */}
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        {availableCategories.length > 1 && (
+          <>
+            <button
+              onClick={() => setActiveFilter(null)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+                !activeFilter ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
+              }`}
             >
-              {isAdmin && (
+              All
+            </button>
+            {availableCategories.map((cat) => {
+              const cfg = categoryConfig[cat] || categoryConfig.general;
+              return (
                 <button
-                  onClick={(e) => { e.stopPropagation(); setSettingsTool(tool); }}
-                  className="absolute right-2.5 top-2.5 rounded-md p-1 text-muted-foreground/40 opacity-100 transition-all hover:bg-secondary hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
-                  aria-label="Tool settings"
+                  key={cat}
+                  onClick={() => setActiveFilter(activeFilter === cat ? null : cat)}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+                    activeFilter === cat ? cfg.color + " border-current" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                  }`}
                 >
-                  <Settings size={13} />
+                  {cfg.label}
                 </button>
-              )}
-              <div className="mb-2 flex items-center gap-2.5">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-secondary ${tool.color}`}>
-                  <Icon size={16} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1">
-                    <h3 className="truncate font-display text-sm font-medium text-foreground">
-                      {tool.name}
-                    </h3>
-                    <InfoTooltip text={tool.description || "Open this tool"} />
-                    <ExternalLink size={10} className="ml-auto shrink-0 opacity-0 transition-opacity group-hover:opacity-60" />
-                  </div>
-                  <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
-                    {tool.tool_type === "webhook" ? "Automation" : tool.tool_type === "keyword" ? "Research" : tool.tool_type === "site-audit" ? "Audit" : tool.tool_type === "iframe" ? "Embedded" : tool.tool_type === "workflow" ? "Workflow" : tool.tool_type === "ai-agent" ? "AI Agent" : "Tool"}
-                  </p>
-                </div>
-                {tool.category && categoryConfig[tool.category] && (
-                  <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${categoryConfig[tool.category].color}`}>
-                    {categoryConfig[tool.category].label}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs leading-relaxed text-muted-foreground line-clamp-1">{tool.description}</p>
-              {tool.tool_type === "ai-agent" && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleOpenTool(tool); }}
-                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-violet-500 bg-violet-500/10 px-3 py-2 text-xs font-medium text-violet-600 shadow-[0_0_12px_hsl(270_80%_55%/0.15)] transition-all hover:bg-violet-500/20 hover:shadow-[0_0_16px_hsl(270_80%_55%/0.25)]"
-                >
-                  <Sparkles size={13} />
-                  Connect AI Agent
-                </button>
-              )}
-              {tool.attributes && tool.attributes.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {tool.attributes.slice(0, 3).map((attr) => (
-                    <Badge key={attr.id} variant="secondary" className="text-[10px] font-normal">
-                      {attr.key}: {attr.value}
-                    </Badge>
-                  ))}
-                  {tool.attributes.length > 3 && (
-                    <Badge variant="outline" className="text-[10px] font-normal text-muted-foreground">
-                      +{tool.attributes.length - 3}
-                    </Badge>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
+              );
+            })}
+          </>
+        )}
 
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Edit Mode Toggle */}
         {isAdmin && (
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: visibleTools.length * 0.1 }}
-            onClick={() => setShowAddTool(true)}
-            className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-border p-6 text-muted-foreground/50 transition-all hover:border-primary/30 hover:text-muted-foreground"
-          >
-            <div className="text-center">
-              <Plus size={24} className="mx-auto mb-2" />
-              <p className="text-sm">Add more tools</p>
+          isEditMode ? (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleSaveLayout}
+                className="inline-flex items-center gap-1.5 rounded-lg border-2 border-primary bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-all hover:bg-primary/20"
+              >
+                <Check size={12} />
+                Save Layout
+              </button>
+              <button
+                onClick={() => setIsEditMode(false)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+              >
+                <X size={12} />
+                Cancel
+              </button>
             </div>
-          </motion.button>
+          ) : (
+            <button
+              onClick={() => setIsEditMode(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:text-foreground"
+            >
+              <Pencil size={12} />
+              Edit Layout
+              <InfoTooltip text="Drag to reorder, click resize to change card size" />
+            </button>
+          )
         )}
       </div>
 
-      <ToolPreviewModal
-        tool={previewTool}
-        onClose={() => setPreviewTool(null)}
-        onEdit={handleEditFromPreview}
-        onOpen={handleOpenTool}
-        onToolUpdated={reloadTools}
-      />
+      {/* Grid */}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={visibleTools.map((t) => t.id)} strategy={rectSortingStrategy}>
+          <div className={`grid gap-3 ${isEditMode ? "grid-cols-5 auto-rows-[140px]" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 auto-rows-auto"}`}>
+            {visibleTools.map((tool, i) => (
+              <SortableToolCard
+                key={tool.id}
+                tool={tool}
+                index={i}
+                isAdmin={isAdmin}
+                isEditMode={isEditMode}
+                cardSize={isEditMode ? (cardSizes[tool.id] || "1x1") : "1x1"}
+                IconComponent={getIcon(tool.icon)}
+                onToolClick={handleToolClick}
+                onOpenTool={handleOpenTool}
+                onSettings={(t) => setSettingsTool(t)}
+                onCycleSize={handleCycleSize}
+              />
+            ))}
+
+            {isAdmin && !isEditMode && (
+              <motion.button
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: visibleTools.length * 0.05 }}
+                onClick={() => setShowAddTool(true)}
+                className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border p-4 text-muted-foreground/50 transition-all hover:border-primary/30 hover:text-muted-foreground"
+              >
+                <div className="text-center">
+                  <Plus size={20} className="mx-auto mb-1" />
+                  <p className="text-xs">Add tool</p>
+                </div>
+              </motion.button>
+            )}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      <ToolPreviewModal tool={previewTool} onClose={() => setPreviewTool(null)} onEdit={handleEditFromPreview} onOpen={handleOpenTool} onToolUpdated={reloadTools} />
       <SiteAuditModal open={activeModal === "site-audit"} onClose={() => setActiveModal(null)} />
-      <WebhookTriggerModal
-        open={activeModal === "webhook"}
-        onClose={() => setActiveModal(null)}
-        defaultWebhookUrl={webhookUrl}
-        toolId={tools.find(t => t.tool_type === "webhook")?.id}
-        toolConfig={(tools.find(t => t.tool_type === "webhook")?.config || {}) as Record<string, unknown>}
-        onWebhookSaved={reloadTools}
-      />
+      <WebhookTriggerModal open={activeModal === "webhook"} onClose={() => setActiveModal(null)} defaultWebhookUrl={webhookUrl} toolId={tools.find(t => t.tool_type === "webhook")?.id} toolConfig={(tools.find(t => t.tool_type === "webhook")?.config || {}) as Record<string, unknown>} onWebhookSaved={reloadTools} />
       <KeywordResearchModal open={activeModal === "keyword"} onClose={() => setActiveModal(null)} />
       <ToolSettingsModal open={!!settingsTool} onClose={() => setSettingsTool(null)} tool={settingsTool} totalTools={tools.length} onUpdated={reloadTools} />
       <AddToolModal open={showAddTool} onClose={() => setShowAddTool(false)} userId={userId} nextSortOrder={tools.length} onAdded={reloadTools} />
-      <IframeToolModal
-        open={!!iframeTool}
-        onClose={() => setIframeTool(null)}
-        url={(iframeTool?.config as Record<string, string>)?.iframe_url || ""}
-        title={iframeTool?.name || "Embedded Tool"}
-      />
-      <WorkflowViewerModal
-        open={!!workflowTool}
-        onClose={() => setWorkflowTool(null)}
-        name={workflowTool?.name || ""}
-        description={workflowTool?.description || ""}
-        workflowFile={(workflowTool?.config as Record<string, string>)?.workflow_file || ""}
-        workflowName={(workflowTool?.config as Record<string, string>)?.workflow_name || ""}
-      />
+      <IframeToolModal open={!!iframeTool} onClose={() => setIframeTool(null)} url={(iframeTool?.config as Record<string, string>)?.iframe_url || ""} title={iframeTool?.name || "Embedded Tool"} />
+      <WorkflowViewerModal open={!!workflowTool} onClose={() => setWorkflowTool(null)} name={workflowTool?.name || ""} description={workflowTool?.description || ""} workflowFile={(workflowTool?.config as Record<string, string>)?.workflow_file || ""} workflowName={(workflowTool?.config as Record<string, string>)?.workflow_name || ""} />
       <N8nAgentModal open={showAgent} onClose={() => setShowAgent(false)} />
     </>
   );
