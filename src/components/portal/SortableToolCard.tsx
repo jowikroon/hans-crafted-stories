@@ -31,6 +31,7 @@ const toolTypeLabel = (type: string) => {
   const map: Record<string, string> = {
     webhook: "⚡ Automation", keyword: "🔍 Research", "site-audit": "🩺 Audit",
     iframe: "📦 Embedded", workflow: "🔄 Workflow", "ai-agent": "🧠 AI Agent",
+    external: "🌐 External App",
   };
   return map[type] || "🔧 Tool";
 };
@@ -42,6 +43,7 @@ const punchyDescriptions: Record<string, string> = {
   iframe: "Your workflow, embedded. Submit data without ever leaving the portal.",
   workflow: "Visualize the machine. See every node, every connection, every decision.",
   "ai-agent": "Your copilot awaits. Natural language in → structured actions out.",
+  external: "Opens in a new tab. Click to launch this app.",
 };
 
 /* ─── Mock run history ─── */

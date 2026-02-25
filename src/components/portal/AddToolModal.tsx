@@ -18,6 +18,7 @@ interface AddToolModalProps {
 }
 
 const toolTypes = [
+  { value: "external", label: "External App (opens in new tab)", category: "general" },
   { value: "webhook", label: "Webhook / Automation", category: "automation" },
   { value: "site-audit", label: "Site Audit", category: "seo" },
   { value: "keyword", label: "Keyword Research", category: "seo" },
@@ -56,21 +57,23 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [toolType, setToolType] = useState("webhook");
+  const [toolType, setToolType] = useState("external");
   const [icon, setIcon] = useState("Wrench");
   const [color, setColor] = useState("text-primary");
   const [webhookUrl, setWebhookUrl] = useState("");
   const [iframeUrl, setIframeUrl] = useState("");
+  const [externalUrl, setExternalUrl] = useState("");
   const [newAttributes, setNewAttributes] = useState<AttributeEntry[]>([]);
 
   const reset = () => {
     setName("");
     setDescription("");
-    setToolType("webhook");
+    setToolType("external");
     setIcon("Wrench");
     setColor("text-primary");
     setWebhookUrl("");
     setIframeUrl("");
+    setExternalUrl("");
     setNewAttributes([]);
   };
 
@@ -84,6 +87,7 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
       const config: Record<string, unknown> = { enabled: true };
       if (toolType === "webhook") config.webhook_url = webhookUrl;
       if (toolType === "iframe") config.iframe_url = iframeUrl;
+      if (toolType === "external") config.external_url = externalUrl;
       const autoCategory = toolTypes.find(t => t.value === toolType)?.category || "general";
       const created = await portalApi.addTool({
         user_id: userId,
@@ -156,6 +160,13 @@ const AddToolModal = ({ open, onClose, userId, nextSortOrder, onAdded }: AddTool
             <div className="space-y-1.5">
               <Label htmlFor="new-iframe-url">Page / Form URL</Label>
               <Input id="new-iframe-url" value={iframeUrl} onChange={(e) => setIframeUrl(e.target.value)} placeholder="https://your-app.com/form/..." />
+            </div>
+          )}
+
+          {toolType === "external" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="new-external-url">External App URL</Label>
+              <Input id="new-external-url" value={externalUrl} onChange={(e) => setExternalUrl(e.target.value)} placeholder="https://your-app.manus.space" />
             </div>
           )}
 
