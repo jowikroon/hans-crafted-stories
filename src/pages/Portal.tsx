@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug, Search } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug, Search, Moon, Sun } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
@@ -46,6 +46,8 @@ const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
   { id: "status", label: "Status", icon: Activity, hint: "System health and uptime" },
 ];
 
+const DARK_MODE_KEY = "portal_dark_mode";
+
 const Portal = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -53,22 +55,25 @@ const Portal = () => {
   const [empireOpen, setEmpireOpen] = useState(false);
   const [n8nOpen, setN8nOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") return localStorage.getItem(DARK_MODE_KEY) === "true";
+    return false;
+  });
   const { toast } = useToast();
 
-  // Keyboard shortcuts: Cmd+E → Empire AI, Cmd+J → n8n Agent, Cmd+K → Command Palette
+  // Apply dark mode class
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDark);
+    localStorage.setItem(DARK_MODE_KEY, String(isDark));
+  }, [isDark]);
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
-      if (e.key === "e") {
-        e.preventDefault();
-        setEmpireOpen((v) => !v);
-      } else if (e.key === "j") {
-        e.preventDefault();
-        setN8nOpen((v) => !v);
-      } else if (e.key === "k") {
-        e.preventDefault();
-        setCommandOpen((v) => !v);
-      }
+      if (e.key === "e") { e.preventDefault(); setEmpireOpen((v) => !v); }
+      else if (e.key === "j") { e.preventDefault(); setN8nOpen((v) => !v); }
+      else if (e.key === "k") { e.preventDefault(); setCommandOpen((v) => !v); }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -112,22 +117,9 @@ const Portal = () => {
             Sign in to access your SEO tools, workflow triggers, and more.
           </p>
 
-          {/* Email/Password Login */}
           <form onSubmit={handleEmailLogin} className="mb-6 space-y-3 text-left">
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="text-sm"
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="text-sm"
-            />
+            <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="text-sm" />
+            <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="text-sm" />
             <Button type="submit" disabled={emailLoading} className="w-full">
               {emailLoading ? <Loader2 size={16} className="mr-2 animate-spin" /> : null}
               Sign in
@@ -135,12 +127,8 @@ const Portal = () => {
           </form>
 
           <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">or</span>
-            </div>
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+            <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">or</span></div>
           </div>
 
           <button
@@ -163,18 +151,11 @@ const Portal = () => {
   if (!isAdmin) {
     return (
       <section className="section-container flex min-h-[60vh] flex-col items-center justify-center pt-28">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
           <ShieldAlert size={40} className="mx-auto mb-4 text-muted-foreground" />
           <h1 className="mb-2 font-display text-2xl font-medium text-foreground">Access Denied</h1>
           <p className="mb-6 text-muted-foreground">You don't have admin access to this portal.</p>
-          <button
-            onClick={signOut}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
+          <button onClick={signOut} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
             <LogOut size={14} /> Sign out
           </button>
         </motion.div>
@@ -198,10 +179,19 @@ const Portal = () => {
               Welcome back{user.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(" ")[0]}` : ""}
             </h1>
             <p className="text-sm leading-relaxed text-muted-foreground/80 sm:text-base sm:leading-normal sm:text-muted-foreground">
-              Admin dashboard — manage tools, content, and system health.
+              Your tools board — manage tools, content one place.
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
+            {/* Dark mode toggle */}
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-2 text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+              title={isDark ? "Light mode" : "Dark mode"}
+            >
+              {isDark ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
+
             <button
               onClick={() => setEmpireOpen((v) => !v)}
               className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
@@ -211,7 +201,7 @@ const Portal = () => {
               }`}
             >
               <Terminal size={14} />
-              Empire AI
+              <span className="hidden sm:inline">Empire AI</span>
               <InfoTooltip text="AI assistant for infrastructure management and n8n workflows" />
               <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘E</kbd>
             </button>
@@ -224,11 +214,10 @@ const Portal = () => {
               }`}
             >
               <Zap size={14} />
-              n8n Agent
+              <span className="hidden sm:inline">n8n Agent</span>
               <InfoTooltip text="Build, fix, and troubleshoot n8n automation workflows" />
               <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘J</kbd>
             </button>
-            {/* Command Palette trigger (desktop) */}
             <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
@@ -251,10 +240,10 @@ const Portal = () => {
             <motion.div
               key="empire-inline"
               initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "33vh", opacity: 1 }}
+              animate={{ height: "40vh", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-4 overflow-hidden rounded-xl border-2 border-emerald-500 bg-card shadow-lg"
+              className="mb-4 overflow-hidden rounded-2xl border-2 border-emerald-500 bg-card shadow-lg"
             >
               <InlineChatPanel
                 systemPrompt={EMPIRE_SYSTEM_PROMPT}
@@ -271,10 +260,10 @@ const Portal = () => {
             <motion.div
               key="n8n-inline"
               initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "33vh", opacity: 1 }}
+              animate={{ height: "40vh", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-4 overflow-hidden rounded-xl border-2 border-purple-500 bg-card shadow-lg"
+              className="mb-4 overflow-hidden rounded-2xl border-2 border-purple-500 bg-card shadow-lg"
             >
               <InlineChatPanel
                 systemPrompt={N8N_SYSTEM_PROMPT}
@@ -290,7 +279,7 @@ const Portal = () => {
         </AnimatePresence>
 
         {/* Tab Navigation */}
-        <div className="mb-8 flex gap-1 overflow-x-auto rounded-lg border border-border bg-secondary/50 p-1 pb-2 sm:mb-8 sm:overflow-visible">
+        <div className="mb-8 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:mb-8 sm:overflow-visible">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -298,7 +287,7 @@ const Portal = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:py-2 ${
+                className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:py-2 ${
                   isActive
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -320,22 +309,8 @@ const Portal = () => {
         {activeTab === "status" && <PortalStatusTab />}
       </motion.div>
 
-      {/* Mobile floating dock */}
-      <PortalFloatingDock
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onCommandOpen={() => setCommandOpen(true)}
-      />
-
-      {/* Command Palette */}
-      <PortalCommandPalette
-        open={commandOpen}
-        onClose={() => setCommandOpen(false)}
-        onTabChange={setActiveTab}
-        onEmpireOpen={() => setEmpireOpen((v) => !v)}
-        onN8nOpen={() => setN8nOpen((v) => !v)}
-        onSignOut={signOut}
-      />
+      <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
+      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => setEmpireOpen((v) => !v)} onN8nOpen={() => setN8nOpen((v) => !v)} onSignOut={signOut} />
     </section>
   );
 };
