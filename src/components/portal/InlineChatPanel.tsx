@@ -25,14 +25,14 @@ interface InlineChatPanelProps {
   accentClass: string;
 }
 
-/* ─── Pipeline stages ─── */
+/* ─── Pipeline stages (TVA vintage style) ─── */
 type PipelineStage = "idle" | "sending" | "processing" | "generating" | "done" | "error";
 
 const pipelineSteps: { key: PipelineStage; label: string; icon: LucideIcon }[] = [
-  { key: "sending", label: "Sending", icon: Send },
-  { key: "processing", label: "Processing", icon: Cpu },
-  { key: "generating", label: "Generating", icon: Bot },
-  { key: "done", label: "Complete", icon: CheckCircle2 },
+  { key: "sending", label: "TRANSMIT", icon: Send },
+  { key: "processing", label: "ANALYZE", icon: Cpu },
+  { key: "generating", label: "SYNTHESIZE", icon: Bot },
+  { key: "done", label: "COMPLETE", icon: CheckCircle2 },
 ];
 
 /* ─── All available task suggestion pools ─── */
@@ -209,21 +209,30 @@ const InlineChatPanel = ({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Pipeline Progress Bar */}
+      {/* TVA-Style Pipeline Progress Bar */}
       {pipelineStage !== "idle" && (
-        <div className={`flex items-center gap-1 border-b ${accentBorder} bg-secondary/30 px-4 py-1.5`}>
+        <div
+          className="relative flex items-center gap-1.5 border-b border-orange-500/20 bg-orange-950/30 px-4 py-2 font-mono overflow-hidden"
+        >
+          {/* CRT scanline overlay */}
+          <div
+            className="pointer-events-none absolute inset-0 z-10"
+            style={{
+              background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px)",
+            }}
+          />
+
           {pipelineSteps.map((step, i) => {
-            const StepIcon = step.icon;
             const isActive = step.key === pipelineStage;
             const isDone = pipelineSteps.findIndex(s => s.key === pipelineStage) > i;
             const isError = pipelineStage === "error" && i === pipelineSteps.findIndex(s => s.key === "processing");
             return (
-              <div key={step.key} className="flex items-center gap-1">
-                <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-medium transition-all ${
-                  isActive ? `${accentBg} ${accentText}` :
-                  isDone ? "bg-emerald-500/10 text-emerald-500" :
-                  isError ? "bg-destructive/10 text-destructive" :
-                  "text-muted-foreground/30"
+              <div key={step.key} className="relative z-20 flex items-center gap-1.5">
+                <div className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest transition-all ${
+                  isActive ? "bg-orange-500/20 text-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.2)] animate-pulse" :
+                  isDone ? "bg-orange-500/10 text-orange-300" :
+                  isError ? "bg-red-500/10 text-red-400" :
+                  "text-orange-800/40"
                 }`}>
                   {isActive ? <Loader2 size={8} className="animate-spin" /> :
                    isDone ? <CheckCircle2 size={8} /> :
@@ -231,7 +240,7 @@ const InlineChatPanel = ({
                   <span className="hidden sm:inline">{step.label}</span>
                 </div>
                 {i < pipelineSteps.length - 1 && (
-                  <ArrowRight size={8} className={`${isDone ? "text-emerald-500/40" : "text-muted-foreground/15"}`} />
+                  <span className={`font-mono text-[8px] tracking-[3px] ${isDone ? "text-orange-500/40" : "text-orange-500/15"}`}>···</span>
                 )}
               </div>
             );
