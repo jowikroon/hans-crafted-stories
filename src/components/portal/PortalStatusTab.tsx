@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Activity, Database, Server, Zap, Globe, Shield, Wifi, WifiOff, RefreshCw, Plug, Unplug } from "lucide-react";
+import { Activity, Database, Server, Zap, Globe, Shield, RefreshCw, Plug, Unplug } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import InfoTooltip from "./InfoTooltip";
@@ -21,10 +21,12 @@ interface Resource {
   lastError?: string;
 }
 
-const StatusIcon = ({ status, size = 10 }: { status: Status; size?: number }) => {
-  if (status === "checking") return <span className={`inline-block h-${size/4} w-${size/4} rounded-full bg-muted-foreground/30 animate-pulse`} style={{ width: size, height: size }} />;
-  if (status === "online") return <Wifi size={size} className="text-primary/70" />;
-  return <WifiOff size={size} className="text-destructive/60" />;
+const StatusDot = ({ status, latency }: { status: Status; latency?: number }) => {
+  if (status === "checking") return <span className="inline-block h-2.5 w-2.5 rounded-full bg-muted-foreground/30 animate-pulse" />;
+  if (status === "offline") return <span className="inline-block h-2.5 w-2.5 rounded-full bg-destructive" />;
+  // Online: green < 200ms, orange 200-500ms, red > 500ms
+  const color = !latency || latency < 200 ? "bg-emerald-500" : latency < 500 ? "bg-amber-500" : "bg-destructive";
+  return <span className={`inline-block h-2.5 w-2.5 rounded-full ${color}`} />;
 };
 
 const PortalStatusTab = () => {
@@ -143,7 +145,7 @@ const PortalStatusTab = () => {
         </div>
 
         {/* Grid of service tiles */}
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {resources.map((r) => {
             const Icon = r.icon;
             const isOnline = r.status === "online";
@@ -175,7 +177,7 @@ const PortalStatusTab = () => {
                       {r.label}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      <StatusIcon status={r.status} size={10} />
+                      <StatusDot status={r.status} latency={r.latency} />
                       {r.latency !== undefined && isOnline && (
                         <span className="text-[10px] tabular-nums text-muted-foreground/40">{r.latency}ms</span>
                       )}
@@ -205,18 +207,23 @@ const PortalStatusTab = () => {
         {/* Minimal overall bar */}
         <div className="flex items-center gap-2 rounded-full border border-border/30 bg-secondary/20 px-4 py-2">
           <div className="flex gap-1">
-            {resources.map((r) => (
-              <span
-                key={r.label}
-                className={`inline-block h-1.5 w-5 rounded-full transition-all duration-700 ${
-                  r.status === "online"
-                    ? "bg-primary/30"
-                    : r.status === "checking"
-                      ? "bg-muted-foreground/15 animate-pulse"
-                      : "bg-destructive/25"
-                }`}
-              />
-            ))}
+            {resources.map((r) => {
+              const dotColor = r.status === "checking"
+                ? "bg-muted-foreground/15 animate-pulse"
+                : r.status === "offline"
+                  ? "bg-destructive/60"
+                  : !r.latency || r.latency < 200
+                    ? "bg-emerald-500/50"
+                    : r.latency < 500
+                      ? "bg-amber-500/50"
+                      : "bg-destructive/50";
+              return (
+                <span
+                  key={r.label}
+                  className={`inline-block h-1.5 w-5 rounded-full transition-all duration-700 ${dotColor}`}
+                />
+              );
+            })}
           </div>
           <span className="ml-auto text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40">
             {onlineCount}/{resources.length}
