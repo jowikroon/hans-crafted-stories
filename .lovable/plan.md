@@ -1,251 +1,78 @@
 
 
-# GTM + GA4 + Consent Mode v2 Implementation Blueprint
+# Full NL/ENG Translation for All Pages
 
-This plan covers two parts: **(A)** code changes in this codebase, and **(B)** the GTM container configuration you need to do in tagmanager.google.com. I can only implement part A; part B is a detailed step-by-step guide you follow in the GTM web UI.
+## Current State
+- Only the **About** page uses the `translations.ts` system via `useLang()`
+- All other pages (Home/Hero, Writing, Work, Privacy, Footer, Cookie Consent, 404) have hardcoded English or Dutch strings
+- The NL/ENG toggle in the navbar works (context is shared), but switching has no effect on most pages
 
----
+## Plan
 
-## Part A -- Code Changes (what I will implement)
+### 1. Expand `src/data/translations.ts` with all site-wide strings
 
-### 1. Replace gtag.js with GTM container in `index.html`
+Add translation keys for every page and component:
 
-Remove the comment placeholder and add the standard GTM snippet. You will need a GTM container ID (format `GTM-XXXXXXX`). I will use a placeholder `GTM-XXXXXXX` that you replace with your real ID.
+**Hero (Home page)**
+- Subtitle, heading, description, button labels ("View my work" / "Bekijk mijn werk")
+- Expertise section: titles, descriptions
+- Quick-links text
 
-**In `<head>` (as high as possible, after `<meta charset>`):**
+**Writing page**
+- Page header ("Writing" / "Artikelen"), subtitle, search placeholder, sort labels, post count text, empty state messages
 
-```html
-<!-- Google Tag Manager -->
-<script>
-(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-XXXXXXX');
-</script>
-<!-- End Google Tag Manager -->
-```
+**Work page**
+- Page header ("Portfolio & Case Studies" / "Portfolio & Cases"), subtitle, description, result count, empty state
 
-**In `<body>` (immediately after opening tag):**
+**Privacy page**
+- Full Dutch and English versions of the privacy policy (7 sections)
 
-```html
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
-```
+**Footer**
+- "Privacy" link label (stays same in both languages)
 
-### 2. Refactor `CookieConsent.tsx`
+**Cookie Consent**
+- Title, description text, button labels ("Accepteren" / "Accept", "Weigeren" / "Decline"), privacy link text
 
-Remove all direct gtag.js / GA loading logic. Replace with dataLayer pushes that GTM listens to:
+**404 page**
+- "Page not found" / "Pagina niet gevonden", return link
 
-- On mount: push default consent state (denied) via dataLayer
-- On accept: push `consent_update` event with granted values
-- On decline: push `consent_update` event with denied values
-- Persist choice in localStorage (keep existing pattern)
-- On returning visitor with stored "accepted": push granted consent immediately
+**Navbar**
+- Nav link labels: Home, Work/Werk, Writing/Artikelen, About/Over mij
+- Search placeholder, Login/Portal labels
 
-The component will push these dataLayer events:
+**Breadcrumbs** (used across Writing, Work, About)
+- "Home" label
 
-```typescript
-// Default (fires before GTM processes):
-window.dataLayer.push({
-  event: 'consent_default',
-  consent: {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'denied',
-    functionality_storage: 'denied',
-    personalization_storage: 'denied',
-    security_storage: 'granted',
-    wait_for_update: 500,
-    region: ['BE','BG','CZ','DK','DE','EE','IE','EL','ES','FR',
-             'HR','IT','CY','LV','LT','LU','HU','MT','NL','AT',
-             'PL','PT','RO','SI','SK','FI','SE','IS','LI','NO']
-  }
-});
+### 2. Update each component to use `useLang()` + translations
 
-// On accept:
-window.dataLayer.push({
-  event: 'consent_update',
-  consent: {
-    ad_storage: 'granted',
-    ad_user_data: 'granted',
-    ad_personalization: 'granted',
-    analytics_storage: 'granted',
-    functionality_storage: 'granted',
-    personalization_storage: 'granted',
-  }
-});
+Each file will:
+1. Import `useLang` from Navbar
+2. Import the relevant translation keys
+3. Replace all hardcoded strings with `t.keyName`
 
-// On decline:
-window.dataLayer.push({
-  event: 'consent_update',
-  consent: {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'denied',
-  }
-});
-```
+**Files to modify:**
+- `src/data/translations.ts` -- add all new keys
+- `src/components/Hero.tsx` -- use translations for all text
+- `src/pages/Writing.tsx` -- page header, search, sort, empty states
+- `src/pages/Work.tsx` -- page header, descriptions, empty states
+- `src/pages/Privacy.tsx` -- full bilingual privacy policy
+- `src/pages/NotFound.tsx` -- 404 text
+- `src/components/Footer.tsx` -- link labels
+- `src/components/CookieConsent.tsx` -- banner text and buttons
+- `src/components/Navbar.tsx` -- nav labels, search placeholder
 
-### 3. Add dataLayer initialization in `index.html`
+### 3. Translation Quality
 
-Before the GTM script, ensure `window.dataLayer = window.dataLayer || [];` is set so consent defaults are queued before GTM loads.
+All translations will be professional Dutch, consistent with the existing `translations.ts` tone:
+- Formal but approachable ("wij" / "je")
+- Industry-accurate e-commerce terminology
+- Consistent with existing NL translations on the About page
 
-### 4. Update TypeScript declarations
+### Technical Notes
 
-Update the global `Window` interface to type `dataLayer` properly.
-
----
-
-## Part B -- GTM Container Configuration (manual steps in GTM UI)
-
-### GTM Architecture Diagram
-
-```text
-+--------------------------------------------------+
-|  index.html                                       |
-|  1. dataLayer init                                |
-|  2. CMP pushes consent_default to dataLayer       |
-|  3. GTM container loads (gtm.js)                  |
-+--------------------------------------------------+
-         |
-         v
-+--------------------------------------------------+
-|  GTM Container                                    |
-|                                                   |
-|  TAGS:                                            |
-|  [1] Consent Default (Consent Initialization)     |
-|      - setDefaultConsentState                     |
-|      - Trigger: Consent Initialization - All Pages|
-|                                                   |
-|  [2] Consent Update                               |
-|      - updateConsentState                         |
-|      - Trigger: Custom Event = consent_update     |
-|                                                   |
-|  [3] GA4 Configuration                            |
-|      - Measurement ID: G-2YX26R0RZK              |
-|      - Built-in consent checks: ON               |
-|      - Trigger: All Pages                         |
-|      - Requires consent: analytics_storage        |
-|                                                   |
-|  [4] GA4 Event tags (future)                      |
-|      - purchase, add_to_cart, begin_checkout      |
-|      - Trigger: Custom Events from dataLayer      |
-|                                                   |
-|  TRIGGERS:                                        |
-|  [A] Consent Initialization - All Pages           |
-|  [B] All Pages (pageview)                         |
-|  [C] CE - consent_update                          |
-|  [D] CE - purchase (future)                       |
-|  [E] CE - add_to_cart (future)                    |
-|                                                   |
-|  VARIABLES:                                       |
-|  [i]   DLV - consent (Data Layer Variable)        |
-|  [ii]  URL Path                                   |
-|  [iii] Page Hostname                              |
-+--------------------------------------------------+
-         |
-         v
-+--------------------------------------------------+
-|  GA4 Property (G-2YX26R0RZK)                     |
-|  - Receives hits only when analytics_storage      |
-|    is granted                                     |
-|  - URL passthrough for cookieless pings           |
-|  - Ads data redaction when ad_storage denied      |
-+--------------------------------------------------+
-```
-
-### Step-by-step GTM setup
-
-#### 1. Create GTM Container
-- Go to tagmanager.google.com
-- Create a Web container for hansvanleeuwen.com
-- Note the GTM-XXXXXXX ID
-
-#### 2. Consent Default Tag
-- Tag type: **Google Tag - Consent Initialization**
-- Use the community template "Consent Mode (Google tags)" or the built-in consent overview
-- Set **setDefaultConsentState** with all storage types denied for EEA regions (use region codes list above)
-- Set `wait_for_update: 500`
-- Set `security_storage: granted` (always)
-- Trigger: **Consent Initialization - All Pages**
-
-#### 3. Consent Update Tag
-- Tag type: **Google Tag - Consent Update** (or custom HTML using the consent template)
-- Read values from Data Layer Variable `consent`
-- Trigger: Custom Event where Event Name equals `consent_update`
-- Uses **updateConsentState** to set values from the dataLayer push
-
-#### 4. GA4 Configuration Tag
-- Tag type: **Google Analytics: GA4 Configuration**
-- Measurement ID: `G-2YX26R0RZK`
-- Enable built-in consent checks
-- Required consent: `analytics_storage`
-- Under Additional Settings:
-  - URL Passthrough: enabled
-  - Ads Data Redaction: enabled
-- Trigger: **All Pages**
-- Ensure only ONE GA4 config tag exists (no duplicates)
-
-#### 5. Variables to create
-| Variable | Type | Path/Value |
-|---|---|---|
-| DLV - consent | Data Layer Variable | `consent` |
-| DLV - consent.analytics_storage | Data Layer Variable | `consent.analytics_storage` |
-| DLV - consent.ad_storage | Data Layer Variable | `consent.ad_storage` |
-
-#### 6. Future ecommerce event tags
-When ready for conversion tracking, create GA4 Event tags for:
-- `purchase` -- triggered by Custom Event `purchase`, reads `ecommerce` from dataLayer
-- `add_to_cart` -- triggered by Custom Event `add_to_cart`
-- `begin_checkout` -- triggered by Custom Event `begin_checkout`
-
-All require `analytics_storage` consent.
-
----
-
-## Common Failure Points Checklist
-
-1. **Duplicate GA4 config** -- Remove ALL direct gtag.js from code. Only GTM should load GA4.
-2. **Consent defaults fire too late** -- The Consent Initialization trigger must fire BEFORE All Pages. Using the built-in "Consent Initialization - All Pages" trigger guarantees this.
-3. **dataLayer not initialized** -- Must be `window.dataLayer = []` before GTM snippet.
-4. **localStorage not checked on reload** -- Returning visitors who accepted must push `consent_update` immediately on mount, before GTM processes pageview.
-5. **Region codes wrong** -- Use ISO 3166-1 alpha-2 (NL, DE, FR, etc.), not 3166-2.
-6. **wait_for_update too short** -- 500ms is the recommended minimum. Below 200ms, consent may not register before tags fire.
-7. **GTM Preview not working** -- Ensure no Content-Security-Policy blocks `*.googletagmanager.com`.
-
----
-
-## Production Deployment Plan
-
-1. Implement code changes (Part A) -- merge to main
-2. Create GTM container and configure tags/triggers (Part B)
-3. Use GTM Preview mode to validate:
-   - Consent Initialization fires first
-   - GA4 config fires on All Pages (with consent check)
-   - No duplicate pageviews in GA4 DebugView
-   - Accepting cookies triggers `consent_update` and GA4 starts collecting
-   - Declining cookies keeps GA4 in cookieless/blocked mode
-4. Publish GTM container version 1
-5. Verify in GA4 Realtime report that hits arrive from production
-
-## Rollback Strategy
-
-- GTM has built-in versioning. If issues arise, go to GTM > Versions > select previous version > Publish
-- On the code side, reverting to the previous commit restores the old direct gtag.js implementation as a fallback
-
----
-
-## Technical Summary of Code Changes
-
-| File | Change |
-|---|---|
-| `index.html` | Add GTM snippet in head + noscript in body, add dataLayer init |
-| `src/components/CookieConsent.tsx` | Remove direct gtag.js loading, replace with dataLayer consent pushes |
-
-Two files changed. No new dependencies needed.
+- No new dependencies needed -- uses existing `useLang()` context
+- The `translations.ts` type will be expanded with new fields (all typed for safety)
+- Blog post and case study content from the database stays as-is (those are managed via the portal CMS)
+- Navigation labels in `Navbar.tsx` will become dynamic based on language
+- SEO meta tags will also be translated per language for each page
 
