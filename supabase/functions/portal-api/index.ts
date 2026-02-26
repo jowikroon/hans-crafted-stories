@@ -330,11 +330,32 @@ serve(async (req) => {
         if (role) {
           const { error: roleError } = await supabase
             .from("user_roles")
-            .upsert({ user_id: userId, role }, { onConflict: "user_id" });
+            .upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
           if (roleError) console.error("Role upsert error:", roleError.message);
         }
         
         return json({ data: { user_id: userId, email } }, 201);
+      }
+
+      case "delete_user": {
+        const { user_id } = body;
+        if (!user_id) return err("user_id is required");
+
+        // Delete all related rows in correct order
+        await supabase.from("user_tool_access").delete().eq("user_id", user_id);
+        await supabase.from("user_content_access").delete().eq("user_id", user_id);
+        await supabase.from("user_ai_access").delete().eq("user_id", user_id);
+        await supabase.from("user_roles").delete().eq("user_id", user_id);
+        await supabase.from("portal_profiles").delete().eq("user_id", user_id);
+
+        // Delete the auth user last
+        const { error: authDeleteError } = await supabase.auth.admin.deleteUser(user_id);
+        if (authDeleteError) {
+          console.error("Auth delete error:", authDeleteError.message);
+          return err(authDeleteError.message, 500);
+        }
+
+        return json({ success: true });
       }
 
       default:
