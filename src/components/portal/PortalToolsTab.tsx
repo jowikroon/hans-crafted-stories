@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow, FileJson, Sparkles, Pencil, Check, X, Bot, Search, Zap, BarChart3, Code, Puzzle, Cpu } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
@@ -304,21 +304,31 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
               ? "grid-cols-2 sm:grid-cols-3 auto-rows-[110px] sm:auto-rows-[130px] md:auto-rows-[150px]"
               : "grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 auto-rows-auto"
           }`}>
-            {visibleTools.map((tool, i) => (
-              <SortableToolCard
-                key={tool.id}
-                tool={tool}
-                index={i}
-                isAdmin={isAdmin}
-                isEditMode={isEditMode}
-                cardSize={isEditMode ? (cardSizes[tool.id] || "1x1") : "1x1"}
-                IconComponent={getIcon(tool.icon)}
-                onToolClick={handleToolClick}
-                onOpenTool={handleOpenTool}
-                onSettings={(t) => setSettingsTool(t)}
-                onCycleSize={handleCycleSize}
-              />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {visibleTools.map((tool, i) => (
+                <motion.div
+                  key={tool.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.25, delay: i * 0.03 }}
+                >
+                  <SortableToolCard
+                    tool={tool}
+                    index={i}
+                    isAdmin={isAdmin}
+                    isEditMode={isEditMode}
+                    cardSize={isEditMode ? (cardSizes[tool.id] || "1x1") : "1x1"}
+                    IconComponent={getIcon(tool.icon)}
+                    onToolClick={handleToolClick}
+                    onOpenTool={handleOpenTool}
+                    onSettings={(t) => setSettingsTool(t)}
+                    onCycleSize={handleCycleSize}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
             {isAdmin && !isEditMode && (
               <motion.button
