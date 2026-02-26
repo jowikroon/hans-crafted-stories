@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
 import EmpireTerminalCard from "./components/empire/EmpireTerminalCard";
+import CookieConsent from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const AppShell = () => {
       </main>
       {!isDarkPage && <Footer />}
       {!isDarkPage && <EmpireTerminalCard />}
+      <CookieConsent />
     </AuthProvider>
   );
 };
