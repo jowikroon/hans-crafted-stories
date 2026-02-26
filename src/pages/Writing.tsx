@@ -8,6 +8,8 @@ import CategoryCards from "@/components/CategoryCards";
 import { usePageElements } from "@/hooks/usePageElements";
 import { useCategoryCards } from "@/hooks/useCategoryCards";
 import { useSEO } from "@/hooks/useSEO";
+import { useLang } from "@/components/Navbar";
+import { translations } from "@/data/translations";
 
 type Filter = string;
 type TagFilter = string | null;
@@ -33,16 +35,19 @@ const Writing = () => {
   const [sort, setSort] = useState<SortOrder>("newest");
   const { isVisible } = usePageElements("writing");
   const { cards: dbCards } = useCategoryCards("writing");
+  const { lang } = useLang();
+  const t = translations[lang].writing;
+  const seo = translations[lang].seo;
 
   useSEO({
-    title: "E-commerce Insights & Articles | Hans van Leeuwen",
-    description: "Read Hans van Leeuwen's thoughts on e-commerce strategy, marketplace optimization, Amazon & Bol.com growth, UX design, and digital commerce trends.",
+    title: seo.writingTitle,
+    description: seo.writingDescription,
     url: "https://hansvanleeuwen.com/writing",
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: "Writing – E-commerce Insights",
-      description: "Articles on e-commerce strategy, marketplace optimization, and digital commerce.",
+      name: t.heading,
+      description: seo.writingDescription,
       url: "https://hansvanleeuwen.com/writing",
       author: { "@type": "Person", name: "Hans van Leeuwen" },
     },
@@ -128,7 +133,7 @@ const Writing = () => {
   if (loading) {
     return (
       <section className="section-container pt-28 pb-20">
-        <p className="text-muted-foreground">Loading…</p>
+        <p className="text-muted-foreground">{t.loading}</p>
       </section>
     );
   }
@@ -149,7 +154,7 @@ const Writing = () => {
             <span>Home</span>
           </Link>
           <ChevronRight size={11} className="text-muted-foreground/40" />
-          <span className="font-medium text-foreground">Writing</span>
+          <span className="font-medium text-foreground">{t.label}</span>
           {filter !== "all" && (
             <>
               <ChevronRight size={11} className="text-muted-foreground/40" />
@@ -171,12 +176,12 @@ const Writing = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">Writing</p>
+          <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">{t.label}</p>
           <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
-            Thoughts &amp; Essays
+            {t.heading}
           </h1>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
-            On design, e-commerce, technology, and life beyond the screen.
+            {t.subtitle}
           </p>
         </motion.div>
       )}
@@ -207,7 +212,7 @@ const Writing = () => {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search posts..."
+                  placeholder={t.searchPlaceholder}
                   className="h-9 w-full rounded-lg border border-border bg-card pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
                 />
                 {search && (
@@ -227,7 +232,7 @@ const Writing = () => {
                 className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 text-xs font-medium text-muted-foreground transition-all hover:text-foreground"
               >
                 <ArrowUpDown size={13} />
-                <span className="hidden sm:inline">{sort === "newest" ? "Newest" : "Oldest"}</span>
+                <span className="hidden sm:inline">{sort === "newest" ? t.newest : t.oldest}</span>
               </button>
             )}
           </div>
@@ -261,8 +266,8 @@ const Writing = () => {
                         onClick={clearAll}
                         className="ml-2 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium text-muted-foreground/60 transition-colors hover:text-foreground"
                       >
-                        <X size={11} />
-                        Clear
+                       <X size={11} />
+                        {t.clear}
                       </button>
                     )}
                   </div>
@@ -279,8 +284,8 @@ const Writing = () => {
           animate={{ opacity: 1 }}
           className="mb-4 text-xs text-muted-foreground/60"
         >
-          {filtered.length} {filtered.length === 1 ? "post" : "posts"}
-          {hasActiveFilters && " matching"}
+          {filtered.length} {filtered.length === 1 ? t.postSingular : t.postPlural}
+          {hasActiveFilters && ` ${t.matching}`}
         </motion.p>
       )}
 
@@ -292,12 +297,12 @@ const Writing = () => {
         </AnimatePresence>
         {filtered.length === 0 && (
           <div className="py-16 text-center">
-            <p className="mb-2 text-muted-foreground">No posts match your filters.</p>
+            <p className="mb-2 text-muted-foreground">{t.noPostsTitle}</p>
             <button
               onClick={clearAll}
               className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
             >
-              Clear all filters
+              {t.clearFilters}
             </button>
           </div>
         )}
