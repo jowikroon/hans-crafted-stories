@@ -294,21 +294,44 @@ serve(async (req) => {
           password,
           email_confirm: true,
         });
-        if (authError) return err(authError.message, 500);
-        
-        const userId = authData.user.id;
-        
-        // Create portal profile
-        await supabase.from("portal_profiles").insert({
-          user_id: userId,
-          display_name: display_name || email.split("@")[0],
-          email,
-          tab_access: tab_access || ["tools"],
-        });
-        
-        // Add role
+
+        let userId: string;
+
+        if (authError) {
+          // If user already exists in auth, look them up and re-use
+          if (authError.message.includes("already been registered")) {
+            const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
+            if (listError) return err(listError.message, 500);
+            const existing = listData.users.find((u: any) => u.email === email);
+            if (!existing) return err("User exists in auth but could not be found", 500);
+            userId = existing.id;
+
+            // Update password if provided
+            await supabase.auth.admin.updateUser(userId, { password });
+          } else {
+            return err(authError.message, 500);
+          }
+        } else {
+          userId = authData.user.id;
+        }
+
+        // Upsert portal profile (avoid duplicate if profile already exists)
+        const { error: profileError } = await supabase
+          .from("portal_profiles")
+          .upsert({
+            user_id: userId,
+            display_name: display_name || email.split("@")[0],
+            email,
+            tab_access: tab_access || ["tools"],
+          }, { onConflict: "user_id" });
+        if (profileError) console.error("Profile upsert error:", profileError.message);
+
+        // Upsert role
         if (role) {
-          await supabase.from("user_roles").insert({ user_id: userId, role });
+          const { error: roleError } = await supabase
+            .from("user_roles")
+            .upsert({ user_id: userId, role }, { onConflict: "user_id" });
+          if (roleError) console.error("Role upsert error:", roleError.message);
         }
         
         return json({ data: { user_id: userId, email } }, 201);
