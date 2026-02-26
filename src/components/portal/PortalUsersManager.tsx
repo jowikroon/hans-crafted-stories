@@ -277,16 +277,28 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
   };
 
   const handleDeleteUser = async (profile: PortalProfile) => {
-    if (!confirm(`Remove ${profile.display_name}? This will delete their profile and access rights.`)) return;
+    if (!confirm(`Remove ${profile.display_name}? This will permanently delete their account, profile, and all access rights.`)) return;
     try {
-      await usersApi.deleteProfile(profile.id);
-      toast({ title: "User removed", description: `${profile.display_name} has been removed.` });
+      const { supabase } = await import("@/integrations/supabase/client");
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portal-api`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ action: "delete_user", user_id: profile.user_id }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to delete user");
+      toast({ title: "User removed", description: `${profile.display_name} has been permanently removed.` });
       if (expandedUser === profile.id) setExpandedUser(null);
       selectedIds.delete(profile.id);
       setSelectedIds(new Set(selectedIds));
       loadData();
-    } catch {
-      toast({ title: "Error", description: "Failed to remove user", variant: "destructive" });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to remove user";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     }
   };
 
