@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const CONSENT_KEY = "cookie_consent";
 type ConsentValue = "accepted" | "declined";
@@ -110,7 +111,10 @@ const CookieConsent = () => {
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-foreground">Cookies & Privacy</h3>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Wij gebruiken analytische cookies om het gebruik van de website te begrijpen en te verbeteren. Geen persoonlijke data wordt gedeeld met derden.
+                Wij gebruiken analytische cookies om het gebruik van de website te begrijpen en te verbeteren. Geen persoonlijke data wordt gedeeld met derden.{" "}
+                <Link to="/privacy" className="underline text-primary hover:text-primary/80 transition-colors">
+                  Privacybeleid
+                </Link>
               </p>
               <div className="flex items-center gap-2 pt-1">
                 <Button size="sm" onClick={handleAccept} className="h-8 text-xs">

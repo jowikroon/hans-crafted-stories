@@ -9,6 +9,7 @@ import BlogPostPage from "@/pages/BlogPostPage";
 import Portal from "@/pages/Portal";
 import Empire from "@/pages/Empire";
 import HansAI from "@/pages/HansAI";
+import Privacy from "@/pages/Privacy";
 import NotFound from "@/pages/NotFound";
 
 const AnimatedRoutes = () => {
@@ -25,6 +26,7 @@ const AnimatedRoutes = () => {
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
         <Route path="/empire" element={<PageTransition><Empire /></PageTransition>} />
         <Route path="/hansai" element={<HansAI />} />
+        <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
