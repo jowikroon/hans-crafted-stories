@@ -337,6 +337,33 @@ export type Database = {
           },
         ]
       }
+      user_ai_access: {
+        Row: {
+          ai_model: string
+          can_access: boolean
+          granted_at: string
+          granted_by: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          ai_model: string
+          can_access?: boolean
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          ai_model?: string
+          can_access?: boolean
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_content_access: {
         Row: {
           can_edit: boolean

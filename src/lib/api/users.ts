@@ -109,4 +109,21 @@ export const usersApi = {
       .insert({ user_id: userId, role } as never);
     if (error) throw error;
   },
+
+  // AI model access
+  async getAiAccess(userId: string): Promise<{ ai_model: string; can_access: boolean }[]> {
+    const { data, error } = await supabase
+      .from("user_ai_access" as any)
+      .select("ai_model, can_access")
+      .eq("user_id", userId);
+    if (error) throw error;
+    return (data as any) || [];
+  },
+
+  async setAiAccess(userId: string, aiModel: string, canAccess: boolean, grantedBy: string): Promise<void> {
+    const { error } = await supabase
+      .from("user_ai_access" as any)
+      .upsert({ user_id: userId, ai_model: aiModel, can_access: canAccess, granted_by: grantedBy } as never, { onConflict: "user_id,ai_model" });
+    if (error) throw error;
+  },
 };

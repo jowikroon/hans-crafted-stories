@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow, FileJson, Sparkles, Pencil, Check, X } from "lucide-react";
+import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow, FileJson, Sparkles, Pencil, Check, X, Bot, Search, Zap, BarChart3, Code, Puzzle, Cpu } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { portalApi, PortalTool } from "@/lib/api/portal";
@@ -19,7 +19,7 @@ import N8nAgentModal from "./N8nAgentModal";
 import InfoTooltip from "./InfoTooltip";
 import SortableToolCard, { type CardSize, sizeCycle, categoryConfig } from "./SortableToolCard";
 
-const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles };
+const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles, Bot, Search, Zap, BarChart3, Code, Puzzle, Cpu };
 const getIcon = (name: string) => iconMap[name] || Wrench;
 
 
