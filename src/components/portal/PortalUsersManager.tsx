@@ -4,13 +4,14 @@ import { UserPlus, Users, Shield, Eye, EyeOff, ChevronDown, ChevronRight, Wrench
 import { usersApi, PortalProfile } from "@/lib/api/users";
 import { portalApi, PortalTool } from "@/lib/api/portal";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface PortalUsersManagerProps {
   adminUserId: string;
@@ -48,6 +49,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<PortalProfile | null>(null);
 
   // Per-user access state
   const [toolAccess, setToolAccess] = useState<Record<string, { can_view: boolean; can_use: boolean }>>({});
@@ -277,7 +279,6 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
   };
 
   const handleDeleteUser = async (profile: PortalProfile) => {
-    if (!confirm(`Remove ${profile.display_name}? This will permanently delete their account, profile, and all access rights.`)) return;
     try {
       const { supabase } = await import("@/integrations/supabase/client");
       const session = (await supabase.auth.getSession()).data.session;
@@ -447,7 +448,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
                     <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg text-muted-foreground/40 hover:text-foreground" onClick={() => toggleActive(profile)} title={profile.is_active ? "Deactivate" : "Activate"}>
                       {profile.is_active ? <EyeOff size={14} /> : <Eye size={14} />}
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg text-muted-foreground/40 hover:text-destructive" onClick={() => handleDeleteUser(profile)} title="Remove user">
+                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg text-muted-foreground/40 hover:text-destructive" onClick={() => setUserToDelete(profile)} title="Remove user">
                       <Trash2 size={14} />
                     </Button>
                   </div>
@@ -872,6 +873,32 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => { if (!open) setUserToDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Gebruiker verwijderen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Weet je zeker dat je <span className="font-medium text-foreground">{userToDelete?.display_name}</span> wilt verwijderen? Dit verwijdert permanent het account, profiel en alle toegangsrechten.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={() => {
+                if (userToDelete) {
+                  handleDeleteUser(userToDelete);
+                  setUserToDelete(null);
+                }
+              }}
+            >
+              Verwijderen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
