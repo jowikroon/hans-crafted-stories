@@ -141,8 +141,8 @@ const SortableToolCard = ({
             <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} border border-border/40 ${cat.color.split(' ')[0]}`}>
               <IconComponent size={16} />
             </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="truncate text-sm font-semibold text-foreground">{tool.name}</h3>
+          <div className="min-w-0 flex-1">
+              <h3 className="text-[13px] font-semibold leading-snug text-foreground line-clamp-2">{tool.name}</h3>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <TypeIcon size={10} className="text-muted-foreground/50" />
                 <p className="text-[10px] font-medium text-muted-foreground/60">{typeConfig.label}</p>
@@ -158,7 +158,7 @@ const SortableToolCard = ({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <h3 className="truncate font-display text-[15px] font-semibold text-foreground">{tool.name}</h3>
+                <h3 className="font-display text-[14px] sm:text-[15px] font-semibold leading-snug text-foreground line-clamp-2 break-words">{tool.name}</h3>
                 <InfoTooltip text={tool.description || "Open this tool"} />
                 <ExternalLink size={10} className="ml-auto shrink-0 opacity-0 transition-opacity group-hover:opacity-50" />
               </div>
