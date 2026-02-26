@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, Terminal, X, Crown, Wrench, Cpu, HeartPulse } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ContextFilterPills from "@/components/ai/ContextFilterPills";
+import CommandSuggestionList from "@/components/ai/CommandSuggestionList";
 import { empireCategories, buildContextPrefix } from "@/components/ai/contextCategories";
 
 const SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
@@ -45,6 +46,7 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSub, setSelectedSub] = useState<string | null>(null);
+  const [showCommands, setShowCommands] = useState(false); // Added state for command list visibility
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -56,10 +58,16 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
     if (open) setTimeout(() => inputRef.current?.focus(), 200);
   }, [open]);
 
+  useEffect(() => {
+    if (selectedSub) setShowCommands(true);
+    else setShowCommands(false);
+  }, [selectedSub]);
+
   const sendMessage = async (text?: string) => {
     const userMsg = text || input.trim();
     if (!userMsg || loading) return;
     setInput("");
+    setShowCommands(false);
 
     const contextPrefix = buildContextPrefix(empireCategories, selectedCategory, selectedSub);
     const systemWithContext = contextPrefix + SYSTEM_PROMPT;
@@ -91,7 +99,17 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") { e.preventDefault(); sendMessage(); }
-    if (e.key === "Escape") onClose();
+    if (e.key === "Escape" && !showCommands) onClose();
+  };
+
+  const handleCommandDismiss = () => {
+    setShowCommands(false);
+    setSelectedSub(null);
+  };
+
+  const handleCommandSelect = (text: string) => {
+    setShowCommands(false);
+    sendMessage(text);
   };
 
   return (
@@ -135,18 +153,32 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
               </div>
             </div>
 
-            {/* Context Filter Pills */}
-            <ContextFilterPills
-              categories={empireCategories}
-              selectedCategory={selectedCategory}
-              selectedSub={selectedSub}
-              onSelect={(cat, sub) => { setSelectedCategory(cat); setSelectedSub(sub); }}
-              accentColor="violet"
-            />
+            {/* Context Filter Pills + Command List */}
+            <div className="relative">
+              <ContextFilterPills
+                categories={empireCategories}
+                selectedCategory={selectedCategory}
+                selectedSub={selectedSub}
+                onSelect={(cat, sub) => { setSelectedCategory(cat); setSelectedSub(sub); }}
+                accentColor="violet"
+              />
+              <AnimatePresence>
+                {showCommands && selectedSub && (
+                  <CommandSuggestionList
+                    subId={selectedSub}
+                    context="empire"
+                    onSelect={handleCommandSelect}
+                    onDismiss={handleCommandDismiss}
+                    accentColor="violet"
+                  />
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 min-h-[200px]">
               {messages.length === 0 ? (
+                // ... keep existing code (empty state)
                 <div className="flex h-full flex-col items-center justify-center text-center py-8">
                   <div className="mb-3 h-10 w-10 rounded-full bg-violet-500/10 flex items-center justify-center">
                     <Terminal size={18} className="text-violet-500/30" />
@@ -165,6 +197,7 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
                   </div>
                 </div>
               ) : (
+                // ... keep existing code (messages)
                 <div className="space-y-3">
                   {messages.map((msg, i) => (
                     <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>

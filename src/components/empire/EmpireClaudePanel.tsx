@@ -4,6 +4,7 @@ import { X, Send, Terminal, Loader2, Sparkles, Cpu, Wrench, HeartPulse } from "l
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import ContextFilterPills from "@/components/ai/ContextFilterPills";
+import CommandSuggestionList from "@/components/ai/CommandSuggestionList";
 import { empireCategories, buildContextPrefix } from "@/components/ai/contextCategories";
 
 const SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
@@ -46,16 +47,23 @@ const EmpireClaudePanel = ({ open, onClose }: EmpireClaudePanelProps) => {
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSub, setSelectedSub] = useState<string | null>(null);
+  const [showCommands, setShowCommands] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
   useEffect(() => { if (open) setTimeout(() => textareaRef.current?.focus(), 300); }, [open]);
 
+  useEffect(() => {
+    if (selectedSub) setShowCommands(true);
+    else setShowCommands(false);
+  }, [selectedSub]);
+
   const sendMessage = async (text?: string) => {
     const userMsg = text || input.trim();
     if (!userMsg || loading) return;
     setInput("");
+    setShowCommands(false);
 
     const contextPrefix = buildContextPrefix(empireCategories, selectedCategory, selectedSub);
     const systemWithContext = contextPrefix + SYSTEM_PROMPT;
@@ -87,6 +95,16 @@ const EmpireClaudePanel = ({ open, onClose }: EmpireClaudePanelProps) => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  const handleCommandDismiss = () => {
+    setShowCommands(false);
+    setSelectedSub(null);
+  };
+
+  const handleCommandSelect = (text: string) => {
+    setShowCommands(false);
+    sendMessage(text);
   };
 
   const renderContent = (text: string) => {
@@ -138,14 +156,27 @@ const EmpireClaudePanel = ({ open, onClose }: EmpireClaudePanelProps) => {
               </button>
             </div>
 
-            {/* Context Filter Pills */}
-            <ContextFilterPills
-              categories={empireCategories}
-              selectedCategory={selectedCategory}
-              selectedSub={selectedSub}
-              onSelect={(cat, sub) => { setSelectedCategory(cat); setSelectedSub(sub); }}
-              accentColor="emerald"
-            />
+            {/* Context Filter Pills + Command List */}
+            <div className="relative">
+              <ContextFilterPills
+                categories={empireCategories}
+                selectedCategory={selectedCategory}
+                selectedSub={selectedSub}
+                onSelect={(cat, sub) => { setSelectedCategory(cat); setSelectedSub(sub); }}
+                accentColor="emerald"
+              />
+              <AnimatePresence>
+                {showCommands && selectedSub && (
+                  <CommandSuggestionList
+                    subId={selectedSub}
+                    context="empire"
+                    onSelect={handleCommandSelect}
+                    onDismiss={handleCommandDismiss}
+                    accentColor="emerald"
+                  />
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4">
