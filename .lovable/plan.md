@@ -1,78 +1,35 @@
 
 
-# Full NL/ENG Translation for All Pages
+# Fix User Delete & Re-Create Flow
 
-## Current State
-- Only the **About** page uses the `translations.ts` system via `useLang()`
-- All other pages (Home/Hero, Writing, Work, Privacy, Footer, Cookie Consent, 404) have hardcoded English or Dutch strings
-- The NL/ENG toggle in the navbar works (context is shared), but switching has no effect on most pages
+## Problem
+When you delete a user and try to re-create them, errors occur because:
+1. **Incomplete deletion** -- only the `portal_profiles` row is deleted, leaving orphaned records in `user_roles`, `user_tool_access`, `user_content_access`, and `user_ai_access`
+2. **Auth user persists** -- the authentication account is never removed, triggering "already registered" on re-creation
+3. **Upsert conflict mismatch** -- the `user_roles` upsert uses `onConflict: "user_id"` but the actual unique constraint is `(user_id, role)`, causing SQL errors
 
-## Plan
+## Solution
 
-### 1. Expand `src/data/translations.ts` with all site-wide strings
+### 1. Add `delete_user` action to the backend function
 
-Add translation keys for every page and component:
+Add a new `delete_user` case in `portal-api/index.ts` that properly cleans up everything in the correct order:
+- Delete from `user_tool_access` (by user_id)
+- Delete from `user_content_access` (by user_id)
+- Delete from `user_ai_access` (by user_id)
+- Delete from `user_roles` (by user_id)
+- Delete from `portal_profiles` (by user_id)
+- Delete the auth user via `supabase.auth.admin.deleteUser(userId)`
 
-**Hero (Home page)**
-- Subtitle, heading, description, button labels ("View my work" / "Bekijk mijn werk")
-- Expertise section: titles, descriptions
-- Quick-links text
+### 2. Fix the `create_user` upsert conflict
 
-**Writing page**
-- Page header ("Writing" / "Artikelen"), subtitle, search placeholder, sort labels, post count text, empty state messages
+Change the `user_roles` upsert from `onConflict: "user_id"` to `onConflict: "user_id,role"` to match the actual database unique constraint.
 
-**Work page**
-- Page header ("Portfolio & Case Studies" / "Portfolio & Cases"), subtitle, description, result count, empty state
+### 3. Update the frontend delete handler
 
-**Privacy page**
-- Full Dutch and English versions of the privacy policy (7 sections)
+Update `PortalUsersManager.tsx` to call the new `delete_user` edge function action (passing `user_id`) instead of the client-side `usersApi.deleteProfile()` which only deletes the profile row.
 
-**Footer**
-- "Privacy" link label (stays same in both languages)
+## Files to Change
 
-**Cookie Consent**
-- Title, description text, button labels ("Accepteren" / "Accept", "Weigeren" / "Decline"), privacy link text
-
-**404 page**
-- "Page not found" / "Pagina niet gevonden", return link
-
-**Navbar**
-- Nav link labels: Home, Work/Werk, Writing/Artikelen, About/Over mij
-- Search placeholder, Login/Portal labels
-
-**Breadcrumbs** (used across Writing, Work, About)
-- "Home" label
-
-### 2. Update each component to use `useLang()` + translations
-
-Each file will:
-1. Import `useLang` from Navbar
-2. Import the relevant translation keys
-3. Replace all hardcoded strings with `t.keyName`
-
-**Files to modify:**
-- `src/data/translations.ts` -- add all new keys
-- `src/components/Hero.tsx` -- use translations for all text
-- `src/pages/Writing.tsx` -- page header, search, sort, empty states
-- `src/pages/Work.tsx` -- page header, descriptions, empty states
-- `src/pages/Privacy.tsx` -- full bilingual privacy policy
-- `src/pages/NotFound.tsx` -- 404 text
-- `src/components/Footer.tsx` -- link labels
-- `src/components/CookieConsent.tsx` -- banner text and buttons
-- `src/components/Navbar.tsx` -- nav labels, search placeholder
-
-### 3. Translation Quality
-
-All translations will be professional Dutch, consistent with the existing `translations.ts` tone:
-- Formal but approachable ("wij" / "je")
-- Industry-accurate e-commerce terminology
-- Consistent with existing NL translations on the About page
-
-### Technical Notes
-
-- No new dependencies needed -- uses existing `useLang()` context
-- The `translations.ts` type will be expanded with new fields (all typed for safety)
-- Blog post and case study content from the database stays as-is (those are managed via the portal CMS)
-- Navigation labels in `Navbar.tsx` will become dynamic based on language
-- SEO meta tags will also be translated per language for each page
+- **`supabase/functions/portal-api/index.ts`** -- add `delete_user` action, fix `user_roles` upsert conflict key
+- **`src/components/portal/PortalUsersManager.tsx`** -- update `handleDeleteUser` to call edge function
 
