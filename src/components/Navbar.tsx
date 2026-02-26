@@ -6,18 +6,22 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import HansAIOverlay from "@/components/overlays/HansAIOverlay";
 import EmpireOverlay from "@/components/overlays/EmpireOverlay";
+import { translations } from "@/data/translations";
 
 type Lang = "nl" | "en";
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: "nl", setLang: () => {} });
 export const useLang = () => useContext(LangContext);
 
-const links = [
-  { to: "/", label: "Home" },
-  { to: "/work", label: "Work" },
-  { to: "/writing", label: "Writing" },
-  { to: "/about", label: "About" },
-];
+const getLinks = (lang: Lang) => {
+  const t = translations[lang].nav;
+  return [
+    { to: "/", label: t.home },
+    { to: "/work", label: t.work },
+    { to: "/writing", label: t.writing },
+    { to: "/about", label: t.about },
+  ];
+};
 
 const searchablePages = [
   { to: "/", label: "Home", keywords: ["home", "start", "landing"] },
@@ -46,6 +50,8 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
+  const t = translations[lang].nav;
+  const links = getLinks(lang);
 
   const isDark = variant === "dark";
 
@@ -140,12 +146,12 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
             >
               <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
                 <Search size={16} className="text-muted-foreground shrink-0" />
-                <input ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleSearchKeyDown} placeholder="Search pages..." className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
+                <input ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleSearchKeyDown} placeholder={t.searchPlaceholder} className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
                 <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">ESC</kbd>
               </div>
               <div className="max-h-64 overflow-y-auto py-1">
                 {filteredPages.length === 0 ? (
-                  <p className="px-4 py-6 text-center text-sm text-muted-foreground">No results found.</p>
+                  <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t.noResults}</p>
                 ) : (
                   filteredPages.map((page, i) => (
                     <button key={page.to} onClick={() => { navigate(page.to); setSearchOpen(false); }} onMouseEnter={() => setSelectedIndex(i)} className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${i === selectedIndex ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/50"}`}>
@@ -183,7 +189,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 }`}
               >
                 <Search size={12} />
-                <span className="hidden lg:inline">Search</span>
+                <span className="hidden lg:inline">{t.search}</span>
                 <kbd className={`inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[9px] font-mono ${isDark ? "border-emerald-500/15 text-emerald-400/25" : "border-border bg-background text-muted-foreground/60"}`}>
                   <Command size={8} />K
                 </kbd>
@@ -205,12 +211,12 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 {user ? (
                   <>
                     <img src={user.user_metadata?.avatar_url || ""} alt="" className="h-4 w-4 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                    Portal
+                    {t.portal}
                   </>
                 ) : (
                   <>
                     <LogIn size={12} />
-                    Login
+                    {t.login}
                   </>
                 )}
               </Link>
@@ -288,7 +294,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 <div className={`my-1 h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />
                 <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-colors ${isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
                   <LogIn size={14} />
-                  {user ? "Portal" : "Login"}
+                  {user ? t.portal : t.login}
                 </Link>
                 {isAdmin && (
                   <>

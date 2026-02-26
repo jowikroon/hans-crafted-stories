@@ -8,6 +8,8 @@ import CategoryCards from "@/components/CategoryCards";
 import { usePageElements } from "@/hooks/usePageElements";
 import { useCategoryCards } from "@/hooks/useCategoryCards";
 import { useSEO } from "@/hooks/useSEO";
+import { useLang } from "@/components/Navbar";
+import { translations } from "@/data/translations";
 
 // Map detailed categories to filter groups
 const categoryGroupMap: Record<string, string> = {
@@ -28,24 +30,27 @@ const Work = () => {
   const [filter, setFilter] = useState("all");
   const { isVisible } = usePageElements("work");
   const { cards: dbCards } = useCategoryCards("work");
+  const { lang } = useLang();
+  const tw = translations[lang].work;
+  const seo = translations[lang].seo;
 
   useSEO({
-    title: "Design Portfolio & Case Studies | E-commerce, 3D & UX | Hans van Leeuwen",
-    description: "Explore Hans van Leeuwen's portfolio: e-commerce UX case studies, 3D creative work, VR game design, and branding projects with measurable results. Amazon & Bol.com specialist.",
+    title: seo.workTitle,
+    description: seo.workDescription,
     url: "https://hansvanleeuwen.com/work",
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: "Design Portfolio & Case Studies",
-      description: "A collection of e-commerce UX, 3D creative, VR game design, and branding case studies by Hans van Leeuwen.",
+      name: tw.heading,
+      description: seo.workDescription,
       url: "https://hansvanleeuwen.com/work",
       author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
-      about: { "@type": "Thing", name: "E-commerce Design & Creative Portfolio" },
+      about: { "@type": "Thing", name: tw.heading },
       breadcrumb: {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-          { "@type": "ListItem", position: 2, name: "Work", item: "https://hansvanleeuwen.com/work" },
+          { "@type": "ListItem", position: 2, name: tw.label, item: "https://hansvanleeuwen.com/work" },
         ],
       },
     },
@@ -115,7 +120,7 @@ const Work = () => {
   if (loading) {
     return (
       <section className="section-container pt-28">
-        <p className="text-muted-foreground">Loading…</p>
+        <p className="text-muted-foreground">{tw.loading}</p>
       </section>
     );
   }
@@ -135,7 +140,7 @@ const Work = () => {
             <span>Home</span>
           </Link>
           <ChevronRight size={11} className="text-muted-foreground/40" />
-          <span className="font-medium text-foreground">Work</span>
+          <span className="font-medium text-foreground">{tw.label}</span>
           {filter !== "all" && (
             <>
               <ChevronRight size={11} className="text-muted-foreground/40" />
@@ -154,15 +159,13 @@ const Work = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            Portfolio & Case Studies
+            {tw.label}
           </p>
           <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
-            E-commerce, 3D & UX Design Work
+            {tw.heading}
           </h1>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
-            A curated collection of case studies — from Amazon & Bol.com e-commerce UX concepts 
-            to 3D creative experiments, VR games, and branding projects. Each project features 
-            real results and measurable outcomes.
+            {tw.description}
           </p>
         </motion.div>
       )}
@@ -182,8 +185,8 @@ const Work = () => {
         animate={{ opacity: 1 }}
         className="mb-6 text-xs text-muted-foreground/60"
       >
-        {filtered.length} {filtered.length === 1 ? "project" : "projects"}
-        {filter !== "all" && " matching"}
+        {filtered.length} {filtered.length === 1 ? tw.projectSingular : tw.projectPlural}
+        {filter !== "all" && ` ${tw.matching}`}
       </motion.p>
 
       {isVisible("case_study_grid") && (
@@ -198,12 +201,12 @@ const Work = () => {
 
       {filtered.length === 0 && (
         <div className="py-16 text-center">
-          <p className="mb-2 text-muted-foreground">No projects in this category.</p>
+          <p className="mb-2 text-muted-foreground">{tw.noProjectsTitle}</p>
           <button
             onClick={() => setFilter("all")}
             className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
           >
-            Show all projects
+            {tw.showAll}
           </button>
         </div>
       )}

@@ -1,12 +1,18 @@
 import Hero from "@/components/Hero";
 import { useSEO } from "@/hooks/useSEO";
+import { useLang } from "@/components/Navbar";
+import { translations } from "@/data/translations";
 
 const Index = () => {
+  const { lang } = useLang();
+  const seo = translations[lang].seo;
+
   useSEO({
-    title: "E-commerce Manager & Marketplace Specialist (Amazon & Bol.com) | Hans van Leeuwen",
-    description: "Hans van Leeuwen – E-commerce manager with 10+ years of experience. Driving marketplace growth on Amazon & Bol.com through strategy, UX optimization, and revenue scaling. Based in Amersfoort, NL.",
+    title: seo.homeTitle,
+    description: seo.homeDescription,
     url: "https://hansvanleeuwen.com/",
   });
+
   return <Hero />;
 };
 

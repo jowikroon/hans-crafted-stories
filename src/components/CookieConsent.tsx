@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useLang } from "@/components/Navbar";
+import { translations } from "@/data/translations";
 
 const CONSENT_KEY = "cookie_consent";
 type ConsentValue = "accepted" | "declined";
@@ -19,7 +21,6 @@ declare global {
   }
 }
 
-/** Push default consent state (all denied for EEA) */
 const pushConsentDefault = () => {
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({
@@ -38,7 +39,6 @@ const pushConsentDefault = () => {
   });
 };
 
-/** Push consent update (granted or denied) */
 const pushConsentUpdate = (granted: boolean) => {
   window.dataLayer = window.dataLayer || [];
   const value = granted ? "granted" : "denied";
@@ -57,20 +57,20 @@ const pushConsentUpdate = (granted: boolean) => {
 
 const CookieConsent = () => {
   const [visible, setVisible] = useState(false);
+  const { lang } = useLang();
+  const t = translations[lang].cookie;
 
   useEffect(() => {
     const stored = localStorage.getItem(CONSENT_KEY) as ConsentValue | null;
-
-    // Always push defaults first so GTM Consent Initialization picks them up
     pushConsentDefault();
 
     if (stored === "accepted") {
       pushConsentUpdate(true);
     } else if (stored === "declined") {
-      // defaults already denied, nothing extra needed
+      // defaults already denied
     } else {
-      const t = setTimeout(() => setVisible(true), 1500);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => setVisible(true), 1500);
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -99,7 +99,7 @@ const CookieConsent = () => {
           <button
             onClick={handleDecline}
             className="absolute right-3 top-3 rounded-full p-1 text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="Sluiten"
+            aria-label={t.close}
           >
             <X size={16} />
           </button>
@@ -109,19 +109,19 @@ const CookieConsent = () => {
               <Cookie size={18} className="text-primary" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-foreground">Cookies & Privacy</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t.title}</h3>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Wij gebruiken analytische cookies om het gebruik van de website te begrijpen en te verbeteren. Geen persoonlijke data wordt gedeeld met derden.{" "}
+                {t.description}{" "}
                 <Link to="/privacy" className="underline text-primary hover:text-primary/80 transition-colors">
-                  Privacybeleid
+                  {t.privacyLink}
                 </Link>
               </p>
               <div className="flex items-center gap-2 pt-1">
                 <Button size="sm" onClick={handleAccept} className="h-8 text-xs">
-                  Accepteren
+                  {t.accept}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={handleDecline} className="h-8 text-xs text-muted-foreground">
-                  Weigeren
+                  {t.decline}
                 </Button>
               </div>
             </div>
