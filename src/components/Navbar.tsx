@@ -1,17 +1,14 @@
-import { useState, createContext, useContext, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, LogIn, Terminal, Search, Command, Bot } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useLang } from "@/hooks/useLang";
 import HansAIOverlay from "@/components/overlays/HansAIOverlay";
 import EmpireOverlay from "@/components/overlays/EmpireOverlay";
 import { translations } from "@/data/translations";
-
-type Lang = "nl" | "en";
-
-const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: "nl", setLang: () => {} });
-export const useLang = () => useContext(LangContext);
+import type { Lang } from "@/hooks/useLang";
 
 const getLinks = (lang: Lang) => {
   const t = translations[lang].nav;
@@ -41,7 +38,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [lang, setLang] = useState<Lang>("nl");
+  const { lang, setLang } = useLang();
   const [searchOpen, setSearchOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [empireOpen, setEmpireOpen] = useState(false);
@@ -124,7 +121,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   );
 
   return (
-    <LangContext.Provider value={{ lang, setLang }}>
+    <>
       {/* ═══ Search Overlay ═══ */}
       <AnimatePresence>
         {searchOpen && (
@@ -317,7 +314,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
       {/* AI & Empire Overlays */}
       <HansAIOverlay open={aiOpen} onClose={() => setAiOpen(false)} />
       <EmpireOverlay open={empireOpen} onClose={() => setEmpireOpen(false)} />
-    </LangContext.Provider>
+    </>
   );
 };
 

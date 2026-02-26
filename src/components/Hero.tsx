@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, ShoppingCart, BarChart3, Search, Zap } from "lucide-react";
-import { useLang } from "@/components/Navbar";
+import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 
 const icons = [

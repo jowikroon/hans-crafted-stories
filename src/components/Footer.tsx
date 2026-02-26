@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useLang } from "@/components/Navbar";
+import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 
 const socialLinks = [
