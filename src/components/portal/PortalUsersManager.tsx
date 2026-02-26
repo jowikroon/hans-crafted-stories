@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserPlus, Users, Shield, Eye, EyeOff, ChevronDown, ChevronRight, Wrench, FileText, Activity, Bot, Terminal, Zap, ShieldCheck, ShieldX, Lock, Unlock, Trash2, CheckSquare, Square, UserCheck } from "lucide-react";
+import { UserPlus, Users, Shield, Eye, EyeOff, ChevronDown, ChevronRight, Wrench, FileText, Activity, Bot, Terminal, Zap, ShieldCheck, ShieldX, Lock, Unlock, Trash2, CheckSquare, Square, UserCheck, Loader2 } from "lucide-react";
 import { usersApi, PortalProfile } from "@/lib/api/users";
 import { portalApi, PortalTool } from "@/lib/api/portal";
 import { useToast } from "@/hooks/use-toast";
@@ -50,6 +50,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [userToDelete, setUserToDelete] = useState<PortalProfile | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Per-user access state
   const [toolAccess, setToolAccess] = useState<Record<string, { can_view: boolean; can_use: boolean }>>({});
@@ -279,6 +280,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
   };
 
   const handleDeleteUser = async (profile: PortalProfile) => {
+    setDeleting(true);
     try {
       const { supabase } = await import("@/integrations/supabase/client");
       const session = (await supabase.auth.getSession()).data.session;
@@ -296,10 +298,13 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
       if (expandedUser === profile.id) setExpandedUser(null);
       selectedIds.delete(profile.id);
       setSelectedIds(new Set(selectedIds));
+      setUserToDelete(null);
       loadData();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to remove user";
       toast({ title: "Error", description: msg, variant: "destructive" });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -875,7 +880,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
       </Dialog>
 
       {/* Delete confirmation dialog */}
-      <AlertDialog open={!!userToDelete} onOpenChange={(open) => { if (!open) setUserToDelete(null); }}>
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => { if (!open && !deleting) setUserToDelete(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Gebruiker verwijderen</AlertDialogTitle>
@@ -884,17 +889,18 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>Annuleren</AlertDialogCancel>
             <AlertDialogAction
               className={buttonVariants({ variant: "destructive" })}
-              onClick={() => {
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault();
                 if (userToDelete) {
                   handleDeleteUser(userToDelete);
-                  setUserToDelete(null);
                 }
               }}
             >
-              Verwijderen
+              {deleting ? <><Loader2 size={14} className="mr-1.5 animate-spin" /> Verwijderen…</> : "Verwijderen"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
