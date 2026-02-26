@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserPlus, Users, Shield, Eye, EyeOff, ChevronDown, ChevronRight, Wrench, FileText, Activity, Bot, Terminal, Zap, ShieldCheck, ShieldX, Lock, Unlock } from "lucide-react";
+import { UserPlus, Users, Shield, Eye, EyeOff, ChevronDown, ChevronRight, Wrench, FileText, Activity, Bot, Terminal, Zap, ShieldCheck, ShieldX, Lock, Unlock, Trash2 } from "lucide-react";
 import { usersApi, PortalProfile } from "@/lib/api/users";
 import { portalApi, PortalTool } from "@/lib/api/portal";
 import { useToast } from "@/hooks/use-toast";
@@ -187,6 +187,18 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
     }
   };
 
+  const handleDeleteUser = async (profile: PortalProfile) => {
+    if (!confirm(`Remove ${profile.display_name}? This will delete their profile and access rights.`)) return;
+    try {
+      await usersApi.deleteProfile(profile.id);
+      toast({ title: "User removed", description: `${profile.display_name} has been removed.` });
+      if (expandedUser === profile.id) setExpandedUser(null);
+      loadData();
+    } catch {
+      toast({ title: "Error", description: "Failed to remove user", variant: "destructive" });
+    }
+  };
+
   const tabs = (profile: PortalProfile) => profile.tab_access || ["tools", "content", "status"];
 
   // Access summary counts
@@ -222,7 +234,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10">
               <Users size={15} className="text-primary" />
             </div>
-            <h3 className="text-base font-semibold text-foreground">Active Directory</h3>
+            <h3 className="text-base font-semibold text-foreground">User Permissions</h3>
             <Badge variant="secondary" className="rounded-lg text-[10px] font-medium">{profiles.length} users</Badge>
           </div>
           <p className="text-xs text-muted-foreground/60 ml-[42px]">Manage user access, permissions, and AI model rights</p>
@@ -277,7 +289,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
                     {isExpanded ? <ChevronDown size={14} className="shrink-0 text-primary" /> : <ChevronRight size={14} className="shrink-0 text-muted-foreground/40" />}
                   </button>
 
-                  <div className="ml-3 flex items-center gap-2">
+                  <div className="ml-3 flex items-center gap-1.5">
                     <Button
                       size="icon"
                       variant="ghost"
@@ -286,6 +298,15 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
                       title={profile.is_active ? "Deactivate" : "Activate"}
                     >
                       {profile.is_active ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 rounded-lg text-muted-foreground/40 hover:text-destructive"
+                      onClick={() => handleDeleteUser(profile)}
+                      title="Remove user"
+                    >
+                      <Trash2 size={14} />
                     </Button>
                   </div>
                 </div>
