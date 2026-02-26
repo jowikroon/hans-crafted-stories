@@ -1,78 +1,71 @@
 
 
-# Central Hub: Connect All Real Tools
+# Portal UX Overhaul: Professional Menu, Better Filtering, More White Space
 
-## What We're Building
-Transform the portal into the **single command center** that connects every piece of your infrastructure -- the 6 Manus apps already there, plus your Chrome extensions, n8n hub, Claude Code terminal, and Ollama AI server.
+## Current Issues
+- Category filter pills are cramped in a single scrollable row with no visual hierarchy
+- Tool cards have duplicated category badges (one in the card header, one at the bottom) -- redundant
+- The grid has tight `gap-4` spacing with minimal breathing room
+- The tab navigation bar (Tools/Content/Pages/Users/Status) feels dense and pill-like
+- Header area has many action buttons crowded together
+- The "Edit Layout" button sits inline with filters, creating visual clutter
 
-## New Tool Cards to Add
+## Design Changes
 
-| Tool | Type | URL / Action | Category |
-|------|------|-------------|----------|
-| Product Page Analyzer | Chrome Extension | Download ZIP + install instructions | SEO |
-| CCP Crawler | Chrome Extension | Download ZIP + install instructions | Data |
-| n8n Orchestration Hub | External (iframe-capable) | n8n.hansvanleeuwen.com | Automation |
-| Claude Code Terminal | External | terminal.hansvanleeuwen.com | AI |
-| Ollama Local AI | External | ollama.hansvanleeuwen.com | AI |
+### 1. Remove duplicate category badge from card bottom
+The category badge already appears in the card header (top-right). The bottom badge added in the last edit is redundant. Remove it and let the card breathe with natural whitespace at the bottom instead.
 
-Total: **11 tool cards** (6 existing Manus apps + 5 new infrastructure tools)
+### 2. Clean up unused mock run history code
+The `showHistory` state, `runs` state, `generateMockRuns` function, and the entire history overlay are dead code. Removing them reduces the component by ~80 lines and keeps things clean.
 
-## Technical Changes
+### 3. Redesign category filter bar
+Replace the flat pill row with a spaced, professional filter section:
+- Add a subtle section header: "Filter by category" in muted text
+- Increase pill padding and spacing (`gap-3`, `px-5 py-2`)
+- Add tool count badges inside each pill (e.g., "SEO (3)")
+- Add a subtle bottom border separator between filters and grid
 
-### 1. New tool type: `chrome-extension`
-- Add `chrome-extension` to the database constraint alongside existing types
-- When clicked, opens a preview modal showing:
-  - Extension description and features
-  - "Download Extension" button that downloads the ZIP from `/public/extensions/`
-  - Step-by-step Chrome install instructions (chrome://extensions -> Developer mode -> Load unpacked)
-- Card label: "Chrome Extension" with a Chrome-style icon
+### 4. Increase white space throughout
+- Portal section: increase horizontal padding from `px-4 sm:px-6` to `px-5 sm:px-8`
+- Header bottom margin: `mb-5` to `mb-8`
+- Filter bar bottom margin: `mb-5` to `mb-8`
+- Grid gap: `gap-4` to `gap-5 sm:gap-6`
+- Tab navigation bottom margin: `mb-5` to `mb-8`
 
-### 2. Copy extension ZIPs to project
-- Copy `product-analyzer-extension-enhanced.zip` to `public/extensions/product-page-analyzer.zip`
-- Copy `ccp_crawler_chrome_extension.zip` to `public/extensions/ccp-crawler.zip`
-- These become downloadable assets from the portal
+### 5. Refine tab navigation
+- Increase tab pill padding for more touch space and breathing room
+- Add a subtle divider line below the tabs (via a wrapper border-b)
 
-### 3. Database: Insert 5 new tools
-Insert into `portal_tools` with proper categories, descriptions, icons and configs:
-- Chrome extensions get `config.download_url` pointing to the ZIP path
-- n8n gets `config.external_url` = `https://n8n.hansvanleeuwen.com`
-- Claude Code gets `config.external_url` = `https://terminal.hansvanleeuwen.com`
-- Ollama gets `config.external_url` = `https://ollama.hansvanleeuwen.com`
-
-### 4. Update SortableToolCard
-- Add `chrome-extension` to `toolTypeLabel` map (label: "Chrome Extension")
-- Add punchy description: "Install once, analyze everywhere. Right-click any product page for instant insights."
-- Add a download icon indicator for chrome-extension cards
-
-### 5. Update ToolPreviewModal
-- For `chrome-extension` type: show "Download Extension" as primary button + install instructions
-- Download triggers a file download of the ZIP from `/public/extensions/`
-
-### 6. Update AddToolModal
-- Add "Chrome Extension (downloadable)" to tool type selector
-- Add download URL input field when chrome-extension is selected
-
-### 7. Update PortalToolsTab
-- Add handler for `chrome-extension` type in `handleOpenTool` -- triggers ZIP download
-
-### 8. Add "infrastructure" category
-- New category in `categoryConfig`: label "Infra", purple/indigo accent
-- n8n, Claude Code, and Ollama get this category for visual grouping
-- Alternatively keep them in their logical categories (automation, ai) for better filtering
-
-## Click Flow Summary
-
-```text
-External App card -> Preview Modal -> "Launch App" -> window.open(url)
-Chrome Extension card -> Preview Modal -> "Download Extension" -> downloads ZIP
-                                       -> Shows install steps below button
-```
+### 6. Separate Edit Layout from filter bar
+Move the "Edit Layout" button to its own row below the filters or make it right-aligned with more visual separation using a vertical divider.
 
 ## Files Modified
-- `supabase/migrations/` -- new migration for constraint + tool inserts
-- `src/components/portal/SortableToolCard.tsx` -- chrome-extension labels
-- `src/components/portal/ToolPreviewModal.tsx` -- download button + install guide
-- `src/components/portal/PortalToolsTab.tsx` -- chrome-extension handler
-- `src/components/portal/AddToolModal.tsx` -- chrome-extension type option
-- `public/extensions/` -- 2 ZIP files copied here
+
+| File | What Changes |
+|------|-------------|
+| `src/components/portal/SortableToolCard.tsx` | Remove bottom category badge, remove all mock run history code (state, generator, overlay) |
+| `src/components/portal/PortalToolsTab.tsx` | Redesign filter bar with counts, increase grid gap and spacing |
+| `src/pages/Portal.tsx` | Increase white space: padding, margins between header/tabs/content |
+
+## Technical Details
+
+**SortableToolCard.tsx changes:**
+- Delete lines 51-58 (generateMockRuns function)
+- Remove `showHistory` and `runs` state (lines 77-78)
+- Remove the bottom category badge div (lines 209-213)
+- Delete the entire History Overlay block (lines 216-279)
+- Remove unused imports: `Clock`, `X`, `AnimatePresence`
+
+**PortalToolsTab.tsx changes:**
+- Count tools per category for badge display
+- Add filter section with count badges: `All (11)`, `SEO (3)`, etc.
+- Increase grid gap to `gap-5 sm:gap-6`
+- Add margin-bottom of `mb-8` to filters section
+- Add a subtle separator (`border-b border-border/50 pb-6 mb-8`) below filters
+
+**Portal.tsx changes:**
+- Section padding: `px-5 sm:px-8 lg:px-12`
+- Header margin: `mb-8 sm:mb-10`
+- Tab nav margin: `mb-8`
+- Add `pb-2` to tab wrapper for breathing room
 
