@@ -45,6 +45,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
   const [expandedSection, setExpandedSection] = useState<AccessSection | null>("tabs");
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
 
   // Per-user access state
@@ -68,18 +69,27 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
   useEffect(() => { loadData(); }, []);
 
   const handleAddUser = async () => {
-    if (!newName.trim() || !newEmail.trim()) {
-      toast({ title: "Validation", description: "Name and email are required.", variant: "destructive" });
+    if (!newName.trim() || !newEmail.trim() || !newPassword.trim()) {
+      toast({ title: "Validation", description: "Name, email, and password are required.", variant: "destructive" });
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast({ title: "Validation", description: "Password must be at least 6 characters.", variant: "destructive" });
       return;
     }
     setSaving(true);
     try {
-      const placeholderId = crypto.randomUUID();
-      await usersApi.createProfile({ user_id: placeholderId, display_name: newName.trim(), email: newEmail.trim() });
-      await usersApi.addUserRole(placeholderId, "user");
-      toast({ title: "User added", description: `${newName.trim()} has been added.` });
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portal-api`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${(await (await import("@/integrations/supabase/client")).supabase.auth.getSession()).data.session?.access_token}` },
+        body: JSON.stringify({ action: "create_user", email: newEmail.trim(), password: newPassword, display_name: newName.trim(), role: "user", tab_access: ["tools"] }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to create user");
+      toast({ title: "User added", description: `${newName.trim()} has been added with a real account.` });
       setNewName("");
       setNewEmail("");
+      setNewPassword("");
       setShowAdd(false);
       loadData();
     } catch (err: unknown) {
@@ -508,6 +518,10 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
             <div className="space-y-1.5">
               <Label htmlFor="user-email">Email</Label>
               <Input id="user-email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="jane@example.com" className="rounded-xl" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="user-password">Password</Label>
+              <Input id="user-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min. 6 characters" className="rounded-xl" />
             </div>
           </div>
           <DialogFooter>
