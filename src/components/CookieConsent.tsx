@@ -3,42 +3,71 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const GA_ID = "G-2YX26R0RZK";
 const CONSENT_KEY = "cookie_consent";
-
 type ConsentValue = "accepted" | "declined";
 
-const loadGoogleAnalytics = () => {
-  if (document.querySelector(`script[src*="googletagmanager.com/gtag"]`)) return;
-
-  const script = document.createElement("script");
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
-  script.async = true;
-  document.head.appendChild(script);
-
-  window.dataLayer = window.dataLayer || [];
-  function gtag(...args: unknown[]) {
-    window.dataLayer!.push(args);
-  }
-  gtag("js", new Date());
-  gtag("config", GA_ID);
-};
+const EEA_REGIONS = [
+  "BE","BG","CZ","DK","DE","EE","IE","EL","ES","FR",
+  "HR","IT","CY","LV","LT","LU","HU","MT","NL","AT",
+  "PL","PT","RO","SI","SK","FI","SE","IS","LI","NO",
+];
 
 declare global {
   interface Window {
-    dataLayer?: unknown[];
+    dataLayer: Record<string, unknown>[];
   }
 }
+
+/** Push default consent state (all denied for EEA) */
+const pushConsentDefault = () => {
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: "consent_default",
+    consent: {
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
+      analytics_storage: "denied",
+      functionality_storage: "denied",
+      personalization_storage: "denied",
+      security_storage: "granted",
+      wait_for_update: 500,
+      region: EEA_REGIONS,
+    },
+  });
+};
+
+/** Push consent update (granted or denied) */
+const pushConsentUpdate = (granted: boolean) => {
+  window.dataLayer = window.dataLayer || [];
+  const value = granted ? "granted" : "denied";
+  window.dataLayer.push({
+    event: "consent_update",
+    consent: {
+      ad_storage: value,
+      ad_user_data: value,
+      ad_personalization: value,
+      analytics_storage: value,
+      functionality_storage: granted ? "granted" : "denied",
+      personalization_storage: granted ? "granted" : "denied",
+    },
+  });
+};
 
 const CookieConsent = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(CONSENT_KEY) as ConsentValue | null;
+
+    // Always push defaults first so GTM Consent Initialization picks them up
+    pushConsentDefault();
+
     if (stored === "accepted") {
-      loadGoogleAnalytics();
-    } else if (!stored) {
-      // Small delay so it doesn't flash on load
+      pushConsentUpdate(true);
+    } else if (stored === "declined") {
+      // defaults already denied, nothing extra needed
+    } else {
       const t = setTimeout(() => setVisible(true), 1500);
       return () => clearTimeout(t);
     }
@@ -47,12 +76,13 @@ const CookieConsent = () => {
   const handleAccept = useCallback(() => {
     localStorage.setItem(CONSENT_KEY, "accepted");
     setVisible(false);
-    loadGoogleAnalytics();
+    pushConsentUpdate(true);
   }, []);
 
   const handleDecline = useCallback(() => {
     localStorage.setItem(CONSENT_KEY, "declined");
     setVisible(false);
+    pushConsentUpdate(false);
   }, []);
 
   return (
