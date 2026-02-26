@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, Terminal, X, Crown, Wrench, Cpu, HeartPulse } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ContextFilterPills from "@/components/ai/ContextFilterPills";
+import { empireCategories, buildContextPrefix } from "@/components/ai/contextCategories";
 
 const SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
 
@@ -41,6 +43,8 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSub, setSelectedSub] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,6 +61,9 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
     if (!userMsg || loading) return;
     setInput("");
 
+    const contextPrefix = buildContextPrefix(empireCategories, selectedCategory, selectedSub);
+    const systemWithContext = contextPrefix + SYSTEM_PROMPT;
+
     const newMessages: Message[] = [...messages, { role: "user", content: userMsg }];
     setMessages(newMessages);
     setLoading(true);
@@ -71,7 +78,7 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ system: SYSTEM_PROMPT, messages: newMessages }),
+        body: JSON.stringify({ system: systemWithContext, messages: newMessages }),
       });
       const data = await res.json();
       setMessages([...newMessages, { role: "assistant", content: data.reply || "No response." }]);
@@ -127,6 +134,15 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
                 </button>
               </div>
             </div>
+
+            {/* Context Filter Pills */}
+            <ContextFilterPills
+              categories={empireCategories}
+              selectedCategory={selectedCategory}
+              selectedSub={selectedSub}
+              onSelect={(cat, sub) => { setSelectedCategory(cat); setSelectedSub(sub); }}
+              accentColor="violet"
+            />
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 min-h-[200px]">

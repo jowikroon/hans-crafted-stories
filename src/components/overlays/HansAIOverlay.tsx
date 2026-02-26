@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, Bot, Zap, Sparkles, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ContextFilterPills from "@/components/ai/ContextFilterPills";
+import { hansAICategories, buildContextPrefix } from "@/components/ai/contextCategories";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hansai-chat`;
 
@@ -26,6 +28,8 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [streamedText, setStreamedText] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSub, setSelectedSub] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -42,7 +46,12 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
     if (!userMsg || loading) return;
     setInput("");
 
+    const contextPrefix = buildContextPrefix(hansAICategories, selectedCategory, selectedSub);
     const newMessages: Message[] = [...messages, { role: "user", content: userMsg }];
+    const messagesWithContext = contextPrefix
+      ? [{ role: "user" as const, content: contextPrefix + userMsg }, ...newMessages.slice(0, -1).slice(-4)]
+      : newMessages;
+
     setMessages(newMessages);
     setLoading(true);
     setStreamedText("");
@@ -57,7 +66,7 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: contextPrefix ? messagesWithContext : newMessages }),
       });
 
       if (!resp.ok) throw new Error("Request failed");
@@ -146,6 +155,15 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
                 </button>
               </div>
             </div>
+
+            {/* Context Filter Pills */}
+            <ContextFilterPills
+              categories={hansAICategories}
+              selectedCategory={selectedCategory}
+              selectedSub={selectedSub}
+              onSelect={(cat, sub) => { setSelectedCategory(cat); setSelectedSub(sub); }}
+              accentColor="emerald"
+            />
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 min-h-[200px]">
