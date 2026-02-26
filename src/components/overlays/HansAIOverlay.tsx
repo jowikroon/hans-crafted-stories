@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, Bot, Zap, Sparkles, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ContextFilterPills from "@/components/ai/ContextFilterPills";
+import CommandSuggestionList from "@/components/ai/CommandSuggestionList";
 import { hansAICategories, buildContextPrefix } from "@/components/ai/contextCategories";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hansai-chat`;
@@ -30,6 +31,7 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
   const [streamedText, setStreamedText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSub, setSelectedSub] = useState<string | null>(null);
+  const [showCommands, setShowCommands] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -41,10 +43,17 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
     if (open) setTimeout(() => inputRef.current?.focus(), 200);
   }, [open]);
 
+  // Show commands when sub is selected
+  useEffect(() => {
+    if (selectedSub) setShowCommands(true);
+    else setShowCommands(false);
+  }, [selectedSub]);
+
   const sendMessage = async (text?: string) => {
     const userMsg = text || input.trim();
     if (!userMsg || loading) return;
     setInput("");
+    setShowCommands(false);
 
     const contextPrefix = buildContextPrefix(hansAICategories, selectedCategory, selectedSub);
     const newMessages: Message[] = [...messages, { role: "user", content: userMsg }];
@@ -112,7 +121,17 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") { e.preventDefault(); sendMessage(); }
-    if (e.key === "Escape") onClose();
+    if (e.key === "Escape" && !showCommands) onClose();
+  };
+
+  const handleCommandDismiss = () => {
+    setShowCommands(false);
+    setSelectedSub(null);
+  };
+
+  const handleCommandSelect = (text: string) => {
+    setShowCommands(false);
+    sendMessage(text);
   };
 
   return (
@@ -156,14 +175,27 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
               </div>
             </div>
 
-            {/* Context Filter Pills */}
-            <ContextFilterPills
-              categories={hansAICategories}
-              selectedCategory={selectedCategory}
-              selectedSub={selectedSub}
-              onSelect={(cat, sub) => { setSelectedCategory(cat); setSelectedSub(sub); }}
-              accentColor="emerald"
-            />
+            {/* Context Filter Pills + Command List wrapper */}
+            <div className="relative">
+              <ContextFilterPills
+                categories={hansAICategories}
+                selectedCategory={selectedCategory}
+                selectedSub={selectedSub}
+                onSelect={(cat, sub) => { setSelectedCategory(cat); setSelectedSub(sub); }}
+                accentColor="emerald"
+              />
+              <AnimatePresence>
+                {showCommands && selectedSub && (
+                  <CommandSuggestionList
+                    subId={selectedSub}
+                    context="hansai"
+                    onSelect={handleCommandSelect}
+                    onDismiss={handleCommandDismiss}
+                    accentColor="emerald"
+                  />
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 min-h-[200px]">
