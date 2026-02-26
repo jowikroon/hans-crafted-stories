@@ -305,9 +305,6 @@ serve(async (req) => {
             const existing = listData.users.find((u: any) => u.email === email);
             if (!existing) return err("User exists in auth but could not be found", 500);
             userId = existing.id;
-
-            // Update password if provided
-            await supabase.auth.admin.updateUser(userId, { password });
           } else {
             return err(authError.message, 500);
           }
