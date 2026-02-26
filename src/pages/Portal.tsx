@@ -183,7 +183,7 @@ const Portal = () => {
   }
 
   return (
-    <section className="section-container pt-20 pb-28 sm:pb-20 sm:pt-28 px-4 sm:px-6">
+    <section className="section-container pt-20 pb-28 sm:pb-20 sm:pt-28 px-5 sm:px-8 lg:px-12">
       <PageBreadcrumb items={[{ label: "Portal" }]} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -191,7 +191,7 @@ const Portal = () => {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Header */}
-        <div className="mb-5 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="mb-1.5 text-sm font-medium uppercase tracking-[0.2em] text-primary sm:mb-2">Portal</p>
             <h1 className="mb-1.5 font-display text-2xl font-medium tracking-tight text-foreground sm:mb-2 sm:text-4xl">
@@ -290,7 +290,7 @@ const Portal = () => {
         </AnimatePresence>
 
         {/* Tab Navigation */}
-        <div className="mb-5 flex gap-1 overflow-x-auto rounded-lg border border-border bg-secondary/50 p-0.5 sm:mb-6 sm:overflow-visible">
+        <div className="mb-8 flex gap-1 overflow-x-auto rounded-lg border border-border bg-secondary/50 p-1 pb-2 sm:mb-8 sm:overflow-visible">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;

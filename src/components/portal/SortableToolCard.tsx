@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, Settings, Sparkles, GripVertical, Maximize2, Minimize2, Clock, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { ExternalLink, Settings, Sparkles, GripVertical, Maximize2, Minimize2 } from "lucide-react";
 import { PortalTool } from "@/lib/api/portal";
 import { Badge } from "@/components/ui/badge";
 import InfoTooltip from "./InfoTooltip";
@@ -48,15 +47,6 @@ const punchyDescriptions: Record<string, string> = {
   "chrome-extension": "Install once, analyze everywhere. Right-click any page for instant insights.",
 };
 
-/* ─── Mock run history ─── */
-const generateMockRuns = () =>
-  Array.from({ length: 10 }, (_, i) => ({
-    id: i,
-    status: Math.random() > 0.15 ? "success" : "error",
-    timestamp: new Date(Date.now() - i * 3600000 * (2 + Math.random() * 6)).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
-    duration: `${(Math.random() * 4 + 0.2).toFixed(1)}s`,
-  }));
-
 interface SortableToolCardProps {
   tool: PortalTool;
   index: number;
@@ -74,9 +64,6 @@ const SortableToolCard = ({
   tool, index, isAdmin, isEditMode, cardSize, IconComponent,
   onToolClick, onOpenTool, onSettings, onCycleSize,
 }: SortableToolCardProps) => {
-  const [showHistory, setShowHistory] = useState(false);
-  const [runs] = useState(generateMockRuns);
-
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: tool.id,
     disabled: !isEditMode,
@@ -91,7 +78,6 @@ const SortableToolCard = ({
 
   const isLarge = cardSize === "2x2" || cardSize === "1x2";
   const cat = tool.category ? categoryConfig[tool.category] || categoryConfig.general : categoryConfig.general;
-  const successCount = runs.filter(r => r.status === "success").length;
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (isEditMode) return;
@@ -205,78 +191,7 @@ const SortableToolCard = ({
               )}
             </div>
           )}
-
-          {!isEditMode && (
-            <div className="mt-auto pt-2">
-              <span className={`inline-block rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${cat.color}`}>{cat.label}</span>
-            </div>
-          )}
         </div>
-
-        {/* ═══ HISTORY OVERLAY ═══ */}
-        <AnimatePresence>
-          {showHistory && !isEditMode && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 z-20 flex flex-col rounded-xl bg-card/95 backdrop-blur-sm"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Overlay header */}
-              <div className="flex items-center justify-between border-b border-border px-3 py-2 sm:px-4">
-                <div className="flex items-center gap-2">
-                  <Clock size={12} className="text-muted-foreground/60" />
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">Run History</span>
-                </div>
-                <button
-                  onClick={() => setShowHistory(false)}
-                  className="rounded-md p-0.5 text-muted-foreground/50 transition-colors hover:bg-secondary hover:text-foreground"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-
-              {/* Status dots row */}
-              <div className="flex items-center gap-1 px-3 pt-2 sm:px-4">
-                {runs.map((r) => (
-                  <div
-                    key={r.id}
-                    title={`${r.status} — ${r.timestamp}`}
-                    className={`h-2.5 w-2.5 rounded-full transition-all ${r.status === "success" ? "bg-emerald-500" : "bg-red-500"}`}
-                  />
-                ))}
-                <span className="ml-auto text-[10px] font-mono text-muted-foreground/50">{successCount}/10 ok</span>
-              </div>
-
-              {/* Run list */}
-              <div className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2 sm:px-4">
-                {runs.map((r) => (
-                  <div key={r.id} className="flex items-center gap-2 rounded px-1.5 py-1 text-[10px] text-muted-foreground transition-colors hover:bg-secondary/60 sm:text-[11px]">
-                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${r.status === "success" ? "bg-emerald-500" : "bg-red-500"}`} />
-                    <span className="flex-1 truncate">{r.timestamp}</span>
-                    <span className={`shrink-0 rounded px-1 py-0.5 text-[9px] font-medium ${r.status === "success" ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}`}>
-                      {r.status === "success" ? "OK" : "ERR"}
-                    </span>
-                    <span className="shrink-0 font-mono text-muted-foreground/40">{r.duration}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Open tool CTA */}
-              <div className="border-t border-border px-3 py-2 sm:px-4">
-                <button
-                  onClick={() => { setShowHistory(false); onToolClick(tool); }}
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/50 px-3 py-1.5 text-[10px] font-semibold text-foreground transition-all hover:bg-secondary sm:text-xs"
-                >
-                  <ExternalLink size={10} />
-                  Open Tool
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
     </div>
   );

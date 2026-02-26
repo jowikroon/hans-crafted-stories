@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow, FileJson, Sparkles, Pencil, Check, X } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
@@ -101,6 +101,20 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
   });
 
   const availableCategories = [...new Set(tools.map(t => t.category || "general"))].sort();
+
+  const toolCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: tools.filter(t => {
+      const config = (t.config || {}) as Record<string, unknown>;
+      return config.enabled !== false;
+    }).length };
+    tools.forEach(t => {
+      const config = (t.config || {}) as Record<string, unknown>;
+      if (config.enabled === false) return;
+      const cat = t.category || "general";
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return counts;
+  }, [tools]);
 
   const handleToolClick = (tool: PortalTool) => setPreviewTool(tool);
 
@@ -215,30 +229,32 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
 
   return (
     <>
-      {/* Top Bar: Filters + Edit Mode Toggle */}
-      <div className="mb-5 flex items-center gap-2">
+      {/* Filter Section */}
+      <div className="border-b border-border/50 pb-6 mb-8">
         {availableCategories.length > 1 && (
-          <div className="relative flex-1 overflow-hidden">
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ maskImage: 'linear-gradient(to right, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)' }}>
+          <div className="mb-4">
+            <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">Filter by category</p>
+            <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setActiveFilter(null)}
-                className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
+                className={`rounded-full border px-5 py-2 text-xs font-medium transition-all active:scale-[0.97] ${
                   !activeFilter ? "border-primary bg-primary/10 text-primary shadow-sm" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
                 }`}
               >
-                All
+                All <span className="ml-1 opacity-60">({toolCounts.all})</span>
               </button>
               {availableCategories.map((cat) => {
                 const cfg = categoryConfig[cat] || categoryConfig.general;
+                const count = toolCounts[cat] || 0;
                 return (
                   <button
                     key={cat}
                     onClick={() => setActiveFilter(activeFilter === cat ? null : cat)}
-                    className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
+                    className={`rounded-full border px-5 py-2 text-xs font-medium transition-all active:scale-[0.97] ${
                       activeFilter === cat ? cfg.color + " border-current shadow-sm" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
                     }`}
                   >
-                    {cfg.label}
+                    {cfg.label} <span className="ml-1 opacity-60">({count})</span>
                   </button>
                 );
               })}
@@ -246,45 +262,44 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
           </div>
         )}
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
         {/* Edit Mode Toggle */}
         {isAdmin && (
-          isEditMode ? (
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-end">
+            {isEditMode ? (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={handleSaveLayout}
+                  className="inline-flex items-center gap-1.5 rounded-lg border-2 border-primary bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-all hover:bg-primary/20"
+                >
+                  <Check size={12} />
+                  Save Layout
+                </button>
+                <button
+                  onClick={() => setIsEditMode(false)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                >
+                  <X size={12} />
+                  Cancel
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={handleSaveLayout}
-                className="inline-flex items-center gap-1.5 rounded-lg border-2 border-primary bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-all hover:bg-primary/20"
+                onClick={() => setIsEditMode(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:text-foreground"
               >
-                <Check size={12} />
-                Save Layout
+                <Pencil size={12} />
+                Edit Layout
+                <InfoTooltip text="Drag to reorder, click resize to change card size" />
               </button>
-              <button
-                onClick={() => setIsEditMode(false)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
-              >
-                <X size={12} />
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsEditMode(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:text-foreground"
-            >
-              <Pencil size={12} />
-              Edit Layout
-              <InfoTooltip text="Drag to reorder, click resize to change card size" />
-            </button>
-          )
+            )}
+          </div>
         )}
       </div>
 
       {/* Grid */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={visibleTools.map((t) => t.id)} strategy={rectSortingStrategy}>
-          <div className={`grid gap-4 sm:gap-4 ${
+          <div className={`grid gap-5 sm:gap-6 ${
             isEditMode
               ? "grid-cols-2 sm:grid-cols-3 auto-rows-[110px] sm:auto-rows-[130px] md:auto-rows-[150px]"
               : "grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 auto-rows-auto"
