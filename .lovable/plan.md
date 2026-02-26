@@ -1,35 +1,29 @@
 
 
-# Fix User Delete & Re-Create Flow
+# Vervang confirm() door AlertDialog
 
-## Problem
-When you delete a user and try to re-create them, errors occur because:
-1. **Incomplete deletion** -- only the `portal_profiles` row is deleted, leaving orphaned records in `user_roles`, `user_tool_access`, `user_content_access`, and `user_ai_access`
-2. **Auth user persists** -- the authentication account is never removed, triggering "already registered" on re-creation
-3. **Upsert conflict mismatch** -- the `user_roles` upsert uses `onConflict: "user_id"` but the actual unique constraint is `(user_id, role)`, causing SQL errors
+## Wat verandert er
 
-## Solution
+De browser `confirm()` popup bij het verwijderen van een gebruiker wordt vervangen door een styled AlertDialog component (al beschikbaar in het project via `@radix-ui/react-alert-dialog`).
 
-### 1. Add `delete_user` action to the backend function
+## Aanpak
 
-Add a new `delete_user` case in `portal-api/index.ts` that properly cleans up everything in the correct order:
-- Delete from `user_tool_access` (by user_id)
-- Delete from `user_content_access` (by user_id)
-- Delete from `user_ai_access` (by user_id)
-- Delete from `user_roles` (by user_id)
-- Delete from `portal_profiles` (by user_id)
-- Delete the auth user via `supabase.auth.admin.deleteUser(userId)`
+### Bestand: `src/components/portal/PortalUsersManager.tsx`
 
-### 2. Fix the `create_user` upsert conflict
+1. **Import toevoegen**: Importeer `AlertDialog`, `AlertDialogAction`, `AlertDialogCancel`, `AlertDialogContent`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogHeader`, `AlertDialogTitle` uit `@/components/ui/alert-dialog`
 
-Change the `user_roles` upsert from `onConflict: "user_id"` to `onConflict: "user_id,role"` to match the actual database unique constraint.
+2. **State toevoegen**: Een `userToDelete` state (`PortalProfile | null`) die bijhoudt welke gebruiker geselecteerd is voor verwijdering
 
-### 3. Update the frontend delete handler
+3. **Delete handler opsplitsen**:
+   - De delete-knop zet `userToDelete` in plaats van direct `handleDeleteUser` aan te roepen
+   - `handleDeleteUser` wordt aangepast zodat het de `confirm()` call verwijdert en direct de delete-logica uitvoert
+   - De "Confirm" knop in de AlertDialog roept `handleDeleteUser(userToDelete)` aan en reset de state
 
-Update `PortalUsersManager.tsx` to call the new `delete_user` edge function action (passing `user_id`) instead of the client-side `usersApi.deleteProfile()` which only deletes the profile row.
+4. **AlertDialog toevoegen** aan de JSX (buiten de gebruikerslijst):
+   - Titel: "Gebruiker verwijderen"
+   - Beschrijving: "Weet je zeker dat je [naam] wilt verwijderen? Dit verwijdert permanent het account, profiel en alle toegangsrechten."
+   - Cancel knop: "Annuleren"
+   - Action knop (destructive styling): "Verwijderen"
 
-## Files to Change
-
-- **`supabase/functions/portal-api/index.ts`** -- add `delete_user` action, fix `user_roles` upsert conflict key
-- **`src/components/portal/PortalUsersManager.tsx`** -- update `handleDeleteUser` to call edge function
-
+### Geen andere bestanden nodig
+De AlertDialog component bestaat al in `src/components/ui/alert-dialog.tsx` en hoeft niet aangepast te worden.
