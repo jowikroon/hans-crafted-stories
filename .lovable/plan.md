@@ -1,90 +1,102 @@
 
 
-# Context Filter Pills + TVA-Style Pipeline for AI Panels
+# Smart Command List (Layer 3) for Hans AI + Empire Commander
 
 ## Overview
 
-Add a 2-layer context filter pill menu to both Empire Commander and Hans AI overlays, plus restyle the tech pipeline with a vintage 1980s TVA (Loki) aesthetic using an orange/amber color palette with CRT-style typography.
+Add a "Layer 3" command suggestions dropdown that appears when a subcategory (Layer 2) is selected. It shows 10 contextual commands: 5 verified/working + 5 AI-suggested. The list overlays the chat area with a smooth slide-down animation. Clicking outside or pressing ESC dismisses the list and deselects the subcategory. Usage is persisted in localStorage so frequently used commands float to the top over time.
+
+## How it works (user flow)
+
+1. User clicks a Layer 1 category (e.g., "Infrastructure") -- Layer 2 subcategories appear (existing behavior)
+2. User clicks a Layer 2 subcategory (e.g., "VPS Primary") -- **NEW: Layer 3 command list slides down** over the chat area
+3. The list shows 10 commands: 5 marked as "verified" (green checkmark), 5 marked as "suggested" (sparkle icon)
+4. Clicking a command sends it as a message and closes the list
+5. Pressing ESC or clicking outside the list closes it AND deselects the subcategory (Layer 2 resets)
+6. Over time, used commands get a usage counter stored in localStorage and sort higher
 
 ## What Changes
 
-### 1. Context Filter Pills (both overlays)
+### 1. New data file: `src/components/ai/commandSuggestions.ts`
 
-A subtle 2-layer pill menu between the header and messages area:
+Defines 10 commands per subcategory for both Empire and Hans AI contexts. Each command has:
+- `text`: The command string
+- `verified`: boolean (true = tested/working, false = suggestion)
+- `usageCount`: starts at 0 (managed at runtime via localStorage)
 
-**Layer 1 -- Category (primary row)**
-Horizontal scrollable pills that select a broad domain. Clicking a category reveals Layer 2.
-
-*Empire Commander:*
-- Infrastructure | Workflows | Security | Monitoring | Database | Docker
-
-*Hans AI:*
-- SEO | Content | Feeds | Campaigns | Analytics | Code
-
-**Layer 2 -- Sub-context (secondary row, appears on selection)**
-Smaller, more specific pills that refine the context. These prepend a system context hint to the AI prompt.
-
-*Example for Empire > Infrastructure:*
-- VPS Primary | VPS Industrial | Cloudflare | DNS | SSL
-
-*Example for Hans AI > SEO:*
-- Technical SEO | On-Page | Keywords | Meta Tags | Schema
-
-**Behavior:**
-- Selected context pill prepends a short system hint to the prompt (e.g., "Focus on: VPS Primary server infrastructure")
-- Clicking "All" or deselecting resets to the default system prompt
-- Pills are styled subtly with low-opacity borders, highlighting on selection
-- Layer 2 animates in/out with Framer Motion (height + opacity)
-
-### 2. TVA-Style Pipeline Progress (vintage 80s orange)
-
-Restyle the existing `pipelineSteps` UI in `InlineChatPanel.tsx` with a retro TVA aesthetic:
-
-**Visual treatment:**
-- Orange/amber color palette (`#F97316` to `#D97706` range)
-- Monospace font (`font-mono`) for all pipeline labels
-- Uppercase tracking-wide text
-- CRT scanline overlay effect via CSS pseudo-element
-- Rounded-rectangle "badge" steps connected by dotted lines instead of arrows
-- Pulsing glow on the active step
-- Step labels use retro terminology: "TRANSMIT" > "ANALYZE" > "SYNTHESIZE" > "COMPLETE"
-
-**Color scheme:**
-- Background: `bg-orange-950/30` with `border-orange-500/20`
-- Active step: `bg-orange-500/20 text-orange-400` with `shadow-orange-500/20`
-- Done step: `bg-orange-500/10 text-orange-300`
-- Inactive: `text-orange-800/40`
-- Connector dots: `border-orange-500/15`
-
-### 3. Files to Modify
-
-| File | Changes |
-|---|---|
-| `src/components/overlays/HansAIOverlay.tsx` | Add 2-layer context pills between header and messages |
-| `src/components/overlays/EmpireOverlay.tsx` | Add 2-layer context pills between header and messages |
-| `src/components/empire/EmpireClaudePanel.tsx` | Add 2-layer context pills between header and messages |
-| `src/components/portal/InlineChatPanel.tsx` | Restyle pipeline to TVA vintage, add context pills |
-
-### 4. Technical Details
-
-**Context data structure:**
+Example structure:
 ```text
-interface ContextCategory {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  subcategories: { id: string; label: string; systemHint: string }[];
+empireCommands = {
+  "vps-primary": [
+    { text: "Check VPS disk usage and memory", verified: true },
+    { text: "Restart Nginx on primary server", verified: true },
+    { text: "Show active Docker containers", verified: true },
+    { text: "Check SSL certificate expiry dates", verified: true },
+    { text: "Tail the last 100 lines of error log", verified: true },
+    { text: "Set up a cron job for daily backups", verified: false },
+    { text: "Optimize Nginx worker connections", verified: false },
+    { text: "Configure fail2ban for SSH protection", verified: false },
+    { text: "Set up log rotation for app logs", verified: false },
+    { text: "Create a health check endpoint", verified: false },
+  ],
+  // ... for all subcategories
 }
 ```
 
-**System prompt injection:**
-When a sub-context is selected, the system prompt gets a prefix:
-`"[CONTEXT: Focus on ${category} > ${subcategory}. ${systemHint}]\n\n" + originalSystemPrompt`
+Similar structure for `hansAICommands` covering SEO, Content, Feeds, etc.
 
-**TVA pipeline CSS (applied via Tailwind + inline styles):**
-- Scanline effect: repeating-linear-gradient overlay at 2px intervals
-- Step connectors: 3 small dots (`...`) in monospace instead of arrow icons
-- Active step gets `animate-pulse` with orange box-shadow glow
+### 2. New component: `src/components/ai/CommandSuggestionList.tsx`
 
-**No new dependencies needed** -- uses existing Framer Motion, Lucide icons, and Tailwind classes.
+A floating dropdown rendered absolutely positioned below the filter pills, overlaying the chat area.
+
+- **Visual style**: Dark panel matching the overlay theme, with a subtle border
+- **Layout**: Vertical list, each item shows an icon (CheckCircle2 for verified, Sparkles for suggested), the command text, and a faint usage counter badge if used before
+- **Animation**: Framer Motion `height: 0 -> auto` + `opacity` transition (same pattern as Layer 2)
+- **Dismiss behavior**: 
+  - Click outside (via a transparent backdrop div) -- closes list + deselects subcategory
+  - ESC key -- closes list + deselects subcategory
+  - Click a command -- sends it, closes list, keeps the subcategory selected
+- **Sorting**: Commands sorted by usage count (descending), then verified first
+
+### 3. Modify `src/components/ai/ContextFilterPills.tsx`
+
+- Add an `onSubSelected` callback prop that fires when a subcategory is clicked (so parent can show/hide the command list)
+- Add an `activeCommandList` boolean prop to control the visual state
+- The component itself doesn't render the command list -- it just signals the parent
+
+### 4. Modify overlay components (3 files)
+
+Update `HansAIOverlay.tsx`, `EmpireOverlay.tsx`, and `EmpireClaudePanel.tsx`:
+
+- Add state: `showCommands: boolean`
+- When `selectedSub` changes to non-null, set `showCommands = true`
+- Render `CommandSuggestionList` between the filter pills and messages area, positioned to overlay the chat
+- On command click: call `sendMessage(text)`, set `showCommands = false`
+- On dismiss (ESC/click-outside): set `showCommands = false` + `setSelectedSub(null)`
+- Add an ESC keydown listener on the command list that only dismisses commands (not the whole overlay)
+
+### 5. localStorage persistence
+
+Key format: `cmd_usage_{empire|hansai}` storing a record of `{ [commandText]: number }`.
+
+On each command click, increment the counter. On render, merge stored counts into the command list and sort accordingly.
+
+## Technical Details
+
+### Files to create
+| File | Purpose |
+|---|---|
+| `src/components/ai/commandSuggestions.ts` | Command data for all subcategories |
+| `src/components/ai/CommandSuggestionList.tsx` | Floating command list component |
+
+### Files to modify
+| File | Change |
+|---|---|
+| `src/components/ai/ContextFilterPills.tsx` | Minor: pass through sub-selection signal |
+| `src/components/overlays/HansAIOverlay.tsx` | Add command list state + rendering |
+| `src/components/overlays/EmpireOverlay.tsx` | Add command list state + rendering |
+| `src/components/empire/EmpireClaudePanel.tsx` | Add command list state + rendering |
+
+### No database changes needed
+All persistence via localStorage. No new dependencies required.
 
