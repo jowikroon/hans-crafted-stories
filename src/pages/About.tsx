@@ -3,7 +3,7 @@ import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRigh
 import { Link } from "react-router-dom";
 import hansProfile from "@/assets/hans-profile.jpg";
 import { Badge } from "@/components/ui/badge";
-import { useLang } from "@/components/Navbar";
+import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageElements } from "@/hooks/usePageElements";
 import { useSEO } from "@/hooks/useSEO";

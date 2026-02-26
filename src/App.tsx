@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { LangProvider } from "@/hooks/useLang";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
@@ -18,13 +19,15 @@ const AppShell = () => {
 
   return (
     <AuthProvider>
-      <Navbar variant={isDarkPage ? "dark" : "default"} />
-      <main className="min-h-screen">
-        <AnimatedRoutes />
-      </main>
-      {!isDarkPage && <Footer />}
-      {!isDarkPage && <EmpireTerminalCard />}
-      <CookieConsent />
+      <LangProvider>
+        <Navbar variant={isDarkPage ? "dark" : "default"} />
+        <main className="min-h-screen">
+          <AnimatedRoutes />
+        </main>
+        {!isDarkPage && <Footer />}
+        {!isDarkPage && <EmpireTerminalCard />}
+        <CookieConsent />
+      </LangProvider>
     </AuthProvider>
   );
 };

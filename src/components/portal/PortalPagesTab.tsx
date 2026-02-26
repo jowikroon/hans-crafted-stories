@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, LayoutDashboard, ChevronRight, Globe } from "lucide-react";
 import { useAllPageElements } from "@/hooks/usePageElements";
 import { Badge } from "@/components/ui/badge";
-import { useLang } from "@/components/Navbar";
+import { useLang } from "@/hooks/useLang";
 import PremiumToggle from "./PremiumToggle";
 
 const pageLabels: Record<string, string> = {

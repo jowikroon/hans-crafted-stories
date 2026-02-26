@@ -1,6 +1,6 @@
 import Hero from "@/components/Hero";
 import { useSEO } from "@/hooks/useSEO";
-import { useLang } from "@/components/Navbar";
+import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 
 const Index = () => {
