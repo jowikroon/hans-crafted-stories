@@ -152,12 +152,14 @@ const HansAI = () => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [lines, loading]);
 
-  // Focus input on mount
+  // Focus input on mount + SEO noindex
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 300);
     document.title = "HansAI — Command Center";
-    const meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement;
-    if (meta) meta.content = "noindex, nofollow";
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!robots) { robots = document.createElement("meta"); robots.name = "robots"; document.head.appendChild(robots); }
+    robots.content = "noindex, nofollow";
+    return () => { if (robots) robots.content = "index, follow"; };
   }, []);
 
   // Spinner animation

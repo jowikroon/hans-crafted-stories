@@ -67,6 +67,14 @@ const Portal = () => {
   }, [isDark]);
 
   useEffect(() => {
+    document.title = "Portal — Hans van Leeuwen";
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!robots) { robots = document.createElement("meta"); robots.name = "robots"; document.head.appendChild(robots); }
+    robots.content = "noindex, nofollow";
+    return () => { if (robots) robots.content = "index, follow"; };
+  }, []);
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
       if (e.key === "e") { e.preventDefault(); setEmpireOpen((v) => !v); }

@@ -125,6 +125,9 @@ type TranslationStrings = {
     workDescription: string;
     privacyTitle: string;
     privacyDescription: string;
+    aboutTitle: string;
+    aboutDescription: string;
+    notFoundTitle: string;
   };
 };
 
@@ -395,6 +398,9 @@ export const translations: Record<Lang, TranslationStrings> = {
       workDescription: "Explore Hans van Leeuwen's portfolio: e-commerce UX case studies, 3D creative work, VR game design, and branding projects with measurable results.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
       privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
+      aboutTitle: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
+      aboutDescription: "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and digital commerce. Based in Amersfoort, NL.",
+      notFoundTitle: "Page Not Found | Hans van Leeuwen",
     },
   },
 
@@ -664,6 +670,9 @@ export const translations: Record<Lang, TranslationStrings> = {
       workDescription: "Bekijk het portfolio van Hans van Leeuwen: e-commerce UX-cases, 3D-creatief werk, VR-gamedesign en brandingprojecten met meetbare resultaten.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
       privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
+      aboutTitle: "Over Hans van Leeuwen – E-commerce Manager | 10+ Jaar Ervaring",
+      aboutDescription: "Leer meer over Hans van Leeuwen: 10+ jaar ervaring in e-commercemanagement, marktplaatsstrategie (Amazon, Bol.com), UX-design en digitale commerce. Gevestigd in Amersfoort, NL.",
+      notFoundTitle: "Pagina Niet Gevonden | Hans van Leeuwen",
     },
   },
 };
