@@ -19,10 +19,12 @@ const BlogPostCard = ({ post, index }: { post: BlogPost; index: number }) => {
 
   return (
     <motion.article
+      layout
+      layoutId={post.id}
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
-      transition={{ duration: 0.4, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.35, delay: index * 0.04, ease: [0.22, 1, 0.36, 1], layout: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
     >
       <Link
         to={`/writing/${post.slug}`}
