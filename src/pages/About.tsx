@@ -7,6 +7,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageElements } from "@/hooks/usePageElements";
 import { useSEO } from "@/hooks/useSEO";
+import { usePageContent } from "@/hooks/usePageContent";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -22,6 +23,7 @@ const About = () => {
   const { lang } = useLang();
   const t = translations[lang];
   const { isVisible } = usePageElements("about");
+  const { getValue } = usePageContent("about");
 
   const seo = t.seo;
 
@@ -123,9 +125,9 @@ const About = () => {
               </h1>
 
               {isVisible("bio_section") && (
-                <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
-                  <p>{t.bio[0]}</p>
-                  <p>{t.bio[1]}</p>
+              <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
+                  <p>{getValue("about_bio_1", t.bio[0])}</p>
+                  <p>{getValue("about_bio_2", t.bio[1])}</p>
                 </div>
               )}
 

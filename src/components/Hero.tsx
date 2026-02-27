@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShoppingCart, BarChart3, Search, Zap } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
+import { usePageContent } from "@/hooks/usePageContent";
 
 const icons = [
   <ShoppingCart size={20} />,
@@ -14,7 +15,14 @@ const icons = [
 const Hero = () => {
   const { lang } = useLang();
   const t = translations[lang].hero;
+  const { getValue } = usePageContent("home");
 
+  const expertise = [
+    { title: getValue("expertise_1_title", t.expertise[0].title), description: getValue("expertise_1_desc", t.expertise[0].description) },
+    { title: getValue("expertise_2_title", t.expertise[1].title), description: getValue("expertise_2_desc", t.expertise[1].description) },
+    { title: getValue("expertise_3_title", t.expertise[2].title), description: getValue("expertise_3_desc", t.expertise[2].description) },
+    { title: getValue("expertise_4_title", t.expertise[3].title), description: getValue("expertise_4_desc", t.expertise[3].description) },
+  ];
   return (
     <main>
       {/* Hero Section */}
@@ -29,22 +37,22 @@ const Hero = () => {
           className="max-w-3xl"
         >
           <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            {t.subtitle}
+            {getValue("hero_subtitle", t.subtitle)}
           </p>
           <h1 className="mb-6 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            {t.heading}{" "}
-            <em className="text-primary">{t.headingEmphasis}</em> &amp; design.
+            {getValue("hero_heading", t.heading)}{" "}
+            <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em> &amp; design.
           </h1>
           <p className="mb-10 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            {t.description}
+            {getValue("hero_description", t.description)}
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
               to="/work"
               className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
-              aria-label={t.ctaWork}
+              aria-label={getValue("hero_cta_work", t.ctaWork)}
             >
-              {t.ctaWork}
+              {getValue("hero_cta_work", t.ctaWork)}
               <ArrowRight
                 size={16}
                 className="transition-transform duration-300 group-hover:translate-x-0.5"
@@ -53,9 +61,9 @@ const Hero = () => {
             <Link
               to="/about"
               className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-sm font-bold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
-              aria-label={t.ctaAbout}
+              aria-label={getValue("hero_cta_about", t.ctaAbout)}
             >
-              {t.ctaAbout}
+              {getValue("hero_cta_about", t.ctaAbout)}
             </Link>
           </div>
         </motion.div>
@@ -64,7 +72,7 @@ const Hero = () => {
       {/* Expertise Section */}
       <section
         className="section-container pb-20"
-        aria-label={t.expertiseLabel}
+        aria-label={getValue("expertise_label", t.expertiseLabel)}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -73,15 +81,15 @@ const Hero = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            {t.expertiseLabel}
+            {getValue("expertise_label", t.expertiseLabel)}
           </h2>
           <p className="mb-8 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-            {t.expertiseHeading}
+            {getValue("expertise_heading", t.expertiseHeading)}
           </p>
         </motion.div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {t.expertise.map((item, i) => (
+          {expertise.map((item, i) => (
             <motion.article
               key={i}
               initial={{ opacity: 0, y: 20 }}

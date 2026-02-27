@@ -40,7 +40,7 @@ type Tab = "tools" | "content" | "pages" | "status" | "users";
 
 const subMenuItems: Record<Tab, string[]> = {
   tools: ["All", "SEO", "Automation", "Data", "AI", "General"],
-  content: ["All", "Blog Posts", "Case Studies"],
+  content: ["All", "Blog Posts", "Case Studies", "Main Menu"],
   pages: ["All", "Published", "Hidden"],
   users: ["All", "Admins", "Members"],
   status: ["All", "Healthy", "Issues"],

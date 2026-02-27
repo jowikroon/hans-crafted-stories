@@ -10,6 +10,7 @@ import { useCategoryCards } from "@/hooks/useCategoryCards";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
+import { usePageContent } from "@/hooks/usePageContent";
 
 // Map detailed categories to filter groups
 const categoryGroupMap: Record<string, string> = {
@@ -33,6 +34,7 @@ const Work = () => {
   const { lang } = useLang();
   const tw = translations[lang].work;
   const seo = translations[lang].seo;
+  const { getValue } = usePageContent("work");
 
   useSEO({
     title: seo.workTitle,
@@ -159,13 +161,13 @@ const Work = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            {tw.label}
+            {getValue("work_label", tw.label)}
           </p>
           <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
-            {tw.heading}
+            {getValue("work_heading", tw.heading)}
           </h1>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
-            {tw.description}
+            {getValue("work_description", tw.description)}
           </p>
         </motion.div>
       )}
