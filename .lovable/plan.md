@@ -1,57 +1,70 @@
 
 
-## Redesign Blog Post Page + Smooth Filtering
+## Add Professional Contact Form to the About Page
 
 ### Overview
-Redesign the individual blog post page (`BlogPostPage.tsx`) to match the reference design -- featuring a full-width hero image, category badge with date/read time, large serif title, excerpt subtitle, author section with social share icons, and clean article body. Also fix the Writing page filtering so cards animate smoothly when filters change instead of abruptly popping in/out.
+Add a clean, minimalist contact form at the bottom of the About page (before the education section ends) that stores submissions in a new database table. The form includes Name, Email, Reason for Contact (dropdown with contextually relevant options), and a Message text field.
 
 ---
 
-### 1. Redesign `BlogPostPage.tsx`
+### 1. Create `contact_submissions` Database Table
 
-Rebuild the layout to match the reference:
+A new table to store form submissions:
 
-- **Hero image**: Full-width cover image at top (from `post.image_url`) with dark gradient overlay, or a subtle gradient fallback if no image
-- **Meta row**: Category badge (colored pill) + date + read time, positioned over/below the hero
-- **Title**: Large display font (`font-display text-4xl md:text-5xl lg:text-6xl`), white text over the hero image
-- **Excerpt/subtitle**: Lighter muted text beneath the title
-- **Author bar**: Hans van Leeuwen's profile image (from `src/assets/hans-profile.jpg`) with name and a short tagline, plus social share icons (copy link, Twitter/X, Facebook, LinkedIn) on the right side
-- **Article body**: Centered `max-w-3xl` prose content, same markdown renderer as current
-- **Breadcrumb**: Keep existing breadcrumb but move above the hero
+- `id` (uuid, primary key)
+- `name` (text, not null)
+- `email` (text, not null)
+- `reason` (text, not null)
+- `message` (text, not null)
+- `created_at` (timestamptz, default now())
 
-### 2. Social Share Icons
+RLS: Enable RLS with an INSERT policy for anonymous users (public-facing form) and a SELECT policy for authenticated admins only.
 
-Add share functionality with four icon buttons:
-- **Copy link**: Copies current URL to clipboard with toast feedback
-- **Twitter/X**: Opens share intent URL in new tab
-- **Facebook**: Opens Facebook sharer URL
-- **LinkedIn**: Opens LinkedIn share URL
+### 2. Contact Reason Options
 
-Use Lucide icons (`Link2`, `Twitter`, `Facebook`, `Linkedin`).
+Contextually relevant to the site (e-commerce portfolio + blog):
 
-### 3. Smooth Filtering on Writing Page
+- **Freelance / Project Inquiry** -- Interested in working together on a project
+- **Job Opportunity** -- Full-time or contract role discussion
+- **Speaking / Collaboration** -- Event, podcast, or content collaboration
+- **General Question** -- Anything else
 
-Current issue: `AnimatePresence mode="popLayout"` causes abrupt transitions when filtering. Fix by:
+### 3. Create `ContactForm` Component
 
-- Change to `mode="popLayout"` with `layout` prop on `BlogPostCard` motion elements
-- Add `layout` and `layoutId` props to the card's `motion.article` so cards smoothly reposition when filtered
-- Use `layoutId={post.id}` on each card so Framer Motion can track and animate position changes
-- This ensures cards slide into their new positions when a filter is applied rather than just fading
+New file: `src/components/ContactForm.tsx`
 
-### 4. Smooth Page Transition (Writing to Blog Post)
+A self-contained component with:
 
-The existing `PageTransition` + `AnimatePresence mode="wait"` in `AnimatedRoutes` already handles cross-page transitions. No changes needed there -- the fade-up/fade-out is already smooth. The blog post page redesign will inherit the same transition wrapper.
+- **Inputs**: Name (text), Email (email), Reason (Select dropdown using Radix Select), Message (Textarea)
+- **Validation**: Client-side with zod schema (name required max 100 chars, valid email, reason required, message required max 2000 chars)
+- **Submission**: Inserts directly into `contact_submissions` table via the client SDK
+- **Feedback**: Success toast via sonner, form reset on success, error handling with toast
+- **Styling**: Matches the site's minimalist aesthetic -- clean borders, subtle focus rings, consistent with existing card/section styling. Uses existing UI primitives (Input, Textarea, Select, Button, Label)
+- **Animation**: Framer Motion fade-in on scroll, consistent with the rest of the About page
+
+### 4. Integrate into About Page
+
+Add the contact form as a new section at the bottom of `src/pages/About.tsx`:
+
+- Wrapped in `isVisible("contact_form")` for portal toggle support
+- Section header with icon (Mail) matching the Experience/Education section headers
+- Positioned after the Education section
+
+### 5. Bilingual Support
+
+Add contact form labels to the translations file for both EN and NL.
 
 ---
 
 ### Technical Details
 
-**Files to modify:**
-- `src/pages/BlogPostPage.tsx` -- full redesign with hero image, author bar, share icons
-- `src/components/BlogPostCard.tsx` -- add `layout` and `layoutId` for smooth filtering
-- `src/pages/Writing.tsx` -- minor adjustment to `AnimatePresence` mode if needed
+**New files:**
+- `src/components/ContactForm.tsx`
 
-**No database changes needed.** All fields (`image_url`, `category`, `excerpt`, `read_time`, `tags`) already exist.
+**Modified files:**
+- `src/pages/About.tsx` -- import and render ContactForm section
+- `src/data/translations.ts` -- add contact form translation strings
 
-**Author info:** Hardcoded to "Hans van Leeuwen" with the existing `hans-profile.jpg` asset and a tagline like "E-commerce Manager & Marketplace Specialist".
+**Database migration:**
+- Create `contact_submissions` table with RLS policies
 
