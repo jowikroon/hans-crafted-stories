@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Activity, Database, Server, Zap, Globe, Shield, RefreshCw, Plug, Unplug, MessageSquareWarning, Check, X, CalendarCheck2, ExternalLink, ListTodo, History, Copy, Bot } from "lucide-react";
+import { Activity, Database, Server, Zap, Globe, Shield, RefreshCw, Plug, Unplug, MessageSquareWarning, Check, X, CalendarCheck2, ExternalLink, ListTodo, History, Copy, Bot, Code } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import InfoTooltip from "./InfoTooltip";
 import { WORKFLOWS } from "@/lib/config/workflows";
+import TrackingScriptsManager from "./TrackingScriptsManager";
 
 /** Monday.com board URL — open in dashboard. Set via VITE_MONDAY_BOARD_URL or use default. */
 const MONDAY_BOARD_URL = import.meta.env.VITE_MONDAY_BOARD_URL || "https://hansvl3s-team-company.monday.com/boards/5092430975";
@@ -708,6 +709,8 @@ const PortalStatusTab = ({ subFilter }: { subFilter?: string }) => {
             </div>
           )}
         </div>
+        {/* Tracking Scripts Section */}
+        <TrackingScriptsManager />
       </div>
     </TooltipProvider>
   );

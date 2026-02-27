@@ -415,6 +415,54 @@ export type Database = {
           },
         ]
       }
+      tracking_scripts: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          is_verified: boolean
+          last_verified_at: string | null
+          name: string
+          position: string
+          script_type: string
+          sort_order: number
+          updated_at: string
+          verification_method: string
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          last_verified_at?: string | null
+          name: string
+          position?: string
+          script_type?: string
+          sort_order?: number
+          updated_at?: string
+          verification_method?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          last_verified_at?: string | null
+          name?: string
+          position?: string
+          script_type?: string
+          sort_order?: number
+          updated_at?: string
+          verification_method?: string
+        }
+        Relationships: []
+      }
       unhandled_intents: {
         Row: {
           created_at: string
