@@ -107,7 +107,7 @@ async function logUnhandledIntent(
   llmConfidence?: number,
 ) {
   try {
-    await supabase.from("unhandled_intents").insert({
+    await (supabase.from("unhandled_intents" as any) as any).insert({
       user_input: userInput,
       source: "hansai",
       fast_route_score: fastRouteScore,
