@@ -168,6 +168,7 @@ export type Database = {
           id: string
           message: string
           metadata: Json | null
+          monday_item_id: string | null
           source: string
         }
         Insert: {
@@ -176,6 +177,7 @@ export type Database = {
           id?: string
           message: string
           metadata?: Json | null
+          monday_item_id?: string | null
           source?: string
         }
         Update: {
@@ -184,6 +186,7 @@ export type Database = {
           id?: string
           message?: string
           metadata?: Json | null
+          monday_item_id?: string | null
           source?: string
         }
         Relationships: []
@@ -336,6 +339,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      unhandled_intents: {
+        Row: {
+          created_at: string
+          fast_route_score: number | null
+          id: string
+          llm_confidence: number | null
+          llm_intent: string | null
+          resolved: boolean
+          resolved_workflow: string | null
+          source: string
+          user_input: string
+        }
+        Insert: {
+          created_at?: string
+          fast_route_score?: number | null
+          id?: string
+          llm_confidence?: number | null
+          llm_intent?: string | null
+          resolved?: boolean
+          resolved_workflow?: string | null
+          source?: string
+          user_input: string
+        }
+        Update: {
+          created_at?: string
+          fast_route_score?: number | null
+          id?: string
+          llm_confidence?: number | null
+          llm_intent?: string | null
+          resolved?: boolean
+          resolved_workflow?: string | null
+          source?: string
+          user_input?: string
+        }
+        Relationships: []
       }
       user_ai_access: {
         Row: {
