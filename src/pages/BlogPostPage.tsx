@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { getBlogPosts } from "@/lib/api/content";
+import BlogPostCard from "@/components/BlogPostCard";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, ChevronRight, Link2, Facebook, Linkedin, Twitter } from "lucide-react";
@@ -271,7 +273,56 @@ const BlogPostPage = () => {
           )}
         </div>
       </motion.div>
+
+      {/* Related Articles */}
+      <RelatedArticles category={post.category} currentSlug={post.slug} />
     </article>
+  );
+};
+
+const RelatedArticles = ({ category, currentSlug }: { category: string; currentSlug: string }) => {
+  const [related, setRelated] = useState<
+    { id: string; title: string; excerpt: string; category: "professional" | "personal"; tags: string[]; date: string; readTime: string; slug: string; imageUrl?: string }[]
+  >([]);
+
+  useEffect(() => {
+    getBlogPosts(true).then((posts) => {
+      const filtered = posts
+        .filter((p) => p.category === category && p.slug !== currentSlug)
+        .slice(0, 3)
+        .map((p) => ({
+          id: p.id,
+          title: p.title,
+          excerpt: p.excerpt,
+          category: p.category as "professional" | "personal",
+          tags: p.tags,
+          date: p.created_at,
+          readTime: p.read_time,
+          slug: p.slug,
+          imageUrl: p.image_url || undefined,
+        }));
+      setRelated(filtered);
+    });
+  }, [category, currentSlug]);
+
+  if (related.length === 0) return null;
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="border-t border-border"
+    >
+      <div className="section-container py-16">
+        <h2 className="mb-8 font-display text-2xl font-medium text-foreground">Related Articles</h2>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {related.map((post, i) => (
+            <BlogPostCard key={post.id} post={post} index={i} />
+          ))}
+        </div>
+      </div>
+    </motion.section>
   );
 };
 
