@@ -1,91 +1,103 @@
 
-
-# Add "Main Menu" Content Editor to Portal
+# Improve Main Menu Content Editor -- Professional UX Redesign
 
 ## Overview
-Add a 4th sub-menu option **"Main Menu"** under the Content tab that lets you edit on-page content elements for each site page (Home, Work, Writing, About) -- similar to how Blog Posts works, but each "item" is a page with its own editable content fields.
 
-## What You'll Get
+Redesign the Main Menu content editor from a basic modal with flat form fields into a professional, structured editing experience with logical hierarchy, collapsible content groups, change tracking, undo capability, character counts, and an AI-ready architecture.
 
-Under **Content > Main Menu**, you'll see 4 page cards: **Home**, **Work**, **Writing**, and **About**. Clicking a page opens an editing modal where you can change the on-screen text content for that page.
+## Current Issues
 
-### Content fields per page:
+- Flat list of inputs with no visual hierarchy between groups
+- No change tracking per field (only a global "has changes" flag)
+- No character count or field type hints
+- No undo/reset capability
+- No visual distinction between short text, headings, and long descriptions
+- Page cards in the list view are plain -- no visual preview of content status
 
-**Home**
-- Subtitle (e.g. "E-commerce Manager")
-- Heading
-- Heading Emphasis (italic word)
-- Description
-- CTA Work button text
-- CTA About button text
-- Expertise section label + heading
-- 4 expertise card titles + descriptions
+## What Changes
 
-**Work**
-- Label (uppercase tag)
-- Heading
-- Description
+### 1. Redesigned Page Cards in PortalContentTab
 
-**Writing**
-- Label
-- Heading
-- Subtitle
-- Search placeholder text
+Replace the plain page buttons with richer cards showing:
+- Page icon (Home, Briefcase, PenLine, User) per page
+- Content group summary (e.g. "Hero, Expertise -- 14 fields")
+- Last updated timestamp from the most recent content row
+- Route path shown as a subtle badge (e.g. `/work`)
 
-**About**
-- Bio paragraph 1
-- Bio paragraph 2
+### 2. Redesigned PageContentEditorModal
 
-## Technical Plan
+Transform the modal into a professional content editing experience:
 
-### 1. New database table: `page_content`
-Create a table to store editable text content per page:
-- `id` (uuid, primary key)
-- `page` (text, e.g. "home", "work", "writing", "about")
-- `content_key` (text, e.g. "hero_subtitle", "hero_heading")
-- `content_value` (text, the actual content)
-- `content_group` (text, for grouping in the editor, e.g. "Hero", "Expertise")
-- `content_label` (text, human-readable label)
-- `sort_order` (integer)
-- `created_at`, `updated_at` (timestamps)
+**Header area:**
+- Page name with icon
+- Unsaved changes indicator badge
+- Reset All button to revert all changes
 
-RLS: Public read for everyone, admin-only write (matching existing pattern).
+**Content groups as collapsible accordion sections:**
+- Each `content_group` (Hero, Expertise, Bio, etc.) rendered as an Accordion item
+- Group header shows field count and changed-field count badge
+- All groups expanded by default, collapsible for focus
 
-### 2. Seed initial data
-Insert rows for all editable content from the current translations (English defaults) for Home, Work, Writing, and About pages.
+**Smart field rendering based on content type:**
+- Short text (under 60 chars): single-line Input
+- Medium text (60-150 chars): Input with character counter
+- Long text (150+ chars): Textarea with character counter and row auto-sizing
+- Field labels with the `content_key` shown as a subtle monospace sub-label (useful for developers/AI integration)
 
-### 3. New hook: `usePageContent`
-- `src/hooks/usePageContent.ts`
-- Fetches `page_content` rows for a given page
-- Returns a `getValue(key, fallback)` helper
-- Used by front-end pages to pull dynamic content instead of hardcoded translations
+**Per-field change indicator:**
+- A small dot or highlight on fields that have been modified
+- Individual field reset button (undo icon) to revert a single field
 
-### 4. New API functions: `src/lib/api/pageContent.ts`
-- `getPageContent(page)` -- fetch all content for a page
-- `updatePageContent(id, value)` -- update a single content value
-- CRUD functions similar to the blog posts pattern
+**Footer actions:**
+- Discard Changes button (resets all)
+- Save and Preview button (existing)
+- Save Changes button (existing, with change count badge)
 
-### 5. New component: `PageContentEditorModal`
-- `src/components/portal/PageContentEditorModal.tsx`
-- Modal that shows all editable fields for a selected page
-- Fields grouped by `content_group` (Hero, Expertise, etc.)
-- Each field is a labeled input or textarea
-- Save button updates all changed fields
-- Matches the clean UX of `BlogPostFormModal`
+### 3. AI-Ready Architecture (Future-proof)
 
-### 6. Update `PortalContentTab.tsx`
-- Add "Main Menu" section (shown when subFilter is "All" or "Main Menu")
-- Display 4 page cards (Home, Work, Writing, About) in the same list style as blog posts
-- Clicking a card opens `PageContentEditorModal` for that page
+Add a subtle, non-functional "AI Assist" button placeholder per field group:
+- Sparkles icon with "AI" label, styled as a ghost button
+- On click, shows a toast: "AI content generation coming soon"
+- This creates the UI hook for future AI integration without any backend work now
 
-### 7. Update Portal sub-menu
-- In `src/pages/Portal.tsx`, add "Main Menu" to the `content` sub-menu array:
-  ```
-  content: ["All", "Blog Posts", "Case Studies", "Main Menu"]
-  ```
+The `content_key` sub-labels on each field serve as the machine-readable identifiers that an AI system would use to target specific fields.
 
-### 8. Wire front-end pages to use dynamic content
-- Update `Hero.tsx`, `Work.tsx`, `Writing.tsx`, `About.tsx` to use `usePageContent` hook
-- Fall back to existing translation strings when no database value exists
-- This makes the content editable from the portal while keeping translations as defaults
+### 4. Database: Add `content_type` column
 
+Add a `content_type` text column to `page_content` to classify fields:
+- Values: `heading`, `subheading`, `body`, `button`, `label`
+- Default: `body`
+- Seed existing rows with appropriate types based on their content_key
+- This enables smarter field rendering and future AI prompting context
+
+## Technical Changes
+
+### Files Modified
+
+1. **New migration** -- Add `content_type` column to `page_content`, seed types for existing rows
+2. **`src/integrations/supabase/types.ts`** -- Will auto-update with new column
+3. **`src/lib/api/pageContent.ts`** -- Add `content_type` to `PageContentRow` interface
+4. **`src/components/portal/PageContentEditorModal.tsx`** -- Full redesign with:
+   - Accordion-based grouped layout
+   - Character counters on medium/long fields
+   - Per-field change tracking with reset buttons
+   - Unsaved changes badge in header
+   - AI Assist placeholder buttons per group
+   - Smart field type rendering based on `content_type` and value length
+5. **`src/components/portal/PortalContentTab.tsx`** -- Enhanced page cards with icons, group summaries, last-updated info, route badges
+
+### New Dependencies
+None -- uses existing Accordion, Badge, Tooltip, and Collapsible components already in the project.
+
+### Component Structure
+
+```text
+PageContentEditorModal
+  DialogHeader (page icon + title + unsaved badge + reset all)
+  Accordion (one item per content_group)
+    AccordionItem
+      AccordionTrigger (group name + field count + AI assist btn)
+      AccordionContent
+        ContentField (label + key hint + input/textarea + char count + change dot + reset)
+  DialogFooter (discard + save & preview + save changes)
+```
