@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, FolderOpen, Plus, Pencil, Trash2, Eye, EyeOff, FileText } from "lucide-react";
+import { BookOpen, FolderOpen, Plus, Pencil, Trash2, Eye, EyeOff, FileText, Layout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -9,8 +9,10 @@ import {
   getCaseStudies, createCaseStudy, updateCaseStudy, deleteCaseStudy,
 } from "@/lib/api/content";
 import { usersApi, UserContentAccess } from "@/lib/api/users";
+import { getAllPageContent, PageContentRow } from "@/lib/api/pageContent";
 import BlogPostFormModal from "./BlogPostFormModal";
 import CaseStudyFormModal from "./CaseStudyFormModal";
+import PageContentEditorModal from "./PageContentEditorModal";
 import InfoTooltip from "./InfoTooltip";
 
 interface PortalContentTabProps {
@@ -22,6 +24,7 @@ interface PortalContentTabProps {
 const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentTabProps) => {
   const [posts, setPosts] = useState<BlogPostRow[]>([]);
   const [studies, setStudies] = useState<CaseStudyRow[]>([]);
+  const [pageContent, setPageContent] = useState<PageContentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [accessMap, setAccessMap] = useState<Record<string, UserContentAccess> | null>(null);
 
@@ -31,12 +34,16 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
   const [studyModalOpen, setStudyModalOpen] = useState(false);
   const [editingStudy, setEditingStudy] = useState<CaseStudyRow | null>(null);
 
+  const [pageEditorOpen, setPageEditorOpen] = useState(false);
+  const [editingPage, setEditingPage] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [p, s] = await Promise.all([getBlogPosts(false), getCaseStudies(false)]);
+      const [p, s, pc] = await Promise.all([getBlogPosts(false), getCaseStudies(false), getAllPageContent()]);
       setPosts(p);
       setStudies(s);
+      setPageContent(pc);
 
       if (!isAdmin && userId) {
         const access = await usersApi.getContentAccess(userId);
@@ -119,6 +126,11 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
 
   const showBlogs = canViewBlogs && (!subFilter || subFilter === "All" || subFilter === "Blog Posts");
   const showStudies = canViewStudies && (!subFilter || subFilter === "All" || subFilter === "Case Studies");
+  const showMainMenu = isAdmin && (!subFilter || subFilter === "All" || subFilter === "Main Menu");
+
+  const PAGES = ["home", "work", "writing", "about"] as const;
+  const pageLabels: Record<string, string> = { home: "Home", work: "Work", writing: "Writing", about: "About" };
+  const getPageContentCount = (page: string) => pageContent.filter((r) => r.page === page).length;
 
   return (
     <div className="space-y-8">
@@ -235,6 +247,35 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
         </div>
       )}
 
+      {/* ── Main Menu ─────────────────────────────────── */}
+      {showMainMenu && (
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <Layout size={15} className="text-primary" />
+            <h2 className="font-display text-sm font-medium text-foreground">Main Menu Pages</h2>
+            <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">{PAGES.length}</span>
+            <InfoTooltip text="Edit on-page text content for each main site page" />
+          </div>
+          <div className="space-y-2">
+            {PAGES.map((page) => (
+              <button
+                key={page}
+                onClick={() => { setEditingPage(page); setPageEditorOpen(true); }}
+                className="group flex w-full items-center justify-between rounded-lg border border-border bg-card p-3 text-left transition-all hover:border-primary/30"
+              >
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-medium text-foreground">{pageLabels[page]}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {getPageContentCount(page)} content fields
+                  </p>
+                </div>
+                <Pencil size={13} className="shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {canEditBlogs && (
         <BlogPostFormModal
           open={postModalOpen}
@@ -250,6 +291,16 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
           onOpenChange={setStudyModalOpen}
           study={editingStudy}
           onSave={handleSaveStudy}
+        />
+      )}
+
+      {editingPage && (
+        <PageContentEditorModal
+          open={pageEditorOpen}
+          onOpenChange={setPageEditorOpen}
+          page={editingPage}
+          rows={pageContent.filter((r) => r.page === editingPage)}
+          onSaved={load}
         />
       )}
     </div>
