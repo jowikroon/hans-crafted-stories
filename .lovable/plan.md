@@ -1,84 +1,64 @@
 
+# Add /docs Page with SEO Meta Tags and Sitemap Entry
 
-# Inject Page-Specific OG Meta Tags for Social Media Crawlers
+## Overview
 
-## Problem
+The `/docs` page referenced in the user's summary doesn't exist yet in the codebase. This plan creates it from scratch: page component, route, SEO, sitemap, Cloudflare OG tags, and footer link.
 
-Social media crawlers (Facebook, LinkedIn, Twitter/X) do not execute JavaScript. Since this is an SPA, all subpages serve the same `index.html` with the homepage's OG tags. Sharing `/about` or `/work` on LinkedIn shows the homepage title and description instead of the page-specific ones.
+## Changes
 
-## Solution: Cloudflare Pages Function (`functions/[[path]].ts`)
+### 1. Add SEO translation strings
 
-Cloudflare Pages supports **Pages Functions** — server-side middleware that runs before serving static files. We create a single catch-all function that:
+**File: `src/data/translations.ts`**
 
-1. Checks the request path
-2. If it matches a known route, fetches the static `index.html` and replaces the OG meta tags with page-specific values
-3. For unknown routes or non-HTML requests, passes through to the static file
+Add `docsTitle` and `docsDescription` to the `seo` type and both EN/NL translation objects:
+- EN: "Documentation Index | Hans van Leeuwen" / "Browse project documentation — hosting, architecture, integrations, and more."
+- NL: "Documentatie-index | Hans van Leeuwen" / "Bekijk projectdocumentatie — hosting, architectuur, integraties en meer."
 
-This runs entirely on Cloudflare's edge — no external server needed.
+Also add `docs` to the `footer` translation type for the footer link label.
 
-## Architecture
+### 2. Create the Docs page
 
-```text
-Browser/Crawler request
-        |
-        v
-  Cloudflare Pages Function (functions/[[path]].ts)
-        |
-        |-- Is it a known page route? (/about, /work, /writing, /privacy)
-        |     Yes -> Fetch index.html, replace OG tags, serve modified HTML
-        |     No  -> Pass through to static files (SPA _redirects handles it)
-        |
-        v
-  Response with correct OG meta tags
-```
+**File: `src/pages/DocsDatabase.tsx`** (new)
 
-## File to Create
+A simple page listing the project's documentation files by category, each linking to the file on GitHub (`jowikroon/hans-crafted-stories`). Categories:
+- **Project**: README.md
+- **Hosting and Deploy**: hosting-context.md, lovable-cloudflare-pages.md, domain-nameservers-hansvanleeuwen.md, cloudflare-connection-troubleshooting.md
+- **Architecture and Flows**: empire-n8n-flow.md, post-commit-workers-and-agents.md
+- **Integrations**: monday-mcp-setup.md
 
-### `functions/[[path]].ts` (Cloudflare Pages Function)
+Includes `useSEO` with translated title/description and a `CollectionPage` JSON-LD schema with breadcrumb.
 
-A single file that:
-- Defines a map of route -> { title, description } using the same SEO strings from translations
-- On each request, checks if the URL path matches a known route
-- If yes: fetches the origin response (index.html), does string replacement on the `<title>`, `og:title`, `og:description`, `twitter:title`, `twitter:description`, and canonical URL tags
-- If no: returns the origin response unmodified
+### 3. Add route
 
-### Route metadata map (hardcoded in the function):
+**File: `src/components/AnimatedRoutes.tsx`**
 
-| Route | Title | Description |
-|---|---|---|
-| `/` | (unchanged — already correct in index.html) | (unchanged) |
-| `/about` | About Hans van Leeuwen -- E-commerce Manager, 10+ Years Experience | Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management... |
-| `/work` | Design Portfolio & Case Studies, E-commerce, 3D & UX, Hans van Leeuwen | Explore Hans van Leeuwen's portfolio... |
-| `/writing` | E-commerce Insights & Articles, Hans van Leeuwen | Read Hans van Leeuwen's thoughts on e-commerce strategy... |
-| `/privacy` | Privacy Policy, Hans van Leeuwen | Read the privacy policy of hansvanleeuwen.com... |
+Add: `<Route path="/docs" element={<PageTransition><DocsDatabase /></PageTransition>} />`
 
-### Key implementation details:
+### 4. Add footer link
 
-- Only modifies HTML responses (checks `Accept` header or content-type)
-- Uses `HTMLRewriter` (Cloudflare's streaming HTML rewriter) for efficient tag replacement — no regex on HTML
-- Preserves the `og:image` (same for all pages — the site-wide OG image)
-- Updates `og:url` and `canonical` to match the current path
-- Falls through to `env.ASSETS.fetch(request)` for static assets (JS, CSS, images)
+**File: `src/components/Footer.tsx`**
 
-## Important Note
+Add a "Docs" link next to the "Privacy" link, using the new `t.docs` translation.
 
-**This file must be created at the project root as `functions/[[path]].ts`** — Cloudflare Pages automatically picks up files in the `functions/` directory and deploys them as edge functions. The `[[path]]` catch-all syntax means it handles all routes.
+### 5. Update sitemap
 
-Since this project deploys via GitHub -> Cloudflare Pages, simply committing this file to the repo will auto-deploy it on the next push to `main`.
+**File: `public/sitemap.xml`**
 
-## What Changes
+Add `/docs` entry with `changefreq: monthly`, `priority: 0.5`.
 
-| File | Change |
+### 6. Update Cloudflare Pages Function
+
+**File: `functions/[[path]].ts`**
+
+The `/docs` route is already in `ROUTE_META` -- no changes needed here.
+
+## Files Changed
+
+| File | Action |
 |---|---|
-| `functions/[[path]].ts` | New — Cloudflare Pages Function for OG meta tag injection |
-
-No changes to existing files. The `_redirects` SPA fallback still works as before — the Pages Function runs first, and for non-matched routes it falls through to the static asset pipeline which uses `_redirects`.
-
-## Verification
-
-After deployment, test with:
-- `curl -A "facebookexternalhit" https://hansvanleeuwen.com/about` — should show About-specific OG tags
-- Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
-- LinkedIn Post Inspector: https://www.linkedin.com/post-inspector/
-- Twitter Card Validator (via posting a tweet preview)
-
+| `src/data/translations.ts` | Add docsTitle, docsDescription to seo type + both languages; add docs to footer |
+| `src/pages/DocsDatabase.tsx` | New -- docs listing page with useSEO and JSON-LD |
+| `src/components/AnimatedRoutes.tsx` | Add /docs route |
+| `src/components/Footer.tsx` | Add Docs link |
+| `public/sitemap.xml` | Add /docs URL |
