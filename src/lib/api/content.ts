@@ -10,6 +10,7 @@ export interface BlogPostRow {
   slug: string;
   read_time: string;
   published: boolean;
+  image_url: string;
   created_at: string;
   updated_at: string;
 }

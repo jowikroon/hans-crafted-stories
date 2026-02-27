@@ -68,6 +68,7 @@ const Writing = () => {
       date: p.created_at,
       readTime: p.read_time,
       slug: p.slug,
+      imageUrl: p.image_url || undefined,
     })),
   [blogPosts]);
 
@@ -290,7 +291,7 @@ const Writing = () => {
         </motion.p>
       )}
 
-      <div>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <AnimatePresence mode="popLayout">
           {filtered.map((post, i) => (
             <BlogPostCard key={post.id} post={post} index={i} />

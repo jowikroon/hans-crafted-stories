@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { BlogPostRow } from "@/lib/api/content";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Props {
   open: boolean;
@@ -23,7 +26,11 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [tags, setTags] = useState("");
   const [readTime, setReadTime] = useState("5 min read");
   const [published, setPublished] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (post) {
@@ -35,14 +42,51 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
       setTags(post.tags.join(", "));
       setReadTime(post.read_time);
       setPublished(post.published);
+      setImageUrl(post.image_url || "");
     } else {
       setTitle(""); setSlug(""); setExcerpt(""); setContent("");
-      setCategory("professional"); setTags(""); setReadTime("5 min read"); setPublished(false);
+      setCategory("professional"); setTags(""); setReadTime("5 min read");
+      setPublished(false); setImageUrl("");
     }
   }, [post, open]);
 
   const autoSlug = (t: string) =>
     t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  const uploadImage = async (file: File) => {
+    const currentSlug = slug || autoSlug(title) || "untitled";
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `blog-images/${currentSlug}-${Date.now()}.${ext}`;
+
+    setUploading(true);
+    try {
+      const { error } = await supabase.storage.from("bucket").upload(path, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage.from("bucket").getPublicUrl(path);
+      setImageUrl(urlData.publicUrl);
+      toast.success("Image uploaded");
+    } catch (err: any) {
+      toast.error("Upload failed: " + (err.message || "Unknown error"));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadImage(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) uploadImage(file);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -56,6 +100,7 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         read_time: readTime,
         published,
+        image_url: imageUrl,
       });
       onOpenChange(false);
     } finally {
@@ -71,6 +116,52 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Cover Image Upload */}
+          <div className="space-y-1.5">
+            <Label>Cover Image</Label>
+            {imageUrl ? (
+              <div className="relative overflow-hidden rounded-lg border border-border">
+                <img src={imageUrl} alt="Cover" className="h-40 w-full object-cover" />
+                <button
+                  onClick={() => setImageUrl("")}
+                  className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-destructive"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors ${
+                  dragOver
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-muted-foreground/40"
+                }`}
+              >
+                {uploading ? (
+                  <p className="text-sm text-muted-foreground">Uploading…</p>
+                ) : (
+                  <>
+                    <ImageIcon size={24} className="text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">
+                      Drag & drop or <span className="font-medium text-primary">click to browse</span>
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Title</Label>
