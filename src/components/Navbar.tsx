@@ -202,9 +202,6 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 }`}
               >
                 <Search size={11} />
-                <kbd className={`inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[9px] font-mono ${isDark ? "border-emerald-500/15 text-emerald-400/25" : "border-border bg-background text-muted-foreground/60"}`}>
-                  <Command size={8} />K
-                </kbd>
               </button>
             </div>
 
