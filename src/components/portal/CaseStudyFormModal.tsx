@@ -1,14 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { X, Image as ImageIcon } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import { CaseStudyRow } from "@/lib/api/content";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import ImageCropUploader from "./ImageCropUploader";
 
 interface Props {
   open: boolean;
@@ -28,9 +27,6 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
   const [sortOrder, setSortOrder] = useState(0);
   const [published, setPublished] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (study) {
@@ -42,41 +38,6 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
       setYear(new Date().getFullYear().toString()); setExternalUrl(""); setSortOrder(0); setPublished(false);
     }
   }, [study, open]);
-
-  const uploadImage = async (file: File) => {
-    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "untitled";
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `case-study-images/${slug}-${Date.now()}.${ext}`;
-
-    setUploading(true);
-    try {
-      const { error } = await supabase.storage.from("bucket").upload(path, file, {
-        cacheControl: "3600",
-        upsert: true,
-      });
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from("bucket").getPublicUrl(path);
-      setImage(urlData.publicUrl);
-      toast.success("Image uploaded");
-    } catch (err: any) {
-      toast.error("Upload failed: " + (err.message || "Unknown error"));
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadImage(file);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) uploadImage(file);
-  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -91,18 +52,40 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
     }
   };
 
+  const filePrefix = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "untitled";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display">{study ? "Edit Case Study" : "New Case Study"}</DialogTitle>
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <FolderOpen size={16} className="text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="font-display">{study ? "Edit Case Study" : "New Case Study"}</DialogTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {study ? "Update your case study details" : "Add a new portfolio case study"}
+              </p>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
+          <ImageCropUploader
+            imageUrl={image}
+            onImageChange={setImage}
+            storagePath="case-study-images"
+            filePrefix={filePrefix}
+            aspectRatio={16 / 9}
+            label="Cover Image"
+            hint="Recommended: 1600×900px (16:9 ratio). You'll be able to crop after selecting."
+          />
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Title</Label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Project name..." />
             </div>
             <div className="space-y-1.5">
               <Label>Category</Label>
@@ -110,65 +93,19 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
             </div>
           </div>
 
-          {/* Cover Image Upload */}
-          <div className="space-y-1.5">
-            <Label>Cover Image</Label>
-            {image ? (
-              <div className="relative overflow-hidden rounded-lg border border-border">
-                <img src={image} alt="Cover" className="h-40 w-full object-cover" />
-                <button
-                  onClick={() => setImage("")}
-                  className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-destructive"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <div
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors ${
-                  dragOver
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-muted-foreground/40"
-                }`}
-              >
-                {uploading ? (
-                  <p className="text-sm text-muted-foreground">Uploading…</p>
-                ) : (
-                  <>
-                    <ImageIcon size={24} className="text-muted-foreground/50" />
-                    <p className="text-sm text-muted-foreground">
-                      Drag & drop or <span className="font-medium text-primary">click to browse</span>
-                    </p>
-                  </>
-                )}
-              </div>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          </div>
-
           <div className="space-y-1.5">
             <Label>Description</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Brief project summary..." />
           </div>
 
           <div className="space-y-1.5">
             <Label>Content (Markdown)</Label>
-            <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={8} className="font-mono text-xs" />
+            <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={8} className="font-mono text-xs" placeholder="Full case study content..." />
           </div>
 
           <div className="space-y-1.5">
             <Label>External URL</Label>
-            <Input value={externalUrl} onChange={(e) => setExternalUrl(e.target.value)} />
+            <Input value={externalUrl} onChange={(e) => setExternalUrl(e.target.value)} placeholder="https://..." />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
@@ -180,16 +117,24 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
               <Label>Sort Order</Label>
               <Input type="number" value={sortOrder} onChange={(e) => setSortOrder(Number(e.target.value))} />
             </div>
-            <div className="flex items-center gap-2 pt-6">
-              <Switch checked={published} onCheckedChange={setPublished} />
-              <Label>Published</Label>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/20 px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-foreground">Published</p>
+              <p className="text-xs text-muted-foreground">
+                {published ? "This case study is visible to everyone" : "Saved as draft"}
+              </p>
             </div>
+            <Switch checked={published} onCheckedChange={setPublished} />
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="mt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving || !title}>{saving ? "Saving…" : "Save"}</Button>
+          <Button onClick={handleSave} disabled={saving || !title}>
+            {saving ? "Saving…" : study ? "Update Study" : "Create Study"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

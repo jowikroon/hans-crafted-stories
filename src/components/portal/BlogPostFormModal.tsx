@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { BookOpen, Tag, Clock, Globe, X } from "lucide-react";
 import { BlogPostRow } from "@/lib/api/content";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import ImageCropUploader from "./ImageCropUploader";
 
 interface Props {
   open: boolean;
@@ -27,10 +27,8 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [readTime, setReadTime] = useState("5 min read");
   const [published, setPublished] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     if (post) {
@@ -48,45 +46,43 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
       setCategory("professional"); setTags(""); setReadTime("5 min read");
       setPublished(false); setImageUrl("");
     }
+    setTagInput("");
   }, [post, open]);
 
   const autoSlug = (t: string) =>
     t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-  const uploadImage = async (file: File) => {
-    const currentSlug = slug || autoSlug(title) || "untitled";
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `blog-images/${currentSlug}-${Date.now()}.${ext}`;
+  const tagList = tags.split(",").map((t) => t.trim()).filter(Boolean);
 
-    setUploading(true);
-    try {
-      const { error } = await supabase.storage.from("bucket").upload(path, file, {
-        cacheControl: "3600",
-        upsert: true,
-      });
-      if (error) throw error;
+  const addTag = (tag: string) => {
+    const clean = tag.trim().toUpperCase();
+    if (!clean || tagList.includes(clean)) return;
+    setTags(tagList.length > 0 ? `${tags}, ${clean}` : clean);
+    setTagInput("");
+  };
 
-      const { data: urlData } = supabase.storage.from("bucket").getPublicUrl(path);
-      setImageUrl(urlData.publicUrl);
-      toast.success("Image uploaded");
-    } catch (err: any) {
-      toast.error("Upload failed: " + (err.message || "Unknown error"));
-    } finally {
-      setUploading(false);
+  const removeTag = (tag: string) => {
+    setTags(tagList.filter((t) => t !== tag).join(", "));
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag(tagInput);
+    }
+    if (e.key === "Backspace" && !tagInput && tagList.length > 0) {
+      removeTag(tagList[tagList.length - 1]);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadImage(file);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) uploadImage(file);
-  };
+  // Auto-calculate read time from content
+  useEffect(() => {
+    if (content) {
+      const words = content.trim().split(/\s+/).length;
+      const mins = Math.max(1, Math.ceil(words / 200));
+      setReadTime(`${mins} min read`);
+    }
+  }, [content]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -97,7 +93,7 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
         excerpt,
         content,
         category,
-        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        tags: tagList,
         read_time: readTime,
         published,
         image_url: imageUrl,
@@ -108,112 +104,171 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
     }
   };
 
+  const wordCount = content ? content.trim().split(/\s+/).length : 0;
+  const charCount = content.length;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display">{post ? "Edit Blog Post" : "New Blog Post"}</DialogTitle>
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <BookOpen size={16} className="text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="font-display">{post ? "Edit Blog Post" : "New Blog Post"}</DialogTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {post ? "Update your article content and settings" : "Create a new article for your blog"}
+              </p>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Cover Image Upload */}
+        <div className="space-y-6">
+          {/* Cover Image with Crop */}
+          <ImageCropUploader
+            imageUrl={imageUrl}
+            onImageChange={setImageUrl}
+            storagePath="blog-images"
+            filePrefix={slug || autoSlug(title) || "untitled"}
+            aspectRatio={4 / 3}
+            label="Cover Image"
+            hint="Recommended: 1200×900px (4:3 ratio). You'll be able to crop after selecting."
+          />
+
+          {/* Title & Slug */}
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">Title</Label>
+              <Input
+                value={title}
+                onChange={(e) => { setTitle(e.target.value); if (!post) setSlug(autoSlug(e.target.value)); }}
+                placeholder="Enter a compelling title..."
+                className="text-base"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Globe size={12} className="text-muted-foreground/50" />
+                <Label className="text-xs text-muted-foreground">URL Slug</Label>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-md border border-border bg-secondary/30 px-3">
+                <span className="text-xs text-muted-foreground/50 select-none">/writing/</span>
+                <input
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  className="h-9 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/40"
+                  placeholder="auto-generated-slug"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Excerpt */}
           <div className="space-y-1.5">
-            <Label>Cover Image</Label>
-            {imageUrl ? (
-              <div className="relative overflow-hidden rounded-lg border border-border">
-                <img src={imageUrl} alt="Cover" className="h-40 w-full object-cover" />
-                <button
-                  onClick={() => setImageUrl("")}
-                  className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-destructive"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <div
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors ${
-                  dragOver
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-muted-foreground/40"
-                }`}
-              >
-                {uploading ? (
-                  <p className="text-sm text-muted-foreground">Uploading…</p>
-                ) : (
-                  <>
-                    <ImageIcon size={24} className="text-muted-foreground/50" />
-                    <p className="text-sm text-muted-foreground">
-                      Drag & drop or <span className="font-medium text-primary">click to browse</span>
-                    </p>
-                  </>
-                )}
-              </div>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Excerpt</Label>
+              <span className="text-[11px] text-muted-foreground/50">{excerpt.length}/200</span>
+            </div>
+            <Textarea
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              rows={2}
+              placeholder="A short summary that appears on the blog card and in search results..."
+              maxLength={200}
             />
           </div>
 
+          {/* Content */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Content (Markdown)</Label>
+              <div className="flex items-center gap-3 text-[11px] text-muted-foreground/50">
+                <span>{wordCount} words</span>
+                <span>{charCount} chars</span>
+                <span className="flex items-center gap-1">
+                  <Clock size={10} />
+                  {readTime}
+                </span>
+              </div>
+            </div>
+            <Textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={14}
+              className="font-mono text-xs leading-relaxed"
+              placeholder="Write your article in Markdown..."
+            />
+          </div>
+
+          {/* Category & Tags */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Title</Label>
-              <Input value={title} onChange={(e) => { setTitle(e.target.value); if (!post) setSlug(autoSlug(e.target.value)); }} />
+              <Label className="text-sm font-medium">Category</Label>
+              <div className="flex gap-2">
+                {["professional", "personal"].map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setCategory(cat)}
+                    className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium capitalize transition-all ${
+                      category === cat
+                        ? cat === "professional"
+                          ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                          : "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                        : "border-border bg-card text-muted-foreground hover:border-muted-foreground/40"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
+
             <div className="space-y-1.5">
-              <Label>Slug</Label>
-              <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
+              <Label className="text-sm font-medium flex items-center gap-1.5">
+                <Tag size={12} className="text-muted-foreground/50" />
+                Tags
+              </Label>
+              <div className="flex min-h-[40px] flex-wrap items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+                {tagList.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="gap-1 text-[11px] uppercase tracking-wide">
+                    {tag}
+                    <button type="button" onClick={() => removeTag(tag)} className="ml-0.5 hover:text-destructive transition-colors">
+                      <X size={10} />
+                    </button>
+                  </Badge>
+                ))}
+                <input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  onBlur={() => { if (tagInput) addTag(tagInput); }}
+                  placeholder={tagList.length === 0 ? "Type and press Enter..." : ""}
+                  className="h-6 min-w-[80px] flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground/40"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground/40">Press Enter or comma to add a tag</p>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Excerpt</Label>
-            <Textarea value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={2} />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Content (Markdown)</Label>
-            <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={12} className="font-mono text-xs" />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5">
-              <Label>Category</Label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                <option value="professional">Professional</option>
-                <option value="personal">Personal</option>
-              </select>
+          {/* Published toggle */}
+          <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/20 px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-foreground">Published</p>
+              <p className="text-xs text-muted-foreground">
+                {published ? "This post is visible to everyone" : "This post is saved as a draft"}
+              </p>
             </div>
-            <div className="space-y-1.5">
-              <Label>Tags (comma-separated)</Label>
-              <Input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="UX, AI" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Read Time</Label>
-              <Input value={readTime} onChange={(e) => setReadTime(e.target.value)} />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
             <Switch checked={published} onCheckedChange={setPublished} />
-            <Label>Published</Label>
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="mt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving || !title || !slug}>{saving ? "Saving…" : "Save"}</Button>
+          <Button onClick={handleSave} disabled={saving || !title || !slug}>
+            {saving ? "Saving…" : post ? "Update Post" : "Create Post"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
