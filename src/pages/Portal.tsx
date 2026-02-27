@@ -297,26 +297,26 @@ const Portal = () => {
         </AnimatePresence>
 
         {/* Tab Navigation */}
-        <nav className="mb-8 flex items-center overflow-x-auto border-b border-border">
-          {tabs.map((tab, i) => {
+        <div className="mb-8 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:mb-8 sm:overflow-visible">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
-              <div key={tab.id} className="flex items-center">
-                <button
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`whitespace-nowrap px-4 py-2.5 text-sm transition-colors ${
-                    isActive
-                      ? "-mb-px border-b-2 border-foreground font-medium text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-                {i < tabs.length - 1 && <div className="h-4 w-px bg-border" />}
-              </div>
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:py-2 ${
+                  isActive
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon size={14} />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
             );
           })}
-        </nav>
+        </div>
 
         {/* Tab Content */}
         {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} />}
