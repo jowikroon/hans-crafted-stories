@@ -45,7 +45,7 @@ interface UnhandledIntent {
   created_at: string;
 }
 
-const PortalStatusTab = () => {
+const PortalStatusTab = ({ subFilter }: { subFilter?: string }) => {
   const [resources, setResources] = useState<Resource[]>([
     { icon: Database, label: "Database", status: "checking", endpoint: "/rest/v1/portal_tools" },
     { icon: Shield, label: "Auth", status: "checking", endpoint: "/auth/v1/session" },
