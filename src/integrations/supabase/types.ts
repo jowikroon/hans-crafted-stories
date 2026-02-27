@@ -196,6 +196,7 @@ export type Database = {
           content_group: string
           content_key: string
           content_label: string
+          content_type: string
           content_value: string
           created_at: string
           id: string
@@ -207,6 +208,7 @@ export type Database = {
           content_group?: string
           content_key: string
           content_label?: string
+          content_type?: string
           content_value?: string
           created_at?: string
           id?: string
@@ -218,6 +220,7 @@ export type Database = {
           content_group?: string
           content_key?: string
           content_label?: string
+          content_type?: string
           content_value?: string
           created_at?: string
           id?: string

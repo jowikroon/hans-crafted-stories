@@ -1,12 +1,14 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { PageContentRow, updatePageContentBatch } from "@/lib/api/pageContent";
-import { Save, Loader2, ExternalLink } from "lucide-react";
+import { Save, Loader2, ExternalLink, RotateCcw, Sparkles, Home, Briefcase, PenLine, User } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -16,15 +18,23 @@ interface Props {
   onSaved: () => void;
 }
 
+const PAGE_ICONS: Record<string, typeof Home> = { home: Home, work: Briefcase, writing: PenLine, about: User };
+const PAGE_ROUTES: Record<string, string> = { home: "/", work: "/work", writing: "/writing", about: "/about" };
+
 const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Props) => {
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
+  // Original values for change tracking
+  const originals = useMemo(() => {
     const map: Record<string, string> = {};
     rows.forEach((r) => (map[r.id] = r.content_value));
-    setValues(map);
+    return map;
   }, [rows]);
+
+  useEffect(() => {
+    setValues({ ...originals });
+  }, [originals]);
 
   const grouped = useMemo(() => {
     const groups: Record<string, PageContentRow[]> = {};
@@ -36,18 +46,28 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
     return Object.entries(groups);
   }, [rows]);
 
-  const hasChanges = useMemo(() => {
-    return rows.some((r) => values[r.id] !== r.content_value);
-  }, [rows, values]);
+  const changedIds = useMemo(
+    () => new Set(rows.filter((r) => values[r.id] !== originals[r.id]).map((r) => r.id)),
+    [rows, values, originals]
+  );
 
-  const pageRoutes: Record<string, string> = { home: "/", work: "/work", writing: "/writing", about: "/about" };
+  const changeCount = changedIds.size;
+
+  const resetField = useCallback((id: string) => {
+    setValues((v) => ({ ...v, [id]: originals[id] }));
+  }, [originals]);
+
+  const resetAll = useCallback(() => {
+    setValues({ ...originals });
+  }, [originals]);
 
   const handleSave = async (preview = false) => {
     const changed = rows
-      .filter((r) => values[r.id] !== r.content_value)
+      .filter((r) => values[r.id] !== originals[r.id])
       .map((r) => ({ id: r.id, content_value: values[r.id] ?? r.content_value }));
+
     if (changed.length === 0) {
-      if (preview) window.open(pageRoutes[page] || "/", "_blank");
+      if (preview) window.open(PAGE_ROUTES[page] || "/", "_blank");
       return;
     }
 
@@ -57,7 +77,7 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
       toast({ title: `${page.charAt(0).toUpperCase() + page.slice(1)} content updated` });
       onSaved();
       if (preview) {
-        window.open(pageRoutes[page] || "/", "_blank");
+        window.open(PAGE_ROUTES[page] || "/", "_blank");
       } else {
         onOpenChange(false);
       }
@@ -68,54 +88,144 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
     }
   };
 
-  const isLong = (value: string) => value.length > 80;
+  const getFieldType = (item: PageContentRow): "short" | "medium" | "long" => {
+    const val = values[item.id] ?? item.content_value;
+    if (val.length > 150 || item.content_type === "body") return "long";
+    if (val.length > 60) return "medium";
+    return "short";
+  };
+
+  const PageIcon = PAGE_ICONS[page] || Home;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-xl overflow-y-auto">
+      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="capitalize">{page} — Edit Content</DialogTitle>
-          <DialogDescription>Edit the on-page text content for the {page} page.</DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <PageIcon size={16} className="text-primary" />
+            </div>
+            <div className="flex-1">
+              <DialogTitle className="capitalize">{page} — Edit Content</DialogTitle>
+              <DialogDescription className="mt-0.5">
+                Edit on-page text content · {rows.length} fields
+              </DialogDescription>
+            </div>
+            {changeCount > 0 && (
+              <Badge variant="secondary" className="shrink-0 bg-primary/10 text-primary">
+                {changeCount} unsaved
+              </Badge>
+            )}
+            {changeCount > 0 && (
+              <Button size="sm" variant="ghost" onClick={resetAll} className="shrink-0 text-muted-foreground">
+                <RotateCcw size={13} className="mr-1" /> Reset
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
-        <div className="space-y-6 pt-2">
-          {grouped.map(([group, items]) => (
-            <div key={group}>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group}</h3>
-              <div className="space-y-3">
-                {items.map((item) => (
-                  <div key={item.id}>
-                    <Label className="mb-1 text-xs">{item.content_label}</Label>
-                    {isLong(values[item.id] ?? item.content_value) ? (
-                      <Textarea
-                        value={values[item.id] ?? item.content_value}
-                        onChange={(e) => setValues((v) => ({ ...v, [item.id]: e.target.value }))}
-                        rows={3}
-                        className="text-sm"
-                      />
-                    ) : (
-                      <Input
-                        value={values[item.id] ?? item.content_value}
-                        onChange={(e) => setValues((v) => ({ ...v, [item.id]: e.target.value }))}
-                        className="text-sm"
-                      />
+        <Accordion type="multiple" defaultValue={grouped.map(([g]) => g)} className="pt-2">
+          {grouped.map(([group, items]) => {
+            const groupChangedCount = items.filter((i) => changedIds.has(i.id)).length;
+            return (
+              <AccordionItem key={group} value={group} className="border-border/50">
+                <AccordionTrigger className="py-3 text-sm hover:no-underline">
+                  <div className="flex flex-1 items-center gap-2">
+                    <span className="font-semibold text-foreground">{group}</span>
+                    <span className="text-[10px] text-muted-foreground">{items.length} fields</span>
+                    {groupChangedCount > 0 && (
+                      <Badge variant="outline" className="h-4 border-primary/30 px-1.5 text-[10px] text-primary">
+                        {groupChangedCount} changed
+                      </Badge>
                     )}
+                    <div className="flex-1" />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="mr-2 h-6 gap-1 px-2 text-[11px] text-muted-foreground/60 hover:text-primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast({ title: "AI content generation coming soon", description: "This feature will enable AI-powered content suggestions for this group." });
+                      }}
+                    >
+                      <Sparkles size={11} /> AI
+                    </Button>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4 pb-2">
+                    {items.map((item) => {
+                      const fieldType = getFieldType(item);
+                      const val = values[item.id] ?? item.content_value;
+                      const isChanged = changedIds.has(item.id);
+                      const showCounter = fieldType !== "short";
 
-        <div className="mt-4 flex justify-end gap-2">
-          <Button onClick={() => handleSave(true)} disabled={saving} size="sm" variant="outline">
-            <ExternalLink size={14} className="mr-1.5" />
-            Save &amp; Preview
+                      return (
+                        <div key={item.id} className="relative">
+                          <div className="mb-1.5 flex items-center gap-2">
+                            {isChanged && (
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                            )}
+                            <Label className="text-xs font-medium">{item.content_label}</Label>
+                            <code className="text-[10px] text-muted-foreground/50 font-mono">{item.content_key}</code>
+                            <div className="flex-1" />
+                            {showCounter && (
+                              <span className="text-[10px] tabular-nums text-muted-foreground/50">{val.length} chars</span>
+                            )}
+                            {isChanged && (
+                              <button
+                                onClick={() => resetField(item.id)}
+                                className="text-muted-foreground/40 transition-colors hover:text-primary"
+                                title="Reset to original"
+                              >
+                                <RotateCcw size={11} />
+                              </button>
+                            )}
+                          </div>
+                          {fieldType === "long" ? (
+                            <Textarea
+                              value={val}
+                              onChange={(e) => setValues((v) => ({ ...v, [item.id]: e.target.value }))}
+                              rows={Math.max(3, Math.ceil(val.length / 80))}
+                              className={`text-sm transition-colors ${isChanged ? "border-primary/30 bg-primary/[0.02]" : ""}`}
+                            />
+                          ) : (
+                            <Input
+                              value={val}
+                              onChange={(e) => setValues((v) => ({ ...v, [item.id]: e.target.value }))}
+                              className={`text-sm transition-colors ${isChanged ? "border-primary/30 bg-primary/[0.02]" : ""}`}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
+
+        <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-4">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={resetAll}
+            disabled={changeCount === 0}
+            className="text-muted-foreground"
+          >
+            Discard Changes
           </Button>
-          <Button onClick={() => handleSave(false)} disabled={saving || !hasChanges} size="sm">
-            {saving ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <Save size={14} className="mr-1.5" />}
-            Save Changes
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => handleSave(true)} disabled={saving} size="sm" variant="outline">
+              <ExternalLink size={14} className="mr-1.5" />
+              Save &amp; Preview
+            </Button>
+            <Button onClick={() => handleSave(false)} disabled={saving || changeCount === 0} size="sm">
+              {saving ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <Save size={14} className="mr-1.5" />}
+              Save{changeCount > 0 ? ` (${changeCount})` : ""}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
