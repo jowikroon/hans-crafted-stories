@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, FolderOpen, Plus, Pencil, Trash2, Eye, EyeOff, FileText, Layout } from "lucide-react";
+import { BookOpen, FolderOpen, Plus, Pencil, Trash2, Eye, EyeOff, FileText, Layout, Home, Briefcase, PenLine, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -130,7 +131,18 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
 
   const PAGES = ["home", "work", "writing", "about"] as const;
   const pageLabels: Record<string, string> = { home: "Home", work: "Work", writing: "Writing", about: "About" };
+  const pageIcons: Record<string, typeof Home> = { home: Home, work: Briefcase, writing: PenLine, about: User };
+  const pageRoutes: Record<string, string> = { home: "/", work: "/work", writing: "/writing", about: "/about" };
   const getPageContentCount = (page: string) => pageContent.filter((r) => r.page === page).length;
+  const getPageGroups = (page: string) => {
+    const groups = new Set(pageContent.filter((r) => r.page === page).map((r) => r.content_group || "General"));
+    return Array.from(groups);
+  };
+  const getPageLastUpdated = (page: string) => {
+    const rows = pageContent.filter((r) => r.page === page);
+    if (rows.length === 0) return null;
+    return rows.reduce((latest, r) => r.updated_at > latest ? r.updated_at : latest, rows[0].updated_at);
+  };
 
   return (
     <div className="space-y-8">
@@ -257,21 +269,38 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
             <InfoTooltip text="Edit on-page text content for each main site page" />
           </div>
           <div className="space-y-2">
-            {PAGES.map((page) => (
-              <button
-                key={page}
-                onClick={() => { setEditingPage(page); setPageEditorOpen(true); }}
-                className="group flex w-full items-center justify-between rounded-lg border border-border bg-card p-3 text-left transition-all hover:border-primary/30"
-              >
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-medium text-foreground">{pageLabels[page]}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {getPageContentCount(page)} content fields
-                  </p>
-                </div>
-                <Pencil size={13} className="shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
-              </button>
-            ))}
+            {PAGES.map((page) => {
+              const Icon = pageIcons[page];
+              const groups = getPageGroups(page);
+              const fieldCount = getPageContentCount(page);
+              const lastUpdated = getPageLastUpdated(page);
+              return (
+                <button
+                  key={page}
+                  onClick={() => { setEditingPage(page); setPageEditorOpen(true); }}
+                  className="group flex w-full items-center gap-3 rounded-lg border border-border bg-card p-3.5 text-left transition-all hover:border-primary/30"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/15">
+                    <Icon size={16} className="text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-medium text-foreground">{pageLabels[page]}</h3>
+                      <Badge variant="outline" className="h-4 border-border/60 px-1.5 text-[10px] text-muted-foreground/60 font-mono">
+                        {pageRoutes[page]}
+                      </Badge>
+                    </div>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {groups.join(", ")} — {fieldCount} fields
+                      {lastUpdated && (
+                        <span className="ml-1.5 text-muted-foreground/50">· Updated {new Date(lastUpdated).toLocaleDateString()}</span>
+                      )}
+                    </p>
+                  </div>
+                  <Pencil size={13} className="shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

@@ -7,6 +7,7 @@ export interface PageContentRow {
   content_value: string;
   content_group: string;
   content_label: string;
+  content_type: string;
   sort_order: number;
   created_at: string;
   updated_at: string;
