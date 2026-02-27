@@ -115,6 +115,27 @@ type TranslationStrings = {
     privacy: string;
   };
 
+  /* ── Contact form ── */
+  contact: {
+    heading: string;
+    name: string;
+    namePlaceholder: string;
+    email: string;
+    emailPlaceholder: string;
+    reason: string;
+    reasonPlaceholder: string;
+    reasonFreelance: string;
+    reasonJob: string;
+    reasonCollaboration: string;
+    reasonGeneral: string;
+    message: string;
+    messagePlaceholder: string;
+    send: string;
+    sending: string;
+    successMessage: string;
+    errorMessage: string;
+  };
+
   /* ── SEO ── */
   seo: {
     homeTitle: string;
@@ -388,6 +409,27 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Footer ── */
     footer: { privacy: "Privacy" },
 
+    /* ── Contact form ── */
+    contact: {
+      heading: "Get in Touch",
+      name: "Name",
+      namePlaceholder: "Your name",
+      email: "Email",
+      emailPlaceholder: "your@email.com",
+      reason: "Reason for Contact",
+      reasonPlaceholder: "Select a reason…",
+      reasonFreelance: "Freelance / Project Inquiry",
+      reasonJob: "Job Opportunity",
+      reasonCollaboration: "Speaking / Collaboration",
+      reasonGeneral: "General Question",
+      message: "Message",
+      messagePlaceholder: "Tell me more…",
+      send: "Send Message",
+      sending: "Sending…",
+      successMessage: "Message sent! I'll get back to you soon.",
+      errorMessage: "Something went wrong. Please try again.",
+    },
+
     /* ── SEO ── */
     seo: {
       homeTitle: "E-commerce Manager & Marketplace Specialist (Amazon & Bol.com) | Hans van Leeuwen",
@@ -659,6 +701,27 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── Footer ── */
     footer: { privacy: "Privacy" },
+
+    /* ── Contact form ── */
+    contact: {
+      heading: "Contact",
+      name: "Naam",
+      namePlaceholder: "Je naam",
+      email: "E-mail",
+      emailPlaceholder: "je@email.com",
+      reason: "Reden voor contact",
+      reasonPlaceholder: "Selecteer een reden…",
+      reasonFreelance: "Freelance / Projectaanvraag",
+      reasonJob: "Vacature",
+      reasonCollaboration: "Spreken / Samenwerking",
+      reasonGeneral: "Algemene vraag",
+      message: "Bericht",
+      messagePlaceholder: "Vertel me meer…",
+      send: "Verstuur bericht",
+      sending: "Verzenden…",
+      successMessage: "Bericht verzonden! Ik neem snel contact op.",
+      errorMessage: "Er ging iets mis. Probeer het opnieuw.",
+    },
 
     /* ── SEO ── */
     seo: {

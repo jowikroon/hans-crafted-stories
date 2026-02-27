@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home } from "lucide-react";
+import ContactForm from "@/components/ContactForm";
 import { Link } from "react-router-dom";
 import hansProfile from "@/assets/hans-profile.jpg";
 import { Badge } from "@/components/ui/badge";
@@ -249,6 +250,19 @@ const About = () => {
                 </motion.div>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Contact Form */}
+        {isVisible("contact_form") && (
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mt-20">
+            <div className="mb-8 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
+                <Mail size={14} className="text-primary" />
+              </div>
+              <h2 className="font-display text-2xl font-medium text-foreground">{t.contact.heading}</h2>
+            </div>
+            <ContactForm />
           </motion.div>
         )}
       </motion.div>
