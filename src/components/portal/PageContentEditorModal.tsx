@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { PageContentRow, updatePageContentBatch } from "@/lib/api/pageContent";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, Loader2, ExternalLink, RotateCcw, Sparkles, Home, Briefcase, PenLine, User } from "lucide-react";
+import { Save, Loader2, ExternalLink, RotateCcw, Sparkles, Home, Briefcase, PenLine, User, History } from "lucide-react";
+import VersionHistoryPanel from "./VersionHistoryPanel";
 
 interface Props {
   open: boolean;
@@ -26,6 +27,11 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [generatingGroup, setGeneratingGroup] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const handleRestoreVersion = (contentId: string, value: string) => {
+    setValues((prev) => ({ ...prev, [contentId]: value }));
+  };
 
   const handleAiSuggest = async (group: string, items: PageContentRow[]) => {
     setGeneratingGroup(group);
@@ -260,16 +266,33 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
           })}
         </Accordion>
 
+        <VersionHistoryPanel
+          page={page}
+          open={historyOpen}
+          onRestore={handleRestoreVersion}
+        />
+
         <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-4">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={resetAll}
-            disabled={changeCount === 0}
-            className="text-muted-foreground"
-          >
-            Discard Changes
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={resetAll}
+              disabled={changeCount === 0}
+              className="text-muted-foreground"
+            >
+              Discard Changes
+            </Button>
+            <Button
+              size="sm"
+              variant={historyOpen ? "secondary" : "ghost"}
+              onClick={() => setHistoryOpen((h) => !h)}
+              className="text-muted-foreground"
+            >
+              <History size={13} className="mr-1" />
+              History
+            </Button>
+          </div>
           <div className="flex gap-2">
             <Button onClick={() => handleSave(true)} disabled={saving} size="sm" variant="outline">
               <ExternalLink size={14} className="mr-1.5" />

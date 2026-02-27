@@ -230,6 +230,42 @@ export type Database = {
         }
         Relationships: []
       }
+      page_content_versions: {
+        Row: {
+          changed_by: string | null
+          content_group: string
+          content_id: string
+          content_key: string
+          content_label: string
+          content_value: string
+          created_at: string
+          id: string
+          page: string
+        }
+        Insert: {
+          changed_by?: string | null
+          content_group?: string
+          content_id: string
+          content_key: string
+          content_label?: string
+          content_value?: string
+          created_at?: string
+          id?: string
+          page: string
+        }
+        Update: {
+          changed_by?: string | null
+          content_group?: string
+          content_id?: string
+          content_key?: string
+          content_label?: string
+          content_value?: string
+          created_at?: string
+          id?: string
+          page?: string
+        }
+        Relationships: []
+      }
       page_elements: {
         Row: {
           created_at: string
