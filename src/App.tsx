@@ -16,16 +16,18 @@ const queryClient = new QueryClient();
 const AppShell = () => {
   const location = useLocation();
   const isDarkPage = location.pathname === "/hansai" || location.pathname === "/empire";
+  const isPortal = location.pathname === "/portal";
+  const hideChrome = isDarkPage || isPortal;
 
   return (
     <AuthProvider>
       <LangProvider>
-        <Navbar variant={isDarkPage ? "dark" : "default"} />
-        <main className="min-h-screen">
+        {!isPortal && <Navbar variant={isDarkPage ? "dark" : "default"} />}
+        <main className={isPortal ? "" : "min-h-screen"}>
           <AnimatedRoutes />
         </main>
-        {!isDarkPage && <Footer />}
-        {!isDarkPage && <EmpireTerminalCard />}
+        {!hideChrome && <Footer />}
+        {!hideChrome && <EmpireTerminalCard />}
         <CookieConsent />
       </LangProvider>
     </AuthProvider>

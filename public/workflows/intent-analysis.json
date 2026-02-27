@@ -1,0 +1,188 @@
+{
+  "name": "Weekly Unhandled Intent Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 22 * * 0"
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Weekly Sunday 22:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [200, 300],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, user_input, source, fast_route_score, llm_intent, llm_confidence, created_at FROM unhandled_intents WHERE resolved = false ORDER BY created_at DESC LIMIT 200"
+      },
+      "id": "fetch-unhandled",
+      "name": "Fetch Unhandled Intents",
+      "type": "n8n-nodes-base.supabase",
+      "position": [420, 300],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "greaterThan",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "check-has-data",
+      "name": "Has Unhandled?",
+      "type": "n8n-nodes-base.if",
+      "position": [640, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an intent analysis specialist. Given a list of unhandled user intents from a digital marketing automation platform, analyze them and produce a structured report.\n\nGroup similar intents into clusters. For each cluster:\n- Name the cluster\n- Count how many intents belong to it\n- Suggest whether a new N8N workflow should be created\n- Provide a brief description of what the workflow would do\n\nRespond in JSON: {\"clusters\": [{\"name\": string, \"count\": number, \"intents\": string[], \"suggested_workflow\": string | null, \"description\": string}], \"total_unhandled\": number, \"summary\": string}"
+            },
+            {
+              "role": "user",
+              "content": "=Analyze these unhandled intents:\n\n{{ JSON.stringify($json) }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2000,
+          "temperature": 0.2
+        }
+      },
+      "id": "ai-analysis",
+      "name": "AI Cluster Analysis",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [860, 200],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "empire_events",
+        "columns": "event_type,payload,created_at",
+        "values": "=intent_analysis|{{ JSON.stringify($json) }}|{{ new Date().toISOString() }}"
+      },
+      "id": "log-analysis",
+      "name": "Log to Empire Events",
+      "type": "n8n-nodes-base.supabase",
+      "position": [1080, 200],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "sendTo": "hans@hansvanleeuwen.com",
+        "subject": "=Weekly Intent Analysis — {{ $json.total_unhandled }} unhandled",
+        "emailType": "html",
+        "html": "=<h2>Weekly Unhandled Intent Report</h2><p>{{ $json.summary }}</p><h3>Clusters</h3><ul>{{ $json.clusters.map(c => `<li><strong>${c.name}</strong> (${c.count} intents) — ${c.description}</li>`).join('') }}</ul><p><a href=\"https://hansvanleeuwen.com/portal\">Review in Portal →</a></p>"
+      },
+      "id": "send-email",
+      "name": "Email Summary",
+      "type": "n8n-nodes-base.gmail",
+      "position": [1300, 200],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {},
+      "id": "no-data-end",
+      "name": "No Unhandled — Skip",
+      "type": "n8n-nodes-base.noOp",
+      "position": [860, 420],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Weekly Sunday 22:00": {
+      "main": [
+        [
+          {
+            "node": "Fetch Unhandled Intents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Unhandled Intents": {
+      "main": [
+        [
+          {
+            "node": "Has Unhandled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Unhandled?": {
+      "main": [
+        [
+          {
+            "node": "AI Cluster Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Unhandled — Skip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Cluster Analysis": {
+      "main": [
+        [
+          {
+            "node": "Log to Empire Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Empire Events": {
+      "main": [
+        [
+          {
+            "node": "Email Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateId": "intent-analysis-v1",
+    "description": "Weekly cron workflow that queries unhandled_intents from Supabase, clusters them with AI, logs analysis to empire_events, and emails a summary report."
+  },
+  "tags": ["intent-routing", "analytics", "weekly"]
+}

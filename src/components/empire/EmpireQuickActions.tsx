@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Zap, FileText, HeartPulse, ScrollText, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { WORKFLOWS } from "@/lib/config/workflows";
 
 interface QuickAction {
   icon: typeof Zap;
@@ -11,10 +12,19 @@ interface QuickAction {
   webhookKey: string;
 }
 
+const ICON_MAP: Record<string, typeof Zap> = {
+  autoseo: Zap,
+  "product-titles": FileText,
+  "health-check": HeartPulse,
+};
+
 const ACTIONS: QuickAction[] = [
-  { icon: Zap, label: "AutoSEO", description: "Trigger AutoSEO workflow", webhookKey: "autoseo" },
-  { icon: FileText, label: "Title Optimizer", description: "Run Product Title Optimizer", webhookKey: "product-titles" },
-  { icon: HeartPulse, label: "Health Check", description: "Check all services", webhookKey: "health-check" },
+  ...WORKFLOWS.filter((w) => ["autoseo", "product-titles", "health-check"].includes(w.name)).map((w) => ({
+    icon: ICON_MAP[w.name] || Zap,
+    label: w.label,
+    description: w.description,
+    webhookKey: w.name,
+  })),
   { icon: ScrollText, label: "Audit Trail", description: "View recent events", webhookKey: "audit" },
 ];
 

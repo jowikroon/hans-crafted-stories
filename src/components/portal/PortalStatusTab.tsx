@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Activity, Database, Server, Zap, Globe, Shield, RefreshCw, Plug, Unplug } from "lucide-react";
+import { Activity, Database, Server, Zap, Globe, Shield, RefreshCw, Plug, Unplug, MessageSquareWarning, Check, X, CalendarCheck2, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import InfoTooltip from "./InfoTooltip";
+import { WORKFLOWS } from "@/lib/config/workflows";
 
 interface ConnectorStatus {
   id: string;
@@ -29,6 +30,18 @@ const StatusDot = ({ status, latency }: { status: Status; latency?: number }) =>
   return <span className={`inline-block h-2.5 w-2.5 rounded-full ${color}`} />;
 };
 
+interface UnhandledIntent {
+  id: string;
+  user_input: string;
+  source: string;
+  fast_route_score: number | null;
+  llm_intent: string | null;
+  llm_confidence: number | null;
+  resolved: boolean;
+  resolved_workflow: string | null;
+  created_at: string;
+}
+
 const PortalStatusTab = () => {
   const [resources, setResources] = useState<Resource[]>([
     { icon: Database, label: "Database", status: "checking", endpoint: "/rest/v1/portal_tools" },
@@ -40,6 +53,11 @@ const PortalStatusTab = () => {
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
   const [connectors, setConnectors] = useState<ConnectorStatus[]>([]);
   const [connectorsLoading, setConnectorsLoading] = useState(true);
+  const [unhandledIntents, setUnhandledIntents] = useState<UnhandledIntent[]>([]);
+  const [intentsLoading, setIntentsLoading] = useState(true);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [mondayEvents, setMondayEvents] = useState<Array<{ id: string; event_type: string; message: string; metadata: Record<string, unknown>; monday_item_id: string | null; created_at: string }>>([]);
+  const [mondayLoading, setMondayLoading] = useState(true);
 
   const checkAll = async () => {
     setResources((prev) => prev.map((r) => ({ ...r, status: "checking" as Status, lastError: undefined })));
@@ -107,6 +125,78 @@ const PortalStatusTab = () => {
   };
 
   useEffect(() => { checkConnectors(); }, []);
+
+  const fetchUnhandledIntents = async () => {
+    setIntentsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("unhandled_intents")
+        .select("*")
+        .eq("resolved", false)
+        .order("created_at", { ascending: false })
+        .limit(25);
+      if (!error && data) {
+        setUnhandledIntents(data as UnhandledIntent[]);
+      }
+    } catch (e) {
+      console.error("Failed to fetch unhandled intents:", e);
+    } finally {
+      setIntentsLoading(false);
+    }
+  };
+
+  const resolveIntent = async (intentId: string, workflowName: string) => {
+    setResolvingId(intentId);
+    try {
+      await supabase
+        .from("unhandled_intents")
+        .update({ resolved: true, resolved_workflow: workflowName })
+        .eq("id", intentId);
+      setUnhandledIntents((prev) => prev.filter((i) => i.id !== intentId));
+    } catch (e) {
+      console.error("Failed to resolve intent:", e);
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
+  const dismissIntent = async (intentId: string) => {
+    setResolvingId(intentId);
+    try {
+      await supabase
+        .from("unhandled_intents")
+        .update({ resolved: true, resolved_workflow: "dismissed" })
+        .eq("id", intentId);
+      setUnhandledIntents((prev) => prev.filter((i) => i.id !== intentId));
+    } catch (e) {
+      console.error("Failed to dismiss intent:", e);
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
+  useEffect(() => { fetchUnhandledIntents(); }, []);
+
+  const fetchMondayEvents = async () => {
+    setMondayLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("empire_events")
+        .select("id, event_type, message, metadata, monday_item_id, created_at")
+        .eq("source", "monday")
+        .order("created_at", { ascending: false })
+        .limit(15);
+      if (!error && data) {
+        setMondayEvents(data as typeof mondayEvents);
+      }
+    } catch (e) {
+      console.error("Failed to fetch Monday events:", e);
+    } finally {
+      setMondayLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchMondayEvents(); }, []);
 
   const onlineCount = resources.filter((r) => r.status === "online").length;
   const allOnline = onlineCount === resources.length;
@@ -276,6 +366,180 @@ const PortalStatusTab = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Monday.com Webhook Events */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-secondary/40">
+                <CalendarCheck2 size={16} className="text-muted-foreground" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-medium text-foreground tracking-tight">Monday.com Events</p>
+                  <InfoTooltip text="Recent webhook events received from Monday.com and routed to N8N workflows" />
+                </div>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                  {mondayLoading ? "Loading…" : `${mondayEvents.length} recent`}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={fetchMondayEvents}
+              disabled={mondayLoading}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border/50 text-muted-foreground/50 transition-all hover:border-border hover:text-foreground disabled:opacity-30"
+            >
+              <RefreshCw size={12} className={mondayLoading ? "animate-spin" : ""} />
+            </button>
+          </div>
+
+          {mondayEvents.length === 0 && !mondayLoading ? (
+            <div className="flex items-center justify-center rounded-2xl border border-border/30 bg-secondary/10 py-8 text-xs text-muted-foreground/40">
+              No Monday.com events yet — configure a webhook to get started
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {mondayEvents.map((evt) => {
+                const isDispatched = evt.event_type === "monday_dispatched";
+                const isUnhandled = evt.event_type === "monday_unhandled";
+                const workflow = (evt.metadata as Record<string, unknown>)?.workflow as string | undefined;
+                const confidence = (evt.metadata as Record<string, unknown>)?.confidence as number | undefined;
+                const actualUrl = "https://monday.com";
+                const expectedUrl = evt.monday_item_id ? `https://monday.com/boards/${(evt.metadata as Record<string, unknown>)?.boardId ?? ""}/pulses/${evt.monday_item_id}` : null;
+                if (evt.monday_item_id) {
+                  // #region agent log
+                  fetch('http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'03c957'},body:JSON.stringify({sessionId:'03c957',runId:'pre-fix',hypothesisId:'H3',location:'src/components/portal/PortalStatusTab.tsx:409',message:'Monday link render data',data:{eventId:evt.id,mondayItemId:evt.monday_item_id,actualUrl,expectedUrl,metadataKeys:Object.keys((evt.metadata as Record<string, unknown>) || {})},timestamp:Date.now()})}).catch(()=>{});
+                  // #endregion
+                }
+                return (
+                  <div
+                    key={evt.id}
+                    className={`flex items-start gap-3 rounded-xl border px-4 py-3 transition-all ${
+                      isDispatched
+                        ? "border-primary/10 bg-primary/[0.02]"
+                        : isUnhandled
+                          ? "border-amber-500/10 bg-amber-500/[0.02]"
+                          : "border-border/30 bg-secondary/10"
+                    }`}
+                  >
+                    <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${
+                      isDispatched ? "bg-primary/10 text-primary/60" : isUnhandled ? "bg-amber-500/10 text-amber-500/60" : "bg-secondary/30 text-muted-foreground/40"
+                    }`}>
+                      {isDispatched ? <Check size={12} /> : isUnhandled ? <MessageSquareWarning size={12} /> : <Zap size={12} />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-foreground/90 break-words">{evt.message}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/50">
+                        {workflow && (
+                          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-primary/70">{workflow}</span>
+                        )}
+                        {confidence != null && (
+                          <span>{(confidence * 100).toFixed(0)}% match</span>
+                        )}
+                        <span>{new Date(evt.created_at).toLocaleString()}</span>
+                        {evt.monday_item_id && (
+                          <a
+                            href={actualUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-0.5 text-primary/50 hover:text-primary/80"
+                          >
+                            <ExternalLink size={8} />
+                            Item #{evt.monday_item_id}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Unhandled Intents Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-secondary/40">
+                <MessageSquareWarning size={16} className="text-muted-foreground" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-medium text-foreground tracking-tight">Unhandled Intents</p>
+                  <InfoTooltip text="User inputs that couldn't be matched to a workflow. Assign them to learn over time." />
+                </div>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                  {intentsLoading ? "Loading…" : `${unhandledIntents.length} unresolved`}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={fetchUnhandledIntents}
+              disabled={intentsLoading}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border/50 text-muted-foreground/50 transition-all hover:border-border hover:text-foreground disabled:opacity-30"
+            >
+              <RefreshCw size={12} className={intentsLoading ? "animate-spin" : ""} />
+            </button>
+          </div>
+
+          {unhandledIntents.length === 0 && !intentsLoading ? (
+            <div className="flex items-center justify-center rounded-2xl border border-border/30 bg-secondary/10 py-8 text-xs text-muted-foreground/40">
+              No unhandled intents — all clear
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {unhandledIntents.map((intent) => (
+                <div
+                  key={intent.id}
+                  className="group flex items-start gap-3 rounded-xl border border-border/30 bg-secondary/10 px-4 py-3 transition-all hover:border-border/50"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-foreground/90 break-words">
+                      "{intent.user_input}"
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/50">
+                      <span className="uppercase tracking-wider">{intent.source}</span>
+                      {intent.fast_route_score != null && (
+                        <span>Score: {(intent.fast_route_score * 100).toFixed(0)}%</span>
+                      )}
+                      {intent.llm_intent && intent.llm_intent !== "unknown" && (
+                        <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-amber-500/70">
+                          LLM: {intent.llm_intent} ({((intent.llm_confidence ?? 0) * 100).toFixed(0)}%)
+                        </span>
+                      )}
+                      <span>{new Date(intent.created_at).toLocaleDateString()}</span>
+                    </div>
+
+                    {/* Assign to workflow */}
+                    <div className="mt-2 flex flex-wrap gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                      {WORKFLOWS.map((wf) => (
+                        <button
+                          key={wf.name}
+                          onClick={() => resolveIntent(intent.id, wf.name)}
+                          disabled={resolvingId === intent.id}
+                          className="flex items-center gap-1 rounded-md border border-border/40 bg-secondary/20 px-2 py-1 text-[10px] font-medium text-muted-foreground/70 transition-all hover:border-primary/30 hover:text-primary/80 disabled:opacity-30"
+                        >
+                          <Check size={10} />
+                          {wf.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => dismissIntent(intent.id)}
+                    disabled={resolvingId === intent.id}
+                    className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/30 transition-all hover:bg-destructive/10 hover:text-destructive/60 disabled:opacity-30"
+                    title="Dismiss"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </TooltipProvider>

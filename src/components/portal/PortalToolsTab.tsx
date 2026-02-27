@@ -229,54 +229,51 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
 
   return (
     <>
-      {/* Filter Section */}
-      <div className="border-b border-border/50 pb-6 mb-8">
+      {/* Top bar: filters (mobile) + edit mode */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        {/* Mobile horizontal filter chips */}
         {availableCategories.length > 1 && (
-          <div className="mb-4">
-            <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">Filter by category</p>
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setActiveFilter(null)}
-                className={`rounded-full border px-5 py-2 text-xs font-medium transition-all active:scale-[0.97] ${
-                  !activeFilter ? "border-primary bg-primary/10 text-primary shadow-sm" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                }`}
-              >
-                All <span className="ml-1 opacity-60">({toolCounts.all})</span>
-              </button>
-              {availableCategories.map((cat) => {
-                const cfg = categoryConfig[cat] || categoryConfig.general;
-                const count = toolCounts[cat] || 0;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveFilter(activeFilter === cat ? null : cat)}
-                    className={`rounded-full border px-5 py-2 text-xs font-medium transition-all active:scale-[0.97] ${
-                      activeFilter === cat ? cfg.color + " border-current shadow-sm" : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                    }`}
-                  >
-                    {cfg.label} <span className="ml-1 opacity-60">({count})</span>
-                  </button>
-                );
-              })}
-            </div>
+          <div className="flex flex-wrap gap-2 lg:hidden">
+            <button
+              onClick={() => setActiveFilter(null)}
+              className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
+                !activeFilter ? "border-white/20 bg-white/[0.08] text-white shadow-sm" : "border-white/[0.08] text-white/40 hover:text-white/70"
+              }`}
+            >
+              All <span className="ml-1 opacity-50">({toolCounts.all})</span>
+            </button>
+            {availableCategories.map((cat) => {
+              const cfg = categoryConfig[cat] || categoryConfig.general;
+              const count = toolCounts[cat] || 0;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveFilter(activeFilter === cat ? null : cat)}
+                  className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
+                    activeFilter === cat ? cfg.color + " border-current shadow-sm" : "border-white/[0.08] text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  {cfg.label} <span className="ml-1 opacity-50">({count})</span>
+                </button>
+              );
+            })}
           </div>
         )}
 
-        {/* Edit Mode Toggle */}
         {isAdmin && (
-          <div className="flex items-center justify-end">
+          <div className="ml-auto flex items-center">
             {isEditMode ? (
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={handleSaveLayout}
-                  className="inline-flex items-center gap-1.5 rounded-lg border-2 border-primary bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-all hover:bg-primary/20"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20"
                 >
                   <Check size={12} />
                   Save Layout
                 </button>
                 <button
                   onClick={() => setIsEditMode(false)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs font-medium text-white/40 transition-all hover:bg-white/[0.04] hover:text-white/70"
                 >
                   <X size={12} />
                   Cancel
@@ -285,7 +282,7 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
             ) : (
               <button
                 onClick={() => setIsEditMode(true)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:border-primary/30 hover:text-foreground"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs font-medium text-white/40 transition-all hover:border-white/20 hover:text-white/70"
               >
                 <Pencil size={12} />
                 Edit Layout
@@ -296,57 +293,106 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
         )}
       </div>
 
-      {/* Grid */}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={visibleTools.map((t) => t.id)} strategy={rectSortingStrategy}>
-          <div className={`grid gap-5 sm:gap-6 ${
-            isEditMode
-              ? "grid-cols-2 sm:grid-cols-3 auto-rows-[110px] sm:auto-rows-[130px] md:auto-rows-[150px]"
-              : "grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 auto-rows-auto"
-          }`}>
-            <AnimatePresence mode="popLayout">
-              {visibleTools.map((tool, i) => (
-                <motion.div
-                  key={tool.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.25, delay: i * 0.03 }}
-                >
-                  <SortableToolCard
-                    tool={tool}
-                    index={i}
-                    isAdmin={isAdmin}
-                    isEditMode={isEditMode}
-                    cardSize={isEditMode ? (cardSizes[tool.id] || "1x1") : "1x1"}
-                    IconComponent={getIcon(tool.icon)}
-                    onToolClick={handleToolClick}
-                    onOpenTool={handleOpenTool}
-                    onSettings={(t) => setSettingsTool(t)}
-                    onCycleSize={handleCycleSize}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
+      {/* Two-column layout: Grid + Categories sidebar */}
+      <div className="flex gap-6">
+        {/* Main grid */}
+        <div className="min-w-0 flex-1">
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={visibleTools.map((t) => t.id)} strategy={rectSortingStrategy}>
+              <div className={`grid gap-4 sm:gap-5 ${
+                isEditMode
+                  ? "grid-cols-2 sm:grid-cols-3 auto-rows-[110px] sm:auto-rows-[130px] md:auto-rows-[150px]"
+                  : "grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-auto"
+              }`}>
+                <AnimatePresence mode="popLayout">
+                  {visibleTools.map((tool, i) => (
+                    <motion.div
+                      key={tool.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.25, delay: i * 0.03 }}
+                    >
+                      <SortableToolCard
+                        tool={tool}
+                        index={i}
+                        isAdmin={isAdmin}
+                        isEditMode={isEditMode}
+                        cardSize={isEditMode ? (cardSizes[tool.id] || "1x1") : "1x1"}
+                        IconComponent={getIcon(tool.icon)}
+                        onToolClick={handleToolClick}
+                        onOpenTool={handleOpenTool}
+                        onSettings={(t) => setSettingsTool(t)}
+                        onCycleSize={handleCycleSize}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
 
-            {isAdmin && !isEditMode && (
-              <motion.button
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: visibleTools.length * 0.05 }}
-                onClick={() => setShowAddTool(true)}
-                className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border p-4 text-muted-foreground/50 transition-all hover:border-primary/30 hover:text-muted-foreground"
+                {isAdmin && !isEditMode && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: visibleTools.length * 0.05 }}
+                    onClick={() => setShowAddTool(true)}
+                    className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-white/[0.08] p-4 text-white/20 transition-all hover:border-white/20 hover:text-white/40"
+                  >
+                    <div className="text-center">
+                      <Plus size={20} className="mx-auto mb-1" />
+                      <p className="text-xs">Add tool</p>
+                    </div>
+                  </motion.button>
+                )}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </div>
+
+        {/* Right-side categories panel (desktop only) */}
+        {availableCategories.length > 1 && (
+          <div className="hidden w-44 shrink-0 lg:block">
+            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/30">
+              Categories
+            </p>
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => setActiveFilter(null)}
+                className={`flex items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-medium transition-all ${
+                  !activeFilter
+                    ? "bg-white/[0.08] text-white"
+                    : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
+                }`}
               >
-                <div className="text-center">
-                  <Plus size={20} className="mx-auto mb-1" />
-                  <p className="text-xs">Add tool</p>
-                </div>
-              </motion.button>
-            )}
+                <span>All</span>
+                <span className="tabular-nums opacity-50">{toolCounts.all}</span>
+              </button>
+              {availableCategories.map((cat) => {
+                const cfg = categoryConfig[cat] || categoryConfig.general;
+                const count = toolCounts[cat] || 0;
+                const isActive = activeFilter === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveFilter(isActive ? null : cat)}
+                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-medium transition-all ${
+                      isActive
+                        ? "bg-white/[0.08] text-white"
+                        : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                      {cfg.label}
+                    </span>
+                    <span className="tabular-nums opacity-50">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </SortableContext>
-      </DndContext>
+        )}
+      </div>
 
       <ToolPreviewModal tool={previewTool} onClose={() => setPreviewTool(null)} onEdit={handleEditFromPreview} onOpen={handleOpenTool} onToolUpdated={reloadTools} />
       <SiteAuditModal open={activeModal === "site-audit"} onClose={() => setActiveModal(null)} />

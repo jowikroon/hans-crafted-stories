@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.hansai-chat]
 verify_jwt = false
+
+[functions.intent-router]
+verify_jwt = false
+
+[functions.monday-webhook]
+verify_jwt = false

@@ -4,18 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import CommandSidebar from "@/components/hansai/CommandSidebar";
+import { WORKFLOWS, type WorkflowDef } from "@/lib/config/workflows";
+import { fastRoute } from "@/lib/intent/router";
 
 // ── Config ─────────────────────────────────────────────────────────
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hansai-chat`;
-
-const workflows = [
-  { name: "autoseo", label: "AutoSEO Brain", webhook: "https://n8n.hansvanleeuwen.com/webhook/autoseo" },
-  { name: "product-titles", label: "Product Title Optimizer", webhook: "https://n8n.hansvanleeuwen.com/webhook/product-titles" },
-  { name: "health-check", label: "Health Check", webhook: "https://n8n.hansvanleeuwen.com/webhook/health-check" },
-  { name: "product-feed", label: "Product Feed Optimizer", webhook: "https://n8n.hansvanleeuwen.com/webhook/product-feed" },
-  { name: "campaign", label: "Campaign Generator", webhook: "https://n8n.hansvanleeuwen.com/webhook/campaign" },
-  { name: "scraper", label: "Web Scraper", webhook: "https://n8n.hansvanleeuwen.com/webhook/scraper" },
-];
+const INTENT_ROUTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/intent-router`;
 
 const SLASH_COMMANDS = [
   { cmd: "/help", desc: "Show all commands" },
@@ -57,8 +51,8 @@ const fmtTime = (t: number) => {
 
 const spinnerFrames = ["|", "/", "—", "\\"];
 
-// ── Natural language → command mapping ────────────────────────────
-const mapNaturalLanguage = (text: string): { cmd: string; arg: string } | null => {
+// ── Natural language → slash command mapping (tasks/ideas/clear only) ─
+const mapNaturalLanguageSlash = (text: string): { cmd: string; arg: string } | null => {
   const lower = text.toLowerCase().trim();
   if (/^(capture |save |add )?idea[:\s]/i.test(lower)) {
     return { cmd: "/idea", arg: text.replace(/^(capture |save |add )?idea[:\s]*/i, "").trim() };
@@ -69,16 +63,61 @@ const mapNaturalLanguage = (text: string): { cmd: string; arg: string } | null =
   if (/^(what |show |list |my )?(tasks|ideas|todo)/i.test(lower)) {
     return { cmd: "/tasks", arg: "" };
   }
-  if (/^(trigger|run|start|launch) (the )?/i.test(lower)) {
-    const wfName = lower.replace(/^(trigger|run|start|launch) (the )?/i, "").replace(/ workflow$/i, "").trim();
-    return { cmd: "/run", arg: wfName };
-  }
   if (/^(write|create|generate|build) .*(seo|prompt|ad copy|email|product desc)/i.test(lower)) {
     return { cmd: "/prompt", arg: "" };
   }
   if (/^clear/i.test(lower)) return { cmd: "/clear", arg: "" };
   return null;
 };
+
+// ── LLM intent classification via edge function ──────────────────
+interface IntentResult {
+  intent: string;
+  confidence: number;
+  missing_params: string[] | null;
+  clarification: string | null;
+}
+
+async function classifyIntent(input: string): Promise<IntentResult> {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+
+    const res = await fetch(INTENT_ROUTER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ input }),
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.error("Intent classification failed:", e);
+    return { intent: "unknown", confidence: 0, missing_params: null, clarification: null };
+  }
+}
+
+async function logUnhandledIntent(
+  userInput: string,
+  fastRouteScore: number,
+  llmIntent?: string,
+  llmConfidence?: number,
+) {
+  try {
+    await supabase.from("unhandled_intents").insert({
+      user_input: userInput,
+      source: "hansai",
+      fast_route_score: fastRouteScore,
+      llm_intent: llmIntent || null,
+      llm_confidence: llmConfidence || null,
+    });
+  } catch (e) {
+    console.error("Failed to log unhandled intent:", e);
+  }
+}
 
 // ── Component ──────────────────────────────────────────────────────
 const HansAI = () => {
@@ -98,6 +137,7 @@ const HansAI = () => {
   const [showForm, setShowForm] = useState<"campaign" | "prompt" | null>(null);
   const [spinnerIdx, setSpinnerIdx] = useState(0);
   const [clearFlash, setClearFlash] = useState(false);
+  const [pendingClarification, setPendingClarification] = useState<WorkflowDef[] | null>(null);
   const [commandHistory, setCommandHistory] = useState<{ text: string; timestamp: number; type: "slash" | "ai" | "workflow" }[]>([]);
 
   // AI conversation history (not displayed, for context)
@@ -171,17 +211,11 @@ const HansAI = () => {
   };
 
   const handleWorkflows = () => {
-    const list = workflows.map((w) => `  ● ${w.name.padEnd(18)} ${w.label}`).join("\n");
+    const list = WORKFLOWS.map((w) => `  ● ${w.name.padEnd(18)} ${w.label}`).join("\n");
     addLine("system", `Available n8n workflows:\n${list}\n\n  Use /run [name] to trigger.`);
   };
 
-  const handleRun = async (name: string) => {
-    const wf = workflows.find((w) => w.name === name || w.label.toLowerCase().includes(name.toLowerCase()));
-    if (!wf) {
-      addLine("error", `Unknown workflow: "${name}". Use /workflows to see available ones.`);
-      return;
-    }
-
+  const handleRunWorkflow = async (wf: WorkflowDef) => {
     addLine("workflow", `Running ${wf.label}...`);
     setLoading(true);
 
@@ -209,6 +243,15 @@ const HansAI = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRun = async (name: string) => {
+    const wf = WORKFLOWS.find((w) => w.name === name || w.label.toLowerCase().includes(name.toLowerCase()));
+    if (!wf) {
+      addLine("error", `Unknown workflow: "${name}". Use /workflows to see available ones.`);
+      return;
+    }
+    await handleRunWorkflow(wf);
   };
 
   const handleClear = () => {
@@ -314,7 +357,7 @@ const HansAI = () => {
     setLoading(true);
 
     try {
-      const wf = workflows.find((w) => w.name === "campaign");
+      const wf = WORKFLOWS.find((w) => w.name === "campaign");
       if (!wf) throw new Error("Campaign workflow not configured");
 
       const res = await fetch(wf.webhook, {
@@ -339,16 +382,28 @@ const HansAI = () => {
     await handleAI(prompt);
   };
 
+  const handleClarificationSelect = async (wf: WorkflowDef) => {
+    setPendingClarification(null);
+    addLine("user", `→ ${wf.label}`);
+    await handleRunWorkflow(wf);
+  };
+
+  const handleClarificationSomethingElse = async (originalInput: string) => {
+    setPendingClarification(null);
+    addLine("system", "I've logged this request. I'll learn from it over time.");
+    await logUnhandledIntent(originalInput, 0, undefined, undefined);
+    await handleAI(originalInput);
+  };
+
   // ── Main command router ─────────────────────────────────────────
   const processInput = async (raw: string) => {
     const trimmed = raw.trim();
     if (!trimmed) return;
 
-    // Track command history
     const cmdType: "slash" | "ai" | "workflow" = trimmed.startsWith("/run") ? "workflow" : trimmed.startsWith("/") ? "slash" : "ai";
     setCommandHistory((prev) => [...prev, { text: trimmed, timestamp: Date.now(), type: cmdType }]);
 
-    // Check for slash commands
+    // 1. Slash commands
     if (trimmed.startsWith("/")) {
       const [cmd, ...rest] = trimmed.split(" ");
       const arg = rest.join(" ").trim();
@@ -369,14 +424,13 @@ const HansAI = () => {
       return;
     }
 
-    // Natural language mapping
-    const mapped = mapNaturalLanguage(trimmed);
+    // 2. Simple slash-like natural language (tasks, ideas, clear, prompt)
+    const mapped = mapNaturalLanguageSlash(trimmed);
     if (mapped) {
       switch (mapped.cmd) {
         case "/idea": handleIdea(mapped.arg); break;
         case "/task": handleTask(mapped.arg); break;
         case "/tasks": handleTasks(); break;
-        case "/run": await handleRun(mapped.arg); break;
         case "/clear": handleClear(); break;
         case "/prompt": setShowForm("prompt"); addLine("system", "Opening prompt builder..."); break;
         default: break;
@@ -384,7 +438,64 @@ const HansAI = () => {
       return;
     }
 
-    // Default: send to AI
+    // 3. Fast keyword router
+    const route = fastRoute(trimmed);
+
+    if (route.confidence >= 0.85 && route.workflow) {
+      await handleRunWorkflow(route.workflow);
+      return;
+    }
+
+    if (route.confidence >= 0.5 && route.alternatives && route.alternatives.length > 0) {
+      addLine("system", "Did you mean one of these workflows?");
+      setPendingClarification(route.alternatives);
+      return;
+    }
+
+    // 4. LLM fallback for low-confidence input
+    if (route.confidence < 0.5) {
+      setLoading(true);
+      addLine("system", "Classifying intent...");
+      const llmResult = await classifyIntent(trimmed);
+      setLoading(false);
+
+      if (llmResult.intent !== "unknown" && llmResult.confidence >= 0.7) {
+        const wf = WORKFLOWS.find((w) => w.name === llmResult.intent);
+        if (wf) {
+          await handleRunWorkflow(wf);
+          return;
+        }
+      }
+
+      if (llmResult.clarification) {
+        addLine("system", llmResult.clarification);
+        // #region agent log
+        fetch('http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'03c957'},body:JSON.stringify({sessionId:'03c957',runId:'pre-fix',hypothesisId:'H1',location:'src/pages/HansAI.tsx:472',message:'LLM clarification branch entered',data:{intent:llmResult.intent,confidence:llmResult.confidence,workflowCount:WORKFLOWS.length},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        const matchingWfs = WORKFLOWS.filter(
+          (w) => w.name === llmResult.intent || llmResult.confidence >= 0.3,
+        ).slice(0, 3);
+        // #region agent log
+        fetch('http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'03c957'},body:JSON.stringify({sessionId:'03c957',runId:'pre-fix',hypothesisId:'H2',location:'src/pages/HansAI.tsx:476',message:'matching workflows computed',data:{intent:llmResult.intent,confidence:llmResult.confidence,matchedNames:matchingWfs.map((m)=>m.name),allNames:WORKFLOWS.map((wf)=>wf.name)},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        if (matchingWfs.length > 0) {
+          setPendingClarification(matchingWfs);
+          return;
+        }
+      }
+
+      if (llmResult.intent === "unknown") {
+        await logUnhandledIntent(
+          trimmed,
+          route.confidence,
+          llmResult.intent,
+          llmResult.confidence,
+        );
+        addLine("system", "I've logged this request. I'll learn from it over time.");
+      }
+    }
+
+    // 5. Fallback: general AI chat
     await handleAI(trimmed);
   };
 
@@ -480,6 +591,29 @@ const HansAI = () => {
             <div className="flex items-center gap-2 py-1 text-xs" style={{ color: "#00ff88", opacity: 0.6 }}>
               <span className="w-3 text-center">{spinnerFrames[spinnerIdx]}</span>
               <span>Processing...</span>
+            </div>
+          )}
+
+          {/* Clarification options */}
+          {pendingClarification && (
+            <div className="my-2 flex flex-wrap gap-2">
+              {pendingClarification.map((wf) => (
+                <button
+                  key={wf.name}
+                  onClick={() => handleClarificationSelect(wf)}
+                  className="rounded-md border px-3 py-1.5 text-xs font-medium transition-all hover:border-[#00ff88]/50 hover:bg-[#00ff88]/10"
+                  style={{ borderColor: "#1e1e1e", color: "#00ff88", background: "rgba(0,255,136,0.05)" }}
+                >
+                  {wf.label}
+                </button>
+              ))}
+              <button
+                onClick={() => handleClarificationSomethingElse(commandHistory[commandHistory.length - 1]?.text || "")}
+                className="rounded-md border px-3 py-1.5 text-xs transition-all hover:border-[#666] hover:bg-white/5"
+                style={{ borderColor: "#1e1e1e", color: "#666" }}
+              >
+                Something else
+              </button>
             </div>
           )}
 

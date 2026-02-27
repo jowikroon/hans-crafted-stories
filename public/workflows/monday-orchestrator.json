@@ -1,0 +1,202 @@
+{
+  "name": "Monday.com Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "monday-orchestrator",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Monday Webhook Receiver",
+      "type": "n8n-nodes-base.webhook",
+      "position": [200, 300],
+      "webhookId": "monday-orchestrator",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            { "conditions": { "options": { "leftValue": "={{ $json.workflow }}", "operation": "equals", "rightValue": "autoseo" } }, "renameOutput": "AutoSEO" },
+            { "conditions": { "options": { "leftValue": "={{ $json.workflow }}", "operation": "equals", "rightValue": "product-titles" } }, "renameOutput": "ProductTitles" },
+            { "conditions": { "options": { "leftValue": "={{ $json.workflow }}", "operation": "equals", "rightValue": "health-check" } }, "renameOutput": "HealthCheck" },
+            { "conditions": { "options": { "leftValue": "={{ $json.workflow }}", "operation": "equals", "rightValue": "product-feed" } }, "renameOutput": "ProductFeed" },
+            { "conditions": { "options": { "leftValue": "={{ $json.workflow }}", "operation": "equals", "rightValue": "campaign" } }, "renameOutput": "Campaign" },
+            { "conditions": { "options": { "leftValue": "={{ $json.workflow }}", "operation": "equals", "rightValue": "scraper" } }, "renameOutput": "Scraper" }
+          ]
+        },
+        "options": { "fallbackOutput": "extra" }
+      },
+      "id": "workflow-router",
+      "name": "Route by Workflow",
+      "type": "n8n-nodes-base.switch",
+      "position": [440, 300],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.hansvanleeuwen.com/webhook/autoseo",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "source", "value": "={{ $json.source }}" },
+            { "name": "monday_item_id", "value": "={{ $json.monday_item_id }}" },
+            { "name": "item_name", "value": "={{ $json.item_name }}" },
+            { "name": "timestamp", "value": "={{ $json.timestamp }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "call-autoseo",
+      "name": "Call AutoSEO",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [700, 100],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.hansvanleeuwen.com/webhook/product-titles",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "source", "value": "={{ $json.source }}" },
+            { "name": "monday_item_id", "value": "={{ $json.monday_item_id }}" },
+            { "name": "item_name", "value": "={{ $json.item_name }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "call-product-titles",
+      "name": "Call Product Titles",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [700, 220],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.hansvanleeuwen.com/webhook/health-check",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "source", "value": "={{ $json.source }}" },
+            { "name": "monday_item_id", "value": "={{ $json.monday_item_id }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "call-health-check",
+      "name": "Call Health Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [700, 340],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.hansvanleeuwen.com/webhook/product-feed",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "source", "value": "={{ $json.source }}" },
+            { "name": "monday_item_id", "value": "={{ $json.monday_item_id }}" },
+            { "name": "item_name", "value": "={{ $json.item_name }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "call-product-feed",
+      "name": "Call Product Feed",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [700, 460],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.hansvanleeuwen.com/webhook/campaign",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "source", "value": "={{ $json.source }}" },
+            { "name": "monday_item_id", "value": "={{ $json.monday_item_id }}" },
+            { "name": "item_name", "value": "={{ $json.item_name }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "call-campaign",
+      "name": "Call Campaign",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [700, 580],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.hansvanleeuwen.com/webhook/scraper",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "source", "value": "={{ $json.source }}" },
+            { "name": "monday_item_id", "value": "={{ $json.monday_item_id }}" },
+            { "name": "item_name", "value": "={{ $json.item_name }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "call-scraper",
+      "name": "Call Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [700, 700],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, workflow: $json.workflow, item_id: $json.monday_item_id }) }}"
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [960, 300],
+      "typeVersion": 1.1
+    }
+  ],
+  "connections": {
+    "Monday Webhook Receiver": {
+      "main": [
+        [
+          {
+            "node": "Route by Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Workflow": {
+      "main": [
+        [{ "node": "Call AutoSEO", "type": "main", "index": 0 }],
+        [{ "node": "Call Product Titles", "type": "main", "index": 0 }],
+        [{ "node": "Call Health Check", "type": "main", "index": 0 }],
+        [{ "node": "Call Product Feed", "type": "main", "index": 0 }],
+        [{ "node": "Call Campaign", "type": "main", "index": 0 }],
+        [{ "node": "Call Scraper", "type": "main", "index": 0 }]
+      ]
+    },
+    "Call AutoSEO": { "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]] },
+    "Call Product Titles": { "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]] },
+    "Call Health Check": { "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]] },
+    "Call Product Feed": { "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]] },
+    "Call Campaign": { "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]] },
+    "Call Scraper": { "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateId": "monday-orchestrator-v1",
+    "description": "Receives dispatched Monday.com item events from the monday-webhook edge function, routes to the appropriate sub-workflow by name, and responds with success status."
+  },
+  "tags": ["monday", "orchestrator", "routing"]
+}
