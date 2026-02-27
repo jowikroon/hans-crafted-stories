@@ -10,6 +10,7 @@ import Footer from "./components/Footer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
 import EmpireTerminalCard from "./components/empire/EmpireTerminalCard";
 import CookieConsent from "./components/CookieConsent";
+import TrackingScriptInjector from "./components/TrackingScriptInjector";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const AppShell = () => {
         {!isDarkPage && <Footer />}
         {!isDarkPage && <EmpireTerminalCard />}
         <CookieConsent />
+        <TrackingScriptInjector />
       </LangProvider>
     </AuthProvider>
   );
