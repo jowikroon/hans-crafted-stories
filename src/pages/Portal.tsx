@@ -38,6 +38,14 @@ const N8N_SUGGESTIONS = [
 
 type Tab = "tools" | "content" | "pages" | "status" | "users";
 
+const subMenuItems: Record<Tab, string[]> = {
+  tools: ["All", "SEO", "Automation", "Data", "AI", "General"],
+  content: ["All", "Blog Posts", "Case Studies"],
+  pages: ["All", "Published", "Hidden"],
+  users: ["All", "Admins", "Members"],
+  status: ["All", "Healthy", "Issues"],
+};
+
 const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
   { id: "tools", label: "Tools", icon: Wrench, hint: "Manage SEO tools and integrations" },
   { id: "content", label: "Content", icon: FileText, hint: "Blog posts and case studies" },
@@ -53,6 +61,7 @@ const Portal = () => {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [activeTab, setActiveTab] = useState<Tab>("tools");
   const [empireOpen, setEmpireOpen] = useState(false);
+  const [subFilter, setSubFilter] = useState<string>("All");
   const [n8nOpen, setN8nOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [empireHover, setEmpireHover] = useState(false);
@@ -297,14 +306,14 @@ const Portal = () => {
         </AnimatePresence>
 
         {/* Tab Navigation */}
-        <div className="mb-8 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:mb-8 sm:overflow-visible">
+        <div className="mb-2 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:overflow-visible">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => { setActiveTab(tab.id); setSubFilter("All"); }}
                 className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:py-2 ${
                   isActive
                     ? "bg-background text-foreground shadow-sm"
@@ -317,6 +326,29 @@ const Portal = () => {
             );
           })}
         </div>
+        <nav className="mb-6 flex items-center overflow-x-auto">
+          {subMenuItems[activeTab].map((item, i) => {
+            const isActive = subFilter === item;
+            return (
+              <div key={item} className="flex items-center">
+                <button
+                  onClick={() => setSubFilter(item)}
+                  className={`whitespace-nowrap px-3 py-1.5 text-xs transition-colors ${
+                    isActive
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {item}
+                </button>
+                {i < subMenuItems[activeTab].length - 1 && (
+                  <div className="h-3.5 w-px bg-border" />
+                )}
+              </div>
+            );
+          })}
+        </nav>
+
 
         {/* Tab Content */}
         {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} />}
