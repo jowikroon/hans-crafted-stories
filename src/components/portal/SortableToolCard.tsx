@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ExternalLink, Settings, Sparkles, GripVertical, Maximize2, Minimize2, Search, Zap, Globe, Cpu, Bot, Code, BarChart3, Rss, Puzzle, Workflow } from "lucide-react";
 import { PortalTool } from "@/lib/api/portal";
 import { Badge } from "@/components/ui/badge";
-import InfoTooltip from "./InfoTooltip";
+
 
 /* ─── Category config ─── */
 const categoryConfig: Record<string, { label: string; color: string; accent: string; dot: string; gradient: string }> = {
@@ -159,7 +159,6 @@ const SortableToolCard = ({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <h3 className="font-display text-[14px] sm:text-[15px] font-semibold leading-snug text-foreground line-clamp-2 break-words">{tool.name}</h3>
-                <InfoTooltip text={tool.description || "Open this tool"} />
                 <ExternalLink size={10} className="ml-auto shrink-0 opacity-0 transition-opacity group-hover:opacity-50" />
               </div>
               <div className="flex items-center gap-2 mt-0.5">

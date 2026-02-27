@@ -16,7 +16,7 @@ import ToolPreviewModal from "./ToolPreviewModal";
 import IframeToolModal from "./IframeToolModal";
 import WorkflowViewerModal from "./WorkflowViewerModal";
 import N8nAgentModal from "./N8nAgentModal";
-import InfoTooltip from "./InfoTooltip";
+
 import SortableToolCard, { type CardSize, sizeCycle, categoryConfig } from "./SortableToolCard";
 
 const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles, Bot, Search, Zap, BarChart3, Code, Puzzle, Cpu };
@@ -286,7 +286,6 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
               >
                 <Pencil size={12} />
                 Edit Layout
-                <InfoTooltip text="Drag to reorder, click resize to change card size" />
               </button>
             )}
           </div>
