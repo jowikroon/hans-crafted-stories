@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
-import InfoTooltip from "@/components/portal/InfoTooltip";
+
 
 const EMPIRE_SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
 You manage n8n workflows, Cloudflare Workers, VPS servers, Docker MCP Gateway, Supabase, and Claude Code CLI sessions.
@@ -56,9 +56,16 @@ const Portal = () => {
   const [n8nOpen, setN8nOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") return localStorage.getItem(DARK_MODE_KEY) === "true";
-    return false;
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(DARK_MODE_KEY);
+      return stored !== null ? stored === "true" : true;
+    }
+    return true;
   });
+  const [empireHover, setEmpireHover] = useState(false);
+  const [n8nHover, setN8nHover] = useState(false);
+  const empireTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const n8nTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -196,32 +203,48 @@ const Portal = () => {
               {isDark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
 
-            <button
-              onClick={() => setEmpireOpen((v) => !v)}
-              className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
-                empireOpen
-                  ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_12px_hsl(160_80%_45%/0.2)]"
-                  : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:text-foreground"
-              }`}
-            >
-              <Terminal size={14} />
-              <span className="hidden sm:inline">Empire AI</span>
-              <InfoTooltip text="AI assistant for infrastructure management and n8n workflows" />
-              <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘E</kbd>
-            </button>
-            <button
-              onClick={() => setN8nOpen((v) => !v)}
-              className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
-                n8nOpen
-                  ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)]"
-                  : "border border-border text-muted-foreground hover:border-purple-500/40 hover:text-foreground"
-              }`}
-            >
-              <Zap size={14} />
-              <span className="hidden sm:inline">n8n Agent</span>
-              <InfoTooltip text="Build, fix, and troubleshoot n8n automation workflows" />
-              <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘J</kbd>
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setEmpireOpen((v) => !v)}
+                onMouseEnter={() => { empireTimerRef.current = setTimeout(() => setEmpireHover(true), 1000); }}
+                onMouseLeave={() => { clearTimeout(empireTimerRef.current); setEmpireHover(false); }}
+                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
+                  empireOpen
+                    ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_16px_hsl(160_80%_45%/0.35)]"
+                    : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(160_80%_45%/0.15)]"
+                }`}
+              >
+                <Terminal size={14} />
+                <span className="hidden sm:inline">Empire AI</span>
+                <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘E</kbd>
+              </button>
+              {empireHover && !empireOpen && (
+                <div className="absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-popover px-3 py-1.5 text-[11px] text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95 duration-200">
+                  Build, automate &amp; manage your AI infrastructure
+                </div>
+              )}
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setN8nOpen((v) => !v)}
+                onMouseEnter={() => { n8nTimerRef.current = setTimeout(() => setN8nHover(true), 1000); }}
+                onMouseLeave={() => { clearTimeout(n8nTimerRef.current); setN8nHover(false); }}
+                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
+                  n8nOpen
+                    ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_16px_hsl(270_80%_55%/0.35)]"
+                    : "border border-border text-muted-foreground hover:border-purple-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(270_80%_55%/0.15)]"
+                }`}
+              >
+                <Zap size={14} />
+                <span className="hidden sm:inline">n8n Agent</span>
+                <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘J</kbd>
+              </button>
+              {n8nHover && !n8nOpen && (
+                <div className="absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-popover px-3 py-1.5 text-[11px] text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95 duration-200">
+                  Build, fix &amp; troubleshoot automation workflows
+                </div>
+              )}
+            </div>
             <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
@@ -299,7 +322,7 @@ const Portal = () => {
               >
                 <Icon size={14} />
                 <span className="hidden sm:inline">{tab.label}</span>
-                <InfoTooltip text={tab.hint} />
+                
               </button>
             );
           })}
