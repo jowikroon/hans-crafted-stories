@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Terminal, Search, Command, Bot } from "lucide-react";
+import { Menu, X, LogIn, Terminal, Search, Command, Bot, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
@@ -9,6 +9,8 @@ import HansAIOverlay from "@/components/overlays/HansAIOverlay";
 import EmpireOverlay from "@/components/overlays/EmpireOverlay";
 import { translations } from "@/data/translations";
 import type { Lang } from "@/hooks/useLang";
+
+const THEME_KEY = "site_theme";
 
 const getLinks = (lang: Lang) => {
   const t = translations[lang].nav;
@@ -50,7 +52,21 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const t = translations[lang].nav;
   const links = getLinks(lang);
 
-  const isDark = variant === "dark";
+  // Global theme state — default light; Portal forces dark via its own effect
+  const [siteTheme, setSiteTheme] = useState<"light" | "dark">(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(THEME_KEY);
+      if (stored === "dark") return "dark";
+    }
+    return "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", siteTheme === "dark");
+    localStorage.setItem(THEME_KEY, siteTheme);
+  }, [siteTheme]);
+
+  const isDark = variant === "dark" || siteTheme === "dark";
 
   const filteredPages = searchQuery.trim()
     ? searchablePages.filter(
@@ -164,42 +180,53 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         )}
       </AnimatePresence>
 
-      {/* ═══ 2-ROW NAVBAR ═══ */}
+      {/* ═══ SINGLE-ROW NAVBAR ═══ */}
       <nav className={`fixed top-0 z-50 w-full backdrop-blur-md transition-colors ${isDark ? "bg-[hsl(220,20%,6%)]/90" : "bg-background/80"}`}>
-        {/* ─── ROW 1: Brand + Search + Lang + Login/Portal ─── */}
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex items-center justify-between h-12">
             {/* Brand */}
-            <Link to="/" className={`font-display text-lg font-bold tracking-tight transition-colors ${isDark ? "text-emerald-300" : "text-foreground"}`}>
+            <Link to="/" className={`shrink-0 font-display text-base sm:text-lg font-bold tracking-tight transition-colors ${isDark ? "text-emerald-300" : "text-foreground"}`}>
               Hans van Leeuwen
             </Link>
 
-            {/* Right cluster */}
-            <div className="flex items-center gap-2.5">
-              {/* Search — desktop */}
+            {/* Center cluster — search + nav pills (desktop) */}
+            <div className="hidden md:flex items-center gap-1">
+              {links.map((l) => navPill(l.to, l.label))}
+              <div className={`mx-2 h-4 w-px ${isDark ? "bg-emerald-500/15" : "bg-border"}`} />
               <button
                 onClick={() => setSearchOpen(true)}
-                className={`hidden md:flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-all ${
+                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all ${
                   isDark
                     ? "border-emerald-500/15 bg-emerald-500/5 text-emerald-400/50 hover:border-emerald-500/30 hover:text-emerald-300"
                     : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground hover:border-primary/20"
                 }`}
               >
-                <Search size={12} />
-                <span className="hidden lg:inline">{t.search}</span>
+                <Search size={11} />
                 <kbd className={`inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[9px] font-mono ${isDark ? "border-emerald-500/15 text-emerald-400/25" : "border-border bg-background text-muted-foreground/60"}`}>
                   <Command size={8} />K
                 </kbd>
               </button>
+            </div>
+
+            {/* Right cluster */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Theme toggle */}
+              <button
+                onClick={() => setSiteTheme(siteTheme === "dark" ? "light" : "dark")}
+                className={`rounded-full p-1.5 transition-all ${isDark ? "text-emerald-400/50 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+                aria-label={siteTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {siteTheme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+              </button>
 
               <LangSwitch />
 
-              <div className={`hidden md:block h-4 w-px ${isDark ? "bg-emerald-500/15" : "bg-border"}`} />
+              <div className={`hidden sm:block h-4 w-px ${isDark ? "bg-emerald-500/15" : "bg-border"}`} />
 
               {/* Portal / Login */}
               <Link
                 to="/portal"
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
                   isActive("/portal")
                     ? isDark ? "bg-emerald-500/15 text-emerald-300" : "bg-primary/10 text-primary"
                     : isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -208,12 +235,12 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 {user ? (
                   <>
                     <img src={user.user_metadata?.avatar_url || ""} alt="" className="h-4 w-4 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                    {t.portal}
+                    <span className="hidden sm:inline">{t.portal}</span>
                   </>
                 ) : (
                   <>
                     <LogIn size={12} />
-                    {t.login}
+                    <span className="hidden sm:inline">{t.login}</span>
                   </>
                 )}
               </Link>
@@ -232,16 +259,10 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         {/* Subtle separator */}
         <div className={`h-px ${isDark ? "bg-emerald-500/8" : "bg-border/50"}`} />
 
-        {/* ─── ROW 2: Nav pills + AI/Empire links ─── */}
-        <div className="mx-auto max-w-6xl px-6 hidden md:block">
-          <div className="flex items-center justify-between h-10">
-            {/* Page nav pills */}
-            <div className="flex items-center gap-0.5">
-              {links.map((l) => navPill(l.to, l.label))}
-            </div>
-
-            {/* AI + Empire quick links */}
-            {isAdmin && (
+        {/* ─── ROW 2: AI/Empire links (admin only, desktop) ─── */}
+        {isAdmin && (
+          <div className="mx-auto max-w-6xl px-6 hidden md:block">
+            <div className="flex items-center justify-end h-8">
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setAiOpen(true)}
@@ -266,9 +287,9 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   Empire
                 </button>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Bottom border */}
         <div className={`hidden md:block h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug, Search, Moon, Sun } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug, Search } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
@@ -46,7 +46,7 @@ const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
   { id: "status", label: "Status", icon: Activity, hint: "System health and uptime" },
 ];
 
-const DARK_MODE_KEY = "portal_dark_mode";
+const THEME_KEY = "site_theme";
 
 const Portal = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
@@ -55,23 +55,22 @@ const Portal = () => {
   const [empireOpen, setEmpireOpen] = useState(false);
   const [n8nOpen, setN8nOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(DARK_MODE_KEY);
-      return stored !== null ? stored === "true" : true;
-    }
-    return true;
-  });
   const [empireHover, setEmpireHover] = useState(false);
   const [n8nHover, setN8nHover] = useState(false);
   const empireTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const n8nTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const { toast } = useToast();
 
+  // Force dark mode when Portal mounts; restore previous theme on unmount
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
-    localStorage.setItem(DARK_MODE_KEY, String(isDark));
-  }, [isDark]);
+    const prev = localStorage.getItem(THEME_KEY) || "light";
+    document.documentElement.classList.add("dark");
+    localStorage.setItem(THEME_KEY, "dark");
+    return () => {
+      document.documentElement.classList.toggle("dark", prev === "dark");
+      localStorage.setItem(THEME_KEY, prev);
+    };
+  }, []);
 
   useEffect(() => {
     document.title = "Portal — Hans van Leeuwen";
@@ -195,14 +194,6 @@ const Portal = () => {
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
-            <button
-              onClick={() => setIsDark(!isDark)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-2 text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
-              title={isDark ? "Light mode" : "Dark mode"}
-            >
-              {isDark ? <Sun size={14} /> : <Moon size={14} />}
-            </button>
-
             <div className="relative">
               <button
                 onClick={() => setEmpireOpen((v) => !v)}
