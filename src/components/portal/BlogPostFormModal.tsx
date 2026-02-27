@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Tag, Clock, Globe, X } from "lucide-react";
+import { BookOpen, Tag, Clock, Globe, X, Eye, Pencil } from "lucide-react";
 import { BlogPostRow } from "@/lib/api/content";
 import ImageCropUploader from "./ImageCropUploader";
 
@@ -29,6 +29,40 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [imageUrl, setImageUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [tagInput, setTagInput] = useState("");
+  const [previewing, setPreviewing] = useState(false);
+
+  const renderedMarkdown = useMemo(() => {
+    if (!previewing || !content) return "";
+    return content
+      // code blocks
+      .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="rounded-md bg-secondary/60 border border-border p-3 overflow-x-auto text-xs font-mono my-3"><code>$2</code></pre>')
+      // inline code
+      .replace(/`([^`]+)`/g, '<code class="rounded bg-secondary/60 px-1.5 py-0.5 text-xs font-mono">$1</code>')
+      // images
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="rounded-md max-w-full my-2" />')
+      // links
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline" target="_blank" rel="noopener noreferrer">$1</a>')
+      // headings
+      .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-4 mb-1">$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-5 mb-1.5">$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-6 mb-2">$1</h1>')
+      // bold & italic
+      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // blockquotes
+      .replace(/^> (.+)$/gm, '<blockquote class="border-l-2 border-primary/30 pl-3 italic text-muted-foreground my-2">$1</blockquote>')
+      // unordered lists
+      .replace(/^[-*] (.+)$/gm, '<li class="ml-4 list-disc text-sm">$1</li>')
+      // ordered lists
+      .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal text-sm">$1</li>')
+      // horizontal rule
+      .replace(/^---$/gm, '<hr class="border-border my-4" />')
+      // paragraphs (double newline)
+      .replace(/\n\n/g, '</p><p class="my-2 text-sm leading-relaxed">')
+      // single newlines
+      .replace(/\n/g, '<br />');
+  }, [content, previewing]);
 
   useEffect(() => {
     if (post) {
@@ -182,7 +216,29 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
           {/* Content */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Content (Markdown)</Label>
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-medium">Content (Markdown)</Label>
+                <div className="flex rounded-md border border-border p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewing(false)}
+                    className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
+                      !previewing ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Pencil size={10} /> Write
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewing(true)}
+                    className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
+                      previewing ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Eye size={10} /> Preview
+                  </button>
+                </div>
+              </div>
               <div className="flex items-center gap-3 text-[11px] text-muted-foreground/50">
                 <span>{wordCount} words</span>
                 <span>{charCount} chars</span>
@@ -192,13 +248,20 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
                 </span>
               </div>
             </div>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={14}
-              className="font-mono text-xs leading-relaxed"
-              placeholder="Write your article in Markdown..."
-            />
+            {previewing ? (
+              <div
+                className="min-h-[336px] max-h-[336px] overflow-y-auto rounded-md border border-border bg-card p-4 text-sm leading-relaxed prose-sm"
+                dangerouslySetInnerHTML={{ __html: content ? `<p class="my-2 text-sm leading-relaxed">${renderedMarkdown}</p>` : '<p class="text-muted-foreground/40 italic">Nothing to preview yet…</p>' }}
+              />
+            ) : (
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={14}
+                className="font-mono text-xs leading-relaxed"
+                placeholder="Write your article in Markdown..."
+              />
+            )}
           </div>
 
           {/* Category & Tags */}
