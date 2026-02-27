@@ -1,103 +1,73 @@
 
-# Improve Main Menu Content Editor -- Professional UX Redesign
 
-## Overview
+## Transform Blog List to Visual Card Grid with Image Upload
 
-Redesign the Main Menu content editor from a basic modal with flat form fields into a professional, structured editing experience with logical hierarchy, collapsible content groups, change tracking, undo capability, character counts, and an AI-ready architecture.
+### Overview
+Redesign the Writing page from a text-based list layout into a modern card grid (matching the reference design), and add image upload capability to the blog post CMS editor. Each card will feature a cover image, category badge, date, post number, title, and an arrow link icon.
 
-## Current Issues
+### 1. Database: Add `image_url` Column to `blog_posts`
 
-- Flat list of inputs with no visual hierarchy between groups
-- No change tracking per field (only a global "has changes" flag)
-- No character count or field type hints
-- No undo/reset capability
-- No visual distinction between short text, headings, and long descriptions
-- Page cards in the list view are plain -- no visual preview of content status
+Add a nullable `image_url` text column to the `blog_posts` table to store the cover image URL for each post.
 
-## What Changes
+```sql
+ALTER TABLE public.blog_posts
+  ADD COLUMN image_url text DEFAULT '' NOT NULL;
+```
 
-### 1. Redesigned Page Cards in PortalContentTab
+### 2. Update Type Definitions
 
-Replace the plain page buttons with richer cards showing:
-- Page icon (Home, Briefcase, PenLine, User) per page
-- Content group summary (e.g. "Hero, Expertise -- 14 fields")
-- Last updated timestamp from the most recent content row
-- Route path shown as a subtle badge (e.g. `/work`)
+Add `image` (or `imageUrl`) to the `BlogPost` interface in `src/data/types.ts` and update `BlogPostRow` in `src/lib/api/content.ts` to include `image_url`.
 
-### 2. Redesigned PageContentEditorModal
+### 3. Redesign `BlogPostCard` Component
 
-Transform the modal into a professional content editing experience:
+Replace the current horizontal list-item layout with a visual card matching the reference:
 
-**Header area:**
-- Page name with icon
-- Unsaved changes indicator badge
-- Reset All button to revert all changes
+- Full-bleed cover image as card background with dark gradient overlay
+- Category badge (colored pill, top-left)
+- Date badge (top-right)
+- Post number (small monospace text, e.g. "001")
+- Large display title (bottom-left, white text over gradient)
+- Arrow-link icon (bottom-right)
+- Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop
+- Aspect ratio ~4:3 for each card
+- Hover effect: slight scale + overlay shift
 
-**Content groups as collapsible accordion sections:**
-- Each `content_group` (Hero, Expertise, Bio, etc.) rendered as an Accordion item
-- Group header shows field count and changed-field count badge
-- All groups expanded by default, collapsible for focus
+### 4. Update Writing Page Grid Layout
 
-**Smart field rendering based on content type:**
-- Short text (under 60 chars): single-line Input
-- Medium text (60-150 chars): Input with character counter
-- Long text (150+ chars): Textarea with character counter and row auto-sizing
-- Field labels with the `content_key` shown as a subtle monospace sub-label (useful for developers/AI integration)
-
-**Per-field change indicator:**
-- A small dot or highlight on fields that have been modified
-- Individual field reset button (undo icon) to revert a single field
-
-**Footer actions:**
-- Discard Changes button (resets all)
-- Save and Preview button (existing)
-- Save Changes button (existing, with change count badge)
-
-### 3. AI-Ready Architecture (Future-proof)
-
-Add a subtle, non-functional "AI Assist" button placeholder per field group:
-- Sparkles icon with "AI" label, styled as a ghost button
-- On click, shows a toast: "AI content generation coming soon"
-- This creates the UI hook for future AI integration without any backend work now
-
-The `content_key` sub-labels on each field serve as the machine-readable identifiers that an AI system would use to target specific fields.
-
-### 4. Database: Add `content_type` column
-
-Add a `content_type` text column to `page_content` to classify fields:
-- Values: `heading`, `subheading`, `body`, `button`, `label`
-- Default: `body`
-- Seed existing rows with appropriate types based on their content_key
-- This enables smarter field rendering and future AI prompting context
-
-## Technical Changes
-
-### Files Modified
-
-1. **New migration** -- Add `content_type` column to `page_content`, seed types for existing rows
-2. **`src/integrations/supabase/types.ts`** -- Will auto-update with new column
-3. **`src/lib/api/pageContent.ts`** -- Add `content_type` to `PageContentRow` interface
-4. **`src/components/portal/PageContentEditorModal.tsx`** -- Full redesign with:
-   - Accordion-based grouped layout
-   - Character counters on medium/long fields
-   - Per-field change tracking with reset buttons
-   - Unsaved changes badge in header
-   - AI Assist placeholder buttons per group
-   - Smart field type rendering based on `content_type` and value length
-5. **`src/components/portal/PortalContentTab.tsx`** -- Enhanced page cards with icons, group summaries, last-updated info, route badges
-
-### New Dependencies
-None -- uses existing Accordion, Badge, Tooltip, and Collapsible components already in the project.
-
-### Component Structure
+Change the post list container in `Writing.tsx` from a vertical stack to a CSS grid:
 
 ```text
-PageContentEditorModal
-  DialogHeader (page icon + title + unsaved badge + reset all)
-  Accordion (one item per content_group)
-    AccordionItem
-      AccordionTrigger (group name + field count + AI assist btn)
-      AccordionContent
-        ContentField (label + key hint + input/textarea + char count + change dot + reset)
-  DialogFooter (discard + save & preview + save changes)
+grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6
 ```
+
+Pass the `imageUrl` through the mapped posts data.
+
+### 5. Add Image Upload to Blog Post CMS Form
+
+Update `BlogPostFormModal.tsx` to include:
+
+- An image upload field with drag-and-drop or click-to-browse
+- Upload to the existing `bucket` storage bucket (path: `blog-images/{slug}.{ext}`)
+- Preview thumbnail of the current/uploaded image
+- Store the public URL in `image_url`
+
+### 6. Update Content API
+
+Update `BlogPostRow` interface and ensure `createBlogPost` / `updateBlogPost` pass `image_url` through.
+
+---
+
+### Technical Details
+
+**Files to modify:**
+- `supabase/migrations/` -- new migration for `image_url` column
+- `src/data/types.ts` -- add `imageUrl` to `BlogPost`
+- `src/lib/api/content.ts` -- add `image_url` to `BlogPostRow`
+- `src/components/BlogPostCard.tsx` -- full redesign to visual card
+- `src/pages/Writing.tsx` -- switch to grid layout, pass image data
+- `src/components/portal/BlogPostFormModal.tsx` -- add image upload field
+
+**Storage:** Uses the existing public `bucket` storage bucket. Images uploaded to `blog-images/` path. Public URL constructed via `supabase.storage.from('bucket').getPublicUrl()`.
+
+**Fallback:** Cards without an image will show a subtle gradient placeholder background.
+
