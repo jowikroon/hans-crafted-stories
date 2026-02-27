@@ -1,63 +1,62 @@
 
 
-# Dark-by-default Portal + Remove Tooltips + AI Agent Hover Glow
+# Add Sub-Menu Navigation to Portal
 
-## Overview
-Three changes: (1) force dark mode as default, move the toggle to the header, (2) remove all `InfoTooltip` usage from the portal, (3) replace AI agent button tooltips with a 1-second delay hover description + glow effect (50% on hover, 100% on click/active).
+## What changes
+Replace the current rounded pill-style tab bar (lines 299-320) with a clean, minimal sub-menu matching the reference image style:
+- Simple text tabs separated by vertical dividers (`|`)
+- No background container, no rounded pill shape, no icons
+- Active tab gets a subtle bottom border or bolder text
+- Horizontally scrollable on mobile
 
-## Changes
+## Tab labels
+Keep the existing 5 tabs but rename them to match the reference image style:
+- "tools" -> **Overview** (since it's the default/main view)
+- "content" -> **Content Library**
+- "pages" -> **Pages**
+- "users" -> **Users**
+- "status" -> **Status**
 
-### 1. Default to dark mode
-**File: `src/pages/Portal.tsx`**
-- Change the `useState` initializer for `isDark` to default to `true` instead of `false` when no localStorage value exists.
-- The Light/Dark toggle button is already in the header (line 191-197) — no move needed, it stays.
+Wait -- the image shows: Overview, SEO Tools, SEO Tools, Workflows, Content Library. But the user said "Let the categories on the page we have as it is." So I'll keep the existing tab IDs and labels (Tools, Content, Pages, Users, Status) but apply the visual style from the image.
 
-### 2. Remove all InfoTooltip usage from Portal
-**Files affected:**
-- `src/pages/Portal.tsx` — Remove `InfoTooltip` import and all 4 usages:
-  - Line 209: Empire AI button tooltip
-  - Line 222: n8n Agent button tooltip  
-  - Line 302: Tab navigation tooltips (inside the tabs loop)
-- `src/components/portal/PortalToolsTab.tsx` — Remove `InfoTooltip` import and usage on line 289 (Edit Layout button)
-- `src/components/portal/SortableToolCard.tsx` — Remove `InfoTooltip` import and usage on the tool card header (the `?` icon next to tool names)
+## Visual style (from image)
+- No rounded container or background color
+- Tabs displayed as plain text in a row
+- Separated by thin vertical lines (1px border-right or a `|` divider)
+- Active tab: slightly bolder or with a subtle underline
+- Clean, minimal typography matching the site's serif/display font feel
 
-### 3. AI Agent buttons: hover description + glow effect
-**File: `src/pages/Portal.tsx`**
+## File changed
 
-Replace the Empire AI and n8n Agent buttons with enhanced versions that:
+**`src/pages/Portal.tsx`** (lines 299-320 only)
+- Replace the `div` with `rounded-2xl border bg-secondary/50` classes with a simpler container
+- Replace button styling: remove pill backgrounds, add vertical dividers between items
+- Remove icons from tabs (image shows text-only)
+- Keep the same `activeTab` / `setActiveTab` logic untouched
 
-- **Hover description (1s delay)**: On mouse enter, after 1 second, show a small description text below/beside the button:
-  - Empire AI: "Build, automate & manage your AI infrastructure"
-  - n8n Agent: "Build, fix & troubleshoot automation workflows"
-- Use `onMouseEnter`/`onMouseLeave` with a `setTimeout` (1000ms) pattern and local state for each button.
-- **Glow states**:
-  - Default: no glow
-  - Hover: 50% glow — `shadow-[0_0_12px_hsl(160_80%_45%/0.15)]` (emerald) / `shadow-[0_0_12px_hsl(270_80%_55%/0.15)]` (purple)
-  - Active/clicked: 100% glow — `shadow-[0_0_16px_hsl(160_80%_45%/0.35)]` (emerald) / `shadow-[0_0_16px_hsl(270_80%_55%/0.35)]` (purple), plus existing active styles
-- The description appears as a small absolutely-positioned tooltip-like element with fade-in animation.
+## Mobile dock
+The `PortalFloatingDock` component remains unchanged -- it still handles mobile navigation separately.
 
-## Technical Details
+## Technical details
 
-### Hover description component pattern
+The new sub-menu markup will look approximately like:
+
 ```text
-const [empireHover, setEmpireHover] = useState(false);
-const empireTimerRef = useRef<NodeJS.Timeout>();
-
-onMouseEnter -> setTimeout(1000) -> setEmpireHover(true)
-onMouseLeave -> clearTimeout + setEmpireHover(false)
+<nav className="mb-8 flex items-center overflow-x-auto border-b border-border">
+  {tabs.map((tab, i) => (
+    <>
+      <button
+        className={active ? "border-b-2 border-foreground font-medium text-foreground"
+                         : "text-muted-foreground hover:text-foreground"}
+        ...
+      >
+        {tab.label}
+      </button>
+      {i < tabs.length - 1 && <div className="h-4 w-px bg-border" />}
+    </>
+  ))}
+</nav>
 ```
 
-A small `<span>` or `<div>` with `absolute` positioning appears below the button with `animate-fade-in` when the hover state is true.
-
-### Glow CSS classes
-- Hover (50%): `hover:shadow-[0_0_12px_...]` with half-opacity color
-- Active (100%): existing `empireOpen` / `n8nOpen` conditional already applies the border + bg; extend with stronger shadow
-
-### Files changed
-
-| File | Action |
-|---|---|
-| `src/pages/Portal.tsx` | Default dark, remove InfoTooltips, add hover descriptions + glow to AI buttons |
-| `src/components/portal/PortalToolsTab.tsx` | Remove InfoTooltip import + usage |
-| `src/components/portal/SortableToolCard.tsx` | Remove InfoTooltip import + usage |
+No new files, no new dependencies. Only the tab bar styling in `Portal.tsx` is modified.
 
