@@ -13,7 +13,7 @@ const pageLabels: Record<string, string> = {
   work: "Work",
 };
 
-const PortalPagesTab = () => {
+const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
   const { lang, setLang } = useLang();
   const { elements, loading, toggleVisibility } = useAllPageElements();
   const [activePage, setActivePage] = useState<string>("writing");
@@ -23,7 +23,12 @@ const PortalPagesTab = () => {
   }
 
   const pages = Array.from(new Set(elements.map((e) => e.page)));
-  const pageElements = elements.filter((e) => e.page === activePage);
+  const pageElements = elements.filter((e) => {
+    if (e.page !== activePage) return false;
+    if (subFilter === "Published") return e.is_visible;
+    if (subFilter === "Hidden") return !e.is_visible;
+    return true;
+  });
   const groups = Array.from(new Set(pageElements.map((e) => e.element_group)));
 
   return (

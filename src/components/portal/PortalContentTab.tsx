@@ -16,9 +16,10 @@ import InfoTooltip from "./InfoTooltip";
 interface PortalContentTabProps {
   userId?: string;
   isAdmin?: boolean;
+  subFilter?: string;
 }
 
-const PortalContentTab = ({ userId, isAdmin = false }: PortalContentTabProps) => {
+const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentTabProps) => {
   const [posts, setPosts] = useState<BlogPostRow[]>([]);
   const [studies, setStudies] = useState<CaseStudyRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,10 +117,13 @@ const PortalContentTab = ({ userId, isAdmin = false }: PortalContentTabProps) =>
     );
   }
 
+  const showBlogs = canViewBlogs && (!subFilter || subFilter === "All" || subFilter === "Blog Posts");
+  const showStudies = canViewStudies && (!subFilter || subFilter === "All" || subFilter === "Case Studies");
+
   return (
     <div className="space-y-8">
       {/* ── Blog Posts ──────────────────────────────────── */}
-      {canViewBlogs && (
+      {showBlogs && (
         <div>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -174,7 +178,7 @@ const PortalContentTab = ({ userId, isAdmin = false }: PortalContentTabProps) =>
       )}
 
       {/* ── Case Studies ───────────────────────────────── */}
-      {canViewStudies && (
+      {showStudies && (
         <div>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">

@@ -351,11 +351,11 @@ const Portal = () => {
 
 
         {/* Tab Content */}
-        {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} />}
-        {activeTab === "content" && <PortalContentTab userId={user.id} isAdmin={isAdmin} />}
-        {activeTab === "pages" && <PortalPagesTab />}
-        {activeTab === "users" && <PortalUsersManager adminUserId={user.id} />}
-        {activeTab === "status" && <PortalStatusTab />}
+        {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
+        {activeTab === "content" && <PortalContentTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
+        {activeTab === "pages" && <PortalPagesTab subFilter={subFilter} />}
+        {activeTab === "users" && <PortalUsersManager adminUserId={user.id} subFilter={subFilter} />}
+        {activeTab === "status" && <PortalStatusTab subFilter={subFilter} />}
       </motion.div>
 
       <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />

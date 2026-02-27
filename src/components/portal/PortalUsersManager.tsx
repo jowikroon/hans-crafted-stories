@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 interface PortalUsersManagerProps {
   adminUserId: string;
+  subFilter?: string;
 }
 
 const contentTypes = [
@@ -37,7 +38,7 @@ const aiModels = [
 
 type AccessSection = "tabs" | "tools" | "content" | "ai";
 
-const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
+const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps) => {
   const { toast } = useToast();
   const [profiles, setProfiles] = useState<PortalProfile[]>([]);
   const [tools, setTools] = useState<PortalTool[]>([]);
@@ -400,7 +401,13 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
         </div>
       ) : (
         <div className="space-y-3">
-          {profiles.map((profile) => {
+          {profiles.filter((p) => {
+            if (!subFilter || subFilter === "All") return true;
+            const tabCount = (p.tab_access || []).length;
+            if (subFilter === "Admins") return tabCount >= 5;
+            if (subFilter === "Members") return tabCount < 5;
+            return true;
+          }).map((profile) => {
             const isExpanded = expandedUser === profile.id;
             const isSelected = selectedIds.has(profile.id);
             const summary = isExpanded ? getAccessSummary(profile) : null;
