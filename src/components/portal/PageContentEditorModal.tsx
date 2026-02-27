@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { PageContentRow, updatePageContentBatch } from "@/lib/api/pageContent";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, ExternalLink } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -40,18 +40,27 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
     return rows.some((r) => values[r.id] !== r.content_value);
   }, [rows, values]);
 
-  const handleSave = async () => {
+  const pageRoutes: Record<string, string> = { home: "/", work: "/work", writing: "/writing", about: "/about" };
+
+  const handleSave = async (preview = false) => {
     const changed = rows
       .filter((r) => values[r.id] !== r.content_value)
       .map((r) => ({ id: r.id, content_value: values[r.id] ?? r.content_value }));
-    if (changed.length === 0) return;
+    if (changed.length === 0) {
+      if (preview) window.open(pageRoutes[page] || "/", "_blank");
+      return;
+    }
 
     setSaving(true);
     try {
       await updatePageContentBatch(changed);
       toast({ title: `${page.charAt(0).toUpperCase() + page.slice(1)} content updated` });
       onSaved();
-      onOpenChange(false);
+      if (preview) {
+        window.open(pageRoutes[page] || "/", "_blank");
+      } else {
+        onOpenChange(false);
+      }
     } catch (e: any) {
       toast({ title: "Error saving", description: e.message, variant: "destructive" });
     } finally {
@@ -98,8 +107,12 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
           ))}
         </div>
 
-        <div className="mt-4 flex justify-end">
-          <Button onClick={handleSave} disabled={saving || !hasChanges} size="sm">
+        <div className="mt-4 flex justify-end gap-2">
+          <Button onClick={() => handleSave(true)} disabled={saving} size="sm" variant="outline">
+            <ExternalLink size={14} className="mr-1.5" />
+            Save &amp; Preview
+          </Button>
+          <Button onClick={() => handleSave(false)} disabled={saving || !hasChanges} size="sm">
             {saving ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <Save size={14} className="mr-1.5" />}
             Save Changes
           </Button>
