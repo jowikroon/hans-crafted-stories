@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Netlify CLI link (optional; remove to commit which site is linked)
+.netlify
+
 # Logs
 logs
 *.log
