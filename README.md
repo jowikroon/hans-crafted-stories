@@ -4,6 +4,9 @@
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
+## Edit flow
+See [docs/lovable-cursor-synergy.md](docs/lovable-cursor-synergy.md) for clear roles between Lovable and Cursor.
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
