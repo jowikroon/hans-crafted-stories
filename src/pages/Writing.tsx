@@ -134,7 +134,7 @@ const Writing = () => {
   if (loading) {
     return (
       <section className="section-container pt-28 pb-20">
-        <p className="text-muted-foreground">{t.loading}</p>
+        <p className="text-muted-foreground">{getValue("writing_loading_text", t.loading)}</p>
       </section>
     );
   }
@@ -298,12 +298,12 @@ const Writing = () => {
         </AnimatePresence>
         {filtered.length === 0 && (
           <div className="py-16 text-center">
-            <p className="mb-2 text-muted-foreground">{t.noPostsTitle}</p>
+            <p className="mb-2 text-muted-foreground">{getValue("writing_no_posts_title", t.noPostsTitle)}</p>
             <button
               onClick={clearAll}
               className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
             >
-              {t.clearFilters}
+              {getValue("writing_clear_filters", t.clearFilters)}
             </button>
           </div>
         )}

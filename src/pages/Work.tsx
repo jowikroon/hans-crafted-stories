@@ -122,7 +122,7 @@ const Work = () => {
   if (loading) {
     return (
       <section className="section-container pt-28">
-        <p className="text-muted-foreground">{tw.loading}</p>
+        <p className="text-muted-foreground">{getValue("work_loading_text", tw.loading)}</p>
       </section>
     );
   }
@@ -203,12 +203,12 @@ const Work = () => {
 
       {filtered.length === 0 && (
         <div className="py-16 text-center">
-          <p className="mb-2 text-muted-foreground">{tw.noProjectsTitle}</p>
+          <p className="mb-2 text-muted-foreground">{getValue("work_no_projects_title", tw.noProjectsTitle)}</p>
           <button
             onClick={() => setFilter("all")}
             className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
           >
-            {tw.showAll}
+            {getValue("work_show_all_label", tw.showAll)}
           </button>
         </div>
       )}
