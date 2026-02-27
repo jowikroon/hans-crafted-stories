@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.monday-webhook]
 verify_jwt = false
+
+[functions.ai-content-suggest]
+verify_jwt = false

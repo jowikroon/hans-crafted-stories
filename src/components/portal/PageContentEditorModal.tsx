@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { PageContentRow, updatePageContentBatch } from "@/lib/api/pageContent";
+import { supabase } from "@/integrations/supabase/client";
 import { Save, Loader2, ExternalLink, RotateCcw, Sparkles, Home, Briefcase, PenLine, User } from "lucide-react";
 
 interface Props {
@@ -24,6 +25,53 @@ const PAGE_ROUTES: Record<string, string> = { home: "/", work: "/work", writing:
 const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Props) => {
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [generatingGroup, setGeneratingGroup] = useState<string | null>(null);
+
+  const handleAiSuggest = async (group: string, items: PageContentRow[]) => {
+    setGeneratingGroup(group);
+    try {
+      const fields = items.map((i) => ({
+        content_label: i.content_label,
+        content_key: i.content_key,
+        content_type: i.content_type,
+        content_value: values[i.id] ?? i.content_value,
+      }));
+
+      const { data, error } = await supabase.functions.invoke("ai-content-suggest", {
+        body: { page, group, fields },
+      });
+
+      if (error) throw new Error(String(error.message || error));
+      if (data?.error) throw new Error(data.error);
+
+      const suggestions: Record<string, string> = data?.suggestions || {};
+      const keyToId: Record<string, string> = {};
+      items.forEach((i) => (keyToId[i.content_key] = i.id));
+
+      let applied = 0;
+      setValues((prev) => {
+        const next = { ...prev };
+        for (const [key, val] of Object.entries(suggestions)) {
+          const id = keyToId[key];
+          if (id && typeof val === "string" && val.trim()) {
+            next[id] = val;
+            applied++;
+          }
+        }
+        return next;
+      });
+
+      toast({
+        title: `AI suggestions applied`,
+        description: `${applied} field${applied !== 1 ? "s" : ""} updated in "${group}". Review and save when ready.`,
+      });
+    } catch (e: any) {
+      console.error("AI suggest error:", e);
+      toast({ title: "AI generation failed", description: String(e?.message || e), variant: "destructive" });
+    } finally {
+      setGeneratingGroup(null);
+    }
+  };
 
   // Original values for change tracking
   const originals = useMemo(() => {
@@ -142,13 +190,19 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="mr-2 h-6 gap-1 px-2 text-[11px] text-muted-foreground/60 hover:text-primary"
+                      disabled={generatingGroup !== null}
+                      className="mr-2 h-6 gap-1 px-2 text-[11px] text-muted-foreground/60 hover:text-primary disabled:opacity-50"
                       onClick={(e) => {
                         e.stopPropagation();
-                        toast({ title: "AI content generation coming soon", description: "This feature will enable AI-powered content suggestions for this group." });
+                        handleAiSuggest(group, items);
                       }}
                     >
-                      <Sparkles size={11} /> AI
+                      {generatingGroup === group ? (
+                        <Loader2 size={11} className="animate-spin" />
+                      ) : (
+                        <Sparkles size={11} />
+                      )}
+                      {generatingGroup === group ? "Generating…" : "AI"}
                     </Button>
                   </div>
                 </AccordionTrigger>
