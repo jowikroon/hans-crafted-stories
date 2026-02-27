@@ -1,73 +1,57 @@
 
 
-## Transform Blog List to Visual Card Grid with Image Upload
+## Redesign Blog Post Page + Smooth Filtering
 
 ### Overview
-Redesign the Writing page from a text-based list layout into a modern card grid (matching the reference design), and add image upload capability to the blog post CMS editor. Each card will feature a cover image, category badge, date, post number, title, and an arrow link icon.
+Redesign the individual blog post page (`BlogPostPage.tsx`) to match the reference design -- featuring a full-width hero image, category badge with date/read time, large serif title, excerpt subtitle, author section with social share icons, and clean article body. Also fix the Writing page filtering so cards animate smoothly when filters change instead of abruptly popping in/out.
 
-### 1. Database: Add `image_url` Column to `blog_posts`
+---
 
-Add a nullable `image_url` text column to the `blog_posts` table to store the cover image URL for each post.
+### 1. Redesign `BlogPostPage.tsx`
 
-```sql
-ALTER TABLE public.blog_posts
-  ADD COLUMN image_url text DEFAULT '' NOT NULL;
-```
+Rebuild the layout to match the reference:
 
-### 2. Update Type Definitions
+- **Hero image**: Full-width cover image at top (from `post.image_url`) with dark gradient overlay, or a subtle gradient fallback if no image
+- **Meta row**: Category badge (colored pill) + date + read time, positioned over/below the hero
+- **Title**: Large display font (`font-display text-4xl md:text-5xl lg:text-6xl`), white text over the hero image
+- **Excerpt/subtitle**: Lighter muted text beneath the title
+- **Author bar**: Hans van Leeuwen's profile image (from `src/assets/hans-profile.jpg`) with name and a short tagline, plus social share icons (copy link, Twitter/X, Facebook, LinkedIn) on the right side
+- **Article body**: Centered `max-w-3xl` prose content, same markdown renderer as current
+- **Breadcrumb**: Keep existing breadcrumb but move above the hero
 
-Add `image` (or `imageUrl`) to the `BlogPost` interface in `src/data/types.ts` and update `BlogPostRow` in `src/lib/api/content.ts` to include `image_url`.
+### 2. Social Share Icons
 
-### 3. Redesign `BlogPostCard` Component
+Add share functionality with four icon buttons:
+- **Copy link**: Copies current URL to clipboard with toast feedback
+- **Twitter/X**: Opens share intent URL in new tab
+- **Facebook**: Opens Facebook sharer URL
+- **LinkedIn**: Opens LinkedIn share URL
 
-Replace the current horizontal list-item layout with a visual card matching the reference:
+Use Lucide icons (`Link2`, `Twitter`, `Facebook`, `Linkedin`).
 
-- Full-bleed cover image as card background with dark gradient overlay
-- Category badge (colored pill, top-left)
-- Date badge (top-right)
-- Post number (small monospace text, e.g. "001")
-- Large display title (bottom-left, white text over gradient)
-- Arrow-link icon (bottom-right)
-- Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop
-- Aspect ratio ~4:3 for each card
-- Hover effect: slight scale + overlay shift
+### 3. Smooth Filtering on Writing Page
 
-### 4. Update Writing Page Grid Layout
+Current issue: `AnimatePresence mode="popLayout"` causes abrupt transitions when filtering. Fix by:
 
-Change the post list container in `Writing.tsx` from a vertical stack to a CSS grid:
+- Change to `mode="popLayout"` with `layout` prop on `BlogPostCard` motion elements
+- Add `layout` and `layoutId` props to the card's `motion.article` so cards smoothly reposition when filtered
+- Use `layoutId={post.id}` on each card so Framer Motion can track and animate position changes
+- This ensures cards slide into their new positions when a filter is applied rather than just fading
 
-```text
-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6
-```
+### 4. Smooth Page Transition (Writing to Blog Post)
 
-Pass the `imageUrl` through the mapped posts data.
-
-### 5. Add Image Upload to Blog Post CMS Form
-
-Update `BlogPostFormModal.tsx` to include:
-
-- An image upload field with drag-and-drop or click-to-browse
-- Upload to the existing `bucket` storage bucket (path: `blog-images/{slug}.{ext}`)
-- Preview thumbnail of the current/uploaded image
-- Store the public URL in `image_url`
-
-### 6. Update Content API
-
-Update `BlogPostRow` interface and ensure `createBlogPost` / `updateBlogPost` pass `image_url` through.
+The existing `PageTransition` + `AnimatePresence mode="wait"` in `AnimatedRoutes` already handles cross-page transitions. No changes needed there -- the fade-up/fade-out is already smooth. The blog post page redesign will inherit the same transition wrapper.
 
 ---
 
 ### Technical Details
 
 **Files to modify:**
-- `supabase/migrations/` -- new migration for `image_url` column
-- `src/data/types.ts` -- add `imageUrl` to `BlogPost`
-- `src/lib/api/content.ts` -- add `image_url` to `BlogPostRow`
-- `src/components/BlogPostCard.tsx` -- full redesign to visual card
-- `src/pages/Writing.tsx` -- switch to grid layout, pass image data
-- `src/components/portal/BlogPostFormModal.tsx` -- add image upload field
+- `src/pages/BlogPostPage.tsx` -- full redesign with hero image, author bar, share icons
+- `src/components/BlogPostCard.tsx` -- add `layout` and `layoutId` for smooth filtering
+- `src/pages/Writing.tsx` -- minor adjustment to `AnimatePresence` mode if needed
 
-**Storage:** Uses the existing public `bucket` storage bucket. Images uploaded to `blog-images/` path. Public URL constructed via `supabase.storage.from('bucket').getPublicUrl()`.
+**No database changes needed.** All fields (`image_url`, `category`, `excerpt`, `read_time`, `tags`) already exist.
 
-**Fallback:** Cards without an image will show a subtle gradient placeholder background.
+**Author info:** Hardcoded to "Hans van Leeuwen" with the existing `hans-profile.jpg` asset and a tagline like "E-commerce Manager & Marketplace Specialist".
 
