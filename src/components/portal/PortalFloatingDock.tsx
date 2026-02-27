@@ -1,13 +1,13 @@
 import { motion } from "framer-motion";
-import { Wrench, FileText, LayoutDashboard, Users, Activity, Search } from "lucide-react";
+import { Wrench, FileText, Crown, Terminal, LayoutDashboard, Users, Activity, Search } from "lucide-react";
 
-type Tab = "tools" | "content" | "pages" | "status" | "users";
+type Tab = "tools" | "content" | "empire" | "terminal" | "pages" | "status" | "users";
 
 const dockItems: { id: Tab; icon: typeof Wrench; label: string }[] = [
   { id: "tools", icon: Wrench, label: "Tools" },
   { id: "content", icon: FileText, label: "Content" },
-  { id: "pages", icon: LayoutDashboard, label: "Pages" },
-  { id: "users", icon: Users, label: "Users" },
+  { id: "empire", icon: Crown, label: "Empire" },
+  { id: "terminal", icon: Terminal, label: "Terminal" },
   { id: "status", icon: Activity, label: "Status" },
 ];
 
@@ -34,37 +34,20 @@ const PortalFloatingDock = ({ activeTab, onTabChange, onCommandOpen }: PortalFlo
               key={item.id}
               onClick={() => onTabChange(item.id)}
               className={`relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center rounded-xl px-2 py-1 transition-all active:scale-[0.92] ${
-                isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-              <span className={`mt-0.5 text-[9px] font-medium leading-none ${isActive ? "text-primary" : "text-muted-foreground/70"}`}>
-                {item.label}
-              </span>
+              <span className={`mt-0.5 text-[9px] font-medium leading-none ${isActive ? "text-primary" : "text-muted-foreground/70"}`}>{item.label}</span>
               {isActive && (
-                <motion.div
-                  layoutId="dockIndicator"
-                  className="absolute -top-0.5 h-0.5 w-4 rounded-full bg-primary"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
+                <motion.div layoutId="dockIndicator" className="absolute -top-0.5 h-0.5 w-4 rounded-full bg-primary" transition={{ type: "spring", stiffness: 500, damping: 30 }} />
               )}
             </button>
           );
         })}
-
-        {/* Divider */}
         <div className="mx-0.5 h-6 w-px bg-border/60" />
-
-        {/* Command Palette trigger */}
-        <button
-          onClick={onCommandOpen}
-          className="flex min-h-[44px] min-w-[44px] flex-col items-center justify-center rounded-xl px-2 py-1 text-muted-foreground transition-all hover:text-foreground active:scale-[0.92]"
-        >
-          <div className="flex h-5 w-5 items-center justify-center rounded-md border border-border bg-muted/80">
-            <Search size={11} strokeWidth={2.5} />
-          </div>
+        <button onClick={onCommandOpen} className="flex min-h-[44px] min-w-[44px] flex-col items-center justify-center rounded-xl px-2 py-1 text-muted-foreground transition-all hover:text-foreground active:scale-[0.92]">
+          <div className="flex h-5 w-5 items-center justify-center rounded-md border border-border bg-muted/80"><Search size={11} strokeWidth={2.5} /></div>
           <span className="mt-0.5 text-[9px] font-medium leading-none text-muted-foreground/70">⌘K</span>
         </button>
       </div>

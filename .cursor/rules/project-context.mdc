@@ -1,0 +1,49 @@
+---
+description: Core project context for Hans van Leeuwen's Sovereign AI Empire
+globs:
+alwaysApply: true
+---
+
+# Project: hans-crafted-stories (Sovereign AI Empire)
+
+## What this project IS
+- A React 18 + Vite + TypeScript web app (NOT the n8n monorepo)
+- Personal portfolio site at hansvanleeuwen.com
+- Portal: admin dashboard with SEO tools, content CMS, user management
+- Empire: infrastructure monitoring dashboard (7-layer health grid)
+- HansAI: terminal-style AI command center
+
+## Tech stack
+- Frontend: React 18, Vite 5, TypeScript, Tailwind CSS 3, shadcn/ui (Radix), Framer Motion
+- Backend: Supabase (PostgreSQL, Auth, Edge Functions, Realtime)
+- AI Gateway: Lovable AI Gateway (Gemini models) for edge function chat
+- Hosting: Cloudflare (Workers, Zero Trust, DNS)
+
+## Infrastructure (external, managed via dashboard)
+- VPS 1 (srv1402218.hstgr.cloud / 187.124.1.75): n8n at n8n.hansvanleeuwen.com, MCP Gateway, Loki/Grafana
+- VPS 2 (srv1411336.hstgr.cloud / 187.124.2.66): Ollama + Open WebUI (AI Brain)
+- Local: Windows 11, GTX 1660 Ti, 24 GB RAM, Ollama, Docker Desktop
+
+## Key directories
+- src/pages/ — Route pages (Portal, Empire, HansAI, About, Blog)
+- src/components/portal/ — Portal tool system (26+ components)
+- src/components/empire/ — Empire monitoring (status grid, audit trail, quick actions, Claude panel)
+- src/components/hansai/ — HansAI terminal components
+- supabase/functions/ — Edge functions (empire-health, hansai-chat, n8n-agent, portal-api, etc.)
+- public/empire/ — VPS bootstrap files (CLAUDE.md, docker-compose.yml, setup.sh)
+- public/workflows/ — n8n workflow JSONs and install scripts
+
+## 7-Layer Sovereign AI Spine
+1. Shield — Cloudflare Zero Trust
+2. Portal — hansvanleeuwen.com (this React app)
+3. Brain — n8n Orchestration (VPS 1)
+4. Muscle — Claude Code CLI (VPS 1, tmux session)
+5. Senses — Docker MCP Gateway (VPS 1, port 3100)
+6. Memory — Supabase database
+7. Immune — AI Doctor / Edge Functions
+
+## Response style
+- Always use numbered lists and clear steps
+- Be direct and honest about what works and what doesn't
+- Prefer editing existing files over creating new ones
+- When suggesting infrastructure changes, remember this is a React dashboard — the actual infra lives on the VPSs

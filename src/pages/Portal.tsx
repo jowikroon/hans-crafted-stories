@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug, Search, Moon, Sun } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Crown, Search, Moon, Sun, Sparkles } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
 import PortalUsersManager from "@/components/portal/PortalUsersManager";
 import PortalPagesTab from "@/components/portal/PortalPagesTab";
+import PortalEmpireTab from "@/components/portal/PortalEmpireTab";
+import PortalTerminalTab from "@/components/portal/PortalTerminalTab";
 import InlineChatPanel from "@/components/portal/InlineChatPanel";
 import PortalFloatingDock from "@/components/portal/PortalFloatingDock";
 import PortalCommandPalette from "@/components/portal/PortalCommandPalette";
@@ -17,30 +20,27 @@ import { useToast } from "@/hooks/use-toast";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 import InfoTooltip from "@/components/portal/InfoTooltip";
 
-const EMPIRE_SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
-You manage n8n workflows, Cloudflare Workers, VPS servers, Docker MCP Gateway, Supabase, and Claude Code CLI sessions.
-Be concise, technical, and actionable. Format with markdown.`;
+const HANSAI_SYSTEM_PROMPT = `You are HansAI — the unified intelligence behind Hans van Leeuwen's Sovereign AI Empire. You combine three roles seamlessly:
 
-const N8N_SYSTEM_PROMPT = `You are an expert n8n workflow automation engineer and AI agent. You specialize in building, fixing, and troubleshooting n8n workflows.
-Output complete, valid n8n JSON when building. When fixing, explain root cause clearly. Format code in markdown code blocks.`;
+1. **Empire Commander** — Expert system operator for AI infrastructure: n8n workflows, Cloudflare Workers, VPS servers (srv1402218 + srv1411336), Docker MCP Gateway, Supabase, Claude Code CLI, Ollama + Open WebUI.
+2. **n8n Workflow Engineer** — Build complete, valid n8n workflow JSON from scratch. Fix broken workflows, troubleshoot execution errors, explain root causes clearly.
+3. **Marketing & SEO Strategist** — Help with automotive SEO, e-commerce automation, Google Ads, Channable feeds, product titles, campaign strategy.
 
-const EMPIRE_SUGGESTIONS = [
+Be concise, technical, and actionable. Format with markdown. Output code in code blocks. When building workflows, output complete valid n8n JSON.`;
+
+const HANSAI_SUGGESTIONS = [
   { icon: Wrench, text: "Fix my AutoSEO workflow — it stopped triggering" },
-  { icon: Cpu, text: "Generate a new n8n workflow for Channable feed optimization" },
-  { icon: HeartPulse, text: "Run a full health check on all services" },
+  { icon: Crown, text: "Run a full health check on all 7 layers" },
+  { icon: Terminal, text: "Build a Gmail → Slack alert n8n workflow" },
 ];
 
-const N8N_SUGGESTIONS = [
-  { icon: Zap, text: "Build a Gmail → Slack alert workflow" },
-  { icon: Wrench, text: "Fix 'Cannot read property of undefined' in Code node" },
-  { icon: Bug, text: "Troubleshoot: my Schedule trigger isn't firing" },
-];
-
-type Tab = "tools" | "content" | "pages" | "status" | "users";
+type Tab = "tools" | "content" | "empire" | "terminal" | "pages" | "status" | "users";
 
 const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
   { id: "tools", label: "Tools", icon: Wrench, hint: "Manage SEO tools and integrations" },
   { id: "content", label: "Content", icon: FileText, hint: "Blog posts and case studies" },
+  { id: "empire", label: "Empire", icon: Crown, hint: "7-layer infrastructure monitoring" },
+  { id: "terminal", label: "Terminal", icon: Terminal, hint: "HansAI command center" },
   { id: "pages", label: "Pages", icon: LayoutDashboard, hint: "Page visibility and elements" },
   { id: "users", label: "Users", icon: Users, hint: "Manage user roles and access" },
   { id: "status", label: "Status", icon: Activity, hint: "System health and uptime" },
@@ -51,9 +51,10 @@ const DARK_MODE_KEY = "portal_dark_mode";
 const Portal = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
-  const [activeTab, setActiveTab] = useState<Tab>("tools");
-  const [empireOpen, setEmpireOpen] = useState(false);
-  const [n8nOpen, setN8nOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as Tab) || "tools";
+  const [activeTab, setActiveTab] = useState<Tab>(tabs.some(t => t.id === initialTab) ? initialTab : "tools");
+  const [aiOpen, setAiOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== "undefined") return localStorage.getItem(DARK_MODE_KEY) === "true";
@@ -61,25 +62,26 @@ const Portal = () => {
   });
   const { toast } = useToast();
 
-  // Apply dark mode class
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
     localStorage.setItem(DARK_MODE_KEY, String(isDark));
   }, [isDark]);
 
-  // Keyboard shortcuts
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab);
+    setSearchParams(tab === "tools" ? {} : { tab });
+  };
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
-      if (e.key === "e") { e.preventDefault(); setEmpireOpen((v) => !v); }
-      else if (e.key === "j") { e.preventDefault(); setN8nOpen((v) => !v); }
+      if (e.key === "e") { e.preventDefault(); setAiOpen((v) => !v); }
       else if (e.key === "k") { e.preventDefault(); setCommandOpen((v) => !v); }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
-  // Email login state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
@@ -89,9 +91,7 @@ const Portal = () => {
     if (!email || !password) return;
     setEmailLoading(true);
     const { error } = await signInWithEmail(email, password);
-    if (error) {
-      toast({ title: "Login failed", description: error, variant: "destructive" });
-    }
+    if (error) toast({ title: "Login failed", description: error, variant: "destructive" });
     setEmailLoading(false);
   };
 
@@ -106,17 +106,9 @@ const Portal = () => {
   if (!user) {
     return (
       <section className="section-container flex min-h-[70vh] flex-col items-center justify-center pt-28">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-sm text-center"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="w-full max-w-sm text-center">
           <h1 className="mb-4 font-display text-4xl font-medium text-foreground">Portal</h1>
-          <p className="mb-8 text-muted-foreground">
-            Sign in to access your SEO tools, workflow triggers, and more.
-          </p>
-
+          <p className="mb-8 text-muted-foreground">Sign in to access your SEO tools, workflow triggers, and more.</p>
           <form onSubmit={handleEmailLogin} className="mb-6 space-y-3 text-left">
             <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="text-sm" />
             <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="text-sm" />
@@ -125,16 +117,11 @@ const Portal = () => {
               Sign in
             </Button>
           </form>
-
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
             <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">or</span></div>
           </div>
-
-          <button
-            onClick={signInWithGoogle}
-            className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
-          >
+          <button onClick={signInWithGoogle} className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80">
             <svg viewBox="0 0 24 24" width="18" height="18" className="shrink-0">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -166,11 +153,7 @@ const Portal = () => {
   return (
     <section className="section-container pt-20 pb-28 sm:pb-20 sm:pt-28 px-5 sm:px-8 lg:px-12">
       <PageBreadcrumb items={[{ label: "Portal" }]} />
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -179,100 +162,59 @@ const Portal = () => {
               Welcome back{user.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(" ")[0]}` : ""}
             </h1>
             <p className="text-sm leading-relaxed text-muted-foreground/80 sm:text-base sm:leading-normal sm:text-muted-foreground">
-              Your tools board — manage tools, content one place.
+              Unified command center — tools, content, infrastructure, terminal.
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
-            {/* Dark mode toggle */}
-            <button
-              onClick={() => setIsDark(!isDark)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-2 text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
-              title={isDark ? "Light mode" : "Dark mode"}
-            >
+            <button onClick={() => setIsDark(!isDark)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-2 text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground" title={isDark ? "Light mode" : "Dark mode"}>
               {isDark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
 
             <button
-              onClick={() => setEmpireOpen((v) => !v)}
+              onClick={() => setAiOpen((v) => !v)}
               className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
-                empireOpen
-                  ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_12px_hsl(160_80%_45%/0.2)]"
-                  : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:text-foreground"
+                aiOpen
+                  ? "border-2 border-primary bg-primary/10 text-primary shadow-[0_0_12px_hsl(var(--primary)/0.2)]"
+                  : "border border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
               }`}
             >
-              <Terminal size={14} />
-              <span className="hidden sm:inline">Empire AI</span>
-              <InfoTooltip text="AI assistant for infrastructure management and n8n workflows" />
+              <Sparkles size={14} />
+              <span className="hidden sm:inline">HansAI</span>
+              <InfoTooltip text="Unified AI assistant — infrastructure, workflows, SEO, and more" />
               <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘E</kbd>
             </button>
-            <button
-              onClick={() => setN8nOpen((v) => !v)}
-              className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
-                n8nOpen
-                  ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)]"
-                  : "border border-border text-muted-foreground hover:border-purple-500/40 hover:text-foreground"
-              }`}
-            >
-              <Zap size={14} />
-              <span className="hidden sm:inline">n8n Agent</span>
-              <InfoTooltip text="Build, fix, and troubleshoot n8n automation workflows" />
-              <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘J</kbd>
-            </button>
-            <button
-              onClick={() => setCommandOpen(true)}
-              className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
-            >
+
+            <button onClick={() => setCommandOpen(true)} className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex">
               <Search size={13} />
               <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground">⌘K</kbd>
             </button>
-            <button
-              onClick={signOut}
-              className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97] sm:min-h-0 sm:py-2"
-            >
+
+            <button onClick={signOut} className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97] sm:min-h-0 sm:py-2">
               <LogOut size={14} />
             </button>
           </div>
         </div>
 
-        {/* Inline AI Panels */}
+        {/* Unified AI Panel */}
         <AnimatePresence>
-          {empireOpen && (
+          {aiOpen && (
             <motion.div
-              key="empire-inline"
+              key="hansai-inline"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "40vh", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-4 overflow-hidden rounded-2xl border-2 border-emerald-500 bg-card shadow-lg"
+              className="mb-4 overflow-hidden rounded-2xl border-2 border-primary bg-card shadow-lg"
             >
               <InlineChatPanel
-                systemPrompt={EMPIRE_SYSTEM_PROMPT}
-                suggestions={EMPIRE_SUGGESTIONS}
-                title="Empire Commander"
-                subtitle="Ask Claude · Manage Infrastructure"
-                icon={Terminal}
-                placeholder="Claude, fix my AutoSEO workflow..."
+                systemPrompt={HANSAI_SYSTEM_PROMPT}
+                suggestions={HANSAI_SUGGESTIONS}
+                title="HansAI"
+                subtitle="Empire Commander · n8n Engineer · SEO Strategist"
+                icon={Sparkles}
+                placeholder="Ask anything — infrastructure, workflows, SEO..."
                 accentClass="emerald"
-              />
-            </motion.div>
-          )}
-          {n8nOpen && (
-            <motion.div
-              key="n8n-inline"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "40vh", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-4 overflow-hidden rounded-2xl border-2 border-purple-500 bg-card shadow-lg"
-            >
-              <InlineChatPanel
-                systemPrompt={N8N_SYSTEM_PROMPT}
-                suggestions={N8N_SUGGESTIONS}
-                title="n8n Workflow Agent"
-                subtitle="Build · Fix · Troubleshoot"
-                icon={Zap}
-                placeholder="Build a workflow for..."
-                accentClass="purple"
+                userId={user.id}
               />
             </motion.div>
           )}
@@ -286,7 +228,7 @@ const Portal = () => {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:py-2 ${
                   isActive
                     ? "bg-background text-foreground shadow-sm"
@@ -304,13 +246,15 @@ const Portal = () => {
         {/* Tab Content */}
         {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} />}
         {activeTab === "content" && <PortalContentTab userId={user.id} isAdmin={isAdmin} />}
+        {activeTab === "empire" && <PortalEmpireTab />}
+        {activeTab === "terminal" && <PortalTerminalTab />}
         {activeTab === "pages" && <PortalPagesTab />}
         {activeTab === "users" && <PortalUsersManager adminUserId={user.id} />}
         {activeTab === "status" && <PortalStatusTab />}
       </motion.div>
 
-      <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
-      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => setEmpireOpen((v) => !v)} onN8nOpen={() => setN8nOpen((v) => !v)} onSignOut={signOut} />
+      <PortalFloatingDock activeTab={activeTab} onTabChange={handleTabChange} onCommandOpen={() => setCommandOpen(true)} />
+      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={handleTabChange} onAiOpen={() => setAiOpen((v) => !v)} onSignOut={signOut} />
     </section>
   );
 };

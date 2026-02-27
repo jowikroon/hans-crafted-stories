@@ -1,0 +1,288 @@
+{
+  "name": "GodMode Self-Repair v1",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GodMode Self-Repair v1\n\n**Trigger:** Every 4 hours OR on workflow error.\n\n**Flow:**\n1. Collect failed executions from the last 4h\n2. If failures found → send to Ollama for diagnosis\n3. Log diagnosis to Supabase empire_events\n4. If confidence > 80% and risk is low → attempt auto-fix via n8n API\n5. Otherwise → send alert (webhook/email)\n\n**Requirements:**\n- Ollama credential pointing to VPS 2 (http://187.124.2.66:11434)\n- Supabase credential for empire_events logging\n- n8n API credential (internal, for reading/updating workflows)"
+      },
+      "id": "sticky-info",
+      "name": "README",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [0, 0],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 4 }]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every 4 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [240, 300],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {},
+      "id": "error-trigger",
+      "name": "On Workflow Error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [240, 500],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collect context from whichever trigger fired\nconst input = $input.all();\nconst errorData = input[0]?.json || {};\n\nconst isErrorTrigger = !!errorData.execution;\nconst now = new Date();\nconst fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);\n\nreturn [{\n  json: {\n    source: isErrorTrigger ? 'error-trigger' : 'scheduled',\n    timestamp: now.toISOString(),\n    lookbackFrom: fourHoursAgo.toISOString(),\n    errorContext: isErrorTrigger ? {\n      workflowId: errorData.execution?.workflowId,\n      workflowName: errorData.execution?.workflowData?.name,\n      executionId: errorData.execution?.id,\n      errorMessage: errorData.execution?.error?.message,\n      errorNode: errorData.execution?.error?.node?.name,\n      lastNodeExecuted: errorData.execution?.lastNodeExecuted,\n    } : null\n  }\n}];"
+      },
+      "id": "collect-context",
+      "name": "Collect Error Context",
+      "type": "n8n-nodes-base.code",
+      "position": [480, 400],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.N8N_HOST || 'http://localhost:5678' }}/api/v1/executions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "status", "value": "error" },
+            { "name": "limit", "value": "20" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-failed-executions",
+      "name": "Get Failed Executions",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [700, 400],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CONFIGURE_ME",
+          "name": "n8n API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge error context with recent failures\nconst context = $('Collect Error Context').first().json;\nconst execResponse = $input.first().json;\n\nconst recentFailures = (execResponse.data || []).slice(0, 10);\n\nconst summary = recentFailures.map(ex => ({\n  id: ex.id,\n  workflowName: ex.workflowData?.name || 'unknown',\n  error: ex.data?.resultData?.error?.message || 'no message',\n  failedNode: ex.data?.resultData?.lastNodeExecuted || 'unknown',\n  finishedAt: ex.stoppedAt,\n}));\n\nconst diagnosisInput = {\n  source: context.source,\n  directError: context.errorContext,\n  recentFailures: summary,\n  failureCount: summary.length,\n  timestamp: context.timestamp,\n};\n\nreturn [{ json: diagnosisInput }];"
+      },
+      "id": "prepare-diagnosis",
+      "name": "Prepare Diagnosis Input",
+      "type": "n8n-nodes-base.code",
+      "position": [920, 400],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "has-failures",
+              "leftValue": "={{ $json.failureCount }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ]
+        }
+      },
+      "id": "check-failures",
+      "name": "Any Failures?",
+      "type": "n8n-nodes-base.if",
+      "position": [1140, 400],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "http://187.124.2.66:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"qwen2.5:7b-instruct-q4_K_M\",\n  \"stream\": false,\n  \"system\": \"You are GodMode-Repair-Agent for Hans van Leeuwen's n8n system on Hostinger VPS.\\n\\nRules:\\n- Output ONLY valid JSON, nothing else.\\n- Analyze the error data and recent execution failures.\\n- Identify root cause (node config, API timeout, credential expired, rate limit, data format, etc.).\\n- Suggest a minimal, stable fix. Prefer node setting changes over full workflow rewrites.\\n- Include confidence (0-100), risk level (low/medium/high), and whether human review is needed.\\n\\nOutput schema:\\n{\\n  \\\"rootCause\\\": \\\"...\\\",\\n  \\\"affectedWorkflow\\\": \\\"...\\\",\\n  \\\"affectedNode\\\": \\\"...\\\",\\n  \\\"suggestedAction\\\": \\\"disable_workflow | restart_execution | update_node_config | alert_human\\\",\\n  \\\"actionDetails\\\": \\\"...\\\",\\n  \\\"confidence\\\": 85,\\n  \\\"risk\\\": \\\"low\\\",\\n  \\\"needsHumanReview\\\": false\\n}\",\n  \"prompt\": {{ JSON.stringify('Analyze these n8n execution failures and diagnose the root cause:\\n\\n' + JSON.stringify($json, null, 2)) }}\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "ollama-diagnose",
+      "name": "Ollama Diagnosis",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1380, 300],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Ollama response and extract diagnosis\nconst raw = $input.first().json;\nlet diagnosis;\n\ntry {\n  const responseText = raw.response || '';\n  const jsonMatch = responseText.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    diagnosis = JSON.parse(jsonMatch[0]);\n  } else {\n    diagnosis = { rootCause: 'Could not parse Ollama response', confidence: 0, risk: 'high', needsHumanReview: true, suggestedAction: 'alert_human' };\n  }\n} catch (e) {\n  diagnosis = { rootCause: 'JSON parse error: ' + e.message, confidence: 0, risk: 'high', needsHumanReview: true, suggestedAction: 'alert_human' };\n}\n\ndiagnosis.analyzedAt = new Date().toISOString();\n\nreturn [{ json: diagnosis }];"
+      },
+      "id": "parse-diagnosis",
+      "name": "Parse Diagnosis",
+      "type": "n8n-nodes-base.code",
+      "position": [1600, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/empire_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event_type\": {{ $json.confidence >= 80 && $json.risk === 'low' ? '\"action\"' : '\"error\"' }},\n  \"source\": \"self-repair-v1\",\n  \"message\": {{ JSON.stringify('Diagnosis: ' + ($json.rootCause || 'unknown') + ' | Action: ' + ($json.suggestedAction || 'none') + ' | Confidence: ' + ($json.confidence || 0) + '%') }},\n  \"metadata\": {{ JSON.stringify($json) }}\n}",
+        "options": {}
+      },
+      "id": "log-to-supabase",
+      "name": "Log to Empire Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1820, 300],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "high-confidence",
+              "leftValue": "={{ $('Parse Diagnosis').first().json.confidence }}",
+              "rightValue": 80,
+              "operator": { "type": "number", "operation": "gte" }
+            },
+            {
+              "id": "low-risk",
+              "leftValue": "={{ $('Parse Diagnosis').first().json.risk }}",
+              "rightValue": "low",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "id": "no-human-needed",
+              "leftValue": "={{ $('Parse Diagnosis').first().json.needsHumanReview }}",
+              "rightValue": false,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "can-auto-fix",
+      "name": "Safe to Auto-Fix?",
+      "type": "n8n-nodes-base.if",
+      "position": [2040, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## Auto-Fix Zone\n\nThis branch only runs when:\n- Confidence >= 80%\n- Risk = low\n- needsHumanReview = false\n\nCurrently: logs the action. Extend with actual n8n API calls (disable/enable workflow, restart execution) once you trust the diagnosis quality."
+      },
+      "id": "sticky-autofix",
+      "name": "Auto-Fix Info",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [2260, 140],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/empire_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event_type\": \"action\",\n  \"source\": \"self-repair-v1\",\n  \"message\": {{ JSON.stringify('AUTO-FIX APPLIED: ' + ($('Parse Diagnosis').first().json.suggestedAction || 'unknown') + ' on ' + ($('Parse Diagnosis').first().json.affectedWorkflow || 'unknown')) }},\n  \"metadata\": {{ JSON.stringify({ diagnosis: $('Parse Diagnosis').first().json, action: 'applied' }) }}\n}",
+        "options": {}
+      },
+      "id": "log-autofix",
+      "name": "Log Auto-Fix",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [2280, 260],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/empire_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event_type\": \"error\",\n  \"source\": \"self-repair-v1\",\n  \"message\": {{ JSON.stringify('HUMAN REVIEW NEEDED: ' + ($('Parse Diagnosis').first().json.rootCause || 'unknown') + ' (confidence: ' + ($('Parse Diagnosis').first().json.confidence || 0) + '%, risk: ' + ($('Parse Diagnosis').first().json.risk || 'unknown') + ')') }},\n  \"metadata\": {{ JSON.stringify({ diagnosis: $('Parse Diagnosis').first().json, action: 'escalated' }) }}\n}",
+        "options": {}
+      },
+      "id": "log-escalation",
+      "name": "Log Escalation",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [2280, 420],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/empire_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event_type\": \"info\",\n  \"source\": \"self-repair-v1\",\n  \"message\": \"Scheduled health check: no failures in last 4 hours.\",\n  \"metadata\": { \"failureCount\": 0 }\n}",
+        "options": {}
+      },
+      "id": "log-all-clear",
+      "name": "Log All Clear",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1380, 520],
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "Every 4 Hours": { "main": [[{ "node": "Collect Error Context", "type": "main", "index": 0 }]] },
+    "On Workflow Error": { "main": [[{ "node": "Collect Error Context", "type": "main", "index": 0 }]] },
+    "Collect Error Context": { "main": [[{ "node": "Get Failed Executions", "type": "main", "index": 0 }]] },
+    "Get Failed Executions": { "main": [[{ "node": "Prepare Diagnosis Input", "type": "main", "index": 0 }]] },
+    "Prepare Diagnosis Input": { "main": [[{ "node": "Any Failures?", "type": "main", "index": 0 }]] },
+    "Any Failures?": {
+      "main": [
+        [{ "node": "Ollama Diagnosis", "type": "main", "index": 0 }],
+        [{ "node": "Log All Clear", "type": "main", "index": 0 }]
+      ]
+    },
+    "Ollama Diagnosis": { "main": [[{ "node": "Parse Diagnosis", "type": "main", "index": 0 }]] },
+    "Parse Diagnosis": { "main": [[{ "node": "Log to Empire Events", "type": "main", "index": 0 }]] },
+    "Log to Empire Events": { "main": [[{ "node": "Safe to Auto-Fix?", "type": "main", "index": 0 }]] },
+    "Safe to Auto-Fix?": {
+      "main": [
+        [{ "node": "Log Auto-Fix", "type": "main", "index": 0 }],
+        [{ "node": "Log Escalation", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [{ "name": "godmode" }, { "name": "self-repair" }]
+}

@@ -46,9 +46,12 @@ ufw default deny incoming > /dev/null 2>&1
 ufw default allow outgoing > /dev/null 2>&1
 ufw allow 22/tcp > /dev/null 2>&1                                    # SSH
 ufw allow from $VPS1_IP to any port 11434 > /dev/null 2>&1           # Ollama from VPS 1 only
-ufw allow 3000/tcp > /dev/null 2>&1                                  # Open WebUI (restrict later)
+# Open WebUI is NOT exposed publicly — access via Cloudflare Tunnel only.
+# To set up tunnel: cloudflared tunnel create ai-brain
+#   then route DNS: cloudflared tunnel route dns ai-brain ai.hansvanleeuwen.com
+#   then run: cloudflared tunnel --url http://localhost:3000 run ai-brain
 ufw --force enable > /dev/null 2>&1
-echo "  ✓ Firewall: SSH open, Ollama locked to VPS 1, Open WebUI on :3000"
+echo "  ✓ Firewall: SSH open, Ollama locked to VPS 1, Open WebUI internal only (use Cloudflare Tunnel)"
 
 # ── 4. Deploy Directory ─────────────────────────────────
 echo "[4/7] Setting up deployment..."

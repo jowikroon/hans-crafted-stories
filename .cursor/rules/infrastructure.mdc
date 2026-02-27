@@ -1,0 +1,44 @@
+---
+description: Infrastructure and self-repair architecture context
+globs:
+  - src/components/empire/**
+  - src/pages/Empire.tsx
+  - supabase/functions/empire-health/**
+  - public/empire/**
+  - public/workflows/**
+---
+
+# Infrastructure & Self-Repair Context
+
+## Current state (Feb 2026)
+- n8n: live at https://n8n.hansvanleeuwen.com (VPS 1)
+- Ollama: deployed on VPS 2 with llama3.2:3b, qwen2.5:7b-instruct-q4_K_M, nomic-embed-text
+- Ollama also runs locally (Windows, port 11434) — needs OLLAMA_HOST=0.0.0.0 for Docker access
+- Open WebUI: VPS 2 port 3000
+- MCP Gateway: VPS 1 port 3100 (Node 20 Alpine)
+- Observability: Loki + Promtail + Grafana on VPS 1
+
+## n8n workflows (live on VPS, triggered via webhooks)
+- AutoSEO: /webhook/autoseo
+- Product Title Optimizer: /webhook/product-titles
+- Health Check: /webhook/health-check
+- Product Feed Optimizer: /webhook/product-feed
+- Campaign Generator: /webhook/campaign
+- Web Scraper: /webhook/scraper
+
+## Self-repair architecture (target)
+- Error detection: n8n Error Workflow trigger + scheduled health cron
+- Diagnosis: Ollama (VPS 2) via n8n AI Agent node
+- Action: n8n API (GET/PUT workflows), Docker restart via SSH, alerts
+- Logging: empire_events table in Supabase (already exists, already shown in EmpireAuditTrail)
+- Dashboard: Empire page shows realtime events
+
+## Known issues
+- empire-health edge function hardcodes muscle and senses to ok:true (no real check)
+- Docker Desktop on local machine has intermittent connectivity (500 from Docker API)
+- No .cursor rules existed before this setup (now fixed)
+
+## Ollama connectivity (local dev)
+- Host: http://localhost:11434 (from Windows)
+- From Docker: http://host.docker.internal:11434 (requires OLLAMA_HOST=0.0.0.0)
+- From n8n on VPS 1 to Ollama on VPS 2: http://187.124.2.66:11434 (firewall allows VPS 1 IP only)

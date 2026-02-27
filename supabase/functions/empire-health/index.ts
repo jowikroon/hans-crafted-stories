@@ -26,10 +26,12 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const [shield, portal, brain, memory, api] = await Promise.all([
+    const [shield, portal, brain, muscle, senses, memory, api] = await Promise.all([
       checkEndpoint("https://cloudflare.com/cdn-cgi/trace"),
       checkEndpoint("https://hansvanleeuwen.com"),
       checkEndpoint("https://n8n.hansvanleeuwen.com/healthz"),
+      checkEndpoint("http://187.124.1.75:22", 3000).then(r => ({ ...r, ok: !r.ok ? false : r.ok })).catch(() => ({ ok: false, latency: 0, error: "unreachable" })),
+      checkEndpoint("http://187.124.1.75:3100", 3000),
       checkEndpoint(`${supabaseUrl}/rest/v1/`, 3000),
       checkEndpoint(`${supabaseUrl}/functions/v1/site-audit`, 3000),
     ]);
@@ -38,8 +40,8 @@ serve(async (req) => {
       shield: { ...shield, name: "Cloudflare Zero Trust" },
       portal: { ...portal, name: "hansvanleeuwen.com" },
       brain: { ...brain, name: "n8n Orchestration" },
-      muscle: { ok: true, latency: 0, name: "Claude Code CLI" }, // manual/webhook status
-      senses: { ok: true, latency: 0, name: "MCP Gateway" }, // manual/webhook status
+      muscle: { ...muscle, name: "Claude Code CLI" },
+      senses: { ...senses, name: "MCP Gateway" },
       memory: { ...memory, name: "Database" },
       immune: { ...api, name: "Edge Functions" },
     };

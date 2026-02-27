@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, Sparkles, LucideIcon, Shuffle, ChevronDown, History, X, CheckCircle2, Circle, ArrowRight, Clock, Cpu, Bot, Zap, Wrench, Search, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { usersApi } from "@/lib/api/users";
 
 interface Suggestion {
   icon: LucideIcon;
@@ -23,6 +24,7 @@ interface InlineChatPanelProps {
   icon: LucideIcon;
   placeholder: string;
   accentClass: string;
+  userId?: string;
 }
 
 /* ─── Pipeline stages (TVA vintage style) ─── */
@@ -78,6 +80,7 @@ const InlineChatPanel = ({
   icon: Icon,
   placeholder,
   accentClass,
+  userId,
 }: InlineChatPanelProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -88,6 +91,19 @@ const InlineChatPanel = ({
   const [showHistory, setShowHistory] = useState(false);
   const [chatHistory, setChatHistory] = useState<{ messages: Message[]; timestamp: number; preview: string }[]>([]);
   const [activeSuggestions, setActiveSuggestions] = useState<Suggestion[]>(defaultSuggestions);
+  const [allowedModels, setAllowedModels] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    usersApi.getAiAccess(userId).then((access) => {
+      const allowed = access.filter(a => a.can_access).map(a => a.ai_model);
+      if (allowed.length > 0) setAllowedModels(allowed);
+    }).catch(() => {});
+  }, [userId]);
+
+  const visibleModels = allowedModels
+    ? aiModels.filter(m => allowedModels.includes(m.id))
+    : aiModels;
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -205,7 +221,7 @@ const InlineChatPanel = ({
     });
   };
 
-  const currentModel = aiModels.find(m => m.id === selectedModel) || aiModels[0];
+  const currentModel = visibleModels.find(m => m.id === selectedModel) || visibleModels[0];
 
   return (
     <div className="flex h-full flex-col">
@@ -281,7 +297,7 @@ const InlineChatPanel = ({
                   exit={{ opacity: 0, y: -4 }}
                   className="absolute right-0 top-full z-50 mt-1 w-48 rounded-xl border border-border bg-card p-1 shadow-xl"
                 >
-                  {aiModels.map((model) => (
+                  {visibleModels.map((model) => (
                     <button
                       key={model.id}
                       onClick={() => { setSelectedModel(model.id); setShowModelPicker(false); }}
