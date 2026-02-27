@@ -129,12 +129,12 @@ const PortalStatusTab = () => {
   const fetchUnhandledIntents = async () => {
     setIntentsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("unhandled_intents")
+      const { data, error } = await (supabase
+        .from("unhandled_intents" as any)
         .select("*")
         .eq("resolved", false)
         .order("created_at", { ascending: false })
-        .limit(25);
+        .limit(25) as any);
       if (!error && data) {
         setUnhandledIntents(data as UnhandledIntent[]);
       }
@@ -148,9 +148,9 @@ const PortalStatusTab = () => {
   const resolveIntent = async (intentId: string, workflowName: string) => {
     setResolvingId(intentId);
     try {
-      await supabase
-        .from("unhandled_intents")
-        .update({ resolved: true, resolved_workflow: workflowName })
+      await (supabase
+        .from("unhandled_intents" as any)
+        .update({ resolved: true, resolved_workflow: workflowName }) as any)
         .eq("id", intentId);
       setUnhandledIntents((prev) => prev.filter((i) => i.id !== intentId));
     } catch (e) {
@@ -163,9 +163,9 @@ const PortalStatusTab = () => {
   const dismissIntent = async (intentId: string) => {
     setResolvingId(intentId);
     try {
-      await supabase
-        .from("unhandled_intents")
-        .update({ resolved: true, resolved_workflow: "dismissed" })
+      await (supabase
+        .from("unhandled_intents" as any)
+        .update({ resolved: true, resolved_workflow: "dismissed" }) as any)
         .eq("id", intentId);
       setUnhandledIntents((prev) => prev.filter((i) => i.id !== intentId));
     } catch (e) {
@@ -180,12 +180,12 @@ const PortalStatusTab = () => {
   const fetchMondayEvents = async () => {
     setMondayLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from("empire_events")
-        .select("id, event_type, message, metadata, monday_item_id, created_at")
+        .select("id, event_type, message, metadata, monday_item_id, created_at" as any)
         .eq("source", "monday")
         .order("created_at", { ascending: false })
-        .limit(15);
+        .limit(15) as any);
       if (!error && data) {
         setMondayEvents(data as typeof mondayEvents);
       }
