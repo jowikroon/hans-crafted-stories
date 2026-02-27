@@ -216,7 +216,7 @@ const Portal = () => {
               >
                 <Terminal size={14} />
                 <span className="hidden sm:inline">Empire AI</span>
-                <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘E</kbd>
+                
               </button>
               {empireHover && !empireOpen && (
                 <div className="absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-popover px-3 py-1.5 text-[11px] text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95 duration-200">
@@ -237,7 +237,7 @@ const Portal = () => {
               >
                 <Zap size={14} />
                 <span className="hidden sm:inline">n8n Agent</span>
-                <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘J</kbd>
+                
               </button>
               {n8nHover && !n8nOpen && (
                 <div className="absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-popover px-3 py-1.5 text-[11px] text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95 duration-200">
@@ -250,7 +250,6 @@ const Portal = () => {
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
             >
               <Search size={13} />
-              <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground">⌘K</kbd>
             </button>
             <button
               onClick={signOut}
