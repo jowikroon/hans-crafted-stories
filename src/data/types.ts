@@ -17,4 +17,5 @@ export interface BlogPost {
   date: string;
   readTime: string;
   slug: string;
+  imageUrl?: string;
 }

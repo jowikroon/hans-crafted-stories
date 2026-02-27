@@ -1,37 +1,77 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { ArrowUpRight } from "lucide-react";
 import { BlogPost } from "@/data/types";
 
-const BlogPostCard = ({ post, index }: { post: BlogPost; index: number }) => (
-  <motion.article
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -10 }}
-    transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-    className="group border-b-2 border-border py-6 transition-colors duration-300 first:border-t-2 hover:border-primary/30"
-  >
-    <Link to={`/writing/${post.slug}`} className="block">
-      <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-8">
-        <div className="flex-1">
-          <h3 className="mb-1 font-display text-lg font-medium text-foreground transition-colors duration-300 group-hover:text-primary">
-            {post.title}
-          </h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">{post.excerpt}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {post.tags.map((tag) => (
-              <span key={tag} className="text-xs uppercase tracking-widest text-muted-foreground/70">
-                {tag}
+const CATEGORY_COLORS: Record<string, string> = {
+  professional: "bg-primary/90 text-primary-foreground",
+  personal: "bg-amber-600/90 text-white",
+};
+
+const BlogPostCard = ({ post, index }: { post: BlogPost; index: number }) => {
+  const postNumber = String(index + 1).padStart(3, "0");
+  const categoryColor = CATEGORY_COLORS[post.category] ?? "bg-muted text-foreground";
+  const dateStr = new Date(post.date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.4, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Link
+        to={`/writing/${post.slug}`}
+        className="group relative block overflow-hidden rounded-2xl border border-border"
+      >
+        <div className="relative aspect-[4/3]">
+          {/* Cover image or gradient fallback */}
+          {post.imageUrl ? (
+            <img
+              src={post.imageUrl}
+              alt={post.title}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-muted to-secondary" />
+          )}
+
+          {/* Dark gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+          {/* Top badges row */}
+          <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${categoryColor}`}>
+              {post.category}
+            </span>
+            <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+              {dateStr}
+            </span>
+          </div>
+
+          {/* Bottom content */}
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5">
+            <div className="flex-1">
+              <span className="mb-1 block font-mono text-xs tracking-wider text-white/50">
+                {postNumber}
               </span>
-            ))}
+              <h3 className="font-display text-xl font-semibold leading-tight text-white md:text-2xl">
+                {post.title}
+              </h3>
+            </div>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+              <ArrowUpRight size={16} />
+            </span>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-4 text-xs text-muted-foreground md:flex-col md:items-end md:gap-1">
-          <time>{new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</time>
-          <span>{post.readTime}</span>
-        </div>
-      </div>
-    </Link>
-  </motion.article>
-);
+      </Link>
+    </motion.article>
+  );
+};
 
 export default BlogPostCard;
