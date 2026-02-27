@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Activity, Database, Server, Zap, Globe, Shield, RefreshCw, Plug, Unplug, MessageSquareWarning, Check, X, CalendarCheck2, ExternalLink } from "lucide-react";
+import { Activity, Database, Server, Zap, Globe, Shield, RefreshCw, Plug, Unplug, MessageSquareWarning, Check, X, CalendarCheck2, ExternalLink, ListTodo, History, Copy, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import InfoTooltip from "./InfoTooltip";
 import { WORKFLOWS } from "@/lib/config/workflows";
+
+/** Monday.com board URL — open in dashboard. Set via VITE_MONDAY_BOARD_URL or use default. */
+const MONDAY_BOARD_URL = import.meta.env.VITE_MONDAY_BOARD_URL || "https://hansvl3s-team-company.monday.com/boards/5092430975";
 
 interface ConnectorStatus {
   id: string;
@@ -58,6 +61,21 @@ const PortalStatusTab = () => {
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [mondayEvents, setMondayEvents] = useState<Array<{ id: string; event_type: string; message: string; metadata: Record<string, unknown>; monday_item_id: string | null; created_at: string }>>([]);
   const [mondayLoading, setMondayLoading] = useState(true);
+  const [mondaySubmenu, setMondaySubmenu] = useState<"todo" | "done">("todo");
+  const [mondayApprovingId, setMondayApprovingId] = useState<string | null>(null);
+  const [triggerAgentUrlCopied, setTriggerAgentUrlCopied] = useState(false);
+
+  const mondayTriggerAgentUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/monday-trigger-agent`;
+
+  const copyTriggerAgentUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(mondayTriggerAgentUrl);
+      setTriggerAgentUrlCopied(true);
+      setTimeout(() => setTriggerAgentUrlCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const checkAll = async () => {
     setResources((prev) => prev.map((r) => ({ ...r, status: "checking" as Status, lastError: undefined })));
@@ -182,8 +200,8 @@ const PortalStatusTab = () => {
     try {
       const { data, error } = await (supabase
         .from("empire_events")
-        .select("id, event_type, message, metadata, monday_item_id, created_at" as any)
-        .eq("source", "monday")
+        .select("id, event_type, message, metadata, monday_item_id, created_at")
+        .in("source", ["monday", "monday-trigger-agent"])
         .order("created_at", { ascending: false })
         .limit(15) as any);
       if (!error && data) {
@@ -197,6 +215,45 @@ const PortalStatusTab = () => {
   };
 
   useEffect(() => { fetchMondayEvents(); }, []);
+
+  const approveMondayItem = async (eventId: string, workflowName: string, itemId: string, itemName: string, boardId: string) => {
+    const wf = WORKFLOWS.find((w) => w.name === workflowName);
+    if (!wf) return;
+    setMondayApprovingId(eventId);
+    try {
+      const payload = {
+        source: "portal-approved",
+        monday_item_id: itemId,
+        monday_board_id: boardId,
+        item_name: itemName,
+        workflow: wf.name,
+        approved_at: new Date().toISOString(),
+      };
+      const { data: sessionData } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionData?.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ webhook_url: wf.webhook, payload }),
+      });
+      if (!res.ok) throw new Error("Webhook failed");
+      const evt = mondayEvents.find((e) => e.id === eventId);
+      const newMetadata = { ...(evt?.metadata || {}), resolved_workflow: workflowName };
+      await supabase.from("empire_events").update({ event_type: "monday_approved", metadata: newMetadata }).eq("id", eventId);
+      setMondayEvents((prev) =>
+        prev.map((e) => (e.id === eventId ? { ...e, event_type: "monday_approved", metadata: newMetadata } : e))
+      );
+    } catch (e) {
+      console.error("Approve Monday item failed:", e);
+    } finally {
+      setMondayApprovingId(null);
+    }
+  };
+
+  const mondayTodo = mondayEvents.filter((e) => e.event_type === "monday_unhandled");
+  const mondayDone = mondayEvents.filter((e) => e.event_type === "monday_dispatched" || e.event_type === "monday_approved").slice(0, 5);
 
   const onlineCount = resources.filter((r) => r.status === "online").length;
   const allOnline = onlineCount === resources.length;
@@ -377,12 +434,39 @@ const PortalStatusTab = () => {
               </div>
               <div>
                 <div className="flex items-center gap-1">
-                  <p className="text-sm font-medium text-foreground tracking-tight">Monday.com Events</p>
-                  <InfoTooltip text="Recent webhook events received from Monday.com and routed to N8N workflows" />
+                  <a
+                    href={MONDAY_BOARD_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-foreground tracking-tight underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary hover:decoration-primary"
+                  >
+                    Monday.com
+                  </a>
+                  <InfoTooltip text="Recent webhook events from Monday.com. To do: approve items to run a workflow. Done: last 5 dispatched or approved." />
                 </div>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
-                  {mondayLoading ? "Loading…" : `${mondayEvents.length} recent`}
-                </p>
+                <nav className="mt-1 flex items-center gap-3 text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                  <button
+                    type="button"
+                    onClick={() => setMondaySubmenu("todo")}
+                    className={`transition-colors hover:text-foreground/80 ${mondaySubmenu === "todo" ? "text-foreground font-medium" : ""}`}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      <ListTodo size={10} />
+                      To do ({mondayTodo.length})
+                    </span>
+                  </button>
+                  <span className="text-muted-foreground/30">|</span>
+                  <button
+                    type="button"
+                    onClick={() => setMondaySubmenu("done")}
+                    className={`transition-colors hover:text-foreground/80 ${mondaySubmenu === "done" ? "text-foreground font-medium" : ""}`}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      <History size={10} />
+                      Done (last 5)
+                    </span>
+                  </button>
+                </nav>
               </div>
             </div>
             <button
@@ -394,39 +478,122 @@ const PortalStatusTab = () => {
             </button>
           </div>
 
-          {mondayEvents.length === 0 && !mondayLoading ? (
+          {/* Monday Trigger Agent — webhook URL for Monday.com Integrations */}
+          <div className="rounded-xl border border-primary/10 bg-primary/[0.02] px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary/60">
+                <Bot size={14} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-foreground">Trigger Agent webhook</p>
+                <p className="text-[10px] text-muted-foreground/70">
+                  Use this URL in Monday.com → Integrations → Webhooks. Each trigger is classified by AI and routed to a workflow.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={copyTriggerAgentUrl}
+                className="flex shrink-0 items-center gap-1.5 rounded-md border border-border/40 bg-secondary/30 px-2.5 py-1.5 text-[10px] font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
+              >
+                {triggerAgentUrlCopied ? <Check size={12} /> : <Copy size={12} />}
+                {triggerAgentUrlCopied ? "Copied" : "Copy URL"}
+              </button>
+            </div>
+            <p className="mt-2 truncate font-mono text-[10px] text-muted-foreground/60" title={mondayTriggerAgentUrl}>
+              {mondayTriggerAgentUrl}
+            </p>
+          </div>
+
+          {mondayLoading ? (
             <div className="flex items-center justify-center rounded-2xl border border-border/30 bg-secondary/10 py-8 text-xs text-muted-foreground/40">
-              No Monday.com events yet — configure a webhook to get started
+              Loading…
+            </div>
+          ) : mondaySubmenu === "todo" ? (
+            mondayTodo.length === 0 ? (
+              <div className="flex items-center justify-center rounded-2xl border border-border/30 bg-secondary/10 py-8 text-xs text-muted-foreground/40">
+                No new requests — unhandled Monday items will appear here for you to approve and send to a workflow
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {mondayTodo.map((evt) => {
+                  const boardId = String((evt.metadata as Record<string, unknown>)?.boardId ?? "");
+                  const itemLink = evt.monday_item_id
+                    ? `https://monday.com/boards/${boardId}/pulses/${evt.monday_item_id}`
+                    : MONDAY_BOARD_URL;
+                  return (
+                    <div
+                      key={evt.id}
+                      className="group flex items-start gap-3 rounded-xl border border-amber-500/10 bg-amber-500/[0.02] px-4 py-3 transition-all"
+                    >
+                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-amber-500/10 text-amber-500/60">
+                        <MessageSquareWarning size={12} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-foreground/90 break-words">{evt.message}</p>
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/50">
+                          <span>{new Date(evt.created_at).toLocaleString()}</span>
+                          {evt.monday_item_id && (
+                            <a
+                              href={itemLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-0.5 text-primary/50 hover:text-primary/80"
+                            >
+                              <ExternalLink size={8} />
+                              Item #{evt.monday_item_id}
+                            </a>
+                          )}
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                          {WORKFLOWS.filter((w) => w.name !== "monday-orchestrator").map((wf) => (
+                            <button
+                              key={wf.name}
+                              onClick={() =>
+                                approveMondayItem(
+                                  evt.id,
+                                  wf.name,
+                                  evt.monday_item_id || "",
+                                  (evt.metadata as Record<string, unknown>)?.item_name as string || evt.message,
+                                  boardId
+                                )
+                              }
+                              disabled={mondayApprovingId === evt.id}
+                              className="flex items-center gap-1 rounded-md border border-border/40 bg-secondary/20 px-2 py-1 text-[10px] font-medium text-muted-foreground/70 transition-all hover:border-primary/30 hover:text-primary/80 disabled:opacity-30"
+                            >
+                              <Check size={10} />
+                              {wf.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : mondayDone.length === 0 ? (
+            <div className="flex items-center justify-center rounded-2xl border border-border/30 bg-secondary/10 py-8 text-xs text-muted-foreground/40">
+              No completed Monday items yet — dispatched or approved items will appear here
             </div>
           ) : (
             <div className="space-y-2">
-              {mondayEvents.map((evt) => {
-                const isDispatched = evt.event_type === "monday_dispatched";
-                const isUnhandled = evt.event_type === "monday_unhandled";
-                const workflow = (evt.metadata as Record<string, unknown>)?.workflow as string | undefined;
+              {mondayDone.map((evt) => {
+                const isApproved = evt.event_type === "monday_approved";
+                const workflow = (evt.metadata as Record<string, unknown>)?.workflow as string | undefined ?? (evt.metadata as Record<string, unknown>)?.resolved_workflow as string | undefined;
                 const confidence = (evt.metadata as Record<string, unknown>)?.confidence as number | undefined;
-                const actualUrl = "https://monday.com";
-                const expectedUrl = evt.monday_item_id ? `https://monday.com/boards/${(evt.metadata as Record<string, unknown>)?.boardId ?? ""}/pulses/${evt.monday_item_id}` : null;
-                if (evt.monday_item_id) {
-                  // #region agent log
-                  fetch('http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'03c957'},body:JSON.stringify({sessionId:'03c957',runId:'pre-fix',hypothesisId:'H3',location:'src/components/portal/PortalStatusTab.tsx:409',message:'Monday link render data',data:{eventId:evt.id,mondayItemId:evt.monday_item_id,actualUrl,expectedUrl,metadataKeys:Object.keys((evt.metadata as Record<string, unknown>) || {})},timestamp:Date.now()})}).catch(()=>{});
-                  // #endregion
-                }
+                const boardId = String((evt.metadata as Record<string, unknown>)?.boardId ?? "");
+                const itemLink = evt.monday_item_id
+                  ? `https://monday.com/boards/${boardId}/pulses/${evt.monday_item_id}`
+                  : MONDAY_BOARD_URL;
                 return (
                   <div
                     key={evt.id}
                     className={`flex items-start gap-3 rounded-xl border px-4 py-3 transition-all ${
-                      isDispatched
-                        ? "border-primary/10 bg-primary/[0.02]"
-                        : isUnhandled
-                          ? "border-amber-500/10 bg-amber-500/[0.02]"
-                          : "border-border/30 bg-secondary/10"
+                      isApproved ? "border-primary/10 bg-primary/[0.02]" : "border-primary/10 bg-primary/[0.02]"
                     }`}
                   >
-                    <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${
-                      isDispatched ? "bg-primary/10 text-primary/60" : isUnhandled ? "bg-amber-500/10 text-amber-500/60" : "bg-secondary/30 text-muted-foreground/40"
-                    }`}>
-                      {isDispatched ? <Check size={12} /> : isUnhandled ? <MessageSquareWarning size={12} /> : <Zap size={12} />}
+                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary/60">
+                      {isApproved ? <Check size={12} /> : <Zap size={12} />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-foreground/90 break-words">{evt.message}</p>
@@ -440,7 +607,7 @@ const PortalStatusTab = () => {
                         <span>{new Date(evt.created_at).toLocaleString()}</span>
                         {evt.monday_item_id && (
                           <a
-                            href={actualUrl}
+                            href={itemLink}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-0.5 text-primary/50 hover:text-primary/80"

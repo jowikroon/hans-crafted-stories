@@ -70,7 +70,7 @@ Wrangler, a script, or an integration fails with **401**, **403**, or “invalid
 - **Wrangler (CLI):** run `npx wrangler login` (browser login) or set:
   - **Windows (PowerShell):** `$env:CLOUDFLARE_API_TOKEN = "your-token"`
   - **Linux/macOS:** `export CLOUDFLARE_API_TOKEN=your-token`
-- **Scripts / CI:** set `CLOUDFLARE_API_TOKEN` in the environment (e.g. `.env` for local, secrets in GitHub/Netlify for CI).
+- **Scripts / CI:** set `CLOUDFLARE_API_TOKEN` in the environment (e.g. `.env` for local, secrets in GitHub Actions for CI).
 
 ### Step 3 — Verify the token
 

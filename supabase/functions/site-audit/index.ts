@@ -9,7 +9,21 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { url } = await req.json();
+    let body: { url?: string } = {};
+    const contentType = req.headers.get("content-type") || "";
+    if (req.method === "POST" && contentType.includes("application/json")) {
+      const text = await req.text();
+      if (text.trim()) {
+        try {
+          body = JSON.parse(text);
+        } catch {
+          return new Response(JSON.stringify({ success: false, error: "Invalid JSON body" }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+    }
+    const { url } = body;
     if (!url) {
       return new Response(JSON.stringify({ success: false, error: "URL is required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
