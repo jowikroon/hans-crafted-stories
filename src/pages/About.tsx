@@ -23,10 +23,26 @@ const About = () => {
   const t = translations[lang];
   const { isVisible } = usePageElements("about");
 
+  const seo = t.seo;
+
   useSEO({
-    title: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
-    description: "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and digital commerce. Based in Amersfoort, NL.",
+    title: seo.aboutTitle,
+    description: seo.aboutDescription,
     url: "https://hansvanleeuwen.com/about",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      mainEntity: { "@id": "https://hansvanleeuwen.com/#person" },
+      name: seo.aboutTitle,
+      url: "https://hansvanleeuwen.com/about",
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+          { "@type": "ListItem", position: 2, name: "About" },
+        ],
+      },
+    },
   });
 
   return (
