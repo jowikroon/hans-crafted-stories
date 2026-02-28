@@ -347,7 +347,7 @@ const UnifiedChatPanel = () => {
         {showCommands && selectedSub && messages.length === 0 && (
           <CommandSuggestionList
             subId={selectedSub}
-            context="empire"
+            context="unified"
             onSelect={(text) => {
               incrementUsage("unified", text);
               sendMessage(text);
