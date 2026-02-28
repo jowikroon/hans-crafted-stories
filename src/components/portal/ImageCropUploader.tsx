@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import Cropper, { Area } from "react-easy-crop";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Upload, X, Image as ImageIcon, ZoomIn, RotateCcw, Crop } from "lucide-react";
@@ -76,9 +76,15 @@ const ImageCropUploader = ({
     setCroppedAreaPixels(croppedPixels);
   }, []);
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
   const handleFileSelect = (file: File) => {
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("File is too large. Maximum size is 10MB.");
       return;
     }
     const reader = new FileReader();
@@ -243,6 +249,9 @@ const ImageCropUploader = ({
               <Crop size={18} className="text-primary" />
               Crop Image
             </DialogTitle>
+            <DialogDescription>
+              Drag to reposition and use the slider to zoom. The highlighted area will be used.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
