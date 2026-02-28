@@ -280,7 +280,9 @@ const Portal = () => {
         {activeTab === "status" && <PortalStatusTab subFilter={subFilter} />}
       </motion.div>
 
-      <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
+      {isVisible("terminal_button") && (
+        <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
+      )}
       <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => setCommandCenterOpen((v) => !v)} onN8nOpen={() => setCommandCenterOpen((v) => !v)} onSignOut={signOut} />
     </section>
   );
