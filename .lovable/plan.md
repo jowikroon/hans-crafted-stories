@@ -1,29 +1,32 @@
 
+## Migrate hardcoded blog content to the database
 
-## Fix: Navbar Command Center koppelen aan `command_center_button`
+### Problem
+All 5 blog posts in the database have an empty `content` field. The frontend falls back to hardcoded content in `src/data/blogContent.ts`, meaning the CMS markdown editor has no effect on what visitors see.
 
-### Probleem
-De Navbar (`src/components/Navbar.tsx`) gebruikt op twee plekken nog de oude visibility check `isNavVisible("ai_button") || isNavVisible("empire_button")` om de Command Center button te tonen/verbergen. Dit betekent dat de nieuwe dedicated `command_center_button` toggle geen effect heeft op de navbar.
+### Solution
+Run a single SQL migration that copies the markdown content from the hardcoded file into the corresponding `blog_posts` rows, matched by slug. This makes the CMS the single source of truth.
 
-### Oplossing
-Omdat `command_center_button` in de database is opgeslagen onder `page: "portal"`, maar de Navbar leest alleen `page: "navbar"` elementen via `usePageElements("navbar")`, zijn er twee opties:
+### Steps
 
-**Gekozen aanpak:** Een tweede `command_center_button` record toevoegen aan de database met `page: "navbar"`, zodat de bestaande `usePageElements("navbar")` hook het automatisch oppikt. Dit houdt de architectuur consistent (elke page heeft zijn eigen element keys).
+1. **Database migration**: Execute an UPDATE statement for each of the 8 slugs in `blogContent.ts`, setting `blog_posts.content` to the full markdown string where `slug` matches. Posts not yet in the DB will be skipped (only existing rows are updated).
 
-### Database
-Insert 1 rij in `page_elements`:
+2. **Verify**: After migration, confirm that `content` is no longer empty for the matched posts.
 
-| page | group | key | label | is_visible |
-|------|-------|-----|-------|------------|
-| navbar | Admin | command_center_button | Navbar Command Center | true |
+3. **Optional cleanup**: Once confirmed, the `blogContent.ts` fallback file can be left in place (as a safety net) or removed entirely so there's only one source of truth.
 
-### Code aanpassing
+### Technical details
 
-**`src/components/Navbar.tsx`** (2 wijzigingen)
-- **Regel 264**: Vervang `(isNavVisible("ai_button") || isNavVisible("empire_button"))` door `isNavVisible("command_center_button")`
-- **Regel 305**: Zelfde vervanging voor de mobiele menu variant
+Slugs to migrate (8 entries in `blogContent.ts`):
+- `hidden-cost-dark-patterns`
+- `designing-with-llms`
+- `cycling-dutch-countryside`
+- `cro-design-problem`
+- `ai-search-ux-lessons`
+- `bookshelf-2024`
+- `ux-unit-economics`
+- `sourdough-products`
 
-De oude `ai_button` en `empire_button` navbar elementen blijven bestaan in de database maar hebben dan geen effect meer op de Command Center visibility.
+Only 5 of these currently exist in the database. The UPDATE will match on `slug` so non-existent rows are safely ignored.
 
-### Resultaat
-Na deze fix stuurt 1 toggle ("Navbar Command Center" onder AI Terminals) de zichtbaarheid van de Command Center button in de navbar, onafhankelijk van de Portal header toggle.
+No code changes are needed — the existing `BlogPostPage.tsx` already reads `post.content` first.
