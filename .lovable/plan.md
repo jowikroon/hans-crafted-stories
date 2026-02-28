@@ -1,32 +1,70 @@
 
-## Migrate hardcoded blog content to the database
+
+## Fix Image Upload: Missing Storage Policies + UX Improvements
 
 ### Problem
-All 5 blog posts in the database have an empty `content` field. The frontend falls back to hardcoded content in `src/data/blogContent.ts`, meaning the CMS markdown editor has no effect on what visitors see.
+The `ImageCropUploader` fails when selecting an image because the storage bucket `bucket` has **RLS enabled but zero policies**. This means all uploads are silently denied by the database, causing a generic error toast.
 
-### Solution
-Run a single SQL migration that copies the markdown content from the hardcoded file into the corresponding `blog_posts` rows, matched by slug. This makes the CMS the single source of truth.
+### Root Cause
+- `storage.objects` table has `row_level_security = true`
+- No INSERT/SELECT/UPDATE/DELETE policies exist on the table
+- Every `supabase.storage.from("bucket").upload(...)` call fails with a permissions error
 
-### Steps
+### Fix
 
-1. **Database migration**: Execute an UPDATE statement for each of the 8 slugs in `blogContent.ts`, setting `blog_posts.content` to the full markdown string where `slug` matches. Posts not yet in the DB will be skipped (only existing rows are updated).
+**1. Add Storage RLS Policies (database migration)**
 
-2. **Verify**: After migration, confirm that `content` is no longer empty for the matched posts.
+Create policies on `storage.objects` to allow:
+- **Admins can upload** (INSERT) to the `bucket` — restricted to authenticated admin users via the existing `has_role()` function
+- **Admins can update** (UPDATE) files they uploaded — for upsert support
+- **Admins can delete** (DELETE) their files — for replacing images
+- **Anyone can read** (SELECT) public files — since the bucket is already public, this enables direct URL access
 
-3. **Optional cleanup**: Once confirmed, the `blogContent.ts` fallback file can be left in place (as a safety net) or removed entirely so there's only one source of truth.
+**2. Minor UX hardening in `ImageCropUploader.tsx`**
 
-### Technical details
+- Add a `DialogDescription` to the crop dialog to fix the console warning about missing `aria-describedby`
+- Add a file size check (max 10MB) before reading the file, matching the hint text already shown to users
+- Improve error messaging to show more user-friendly text on permission errors
 
-Slugs to migrate (8 entries in `blogContent.ts`):
-- `hidden-cost-dark-patterns`
-- `designing-with-llms`
-- `cycling-dutch-countryside`
-- `cro-design-problem`
-- `ai-search-ux-lessons`
-- `bookshelf-2024`
-- `ux-unit-economics`
-- `sourdough-products`
+### Technical Details
 
-Only 5 of these currently exist in the database. The UPDATE will match on `slug` so non-existent rows are safely ignored.
+**SQL migration:**
+```sql
+-- Allow anyone to view files (bucket is already public)
+CREATE POLICY "Public read access" ON storage.objects
+  FOR SELECT USING (bucket_id = 'bucket');
 
-No code changes are needed — the existing `BlogPostPage.tsx` already reads `post.content` first.
+-- Admins can upload files
+CREATE POLICY "Admins can upload files" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'bucket' 
+    AND has_role(auth.uid(), 'admin')
+  );
+
+-- Admins can update their files (needed for upsert)
+CREATE POLICY "Admins can update files" ON storage.objects
+  FOR UPDATE USING (
+    bucket_id = 'bucket' 
+    AND has_role(auth.uid(), 'admin')
+  );
+
+-- Admins can delete files
+CREATE POLICY "Admins can delete files" ON storage.objects
+  FOR DELETE USING (
+    bucket_id = 'bucket' 
+    AND has_role(auth.uid(), 'admin')
+  );
+```
+
+**Code changes in `ImageCropUploader.tsx`:**
+- Import `DialogDescription` and add it under `DialogTitle`
+- Add file size validation (10MB max) in `handleFileSelect`
+
+### What stays the same
+- The crop tool UX (drag, zoom, aspect ratio) is well-built and needs no changes
+- The bucket name `bucket` and upload paths remain unchanged
+- Both blog post and case study forms continue using `ImageCropUploader` as-is
+
+### Result
+After this fix, admins will be able to select, crop, and upload images through the CMS without errors. The full flow (select file, crop dialog, upload, see preview) will work end-to-end.
+
