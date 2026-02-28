@@ -22,6 +22,10 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
+  const [titleNl, setTitleNl] = useState("");
+  const [excerptNl, setExcerptNl] = useState("");
+  const [contentNl, setContentNl] = useState("");
+  const [previewingNl, setPreviewingNl] = useState(false);
   const [category, setCategory] = useState("professional");
   const [tags, setTags] = useState("");
   const [readTime, setReadTime] = useState("5 min read");
@@ -70,6 +74,9 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
       setSlug(post.slug);
       setExcerpt(post.excerpt);
       setContent(post.content);
+      setTitleNl(post.title_nl || "");
+      setExcerptNl(post.excerpt_nl || "");
+      setContentNl(post.content_nl || "");
       setCategory(post.category);
       setTags(post.tags.join(", "));
       setReadTime(post.read_time);
@@ -77,6 +84,7 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
       setImageUrl(post.image_url || "");
     } else {
       setTitle(""); setSlug(""); setExcerpt(""); setContent("");
+      setTitleNl(""); setExcerptNl(""); setContentNl("");
       setCategory("professional"); setTags(""); setReadTime("5 min read");
       setPublished(false); setImageUrl("");
     }
@@ -126,6 +134,9 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
         slug,
         excerpt,
         content,
+        title_nl: titleNl,
+        excerpt_nl: excerptNl,
+        content_nl: contentNl,
         category,
         tags: tagList,
         read_time: readTime,
@@ -262,6 +273,76 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
                 placeholder="Write your article in Markdown..."
               />
             )}
+          </div>
+
+          {/* ── Dutch Translations ── */}
+          <div className="space-y-4 rounded-lg border border-border bg-secondary/10 p-4">
+            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+              🇳🇱 Dutch Translations <span className="text-[11px] font-normal text-muted-foreground">(optional – falls back to English)</span>
+            </p>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">Title (NL)</Label>
+              <Input
+                value={titleNl}
+                onChange={(e) => setTitleNl(e.target.value)}
+                placeholder="Nederlandse titel…"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Excerpt (NL)</Label>
+                <span className="text-[11px] text-muted-foreground/50">{excerptNl.length}/200</span>
+              </div>
+              <Textarea
+                value={excerptNl}
+                onChange={(e) => setExcerptNl(e.target.value)}
+                rows={2}
+                placeholder="Korte samenvatting in het Nederlands…"
+                maxLength={200}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-medium">Content (NL) (Markdown)</Label>
+                <div className="flex rounded-md border border-border p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewingNl(false)}
+                    className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
+                      !previewingNl ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Pencil size={10} /> Write
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewingNl(true)}
+                    className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
+                      previewingNl ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Eye size={10} /> Preview
+                  </button>
+                </div>
+              </div>
+              {previewingNl ? (
+                <div
+                  className="min-h-[200px] max-h-[200px] overflow-y-auto rounded-md border border-border bg-card p-4 text-sm leading-relaxed prose-sm"
+                  dangerouslySetInnerHTML={{ __html: contentNl ? `<p class="my-2 text-sm leading-relaxed">${contentNl}</p>` : '<p class="text-muted-foreground/40 italic">Nog niets om te laten zien…</p>' }}
+                />
+              ) : (
+                <Textarea
+                  value={contentNl}
+                  onChange={(e) => setContentNl(e.target.value)}
+                  rows={8}
+                  className="font-mono text-xs leading-relaxed"
+                  placeholder="Schrijf je artikel in Markdown…"
+                />
+              )}
+            </div>
           </div>
 
           {/* Category & Tags */}

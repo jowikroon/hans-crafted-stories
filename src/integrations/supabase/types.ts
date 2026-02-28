@@ -18,8 +18,10 @@ export type Database = {
         Row: {
           category: string
           content: string
+          content_nl: string
           created_at: string
           excerpt: string
+          excerpt_nl: string
           id: string
           image_url: string
           published: boolean
@@ -27,13 +29,16 @@ export type Database = {
           slug: string
           tags: string[]
           title: string
+          title_nl: string
           updated_at: string
         }
         Insert: {
           category?: string
           content?: string
+          content_nl?: string
           created_at?: string
           excerpt?: string
+          excerpt_nl?: string
           id?: string
           image_url?: string
           published?: boolean
@@ -41,13 +46,16 @@ export type Database = {
           slug: string
           tags?: string[]
           title: string
+          title_nl?: string
           updated_at?: string
         }
         Update: {
           category?: string
           content?: string
+          content_nl?: string
           created_at?: string
           excerpt?: string
+          excerpt_nl?: string
           id?: string
           image_url?: string
           published?: boolean
@@ -55,6 +63,7 @@ export type Database = {
           slug?: string
           tags?: string[]
           title?: string
+          title_nl?: string
           updated_at?: string
         }
         Relationships: []

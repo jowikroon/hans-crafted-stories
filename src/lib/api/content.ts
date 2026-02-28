@@ -5,6 +5,9 @@ export interface BlogPostRow {
   title: string;
   excerpt: string;
   content: string;
+  title_nl: string;
+  excerpt_nl: string;
+  content_nl: string;
   category: string;
   tags: string[];
   slug: string;
