@@ -2,52 +2,59 @@ import { Search, HeartPulse, FileText, Bug } from "lucide-react";
 
 const examples = [
   {
-    title: "SEO Title Optimization",
+    title: "Find the best keywords for your products",
     icon: Search,
     color: "emerald",
-    context: { category: "SEO", sub: "Keywords" },
-    prompt: "Research keywords for brake pads",
-    edgeFn: "hansai-chat",
-    systemMod: "Context prefix adds: [SEO > Keywords] focus — keyword research mode",
-    output: "Streaming markdown response with keyword table, search volume estimates, and title suggestions.",
+    goal: "Discover high-value keywords to improve your product page rankings.",
+    steps: [
+      "Open Hans AI from the navigation bar",
+      "Select the topic: SEO › Keywords",
+      "Type: \"Research keywords for brake pads\"",
+    ],
+    result: "A table of keywords with search volume estimates and ready-to-use title suggestions.",
   },
   {
-    title: "Infrastructure Health Check",
+    title: "Check if all your services are running",
     icon: HeartPulse,
     color: "violet",
-    context: { category: "Monitoring", sub: "Health" },
-    prompt: "Run full health check",
-    edgeFn: "intent-router → health-check webhook",
-    systemMod: "Intent router detects 'health check' keyword (fastRoute score 0.92) → direct webhook trigger",
-    output: "Status grid with green/red indicators per service, response times, and uptime percentages.",
+    goal: "Instantly see which backend services are healthy and which need attention.",
+    steps: [
+      "Open the Command Center in the Portal",
+      "Select the topic: Monitoring › Health",
+      "Type: \"Run full health check\"",
+    ],
+    result: "A status grid showing green/red indicators per service, response times, and uptime.",
   },
   {
-    title: "Content Generation",
+    title: "Generate a blog post outline",
     icon: FileText,
     color: "orange",
-    context: { category: "Content", sub: "Blog" },
-    prompt: "Generate blog post outline for auto parts",
-    edgeFn: "n8n-agent",
-    systemMod: "Context prefix adds: [Content > Blog] — generate content mode, include SEO meta fields",
-    output: "Structured outline with H2/H3 headings, intro paragraph, key points, and meta description draft.",
+    goal: "Get a structured blog outline with SEO-optimized headings in seconds.",
+    steps: [
+      "Open the Command Center in the Portal",
+      "Select the topic: Content › Blog",
+      "Type: \"Generate blog post outline for auto parts\"",
+    ],
+    result: "A structured outline with H2/H3 headings, an intro paragraph, key points, and a meta description draft.",
   },
   {
-    title: "Workflow Debugging",
+    title: "Fix a broken automation",
     icon: Bug,
     color: "cyan",
-    context: { category: "Automation", sub: "n8n" },
-    prompt: "Fix Schedule trigger not firing",
-    edgeFn: "n8n-agent (troubleshoot mode)",
-    systemMod: "Auto-detects 'troubleshoot' intent — switches to diagnostic system prompt with log analysis",
-    output: "Step-by-step diagnosis: cron expression validation, timezone check, node connection verification.",
+    goal: "Diagnose why a workflow trigger stopped firing and get step-by-step fixes.",
+    steps: [
+      "Open the n8n Agent from the Portal",
+      "Type: \"Fix Schedule trigger not firing\"",
+    ],
+    result: "A step-by-step diagnosis: cron expression check, timezone validation, and node connection fixes.",
   },
 ];
 
-const colorMap: Record<string, { border: string; badge: string; bg: string }> = {
-  emerald: { border: "border-emerald-500/30", badge: "bg-emerald-500/15 text-emerald-400", bg: "bg-emerald-500/5" },
-  violet: { border: "border-violet-500/30", badge: "bg-violet-500/15 text-violet-400", bg: "bg-violet-500/5" },
-  orange: { border: "border-orange-500/30", badge: "bg-orange-500/15 text-orange-400", bg: "bg-orange-500/5" },
-  cyan: { border: "border-cyan-500/30", badge: "bg-cyan-500/15 text-cyan-400", bg: "bg-cyan-500/5" },
+const colorMap: Record<string, { border: string; bg: string; step: string; num: string }> = {
+  emerald: { border: "border-emerald-500/30", bg: "bg-emerald-500/5", step: "text-emerald-400", num: "bg-emerald-500/20 text-emerald-400" },
+  violet: { border: "border-violet-500/30", bg: "bg-violet-500/5", step: "text-violet-400", num: "bg-violet-500/20 text-violet-400" },
+  orange: { border: "border-orange-500/30", bg: "bg-orange-500/5", step: "text-orange-400", num: "bg-orange-500/20 text-orange-400" },
+  cyan: { border: "border-cyan-500/30", bg: "bg-cyan-500/5", step: "text-cyan-400", num: "bg-cyan-500/20 text-cyan-400" },
 };
 
 const WikiExamples = () => (
@@ -62,33 +69,24 @@ const WikiExamples = () => (
             <h3 className="text-sm font-semibold text-foreground">{ex.title}</h3>
           </div>
 
-          <div className="space-y-2.5 text-[11px]">
-            <div>
-              <span className="text-muted-foreground/60">Context: </span>
-              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${c.badge}`}>
-                {ex.context.category} › {ex.context.sub}
-              </span>
-            </div>
+          <p className="mb-3 text-xs leading-relaxed text-muted-foreground">{ex.goal}</p>
 
-            <div>
-              <span className="text-muted-foreground/60">Prompt: </span>
-              <span className="font-mono text-foreground">"{ex.prompt}"</span>
-            </div>
+          {/* Steps */}
+          <div className="mb-3 space-y-1.5">
+            {ex.steps.map((step, i) => (
+              <div key={i} className="flex items-start gap-2 text-[11px]">
+                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ${c.num}`}>
+                  {i + 1}
+                </span>
+                <span className="text-muted-foreground">{step}</span>
+              </div>
+            ))}
+          </div>
 
-            <div>
-              <span className="text-muted-foreground/60">Edge Function: </span>
-              <code className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">{ex.edgeFn}</code>
-            </div>
-
-            <div>
-              <span className="text-muted-foreground/60">System Modification: </span>
-              <span className="text-muted-foreground">{ex.systemMod}</span>
-            </div>
-
-            <div className="rounded-lg border border-border bg-card/50 p-2">
-              <span className="text-muted-foreground/60">Expected Output: </span>
-              <span className="text-muted-foreground">{ex.output}</span>
-            </div>
+          {/* Result */}
+          <div className="rounded-lg border border-border bg-card/50 p-2.5">
+            <span className="text-[10px] font-medium text-muted-foreground/60">What you'll get</span>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{ex.result}</p>
           </div>
         </div>
       );
