@@ -7,6 +7,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
 import HansAIOverlay from "@/components/overlays/HansAIOverlay";
 import EmpireOverlay from "@/components/overlays/EmpireOverlay";
+import { usePageElements } from "@/hooks/usePageElements";
 import { translations } from "@/data/translations";
 import type { Lang } from "@/hooks/useLang";
 
@@ -49,6 +50,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
+  const { isVisible: isNavVisible } = usePageElements("navbar");
   const t = translations[lang].nav;
   const links = getLinks(lang);
 
@@ -261,6 +263,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
           <div className="mx-auto max-w-6xl px-6 hidden md:block">
             <div className="flex items-center justify-end h-8">
               <div className="flex items-center gap-1.5">
+                {isNavVisible("ai_button") && (
                 <button
                   onClick={() => setAiOpen(true)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
@@ -272,6 +275,8 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   <Bot size={11} />
                   AI
                 </button>
+                )}
+                {isNavVisible("empire_button") && (
                 <button
                   onClick={() => setEmpireOpen(true)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
@@ -283,6 +288,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   <Terminal size={11} />
                   Empire
                 </button>
+                )}
               </div>
             </div>
           </div>
@@ -313,14 +319,18 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 </Link>
                 {isAdmin && (
                   <>
+                    {isNavVisible("ai_button") && (
                     <button onClick={() => { setMobileOpen(false); setAiOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-emerald-500/15 text-emerald-400/40" : "border-border text-muted-foreground"} hover:border-emerald-500/40 hover:text-emerald-600`}>
                       <Bot size={14} />
                       Hans AI
                     </button>
+                    )}
+                    {isNavVisible("empire_button") && (
                     <button onClick={() => { setMobileOpen(false); setEmpireOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-violet-500/15 text-violet-400/40" : "border-border text-muted-foreground"} hover:border-violet-500/40 hover:text-violet-600`}>
                       <Terminal size={14} />
                       Empire
                     </button>
+                    )}
                   </>
                 )}
               </div>

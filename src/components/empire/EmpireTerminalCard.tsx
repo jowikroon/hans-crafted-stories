@@ -3,16 +3,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, X, Maximize2, Minimize2, ExternalLink } from "lucide-react";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useAuth } from "@/hooks/useAuth";
+import { usePageElements } from "@/hooks/usePageElements";
 
 const TERMINAL_URL = "https://terminal.hansvanleeuwen.com";
 
 const EmpireTerminalCard = () => {
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
+  const { isVisible } = usePageElements("portal");
   const [open, setOpen] = useState(false);
   const [maximized, setMaximized] = useState(false);
 
-  if (!user || !isAdmin) return null;
+  if (!user || !isAdmin || !isVisible("terminal_button")) return null;
 
   return (
     <>

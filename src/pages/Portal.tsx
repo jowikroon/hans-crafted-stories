@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+import { usePageElements } from "@/hooks/usePageElements";
 
 
 const EMPIRE_SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
@@ -69,6 +70,7 @@ const Portal = () => {
   const empireTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const n8nTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const { toast } = useToast();
+  const { isVisible } = usePageElements("portal");
 
   // Force dark mode when Portal mounts; restore previous theme on unmount
   useEffect(() => {
@@ -203,6 +205,7 @@ const Portal = () => {
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
+            {isVisible("empire_ai_button") && (
             <div className="relative">
               <button
                 onClick={() => setEmpireOpen((v) => !v)}
@@ -224,6 +227,8 @@ const Portal = () => {
                 </div>
               )}
             </div>
+            )}
+            {isVisible("n8n_agent_button") && (
             <div className="relative">
               <button
                 onClick={() => setN8nOpen((v) => !v)}
@@ -245,6 +250,7 @@ const Portal = () => {
                 </div>
               )}
             </div>
+            )}
             <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
