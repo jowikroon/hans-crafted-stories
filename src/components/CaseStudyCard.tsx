@@ -1,8 +1,12 @@
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { CaseStudy } from "@/data/types";
+import { useLang } from "@/hooks/useLang";
 
 const CaseStudyCard = ({ study, index }: { study: CaseStudy; index: number }) => {
+  const { lang } = useLang();
+  const displayTitle = (lang === "nl" && study.titleNl) ? study.titleNl : study.title;
+  const displayDescription = (lang === "nl" && study.descriptionNl) ? study.descriptionNl : study.description;
   const Wrapper = study.externalUrl ? "a" : "div";
   const linkProps = study.externalUrl
     ? { href: study.externalUrl, target: "_blank" as const, rel: "noopener noreferrer" }
@@ -54,9 +58,9 @@ const CaseStudyCard = ({ study, index }: { study: CaseStudy; index: number }) =>
             </span>
           </div>
           <h3 className="mb-1 font-display text-base font-medium leading-snug text-foreground line-clamp-1">
-            {study.title}
+            {displayTitle}
           </h3>
-          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{study.description}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{displayDescription}</p>
         </div>
       </Wrapper>
     </motion.article>

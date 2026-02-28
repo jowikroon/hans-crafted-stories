@@ -70,8 +70,10 @@ const Work = () => {
       studies.map((s) => ({
         id: s.id,
         title: s.title,
+        titleNl: s.title_nl || undefined,
         category: s.category,
         description: s.description,
+        descriptionNl: s.description_nl || undefined,
         image: s.image,
         year: s.year,
         externalUrl: s.external_url ?? undefined,

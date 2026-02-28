@@ -72,42 +72,51 @@ export type Database = {
         Row: {
           category: string
           content: string
+          content_nl: string
           created_at: string
           description: string
+          description_nl: string
           external_url: string | null
           id: string
           image: string
           published: boolean
           sort_order: number
           title: string
+          title_nl: string
           updated_at: string
           year: string
         }
         Insert: {
           category?: string
           content?: string
+          content_nl?: string
           created_at?: string
           description?: string
+          description_nl?: string
           external_url?: string | null
           id?: string
           image?: string
           published?: boolean
           sort_order?: number
           title: string
+          title_nl?: string
           updated_at?: string
           year?: string
         }
         Update: {
           category?: string
           content?: string
+          content_nl?: string
           created_at?: string
           description?: string
+          description_nl?: string
           external_url?: string | null
           id?: string
           image?: string
           published?: boolean
           sort_order?: number
           title?: string
+          title_nl?: string
           updated_at?: string
           year?: string
         }
