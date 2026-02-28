@@ -513,11 +513,22 @@ export const hansAICommands: Record<string, CommandSuggestion[]> = {
   ],
 };
 
+// Unified commands — merge empire + hansAI (rename channable to channable-feeds for hansAI)
+export const unifiedCommands: Record<string, CommandSuggestion[]> = {
+  ...empireCommands,
+  ...Object.fromEntries(
+    Object.entries(hansAICommands).map(([key, val]) =>
+      key === "channable" ? ["channable-feeds", val] : [key, val]
+    )
+  ),
+};
+
 const STORAGE_KEY_EMPIRE = "cmd_usage_empire";
 const STORAGE_KEY_HANSAI = "cmd_usage_hansai";
+const STORAGE_KEY_UNIFIED = "cmd_usage_unified";
 
-export function getUsageCounts(context: "empire" | "hansai"): Record<string, number> {
-  const key = context === "empire" ? STORAGE_KEY_EMPIRE : STORAGE_KEY_HANSAI;
+export function getUsageCounts(context: "empire" | "hansai" | "unified"): Record<string, number> {
+  const key = context === "empire" ? STORAGE_KEY_EMPIRE : context === "hansai" ? STORAGE_KEY_HANSAI : STORAGE_KEY_UNIFIED;
   try {
     return JSON.parse(localStorage.getItem(key) || "{}");
   } catch {
@@ -525,8 +536,8 @@ export function getUsageCounts(context: "empire" | "hansai"): Record<string, num
   }
 }
 
-export function incrementUsage(context: "empire" | "hansai", commandText: string): void {
-  const key = context === "empire" ? STORAGE_KEY_EMPIRE : STORAGE_KEY_HANSAI;
+export function incrementUsage(context: "empire" | "hansai" | "unified", commandText: string): void {
+  const key = context === "empire" ? STORAGE_KEY_EMPIRE : context === "hansai" ? STORAGE_KEY_HANSAI : STORAGE_KEY_UNIFIED;
   const counts = getUsageCounts(context);
   counts[commandText] = (counts[commandText] || 0) + 1;
   localStorage.setItem(key, JSON.stringify(counts));
