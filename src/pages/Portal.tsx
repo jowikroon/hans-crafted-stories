@@ -181,7 +181,7 @@ const Portal = () => {
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
-            {(isVisible("empire_ai_button") || isVisible("n8n_agent_button")) && (
+            {isVisible("command_center_button") && (
               <button
                 onClick={() => setCommandCenterOpen((v) => !v)}
                 className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
@@ -210,7 +210,7 @@ const Portal = () => {
         </div>
 
         {/* Unified Command Center Panel */}
-        {(isVisible("empire_ai_button") || isVisible("n8n_agent_button")) && (
+        {isVisible("command_center_button") && (
           <AnimatePresence>
             {commandCenterOpen && (
               <motion.div
