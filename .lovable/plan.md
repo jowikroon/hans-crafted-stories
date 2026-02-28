@@ -1,26 +1,25 @@
 
-
-# Fix Command Suggestion List in Command Center
+# Constrain Command Suggestions to Chat Area
 
 ## Problem
-The top-10 command/prompt suggestions that should appear when selecting main + sub-menu filters in the Command Center are broken. The root cause is a wrong `context` prop: it says `"empire"` instead of `"unified"`, so the component looks up commands from the wrong map and most sub-categories return empty results.
+The `CommandSuggestionList` uses `position: absolute; left: 0; right: 0` which makes it stretch to 100% of the nearest positioned ancestor. Since it sits directly inside the UnifiedChatPanel root (which fills the full-width Command Center panel), the suggestions span the entire screen width instead of staying within the chat/message area.
 
 ## Fix
 
-### UnifiedChatPanel.tsx (single line change)
-Change line 351 from:
+### CommandSuggestionList.tsx
+Change the positioning from `absolute` to `relative`. This keeps the suggestion list in the normal document flow, sitting neatly below the filter pills and above the messages area, constrained to the chat column width.
+
+- Line 90: Remove `absolute left-0 right-0` from the className
+- Replace with `relative` so it flows naturally within the layout
+- Keep `z-30`, border styling, and shadow as-is
+
+### Single-line change
 ```tsx
-context="empire"
+// Before
+className={`absolute left-0 right-0 z-30 overflow-hidden rounded-b-lg border-b border-x ${colors.bg} shadow-xl`}
+
+// After
+className={`relative z-30 overflow-hidden rounded-b-lg border-b border-x ${colors.bg} shadow-xl`}
 ```
-to:
-```tsx
-context="unified"
-```
 
-This ensures `CommandSuggestionList` looks up commands from `unifiedCommands` (which merges both empire and hansAI command maps), so every sub-category filter correctly shows its 10 prompt suggestions.
-
-## No other files need changes
-- `CommandSuggestionList.tsx` -- works correctly, just receives wrong context
-- `commandSuggestions.ts` -- already has `unifiedCommands` with all entries
-- `HansAIOverlay.tsx` -- already uses `context="hansai"` correctly
-
+No other files need changes. This keeps the component working identically in the HansAI and Empire overlays (which are narrower panels where the issue wasn't noticeable).
