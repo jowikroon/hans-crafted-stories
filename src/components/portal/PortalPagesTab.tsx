@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, LayoutDashboard, ChevronRight, Globe } from "lucide-react";
+import { Eye, EyeOff, LayoutDashboard, ChevronRight } from "lucide-react";
 import { useAllPageElements } from "@/hooks/usePageElements";
 import { Badge } from "@/components/ui/badge";
-import { useLang } from "@/hooks/useLang";
 import PremiumToggle from "./PremiumToggle";
+import PortalLangToggle from "./PortalLangToggle";
 
 const pageLabels: Record<string, string> = {
   home: "Home",
@@ -19,7 +19,6 @@ const AI_TERMINALS_PAGES = ["portal", "navbar"];
 const AI_TERMINALS_LABEL = "AI Terminals";
 
 const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
-  const { lang, setLang } = useLang();
   const { elements, loading, toggleVisibility } = useAllPageElements();
   const [activePage, setActivePage] = useState<string>("writing");
 
@@ -78,30 +77,7 @@ const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
           })}
         </div>
 
-        {/* NL / ENG switch */}
-        <div className="flex shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-2 py-1.5">
-          <Globe size={12} className="text-muted-foreground/50 mr-1" />
-          <button
-            onClick={() => setLang("nl")}
-            className={`rounded px-2 py-1 text-xs font-semibold transition-all ${
-              lang === "nl"
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground/50 hover:text-foreground"
-            }`}
-          >
-            NL
-          </button>
-          <button
-            onClick={() => setLang("en")}
-            className={`rounded px-2 py-1 text-xs font-semibold transition-all ${
-              lang === "en"
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground/50 hover:text-foreground"
-            }`}
-          >
-            ENG
-          </button>
-        </div>
+        <PortalLangToggle />
       </div>
 
       {/* Elements grouped */}
