@@ -1,111 +1,98 @@
 
 
-# Internal AI Wiki Page
+# UX Overhaul: AI Wiki Page
 
-Build a new `/wiki` page inside the Portal (admin-only) that serves as a comprehensive internal reference for all AI components, user flows, worked-out examples, and a live error log viewer.
+## Design Philosophy
 
-## Structure
+Applying BJ Fogg's Behavior Model (Motivation + Ability + Prompt), the current Wiki fails on **Ability** -- it's written for developers, not users. Terms like "edge function", "fastRoute()", "buildContextPrefix()", and "localStorage" create friction. A user doesn't care *how* it works internally -- they care *what they can do* and *how to do it*.
 
-The Wiki page will be a new route accessible from the Portal navigation. It will be organized into 4 main sections, each rendered as a collapsible accordion panel with a clean, dark-themed design matching the existing Portal aesthetic.
+## Current Problems
 
----
+1. **Developer jargon everywhere** -- "Edge Function", "Client-side keyword matching", "LLM fallback", "system prompt modifications"
+2. **Section titles sound like documentation** -- "AI Components Registry", "User Flow Pipe Design"
+3. **Cards show file paths and backend names** -- users don't need `UnifiedChatPanel.tsx` or `n8n-agent`
+4. **Pipeline uses function names** -- `buildContextPrefix()`, `fastRoute()` mean nothing to a user
+5. **Examples explain internals** -- "Context prefix adds: [SEO > Keywords] focus" is developer logic, not a user benefit
+6. **Page subtitle says "system architecture"** -- immediately signals "not for me" to non-technical users
 
-## Section 1: AI Components Registry
+## Redesigned Structure
 
-A reference table/card grid documenting every AI component in the system:
+### Page Header
+- Title: "AI Guide" (not "AI Wiki")
+- Subtitle: "Everything you can do with AI in your portal -- and how to get the best results."
 
-| Component | Type | Location | Backend | Model |
-|---|---|---|---|---|
-| **Command Center** | Unified Chat Panel | Portal header | `n8n-agent` edge fn | Multi-model picker (Gemini/GPT) |
-| **Hans AI** | Overlay Chat | Navbar + Portal | `hansai-chat` edge fn | Gemini 3 Flash (streaming) |
-| **Empire Commander** | Overlay Chat | Portal | `n8n-agent` edge fn | Gemini 2.5 Flash |
-| **n8n Agent** | Modal Chat | Portal | `n8n-agent` edge fn | Gemini 2.5 Flash |
-| **Intent Router** | Classifier | Command Center | `intent-router` edge fn | Gemini 2.5 Flash |
-| **AI Content Suggest** | Copy Generator | Page Content Editor | `ai-content-suggest` edge fn | Gemini 3 Flash |
-| **Empire Health** | Status Monitor | Empire Dashboard | `empire-health` edge fn | N/A (HTTP checks) |
-| **Context Filter Pills** | UI Component | All chat panels | Client-side | N/A |
-| **Command Suggestion List** | UI Component | All chat panels | Client-side (localStorage) | N/A |
-| **Fast Route** | Client Router | Intent system | Client-side keyword matching | N/A |
+### Section 1: "What Can I Use?" (was: AI Components Registry)
+Rewrite each component card to answer: **What does this do for me?**
 
-Each card will show: name, description, file paths, edge function, AI model used, and accent color theme.
+| Current | Redesigned |
+|---|---|
+| Name: "Command Center" / Type: "Unified Chat Panel" | Name: "Command Center" / Tagline: "Your main AI assistant" |
+| "Central chat interface with 12 context categories, TVA pipeline bar, and intent classification" | "Ask anything -- from SEO advice to content writing. Pick a topic first to get smarter answers." |
+| Shows: Backend, Model, Files | Shows: Where to find it, What it's best for, Pro tip |
 
-## Section 2: User Flow Pipe Design
+Remove: file paths, edge function names, model names, "Client-side (localStorage)"
+Add: "Where to find it" (plain language), "Best for" (use cases), one-line pro tip
 
-A visual pipeline diagram showing how a user prompt flows through the system, rendered as a styled step-by-step flow using CSS (no external diagram library needed):
+### Section 2: "How It Works" (was: User Flow Pipe Design)
+Replace function names with plain-language steps a user actually experiences:
 
-```text
-User Input
-    |
-    v
-[Context Filter Pills] -- Layer 1: Category, Layer 2: Sub-context
-    |
-    v
-[Command Suggestions] -- Layer 3: Top-10 smart prompts (usage-sorted)
-    |
-    v
-[buildContextPrefix()] -- Prepends system hints based on selection
-    |
-    v
-[Intent Router?] -- Optional: Compass button classifies goal
-    |   |
-    |   +---> fastRoute() -- Client-side keyword matching (>0.85 = direct)
-    |   +---> intent-router edge fn -- LLM fallback (<0.5 confidence)
-    |
-    v
-[Edge Function] -- hansai-chat (streaming) OR n8n-agent (non-streaming)
-    |
-    v
-[Lovable AI Gateway] -- ai.gateway.lovable.dev/v1/chat/completions
-    |
-    v
-[Response Rendering] -- Markdown code blocks + inline code
-    |
-    v
-[TVA Pipeline Bar] -- Visual: TRANSMIT > ANALYZE > SYNTHESIZE > COMPLETE
-```
+| Current Step | Redesigned Step |
+|---|---|
+| "User Input" / "Raw text prompt typed into any chat panel" | "Type your question" / "Open any AI chat and type what you need" |
+| "Context Filter Pills" / "Layer 1: Category -- Layer 2: Sub-context" | "Pick a topic" / "Choose a category (like SEO or Content) to help the AI focus" |
+| "Command Suggestions" / "Layer 3: Top-10 smart prompts (usage-sorted, localStorage)" | "Try a suggested prompt" / "Pick from your most-used prompts to save time" |
+| "buildContextPrefix()" / "Prepends system hints..." | **Remove entirely** -- invisible to user |
+| "Intent Router" / branches with fastRoute() | "Smart routing" / "The system figures out the best way to handle your request" (no branches shown) |
+| "Edge Function" / "hansai-chat OR n8n-agent" | **Merge into previous** -- invisible to user |
+| "Lovable AI Gateway" | **Remove** -- invisible to user |
+| "Response Rendering" | "Get your answer" / "Results appear as formatted text with highlights and code blocks" |
+| "TVA Pipeline Bar" | "Progress indicator" / "The orange bar shows your request moving through: Transmit, Analyze, Synthesize, Complete" |
 
-This will be rendered as a vertical pipeline with styled nodes and connector lines, using the orange/amber TVA aesthetic.
+Reduce from 9 steps to 5 user-visible steps.
 
-## Section 3: Worked-Out Examples
+### Section 3: "Try These Examples" (was: Worked-Out Examples)
+Rewrite each example as a simple recipe card:
 
-3-4 interactive example cards showing real use cases with input/output:
+| Current | Redesigned |
+|---|---|
+| Context/Prompt/Edge Function/System Modification/Expected Output | **Goal** (what you want) / **Steps** (1-2-3) / **What you'll get** (result) |
 
-1. **SEO Title Optimization** -- Category: SEO > Keywords, Prompt: "Research keywords for brake pads", Expected flow through hansai-chat
-2. **Infrastructure Health Check** -- Category: Monitoring > Health, Prompt: "Run full health check", Routes via intent-router to health-check webhook
-3. **Content Generation** -- Category: Content > Blog, Prompt: "Generate blog post outline for auto parts", Uses n8n-agent with context prefix
-4. **Workflow Debugging** -- Opens n8n Agent modal, Prompt: "Fix Schedule trigger not firing", Auto-detects "troubleshoot" mode
+Remove: edge function names, system modification details, context prefix internals
+Add: Numbered steps the user follows, clear outcome description
 
-Each example shows: the context selection, the prompt text, which edge function handles it, the system prompt modifications, and sample output format.
+Example card redesign:
+- **Goal**: "Find the best keywords for your product pages"
+- **Steps**: 1. Open Hans AI, 2. Select SEO > Keywords, 3. Type "Research keywords for brake pads"
+- **What you'll get**: "A table of keywords with search volume and ready-to-use title suggestions"
 
-## Section 4: Live Error Log
+### Section 4: "System Health" (was: Live Error Log)
+- Keep as-is (it's admin-facing and appropriately technical)
+- Only rename the section title to "System Health" and add a small intro line: "Real-time errors and warnings from your AI services."
 
-A real-time error log panel pulling from the `empire_events` table filtered by `event_type = 'error'`. Features:
-- Realtime subscription (reuses existing pattern from `EmpireAuditTrail`)
-- Filter by source (edge function name)
-- Timestamp, source, message, and expandable metadata JSON
-- Refresh button and auto-scroll
-- Red-themed accents for errors, amber for warnings
-
----
-
-## Technical Implementation
-
-### New files to create:
-1. **`src/pages/Wiki.tsx`** -- Main wiki page component with 4 accordion sections
-2. **`src/components/wiki/WikiComponentRegistry.tsx`** -- Component registry cards
-3. **`src/components/wiki/WikiPipeDesign.tsx`** -- Visual pipeline flow
-4. **`src/components/wiki/WikiExamples.tsx`** -- Worked-out examples
-5. **`src/components/wiki/WikiErrorLog.tsx`** -- Live error log panel
+## Technical Changes
 
 ### Files to modify:
-1. **`src/components/AnimatedRoutes.tsx`** -- Add `/wiki` route (lazy loaded)
-2. **`src/pages/Portal.tsx`** -- Add Wiki link/button in the Portal header (Book icon)
 
-### Design decisions:
-- Admin-only access (reuses existing `useAdmin` hook)
-- Dark mode forced (same as Portal)
-- No database tables needed -- all content is hardcoded reference data
-- Error log reuses existing `empire_events` table with Realtime subscription
-- Accordion-based layout using existing Radix `Collapsible` component
-- All data is static/reference (component names, file paths, descriptions) except the error log
+1. **`src/pages/Wiki.tsx`**
+   - Change page title to "AI Guide"
+   - Change subtitle
+   - Rename accordion section labels and swap icons
+
+2. **`src/components/wiki/WikiComponentRegistry.tsx`**
+   - Rewrite the `components` data array: remove `edgeFn`, `model`, `files` fields; add `findIt`, `bestFor`, `tip` fields
+   - Simplify card rendering: show icon + name + tagline + "Where to find it" + "Best for" + pro tip
+   - Remove file path code tags and backend/model rows
+
+3. **`src/components/wiki/WikiPipeDesign.tsx`**
+   - Replace the `steps` array with 5 user-facing steps (removing internal steps)
+   - Remove branches (fastRoute/intent-router detail)
+   - Keep the visual vertical timeline but with simpler, friendlier copy
+
+4. **`src/components/wiki/WikiExamples.tsx`**
+   - Restructure the `examples` data to use `goal`, `steps[]`, `result` instead of `context`, `edgeFn`, `systemMod`
+   - Render as numbered step cards with a clear "What you'll get" outcome box
+
+5. **`src/components/wiki/WikiErrorLog.tsx`**
+   - Add an intro line below the section heading
+   - No other changes (already appropriately functional for admins)
 
