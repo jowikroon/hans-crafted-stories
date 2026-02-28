@@ -15,6 +15,7 @@ import BlogPostFormModal from "./BlogPostFormModal";
 import CaseStudyFormModal from "./CaseStudyFormModal";
 import PageContentEditorModal from "./PageContentEditorModal";
 import InfoTooltip from "./InfoTooltip";
+import PortalLangToggle from "./PortalLangToggle";
 
 interface PortalContentTabProps {
   userId?: string;
@@ -146,6 +147,11 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
 
   return (
     <div className="space-y-8">
+      {/* Language toggle */}
+      <div className="flex justify-end">
+        <PortalLangToggle />
+      </div>
+
       {/* ── Blog Posts ──────────────────────────────────── */}
       {showBlogs && (
         <div>

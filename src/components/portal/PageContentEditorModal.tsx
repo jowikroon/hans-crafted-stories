@@ -11,6 +11,7 @@ import { PageContentRow, updatePageContentBatch } from "@/lib/api/pageContent";
 import { supabase } from "@/integrations/supabase/client";
 import { Save, Loader2, ExternalLink, RotateCcw, Sparkles, Home, Briefcase, PenLine, User, History } from "lucide-react";
 import VersionHistoryPanel from "./VersionHistoryPanel";
+import PortalLangToggle from "./PortalLangToggle";
 
 interface Props {
   open: boolean;
@@ -165,6 +166,7 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
                 Edit on-page text content · {rows.length} fields
               </DialogDescription>
             </div>
+            <PortalLangToggle />
             {changeCount > 0 && (
               <Badge variant="secondary" className="shrink-0 bg-primary/10 text-primary">
                 {changeCount} unsaved
