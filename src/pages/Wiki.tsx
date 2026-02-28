@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { ShieldAlert, Sparkles, Wand2, Route, Lightbulb, Activity, ArrowLeft } from "lucide-react";
+import { ShieldAlert, Sparkles, Wand2, Route, Lightbulb, Activity, ArrowLeft, MessageSquare, Bot, Wrench } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Accordion,
@@ -86,6 +86,59 @@ const Wiki = () => {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Quick Start Hero */}
+        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+          {[
+            {
+              icon: MessageSquare,
+              title: "Ask the Command Center",
+              desc: "Open the chat in the Portal header. Pick a topic, type your question, get an answer.",
+              accent: "orange",
+              border: "border-orange-500/30",
+              bg: "bg-orange-500/5",
+              iconColor: "text-orange-400",
+              numBg: "bg-orange-500/20 text-orange-400",
+            },
+            {
+              icon: Bot,
+              title: "Chat with Hans AI",
+              desc: "Click the AI button in the navbar for a quick, streaming answer — no matter what page you're on.",
+              accent: "emerald",
+              border: "border-emerald-500/30",
+              bg: "bg-emerald-500/5",
+              iconColor: "text-emerald-400",
+              numBg: "bg-emerald-500/20 text-emerald-400",
+            },
+            {
+              icon: Wrench,
+              title: "Automate with n8n Agent",
+              desc: "Open the n8n Agent in the Portal. Describe what you want to automate — it builds the workflow.",
+              accent: "cyan",
+              border: "border-cyan-500/30",
+              bg: "bg-cyan-500/5",
+              iconColor: "text-cyan-400",
+              numBg: "bg-cyan-500/20 text-cyan-400",
+            },
+          ].map((card, i) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.title}
+                className={`rounded-xl border p-4 transition-colors hover:bg-secondary/20 ${card.border} ${card.bg}`}
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${card.numBg}`}>
+                    {i + 1}
+                  </span>
+                  <Icon size={14} className={card.iconColor} />
+                  <h3 className="text-sm font-semibold text-foreground">{card.title}</h3>
+                </div>
+                <p className="text-xs leading-relaxed text-muted-foreground">{card.desc}</p>
+              </div>
+            );
+          })}
         </div>
 
         {/* Accordion sections */}
