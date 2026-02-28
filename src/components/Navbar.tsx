@@ -261,7 +261,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
           <div className="mx-auto max-w-6xl px-6 hidden md:block">
             <div className="flex items-center justify-end h-8">
               <div className="flex items-center gap-1.5">
-                {(isNavVisible("ai_button") || isNavVisible("empire_button")) && (
+                {isNavVisible("command_center_button") && (
                 <button
                   onClick={() => setCommandCenterOpen(true)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
@@ -302,7 +302,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   <LogIn size={14} />
                   {user ? t.portal : t.login}
                 </Link>
-                {isAdmin && (isNavVisible("ai_button") || isNavVisible("empire_button")) && (
+                {isAdmin && isNavVisible("command_center_button") && (
                   <button onClick={() => { setMobileOpen(false); setCommandCenterOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
                     <Command size={14} />
                     Command Center
