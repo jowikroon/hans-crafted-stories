@@ -5,6 +5,7 @@ import {
   type CommandSuggestion,
   empireCommands,
   hansAICommands,
+  unifiedCommands,
   getUsageCounts,
   incrementUsage,
   getSortedCommands,
@@ -12,7 +13,7 @@ import {
 
 interface CommandSuggestionListProps {
   subId: string;
-  context: "empire" | "hansai";
+  context: "empire" | "hansai" | "unified";
   onSelect: (text: string) => void;
   onDismiss: () => void;
   accentColor: "emerald" | "violet" | "orange";
@@ -48,7 +49,7 @@ const colorStyles = {
 const CommandSuggestionList = ({ subId, context, onSelect, onDismiss, accentColor }: CommandSuggestionListProps) => {
   const listRef = useRef<HTMLDivElement>(null);
   const colors = colorStyles[accentColor];
-  const commandMap = context === "empire" ? empireCommands : hansAICommands;
+  const commandMap = context === "empire" ? empireCommands : context === "unified" ? unifiedCommands : hansAICommands;
   const rawCommands: CommandSuggestion[] = commandMap[subId] || [];
   const usageCounts = useMemo(() => getUsageCounts(context), [context, subId]);
   const sorted = useMemo(() => getSortedCommands(rawCommands, usageCounts), [rawCommands, usageCounts]);

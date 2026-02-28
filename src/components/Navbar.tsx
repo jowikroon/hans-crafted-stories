@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Terminal, Search, Command, Bot, Sun, Moon } from "lucide-react";
+import { Menu, X, LogIn, Search, Command, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
 import HansAIOverlay from "@/components/overlays/HansAIOverlay";
-import EmpireOverlay from "@/components/overlays/EmpireOverlay";
 import { usePageElements } from "@/hooks/usePageElements";
 import { translations } from "@/data/translations";
 import type { Lang } from "@/hooks/useLang";
@@ -43,8 +42,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { lang, setLang } = useLang();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
-  const [empireOpen, setEmpireOpen] = useState(false);
+  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -258,35 +256,22 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         {/* Subtle separator */}
         <div className={`h-px ${isDark ? "bg-emerald-500/8" : "bg-border/50"}`} />
 
-        {/* ─── ROW 2: AI/Empire links (admin only, desktop) ─── */}
+        {/* ─── ROW 2: Command Center link (admin only, desktop) ─── */}
         {isAdmin && (
           <div className="mx-auto max-w-6xl px-6 hidden md:block">
             <div className="flex items-center justify-end h-8">
               <div className="flex items-center gap-1.5">
-                {isNavVisible("ai_button") && (
+                {(isNavVisible("ai_button") || isNavVisible("empire_button")) && (
                 <button
-                  onClick={() => setAiOpen(true)}
+                  onClick={() => setCommandCenterOpen(true)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
-                    aiOpen
-                      ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_10px_hsl(160_80%_45%/0.15)]"
-                      : `${isDark ? "border-emerald-500/15 text-emerald-400/40 hover:border-emerald-500/40 hover:text-emerald-300" : "border-border text-muted-foreground hover:border-emerald-500/30 hover:bg-emerald-500/5 hover:text-emerald-600"}`
+                    commandCenterOpen
+                      ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_10px_hsl(25_95%_53%/0.15)]"
+                      : `${isDark ? "border-orange-500/15 text-orange-400/40 hover:border-orange-500/40 hover:text-orange-300" : "border-border text-muted-foreground hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-600"}`
                   }`}
                 >
-                  <Bot size={11} />
-                  AI
-                </button>
-                )}
-                {isNavVisible("empire_button") && (
-                <button
-                  onClick={() => setEmpireOpen(true)}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
-                    empireOpen
-                      ? "border-violet-500 bg-violet-500/10 text-violet-600 shadow-[0_0_10px_hsl(270_80%_55%/0.15)]"
-                      : `${isDark ? "border-violet-500/15 text-violet-400/40 hover:border-violet-500/40 hover:text-violet-300" : "border-border text-muted-foreground hover:border-violet-500/30 hover:bg-violet-500/5 hover:text-violet-600"}`
-                  }`}
-                >
-                  <Terminal size={11} />
-                  Empire
+                  <Command size={11} />
+                  Command Center
                 </button>
                 )}
               </div>
@@ -317,21 +302,11 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   <LogIn size={14} />
                   {user ? t.portal : t.login}
                 </Link>
-                {isAdmin && (
-                  <>
-                    {isNavVisible("ai_button") && (
-                    <button onClick={() => { setMobileOpen(false); setAiOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-emerald-500/15 text-emerald-400/40" : "border-border text-muted-foreground"} hover:border-emerald-500/40 hover:text-emerald-600`}>
-                      <Bot size={14} />
-                      Hans AI
-                    </button>
-                    )}
-                    {isNavVisible("empire_button") && (
-                    <button onClick={() => { setMobileOpen(false); setEmpireOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-violet-500/15 text-violet-400/40" : "border-border text-muted-foreground"} hover:border-violet-500/40 hover:text-violet-600`}>
-                      <Terminal size={14} />
-                      Empire
-                    </button>
-                    )}
-                  </>
+                {isAdmin && (isNavVisible("ai_button") || isNavVisible("empire_button")) && (
+                  <button onClick={() => { setMobileOpen(false); setCommandCenterOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
+                    <Command size={14} />
+                    Command Center
+                  </button>
                 )}
               </div>
             </motion.div>
@@ -339,9 +314,8 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         </AnimatePresence>
       </nav>
 
-      {/* AI & Empire Overlays */}
-      <HansAIOverlay open={aiOpen} onClose={() => setAiOpen(false)} />
-      <EmpireOverlay open={empireOpen} onClose={() => setEmpireOpen(false)} />
+      {/* AI Overlay — unified via HansAIOverlay for now */}
+      <HansAIOverlay open={commandCenterOpen} onClose={() => setCommandCenterOpen(false)} />
     </>
   );
 };

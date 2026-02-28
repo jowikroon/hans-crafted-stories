@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug, Search } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
 import PortalUsersManager from "@/components/portal/PortalUsersManager";
 import PortalPagesTab from "@/components/portal/PortalPagesTab";
-import InlineChatPanel from "@/components/portal/InlineChatPanel";
+import UnifiedChatPanel from "@/components/portal/UnifiedChatPanel";
 import PortalFloatingDock from "@/components/portal/PortalFloatingDock";
 import PortalCommandPalette from "@/components/portal/PortalCommandPalette";
 import { Input } from "@/components/ui/input";
@@ -18,24 +18,6 @@ import PageBreadcrumb from "@/components/PageBreadcrumb";
 import { usePageElements } from "@/hooks/usePageElements";
 
 
-const EMPIRE_SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
-You manage n8n workflows, Cloudflare Workers, VPS servers, Docker MCP Gateway, Supabase, and Claude Code CLI sessions.
-Be concise, technical, and actionable. Format with markdown.`;
-
-const N8N_SYSTEM_PROMPT = `You are an expert n8n workflow automation engineer and AI agent. You specialize in building, fixing, and troubleshooting n8n workflows.
-Output complete, valid n8n JSON when building. When fixing, explain root cause clearly. Format code in markdown code blocks.`;
-
-const EMPIRE_SUGGESTIONS = [
-  { icon: Wrench, text: "Fix my AutoSEO workflow — it stopped triggering" },
-  { icon: Cpu, text: "Generate a new n8n workflow for Channable feed optimization" },
-  { icon: HeartPulse, text: "Run a full health check on all services" },
-];
-
-const N8N_SUGGESTIONS = [
-  { icon: Zap, text: "Build a Gmail → Slack alert workflow" },
-  { icon: Wrench, text: "Fix 'Cannot read property of undefined' in Code node" },
-  { icon: Bug, text: "Troubleshoot: my Schedule trigger isn't firing" },
-];
 
 type Tab = "tools" | "content" | "pages" | "status" | "users";
 
@@ -61,14 +43,9 @@ const Portal = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [activeTab, setActiveTab] = useState<Tab>("tools");
-  const [empireOpen, setEmpireOpen] = useState(false);
+  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
   const [subFilter, setSubFilter] = useState<string>("All");
-  const [n8nOpen, setN8nOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
-  const [empireHover, setEmpireHover] = useState(false);
-  const [n8nHover, setN8nHover] = useState(false);
-  const empireTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const n8nTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const { toast } = useToast();
   const { isVisible } = usePageElements("portal");
 
@@ -94,8 +71,7 @@ const Portal = () => {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
-      if (e.key === "e") { e.preventDefault(); setEmpireOpen((v) => !v); }
-      else if (e.key === "j") { e.preventDefault(); setN8nOpen((v) => !v); }
+      if (e.key === "e" || e.key === "j") { e.preventDefault(); setCommandCenterOpen((v) => !v); }
       else if (e.key === "k") { e.preventDefault(); setCommandOpen((v) => !v); }
     };
     document.addEventListener("keydown", handler);
@@ -205,52 +181,17 @@ const Portal = () => {
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
-            {isVisible("empire_ai_button") && (
-            <div className="relative">
-              <button
-                onClick={() => setEmpireOpen((v) => !v)}
-                onMouseEnter={() => { empireTimerRef.current = setTimeout(() => setEmpireHover(true), 1000); }}
-                onMouseLeave={() => { clearTimeout(empireTimerRef.current); setEmpireHover(false); }}
-                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
-                  empireOpen
-                    ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_16px_hsl(160_80%_45%/0.35)]"
-                    : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(160_80%_45%/0.15)]"
-                }`}
-              >
-                <Terminal size={14} />
-                <span className="hidden sm:inline">Empire AI</span>
-                
-              </button>
-              {empireHover && !empireOpen && (
-                <div className="absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-popover px-3 py-1.5 text-[11px] text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95 duration-200">
-                  Build, automate &amp; manage your AI infrastructure
-                </div>
-              )}
-            </div>
-            )}
-            {isVisible("n8n_agent_button") && (
-            <div className="relative">
-              <button
-                onClick={() => setN8nOpen((v) => !v)}
-                onMouseEnter={() => { n8nTimerRef.current = setTimeout(() => setN8nHover(true), 1000); }}
-                onMouseLeave={() => { clearTimeout(n8nTimerRef.current); setN8nHover(false); }}
-                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
-                  n8nOpen
-                    ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_16px_hsl(270_80%_55%/0.35)]"
-                    : "border border-border text-muted-foreground hover:border-purple-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(270_80%_55%/0.15)]"
-                }`}
-              >
-                <Zap size={14} />
-                <span className="hidden sm:inline">n8n Agent</span>
-                
-              </button>
-              {n8nHover && !n8nOpen && (
-                <div className="absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-popover px-3 py-1.5 text-[11px] text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95 duration-200">
-                  Build, fix &amp; troubleshoot automation workflows
-                </div>
-              )}
-            </div>
-            )}
+            <button
+              onClick={() => setCommandCenterOpen((v) => !v)}
+              className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
+                commandCenterOpen
+                  ? "border-2 border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_16px_hsl(25_95%_53%/0.35)]"
+                  : "border border-border text-muted-foreground hover:border-orange-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(25_95%_53%/0.15)]"
+              }`}
+            >
+              <Command size={14} />
+              <span className="hidden sm:inline">Command Center</span>
+            </button>
             <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
@@ -266,46 +207,18 @@ const Portal = () => {
           </div>
         </div>
 
-        {/* Inline AI Panels */}
+        {/* Unified Command Center Panel */}
         <AnimatePresence>
-          {empireOpen && (
+          {commandCenterOpen && (
             <motion.div
-              key="empire-inline"
+              key="command-center"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "40vh", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-4 overflow-hidden rounded-2xl border-2 border-emerald-500 bg-card shadow-lg"
+              className="mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card shadow-lg"
             >
-              <InlineChatPanel
-                systemPrompt={EMPIRE_SYSTEM_PROMPT}
-                suggestions={EMPIRE_SUGGESTIONS}
-                title="Empire Commander"
-                subtitle="Ask Claude · Manage Infrastructure"
-                icon={Terminal}
-                placeholder="Claude, fix my AutoSEO workflow..."
-                accentClass="emerald"
-              />
-            </motion.div>
-          )}
-          {n8nOpen && (
-            <motion.div
-              key="n8n-inline"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "40vh", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-4 overflow-hidden rounded-2xl border-2 border-purple-500 bg-card shadow-lg"
-            >
-              <InlineChatPanel
-                systemPrompt={N8N_SYSTEM_PROMPT}
-                suggestions={N8N_SUGGESTIONS}
-                title="n8n Workflow Agent"
-                subtitle="Build · Fix · Troubleshoot"
-                icon={Zap}
-                placeholder="Build a workflow for..."
-                accentClass="purple"
-              />
+              <UnifiedChatPanel />
             </motion.div>
           )}
         </AnimatePresence>
@@ -364,7 +277,7 @@ const Portal = () => {
       </motion.div>
 
       <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
-      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => setEmpireOpen((v) => !v)} onN8nOpen={() => setN8nOpen((v) => !v)} onSignOut={signOut} />
+      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => setCommandCenterOpen((v) => !v)} onN8nOpen={() => setCommandCenterOpen((v) => !v)} onSignOut={signOut} />
     </section>
   );
 };
