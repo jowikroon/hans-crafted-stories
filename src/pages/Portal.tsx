@@ -181,17 +181,19 @@ const Portal = () => {
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
-            <button
-              onClick={() => setCommandCenterOpen((v) => !v)}
-              className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
-                commandCenterOpen
-                  ? "border-2 border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_16px_hsl(25_95%_53%/0.35)]"
-                  : "border border-border text-muted-foreground hover:border-orange-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(25_95%_53%/0.15)]"
-              }`}
-            >
-              <Command size={14} />
-              <span className="hidden sm:inline">Command Center</span>
-            </button>
+            {(isVisible("empire_ai_button") || isVisible("n8n_agent_button")) && (
+              <button
+                onClick={() => setCommandCenterOpen((v) => !v)}
+                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
+                  commandCenterOpen
+                    ? "border-2 border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_16px_hsl(25_95%_53%/0.35)]"
+                    : "border border-border text-muted-foreground hover:border-orange-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(25_95%_53%/0.15)]"
+                }`}
+              >
+                <Command size={14} />
+                <span className="hidden sm:inline">Command Center</span>
+              </button>
+            )}
             <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
@@ -208,20 +210,22 @@ const Portal = () => {
         </div>
 
         {/* Unified Command Center Panel */}
-        <AnimatePresence>
-          {commandCenterOpen && (
-            <motion.div
-              key="command-center"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "40vh", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card shadow-lg"
-            >
-              <UnifiedChatPanel />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {(isVisible("empire_ai_button") || isVisible("n8n_agent_button")) && (
+          <AnimatePresence>
+            {commandCenterOpen && (
+              <motion.div
+                key="command-center"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "40vh", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className="mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card shadow-lg"
+              >
+                <UnifiedChatPanel />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* Tab Navigation */}
         <div className="mb-2 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:overflow-visible">
