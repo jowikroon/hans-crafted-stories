@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search, Zap } from "lucide-react";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
@@ -11,6 +11,8 @@ import PortalPagesTab from "@/components/portal/PortalPagesTab";
 import UnifiedChatPanel from "@/components/portal/UnifiedChatPanel";
 import PortalFloatingDock from "@/components/portal/PortalFloatingDock";
 import PortalCommandPalette from "@/components/portal/PortalCommandPalette";
+import EmpireOverlay from "@/components/overlays/EmpireOverlay";
+import N8nAgentModal from "@/components/portal/N8nAgentModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -46,6 +48,8 @@ const Portal = () => {
   const [commandCenterOpen, setCommandCenterOpen] = useState(false);
   const [subFilter, setSubFilter] = useState<string>("All");
   const [commandOpen, setCommandOpen] = useState(false);
+  const [empireOpen, setEmpireOpen] = useState(false);
+  const [n8nOpen, setN8nOpen] = useState(false);
   const { toast } = useToast();
   const { isVisible } = usePageElements("portal");
 
@@ -181,6 +185,32 @@ const Portal = () => {
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
+            {isVisible("empire_ai_button") && (
+              <button
+                onClick={() => setEmpireOpen((v) => !v)}
+                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
+                  empireOpen
+                    ? "border-2 border-violet-500 bg-violet-500/10 text-violet-500 shadow-[0_0_16px_hsl(263_70%_50%/0.35)]"
+                    : "border border-border text-muted-foreground hover:border-violet-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(263_70%_50%/0.15)]"
+                }`}
+              >
+                <Zap size={14} />
+                <span className="hidden sm:inline">Empire AI</span>
+              </button>
+            )}
+            {isVisible("n8n_agent_button") && (
+              <button
+                onClick={() => setN8nOpen((v) => !v)}
+                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
+                  n8nOpen
+                    ? "border-2 border-cyan-500 bg-cyan-500/10 text-cyan-500 shadow-[0_0_16px_hsl(188_95%_43%/0.35)]"
+                    : "border border-border text-muted-foreground hover:border-cyan-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(188_95%_43%/0.15)]"
+                }`}
+              >
+                <Wrench size={14} />
+                <span className="hidden sm:inline">n8n Agent</span>
+              </button>
+            )}
             {isVisible("command_center_button") && (
               <button
                 onClick={() => setCommandCenterOpen((v) => !v)}
@@ -284,6 +314,8 @@ const Portal = () => {
         <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
       )}
       <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => setCommandCenterOpen((v) => !v)} onN8nOpen={() => setCommandCenterOpen((v) => !v)} onSignOut={signOut} />
+      <EmpireOverlay open={empireOpen} onClose={() => setEmpireOpen(false)} />
+      <N8nAgentModal open={n8nOpen} onClose={() => setN8nOpen(false)} />
     </section>
   );
 };
