@@ -1,70 +1,49 @@
 
 
-## Fix Image Upload: Missing Storage Policies + UX Improvements
+## Add consistent NL/ENG language toggle across all CMS sections
 
-### Problem
-The `ImageCropUploader` fails when selecting an image because the storage bucket `bucket` has **RLS enabled but zero policies**. This means all uploads are silently denied by the database, causing a generic error toast.
+### What this does
+Extract the NL/ENG language switcher (currently only in Portal > Pages) into a reusable component and add it to the Content tab and the page content editor modal. Since the toggle uses the global `useLang()` context, switching language in any location (Navbar, Pages tab, Content tab) will synchronize across the entire site.
 
-### Root Cause
-- `storage.objects` table has `row_level_security = true`
-- No INSERT/SELECT/UPDATE/DELETE policies exist on the table
-- Every `supabase.storage.from("bucket").upload(...)` call fails with a permissions error
+### Current state
+- The Navbar already has a global NL | ENG toggle that works site-wide
+- The Portal > Pages tab has its own NL/ENG toggle (Globe icon style)
+- The Portal > Content tab and editor modals have no language toggle
+- All components already consume `useLang()` for translations
 
-### Fix
+### Steps
 
-**1. Add Storage RLS Policies (database migration)**
+**1. Create a reusable `PortalLangToggle` component**
 
-Create policies on `storage.objects` to allow:
-- **Admins can upload** (INSERT) to the `bucket` — restricted to authenticated admin users via the existing `has_role()` function
-- **Admins can update** (UPDATE) files they uploaded — for upsert support
-- **Admins can delete** (DELETE) their files — for replacing images
-- **Anyone can read** (SELECT) public files — since the bucket is already public, this enables direct URL access
+Extract the Globe + NL/ENG button group from `PortalPagesTab.tsx` into `src/components/portal/PortalLangToggle.tsx`. This keeps the same styling (Globe icon, compact pill buttons) and uses `useLang()` under the hood.
 
-**2. Minor UX hardening in `ImageCropUploader.tsx`**
+**2. Use `PortalLangToggle` in `PortalPagesTab`**
 
-- Add a `DialogDescription` to the crop dialog to fix the console warning about missing `aria-describedby`
-- Add a file size check (max 10MB) before reading the file, matching the hint text already shown to users
-- Improve error messaging to show more user-friendly text on permission errors
+Replace the inline NL/ENG markup in `PortalPagesTab.tsx` with the new shared component.
 
-### Technical Details
+**3. Add `PortalLangToggle` to `PortalContentTab`**
 
-**SQL migration:**
-```sql
--- Allow anyone to view files (bucket is already public)
-CREATE POLICY "Public read access" ON storage.objects
-  FOR SELECT USING (bucket_id = 'bucket');
+Place the toggle in the top-right area of the Content tab, next to the section headers. This lets admins switch language context while managing blog posts, case studies, and main menu pages.
 
--- Admins can upload files
-CREATE POLICY "Admins can upload files" ON storage.objects
-  FOR INSERT WITH CHECK (
-    bucket_id = 'bucket' 
-    AND has_role(auth.uid(), 'admin')
-  );
+**4. Add `PortalLangToggle` to `PageContentEditorModal`**
 
--- Admins can update their files (needed for upsert)
-CREATE POLICY "Admins can update files" ON storage.objects
-  FOR UPDATE USING (
-    bucket_id = 'bucket' 
-    AND has_role(auth.uid(), 'admin')
-  );
+Place the toggle in the dialog header area so admins can see which language context they're editing in. The `page_content` values from the database and their `usePageContent` fallback translations will react to the language switch.
 
--- Admins can delete files
-CREATE POLICY "Admins can delete files" ON storage.objects
-  FOR DELETE USING (
-    bucket_id = 'bucket' 
-    AND has_role(auth.uid(), 'admin')
-  );
-```
+**5. Verify global sync**
 
-**Code changes in `ImageCropUploader.tsx`:**
-- Import `DialogDescription` and add it under `DialogTitle`
-- Add file size validation (10MB max) in `handleFileSelect`
+Since all toggles share the same `useLang()` React context:
+- Switching in the Navbar updates the Content tab, Pages tab, Hero, Footer, etc.
+- Switching in the Portal Content tab updates the Navbar and all frontend pages
+- No separate state management needed -- it's already linked
 
-### What stays the same
-- The crop tool UX (drag, zoom, aspect ratio) is well-built and needs no changes
-- The bucket name `bucket` and upload paths remain unchanged
-- Both blog post and case study forms continue using `ImageCropUploader` as-is
+### Files to create
+- `src/components/portal/PortalLangToggle.tsx` (new shared component)
 
-### Result
-After this fix, admins will be able to select, crop, and upload images through the CMS without errors. The full flow (select file, crop dialog, upload, see preview) will work end-to-end.
+### Files to edit
+- `src/components/portal/PortalPagesTab.tsx` (replace inline toggle with shared component)
+- `src/components/portal/PortalContentTab.tsx` (add toggle to header area)
+- `src/components/portal/PageContentEditorModal.tsx` (add toggle to dialog header)
+
+### No database changes needed
+The language system is purely frontend (React context + `translations.ts`). Blog posts and case studies are single-language database entries; the toggle affects the surrounding UI labels and page text, not the post content itself.
 
