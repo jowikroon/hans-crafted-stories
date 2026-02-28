@@ -7,6 +7,7 @@ import { Home, ChevronRight, Link2, Facebook, Linkedin, Twitter } from "lucide-r
 import { getBlogPost, BlogPostRow } from "@/lib/api/content";
 import { blogContent } from "@/data/blogContent";
 import { useSEO } from "@/hooks/useSEO";
+import { useLang } from "@/hooks/useLang";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
 
@@ -50,13 +51,19 @@ const shareUrl = (platform: string, url: string, title: string) => {
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPostRow | null | undefined>(undefined);
+  const { lang } = useLang();
 
   useEffect(() => {
     if (!slug) return;
     getBlogPost(slug).then(setPost);
   }, [slug]);
 
-  const fullContent = post?.content || (slug ? blogContent[slug] : "") || "";
+  // Language-aware fields
+  const displayTitle = post ? ((lang === "nl" && post.title_nl) ? post.title_nl : post.title) : "";
+  const displayExcerpt = post ? ((lang === "nl" && post.excerpt_nl) ? post.excerpt_nl : post.excerpt) : "";
+  const displayContent = post ? ((lang === "nl" && post.content_nl) ? post.content_nl : post.content) : "";
+
+  const fullContent = displayContent || (slug ? blogContent[slug] : "") || "";
   const wordCount = useMemo(
     () => (fullContent ? fullContent.trim().split(/\s+/).length : 0),
     [fullContent]
@@ -65,15 +72,15 @@ const BlogPostPage = () => {
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
 
   useSEO({
-    title: post ? `${post.title} | Hans van Leeuwen` : "Loading... | Hans van Leeuwen",
-    description: post?.excerpt || "Read this article by Hans van Leeuwen on e-commerce, marketplace strategy, and digital commerce.",
+    title: post ? `${displayTitle} | Hans van Leeuwen` : "Loading... | Hans van Leeuwen",
+    description: displayExcerpt || "Read this article by Hans van Leeuwen on e-commerce, marketplace strategy, and digital commerce.",
     url: `https://hansvanleeuwen.com/writing/${slug}`,
     type: "article",
     jsonLd: post ? {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
-      headline: post.title,
-      description: post.excerpt,
+      headline: displayTitle,
+      description: displayExcerpt,
       url: `https://hansvanleeuwen.com/writing/${slug}`,
       mainEntityOfPage: { "@type": "WebPage", "@id": `https://hansvanleeuwen.com/writing/${slug}` },
       datePublished: post.created_at,
@@ -127,7 +134,7 @@ const BlogPostPage = () => {
           {post.image_url ? (
             <img
               src={post.image_url}
-              alt={post.title}
+              alt={displayTitle}
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
@@ -146,7 +153,7 @@ const BlogPostPage = () => {
                 <ChevronRight size={11} className="text-white/30" />
                 <Link to="/writing" className="transition-colors hover:text-white">Writing</Link>
                 <ChevronRight size={11} className="text-white/30" />
-                <span className="font-medium text-white/90 line-clamp-1">{post.title}</span>
+                <span className="font-medium text-white/90 line-clamp-1">{displayTitle}</span>
               </nav>
             </div>
           </div>
@@ -171,13 +178,13 @@ const BlogPostPage = () => {
 
                 {/* Title */}
                 <h1 className="mb-3 max-w-3xl font-display text-3xl font-semibold leading-tight text-white md:text-4xl lg:text-5xl">
-                  {post.title}
+                  {displayTitle}
                 </h1>
 
                 {/* Excerpt */}
-                {post.excerpt && (
+                {displayExcerpt && (
                   <p className="max-w-2xl text-base leading-relaxed text-white/70 md:text-lg">
-                    {post.excerpt}
+                    {displayExcerpt}
                   </p>
                 )}
               </motion.div>
@@ -217,7 +224,7 @@ const BlogPostPage = () => {
               <Link2 size={16} />
             </button>
             <a
-              href={shareUrl("twitter", currentUrl, post.title)}
+              href={shareUrl("twitter", currentUrl, displayTitle)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
@@ -226,7 +233,7 @@ const BlogPostPage = () => {
               <Twitter size={16} />
             </a>
             <a
-              href={shareUrl("facebook", currentUrl, post.title)}
+              href={shareUrl("facebook", currentUrl, displayTitle)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
@@ -235,7 +242,7 @@ const BlogPostPage = () => {
               <Facebook size={16} />
             </a>
             <a
-              href={shareUrl("linkedin", currentUrl, post.title)}
+              href={shareUrl("linkedin", currentUrl, displayTitle)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"

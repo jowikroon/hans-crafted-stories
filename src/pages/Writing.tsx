@@ -63,6 +63,8 @@ const Writing = () => {
       id: p.id,
       title: p.title,
       excerpt: p.excerpt,
+      titleNl: p.title_nl || undefined,
+      excerptNl: p.excerpt_nl || undefined,
       category: p.category as "professional" | "personal",
       tags: p.tags,
       date: p.created_at,

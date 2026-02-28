@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { BlogPost } from "@/data/types";
+import { useLang } from "@/hooks/useLang";
 
 const CATEGORY_COLORS: Record<string, string> = {
   professional: "bg-primary/90 text-primary-foreground",
@@ -9,6 +10,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const BlogPostCard = ({ post, index }: { post: BlogPost; index: number }) => {
+  const { lang } = useLang();
+  const displayTitle = (lang === "nl" && post.titleNl) ? post.titleNl : post.title;
   const postNumber = String(index + 1).padStart(3, "0");
   const categoryColor = CATEGORY_COLORS[post.category] ?? "bg-muted text-foreground";
   const dateStr = new Date(post.date).toLocaleDateString("en-US", {
@@ -35,7 +38,7 @@ const BlogPostCard = ({ post, index }: { post: BlogPost; index: number }) => {
           {post.imageUrl ? (
             <img
               src={post.imageUrl}
-              alt={post.title}
+              alt={displayTitle}
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
@@ -63,7 +66,7 @@ const BlogPostCard = ({ post, index }: { post: BlogPost; index: number }) => {
                 {postNumber}
               </span>
               <h3 className="font-display text-xl font-semibold leading-tight text-white md:text-2xl">
-                {post.title}
+                {displayTitle}
               </h3>
             </div>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">

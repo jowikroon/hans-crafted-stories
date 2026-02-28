@@ -12,6 +12,8 @@ export interface BlogPost {
   id: string;
   title: string;
   excerpt: string;
+  titleNl?: string;
+  excerptNl?: string;
   category: "professional" | "personal";
   tags: string[];
   date: string;
