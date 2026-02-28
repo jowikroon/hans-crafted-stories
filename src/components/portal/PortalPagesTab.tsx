@@ -11,6 +11,8 @@ const pageLabels: Record<string, string> = {
   about: "About",
   writing: "Writing",
   work: "Work",
+  portal: "Portal",
+  navbar: "Navbar",
 };
 
 const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
