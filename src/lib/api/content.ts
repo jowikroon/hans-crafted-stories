@@ -21,9 +21,12 @@ export interface BlogPostRow {
 export interface CaseStudyRow {
   id: string;
   title: string;
+  title_nl: string;
   category: string;
   description: string;
+  description_nl: string;
   content: string;
+  content_nl: string;
   image: string;
   year: string;
   external_url: string | null;

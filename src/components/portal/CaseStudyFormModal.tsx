@@ -18,9 +18,12 @@ interface Props {
 
 const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
   const [title, setTitle] = useState("");
+  const [titleNl, setTitleNl] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
+  const [descriptionNl, setDescriptionNl] = useState("");
   const [content, setContent] = useState("");
+  const [contentNl, setContentNl] = useState("");
   const [image, setImage] = useState("");
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const [externalUrl, setExternalUrl] = useState("");
@@ -30,11 +33,13 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
 
   useEffect(() => {
     if (study) {
-      setTitle(study.title); setCategory(study.category); setDescription(study.description);
-      setContent(study.content); setImage(study.image); setYear(study.year);
+      setTitle(study.title); setTitleNl(study.title_nl || ""); setCategory(study.category);
+      setDescription(study.description); setDescriptionNl(study.description_nl || "");
+      setContent(study.content); setContentNl(study.content_nl || ""); setImage(study.image); setYear(study.year);
       setExternalUrl(study.external_url || ""); setSortOrder(study.sort_order); setPublished(study.published);
     } else {
-      setTitle(""); setCategory(""); setDescription(""); setContent(""); setImage("");
+      setTitle(""); setTitleNl(""); setCategory(""); setDescription(""); setDescriptionNl("");
+      setContent(""); setContentNl(""); setImage("");
       setYear(new Date().getFullYear().toString()); setExternalUrl(""); setSortOrder(0); setPublished(false);
     }
   }, [study, open]);
@@ -43,7 +48,8 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
     setSaving(true);
     try {
       await onSave({
-        title, category, description, content, image, year,
+        title, title_nl: titleNl, category, description, description_nl: descriptionNl,
+        content, content_nl: contentNl, image, year,
         external_url: externalUrl || null, sort_order: sortOrder, published,
       });
       onOpenChange(false);
@@ -101,6 +107,23 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
           <div className="space-y-1.5">
             <Label>Content (Markdown)</Label>
             <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={8} className="font-mono text-xs" placeholder="Full case study content..." />
+          </div>
+
+          {/* Dutch Translations */}
+          <div className="space-y-4 rounded-lg border border-border bg-secondary/10 p-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">🇳🇱 Dutch Translations</p>
+            <div className="space-y-1.5">
+              <Label>Title (NL)</Label>
+              <Input value={titleNl} onChange={(e) => setTitleNl(e.target.value)} placeholder="Nederlandse titel..." />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Description (NL)</Label>
+              <Textarea value={descriptionNl} onChange={(e) => setDescriptionNl(e.target.value)} rows={2} placeholder="Korte samenvatting..." />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Content (NL — Markdown)</Label>
+              <Textarea value={contentNl} onChange={(e) => setContentNl(e.target.value)} rows={6} className="font-mono text-xs" placeholder="Volledige case study inhoud..." />
+            </div>
           </div>
 
           <div className="space-y-1.5">

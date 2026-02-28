@@ -1,8 +1,10 @@
 export interface CaseStudy {
   id: string;
   title: string;
+  titleNl?: string;
   category: string;
   description: string;
+  descriptionNl?: string;
   image: string;
   year: string;
   externalUrl?: string;
