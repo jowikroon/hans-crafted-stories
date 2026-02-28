@@ -145,7 +145,7 @@ const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
                             : "text-muted-foreground/30"
                         }`}>
                           <span className={el.is_visible ? "text-primary/70" : ""}>
-                            {pageLabels[el.page] || el.page}
+                            {AI_TERMINALS_PAGES.includes(el.page) ? AI_TERMINALS_LABEL : (pageLabels[el.page] || el.page)}
                           </span>
                           <ChevronRight size={9} className="shrink-0 opacity-40" />
                           <span className={el.is_visible ? "text-muted-foreground/80" : ""}>
