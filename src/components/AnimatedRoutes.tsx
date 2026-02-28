@@ -7,6 +7,7 @@ import Writing from "@/pages/Writing";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
 import Portal from "@/pages/Portal";
+import Wiki from "@/pages/Wiki";
 import Empire from "@/pages/Empire";
 import HansAI from "@/pages/HansAI";
 import Privacy from "@/pages/Privacy";
@@ -24,6 +25,7 @@ const AnimatedRoutes = () => {
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
+        <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
         <Route path="/empire" element={<PageTransition><Empire /></PageTransition>} />
         <Route path="/hansai" element={<HansAI />} />
         <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search, Zap } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search, Zap, BookOpen } from "lucide-react";
+import { Link } from "react-router-dom";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
@@ -224,6 +225,14 @@ const Portal = () => {
                 <span className="hidden sm:inline">Command Center</span>
               </button>
             )}
+            <Link
+              to="/wiki"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2"
+              title="AI Wiki"
+            >
+              <BookOpen size={14} />
+              <span className="hidden sm:inline">Wiki</span>
+            </Link>
             <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
