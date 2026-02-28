@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { ShieldAlert, BookOpen, Cpu, GitBranch, Lightbulb, AlertTriangle, ArrowLeft } from "lucide-react";
+import { ShieldAlert, Sparkles, Wand2, Route, Lightbulb, Activity, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Accordion,
@@ -21,7 +21,6 @@ const Wiki = () => {
   const { user, loading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
 
-  // Force dark mode
   useEffect(() => {
     const prev = localStorage.getItem(THEME_KEY) || "light";
     document.documentElement.classList.add("dark");
@@ -33,7 +32,7 @@ const Wiki = () => {
   }, []);
 
   useEffect(() => {
-    document.title = "AI Wiki — Hans van Leeuwen";
+    document.title = "AI Guide — Hans van Leeuwen";
     let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
     if (!robots) { robots = document.createElement("meta"); robots.name = "robots"; document.head.appendChild(robots); }
     robots.content = "noindex, nofollow";
@@ -54,7 +53,7 @@ const Wiki = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
           <ShieldAlert size={40} className="mx-auto mb-4 text-muted-foreground" />
           <h1 className="mb-2 font-display text-2xl font-medium text-foreground">Access Denied</h1>
-          <p className="mb-6 text-muted-foreground">Admin access required to view the AI Wiki.</p>
+          <p className="mb-6 text-muted-foreground">Admin access required to view the AI Guide.</p>
           <Link to="/portal" className="text-sm text-primary hover:underline">Back to Portal</Link>
         </motion.div>
       </section>
@@ -77,25 +76,25 @@ const Wiki = () => {
             <ArrowLeft size={12} /> Back to Portal
           </Link>
           <div className="flex items-center gap-3">
-            <BookOpen size={24} className="text-orange-500" />
+            <Sparkles size={24} className="text-orange-500" />
             <div>
               <h1 className="font-display text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
-                AI Wiki
+                AI Guide
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Internal reference for all AI components, user flows, and system architecture.
+                Everything you can do with AI in your portal — and how to get the best results.
               </p>
             </div>
           </div>
         </div>
 
         {/* Accordion sections */}
-        <Accordion type="multiple" defaultValue={["registry"]} className="space-y-3">
-          <AccordionItem value="registry" className="rounded-xl border border-border bg-card/50 px-4">
+        <Accordion type="multiple" defaultValue={["tools"]} className="space-y-3">
+          <AccordionItem value="tools" className="rounded-xl border border-border bg-card/50 px-4">
             <AccordionTrigger className="py-4 text-sm font-semibold text-foreground hover:no-underline">
               <span className="flex items-center gap-2">
-                <Cpu size={15} className="text-orange-500" />
-                AI Components Registry
+                <Wand2 size={15} className="text-orange-500" />
+                What Can I Use?
               </span>
             </AccordionTrigger>
             <AccordionContent className="pb-4">
@@ -103,11 +102,11 @@ const Wiki = () => {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="pipeline" className="rounded-xl border border-border bg-card/50 px-4">
+          <AccordionItem value="flow" className="rounded-xl border border-border bg-card/50 px-4">
             <AccordionTrigger className="py-4 text-sm font-semibold text-foreground hover:no-underline">
               <span className="flex items-center gap-2">
-                <GitBranch size={15} className="text-amber-500" />
-                User Flow Pipe Design
+                <Route size={15} className="text-amber-500" />
+                How It Works
               </span>
             </AccordionTrigger>
             <AccordionContent className="pb-4">
@@ -119,7 +118,7 @@ const Wiki = () => {
             <AccordionTrigger className="py-4 text-sm font-semibold text-foreground hover:no-underline">
               <span className="flex items-center gap-2">
                 <Lightbulb size={15} className="text-emerald-500" />
-                Worked-Out Examples
+                Try These Examples
               </span>
             </AccordionTrigger>
             <AccordionContent className="pb-4">
@@ -127,11 +126,11 @@ const Wiki = () => {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="errors" className="rounded-xl border border-border bg-card/50 px-4">
+          <AccordionItem value="health" className="rounded-xl border border-border bg-card/50 px-4">
             <AccordionTrigger className="py-4 text-sm font-semibold text-foreground hover:no-underline">
               <span className="flex items-center gap-2">
-                <AlertTriangle size={15} className="text-red-500" />
-                Live Error Log
+                <Activity size={15} className="text-red-500" />
+                System Health
               </span>
             </AccordionTrigger>
             <AccordionContent className="pb-4">

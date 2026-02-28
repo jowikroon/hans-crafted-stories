@@ -1,115 +1,75 @@
-import { Bot, MessageSquare, Compass, Sparkles, HeartPulse, Filter, ListChecks, Route } from "lucide-react";
+import { MessageSquare, Bot, Compass, Sparkles, HeartPulse, Search } from "lucide-react";
 
-const components = [
+const tools = [
   {
     name: "Command Center",
-    type: "Unified Chat Panel",
-    location: "Portal header",
-    edgeFn: "n8n-agent",
-    model: "Multi-model picker (Gemini/GPT)",
-    files: ["src/components/portal/UnifiedChatPanel.tsx"],
-    color: "orange",
+    tagline: "Your main AI assistant",
     icon: MessageSquare,
-    description: "Central chat interface with 12 context categories, TVA pipeline bar, and intent classification.",
+    color: "orange",
+    description: "Ask anything — from SEO advice to content writing. Pick a topic first to get smarter, more focused answers.",
+    findIt: "Open it from the chat icon at the top of the Portal.",
+    bestFor: "General questions, brainstorming, writing tasks",
+    tip: "Select a topic category before typing to get much better results.",
   },
   {
     name: "Hans AI",
-    type: "Overlay Chat",
-    location: "Navbar + Portal",
-    edgeFn: "hansai-chat",
-    model: "Gemini 3 Flash (streaming)",
-    files: ["src/components/overlays/HansAIOverlay.tsx", "src/pages/HansAI.tsx"],
-    color: "emerald",
+    tagline: "Quick AI chat, anywhere",
     icon: Bot,
-    description: "Streaming chat overlay accessible from the navbar. Uses context filter pills and smart suggestions.",
+    color: "emerald",
+    description: "A fast, streaming chat that's accessible from any page. Great for quick questions without leaving what you're working on.",
+    findIt: "Click the AI button in the top navigation bar.",
+    bestFor: "Quick lookups, SEO checks, on-the-fly answers",
+    tip: "Use the suggested prompts — they're sorted by what you use most.",
   },
   {
     name: "Empire Commander",
-    type: "Overlay Chat",
-    location: "Portal",
-    edgeFn: "n8n-agent",
-    model: "Gemini 2.5 Flash",
-    files: ["src/components/overlays/EmpireOverlay.tsx"],
-    color: "violet",
+    tagline: "Manage your infrastructure",
     icon: Bot,
-    description: "Infrastructure-focused overlay for monitoring and managing Empire services.",
+    color: "violet",
+    description: "Monitor and manage your backend services. Check what's running, troubleshoot issues, and run health checks.",
+    findIt: "Open from the Empire AI button in the Portal.",
+    bestFor: "Server monitoring, deployment status, debugging",
+    tip: "Ask 'run full health check' to instantly scan all services.",
   },
   {
     name: "n8n Agent",
-    type: "Modal Chat",
-    location: "Portal",
-    edgeFn: "n8n-agent",
-    model: "Gemini 2.5 Flash",
-    files: ["src/components/portal/N8nAgentModal.tsx"],
-    color: "cyan",
+    tagline: "Workflow automation helper",
     icon: Bot,
-    description: "Dedicated modal for interacting with n8n workflow automation agent.",
+    color: "cyan",
+    description: "Get help building, debugging, and managing your automated workflows. It knows your workflow setup.",
+    findIt: "Click the n8n Agent button in the Portal.",
+    bestFor: "Building automations, fixing triggers, workflow questions",
+    tip: "Describe what you want to automate in plain language — it will suggest a workflow.",
   },
   {
-    name: "Intent Router",
-    type: "Classifier",
-    location: "Command Center",
-    edgeFn: "intent-router",
-    model: "Gemini 2.5 Flash",
-    files: ["src/components/portal/IntentButton.tsx", "src/lib/intent/router.ts"],
-    color: "amber",
+    name: "Smart Routing",
+    tagline: "Finds the right tool for you",
     icon: Compass,
-    description: "Classifies user goals and routes to the correct workflow or edge function.",
+    color: "amber",
+    description: "When you type a request, the system automatically figures out the best way to handle it — no extra steps needed.",
+    findIt: "Use the compass button in the Command Center.",
+    bestFor: "Complex requests that span multiple tools",
+    tip: "Be specific about your goal — 'optimize product titles for SEO' works better than 'help with SEO'.",
   },
   {
-    name: "AI Content Suggest",
-    type: "Copy Generator",
-    location: "Page Content Editor",
-    edgeFn: "ai-content-suggest",
-    model: "Gemini 3 Flash",
-    files: ["src/components/portal/PageContentEditorModal.tsx"],
-    color: "pink",
+    name: "AI Content Writer",
+    tagline: "Generate copy instantly",
     icon: Sparkles,
-    description: "Generates copy suggestions for page content fields (titles, descriptions, body text).",
+    color: "pink",
+    description: "Generates titles, descriptions, and body text for any page. Just pick a field and let AI draft it for you.",
+    findIt: "Edit any page content and click the sparkle icon next to a text field.",
+    bestFor: "Page titles, meta descriptions, blog intros",
+    tip: "Review and tweak the suggestions — AI gives you a strong starting point, not the final word.",
   },
   {
-    name: "Empire Health",
-    type: "Status Monitor",
-    location: "Empire Dashboard",
-    edgeFn: "empire-health",
-    model: "N/A (HTTP checks)",
-    files: ["src/components/empire/EmpireStatusGrid.tsx"],
-    color: "green",
+    name: "Health Monitor",
+    tagline: "See if everything is running",
     icon: HeartPulse,
-    description: "Runs HTTP health checks against infrastructure endpoints and reports status.",
-  },
-  {
-    name: "Context Filter Pills",
-    type: "UI Component",
-    location: "All chat panels",
-    edgeFn: "Client-side",
-    model: "N/A",
-    files: ["src/components/ai/ContextFilterPills.tsx", "src/components/ai/contextCategories.ts"],
-    color: "slate",
-    icon: Filter,
-    description: "Two-layer category/sub-context pills that prefix system hints to user prompts.",
-  },
-  {
-    name: "Command Suggestion List",
-    type: "UI Component",
-    location: "All chat panels",
-    edgeFn: "Client-side (localStorage)",
-    model: "N/A",
-    files: ["src/components/ai/CommandSuggestionList.tsx", "src/components/ai/commandSuggestions.ts"],
-    color: "slate",
-    icon: ListChecks,
-    description: "Top-10 smart prompt suggestions sorted by usage frequency, stored in localStorage.",
-  },
-  {
-    name: "Fast Route",
-    type: "Client Router",
-    location: "Intent system",
-    edgeFn: "Client-side keyword matching",
-    model: "N/A",
-    files: ["src/lib/intent/router.ts"],
-    color: "yellow",
-    icon: Route,
-    description: "Client-side keyword matcher. Score >0.85 triggers direct routing without LLM fallback.",
+    color: "green",
+    description: "Shows real-time status of all your backend services — green means good, red means something needs attention.",
+    findIt: "Go to the Empire Dashboard page.",
+    bestFor: "Checking uptime, spotting outages, response times",
+    tip: "If a service shows red, try asking Empire Commander to diagnose the issue.",
   },
 ];
 
@@ -121,8 +81,6 @@ const colorMap: Record<string, string> = {
   amber: "border-amber-500/30 bg-amber-500/5",
   pink: "border-pink-500/30 bg-pink-500/5",
   green: "border-green-500/30 bg-green-500/5",
-  slate: "border-border bg-secondary/30",
-  yellow: "border-yellow-500/30 bg-yellow-500/5",
 };
 
 const badgeColorMap: Record<string, string> = {
@@ -133,49 +91,37 @@ const badgeColorMap: Record<string, string> = {
   amber: "bg-amber-500/15 text-amber-400",
   pink: "bg-pink-500/15 text-pink-400",
   green: "bg-green-500/15 text-green-400",
-  slate: "bg-muted text-muted-foreground",
-  yellow: "bg-yellow-500/15 text-yellow-400",
 };
 
 const WikiComponentRegistry = () => (
   <div className="grid gap-4 sm:grid-cols-2">
-    {components.map((c) => {
-      const Icon = c.icon;
+    {tools.map((t) => {
+      const Icon = t.icon;
       return (
         <div
-          key={c.name}
-          className={`rounded-xl border p-4 transition-colors hover:bg-secondary/20 ${colorMap[c.color]}`}
+          key={t.name}
+          className={`rounded-xl border p-4 transition-colors hover:bg-secondary/20 ${colorMap[t.color]}`}
         >
           <div className="mb-2 flex items-center gap-2">
             <Icon size={16} className="shrink-0 text-muted-foreground" />
-            <h3 className="text-sm font-semibold text-foreground">{c.name}</h3>
-            <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeColorMap[c.color]}`}>
-              {c.type}
+            <h3 className="text-sm font-semibold text-foreground">{t.name}</h3>
+            <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeColorMap[t.color]}`}>
+              {t.tagline}
             </span>
           </div>
-          <p className="mb-3 text-xs leading-relaxed text-muted-foreground">{c.description}</p>
+          <p className="mb-3 text-xs leading-relaxed text-muted-foreground">{t.description}</p>
           <div className="space-y-1.5 text-[11px]">
             <div className="flex gap-2">
-              <span className="shrink-0 text-muted-foreground/60">Location</span>
-              <span className="text-muted-foreground">{c.location}</span>
+              <span className="shrink-0 font-medium text-muted-foreground/70">📍 Find it</span>
+              <span className="text-muted-foreground">{t.findIt}</span>
             </div>
             <div className="flex gap-2">
-              <span className="shrink-0 text-muted-foreground/60">Backend</span>
-              <span className="font-mono text-muted-foreground">{c.edgeFn}</span>
+              <span className="shrink-0 font-medium text-muted-foreground/70">✦ Best for</span>
+              <span className="text-muted-foreground">{t.bestFor}</span>
             </div>
             <div className="flex gap-2">
-              <span className="shrink-0 text-muted-foreground/60">Model</span>
-              <span className="text-muted-foreground">{c.model}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="shrink-0 text-muted-foreground/60">Files</span>
-              <span className="flex flex-wrap gap-1">
-                {c.files.map((f) => (
-                  <code key={f} className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">
-                    {f.split("/").pop()}
-                  </code>
-                ))}
-              </span>
+              <span className="shrink-0 font-medium text-muted-foreground/70">💡 Pro tip</span>
+              <span className="text-foreground/80">{t.tip}</span>
             </div>
           </div>
         </div>
