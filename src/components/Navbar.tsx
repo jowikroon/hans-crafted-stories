@@ -9,6 +9,7 @@ import HansAIOverlay from "@/components/overlays/HansAIOverlay";
 import { usePageElements } from "@/hooks/usePageElements";
 import { translations } from "@/data/translations";
 import type { Lang } from "@/hooks/useLang";
+import logoImg from "@/assets/logo.png";
 
 const THEME_KEY = "site_theme";
 
@@ -185,7 +186,8 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex items-center justify-between h-12">
             {/* Brand */}
-            <Link to="/" className={`shrink-0 font-display text-base sm:text-lg font-bold tracking-tight transition-colors ${isDark ? "text-emerald-300" : "text-foreground"}`}>
+            <Link to="/" className={`shrink-0 flex items-center gap-2 font-display text-base sm:text-lg font-bold tracking-tight transition-colors ${isDark ? "text-emerald-300" : "text-foreground"}`}>
+              <img src={logoImg} alt="Logo" className={`h-6 w-6 object-contain ${isDark ? "invert brightness-200" : ""}`} />
               Hans van Leeuwen
             </Link>
 
