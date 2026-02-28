@@ -1,49 +1,66 @@
 
 
-## Add consistent NL/ENG language toggle across all CMS sections
+# Add Multilingual (NL/ENG) Support to Blog Posts
 
-### What this does
-Extract the NL/ENG language switcher (currently only in Portal > Pages) into a reusable component and add it to the Content tab and the page content editor modal. Since the toggle uses the global `useLang()` context, switching language in any location (Navbar, Pages tab, Content tab) will synchronize across the entire site.
+## Current State
+Blog posts are stored in the `blog_posts` table with single-language fields (`title`, `excerpt`, `content`). Unlike the `page_content` table which uses a `_nl` key-suffix pattern, blog posts have no Dutch translation capability.
 
-### Current state
-- The Navbar already has a global NL | ENG toggle that works site-wide
-- The Portal > Pages tab has its own NL/ENG toggle (Globe icon style)
-- The Portal > Content tab and editor modals have no language toggle
-- All components already consume `useLang()` for translations
+## Approach
+Add dedicated `_nl` columns to the `blog_posts` table and update the CMS editor + frontend to support both languages.
 
-### Steps
+## Steps
 
-**1. Create a reusable `PortalLangToggle` component**
+### 1. Database Migration
+Add three new nullable columns to `blog_posts`:
+- `title_nl` (text, default `''`)
+- `excerpt_nl` (text, default `''`)
+- `content_nl` (text, default `''`)
 
-Extract the Globe + NL/ENG button group from `PortalPagesTab.tsx` into `src/components/portal/PortalLangToggle.tsx`. This keeps the same styling (Globe icon, compact pill buttons) and uses `useLang()` under the hood.
+These are nullable/empty-defaulted so existing posts continue working without Dutch content.
 
-**2. Use `PortalLangToggle` in `PortalPagesTab`**
+### 2. Update BlogPostFormModal (CMS Editor)
+Add a language tab or collapsible section showing:
+- **Title (NL)** -- text input
+- **Excerpt (NL)** -- textarea
+- **Content (NL)** -- markdown editor with the same Write/Preview toggle
 
-Replace the inline NL/ENG markup in `PortalPagesTab.tsx` with the new shared component.
+The existing English fields stay as-is. The NL fields appear below each English counterpart (or in a separate "Dutch" section), labeled with an "(NL)" suffix to match the page content editor pattern.
 
-**3. Add `PortalLangToggle` to `PortalContentTab`**
+Save will include the new `_nl` fields in the payload.
 
-Place the toggle in the top-right area of the Content tab, next to the section headers. This lets admins switch language context while managing blog posts, case studies, and main menu pages.
+### 3. Update Content API Types
+Add `title_nl`, `excerpt_nl`, `content_nl` to the `BlogPostRow` interface in `src/lib/api/content.ts`.
 
-**4. Add `PortalLangToggle` to `PageContentEditorModal`**
+### 4. Update Frontend Pages to Be Language-Aware
+- **BlogPostPage.tsx**: Use `useLang()` hook. When `lang === "nl"`, display `post.title_nl || post.title`, `post.excerpt_nl || post.excerpt`, and `post.content_nl || post.content` (falling back to English if NL is empty).
+- **BlogPostCard.tsx**: Same language-aware title/excerpt rendering.
+- **Writing.tsx** (blog index): Same pattern for card display.
 
-Place the toggle in the dialog header area so admins can see which language context they're editing in. The `page_content` values from the database and their `usePageContent` fallback translations will react to the language switch.
+### 5. Case Studies (Same Pattern)
+Optionally extend the same approach to `case_studies` table with `title_nl`, `description_nl`, `content_nl` columns and update `CaseStudyFormModal` similarly.
 
-**5. Verify global sync**
+## Technical Details
 
-Since all toggles share the same `useLang()` React context:
-- Switching in the Navbar updates the Content tab, Pages tab, Hero, Footer, etc.
-- Switching in the Portal Content tab updates the Navbar and all frontend pages
-- No separate state management needed -- it's already linked
+```text
+blog_posts table
++------------------+------------------+
+| English (exists) | Dutch (new)      |
++------------------+------------------+
+| title            | title_nl         |
+| excerpt          | excerpt_nl       |
+| content          | content_nl       |
++------------------+------------------+
+```
 
-### Files to create
-- `src/components/portal/PortalLangToggle.tsx` (new shared component)
+The frontend fallback logic in components:
+```
+const displayTitle = (lang === "nl" && post.title_nl) ? post.title_nl : post.title;
+```
 
-### Files to edit
-- `src/components/portal/PortalPagesTab.tsx` (replace inline toggle with shared component)
-- `src/components/portal/PortalContentTab.tsx` (add toggle to header area)
-- `src/components/portal/PageContentEditorModal.tsx` (add toggle to dialog header)
-
-### No database changes needed
-The language system is purely frontend (React context + `translations.ts`). Blog posts and case studies are single-language database entries; the toggle affects the surrounding UI labels and page text, not the post content itself.
+Files to modify:
+- `src/lib/api/content.ts` -- add NL fields to BlogPostRow interface
+- `src/components/portal/BlogPostFormModal.tsx` -- add NL input fields
+- `src/pages/BlogPostPage.tsx` -- language-aware rendering
+- `src/components/BlogPostCard.tsx` -- language-aware title/excerpt
+- `src/pages/Writing.tsx` -- language-aware card display
 
