@@ -15,6 +15,9 @@ const pageLabels: Record<string, string> = {
   navbar: "Navbar",
 };
 
+const AI_TERMINALS_PAGES = ["portal", "navbar"];
+const AI_TERMINALS_LABEL = "AI Terminals";
+
 const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
   const { lang, setLang } = useLang();
   const { elements, loading, toggleVisibility } = useAllPageElements();
@@ -24,9 +27,18 @@ const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
     return <p className="py-8 text-center text-muted-foreground">Loading page elements…</p>;
   }
 
-  const pages = Array.from(new Set(elements.map((e) => e.page)));
+  // Build display pages: merge portal+navbar into "ai_terminals"
+  const rawPages = Array.from(new Set(elements.map((e) => e.page)));
+  const displayPages = [
+    ...rawPages.filter((p) => !AI_TERMINALS_PAGES.includes(p)),
+    ...(rawPages.some((p) => AI_TERMINALS_PAGES.includes(p)) ? ["ai_terminals"] : []),
+  ];
+
+  const isAiTerminals = activePage === "ai_terminals";
+  const activeSourcePages = isAiTerminals ? AI_TERMINALS_PAGES : [activePage];
+
   const pageElements = elements.filter((e) => {
-    if (e.page !== activePage) return false;
+    if (!activeSourcePages.includes(e.page)) return false;
     if (subFilter === "Published") return e.is_visible;
     if (subFilter === "Hidden") return !e.is_visible;
     return true;
@@ -38,10 +50,12 @@ const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
       {/* Page selector + Language switch */}
       <div className="mb-6 flex items-center justify-between gap-3">
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {pages.map((page) => {
+          {displayPages.map((page) => {
             const isActive = activePage === page;
-            const visibleCount = elements.filter((e) => e.page === page && e.is_visible).length;
-            const totalCount = elements.filter((e) => e.page === page).length;
+            const sourcePages = page === "ai_terminals" ? AI_TERMINALS_PAGES : [page];
+            const visibleCount = elements.filter((e) => sourcePages.includes(e.page) && e.is_visible).length;
+            const totalCount = elements.filter((e) => sourcePages.includes(e.page)).length;
+            const label = page === "ai_terminals" ? AI_TERMINALS_LABEL : (pageLabels[page] || page);
             return (
               <button
                 key={page}
@@ -53,7 +67,7 @@ const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
                 }`}
               >
                 <LayoutDashboard size={14} />
-                {pageLabels[page] || page}
+                {label}
                 <span className={`ml-1 text-[10px] font-semibold ${
                   visibleCount === totalCount ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
                 }`}>
