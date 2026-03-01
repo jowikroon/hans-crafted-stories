@@ -93,6 +93,44 @@ Here “Gemini” is the brain that decides what to do; “control” is still e
 
 ---
 
+---
+
+## Implemented: google-agent with Connect Google
+
+The **google-agent** Edge Function and OAuth flow are implemented:
+
+1. **Token storage:** `user_google_tokens` table (migration) with RLS.
+2. **OAuth flow:** `google-oauth-start` and `google-oauth-callback` Edge Functions.
+3. **Frontend:** "Connect Google" button in Command Center; sends `Authorization` when invoking the Google workflow.
+4. **google-agent:** Requires auth, loads/refreshes tokens, uses Gemini with function calling (Gmail, Sheets, Drive).
+
+### Env vars (Supabase Edge secrets)
+
+| Variable | Purpose |
+|----------|---------|
+| `GEMINI_API_KEY` | Direct Gemini API for function calling (required for tools; Lovable gateway does not support tools) |
+| `GOOGLE_OAUTH_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth client secret |
+| `GOOGLE_OAUTH_STATE_SECRET` | (Optional) Sign OAuth state; if unset, a default is used |
+| `APP_ORIGIN` | App origin for OAuth redirect (e.g. `https://your-app.com` or `http://localhost:5173`) |
+
+### Google Cloud Console — add redirect URI
+
+If reusing the n8n OAuth client (or using a dedicated one), add this **Authorized redirect URI**:
+
+```
+https://<project-ref>.supabase.co/functions/v1/google-oauth-callback
+```
+
+Replace `<project-ref>` with your Supabase project reference (e.g. `oejeojzaakfhculcoqdh`).
+
+### Config files
+
+- `config/all-credentials.export.env.example` — template with `GOOGLE_OAUTH_*`, `APP_ORIGIN`
+- `n8n/secrets.manifest.yml` — `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_STATE_SECRET`
+
+---
+
 ## References
 
 - [Automate Google Workspace tasks with the Gemini API](https://codelabs.developers.google.com/codelabs/gemini-workspace) (function calling, Gmail/Sheets/Drive).

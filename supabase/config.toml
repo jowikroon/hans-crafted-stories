@@ -38,3 +38,9 @@ verify_jwt = false
 
 [functions.google-agent]
 verify_jwt = false
+
+[functions.google-oauth-start]
+verify_jwt = false
+
+[functions.google-oauth-callback]
+verify_jwt = false

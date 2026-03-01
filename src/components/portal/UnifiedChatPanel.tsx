@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, Sparkles, Shuffle, ChevronDown, ChevronRight, History, X, CheckCircle2, Circle, Clock, Cpu, Bot, Zap, Wrench, Search, BarChart3, Command, GitBranch, Settings2 } from "lucide-react";
+import { Send, Loader2, Sparkles, Shuffle, ChevronDown, ChevronRight, History, X, CheckCircle2, Circle, Clock, Cpu, Bot, Zap, Wrench, Search, BarChart3, Command, GitBranch, Settings2, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,6 +70,8 @@ const HISTORY_KEY = "portal_chat_history_unified";
 const MODEL_STORAGE_KEY = "portal_command_center_model";
 const N8N_FILTER_PROXY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-filter-proxy`;
 const UNIVERSAL_ROUTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/universal-router`;
+const GOOGLE_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-agent`;
+const GOOGLE_OAUTH_START_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-oauth-start`;
 
 /** n8n workflow list item from n8n-filter-proxy */
 interface N8nWorkflowItem {
@@ -113,6 +115,7 @@ const UnifiedChatPanel = () => {
   const [n8nFilterActive, setN8nFilterActive] = useState(false);
   const [n8nWorkflows, setN8nWorkflows] = useState<N8nWorkflowItem[]>([]);
   const [n8nWorkflowsLoading, setN8nWorkflowsLoading] = useState(false);
+  const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -143,6 +146,53 @@ const UnifiedChatPanel = () => {
       if (stored) setChatHistory(JSON.parse(stored));
     } catch { /* ignore */ }
   }, []);
+
+  /* Google connected status for Connect Google button */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("google_connected") === "1") {
+      setGoogleConnected(true);
+      params.delete("google_connected");
+      const newUrl = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+      return;
+    }
+    if (params.get("google_oauth_error")) {
+      setGoogleConnected(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user?.id) {
+          if (!cancelled) setGoogleConnected(false);
+          return;
+        }
+        const { data } = await supabase.from("user_google_tokens").select("user_id").eq("user_id", session.user.id).maybeSingle();
+        if (!cancelled) setGoogleConnected(!!data);
+      } catch {
+        if (!cancelled) setGoogleConnected(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleConnectGoogle = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) return;
+      const returnTo = `${window.location.origin}/portal`;
+      const res = await fetch(`${GOOGLE_OAUTH_START_URL}?returnTo=${encodeURIComponent(returnTo)}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch { /* ignore */ }
+  };
 
   /* v6.1: Restore last filter + pinned examples from user_preferences */
   useEffect(() => {
@@ -259,8 +309,34 @@ const UnifiedChatPanel = () => {
     setLoading(true);
     setPipelineStage("processing");
 
-    const extraPayload = wf.name === "google" && userMessage ? { message: userMessage } : undefined;
-    const result = await triggerWorkflow(wf, "command_center", extraPayload);
+    let result: { ok: boolean; data: unknown; error?: string };
+    if (wf.name === "google") {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const res = await fetch(GOOGLE_AGENT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          message: userMessage ?? "",
+          source: "command_center",
+          timestamp: new Date().toISOString(),
+        }),
+      });
+      const text = await res.text();
+      let data: unknown;
+      try { data = JSON.parse(text); } catch { data = text; }
+      result = {
+        ok: res.ok,
+        data: res.ok ? data : null,
+        error: res.ok ? undefined : (data && typeof data === "object" && "error" in data ? String((data as { error: unknown }).error) : text || `HTTP ${res.status}`),
+      };
+    } else {
+      const extraPayload = userMessage ? { message: userMessage } : undefined;
+      result = await triggerWorkflow(wf, "command_center", extraPayload);
+    }
 
     if (result.ok) {
       const data = result.data as Record<string, unknown> | null;
@@ -611,6 +687,23 @@ const UnifiedChatPanel = () => {
           >
             <History size={12} />
           </button>
+
+          {googleConnected === false && (
+            <button
+              onClick={handleConnectGoogle}
+              className="flex items-center gap-1 rounded-lg border border-dashed border-orange-500/40 px-2 py-1 text-[10px] font-medium text-orange-400/90 transition-all hover:border-orange-500/60 hover:bg-orange-500/10"
+              title="Connect Google (Gmail, Sheets, Drive)"
+            >
+              <Link2 size={10} />
+              <span className="hidden sm:inline">Connect Google</span>
+            </button>
+          )}
+          {googleConnected === true && (
+            <span className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-400/90" title="Google connected">
+              <CheckCircle2 size={10} />
+              <span className="hidden sm:inline">Google</span>
+            </span>
+          )}
         </div>
       </div>
 

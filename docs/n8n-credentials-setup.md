@@ -151,9 +151,11 @@ Use a **Web application** OAuth 2.0 client. In **APIs & Services → Credentials
 
 **Authorized redirect URIs** (for use with requests from a web server):
 
-- Exactly **one** entry:  
-  `https://n8n.srv1402218.hstgr.cloud/rest/oauth2-credential/callback`  
+- `https://n8n.srv1402218.hstgr.cloud/rest/oauth2-credential/callback` — for n8n Gmail/Sheets OAuth  
   (Duplicate entries cause "Duplicate redirect URIs are not allowed".)
+- **If using google-agent (Connect Google):** add a second redirect URI:  
+  `https://oejeojzaakfhculcoqdh.supabase.co/functions/v1/google-oauth-callback`  
+  (Replace `oejeojzaakfhculcoqdh` with your Supabase project ref.)
 
 **Authorized JavaScript origins** (for use with requests from a browser):
 
@@ -161,7 +163,7 @@ Use a **Web application** OAuth 2.0 client. In **APIs & Services → Credentials
   `https://n8n.srv1402218.hstgr.cloud`  
   (No trailing slash. Remove any placeholder such as `https://www.example.com` and delete any empty row to avoid "URI must not be empty".)
 
-**Summary:** One redirect URI, one origin, both matching your n8n host. Save; changes can take a few minutes to apply. Then in n8n add the Gmail (or Google Sheets) OAuth2 credential using this client's Client ID and Client Secret.
+**Summary:** One redirect URI for n8n; optionally a second for google-agent. One origin for n8n. Save; changes can take a few minutes to apply. Then in n8n add the Gmail (or Google Sheets) OAuth2 credential using this client's Client ID and Client Secret. For google-agent, set `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `APP_ORIGIN` in Supabase Edge secrets (see [gemini-google-control.md](gemini-google-control.md)).
 
 ### 2.6 Monday.com — if any workflow calls Monday API from n8n
 
@@ -221,7 +223,7 @@ environment:
 
 ## 4. Quick checklist
 
-- [ ] `config/all-credentials.export.env` exists and contains: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `MONDAY_API_TOKEN`, `N8N_ENCRYPTION_KEY` (and optionally Firecrawl, Google OAuth vars).
+- [ ] `config/all-credentials.export.env` exists and contains: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `MONDAY_API_TOKEN`, `N8N_ENCRYPTION_KEY` (and optionally Firecrawl, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `APP_ORIGIN` for google-agent).
 - [ ] In n8n: **Prod - Supabase Service Role** created and tested with a Supabase node.
 - [ ] **Prod - Anthropic Claude** created and selected in AutoSEO Brain v2 Claude node (or credential named `AnthropicApi`).
 - [ ] **Prod - OpenAI** created and selected in SEO Audit / Intent Analysis AI nodes.
