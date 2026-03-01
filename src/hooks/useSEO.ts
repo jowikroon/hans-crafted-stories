@@ -8,7 +8,7 @@ interface SEOConfig {
   jsonLd?: Record<string, unknown>;
 }
 
-const DEFAULT_TITLE = "E-commerce Manager & Marketplace Specialist (Amazon & Bol.com) | Hans van Leeuwen";
+const DEFAULT_TITLE = "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen";
 
 const setMeta = (name: string, content: string, attr = "name") => {
   let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;

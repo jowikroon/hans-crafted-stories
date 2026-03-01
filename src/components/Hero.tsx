@@ -16,6 +16,7 @@ const icons = [
 
 const Hero = () => {
   const { lang } = useLang();
+  const isNl = lang === "nl";
   const t = translations[lang].hero;
   const { getValue } = usePageContent("home");
 
@@ -51,6 +52,17 @@ const Hero = () => {
           </h2>
           <p className="mb-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
             {getValue("hero_description", t.description)}
+          </p>
+          <p className="mb-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            {isNl ? "Bekijk mijn " : "Explore my "}
+            <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {isNl ? "Amazon & Bol.com marketplace cases" : "Amazon & Bol.com marketplace case studies"}
+            </Link>
+            {isNl ? " of lees " : " or read "}
+            <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {isNl ? "e-commerce inzichten & artikelen" : "e-commerce insights & articles"}
+            </Link>
+            .
           </p>
           <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground/70">
             <MapPin size={13} className="shrink-0 text-primary/60" />
