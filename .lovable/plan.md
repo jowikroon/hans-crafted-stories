@@ -1,23 +1,25 @@
 
 
-# Hide Command Center for unauthenticated users
+# Enable Google Sign-In with Lovable Cloud
 
-## Problem
-The Command Center currently appears in the public navbar for everyone -- both as a navigation pill ("Command Center" next to "Over mij") and as the orange button in the second row. It should only be visible after logging in.
+## Current State
+The `useAuth.tsx` file currently calls `supabase.auth.signInWithOAuth()` directly. The project already has the Lovable Cloud auth module generated at `src/integrations/lovable/index.ts` with a `lovable.auth.signInWithOAuth()` function, but it's not being used.
 
 ## Changes
 
-### File: `src/components/Navbar.tsx`
+### File: `src/hooks/useAuth.tsx`
+- Import `lovable` from `@/integrations/lovable/index`
+- Replace the `supabase.auth.signInWithOAuth()` call with `lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin })`
+- The Lovable Cloud module handles the OAuth flow and automatically sets the Supabase session via `supabase.auth.setSession()`
+- Keep the existing `AUTH_REDIRECT_KEY` logic for post-login navigation -- the `onAuthStateChange` listener will still fire after `setSession` and redirect the user
 
-Three areas need to be wrapped with an authentication check (`user` from `useAuth`):
+### Google OAuth Client ID
+Your custom Client ID (`773115162300-...`) can be configured through Lovable Cloud's Authentication Settings (Users -> Authentication Settings -> Sign In Methods -> Google). This is where you paste your own Client ID and Secret for branding/control purposes.
 
-1. **Navigation pills (line 22)**: Remove the `/hansai` link from the `getLinks` array. Instead, conditionally add it only when `user` exists, inside the component where `links` is used.
+### Redirect URLs
+- **Google Cloud Console** authorized redirect URI: `https://oejeojzaakfhculcoqdh.supabase.co/auth/v1/callback` (this is the backend callback)
+- **App redirect after login**: handled by the `onAuthStateChange` listener which reads the saved path from `localStorage` and navigates there (defaults to `/portal`)
+- The `redirect_uri` passed to `lovable.auth.signInWithOAuth` should be `window.location.origin` (the Lovable Cloud module handles the rest)
 
-2. **Desktop ROW 2 button (lines 261-280)**: Wrap the entire Command Center row in a `{user && (...)}` conditional so it only renders for authenticated users.
-
-3. **Mobile menu button (lines 305-308)**: Wrap the Command Center button in the mobile menu with the same `{user && (...)}` conditional.
-
-### Approach
-- The `getLinks` function is defined outside the component and has no access to `user`. Solution: remove the hansai entry from `getLinks` and add it conditionally inside the component where `links` is mapped (e.g. `const links = user ? [...allLinks] : allLinks.filter(l => l.to !== "/hansai")`).
-- No changes to routing -- `/hansai` remains accessible by URL for authenticated users. This only hides the navigation entry.
+### No database changes needed
 
