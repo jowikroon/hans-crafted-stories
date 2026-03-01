@@ -21,7 +21,9 @@ const AppShell = () => {
   return (
     <AuthProvider>
       <LangProvider>
-        <Navbar variant={isDarkPage ? "dark" : "default"} />
+        <header>
+          <Navbar variant={isDarkPage ? "dark" : "default"} />
+        </header>
         <main className="min-h-screen">
           <AnimatedRoutes />
         </main>

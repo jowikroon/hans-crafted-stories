@@ -7,7 +7,7 @@ const examples = [
     color: "emerald",
     goal: "Discover high-value keywords to improve your product page rankings.",
     steps: [
-      "Open Hans AI from the navigation bar",
+      "Open Command Center from the Portal or navigation bar",
       "Select the topic: SEO › Keywords",
       "Type: \"Research keywords for brake pads\"",
     ],
@@ -43,7 +43,7 @@ const examples = [
     color: "cyan",
     goal: "Diagnose why a workflow trigger stopped firing and get step-by-step fixes.",
     steps: [
-      "Open the n8n Agent from the Portal",
+      "Open Command Center from the Portal or navigation bar",
       "Type: \"Fix Schedule trigger not firing\"",
     ],
     result: "A step-by-step diagnosis: cron expression check, timezone validation, and node connection fixes.",
@@ -58,7 +58,11 @@ const colorMap: Record<string, { border: string; bg: string; step: string; num: 
 };
 
 const WikiExamples = () => (
-  <div className="grid gap-4 sm:grid-cols-2">
+  <div className="space-y-6">
+    <p className="text-sm text-muted-foreground">
+      Copy these prompts or follow the steps to get results quickly. Each example shows the goal, steps, and what you’ll get.
+    </p>
+    <div className="grid gap-4 sm:grid-cols-2">
     {examples.map((ex) => {
       const Icon = ex.icon;
       const c = colorMap[ex.color];
@@ -85,12 +89,13 @@ const WikiExamples = () => (
 
           {/* Result */}
           <div className="rounded-lg border border-border bg-card/50 p-2.5">
-            <span className="text-[10px] font-medium text-muted-foreground/60">What you'll get</span>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{ex.result}</p>
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">Outcome</span>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{ex.result}</p>
           </div>
         </div>
       );
     })}
+    </div>
   </div>
 );
 

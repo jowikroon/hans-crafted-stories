@@ -41,156 +41,171 @@ const Wiki = () => {
 
   if (loading || adminLoading) {
     return (
-      <section className="section-container flex min-h-[60vh] items-center justify-center pt-28">
-        <p className="text-muted-foreground">Loading...</p>
+      <section className="section-container flex min-h-[60vh] items-center justify-center pt-28" aria-live="polite">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" aria-hidden />
+          <p className="text-sm text-muted-foreground">Loading guide…</p>
+        </div>
       </section>
     );
   }
 
   if (!user || !isAdmin) {
     return (
-      <section className="section-container flex min-h-[60vh] flex-col items-center justify-center pt-28">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-          <ShieldAlert size={40} className="mx-auto mb-4 text-muted-foreground" />
-          <h1 className="mb-2 font-display text-2xl font-medium text-foreground">Access Denied</h1>
-          <p className="mb-6 text-muted-foreground">Admin access required to view the AI Guide.</p>
-          <Link to="/portal" className="text-sm text-primary hover:underline">Back to Portal</Link>
+      <section className="section-container flex min-h-[60vh] flex-col items-center justify-center pt-28" aria-labelledby="access-denied-heading">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-sm">
+          <ShieldAlert size={48} className="mx-auto mb-4 text-muted-foreground" aria-hidden />
+          <h1 id="access-denied-heading" className="mb-2 font-display text-2xl font-semibold text-foreground">Access denied</h1>
+          <p className="mb-6 text-sm text-muted-foreground">Admin access is required to view the AI Guide. Sign in with an admin account or return to the Portal.</p>
+          <Link to="/portal" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+            <ArrowLeft size={14} aria-hidden /> Back to Portal
+          </Link>
         </motion.div>
       </section>
     );
   }
 
   return (
-    <section className="section-container px-5 pb-28 pt-20 sm:px-8 sm:pb-20 sm:pt-28 lg:px-12">
+    <section className="section-container max-w-4xl mx-auto px-5 pb-28 pt-20 sm:px-8 sm:pb-20 sm:pt-28 lg:px-12" aria-label="AI Guide">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Header */}
-        <div className="mb-8">
+        <header className="mb-10">
           <Link
             to="/portal"
-            className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="mb-5 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="Return to Portal"
           >
-            <ArrowLeft size={12} /> Back to Portal
+            <ArrowLeft size={14} aria-hidden /> Back to Portal
           </Link>
-          <div className="flex items-center gap-3">
-            <Sparkles size={24} className="text-orange-500" />
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10">
+              <Sparkles size={24} className="text-orange-500" aria-hidden />
+            </div>
             <div>
-              <h1 className="font-display text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
+              <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 AI Guide
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Everything you can do with AI in your portal — and how to get the best results.
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground max-w-xl">
+                Use this guide to find the right tool, understand the flow from question to result, and try example prompts. Everything is intent-based: describe what you want and the system routes you there.
               </p>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Quick Start Hero */}
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">
-          {[
-            {
-              icon: MessageSquare,
-              title: "Ask the Command Center",
-              desc: "Open the chat in the Portal header. Pick a topic, type your question, get an answer.",
-              accent: "orange",
-              border: "border-orange-500/30",
-              bg: "bg-orange-500/5",
-              iconColor: "text-orange-400",
-              numBg: "bg-orange-500/20 text-orange-400",
-            },
-            {
-              icon: Bot,
-              title: "Chat with Hans AI",
-              desc: "Click the AI button in the navbar for a quick, streaming answer — no matter what page you're on.",
-              accent: "emerald",
-              border: "border-emerald-500/30",
-              bg: "bg-emerald-500/5",
-              iconColor: "text-emerald-400",
-              numBg: "bg-emerald-500/20 text-emerald-400",
-            },
-            {
-              icon: Wrench,
-              title: "Automate with n8n Agent",
-              desc: "Open the n8n Agent in the Portal. Describe what you want to automate — it builds the workflow.",
-              accent: "cyan",
-              border: "border-cyan-500/30",
-              bg: "bg-cyan-500/5",
-              iconColor: "text-cyan-400",
-              numBg: "bg-cyan-500/20 text-cyan-400",
-            },
-          ].map((card, i) => {
-            const Icon = card.icon;
-            return (
-              <div
-                key={card.title}
-                className={`rounded-xl border p-4 transition-colors hover:bg-secondary/20 ${card.border} ${card.bg}`}
-              >
-                <div className="mb-2 flex items-center gap-2">
-                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${card.numBg}`}>
-                    {i + 1}
-                  </span>
-                  <Icon size={14} className={card.iconColor} />
-                  <h3 className="text-sm font-semibold text-foreground">{card.title}</h3>
-                </div>
-                <p className="text-xs leading-relaxed text-muted-foreground">{card.desc}</p>
-              </div>
-            );
-          })}
-        </div>
+        {/* Quick Start */}
+        <section className="mb-10" aria-labelledby="quick-start-heading">
+          <h2 id="quick-start-heading" className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Quick start
+          </h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Three ways to get started. Pick one and follow the steps in the sections below.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                icon: MessageSquare,
+                title: "Ask the Command Center",
+                desc: "Open it from the Portal or nav bar. Describe your goal — it routes to a workflow automatically or answers with AI.",
+                border: "border-orange-500/30",
+                bg: "bg-orange-500/5",
+                iconColor: "text-orange-400",
+                numBg: "bg-orange-500/20 text-orange-400",
+              },
+              {
+                icon: Bot,
+                title: "Command Center everywhere",
+                desc: "Click Command Center in the navbar from any page. Same intent-first panel, no need to open the Portal.",
+                border: "border-emerald-500/30",
+                bg: "bg-emerald-500/5",
+                iconColor: "text-emerald-400",
+                numBg: "bg-emerald-500/20 text-emerald-400",
+              },
+              {
+                icon: Wrench,
+                title: "Automate with n8n Agent",
+                desc: "In the Portal, open the n8n Agent. Describe what you want to automate and it helps build the workflow.",
+                border: "border-cyan-500/30",
+                bg: "bg-cyan-500/5",
+                iconColor: "text-cyan-400",
+                numBg: "bg-cyan-500/20 text-cyan-400",
+              },
+            ].map((card, i) => {
+              const Icon = card.icon;
+              return (
+                <article
+                  key={card.title}
+                  className={`rounded-xl border p-4 transition-colors hover:bg-secondary/10 ${card.border} ${card.bg}`}
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${card.numBg}`} aria-hidden>
+                      {i + 1}
+                    </span>
+                    <Icon size={16} className={card.iconColor} aria-hidden />
+                    <h3 className="text-sm font-semibold text-foreground">{card.title}</h3>
+                  </div>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{card.desc}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
 
-        {/* Accordion sections */}
-        <Accordion type="multiple" defaultValue={["tools"]} className="space-y-3">
-          <AccordionItem value="tools" className="rounded-xl border border-border bg-card/50 px-4">
-            <AccordionTrigger className="py-4 text-sm font-semibold text-foreground hover:no-underline">
-              <span className="flex items-center gap-2">
-                <Wand2 size={15} className="text-orange-500" />
-                What Can I Use?
-              </span>
-            </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              <WikiComponentRegistry />
-            </AccordionContent>
-          </AccordionItem>
+        {/* Guide sections */}
+        <nav aria-label="Guide sections" className="space-y-2">
+          <Accordion type="multiple" defaultValue={["tools"]} className="space-y-2">
+            <AccordionItem value="tools" className="rounded-xl border border-border bg-card/50 px-4">
+              <AccordionTrigger className="py-4 text-left text-sm font-semibold text-foreground hover:no-underline [&[data-state=open]]:pb-2">
+                <span className="flex items-center gap-2">
+                  <Wand2 size={16} className="shrink-0 text-orange-500" aria-hidden />
+                  What can I use?
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4 pt-0">
+                <WikiComponentRegistry />
+              </AccordionContent>
+            </AccordionItem>
 
-          <AccordionItem value="flow" className="rounded-xl border border-border bg-card/50 px-4">
-            <AccordionTrigger className="py-4 text-sm font-semibold text-foreground hover:no-underline">
-              <span className="flex items-center gap-2">
-                <Route size={15} className="text-amber-500" />
-                How It Works
-              </span>
-            </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              <WikiPipeDesign />
-            </AccordionContent>
-          </AccordionItem>
+            <AccordionItem value="flow" className="rounded-xl border border-border bg-card/50 px-4">
+              <AccordionTrigger className="py-4 text-left text-sm font-semibold text-foreground hover:no-underline [&[data-state=open]]:pb-2">
+                <span className="flex items-center gap-2">
+                  <Route size={16} className="shrink-0 text-amber-500" aria-hidden />
+                  How it works
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4 pt-0">
+                <WikiPipeDesign />
+              </AccordionContent>
+            </AccordionItem>
 
-          <AccordionItem value="examples" className="rounded-xl border border-border bg-card/50 px-4">
-            <AccordionTrigger className="py-4 text-sm font-semibold text-foreground hover:no-underline">
-              <span className="flex items-center gap-2">
-                <Lightbulb size={15} className="text-emerald-500" />
-                Try These Examples
-              </span>
-            </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              <WikiExamples />
-            </AccordionContent>
-          </AccordionItem>
+            <AccordionItem value="examples" className="rounded-xl border border-border bg-card/50 px-4">
+              <AccordionTrigger className="py-4 text-left text-sm font-semibold text-foreground hover:no-underline [&[data-state=open]]:pb-2">
+                <span className="flex items-center gap-2">
+                  <Lightbulb size={16} className="shrink-0 text-emerald-500" aria-hidden />
+                  Try these examples
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4 pt-0">
+                <WikiExamples />
+              </AccordionContent>
+            </AccordionItem>
 
-          <AccordionItem value="health" className="rounded-xl border border-border bg-card/50 px-4">
-            <AccordionTrigger className="py-4 text-sm font-semibold text-foreground hover:no-underline">
-              <span className="flex items-center gap-2">
-                <Activity size={15} className="text-red-500" />
-                System Health
-              </span>
-            </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              <WikiErrorLog />
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+            <AccordionItem value="health" className="rounded-xl border border-border bg-card/50 px-4">
+              <AccordionTrigger className="py-4 text-left text-sm font-semibold text-foreground hover:no-underline [&[data-state=open]]:pb-2">
+                <span className="flex items-center gap-2">
+                  <Activity size={16} className="shrink-0 text-red-500" aria-hidden />
+                  System health
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4 pt-0">
+                <WikiErrorLog />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </nav>
       </motion.div>
     </section>
   );

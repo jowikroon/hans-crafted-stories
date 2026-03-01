@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
 import HansAIOverlay from "@/components/overlays/HansAIOverlay";
-import { usePageElements } from "@/hooks/usePageElements";
 import { translations } from "@/data/translations";
 import type { Lang } from "@/hooks/useLang";
 import logoImg from "@/assets/logo.png";
@@ -20,6 +19,7 @@ const getLinks = (lang: Lang) => {
     { to: "/work", label: t.work },
     { to: "/writing", label: t.writing },
     { to: "/about", label: t.about },
+    { to: "/hansai", label: t.commandCenter },
   ];
 };
 
@@ -49,9 +49,9 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
-  const { isVisible: isNavVisible } = usePageElements("navbar");
   const t = translations[lang].nav;
-  const links = getLinks(lang);
+  const allLinks = getLinks(lang);
+  const links = allLinks;
 
   // Global theme state — default light; Portal forces dark via its own effect
   const [siteTheme, setSiteTheme] = useState<"light" | "dark">(() => {
@@ -182,7 +182,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
       </AnimatePresence>
 
       {/* ═══ SINGLE-ROW NAVBAR ═══ */}
-      <nav className={`fixed top-0 z-50 w-full backdrop-blur-md transition-colors ${isDark ? "bg-[hsl(220,20%,6%)]/90" : "bg-background/80"}`}>
+      <nav aria-label="Primary navigation" className={`fixed top-0 z-50 w-full backdrop-blur-md transition-colors ${isDark ? "bg-[hsl(220,20%,6%)]/90" : "bg-background/80"}`}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex items-center justify-between h-12">
             {/* Brand */}
@@ -258,16 +258,15 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         {/* Subtle separator */}
         <div className={`h-px ${isDark ? "bg-emerald-500/8" : "bg-border/50"}`} />
 
-        {/* ─── ROW 2: Command Center link (admin only, desktop) ─── */}
-        {isAdmin && (
+        {/* ─── ROW 2: Command Center link (desktop) — always visible ─── */}
+        {(
           <div className="mx-auto max-w-6xl px-6 hidden md:block">
             <div className="flex items-center justify-end h-8">
               <div className="flex items-center gap-1.5">
-                {isNavVisible("command_center_button") && (
                 <button
-                  onClick={() => setCommandCenterOpen(true)}
+                  onClick={() => navigate("/hansai")}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
-                    commandCenterOpen
+                    location.pathname === "/hansai"
                       ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_10px_hsl(25_95%_53%/0.15)]"
                       : `${isDark ? "border-orange-500/15 text-orange-400/40 hover:border-orange-500/40 hover:text-orange-300" : "border-border text-muted-foreground hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-600"}`
                   }`}
@@ -275,7 +274,6 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   <Command size={11} />
                   Command Center
                 </button>
-                )}
               </div>
             </div>
           </div>
@@ -304,12 +302,10 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   <LogIn size={14} />
                   {user ? t.portal : t.login}
                 </Link>
-                {isAdmin && isNavVisible("command_center_button") && (
-                  <button onClick={() => { setMobileOpen(false); setCommandCenterOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
-                    <Command size={14} />
-                    Command Center
-                  </button>
-                )}
+                <button onClick={() => { setMobileOpen(false); navigate("/hansai"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
+                  <Command size={14} />
+                  Command Center
+                </button>
               </div>
             </motion.div>
           )}

@@ -22,7 +22,8 @@ export function usePageElements(page: string) {
       .eq("page", page)
       .order("sort_order")
       .then(({ data }) => {
-        setElements((data as PageElement[]) || []);
+        const list = (data as PageElement[]) || [];
+        setElements(list);
         setLoading(false);
       });
   }, [page]);

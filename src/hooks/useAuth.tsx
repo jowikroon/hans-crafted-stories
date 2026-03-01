@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import type { User, Session } from "@supabase/supabase-js";
 
 const AUTH_REDIRECT_KEY = "auth_redirect_after_login";
@@ -51,15 +50,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [navigate]);
 
   const signInWithGoogle = async () => {
-    // Save current path so we can redirect back after OAuth completes
-    localStorage.setItem(AUTH_REDIRECT_KEY, location.pathname);
+    // Save the page the user came from; after OAuth the /auth/callback route
+    // will trigger onAuthStateChange(SIGNED_IN) which reads this and navigates.
+    const returnPath = location.pathname || "/portal";
+    localStorage.setItem(AUTH_REDIRECT_KEY, returnPath);
+
+    // Always redirect to a fixed, known route so the app never lands on an
+    // unknown path and hits the NotFound catch-all.
+    const redirectTo = `${window.location.origin}/auth/callback`;
 
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo },
       });
-      if (result?.error) {
-        console.error("Google Sign-In error:", result.error);
+      if (error) {
+        console.error("Google Sign-In error:", error.message);
         localStorage.removeItem(AUTH_REDIRECT_KEY);
       }
     } catch (err) {

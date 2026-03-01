@@ -59,7 +59,12 @@ const WikiErrorLog = () => {
 
   return (
     <div>
-      <p className="mb-4 text-xs text-muted-foreground">Real-time errors and warnings from your AI services. Red means something broke, amber means something needs attention.</p>
+      <p className="mb-2 text-sm text-muted-foreground">
+        Real-time errors and warnings from your AI services. Check here when a workflow or service isn’t behaving as expected.
+      </p>
+      <p className="mb-4 text-xs text-muted-foreground/80">
+        Red = error (something broke). Amber = warning (needs attention).
+      </p>
       {/* Controls */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <select

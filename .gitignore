@@ -2,6 +2,11 @@
 .env
 .env.local
 .env.*.local
+config/all-credentials.export.env
+
+# Vault adapter data (encrypted secrets store)
+vault-adapter/data/
+*.vault
 
 # Local Netlify link (if ever used)
 .netlify

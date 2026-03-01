@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import FeaturedArticles from "@/components/FeaturedArticles";
-import { ArrowRight, ShoppingCart, BarChart3, Search, Zap } from "lucide-react";
+import HomeFAQ from "@/components/HomeFAQ";
+import { ArrowRight, ShoppingCart, BarChart3, Search, TrendingUp, MapPin } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageContent } from "@/hooks/usePageContent";
@@ -9,8 +10,8 @@ import { usePageContent } from "@/hooks/usePageContent";
 const icons = [
   <ShoppingCart size={20} />,
   <BarChart3 size={20} />,
+  <TrendingUp size={20} />,
   <Search size={20} />,
-  <Zap size={20} />,
 ];
 
 const Hero = () => {
@@ -24,6 +25,7 @@ const Hero = () => {
     { title: getValue("expertise_3_title", t.expertise[2].title), description: getValue("expertise_3_desc", t.expertise[2].description) },
     { title: getValue("expertise_4_title", t.expertise[3].title), description: getValue("expertise_4_desc", t.expertise[3].description) },
   ];
+
   return (
     <main>
       {/* Hero Section */}
@@ -40,12 +42,19 @@ const Hero = () => {
           <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-primary">
             {getValue("hero_subtitle", t.subtitle)}
           </p>
-          <h1 className="mb-6 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
             {getValue("hero_heading", t.heading)}{" "}
             <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em> &amp; design.
           </h1>
-          <p className="mb-10 max-w-xl text-lg leading-relaxed text-muted-foreground">
+          <h2 className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
+            {getValue("hero_freelance_h2", t.freelanceH2)}
+          </h2>
+          <p className="mb-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
             {getValue("hero_description", t.description)}
+          </p>
+          <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground/70">
+            <MapPin size={13} className="shrink-0 text-primary/60" />
+            {getValue("hero_location", t.location)}
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
@@ -59,14 +68,37 @@ const Hero = () => {
                 className="transition-transform duration-300 group-hover:translate-x-0.5"
               />
             </Link>
-            <Link
-              to="/about"
+            <a
+              href="mailto:hansvl3@gmail.com?subject=Marketplace Audit Request"
               className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-sm font-bold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
-              aria-label={getValue("hero_cta_about", t.ctaAbout)}
+              aria-label={getValue("hero_cta_consult", t.ctaConsult)}
             >
-              {getValue("hero_cta_about", t.ctaAbout)}
-            </Link>
+              {getValue("hero_cta_consult", t.ctaConsult)}
+            </a>
           </div>
+        </motion.div>
+      </section>
+
+      {/* Results / Proof Section */}
+      <section
+        className="section-container pb-8 pt-2"
+        aria-label={getValue("hero_results_label", t.resultsLabel)}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-wrap gap-6 md:gap-10"
+        >
+          {t.results.map((result, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                {i + 1}
+              </span>
+              <p className="text-sm leading-snug text-muted-foreground max-w-[220px]">{result}</p>
+            </div>
+          ))}
         </motion.div>
       </section>
 
@@ -135,6 +167,9 @@ const Hero = () => {
           </Link>
         </motion.div>
       </section>
+
+      {/* FAQ Section — matches FAQPage schema for parity */}
+      <HomeFAQ />
 
       {/* Featured Articles */}
       <FeaturedArticles />

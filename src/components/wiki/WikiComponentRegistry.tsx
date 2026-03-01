@@ -1,28 +1,28 @@
 import { useState } from "react";
-import { MessageSquare, Bot, Compass, Sparkles, HeartPulse, ChevronDown } from "lucide-react";
+import { MessageSquare, Bot, Compass, Sparkles, HeartPulse, ChevronDown, MapPin, Target, Lightbulb } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import WikiCommandFlow from "./WikiCommandFlow";
 
 const tools = [
   {
     name: "Command Center",
-    tagline: "Your main AI assistant",
+    tagline: "The only link to intent",
     icon: MessageSquare,
     color: "orange",
-    description: "Ask anything — from SEO advice to content writing. Pick a topic first to get smarter, more focused answers.",
-    findIt: "Open it from the chat icon at the top of the Portal.",
-    bestFor: "General questions, brainstorming, writing tasks",
-    tip: "Select a topic category before typing to get much better results.",
+    description: "The single entry point for everything. Type a goal in plain language — it classifies your intent, triggers the right workflow automatically, and falls back to AI chat when no workflow matches. Unmatched requests are logged so you learn from them over time.",
+    findIt: "Portal → Command Center button, or click 'Command Center' in the top navigation. Both open the same intent-first panel.",
+    bestFor: "Triggering workflows, SEO tasks, infra commands, AI questions",
+    tip: "No need to pick a workflow manually — just describe your goal and Command Center routes it for you.",
   },
   {
-    name: "Hans AI",
-    tagline: "Quick AI chat, anywhere",
+    name: "Hans AI Terminal",
+    tagline: "Full-page command terminal",
     icon: Bot,
     color: "emerald",
-    description: "A fast, streaming chat that's accessible from any page. Great for quick questions without leaving what you're working on.",
-    findIt: "Click the AI button in the top navigation bar.",
-    bestFor: "Quick lookups, SEO checks, on-the-fly answers",
-    tip: "Use the suggested prompts — they're sorted by what you use most.",
+    description: "The full-screen terminal view of Command Center. Supports slash commands (/run, /task, /idea), workflow clarification, and streaming AI chat — all powered by the same intent pipeline.",
+    findIt: "Navigate to /hansai, or click 'Full Terminal →' inside the Command Center overlay.",
+    bestFor: "Power users who prefer a terminal UI, slash commands, reviewing command history",
+    tip: "Type /workflows to see all available n8n workflows you can trigger directly.",
   },
   {
     name: "Empire Commander",
@@ -46,13 +46,13 @@ const tools = [
   },
   {
     name: "Smart Routing",
-    tagline: "Finds the right tool for you",
+    tagline: "Built into every send",
     icon: Compass,
     color: "amber",
-    description: "When you type a request, the system automatically figures out the best way to handle it — no extra steps needed.",
-    findIt: "Use the compass button in the Command Center.",
-    bestFor: "Complex requests that span multiple tools",
-    tip: "Be specific about your goal — 'optimize product titles for SEO' works better than 'help with SEO'.",
+    description: "Every message you send through Command Center is automatically routed: fast keyword matching first, then LLM classification, then clarification if needed, and unmatched requests are logged for future improvement.",
+    findIt: "It runs automatically on every message in Command Center. Use the compass icon to manually classify an input before sending.",
+    bestFor: "Understanding which workflow will run, pre-routing before sending",
+    tip: "Click the compass icon next to the input to preview which workflow your message will trigger before you send.",
   },
   {
     name: "AI Content Writer",
@@ -100,47 +100,61 @@ const WikiComponentRegistry = () => {
   const [showFlow, setShowFlow] = useState(false);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {tools.map((t) => {
-        const Icon = t.icon;
-        const isCommandCenter = t.name === "Command Center";
-        return (
-          <div
-            key={t.name}
-            className={`rounded-xl border p-4 transition-colors hover:bg-secondary/20 ${colorMap[t.color]} ${isCommandCenter ? "sm:col-span-2" : ""}`}
-          >
-            <div className="mb-2 flex items-center gap-2">
-              <Icon size={16} className="shrink-0 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-foreground">{t.name}</h3>
-              <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeColorMap[t.color]}`}>
-                {t.tagline}
-              </span>
-            </div>
-            <p className="mb-3 text-xs leading-relaxed text-muted-foreground">{t.description}</p>
-            <div className="space-y-1.5 text-[11px]">
-              <div className="flex gap-2">
-                <span className="shrink-0 font-medium text-muted-foreground/70">📍 Find it</span>
-                <span className="text-muted-foreground">{t.findIt}</span>
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        These are the main AI-powered tools in your portal. Each has a clear role — start with Command Center, then explore the others as needed.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {tools.map((t) => {
+          const Icon = t.icon;
+          const isCommandCenter = t.name === "Command Center";
+          return (
+            <article
+              key={t.name}
+              className={`rounded-xl border p-4 transition-colors hover:bg-secondary/10 ${colorMap[t.color]} ${isCommandCenter ? "sm:col-span-2" : ""}`}
+              aria-labelledby={`tool-${t.name.replace(/\s+/g, "-")}-title`}
+            >
+              <div className="mb-2 flex items-center gap-2 flex-wrap">
+                <Icon size={16} className="shrink-0 text-muted-foreground" aria-hidden />
+                <h3 id={`tool-${t.name.replace(/\s+/g, "-")}-title`} className="text-sm font-semibold text-foreground">{t.name}</h3>
+                <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeColorMap[t.color]}`}>
+                  {t.tagline}
+                </span>
               </div>
-              <div className="flex gap-2">
-                <span className="shrink-0 font-medium text-muted-foreground/70">✦ Best for</span>
-                <span className="text-muted-foreground">{t.bestFor}</span>
+              <p className="mb-4 text-xs leading-relaxed text-muted-foreground">{t.description}</p>
+              <div className="space-y-2.5 text-[11px]">
+                <div className="flex gap-2">
+                  <span className="flex shrink-0 items-start gap-1 font-medium text-muted-foreground">
+                    <MapPin size={11} className="mt-0.5 shrink-0" aria-hidden /> Find it
+                  </span>
+                  <span className="text-muted-foreground">{t.findIt}</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="flex shrink-0 items-start gap-1 font-medium text-muted-foreground">
+                    <Target size={11} className="mt-0.5 shrink-0" aria-hidden /> Best for
+                  </span>
+                  <span className="text-muted-foreground">{t.bestFor}</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="flex shrink-0 items-start gap-1 font-medium text-muted-foreground">
+                    <Lightbulb size={11} className="mt-0.5 shrink-0" aria-hidden /> Pro tip
+                  </span>
+                  <span className="text-foreground/90">{t.tip}</span>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <span className="shrink-0 font-medium text-muted-foreground/70">💡 Pro tip</span>
-                <span className="text-foreground/80">{t.tip}</span>
-              </div>
-            </div>
 
             {isCommandCenter && (
               <>
                 <button
+                  type="button"
                   onClick={() => setShowFlow((v) => !v)}
-                  className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-orange-400 transition-colors hover:text-orange-300"
+                  className="mt-4 flex items-center gap-1.5 text-[11px] font-medium text-orange-400 transition-colors hover:text-orange-300"
+                  aria-expanded={showFlow}
                 >
                   <ChevronDown
                     size={12}
                     className={`transition-transform ${showFlow ? "rotate-180" : ""}`}
+                    aria-hidden
                   />
                   {showFlow ? "Hide workflow" : "See how it works"}
                 </button>
@@ -159,9 +173,10 @@ const WikiComponentRegistry = () => {
                 </AnimatePresence>
               </>
             )}
-          </div>
+          </article>
         );
       })}
+      </div>
     </div>
   );
 };

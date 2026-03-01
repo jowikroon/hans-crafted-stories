@@ -258,9 +258,24 @@ const Portal = () => {
                 animate={{ height: "40vh", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card shadow-lg"
+                className="mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card shadow-lg flex flex-col"
               >
-                <UnifiedChatPanel />
+                <div className="flex shrink-0 items-center justify-between border-b border-orange-500/20 px-3 py-2 bg-card/80">
+                  <span className="text-[11px] font-medium text-foreground">Command Center</span>
+                  {isAdmin ? (
+                    <Link
+                      to="/hansai"
+                      className="rounded-md px-2.5 py-1 text-[10px] font-medium text-orange-400 hover:bg-orange-500/10 hover:text-orange-300 transition-colors"
+                    >
+                      Open full Command Center (terminal + filters) →
+                    </Link>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">Log in as admin to open the full terminal.</span>
+                  )}
+                </div>
+                <div className="flex-1 min-h-0">
+                  <UnifiedChatPanel />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

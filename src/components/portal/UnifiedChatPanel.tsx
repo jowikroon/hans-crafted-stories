@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, Sparkles, Shuffle, ChevronDown, History, X, CheckCircle2, Circle, Clock, Cpu, Bot, Zap, Wrench, Search, BarChart3, Command } from "lucide-react";
+import { Send, Loader2, Sparkles, Shuffle, ChevronDown, History, X, CheckCircle2, Circle, Clock, Cpu, Bot, Zap, Wrench, Search, BarChart3, Command, GitBranch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import ContextFilterPills from "@/components/ai/ContextFilterPills";
@@ -8,10 +8,12 @@ import { unifiedCategories, buildContextPrefix } from "@/components/ai/contextCa
 import CommandSuggestionList from "@/components/ai/CommandSuggestionList";
 import { incrementUsage } from "@/components/ai/commandSuggestions";
 import IntentButton from "./IntentButton";
+import { runIntentPipeline, triggerWorkflow } from "@/lib/intent/pipeline";
+import type { WorkflowDef } from "@/lib/config/workflows";
 import type { LucideIcon } from "lucide-react";
 
 interface Message {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system" | "workflow";
   content: string;
   timestamp?: number;
 }
@@ -21,11 +23,12 @@ interface Suggestion {
   text: string;
 }
 
-/* ─── Pipeline stages (TVA vintage style) ─── */
-type PipelineStage = "idle" | "sending" | "processing" | "generating" | "done" | "error";
+/* ─── Pipeline stages ─── */
+type PipelineStage = "idle" | "sending" | "routing" | "processing" | "generating" | "done" | "error";
 
 const pipelineSteps: { key: PipelineStage; label: string; icon: LucideIcon }[] = [
   { key: "sending", label: "TRANSMIT", icon: Send },
+  { key: "routing", label: "INTENT", icon: GitBranch },
   { key: "processing", label: "ANALYZE", icon: Cpu },
   { key: "generating", label: "SYNTHESIZE", icon: Bot },
   { key: "done", label: "COMPLETE", icon: CheckCircle2 },
@@ -50,7 +53,6 @@ const suggestionPool: Suggestion[] = [
   { icon: BarChart3, text: "Show GA4 traffic overview for this week" },
 ];
 
-/* ─── Available AI models ─── */
 const aiModels = [
   { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash", tag: "Fast" },
   { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash", tag: "Balanced" },
@@ -60,26 +62,53 @@ const aiModels = [
 ];
 
 const HISTORY_KEY = "portal_chat_history_unified";
+const MODEL_STORAGE_KEY = "portal_command_center_model";
+
+const getStoredModel = (): string => {
+  try {
+    const stored = localStorage.getItem(MODEL_STORAGE_KEY);
+    if (stored && aiModels.some((m) => m.id === stored)) return stored;
+  } catch { /* ignore */ }
+  return aiModels[0].id;
+};
 
 const UnifiedChatPanel = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [pipelineStage, setPipelineStage] = useState<PipelineStage>("idle");
-  const [selectedModel, setSelectedModel] = useState(aiModels[0].id);
+  const [selectedModel, setSelectedModel] = useState(getStoredModel);
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [chatHistory, setChatHistory] = useState<{ messages: Message[]; timestamp: number; preview: string }[]>([]);
   const [activeSuggestions, setActiveSuggestions] = useState<Suggestion[]>(suggestionPool.slice(0, 3));
+  const [pendingClarification, setPendingClarification] = useState<{ workflows: WorkflowDef[]; originalInput: string } | null>(null);
 
-  // Context filter state
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSub, setSelectedSub] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const modelPickerRef = useRef<HTMLDivElement>(null);
 
-  // Load history
+  useEffect(() => {
+    try {
+      localStorage.setItem(MODEL_STORAGE_KEY, selectedModel);
+    } catch { /* ignore */ }
+  }, [selectedModel]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modelPickerRef.current && !modelPickerRef.current.contains(e.target as Node)) {
+        setShowModelPicker(false);
+      }
+    };
+    if (showModelPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showModelPicker]);
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem(HISTORY_KEY);
@@ -89,7 +118,7 @@ const UnifiedChatPanel = () => {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages, loading, pendingClarification]);
 
   useEffect(() => {
     setTimeout(() => textareaRef.current?.focus(), 200);
@@ -98,6 +127,10 @@ const UnifiedChatPanel = () => {
   const randomizeSuggestions = () => {
     const shuffled = [...suggestionPool].sort(() => Math.random() - 0.5);
     setActiveSuggestions(shuffled.slice(0, 3));
+  };
+
+  const appendMessage = (msg: Message) => {
+    setMessages((prev) => [...prev, { ...msg, timestamp: msg.timestamp ?? Date.now() }]);
   };
 
   const saveToHistory = (msgs: Message[]) => {
@@ -114,30 +147,49 @@ const UnifiedChatPanel = () => {
 
   const loadFromHistory = (entry: { messages: Message[]; timestamp: number }) => {
     setMessages(entry.messages);
+    setPendingClarification(null);
     setShowHistory(false);
   };
 
-  const sendMessage = async (text?: string) => {
-    const userMsg = text || input.trim();
-    if (!userMsg || loading) return;
-    setInput("");
+  /* ─── Execute a matched workflow and show result ─── */
+  const executeWorkflow = async (wf: WorkflowDef, addToMessages: boolean = true) => {
+    if (addToMessages) {
+      appendMessage({ role: "workflow", content: `Running **${wf.label}**…` });
+    }
+    setLoading(true);
+    setPipelineStage("processing");
 
-    // Build context prefix
+    const result = await triggerWorkflow(wf, "command_center");
+
+    if (result.ok) {
+      const reply =
+        result.data && typeof result.data === "object"
+          ? `✓ **${wf.label}** completed\n\n\`\`\`json\n${JSON.stringify(result.data, null, 2)}\n\`\`\``
+          : `✓ **${wf.label}** completed${result.data ? `\n\n${String(result.data)}` : ""}`;
+      appendMessage({ role: "workflow", content: reply });
+    } else {
+      appendMessage({ role: "workflow", content: `✗ **${wf.label}** failed — ${result.error}` });
+    }
+
+    setPipelineStage("done");
+    setTimeout(() => { setPipelineStage("idle"); setLoading(false); }, 1500);
+  };
+
+  /* ─── Fallback: send to AI model ─── */
+  const sendToAI = async (userMsg: string, allMessages: Message[]) => {
     const contextPrefix = buildContextPrefix(unifiedCategories, selectedCategory, selectedSub);
     const systemWithContext = contextPrefix
       ? `${UNIFIED_SYSTEM_PROMPT}\n\n${contextPrefix}`
       : UNIFIED_SYSTEM_PROMPT;
 
-    const newMessages: Message[] = [...messages, { role: "user", content: userMsg, timestamp: Date.now() }];
-    setMessages(newMessages);
     setLoading(true);
-    setPipelineStage("sending");
+    setPipelineStage("processing");
 
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
-      setPipelineStage("processing");
+      setPipelineStage("generating");
 
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-agent`, {
         method: "POST",
@@ -145,23 +197,93 @@ const UnifiedChatPanel = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ system: systemWithContext, messages: newMessages, model: selectedModel }),
+        body: JSON.stringify({ system: systemWithContext, messages: allMessages, model: selectedModel }),
       });
 
-      setPipelineStage("generating");
-
       const data = await res.json();
-      const finalMessages: Message[] = [...newMessages, { role: "assistant", content: data.reply || "No response.", timestamp: Date.now() }];
+      const reply: Message = { role: "assistant", content: data.reply || "No response.", timestamp: Date.now() };
+      const finalMessages = [...allMessages, reply];
       setMessages(finalMessages);
       saveToHistory(finalMessages);
       setPipelineStage("done");
       setTimeout(() => setPipelineStage("idle"), 2000);
     } catch {
-      setMessages([...newMessages, { role: "assistant", content: "Connection error.", timestamp: Date.now() }]);
+      appendMessage({ role: "assistant", content: "Connection error." });
       setPipelineStage("error");
       setTimeout(() => setPipelineStage("idle"), 3000);
     } finally {
       setLoading(false);
+    }
+  };
+
+  /* ─── Main intent-first send ─── */
+  const sendMessage = async (text?: string) => {
+    const userMsg = (text || input).trim();
+    if (!userMsg || loading) return;
+    setInput("");
+    setPendingClarification(null);
+
+    const userMsgObj: Message = { role: "user", content: userMsg, timestamp: Date.now() };
+    const newMessages = [...messages, userMsgObj];
+    setMessages(newMessages);
+    setLoading(true);
+    setPipelineStage("sending");
+
+    // Step 1: run the intent pipeline
+    setPipelineStage("routing");
+    const result = await runIntentPipeline(userMsg, "command_center");
+
+    switch (result.outcome.type) {
+      case "workflow_match":
+        // Direct workflow execution — no AI needed
+        setLoading(false);
+        await executeWorkflow(result.outcome.workflow, true);
+        return;
+
+      case "clarify":
+        // Let the user pick which workflow they meant
+        appendMessage({
+          role: "system",
+          content: result.outcome.message || "Did you mean one of these workflows?",
+        });
+        setPendingClarification({ workflows: result.outcome.workflows, originalInput: userMsg });
+        setLoading(false);
+        setPipelineStage("idle");
+        return;
+
+      case "unhandled":
+        // Logged; still offer AI chat as fallback
+        appendMessage({
+          role: "system",
+          content: "I've logged this request — I'll learn from it over time. Let me answer as best I can:",
+        });
+        await sendToAI(userMsg, [...newMessages, { role: "system", content: "I've logged this request — I'll learn from it over time. Let me answer as best I can:" }]);
+        return;
+
+      case "chat_fallback":
+      default:
+        // No workflow match; fall through to AI
+        await sendToAI(userMsg, newMessages);
+        return;
+    }
+  };
+
+  /* ─── Clarification handlers ─── */
+  const handleClarificationSelect = async (wf: WorkflowDef) => {
+    const original = pendingClarification?.originalInput || "";
+    setPendingClarification(null);
+    appendMessage({ role: "user", content: `→ ${wf.label}` });
+    await executeWorkflow(wf, false);
+    void original;
+  };
+
+  const handleClarificationDismiss = async () => {
+    const original = pendingClarification?.originalInput || "";
+    setPendingClarification(null);
+    if (original) {
+      appendMessage({ role: "system", content: "Continuing as a general question…" });
+      const allMsgs = [...messages, { role: "system" as const, content: "Continuing as a general question…" }];
+      await sendToAI(original, allMsgs);
     }
   };
 
@@ -170,7 +292,7 @@ const UnifiedChatPanel = () => {
   };
 
   const renderContent = (text: string) => {
-    const parts = text.split(/(```[\s\S]*?```|`[^`]+`)/g);
+    const parts = text.split(/(```[\s\S]*?```|`[^`]+`|\*\*[^*]+\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith("```") && part.endsWith("```")) {
         const lines = part.slice(3, -3).split("\n");
@@ -184,6 +306,8 @@ const UnifiedChatPanel = () => {
         );
       } else if (part.startsWith("`") && part.endsWith("`")) {
         return <code key={i} className="rounded bg-secondary px-1.5 py-0.5 font-mono text-xs text-primary">{part.slice(1, -1)}</code>;
+      } else if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={i}>{part.slice(2, -2)}</strong>;
       }
       return <span key={i}>{part}</span>;
     });
@@ -192,8 +316,6 @@ const UnifiedChatPanel = () => {
   const currentModel = aiModels.find(m => m.id === selectedModel) || aiModels[0];
 
   const [showCommands, setShowCommands] = useState(false);
-
-  // Show command list whenever a sub is selected
   useEffect(() => {
     if (selectedSub) setShowCommands(true);
     else setShowCommands(false);
@@ -244,21 +366,25 @@ const UnifiedChatPanel = () => {
           </div>
           <div>
             <h3 className="text-xs font-semibold text-foreground">Command Center</h3>
-            <p className="text-[9px] text-muted-foreground">Unified AI · Infrastructure + Marketing</p>
+            <p className="text-[9px] text-muted-foreground">Intent · Workflows · AI</p>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5">
-          {/* Model Picker */}
-          <div className="relative">
+          <div className="relative" ref={modelPickerRef}>
+            <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/70 hidden sm:inline">Model</span>
             <button
+              type="button"
               onClick={() => setShowModelPicker(!showModelPicker)}
-              className="flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-[10px] font-medium text-muted-foreground transition-all hover:border-primary/30 hover:text-foreground"
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-2.5 py-1.5 text-[10px] font-medium text-foreground transition-all hover:border-primary/40 hover:bg-secondary/50"
+              aria-expanded={showModelPicker}
+              aria-haspopup="listbox"
+              aria-label={`Model: ${currentModel.label}. Click to change.`}
             >
-              <Bot size={10} />
-              <span className="hidden sm:inline">{currentModel.label}</span>
-              <span className="rounded bg-primary/10 px-1 py-0.5 text-[8px] font-bold text-primary">{currentModel.tag}</span>
-              <ChevronDown size={8} />
+              <Bot size={12} className="text-orange-400/80 shrink-0" />
+              <span>{currentModel.label}</span>
+              <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[8px] font-bold text-primary">{currentModel.tag}</span>
+              <ChevronDown size={10} className={`shrink-0 text-muted-foreground transition-transform ${showModelPicker ? "rotate-180" : ""}`} />
             </button>
 
             <AnimatePresence>
@@ -267,14 +393,19 @@ const UnifiedChatPanel = () => {
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="absolute right-0 top-full z-50 mt-1 w-48 rounded-xl border border-border bg-card p-1 shadow-xl"
+                  className="absolute right-0 top-full z-[200] mt-1.5 w-52 rounded-xl border border-border bg-card p-1.5 shadow-xl"
+                  role="listbox"
                 >
+                  <p className="mb-1 px-2 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60">Choose model</p>
                   {aiModels.map((model) => (
                     <button
                       key={model.id}
+                      type="button"
+                      role="option"
+                      aria-selected={selectedModel === model.id}
                       onClick={() => { setSelectedModel(model.id); setShowModelPicker(false); }}
-                      className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-[11px] transition-all ${
-                        selectedModel === model.id ? "bg-orange-500/10 text-orange-400 font-medium" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[11px] transition-all ${
+                        selectedModel === model.id ? "bg-orange-500/15 text-orange-400 font-medium" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                       }`}
                     >
                       <span>{model.label}</span>
@@ -286,7 +417,6 @@ const UnifiedChatPanel = () => {
             </AnimatePresence>
           </div>
 
-          {/* History */}
           <button
             onClick={() => setShowHistory(!showHistory)}
             className={`rounded-lg p-1.5 transition-all ${showHistory ? "bg-orange-500/10 text-orange-400" : "text-muted-foreground/40 hover:text-foreground"}`}
@@ -342,7 +472,7 @@ const UnifiedChatPanel = () => {
         )}
       </AnimatePresence>
 
-      {/* Smart Command Suggestions (Layer 3) */}
+      {/* Smart Command Suggestions */}
       <AnimatePresence>
         {showCommands && selectedSub && messages.length === 0 && (
           <CommandSuggestionList
@@ -364,7 +494,7 @@ const UnifiedChatPanel = () => {
         {messages.length === 0 && !selectedSub ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <Sparkles size={24} className="mb-3 text-muted-foreground/20" />
-            <p className="mb-4 max-w-xs text-[11px] text-muted-foreground">Unified AI · Infrastructure + Marketing</p>
+            <p className="mb-4 max-w-xs text-[11px] text-muted-foreground">Type a goal — workflows run automatically, AI answers everything else</p>
 
             <div className="flex flex-wrap justify-center gap-1.5 mb-2">
               {activeSuggestions.map((s, i) => {
@@ -392,22 +522,74 @@ const UnifiedChatPanel = () => {
           </div>
         ) : messages.length > 0 ? (
           <div className="space-y-3">
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                {msg.role === "assistant" && (
-                  <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
-                    <Command size={10} className="text-orange-400" />
+            {messages.map((msg, i) => {
+              if (msg.role === "system") {
+                return (
+                  <div key={i} className="flex justify-center">
+                    <span className="rounded-full border border-orange-500/20 bg-orange-500/5 px-3 py-1 text-[10px] font-mono text-orange-400/70">
+                      {msg.content}
+                    </span>
                   </div>
-                )}
-                <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-foreground text-background"
-                    : "border border-orange-500/30 bg-secondary/30 text-foreground"
-                }`}>
-                  {renderContent(msg.content)}
+                );
+              }
+              if (msg.role === "workflow") {
+                return (
+                  <div key={i} className="flex gap-2">
+                    <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
+                      <Zap size={10} className="text-emerald-400" />
+                    </div>
+                    <div className="max-w-[85%] rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs leading-relaxed text-foreground">
+                      {renderContent(msg.content)}
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {msg.role === "assistant" && (
+                    <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
+                      <Command size={10} className="text-orange-400" />
+                    </div>
+                  )}
+                  <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                    msg.role === "user"
+                      ? "bg-foreground text-background"
+                      : "border border-orange-500/30 bg-secondary/30 text-foreground"
+                  }`}>
+                    {renderContent(msg.content)}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+
+            {/* Clarification picker */}
+            {pendingClarification && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl border border-orange-500/30 bg-orange-500/5 p-3"
+              >
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-orange-400">Choose a workflow</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {pendingClarification.workflows.map((wf) => (
+                    <button
+                      key={wf.name}
+                      onClick={() => handleClarificationSelect(wf)}
+                      className="rounded-lg border border-orange-500/25 bg-orange-500/10 px-2.5 py-1 text-[11px] font-medium text-orange-300 transition-all hover:border-orange-500/50 hover:bg-orange-500/20"
+                    >
+                      {wf.label}
+                    </button>
+                  ))}
+                  <button
+                    onClick={handleClarificationDismiss}
+                    className="rounded-lg border border-border px-2.5 py-1 text-[11px] text-muted-foreground transition-all hover:border-border/80 hover:text-foreground"
+                  >
+                    Something else
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
             {loading && (
               <div className="flex gap-2">
                 <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
@@ -433,13 +615,17 @@ const UnifiedChatPanel = () => {
           <IntentButton
             currentInput={input}
             currentContext={selectedCategory}
+            onExecute={async (wf) => {
+              appendMessage({ role: "user", content: `→ ${wf.label}` });
+              await executeWorkflow(wf, false);
+            }}
           />
           <textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask anything — infra, SEO, workflows, campaigns..."
+            placeholder="Type a goal or ask anything — workflows run automatically"
             rows={1}
             className="flex-1 resize-none rounded-xl border border-border bg-secondary/30 px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-orange-500/30 focus:outline-none"
           />

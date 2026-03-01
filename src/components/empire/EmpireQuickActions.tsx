@@ -63,9 +63,14 @@ const EmpireQuickActions = () => {
 
   return (
     <div className="space-y-3">
-      <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-amber-400/70">
-        Quick Actions
-      </h2>
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-amber-400/70">
+          Quick Actions
+        </h2>
+        <span className="text-[10px] text-muted-foreground/40">
+          For intent-based runs, use <span className="text-orange-400/60">Command Center</span>
+        </span>
+      </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {ACTIONS.map((action, i) => {
           const Icon = action.icon;

@@ -139,8 +139,8 @@ export async function runIntentPipeline(
     };
   }
 
-  // 3 & 4 & 5. Low confidence → ask the LLM (with optional hierarchy context)
-  const llmResult = await classifyIntent(trimmed, router_context);
+  // 3 & 4 & 5. Low confidence → ask the LLM
+  const llmResult = await classifyIntent(trimmed);
 
   if (llmResult.intent !== "unknown" && llmResult.confidence >= 0.7) {
     const wf = WORKFLOWS.find((w) => w.name === llmResult.intent);

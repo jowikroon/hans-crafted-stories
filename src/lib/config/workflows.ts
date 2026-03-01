@@ -8,6 +8,7 @@ export interface WorkflowDef {
   category: "seo" | "data" | "infra" | "ai" | "marketing";
 }
 
+/** Same n8n instance runs on primary VPS (srv1402218); n8n.srv1402218.hstgr.cloud is the same server. */
 export const N8N_BASE = "https://n8n.hansvanleeuwen.com";
 
 export const WORKFLOWS: WorkflowDef[] = [

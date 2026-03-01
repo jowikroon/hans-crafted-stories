@@ -53,10 +53,14 @@ const accentNumber: Record<string, string> = {
 };
 
 const WikiPipeDesign = () => (
-  <div className="relative pl-6">
-    <div className="absolute left-[11px] top-4 bottom-4 w-px bg-gradient-to-b from-orange-500/60 via-cyan-500/40 to-emerald-500/60" />
+  <div className="space-y-6">
+    <p className="text-sm text-muted-foreground">
+      From your message to the result: the system interprets your intent, picks the right path, and returns a clear answer. The steps below outline the flow.
+    </p>
+    <div className="relative pl-6">
+      <div className="absolute left-[11px] top-4 bottom-4 w-px bg-gradient-to-b from-orange-500/60 via-cyan-500/40 to-emerald-500/60" aria-hidden />
 
-    <div className="space-y-1">
+      <div className="space-y-1">
       {steps.map((step, i) => (
         <div key={i} className="relative flex items-start gap-3 py-2">
           <div className={`absolute -left-6 top-3.5 flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-background ${accentDot[step.accent]}`}>
@@ -68,6 +72,7 @@ const WikiPipeDesign = () => (
           </div>
         </div>
       ))}
+      </div>
     </div>
   </div>
 );

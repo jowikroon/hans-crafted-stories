@@ -1,0 +1,14 @@
+{
+  "name": "vault-adapter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Stub vault adapter — encrypted local secret store with HTTP API and CLI",
+  "main": "index.cjs",
+  "bin": {
+    "vaultctl": "./cli.cjs"
+  },
+  "scripts": {
+    "start": "node index.cjs",
+    "test": "echo \"No tests yet\" && exit 0"
+  }
+}

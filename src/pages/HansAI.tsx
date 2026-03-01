@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
@@ -526,7 +525,6 @@ const HansAI = () => {
       </div>
     );
   }
-  if (!user || !isAdmin) return <Navigate to="/portal" replace />;
 
   // ── Render ──────────────────────────────────────────────────────
   return (
