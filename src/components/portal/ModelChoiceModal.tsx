@@ -36,7 +36,7 @@ const ModelChoiceModal = ({
         return;
       }
 
-      await supabase.from("approvals").insert({
+      await (supabase as any).from("approvals").insert({
         llm_job_id: llmJobId,
         type: "model_switch",
         payload: { selected_model: selectedModel },
@@ -75,7 +75,7 @@ const ModelChoiceModal = ({
       const { data: sessionData } = await supabase.auth.getSession();
       const user = sessionData?.session?.user;
       if (user) {
-        await supabase
+        await (supabase as any)
           .from("llm_jobs")
           .update({ status: "cancelled", updated_at: new Date().toISOString() })
           .eq("id", llmJobId)

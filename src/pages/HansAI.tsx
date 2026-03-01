@@ -452,7 +452,7 @@ const HansAI = () => {
     // 3-5. Shared intent pipeline (fast route → LLM classify → log unhandled)
     setLoading(true);
     addLine("system", "Classifying intent...");
-    const pipelineResult = await runIntentPipeline(trimmed, "command_center", hierarchyContext);
+    const pipelineResult = await runIntentPipeline(trimmed, "command_center");
     setLoading(false);
 
     switch (pipelineResult.outcome.type) {
