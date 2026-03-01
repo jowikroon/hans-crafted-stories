@@ -1,10 +1,16 @@
 import { useEffect } from "react";
 
+interface HreflangEntry {
+  lang: string;
+  href: string;
+}
+
 interface SEOConfig {
   title: string;
   description: string;
   url: string;
   type?: string;
+  hreflang?: HreflangEntry[];
   jsonLd?: Record<string, unknown>;
 }
 
@@ -20,7 +26,7 @@ const setMeta = (name: string, content: string, attr = "name") => {
   el.content = content;
 };
 
-export const useSEO = ({ title, description, url, type = "website", jsonLd }: SEOConfig) => {
+export const useSEO = ({ title, description, url, type = "website", hreflang, jsonLd }: SEOConfig) => {
   useEffect(() => {
     document.title = title;
     setMeta("description", description);
@@ -41,6 +47,20 @@ export const useSEO = ({ title, description, url, type = "website", jsonLd }: SE
     }
     canonical.href = url;
 
+    // Hreflang links
+    const hreflangClass = "seo-hreflang";
+    document.querySelectorAll(`.${hreflangClass}`).forEach((el) => el.remove());
+    if (hreflang) {
+      hreflang.forEach(({ lang, href }) => {
+        const link = document.createElement("link");
+        link.rel = "alternate";
+        link.hreflang = lang;
+        link.href = href;
+        link.className = hreflangClass;
+        document.head.appendChild(link);
+      });
+    }
+
     const ldId = "page-jsonld";
     if (jsonLd) {
       let ldScript = document.getElementById(ldId) as HTMLScriptElement | null;
@@ -56,6 +76,7 @@ export const useSEO = ({ title, description, url, type = "website", jsonLd }: SE
     return () => {
       document.title = DEFAULT_TITLE;
       document.getElementById(ldId)?.remove();
+      document.querySelectorAll(`.${hreflangClass}`).forEach((el) => el.remove());
     };
-  }, [title, description, url, type, jsonLd]);
+  }, [title, description, url, type, hreflang, jsonLd]);
 };

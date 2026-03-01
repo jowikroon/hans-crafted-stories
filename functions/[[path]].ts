@@ -45,6 +45,54 @@ const ROUTE_META: Record<string, RouteMetadata> = {
   },
 };
 
+// Route-specific JSON-LD structured data (injected via HTMLRewriter, replacing homepage schema)
+const ROUTE_JSONLD: Record<string, string> = {
+  "/about": JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ProfilePage",
+        "mainEntity": { "@id": "https://hansvanleeuwen.com/#person" },
+        "name": "About Hans van Leeuwen – E-commerce Manager",
+        "url": "https://hansvanleeuwen.com/about",
+        "isPartOf": { "@id": "https://hansvanleeuwen.com/#website" },
+      },
+      {
+        "@type": "Person",
+        "@id": "https://hansvanleeuwen.com/#person",
+        "name": "Hans van Leeuwen",
+        "url": "https://hansvanleeuwen.com/about",
+        "jobTitle": "Freelance E-commerce Manager",
+        "description": "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
+        "image": {
+          "@type": "ImageObject",
+          "url": "https://hansvanleeuwen.com/og-image.png",
+          "width": 1200,
+          "height": 630,
+          "caption": "Hans van Leeuwen – Freelance E-commerce Manager",
+        },
+        "knowsAbout": ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Conversion optimization", "Digital commerce", "SEO", "Amazon Ads", "Bol Ads"],
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Amersfoort",
+          "addressCountry": "NL",
+        },
+        "sameAs": [
+          "https://www.linkedin.com/in/hansvl3",
+          "https://www.behans.nl",
+        ],
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://hansvanleeuwen.com/" },
+          { "@type": "ListItem", "position": 2, "name": "About", "item": "https://hansvanleeuwen.com/about" },
+        ],
+      },
+    ],
+  }),
+};
+
 // HTMLRewriter element handlers
 
 class TitleHandler {
@@ -88,6 +136,22 @@ class CanonicalHandler {
   }
 }
 
+class JsonLdHandler {
+  private newContent: string;
+  private replaced = false;
+  constructor(content: string) {
+    this.newContent = content;
+  }
+  element(element: Element) {
+    if (this.replaced) return;
+    const type = element.getAttribute("type");
+    if (type === "application/ld+json") {
+      element.setInnerContent(this.newContent, { html: false });
+      this.replaced = true;
+    }
+  }
+}
+
 interface Env {
   ASSETS: { fetch: (request: Request) => Promise<Response> };
 }
@@ -116,7 +180,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const twitterDesc = meta.twitterDescription || meta.description;
 
   // Use HTMLRewriter for safe, streaming tag replacement
-  return new HTMLRewriter()
+  let rewriter = new HTMLRewriter()
     .on("title", new TitleHandler(meta.title))
     .on("meta[property='og:title']", new MetaHandler("property", "og:title", meta.title))
     .on("meta[property='og:description']", new MetaHandler("property", "og:description", meta.description))
@@ -124,6 +188,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     .on("meta[name='description']", new MetaHandler("name", "description", meta.description))
     .on("meta[name='twitter:title']", new MetaHandler("name", "twitter:title", meta.title))
     .on("meta[name='twitter:description']", new MetaHandler("name", "twitter:description", twitterDesc))
-    .on("link[rel='canonical']", new CanonicalHandler(canonicalUrl))
-    .transform(assetResponse);
+    .on("link[rel='canonical']", new CanonicalHandler(canonicalUrl));
+
+  // Replace homepage JSON-LD with route-specific schema if available
+  const routeJsonLd = ROUTE_JSONLD[path];
+  if (routeJsonLd) {
+    rewriter = rewriter.on("script[type='application/ld+json']", new JsonLdHandler(routeJsonLd));
+  }
+
+  return rewriter.transform(assetResponse);
 };
