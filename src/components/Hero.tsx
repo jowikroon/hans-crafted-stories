@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import FeaturedArticles from "@/components/FeaturedArticles";
 import HomeFAQ from "@/components/HomeFAQ";
+import ServiceDetails from "@/components/ServiceDetails";
 import { ArrowRight, ShoppingCart, BarChart3, Search, TrendingUp, MapPin } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
@@ -181,6 +182,9 @@ const Hero = () => {
           </Link>
         </motion.div>
       </section>
+
+      {/* Service Details — deliverables, engagement model, industries */}
+      <ServiceDetails />
 
       {/* FAQ Section — matches FAQPage schema for parity */}
       <HomeFAQ />
