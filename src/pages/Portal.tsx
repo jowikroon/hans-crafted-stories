@@ -255,7 +255,7 @@ const Portal = () => {
               <motion.div
                 key="command-center"
                 initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "80vh", opacity: 1 }}
+                animate={{ height: "70vh", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 className="mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card shadow-lg flex flex-col"
