@@ -2,9 +2,17 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
+import { Play, MessageSquare, PenTool, Megaphone } from "lucide-react";
 import CommandSidebar from "@/components/hansai/CommandSidebar";
 import { HierarchyControls, hierarchyStorage } from "@/components/command-center/HierarchyControls";
 import { HierarchyErrorBoundary, defaultHierarchyFallback } from "@/components/command-center/HierarchyErrorBoundary";
+import StatusStrip from "@/components/command-center/StatusStrip";
+import QuickActionCard from "@/components/command-center/QuickActionCard";
+import RecentActivityRow from "@/components/command-center/RecentActivityRow";
+import StatusDrawer from "@/components/command-center/StatusDrawer";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 import { WORKFLOWS, type WorkflowDef } from "@/lib/config/workflows";
 import { runIntentPipeline, logUnhandledIntent } from "@/lib/intent/pipeline";
 import type { HierarchyContext } from "@/lib/intent/types";
@@ -92,6 +100,10 @@ const HansAI = () => {
   const [clearFlash, setClearFlash] = useState(false);
   const [pendingClarification, setPendingClarification] = useState<WorkflowDef[] | null>(null);
   const [commandHistory, setCommandHistory] = useState<{ text: string; timestamp: number; type: "slash" | "ai" | "workflow" }[]>([]);
+  const [statusDrawerOpen, setStatusDrawerOpen] = useState(false);
+  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
+  const [hierarchyOpen, setHierarchyOpen] = useState(false);
+  const [terminalExpanded, setTerminalExpanded] = useState(false);
 
   // AI conversation history (not displayed, for context)
   const [aiMessages, setAiMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -537,153 +549,183 @@ const HansAI = () => {
   }
 
   // ── Render ──────────────────────────────────────────────────────
+  const focusTerminal = (prefill?: string) => {
+    if (prefill) setInput(prefill);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
   return (
-    <div className="relative flex h-screen overflow-hidden pt-[88px]" style={{ background: "#0a0a0a", fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
-      {/* Main terminal area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-      {/* JetBrains Mono font */}
+    <div className="relative flex h-screen flex-col overflow-hidden pt-[88px] bg-background" style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
       <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-      {/* ── Compact status bar + hierarchy (Laag 1–3) ──────────── */}
-      <div
-        className="shrink-0 border-b px-4 py-2"
-        style={{ borderColor: "#1e1e1e" }}
-      >
-        <div className="flex h-8 items-center justify-between">
-          <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest" style={{ color: "#00ff88", opacity: 0.5 }}>
-            Command Center
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-4xl space-y-5 px-4 py-5 sm:px-6">
+
+          {/* ── Status Strip ─────────────────────────────────── */}
+          <StatusStrip onOpenDrawer={() => setStatusDrawerOpen(true)} />
+
+          {/* ── Quick Actions (2×2) ──────────────────────────── */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <QuickActionCard icon={Play} label="Run Workflow" description="Trigger an n8n workflow" onClick={() => focusTerminal("/run ")} />
+            <QuickActionCard icon={MessageSquare} label="AI Chat" description="Ask anything" onClick={() => focusTerminal("/ai ")} />
+            <QuickActionCard icon={PenTool} label="Write Prompt" description="SEO, ads, email copy" onClick={() => { setShowForm("prompt"); addLine("system", "Opening prompt builder..."); }} />
+            <QuickActionCard icon={Megaphone} label="Campaign" description="Launch a campaign" onClick={() => { setShowForm("campaign"); addLine("system", "Opening campaign builder..."); }} />
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "#00ff88" }} />
-            <span style={{ color: "#00ff88", opacity: 0.5, fontSize: "10px" }}>Online</span>
-          </div>
-        </div>
-        <HierarchyErrorBoundary
-          fallbackContext={defaultHierarchyFallback}
-          onReset={() => setHierarchyContext(defaultHierarchyFallback)}
-        >
-          <HierarchyControls
-            value={hierarchyContext}
-            onChange={handleHierarchyChange}
-            lastValue={hierarchyLastValue}
-            onUndo={handleHierarchyUndo}
-            className="mt-2"
-          />
-        </HierarchyErrorBoundary>
-      </div>
 
-      {/* ── Terminal output ───────────────────────────────────── */}
-      <div
-        ref={scrollRef}
-        className={`flex-1 overflow-y-auto px-4 py-4 transition-all duration-150 ${clearFlash ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
-        style={{ scrollBehavior: "smooth" }}
-      >
-        <div className="mx-auto max-w-3xl space-y-1">
-          {lines.map((line) => (
-            <TerminalLineComponent key={line.id} line={line} tasks={tasks} onToggleTask={toggleTask} />
-          ))}
-
-          {/* Loading spinner */}
-          {loading && (
-            <div className="flex items-center gap-2 py-1 text-xs" style={{ color: "#00ff88", opacity: 0.6 }}>
-              <span className="w-3 text-center">{spinnerFrames[spinnerIdx]}</span>
-              <span>Processing...</span>
-            </div>
-          )}
-
-          {/* Clarification options */}
-          {pendingClarification && (
-            <div className="my-2 flex flex-wrap gap-2">
-              {pendingClarification.map((wf) => (
-                <button
-                  key={wf.name}
-                  onClick={() => handleClarificationSelect(wf)}
-                  className="rounded-md border px-3 py-1.5 text-xs font-medium transition-all hover:border-[#00ff88]/50 hover:bg-[#00ff88]/10"
-                  style={{ borderColor: "#1e1e1e", color: "#00ff88", background: "rgba(0,255,136,0.05)" }}
-                >
-                  {wf.label}
-                </button>
-              ))}
-              <button
-                onClick={() => handleClarificationSomethingElse(commandHistory[commandHistory.length - 1]?.text || "")}
-                className="rounded-md border px-3 py-1.5 text-xs transition-all hover:border-[#666] hover:bg-white/5"
-                style={{ borderColor: "#1e1e1e", color: "#666" }}
+          {/* ── Hierarchy Controls (collapsible) ─────────────── */}
+          <Collapsible open={hierarchyOpen} onOpenChange={setHierarchyOpen}>
+            <CollapsibleTrigger className="flex w-full items-center justify-between rounded-xl border border-border/30 bg-card/30 px-4 py-2.5 text-left transition-colors hover:bg-card/50">
+              <span className="text-xs font-medium text-muted-foreground">
+                Context: <span className="text-foreground">{hierarchyContext.primaryGoal.replace(/_/g, " ")}</span>
+              </span>
+              <ChevronDown size={14} className={`text-muted-foreground/50 transition-transform ${hierarchyOpen ? "rotate-180" : ""}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2">
+              <HierarchyErrorBoundary
+                fallbackContext={defaultHierarchyFallback}
+                onReset={() => setHierarchyContext(defaultHierarchyFallback)}
               >
-                Something else
+                <HierarchyControls
+                  value={hierarchyContext}
+                  onChange={handleHierarchyChange}
+                  lastValue={hierarchyLastValue}
+                  onUndo={handleHierarchyUndo}
+                />
+              </HierarchyErrorBoundary>
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* ── Terminal (compact, expandable) ────────────────── */}
+          <div className={`rounded-xl border border-border/30 bg-card/20 transition-all ${terminalExpanded ? "min-h-[70vh]" : "max-h-[40vh]"} flex flex-col overflow-hidden`}>
+            <div className="flex items-center justify-between border-b border-border/20 px-4 py-2">
+              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50">Terminal</span>
+              <button
+                onClick={() => setTerminalExpanded((v) => !v)}
+                className="text-[10px] font-medium text-primary/60 transition-colors hover:text-primary"
+              >
+                {terminalExpanded ? "Minimize" : "Expand"}
               </button>
             </div>
-          )}
 
-          {/* Inline forms */}
-          {showForm === "campaign" && (
-            <CampaignForm onSubmit={handleCampaignSubmit} onCancel={() => setShowForm(null)} />
-          )}
-          {showForm === "prompt" && (
-            <PromptForm onSubmit={handlePromptSubmit} onCancel={() => setShowForm(null)} />
-          )}
-        </div>
-      </div>
-
-      {/* ── Input bar ─────────────────────────────────────────── */}
-      <div className="shrink-0 px-4 pb-4 pt-2" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
-        <div className="mx-auto max-w-3xl">
-          {/* Autocomplete suggestions */}
-          {suggestions.length > 0 && (
-            <div className="mb-1 rounded-lg border p-1" style={{ background: "#111111", borderColor: "#1e1e1e" }}>
-              {suggestions.map((s, i) => (
-                <button
-                  key={s.cmd}
-                  onClick={() => { setInput(s.cmd + " "); setSuggestions([]); inputRef.current?.focus(); }}
-                  className={`flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left text-xs transition-colors ${
-                    i === selectedSuggestion ? "" : ""
-                  }`}
-                  style={{
-                    color: i === selectedSuggestion ? "#00ff88" : "#666",
-                    background: i === selectedSuggestion ? "rgba(0,255,136,0.08)" : "transparent",
-                  }}
-                >
-                  <span className="font-semibold" style={{ color: "#00ff88" }}>{s.cmd}</span>
-                  <span>{s.desc}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center gap-2 rounded-lg border px-3 py-2" style={{ background: "#111111", borderColor: "#1e1e1e" }}>
-            <span className="hidden text-xs sm:inline" style={{ color: "#00ff88", opacity: 0.5 }}>$</span>
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => handleInputChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a command or message..."
-              disabled={loading}
-              className="flex-1 bg-transparent text-sm outline-none placeholder:opacity-30"
-              style={{ color: "#e0e0e0", fontFamily: "inherit" }}
-            />
-            <button
-              onClick={handleSubmit}
-              disabled={!input.trim() || loading}
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all disabled:opacity-20"
-              style={{ background: "rgba(0,255,136,0.15)", color: "#00ff88" }}
+            {/* Terminal output */}
+            <div
+              ref={scrollRef}
+              className={`flex-1 overflow-y-auto px-4 py-3 transition-all duration-150 ${clearFlash ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </button>
+              <div className="space-y-1">
+                {lines.map((line) => (
+                  <TerminalLineComponent key={line.id} line={line} tasks={tasks} onToggleTask={toggleTask} />
+                ))}
+
+                {loading && (
+                  <div className="flex items-center gap-2 py-1 text-xs text-primary/60">
+                    <span className="w-3 text-center">{spinnerFrames[spinnerIdx]}</span>
+                    <span>Processing...</span>
+                  </div>
+                )}
+
+                {pendingClarification && (
+                  <div className="my-2 flex flex-wrap gap-2">
+                    {pendingClarification.map((wf) => (
+                      <button
+                        key={wf.name}
+                        onClick={() => handleClarificationSelect(wf)}
+                        className="rounded-md border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition-all hover:border-primary/50 hover:bg-primary/10"
+                      >
+                        {wf.label}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => handleClarificationSomethingElse(commandHistory[commandHistory.length - 1]?.text || "")}
+                      className="rounded-md border border-border/30 px-3 py-1.5 text-xs text-muted-foreground transition-all hover:border-border hover:bg-card/50"
+                    >
+                      Something else
+                    </button>
+                  </div>
+                )}
+
+                {showForm === "campaign" && (
+                  <CampaignForm onSubmit={handleCampaignSubmit} onCancel={() => setShowForm(null)} />
+                )}
+                {showForm === "prompt" && (
+                  <PromptForm onSubmit={handlePromptSubmit} onCancel={() => setShowForm(null)} />
+                )}
+              </div>
+            </div>
+
+            {/* Input bar */}
+            <div className="shrink-0 border-t border-border/20 px-4 py-2.5">
+              {suggestions.length > 0 && (
+                <div className="mb-1.5 rounded-lg border border-border/30 bg-card/60 p-1">
+                  {suggestions.map((s, i) => (
+                    <button
+                      key={s.cmd}
+                      onClick={() => { setInput(s.cmd + " "); setSuggestions([]); inputRef.current?.focus(); }}
+                      className={`flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left text-xs transition-colors ${
+                        i === selectedSuggestion ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                      }`}
+                    >
+                      <span className="font-semibold text-primary">{s.cmd}</span>
+                      <span>{s.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 rounded-lg border border-border/30 bg-card/40 px-3 py-2">
+                <span className="hidden text-xs text-primary/40 sm:inline">$</span>
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type a command or message..."
+                  disabled={loading}
+                  className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/30"
+                  style={{ fontFamily: "inherit" }}
+                />
+                <button
+                  onClick={handleSubmit}
+                  disabled={!input.trim() || loading}
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary transition-all disabled:opacity-20"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
+
+          {/* ── Recent Activity ───────────────────────────────── */}
+          <RecentActivityRow
+            commands={commandHistory}
+            onReplay={(cmd) => { setInput(cmd); inputRef.current?.focus(); }}
+            onViewAll={() => setHistoryDrawerOpen(true)}
+          />
         </div>
       </div>
-      </div>
 
-      {/* Command Sidebar */}
-      <CommandSidebar
-        commandHistory={commandHistory}
-        onReplayCommand={(cmd) => {
-          setInput(cmd);
-          inputRef.current?.focus();
-        }}
-      />
+      {/* ── Drawers ──────────────────────────────────────────── */}
+      <StatusDrawer open={statusDrawerOpen} onOpenChange={setStatusDrawerOpen} />
+
+      <Sheet open={historyDrawerOpen} onOpenChange={setHistoryDrawerOpen}>
+        <SheetContent side="right" className="w-[min(100vw-2rem,360px)] overflow-y-auto border-l border-border bg-background p-0">
+          <SheetHeader className="border-b border-border px-6 py-4">
+            <SheetTitle className="text-sm font-medium">Command History</SheetTitle>
+          </SheetHeader>
+          <div className="p-4">
+            <CommandSidebar
+              commandHistory={commandHistory}
+              onReplayCommand={(cmd) => {
+                setInput(cmd);
+                setHistoryDrawerOpen(false);
+                inputRef.current?.focus();
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
