@@ -1,7 +1,7 @@
-import { Database, Shield, Zap, Globe, Server } from "lucide-react";
+import { Server, X } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 
 type Status = "online" | "offline" | "checking";
 
@@ -27,6 +27,57 @@ const StatusDot = ({ status, latency }: { status: Status; latency?: number }) =>
   return <span className={`inline-block h-2.5 w-2.5 rounded-full ${color}`} />;
 };
 
+const latencyColor = (ms: number) =>
+  ms < 200 ? "hsl(160, 60%, 45%)" : ms < 500 ? "hsl(38, 92%, 50%)" : "hsl(0, 72%, 51%)";
+
+const LatencySparkChart = ({ resources }: { resources: Resource[] }) => {
+  const data = resources
+    .filter((r) => r.status === "online" && r.latency !== undefined)
+    .map((r) => ({ name: r.label, ms: r.latency! }));
+
+  if (data.length === 0) return null;
+
+  return (
+    <div className="rounded-2xl border border-border/40 bg-secondary/20 px-4 py-4">
+      <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground/70">
+        Response latency
+      </p>
+      <ResponsiveContainer width="100%" height={120}>
+        <BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+            tickLine={false}
+            axisLine={false}
+          />
+          <YAxis
+            tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+            tickLine={false}
+            axisLine={false}
+            unit="ms"
+            width={45}
+          />
+          <Tooltip
+            cursor={{ fill: "hsl(var(--muted) / 0.3)" }}
+            contentStyle={{
+              background: "hsl(var(--background))",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: 8,
+              fontSize: 11,
+            }}
+            formatter={(value: number) => [`${value}ms`, "Latency"]}
+          />
+          <Bar dataKey="ms" radius={[4, 4, 0, 0]} maxBarSize={32}>
+            {data.map((entry, i) => (
+              <Cell key={i} fill={latencyColor(entry.ms)} fillOpacity={0.8} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 const HealthDetailDrawer = ({ open, onClose, resources }: HealthDetailDrawerProps) => {
   return (
     <Drawer open={open} onOpenChange={(o) => !o && onClose()}>
@@ -40,7 +91,9 @@ const HealthDetailDrawer = ({ open, onClose, resources }: HealthDetailDrawerProp
             </Button>
           </DrawerClose>
         </DrawerHeader>
-        <div className="overflow-y-auto px-4 pb-6">
+        <div className="overflow-y-auto px-4 pb-6 space-y-4">
+          <LatencySparkChart resources={resources} />
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {resources.map((r) => {
               const Icon = r.icon;
