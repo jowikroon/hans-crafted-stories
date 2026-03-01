@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2, Download } from "lucide-react";
+import { CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2, Download, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,17 +22,51 @@ const ROUTES = [
   { path: "/wiki", name: "System Wiki", public: false, seo: false },
 ];
 
-const ISSUES = [
-  { severity: "critical", area: "Build", issue: "App.js chunk 1.25MB — needs code splitting", impact: "Slow initial load, poor Core Web Vitals", fix: "Dynamic imports for Portal, HansAI, Empire, Wiki pages" },
-  { severity: "critical", area: "SEO", issue: "SPA with client-side rendering only", impact: "Search engines may not index dynamic content", fix: "SSR/prerendering via Cloudflare Pages Functions or static injection" },
-  { severity: "high", area: "Router", issue: "3 of 20 e-commerce prompts failed initial routing", impact: "Users hitting AI fallback for valid workflow requests", fix: "Expanded keywords for scraper + autoseo (FIXED in this session)" },
-  { severity: "high", area: "Deploy", issue: "Gap between workflow design and deployment", impact: "n8n instances showing empty despite designs existing", fix: "Automated workflow import via n8n API on deploy" },
-  { severity: "medium", area: "UX", issue: "No CTA on homepage for backend dashboard", impact: "Visitors can't discover the Command Center", fix: "Add subtle 'Login' or 'Dashboard' entry point" },
-  { severity: "medium", area: "Perf", issue: "Logo PNG 1.4MB, profile JPG 716KB unoptimized", impact: "Slow hero section load", fix: "WebP conversion, responsive srcset, lazy loading" },
-  { severity: "medium", area: "Intent", issue: "LLM fallback uses Lovable gateway (external dependency)", impact: "Single point of failure for intent classification", fix: "Route through Ollama on VPS2 when deployed" },
-  { severity: "low", area: "Test", issue: "Only 51 tests — no integration or E2E coverage", impact: "Regressions in portal/auth/content flows", fix: "Add Playwright E2E for critical paths" },
-  { severity: "low", area: "DX", issue: "Both .cjs and .js versions of scripts maintained", impact: "Maintenance overhead", fix: "Consolidate to ESM-only with proper package.json type:module" },
-];
+/* ─── Live issues from DB ─── */
+
+interface SystemIssue {
+  id: string;
+  severity: string;
+  area: string;
+  issue: string;
+  impact: string;
+  fix: string;
+  is_resolved: boolean;
+  sort_order: number;
+}
+
+function useSystemIssues() {
+  const [issues, setIssues] = useState<SystemIssue[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchIssues = async () => {
+    try {
+      const { data, error } = await (supabase
+        .from("system_issues" as any)
+        .select("*")
+        .order("sort_order", { ascending: true }) as any);
+      if (!error && data) setIssues(data as SystemIssue[]);
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchIssues(); }, []);
+
+  const toggleResolved = async (id: string, current: boolean) => {
+    await (supabase.from("system_issues" as any).update({ is_resolved: !current } as any).eq("id", id) as any);
+    setIssues(prev => prev.map(i => i.id === id ? { ...i, is_resolved: !current } : i));
+  };
+
+  const deleteIssue = async (id: string) => {
+    await (supabase.from("system_issues" as any).delete().eq("id", id) as any);
+    setIssues(prev => prev.filter(i => i.id !== id));
+  };
+
+  return { issues, loading, toggleResolved, deleteIssue, refetch: fetchIssues };
+}
 
 /* ─── Derived from WORKFLOWS config ─── */
 
@@ -99,22 +133,25 @@ function useIntentData() {
   return { rows, loading };
 }
 
-/* ─── Computed stats ─── */
+/* ─── Helper ─── */
 
-const issueDistribution = ISSUES.reduce<Record<string, number>>((acc, i) => {
-  acc[i.severity] = (acc[i.severity] || 0) + 1;
-  return acc;
-}, {});
+function computeIssueDistribution(issues: SystemIssue[]) {
+  return issues.reduce<Record<string, number>>((acc, i) => {
+    acc[i.severity] = (acc[i.severity] || 0) + 1;
+    return acc;
+  }, {});
+}
 
 /* ─── Sub-panels ─── */
 
-const OverviewPanel = ({ intents, intentsLoading }: { intents: IntentRow[]; intentsLoading: boolean }) => {
+const OverviewPanel = ({ intents, intentsLoading, issues, issuesLoading }: { intents: IntentRow[]; intentsLoading: boolean; issues: SystemIssue[]; issuesLoading: boolean }) => {
   const resolvedCount = intents.filter((i) => i.resolved).length;
   const unresolvedCount = intents.filter((i) => !i.resolved).length;
   const withScore = intents.filter((i) => i.fast_route_score != null && i.fast_route_score > 0);
   const avgScore = withScore.length > 0
     ? withScore.reduce((a, i) => a + (i.fast_route_score || 0), 0) / withScore.length
     : 0;
+  const issueDistribution = computeIssueDistribution(issues);
 
   return (
     <div className="space-y-6">
@@ -151,14 +188,18 @@ const OverviewPanel = ({ intents, intentsLoading }: { intents: IntentRow[]; inte
       <Card className="border-border/60">
         <CardContent className="p-5">
           <h3 className="text-[11px] font-semibold uppercase tracking-widest text-emerald-400 mb-3">Issue Distribution</h3>
-          <div className="flex flex-wrap gap-4">
-            {(Object.entries(issueDistribution) as [string, number][]).map(([sev, count]) => (
-              <div key={sev} className="flex items-center gap-2">
-                <div className={`h-2 w-2 rounded-sm ${severityDotClasses[sev] || "bg-muted-foreground"}`} />
-                <span className="text-xs text-muted-foreground">{sev}: <strong className="text-foreground">{count}</strong></span>
-              </div>
-            ))}
-          </div>
+          {issuesLoading ? (
+            <span className="text-xs text-muted-foreground">Loading…</span>
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              {(Object.entries(issueDistribution) as [string, number][]).map(([sev, count]) => (
+                <div key={sev} className="flex items-center gap-2">
+                  <div className={`h-2 w-2 rounded-sm ${severityDotClasses[sev] || "bg-muted-foreground"}`} />
+                  <span className="text-xs text-muted-foreground">{sev}: <strong className="text-foreground">{count}</strong></span>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -278,18 +319,29 @@ const TestResultsPanel = ({ intents, loading }: { intents: IntentRow[]; loading:
   );
 };
 
-const IssuesPanel = () => {
-  const [expandedIssue, setExpandedIssue] = useState<number | null>(null);
+const IssuesPanel = ({ issues, loading, toggleResolved, deleteIssue }: { issues: SystemIssue[]; loading: boolean; toggleResolved: (id: string, current: boolean) => void; deleteIssue: (id: string) => void }) => {
+  const [expandedIssue, setExpandedIssue] = useState<string | null>(null);
+  const issueDistribution = computeIssueDistribution(issues);
   const summary = Object.entries(issueDistribution).map(([s, c]) => `${c} ${s}`).join(" · ");
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 size={20} className="animate-spin text-muted-foreground" />
+        <span className="ml-2 text-xs text-muted-foreground">Loading issues…</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <p className="text-[11px] text-muted-foreground">{ISSUES.length} issues identified · {summary}</p>
+      <p className="text-[11px] text-muted-foreground">{issues.length} issues · {summary}</p>
       <div className="space-y-2">
-        {ISSUES.map((issue, i) => (
+        {issues.map((issue) => (
           <Card
-            key={i}
-            className={`cursor-pointer border-border/60 transition-colors ${expandedIssue === i ? "border-border" : "hover:border-border/80"}`}
-            onClick={() => setExpandedIssue(expandedIssue === i ? null : i)}
+            key={issue.id}
+            className={`cursor-pointer border-border/60 transition-colors ${issue.is_resolved ? "opacity-50" : ""} ${expandedIssue === issue.id ? "border-border" : "hover:border-border/80"}`}
+            onClick={() => setExpandedIssue(expandedIssue === issue.id ? null : issue.id)}
           >
             <CardContent className="p-3.5">
               <div className="flex items-center gap-2.5">
@@ -297,10 +349,24 @@ const IssuesPanel = () => {
                   {issue.severity}
                 </span>
                 <span className="text-[10px] font-semibold text-muted-foreground">[{issue.area}]</span>
-                <span className="flex-1 text-xs text-foreground/80">{issue.issue}</span>
-                {expandedIssue === i ? <ChevronUp size={14} className="text-muted-foreground/40" /> : <ChevronDown size={14} className="text-muted-foreground/40" />}
+                <span className={`flex-1 text-xs text-foreground/80 ${issue.is_resolved ? "line-through" : ""}`}>{issue.issue}</span>
+                <button
+                  className="p-1 rounded hover:bg-secondary transition-colors"
+                  title={issue.is_resolved ? "Mark open" : "Mark resolved"}
+                  onClick={(e) => { e.stopPropagation(); toggleResolved(issue.id, issue.is_resolved); }}
+                >
+                  <Check size={13} className={issue.is_resolved ? "text-emerald-400" : "text-muted-foreground/40"} />
+                </button>
+                <button
+                  className="p-1 rounded hover:bg-destructive/20 transition-colors"
+                  title="Delete issue"
+                  onClick={(e) => { e.stopPropagation(); deleteIssue(issue.id); }}
+                >
+                  <Trash2 size={13} className="text-muted-foreground/40 hover:text-destructive" />
+                </button>
+                {expandedIssue === issue.id ? <ChevronUp size={14} className="text-muted-foreground/40" /> : <ChevronDown size={14} className="text-muted-foreground/40" />}
               </div>
-              {expandedIssue === i && (
+              {expandedIssue === issue.id && (
                 <div className="mt-3 space-y-1.5 border-t border-border/40 pt-3">
                   <p className="text-xs"><span className="text-[10px] uppercase text-muted-foreground/60">Impact: </span><span className="text-muted-foreground">{issue.impact}</span></p>
                   <p className="text-xs"><span className="text-[10px] uppercase text-muted-foreground/60">Fix: </span><span className="text-emerald-400">{issue.fix}</span></p>
@@ -385,14 +451,15 @@ const ArchitecturePanel = () => (
 
 const AnalysisDashboard = ({ subFilter }: { subFilter: string }) => {
   const { rows: intents, loading: intentsLoading } = useIntentData();
+  const { issues, loading: issuesLoading, toggleResolved, deleteIssue } = useSystemIssues();
   const normalized = subFilter.toLowerCase().replace(/\s+/g, "-");
 
   switch (normalized) {
-    case "overview": return <OverviewPanel intents={intents} intentsLoading={intentsLoading} />;
+    case "overview": return <OverviewPanel intents={intents} intentsLoading={intentsLoading} issues={issues} issuesLoading={issuesLoading} />;
     case "test-results": return <TestResultsPanel intents={intents} loading={intentsLoading} />;
-    case "issues": return <IssuesPanel />;
+    case "issues": return <IssuesPanel issues={issues} loading={issuesLoading} toggleResolved={toggleResolved} deleteIssue={deleteIssue} />;
     case "architecture": return <ArchitecturePanel />;
-    default: return <OverviewPanel intents={intents} intentsLoading={intentsLoading} />;
+    default: return <OverviewPanel intents={intents} intentsLoading={intentsLoading} issues={issues} issuesLoading={issuesLoading} />;
   }
 };
 
