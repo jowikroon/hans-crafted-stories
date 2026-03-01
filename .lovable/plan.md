@@ -1,95 +1,83 @@
 
 
-# SEO Quick Wins Implementation
+# On-Page SEO Audit Fix Plan for /about (and site-wide improvements)
 
-Based on the audit, here are the fast, high-impact changes we can make within the current codebase.
-
----
-
-## 1. Host OG/social image on the same domain
-
-**Problem**: `og:image` and `twitter:image` point to `storage.googleapis.com`, reducing brand control.
-
-**Fix**: Copy the social image to `public/og-image.png` (already exists) and update all references in `index.html` and `functions/[[path]].ts` to use `https://hansvanleeuwen.com/og-image.png`.
-
-Files: `index.html` (lines 29, 41, 56, 75)
+This plan addresses the findings from the SEO audit, prioritized by impact. Some fixes are /about-specific; others are site-wide and benefit all pages.
 
 ---
 
-## 2. Fix `og:locale` from `en_US` to `en_GB`
+## 1. Critical Fixes
 
-**Problem**: `og:locale` is `en_US` but primary audience is Netherlands/EU.
+### 1a. Reduce noscript duplication risk
+**Problem:** The `<noscript>` block in `index.html` contains full homepage content. The `inject-static-content.cjs` script also injects similar content into `<div id="root">` post-build. Google may see duplicate headings/sections.
 
-**Fix**: Change `og:locale` from `en_US` to `en_GB` in `index.html` (line 33). This is the closest standard OG locale for international English targeting EU.
+**Fix:**
+- Remove the `inject-static-content.cjs` post-build injection entirely (or reduce it to nav + single CTA). The `<noscript>` block already provides crawlable fallback.
+- Trim the `<noscript>` block to essentials: navigation, H1, one paragraph, key CTAs, and FAQ (no repeated service blocks that duplicate the rendered DOM).
 
----
+### 1b. Add /about-specific structured data via Cloudflare edge function
+**Problem:** The /about page injects a `ProfilePage` JSON-LD via `useSEO`, but this only works after JS renders. Crawlers hitting the raw HTML see only the homepage schema.
 
-## 3. Shorten the page title
+**Fix:** Extend `functions/[[path]].ts` to inject /about-specific JSON-LD (ProfilePage + BreadcrumbList for Home > About) using `HTMLRewriter`, replacing the homepage schema for /about requests.
 
-**Problem**: Title is 80+ chars, risks SERP truncation.
+### 1c. Fix the Lovable badge outbound link
+**Problem:** Third-party badge injects DOM + outbound link.
 
-**Fix**: Change title across `index.html`, translations, and the `useSEO` default to:
-`Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen`
-
-Files: `index.html` (line 18, 27, 39, 62), `src/hooks/useSEO.ts` (DEFAULT_TITLE), `src/data/translations.ts` (seo.homeTitle)
-
----
-
-## 4. Make FAQ answers visible by default (no accordion hide)
-
-**Problem**: FAQ answers are hidden behind an accordion click, which Google may not index as FAQ rich results.
-
-**Fix**: In `HomeFAQ.tsx`, render all answers expanded by default (remove the toggle-to-show behavior). Keep the accordion interaction for UX but default `openIndex` to show all, or simply always render `<dd>` content visibly. The simplest approach: remove the conditional `{isOpen && ...}` wrapper so answers are always in the DOM (use CSS `max-height` transition for the expand/collapse animation instead).
-
-File: `src/components/HomeFAQ.tsx`
+**Fix:** This badge is injected by the Lovable platform and cannot be removed from code. It is only present in preview/development builds and is not included in production deployments to custom domains. No action needed if publishing to hansvanleeuwen.com.
 
 ---
 
-## 5. Fix BreadcrumbList schema (homepage should only have "Home")
+## 2. Quick Wins
 
-**Problem**: The homepage BreadcrumbList includes all sections (Home, Work, Writing, About), which is incorrect -- breadcrumbs should reflect the current page's hierarchy position.
+### 2a. Add missing meta tags to index.html
+Add to `<head>`:
+```html
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<meta name="format-detection" content="telephone=no" />
+```
 
-**Fix**: In `index.html`, reduce the BreadcrumbList to only one item (`Home`). Per-page breadcrumb schemas are already handled by the `useSEO` hook's `jsonLd` prop on inner pages.
+### 2b. Update inject-static-content.cjs H1 to match rendered H1
+**Problem:** The injected static H1 says "Driving marketplace growth through strategy & design" while the rendered H1 is "Freelance E-commerce Manager -- strategy, growth & design". These should match.
 
-File: `index.html` (lines 87-114)
+**Fix:** Update the static content script's H1 to mirror the rendered keyword-rich version.
 
----
+### 2c. About page -- add Person schema with ImageObject
+**Problem:** The /about page's `useSEO` only outputs a simple `ProfilePage` schema. It should include a richer Person entity with `ImageObject` for the profile photo.
 
-## 6. Add keyword-rich contextual internal links in Hero body copy
+**Fix:** Expand the `useSEO` call in `About.tsx` to include a `@graph` with `Person` (image, jobTitle, worksFor, knowsAbout, address, sameAs) and `ImageObject` for the profile photo, plus the existing BreadcrumbList.
 
-**Problem**: Internal links only appear in nav/CTAs with generic anchors.
-
-**Fix**: In the Hero description paragraph and expertise cards, add contextual links like:
-- "Amazon marketplace case studies" linking to `/work`
-- "e-commerce insights" linking to `/writing`
-
-This means adding `<Link>` elements inside the Hero description or adding a new short paragraph with varied anchor text after the main description.
-
-File: `src/components/Hero.tsx`
-
----
-
-## 7. Add CRO/jargon definitions on first use
-
-**Problem**: Terms like CRO and UX appear without explanation.
-
-**Fix**: In the expertise card descriptions (via translations), expand first occurrences:
-- "conversion rate optimization (CRO)" instead of just "CRO"
-- "user experience (UX)" instead of just "UX"
-
-File: `src/data/translations.ts` (expertise descriptions)
+### 2d. Ensure OG image is PNG (not WebP)
+**Current:** `og-image.png` -- already PNG. No change needed. The audit flagged .webp as a risk, but the current implementation is correct.
 
 ---
 
-## Summary of files to change
+## 3. Opportunities
 
-| File | Changes |
-|------|---------|
-| `index.html` | OG image URLs, og:locale, title, BreadcrumbList |
-| `src/hooks/useSEO.ts` | Shorter DEFAULT_TITLE |
-| `src/data/translations.ts` | Shorter homeTitle, jargon definitions in expertise |
-| `src/components/HomeFAQ.tsx` | Always-visible FAQ answers |
-| `src/components/Hero.tsx` | Contextual internal links with keyword anchors |
-| `functions/[[path]].ts` | No changes needed (inner pages only) |
-| `scripts/inject-static-content.cjs` | Update title to match shortened version |
+### 3a. Add hreflang for NL/EN language variants
+**Problem:** The site supports NL/EN but has no hreflang tags.
+
+**Fix:** Add `<link rel="alternate" hreflang="en" href="..." />` and `<link rel="alternate" hreflang="nl" href="..." />` in `useSEO` hook dynamically, or statically in `index.html` with the Cloudflare function swapping URLs per route.
+
+### 3b. Improve Footer with internal links for topical clustering
+**Problem:** Footer only has LinkedIn, BeHans.nl, and Privacy. Missing internal nav links.
+
+**Fix:** Add Work, Writing, About links to Footer for stronger internal linking across all pages.
+
+### 3c. Add /about noscript fallback
+**Problem:** When crawlers hit /about without JS, they see the homepage noscript content (since it's an SPA with a single index.html).
+
+**Fix:** This is already handled by the Cloudflare edge function which rewrites meta tags for /about. For deeper crawlability, the edge function could also inject an /about-specific `<noscript>` block, but this is lower priority since Google typically renders JS.
+
+---
+
+## Technical Summary of File Changes
+
+| File | Change |
+|------|--------|
+| `index.html` | Add referrer + format-detection meta tags; trim noscript to essentials |
+| `scripts/inject-static-content.cjs` | Update H1 to match rendered version, or remove script entirely |
+| `src/pages/About.tsx` | Expand `useSEO` JSON-LD to include rich Person + ImageObject schema |
+| `functions/[[path]].ts` | Add /about JSON-LD injection via HTMLRewriter |
+| `src/components/Footer.tsx` | Add internal navigation links (Work, Writing, About) |
+| `src/hooks/useSEO.ts` | Add hreflang link injection support |
 
