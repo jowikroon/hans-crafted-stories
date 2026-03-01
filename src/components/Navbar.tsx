@@ -19,7 +19,6 @@ const getLinks = (lang: Lang) => {
     { to: "/work", label: t.work },
     { to: "/writing", label: t.writing },
     { to: "/about", label: t.about },
-    { to: "/hansai", label: t.commandCenter },
   ];
 };
 
@@ -51,7 +50,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const { isAdmin } = useAdmin();
   const t = translations[lang].nav;
   const allLinks = getLinks(lang);
-  const links = allLinks;
+  const links = user ? [...allLinks, { to: "/hansai", label: t.commandCenter }] : allLinks;
 
   // Global theme state — default light; Portal forces dark via its own effect
   const [siteTheme, setSiteTheme] = useState<"light" | "dark">(() => {
@@ -259,7 +258,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         <div className={`h-px ${isDark ? "bg-emerald-500/8" : "bg-border/50"}`} />
 
         {/* ─── ROW 2: Command Center link (desktop) — always visible ─── */}
-        {(
+        {user && (
           <div className="mx-auto max-w-6xl px-6 hidden md:block">
             <div className="flex items-center justify-end h-8">
               <div className="flex items-center gap-1.5">
@@ -302,10 +301,12 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   <LogIn size={14} />
                   {user ? t.portal : t.login}
                 </Link>
-                <button onClick={() => { setMobileOpen(false); navigate("/hansai"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
-                  <Command size={14} />
-                  Command Center
-                </button>
+                {user && (
+                  <button onClick={() => { setMobileOpen(false); navigate("/hansai"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
+                    <Command size={14} />
+                    Command Center
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
