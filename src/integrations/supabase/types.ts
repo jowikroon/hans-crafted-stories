@@ -431,6 +431,45 @@ export type Database = {
         }
         Relationships: []
       }
+      system_issues: {
+        Row: {
+          area: string
+          created_at: string
+          fix: string
+          id: string
+          impact: string
+          is_resolved: boolean
+          issue: string
+          severity: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          area?: string
+          created_at?: string
+          fix?: string
+          id?: string
+          impact?: string
+          is_resolved?: boolean
+          issue?: string
+          severity?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          created_at?: string
+          fix?: string
+          id?: string
+          impact?: string
+          is_resolved?: boolean
+          issue?: string
+          severity?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tool_attributes: {
         Row: {
           created_at: string
