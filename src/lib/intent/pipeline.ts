@@ -8,7 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { fastRoute } from "@/lib/intent/router";
 import { WORKFLOWS, type WorkflowDef } from "@/lib/config/workflows";
 
-const INTENT_ROUTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/intent-router`;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? "";
+const INTENT_ROUTER_URL = `${SUPABASE_URL}/functions/v1/intent-router`;
+const TRIGGER_WEBHOOK_URL = `${SUPABASE_URL}/functions/v1/trigger-webhook`;
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -75,7 +77,9 @@ export async function logUnhandledIntent(
 }
 
 /**
- * Trigger an n8n workflow (or google-agent) by direct webhook POST.
+ * Trigger an n8n workflow (or google-agent).
+ * - n8n webhooks: routed via Supabase trigger-webhook to avoid CORS (browser → Supabase → n8n).
+ * - Supabase-owned URLs (e.g. google-agent): called directly from the browser.
  * Optional extraPayload is merged into the body (e.g. { message } for google-agent).
  */
 export async function triggerWorkflow(
@@ -83,20 +87,57 @@ export async function triggerWorkflow(
   source: string = "command_center",
   extraPayload?: Record<string, unknown>,
 ): Promise<{ ok: boolean; data: unknown; error?: string }> {
+  const body = { source, timestamp: new Date().toISOString(), ...extraPayload };
+  const isSupabaseWebhook = SUPABASE_URL && wf.webhook.startsWith(SUPABASE_URL);
+
+  if (isSupabaseWebhook) {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const res = await fetch(wf.webhook, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
+      });
+      const text = await res.text();
+      let data: unknown;
+      try { data = JSON.parse(text); } catch { data = text; }
+      if (!res.ok) {
+        const err = data && typeof data === "object" && "error" in data ? (data as { error: string }).error : text || `HTTP ${res.status}`;
+        return { ok: false, data: null, error: err };
+      }
+      return { ok: true, data };
+    } catch (err) {
+      return { ok: false, data: null, error: err instanceof Error ? err.message : "Unknown error" };
+    }
+  }
+
   try {
-    const body = { source, timestamp: new Date().toISOString(), ...extraPayload };
-    const res = await fetch(wf.webhook, {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    if (!token) {
+      return { ok: false, data: null, error: "Not signed in — workflow triggers require authentication" };
+    }
+    const res = await fetch(TRIGGER_WEBHOOK_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ webhook_url: wf.webhook, payload: body }),
     });
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const text = await res.text();
-    let data: unknown;
-    try { data = JSON.parse(text); } catch { data = text; }
-    return { ok: true, data };
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { ok: false, data: null, error: (json as { error?: string }).error || res.statusText || "Request failed" };
+    }
+    if ((json as { ok?: boolean }).ok !== true) {
+      return { ok: false, data: null, error: (json as { error?: string }).error || "Webhook trigger failed" };
+    }
+    const runId = (json as { run_id?: string }).run_id;
+    return { ok: true, data: runId ? { run_id: runId, message: "Workflow started. Check workflow runs for status." } : json };
   } catch (err) {
     return { ok: false, data: null, error: err instanceof Error ? err.message : "Unknown error" };
   }
