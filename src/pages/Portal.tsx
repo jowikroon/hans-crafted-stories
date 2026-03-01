@@ -29,7 +29,7 @@ const subMenuItems: Record<Tab, string[]> = {
   content: ["All", "Blog Posts", "Case Studies", "Main Menu"],
   pages: ["All", "Published", "Hidden"],
   users: ["All", "Admins", "Members"],
-  status: ["All", "Healthy", "Issues", "Tracking"],
+  status: ["All", "Overview", "Test Results", "Issues", "Architecture"],
 };
 
 const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [

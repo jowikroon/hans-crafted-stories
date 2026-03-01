@@ -8,6 +8,7 @@ import HealthDetailDrawer from "./status/HealthDetailDrawer";
 import ConnectorDetailDrawer from "./status/ConnectorDetailDrawer";
 import MondayDetailDrawer from "./status/MondayDetailDrawer";
 import IntentsDetailDrawer from "./status/IntentsDetailDrawer";
+import AnalysisDashboard from "./status/AnalysisDashboard";
 import TrackingScriptsManager from "./TrackingScriptsManager";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
@@ -115,19 +116,15 @@ const PortalStatusTab = ({ subFilter }: { subFilter?: string }) => {
     { key: "tracking", icon: Code, title: "Tracking Scripts", summary: "Manage scripts", level: "ok" as StatusLevel },
   ];
 
-  const filteredCards = !subFilter || subFilter === "all"
-    ? cards
-    : subFilter === "healthy"
-      ? cards.filter((c) => c.level === "ok")
-      : subFilter === "issues"
-        ? cards.filter((c) => c.level === "warning" || c.level === "critical")
-        : subFilter === "tracking"
-          ? cards.filter((c) => c.key === "tracking")
-          : cards;
+  const analysisFilters = ["overview", "test results", "issues", "architecture"];
+  const isAnalysis = analysisFilters.includes((subFilter || "").toLowerCase());
 
-  useEffect(() => {
-    if (subFilter === "tracking") setOpenDrawer("tracking");
-  }, [subFilter]);
+  if (isAnalysis) {
+    return <AnalysisDashboard subFilter={subFilter || "overview"} />;
+  }
+
+  // "All" or fallback — show existing status cards
+  const filteredCards = cards;
 
   const overallLevel: StatusLevel = checking ? "checking" : healthLevel === "critical" || connectorLevel === "critical" ? "critical" : healthLevel === "warning" || connectorLevel === "warning" || mondayLevel === "warning" || intentsLevel === "warning" ? "warning" : "ok";
 
