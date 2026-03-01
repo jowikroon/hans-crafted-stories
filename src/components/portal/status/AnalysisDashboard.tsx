@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { WORKFLOWS, type WorkflowDef } from "@/lib/config/workflows";
@@ -182,11 +183,39 @@ const TestResultsPanel = ({ intents, loading }: { intents: IntentRow[]; loading:
 
   const resolvedCount = intents.filter(i => i.resolved).length;
 
+  const exportCSV = () => {
+    const headers = ["#", "User Input", "Source", "Route Score", "LLM Intent", "Resolved Workflow", "Status", "Created At"];
+    const csvRows = [headers.join(",")];
+    intents.forEach((intent, i) => {
+      const row = [
+        i + 1,
+        `"${(intent.user_input || "").replace(/"/g, '""')}"`,
+        intent.source,
+        ((intent.fast_route_score ?? 0) * 100).toFixed(0) + "%",
+        intent.llm_intent || "",
+        intent.resolved_workflow || "",
+        intent.resolved ? "resolved" : "open",
+        intent.created_at,
+      ];
+      csvRows.push(row.join(","));
+    });
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `intent-results-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+  };
+
   return (
     <div className="space-y-4">
-      <p className="text-[11px] text-muted-foreground">
-        {intents.length} intent routing attempts · {resolvedCount} resolved · Live data from database
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-muted-foreground">
+          {intents.length} intent routing attempts · {resolvedCount} resolved · Live data from database
+        </p>
+        <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1.5 text-xs">
+          <Download size={13} /> Export CSV
+        </Button>
+      </div>
       <div className="overflow-x-auto rounded-lg border border-border/60">
         <table className="w-full text-xs">
           <thead>
