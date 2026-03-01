@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, Sparkles, Shuffle, ChevronDown, ChevronRight, History, X, CheckCircle2, Circle, Clock, Cpu, Bot, Zap, Wrench, Search, BarChart3, Command, GitBranch, Settings2, Link2 } from "lucide-react";
+import { Send, Loader2, Sparkles, Shuffle, ChevronDown, ChevronRight, History, X, CheckCircle2, Circle, Clock, Cpu, Bot, Zap, Wrench, Search, BarChart3, Command, GitBranch, Settings2, Link2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,7 @@ import type { WorkflowDef } from "@/lib/config/workflows";
 import type { LucideIcon } from "lucide-react";
 
 interface Message {
-  role: "user" | "assistant" | "system" | "workflow";
+  role: "user" | "assistant" | "system" | "workflow" | "error";
   content: string;
   timestamp?: number;
 }
@@ -402,7 +402,7 @@ const UnifiedChatPanel = () => {
           : `✓ **${wf.label}** completed${result.data ? `\n\n${String(result.data)}` : ""}`;
       appendMessage({ role: "workflow", content: reply });
     } else {
-      appendMessage({ role: "workflow", content: `✗ **${wf.label}** failed — ${result.error}` });
+      appendMessage({ role: "error", content: `**${wf.label}** failed: ${result.error}` });
     }
 
     setPipelineStage("done");
@@ -452,7 +452,7 @@ const UnifiedChatPanel = () => {
 
       if (!res.ok) {
         const errMsg = data?.error || (data as { message?: string }).message || `Request failed (${res.status})`;
-        appendMessage({ role: "assistant", content: errMsg });
+        appendMessage({ role: "error", content: `Request failed: ${errMsg}` });
         setPipelineStage("error");
         setTimeout(() => setPipelineStage("idle"), 3000);
         return;
@@ -484,7 +484,7 @@ const UnifiedChatPanel = () => {
           });
         } else if (!createResult.success && createResult.error) {
           finalMessages.push({
-            role: "system",
+            role: "error",
             content: `Could not create workflow in n8n: ${createResult.error}`,
             timestamp: Date.now(),
           });
@@ -497,7 +497,7 @@ const UnifiedChatPanel = () => {
       setTimeout(() => setPipelineStage("idle"), 2000);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
-      appendMessage({ role: "assistant", content: msg.includes("fetch") || msg.includes("Network") ? "Connection error. Check your network and try again." : msg });
+      appendMessage({ role: "error", content: msg.includes("fetch") || msg.includes("Network") ? "Connection error. Check your network and try again." : msg });
       setPipelineStage("error");
       setTimeout(() => setPipelineStage("idle"), 3000);
     } finally {
@@ -577,13 +577,18 @@ const UnifiedChatPanel = () => {
 
   const handleModelResume = async (reply: string) => {
     if (!modelChoicePending) return;
-    const replyMsg: Message = { role: "assistant", content: reply || "No response.", timestamp: Date.now() };
+    const isErrorReply = reply.startsWith("Fallback failed") || reply.startsWith("Connection error");
+    const replyMsg: Message = {
+      role: isErrorReply ? "error" : "assistant",
+      content: isErrorReply ? reply : (reply || "No response."),
+      timestamp: Date.now(),
+    };
     let finalMessages: Message[] = [...messages, replyMsg];
 
     const workflowJson = extractWorkflowJsonFromMarkdown(reply || "");
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
-    if (workflowJson && token) {
+    if (!isErrorReply && workflowJson && token) {
       const createResult = await createWorkflowInN8n(workflowJson, token);
       if (createResult.success && createResult.url) {
         finalMessages.push({
@@ -593,7 +598,7 @@ const UnifiedChatPanel = () => {
         });
       } else if (!createResult.success && createResult.error) {
         finalMessages.push({
-          role: "system",
+          role: "error",
           content: `Could not create workflow in n8n: ${createResult.error}`,
           timestamp: Date.now(),
         });
@@ -996,6 +1001,19 @@ const UnifiedChatPanel = () => {
                       <Zap size={10} className="text-emerald-400" />
                     </div>
                     <div className="max-w-[85%] rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs leading-relaxed text-foreground">
+                      {renderContent(msg.content)}
+                    </div>
+                  </div>
+                );
+              }
+              if (msg.role === "error") {
+                return (
+                  <div key={i} className="flex gap-2">
+                    <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-500/10">
+                      <AlertCircle size={10} className="text-red-400" />
+                    </div>
+                    <div className="max-w-[85%] rounded-xl border border-red-500/30 bg-red-500/5 px-3 py-2 text-xs leading-relaxed text-red-200">
+                      <span className="mr-1.5 font-semibold text-red-400">Error</span>
                       {renderContent(msg.content)}
                     </div>
                   </div>
