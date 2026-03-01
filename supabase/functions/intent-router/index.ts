@@ -35,7 +35,7 @@ serve(async (req) => {
   }
 
   try {
-    const { input, context } = await req.json();
+    const { input, context, router_context } = await req.json();
 
     if (!input || typeof input !== "string") {
       return new Response(
@@ -43,6 +43,13 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    const hierarchyHint =
+      router_context &&
+      typeof router_context === "object" &&
+      (router_context.primaryGoal != null || router_context.activeTabs?.length || router_context.subTools?.length)
+        ? `\nCommand Center context: primaryGoal=${router_context.primaryGoal ?? "none"}, activeTabs=[${(router_context.activeTabs ?? []).join(", ")}], subTools=[${(router_context.subTools ?? []).join(", ")}]. Prefer intents that match this context when relevant.`
+        : "";
 
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
@@ -52,14 +59,11 @@ serve(async (req) => {
       );
     }
 
+    const userContent = [context ? `Context: ${context}` : "", hierarchyHint ? `Hierarchy: ${hierarchyHint}` : "", `User input: "${input}"`].filter(Boolean).join("\n\n");
+
     const messages = [
       { role: "system", content: SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: context
-          ? `Context: ${context}\n\nUser input: "${input}"`
-          : `User input: "${input}"`,
-      },
+      { role: "user", content: userContent },
     ];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

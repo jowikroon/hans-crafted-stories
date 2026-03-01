@@ -22,7 +22,14 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, model } = await req.json();
+    const { messages, model, router_context } = await req.json();
+
+    const hierarchyHint =
+      router_context &&
+      typeof router_context === "object" &&
+      (router_context.primaryGoal != null || router_context.activeTabs?.length || router_context.subTools?.length)
+        ? `\n\nCommand Center focus: primaryGoal=${router_context.primaryGoal ?? "none"}, tabs=[${(router_context.activeTabs ?? []).join(", ")}], subTools=[${(router_context.subTools ?? []).join(", ")}]. When relevant, tailor answers to this context (e.g. SEO, n8n, campaigns, system health).`
+        : "";
 
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
@@ -34,6 +41,8 @@ serve(async (req) => {
 
     const selectedModel = model || "google/gemini-3-flash-preview";
 
+    const systemContent = SYSTEM_PROMPT + hierarchyHint;
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -43,7 +52,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: selectedModel,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemContent },
           ...messages,
         ],
         stream: true,
