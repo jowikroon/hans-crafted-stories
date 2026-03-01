@@ -43,12 +43,11 @@ assert("At least 3 variables", result.manifest && result.manifest.variables.leng
 // Test 5: At least 5 secrets
 assert("At least 5 secrets", result.manifest && result.manifest.secrets.length >= 5);
 
-// Test 6: All secrets have valid source
+// Test 6: All secrets have valid source (ENV | VAULT_REF | N8N_CRED)
 if (result.manifest) {
-  const allValid = result.manifest.secrets.every((s) =>
-    ["ENV", "VAULT", "N8N_CRED"].includes(s.source)
-  );
-  assert("All secrets have valid source (ENV/VAULT/N8N_CRED)", allValid);
+  const allowed = ["ENV", "VAULT_REF", "N8N_CRED", "VAULT"];
+  const allValid = result.manifest.secrets.every((s) => allowed.includes(s.source));
+  assert("All secrets have valid source (ENV/VAULT_REF/N8N_CRED)", allValid);
 }
 
 // Test 7: Required secrets present
@@ -62,7 +61,15 @@ if (result.manifest) {
 // Test 8: At least 3 workflows
 assert("At least 3 workflows", result.manifest && result.manifest.workflows.length >= 3);
 
-// Test 9: Non-existent file returns invalid
+// Test 9: Policy section present and valid
+assert("Has policy section", result.manifest && result.manifest.policy);
+assert("Policy has redaction_patterns", result.manifest?.policy?.redaction_patterns?.length > 0);
+assert("Policy has allowed_sources", result.manifest?.policy?.allowed_sources?.length > 0);
+assert("Policy has forbidden_patterns", result.manifest?.policy?.forbidden_patterns?.length > 0);
+assert("Policy allowed_sources includes ENV", result.manifest?.policy?.allowed_sources?.includes("ENV"));
+assert("Policy forbidden_patterns includes 'Bearer '", result.manifest?.policy?.forbidden_patterns?.some((p) => p.includes("Bearer")));
+
+// Test 10: Non-existent file returns invalid
 const badResult = validate("/tmp/does-not-exist-12345.yml");
 assert("Non-existent file returns invalid", badResult.valid === false);
 assert("Error mentions 'File not found'", badResult.errors[0] && badResult.errors[0].includes("File not found"));

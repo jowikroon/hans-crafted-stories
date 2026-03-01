@@ -19,7 +19,8 @@
     "test:secrets-unit": "node n8n/scripts/validate-manifest.test.cjs",
     "test:secrets-integration": "node scripts/test-secrets-integration.cjs",
     "vault:start": "node vault-adapter/index.cjs",
-    "vaultctl": "node vault-adapter/cli.cjs"
+    "vaultctl": "node vault-adapter/cli.cjs",
+    "supabase:types": "supabase gen types typescript --project-id oejeojzaakfhculcoqdh > src/integrations/supabase/types.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

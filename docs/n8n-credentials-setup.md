@@ -89,6 +89,7 @@ Copy values from `config/all-credentials.export.env` (or your Supabase / Cloudfl
 | **Monday.com** | Monday.com API | Prod - Monday.com | **API Token:** (secret) | `MONDAY_API_TOKEN` |
 | **Firecrawl (optional)** | HTTP Header Auth or Custom | Prod - Firecrawl | **Header:** `Authorization`<br>**Value:** `Bearer <key>` | `FIRECRAWL_API_KEY` |
 | **Lovable / AI (optional)** | Not used in n8n | — | — | `LOVABLE_API_KEY` used by Supabase Edge (hansai-chat, n8n-agent, intent-router), not by n8n nodes |
+| **Gemini (optional)** | Not used in n8n | — | — | `GEMINI_API_KEY` for direct Gemini API in edge functions and future Google control; see [Gemini + Google control](gemini-google-control.md) |
 
 **Real values you can paste now (public / non-secret):**
 
@@ -143,6 +144,24 @@ Open **https://n8n.srv1402218.hstgr.cloud** and use the steps below.
 2. **Name:** `Prod - Gmail`.
 3. Complete OAuth2 (same Google account or separate; Gmail scope required).
 4. **Save** → in Email/Gmail nodes select **Prod - Gmail**.
+
+#### 2.5.1 Google Cloud Console — OAuth client for n8n (Gmail / Google Sheets)
+
+Use a **Web application** OAuth 2.0 client. In **APIs & Services → Credentials → [your client] → Authorized redirect URIs** and **Authorized JavaScript origins** set the following **exactly** (no duplicates, no empty rows, no placeholders).
+
+**Authorized redirect URIs** (for use with requests from a web server):
+
+- Exactly **one** entry:  
+  `https://n8n.srv1402218.hstgr.cloud/rest/oauth2-credential/callback`  
+  (Duplicate entries cause "Duplicate redirect URIs are not allowed".)
+
+**Authorized JavaScript origins** (for use with requests from a browser):
+
+- Exactly **one** entry:  
+  `https://n8n.srv1402218.hstgr.cloud`  
+  (No trailing slash. Remove any placeholder such as `https://www.example.com` and delete any empty row to avoid "URI must not be empty".)
+
+**Summary:** One redirect URI, one origin, both matching your n8n host. Save; changes can take a few minutes to apply. Then in n8n add the Gmail (or Google Sheets) OAuth2 credential using this client's Client ID and Client Secret.
 
 ### 2.6 Monday.com — if any workflow calls Monday API from n8n
 

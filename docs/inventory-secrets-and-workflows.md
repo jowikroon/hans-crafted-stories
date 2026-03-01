@@ -78,4 +78,17 @@ These are the secrets tracked by `n8n/secrets.manifest.yml`:
 | `FIRECRAWL_API_KEY` | ENV / VAULT | no | n8n Firecrawl HTTP auth |
 | `GRAFANA_PASSWORD` | ENV | no | Grafana admin |
 
+---
+
+## 6. Supabase cloud (Edge Functions + types)
+
+**Edge Function secrets** (set in Supabase Dashboard → Project Settings → Edge Functions → Secrets):
+
+| Secret | Required by | Purpose |
+|--------|--------------|---------|
+| `LOVABLE_API_KEY` | n8n-agent | Primary LLM gateway (Lovable/Gemini) |
+| `OPENAI_API_KEY` | llm-resume | Fallback when primary fails (model choice flow) |
+
+**TypeScript types**: After migrations are applied to the cloud DB, run `supabase login` then `npm run supabase:types` to regenerate `src/integrations/supabase/types.ts` from the linked project (`oejeojzaakfhculcoqdh`).
+
 *Generated from codebase scan on 2026-03-01.*

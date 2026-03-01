@@ -9,16 +9,17 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const ALLOWED_SOURCES = ["ENV", "VAULT", "N8N_CRED"];
+const ALLOWED_SOURCES = ["ENV", "VAULT_REF", "N8N_CRED", "VAULT"]; // VAULT kept for backward compat
 
 function parseYamlSimple(text) {
   // Minimal YAML-subset parser for our flat manifest structure.
   // For production, use a real YAML library. This handles our specific format.
   const lines = text.split("\n");
-  const result = { variables: [], secrets: [], workflows: [] };
+  const result = { variables: [], secrets: [], workflows: [], policy: { redaction_patterns: [], allowed_sources: [], forbidden_patterns: [] } };
   let currentSection = null;
   let currentItem = null;
   let currentList = null;
+  let currentPolicyKey = null;
 
   for (const raw of lines) {
     const line = raw.replace(/\r$/, "");
@@ -29,9 +30,22 @@ function parseYamlSimple(text) {
       result.version = line.split(":").slice(1).join(":").trim().replace(/"/g, "");
       continue;
     }
-    if (/^variables:/.test(line)) { currentSection = "variables"; currentItem = null; currentList = null; continue; }
-    if (/^secrets:/.test(line)) { currentSection = "secrets"; currentItem = null; currentList = null; continue; }
-    if (/^workflows:/.test(line)) { currentSection = "workflows"; currentItem = null; currentList = null; continue; }
+    if (/^variables:/.test(line)) { currentSection = "variables"; currentItem = null; currentList = null; currentPolicyKey = null; continue; }
+    if (/^secrets:/.test(line)) { currentSection = "secrets"; currentItem = null; currentList = null; currentPolicyKey = null; continue; }
+    if (/^workflows:/.test(line)) { currentSection = "workflows"; currentItem = null; currentList = null; currentPolicyKey = null; continue; }
+    if (/^policy:/.test(line)) { currentSection = "policy"; currentPolicyKey = null; continue; }
+
+    // Policy sub-keys (e.g. "  redaction_patterns:")
+    if (currentSection === "policy" && /^  [\w_]+:\s*$/.test(line)) {
+      currentPolicyKey = line.trim().replace(/:.*/, "").trim();
+      continue;
+    }
+    // Policy list items (e.g. "    - ENV")
+    if (currentSection === "policy" && currentPolicyKey && /^    - /.test(line)) {
+      const val = line.trim().replace(/^- /, "").trim().replace(/^["']|["']$/g, "");
+      if (result.policy[currentPolicyKey]) result.policy[currentPolicyKey].push(val);
+      continue;
+    }
 
     // List item start
     if (/^  - name:/.test(line) || /^  - file:/.test(line)) {
@@ -157,6 +171,41 @@ function validate(manifestPath) {
     }
   }
 
+  // Policy (Gate 2)
+  if (!manifest.policy || typeof manifest.policy !== "object") {
+    errors.push("Missing 'policy' section");
+  } else {
+    const policy = manifest.policy;
+    if (!Array.isArray(policy.redaction_patterns) || policy.redaction_patterns.length === 0) {
+      errors.push("Policy must have non-empty 'redaction_patterns' array");
+    }
+    if (!Array.isArray(policy.allowed_sources) || policy.allowed_sources.length === 0) {
+      errors.push("Policy must have non-empty 'allowed_sources' array");
+    }
+    if (!Array.isArray(policy.forbidden_patterns) || policy.forbidden_patterns.length === 0) {
+      errors.push("Policy must have non-empty 'forbidden_patterns' array");
+    }
+    if (Array.isArray(policy.allowed_sources)) {
+      const invalid = policy.allowed_sources.filter((x) => !ALLOWED_SOURCES.includes(x));
+      if (invalid.length > 0) errors.push(`Policy allowed_sources contains invalid values: ${invalid.join(", ")}`);
+    }
+  }
+
+  // Optional: secret environments (if present must be local/vps)
+  if (Array.isArray(manifest.secrets)) {
+    const allowedEnv = ["local", "vps"];
+    for (const s of manifest.secrets) {
+      if (s.environments !== undefined) {
+        const envs = Array.isArray(s.environments) ? s.environments : (typeof s.environments === "string" && s.environments.startsWith("[") ? s.environments.replace(/[\[\]]/g, "").split(",").map((e) => e.trim()) : []);
+        const invalid = envs.filter((e) => !allowedEnv.includes(e));
+        if (invalid.length > 0) errors.push(`Secret '${s.name}' has invalid environments: ${invalid.join(", ")} (allowed: local, vps)`);
+      }
+      if (s.canonical_name !== undefined && s.canonical_name !== s.name) {
+        errors.push(`Secret '${s.name}' canonical_name must match name when present`);
+      }
+    }
+  }
+
   return { valid: errors.length === 0, errors, manifest };
 }
 
@@ -169,6 +218,9 @@ if (require.main === module) {
     console.log(`  Variables: ${result.manifest.variables.length}`);
     console.log(`  Secrets: ${result.manifest.secrets.length}`);
     console.log(`  Workflows: ${result.manifest.workflows.length}`);
+    if (result.manifest.policy) {
+      console.log(`  Policy: redaction_patterns=${result.manifest.policy.redaction_patterns?.length ?? 0}, allowed_sources=${result.manifest.policy.allowed_sources?.length ?? 0}, forbidden_patterns=${result.manifest.policy.forbidden_patterns?.length ?? 0}`);
+    }
   } else {
     console.error("Manifest INVALID:");
     result.errors.forEach((e) => console.error(`  - ${e}`));

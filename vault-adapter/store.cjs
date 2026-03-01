@@ -1,6 +1,10 @@
 /**
- * File-backed encrypted secret store.
+ * File-backed encrypted secret store (Gate 3).
  * Each secret is stored as { name: encryptedBlob } in a JSON file.
+ * AEAD encryption via crypto.cjs (AES-256-GCM). Master key: VAULT_MASTER_KEY (64 hex chars).
+ *
+ * Path: VAULT_FILE env or default ./data/secrets.vault.
+ * In Docker use /mnt/data/secrets.vault and mount a volume at /mnt/data.
  */
 
 const fs = require("node:fs");

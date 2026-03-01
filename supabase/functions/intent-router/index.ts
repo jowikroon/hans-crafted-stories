@@ -13,6 +13,7 @@ const WORKFLOW_CONTEXT = [
   { name: "product-feed", description: "Optimize and sync product feeds across channels (Channable, Google Shopping)" },
   { name: "campaign", description: "Generate and launch marketing campaigns with AI-powered copy" },
   { name: "scraper", description: "Scrape competitor data, pricing, and product information from websites" },
+  { name: "google", description: "Control Gmail, Google Sheets, Drive — summarize emails, add rows, list files" },
 ];
 
 const SYSTEM_PROMPT = `You are an intent classifier for a digital marketing automation platform.
@@ -27,7 +28,8 @@ Rules:
 - If the input is ambiguous but could match, set confidence 0.4-0.7 and provide a clarification question
 - If no workflow matches at all, set intent to "unknown" and confidence to 0.0
 - missing_params should list any required parameters the user didn't provide
-- Be strict: only classify as a workflow if the user's intent genuinely relates to it`;
+- Be strict: only classify as a workflow if the user's intent genuinely relates to it
+- IMPORTANT: Generic conversational questions such as "what can you do", "tell me all you can do", "what are your capabilities", "help me", "who are you", "what do you know", or any greeting/capability question must ALWAYS be classified as intent "unknown" with confidence 0.0 — they are chat questions, not workflow requests`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

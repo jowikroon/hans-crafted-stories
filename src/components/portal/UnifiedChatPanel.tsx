@@ -1,14 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, Sparkles, Shuffle, ChevronDown, History, X, CheckCircle2, Circle, Clock, Cpu, Bot, Zap, Wrench, Search, BarChart3, Command, GitBranch } from "lucide-react";
+import { Send, Loader2, Sparkles, Shuffle, ChevronDown, ChevronRight, History, X, CheckCircle2, Circle, Clock, Cpu, Bot, Zap, Wrench, Search, BarChart3, Command, GitBranch, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import ContextFilterPills from "@/components/ai/ContextFilterPills";
 import { unifiedCategories, buildContextPrefix } from "@/components/ai/contextCategories";
 import CommandSuggestionList from "@/components/ai/CommandSuggestionList";
 import { incrementUsage } from "@/components/ai/commandSuggestions";
 import IntentButton from "./IntentButton";
+import ModelChoiceModal from "./ModelChoiceModal";
 import { runIntentPipeline, triggerWorkflow } from "@/lib/intent/pipeline";
+import { extractWorkflowJsonFromMarkdown, createWorkflowInN8n } from "@/lib/n8n/create-workflow";
 import type { WorkflowDef } from "@/lib/config/workflows";
 import type { LucideIcon } from "lucide-react";
 
@@ -40,6 +43,8 @@ INFRASTRUCTURE: You manage n8n workflows, Cloudflare Workers, VPS servers (prima
 
 MARKETING & SEO: You optimize product feeds (Channable, Google Shopping), run SEO audits, manage Google Ads campaigns, analyze GA4/Search Console data, create content, and manage e-commerce operations.
 
+When the user asks to **create**, **build**, or **generate** an n8n workflow, output a single, valid n8n workflow as a \`\`\`json code block\`\`\` with: \`name\` (string), \`nodes\` (array of node objects with id, type, name, position, parameters, typeVersion), and \`connections\` (object). Use standard n8n node types (e.g. n8n-nodes-base.webhook, n8n-nodes-base.httpRequest). The system will create the workflow in n8n automatically. Do not put credentials in the JSON; use "REPLACE_WITH_YOUR_CREDENTIAL_ID" for credential IDs.
+
 Be concise, technical, and actionable. Format with markdown. Adapt your expertise based on the context filter selected.`;
 
 const suggestionPool: Suggestion[] = [
@@ -63,6 +68,16 @@ const aiModels = [
 
 const HISTORY_KEY = "portal_chat_history_unified";
 const MODEL_STORAGE_KEY = "portal_command_center_model";
+const N8N_FILTER_PROXY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-filter-proxy`;
+const UNIVERSAL_ROUTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/universal-router`;
+
+/** n8n workflow list item from n8n-filter-proxy */
+interface N8nWorkflowItem {
+  id?: string;
+  name?: string;
+  active?: boolean;
+  [key: string]: unknown;
+}
 
 const getStoredModel = (): string => {
   try {
@@ -83,11 +98,24 @@ const UnifiedChatPanel = () => {
   const [chatHistory, setChatHistory] = useState<{ messages: Message[]; timestamp: number; preview: string }[]>([]);
   const [activeSuggestions, setActiveSuggestions] = useState<Suggestion[]>(suggestionPool.slice(0, 3));
   const [pendingClarification, setPendingClarification] = useState<{ workflows: WorkflowDef[]; originalInput: string } | null>(null);
+  const [modelChoicePending, setModelChoicePending] = useState<{
+    llmJobId: string;
+    system: string;
+    messages: Array<{ role: string; content: string }>;
+  } | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSub, setSelectedSub] = useState<string | null>(null);
 
+  /* v6.1: Advanced bar + n8n filter */
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [showAdvancedModal, setShowAdvancedModal] = useState(false);
+  const [n8nFilterActive, setN8nFilterActive] = useState(false);
+  const [n8nWorkflows, setN8nWorkflows] = useState<N8nWorkflowItem[]>([]);
+  const [n8nWorkflowsLoading, setN8nWorkflowsLoading] = useState(false);
+
   const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelPickerRef = useRef<HTMLDivElement>(null);
 
@@ -116,9 +144,81 @@ const UnifiedChatPanel = () => {
     } catch { /* ignore */ }
   }, []);
 
+  /* v6.1: Restore last filter + pinned examples from user_preferences */
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading, pendingClarification]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user?.id) return;
+        const { data } = await (supabase as any).from("user_preferences").select("n8n_filter_presets").eq("user_id", session.user.id).maybeSingle();
+        if (cancelled || !data) return;
+        const presets = (data as { n8n_filter_presets?: Record<string, unknown> })?.n8n_filter_presets;
+        if (presets && typeof presets === "object" && "show_n8n_workflows" in presets) {
+          setN8nFilterActive(Boolean((presets as { show_n8n_workflows?: boolean }).show_n8n_workflows));
+        }
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  /* v6.1: Fetch n8n workflows when n8n filter is active */
+  useEffect(() => {
+    if (!n8nFilterActive) {
+      setN8nWorkflows([]);
+      return;
+    }
+    let cancelled = false;
+    setN8nWorkflowsLoading(true);
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) return;
+        const res = await fetch(N8N_FILTER_PROXY_URL, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (cancelled) return;
+        if (!res.ok) {
+          setN8nWorkflows([]);
+          return;
+        }
+        const json = await res.json();
+        const list = Array.isArray(json?.data) ? json.data : (Array.isArray(json?.workflows) ? json.workflows : []);
+        setN8nWorkflows(Array.isArray(list) ? list : []);
+      } catch {
+        if (!cancelled) setN8nWorkflows([]);
+      } finally {
+        if (!cancelled) setN8nWorkflowsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [n8nFilterActive]);
+
+  /* v6.1: Persist n8n filter preset to user_preferences */
+  const saveN8nPreset = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return;
+      await (supabase as any).from("user_preferences").update({
+        n8n_filter_presets: { show_n8n_workflows: n8nFilterActive },
+      }).eq("user_id", session.user.id);
+    } catch { /* ignore */ }
+  }, [n8nFilterActive]);
+  useEffect(() => {
+    if (!n8nFilterActive) return;
+    const t = setTimeout(saveN8nPreset, 500);
+    return () => clearTimeout(t);
+  }, [n8nFilterActive, saveN8nPreset]);
+
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight;
+    });
+  }, [messages, loading, pendingClarification, modelChoicePending]);
 
   useEffect(() => {
     setTimeout(() => textareaRef.current?.focus(), 200);
@@ -152,19 +252,23 @@ const UnifiedChatPanel = () => {
   };
 
   /* ─── Execute a matched workflow and show result ─── */
-  const executeWorkflow = async (wf: WorkflowDef, addToMessages: boolean = true) => {
+  const executeWorkflow = async (wf: WorkflowDef, addToMessages: boolean = true, userMessage?: string) => {
     if (addToMessages) {
       appendMessage({ role: "workflow", content: `Running **${wf.label}**…` });
     }
     setLoading(true);
     setPipelineStage("processing");
 
-    const result = await triggerWorkflow(wf, "command_center");
+    const extraPayload = wf.name === "google" && userMessage ? { message: userMessage } : undefined;
+    const result = await triggerWorkflow(wf, "command_center", extraPayload);
 
     if (result.ok) {
-      const reply =
-        result.data && typeof result.data === "object"
-          ? `✓ **${wf.label}** completed\n\n\`\`\`json\n${JSON.stringify(result.data, null, 2)}\n\`\`\``
+      const data = result.data as Record<string, unknown> | null;
+      const isGoogleReply = wf.name === "google" && data && typeof data === "object" && "reply" in data;
+      const reply = isGoogleReply
+        ? (data!.reply as string) || `✓ **${wf.label}** completed`
+        : data && typeof data === "object"
+          ? `✓ **${wf.label}** completed\n\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``
           : `✓ **${wf.label}** completed${result.data ? `\n\n${String(result.data)}` : ""}`;
       appendMessage({ role: "workflow", content: reply });
     } else {
@@ -191,18 +295,60 @@ const UnifiedChatPanel = () => {
 
       setPipelineStage("generating");
 
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-agent`, {
+      const res = await fetch(UNIVERSAL_ROUTER_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ system: systemWithContext, messages: allMessages, model: selectedModel }),
+        body: JSON.stringify({
+          system: systemWithContext,
+          messages: allMessages.filter((m) => m.role === "user" || m.role === "assistant").map((m) => ({ role: m.role, content: m.content })),
+          model: selectedModel,
+          filter_context: {
+            category: selectedCategory,
+            sub: selectedSub,
+            n8n_filter_active: n8nFilterActive,
+          },
+        }),
       });
 
       const data = await res.json();
+
+      // Primary failed — show model choice modal
+      if (res.status === 202 && data.needs_choice && data.llm_job_id) {
+        setModelChoicePending({
+          llmJobId: data.llm_job_id,
+          system: systemWithContext,
+          messages: allMessages.filter((m) => m.role === "user" || m.role === "assistant").map((m) => ({ role: m.role, content: m.content })),
+        });
+        setLoading(false);
+        setPipelineStage("idle");
+        return;
+      }
+
       const reply: Message = { role: "assistant", content: data.reply || "No response.", timestamp: Date.now() };
-      const finalMessages = [...allMessages, reply];
+      const finalMessages: Message[] = [...allMessages, reply];
+
+      // If the AI returned a workflow JSON in a code block, create it in n8n
+      const workflowJson = extractWorkflowJsonFromMarkdown(data.reply || "");
+      if (workflowJson && token) {
+        const createResult = await createWorkflowInN8n(workflowJson, token);
+        if (createResult.success && createResult.url) {
+          finalMessages.push({
+            role: "workflow",
+            content: `✓ **Workflow created in n8n:** [${createResult.name || "Open"}](${createResult.url})`,
+            timestamp: Date.now(),
+          });
+        } else if (!createResult.success && createResult.error) {
+          finalMessages.push({
+            role: "system",
+            content: `Could not create workflow in n8n: ${createResult.error}`,
+            timestamp: Date.now(),
+          });
+        }
+      }
+
       setMessages(finalMessages);
       saveToHistory(finalMessages);
       setPipelineStage("done");
@@ -235,9 +381,9 @@ const UnifiedChatPanel = () => {
 
     switch (result.outcome.type) {
       case "workflow_match":
-        // Direct workflow execution — no AI needed
+        // Direct workflow execution — no AI needed (for google-agent, pass user message)
         setLoading(false);
-        await executeWorkflow(result.outcome.workflow, true);
+        await executeWorkflow(result.outcome.workflow, true, userMsg);
         return;
 
       case "clarify":
@@ -273,8 +419,7 @@ const UnifiedChatPanel = () => {
     const original = pendingClarification?.originalInput || "";
     setPendingClarification(null);
     appendMessage({ role: "user", content: `→ ${wf.label}` });
-    await executeWorkflow(wf, false);
-    void original;
+    await executeWorkflow(wf, false, wf.name === "google" ? original : undefined);
   };
 
   const handleClarificationDismiss = async () => {
@@ -285,6 +430,48 @@ const UnifiedChatPanel = () => {
       const allMsgs = [...messages, { role: "system" as const, content: "Continuing as a general question…" }];
       await sendToAI(original, allMsgs);
     }
+  };
+
+  const handleModelResume = async (reply: string) => {
+    if (!modelChoicePending) return;
+    const replyMsg: Message = { role: "assistant", content: reply || "No response.", timestamp: Date.now() };
+    let finalMessages: Message[] = [...messages, replyMsg];
+
+    const workflowJson = extractWorkflowJsonFromMarkdown(reply || "");
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    if (workflowJson && token) {
+      const createResult = await createWorkflowInN8n(workflowJson, token);
+      if (createResult.success && createResult.url) {
+        finalMessages.push({
+          role: "workflow",
+          content: `✓ **Workflow created in n8n:** [${createResult.name || "Open"}](${createResult.url})`,
+          timestamp: Date.now(),
+        });
+      } else if (!createResult.success && createResult.error) {
+        finalMessages.push({
+          role: "system",
+          content: `Could not create workflow in n8n: ${createResult.error}`,
+          timestamp: Date.now(),
+        });
+      }
+    }
+
+    setMessages(finalMessages);
+    saveToHistory(finalMessages);
+    setModelChoicePending(null);
+    setPipelineStage("done");
+    setTimeout(() => setPipelineStage("idle"), 2000);
+  };
+
+  const handleModelCancel = () => {
+    appendMessage({ role: "system", content: "Task cancelled." });
+    saveToHistory([...messages, { role: "system", content: "Task cancelled.", timestamp: Date.now() }]);
+    setModelChoicePending(null);
+  };
+
+  const handleModelClose = () => {
+    setModelChoicePending(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -436,6 +623,71 @@ const UnifiedChatPanel = () => {
         accentColor="orange"
       />
 
+      {/* v6.1: Advanced bar (collapsible; modal on mobile) */}
+      <div className="border-b border-orange-500/10">
+        <div className="flex items-center px-3 py-1.5">
+          <Dialog open={showAdvancedModal} onOpenChange={setShowAdvancedModal}>
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                className="flex sm:hidden items-center gap-1.5 rounded-lg border border-orange-500/20 px-2.5 py-1 text-[10px] font-medium text-orange-400 transition-all hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                <Settings2 size={10} />
+                Advanced
+              </button>
+            </DialogTrigger>
+            <DialogContent className="border-orange-500/20 bg-card sm:hidden">
+              <DialogHeader>
+                <DialogTitle className="text-xs font-semibold text-orange-400">Advanced filters</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2 pt-2">
+                <label className="flex cursor-pointer items-center gap-2 text-[11px] text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={n8nFilterActive}
+                    onChange={(e) => { setN8nFilterActive(e.target.checked); setShowAdvancedModal(false); }}
+                    className="rounded border-orange-500/30"
+                  />
+                  Show n8n workflows
+                </label>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen((o) => !o)}
+            className="hidden sm:flex items-center gap-1.5 rounded-lg border border-orange-500/20 px-2.5 py-1 text-[10px] font-medium text-orange-400 transition-all hover:bg-orange-500/10 hover:text-orange-300"
+          >
+            <Settings2 size={10} />
+            Advanced
+            <ChevronDown size={10} className={`transition-transform ${advancedOpen ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+        <AnimatePresence>
+          {advancedOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="overflow-hidden border-t border-orange-500/10"
+            >
+              <div className="px-3 py-2">
+                <label className="flex cursor-pointer items-center gap-2 text-[11px] text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={n8nFilterActive}
+                    onChange={(e) => setN8nFilterActive(e.target.checked)}
+                    className="rounded border-orange-500/30"
+                  />
+                  Show n8n workflows
+                </label>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* History Panel */}
       <AnimatePresence>
         {showHistory && (
@@ -489,8 +741,35 @@ const UnifiedChatPanel = () => {
         )}
       </AnimatePresence>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3">
+      {/* v6.1: Live breadcrumb + status bar */}
+      <div className="flex shrink-0 flex-wrap items-center gap-x-2 border-b border-border px-4 py-1.5">
+        <nav className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <span className="font-medium text-foreground">
+            {!selectedCategory ? "All" : unifiedCategories.find((c) => c.id === selectedCategory)?.label ?? selectedCategory}
+          </span>
+          {selectedSub && (
+            <>
+              <ChevronRight size={10} className="shrink-0 opacity-60" />
+              <span>{unifiedCategories.find((c) => c.id === selectedCategory)?.subcategories.find((s) => s.id === selectedSub)?.label ?? selectedSub}</span>
+            </>
+          )}
+          {n8nFilterActive && (
+            <>
+              <ChevronRight size={10} className="shrink-0 opacity-60" />
+              <span className="text-orange-400/80">n8n</span>
+            </>
+          )}
+        </nav>
+        {n8nFilterActive && (
+          <span className="text-[9px] text-muted-foreground">
+            n8n: {n8nWorkflowsLoading ? "…" : `${n8nWorkflows.length} workflows loaded`}
+          </span>
+        )}
+      </div>
+
+      {/* Messages (+ optional n8n right pane) */}
+      <div className={`flex flex-1 min-h-0 ${n8nFilterActive ? "flex-row" : ""}`}>
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-3 min-w-0">
         {messages.length === 0 && !selectedSub ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <Sparkles size={24} className="mb-3 text-muted-foreground/20" />
@@ -607,6 +886,39 @@ const UnifiedChatPanel = () => {
             <div ref={bottomRef} />
           </div>
         ) : null}
+        </div>
+
+        {/* v6.1: Right preview pane — n8n workflow cards (when n8n filter active) */}
+        {n8nFilterActive && (
+          <div className="hidden md:flex w-64 shrink-0 flex-col border-l border-orange-500/20 bg-orange-500/5 overflow-y-auto">
+            <p className="sticky top-0 z-10 border-b border-orange-500/20 bg-card/95 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-orange-400">
+              n8n workflows
+            </p>
+            <div className="p-2 space-y-2">
+              {n8nWorkflowsLoading ? (
+                <div className="rounded-lg border border-orange-500/20 px-3 py-4 text-center text-[10px] text-muted-foreground">
+                  Loading…
+                </div>
+              ) : n8nWorkflows.length === 0 ? (
+                <div className="rounded-lg border border-orange-500/20 px-3 py-4 text-center text-[10px] text-muted-foreground">
+                  No workflows
+                </div>
+              ) : (
+                n8nWorkflows.map((wf) => (
+                  <div
+                    key={wf.id ?? wf.name ?? String(Math.random())}
+                    className="rounded-xl border border-orange-500/20 bg-orange-500/5 px-3 py-2 text-[11px] transition-all hover:border-orange-500/40 hover:bg-orange-500/10"
+                  >
+                    <p className="font-medium text-foreground truncate">{wf.name ?? "Unnamed"}</p>
+                    {wf.active === false && (
+                      <span className="text-[9px] text-muted-foreground">Inactive</span>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input with Intent Button */}
@@ -634,6 +946,16 @@ const UnifiedChatPanel = () => {
           </Button>
         </div>
       </div>
+
+      <ModelChoiceModal
+        open={!!modelChoicePending}
+        onClose={handleModelClose}
+        llmJobId={modelChoicePending?.llmJobId ?? ""}
+        system={modelChoicePending?.system ?? ""}
+        messages={modelChoicePending?.messages ?? []}
+        onResume={handleModelResume}
+        onCancel={handleModelCancel}
+      />
     </div>
   );
 };

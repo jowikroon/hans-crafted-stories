@@ -75,18 +75,20 @@ export async function logUnhandledIntent(
 }
 
 /**
- * Trigger an n8n workflow by direct webhook POST.
- * Returns the parsed response or null on error.
+ * Trigger an n8n workflow (or google-agent) by direct webhook POST.
+ * Optional extraPayload is merged into the body (e.g. { message } for google-agent).
  */
 export async function triggerWorkflow(
   wf: WorkflowDef,
   source: string = "command_center",
+  extraPayload?: Record<string, unknown>,
 ): Promise<{ ok: boolean; data: unknown; error?: string }> {
   try {
+    const body = { source, timestamp: new Date().toISOString(), ...extraPayload };
     const res = await fetch(wf.webhook, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ source, timestamp: new Date().toISOString() }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

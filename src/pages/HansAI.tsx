@@ -218,23 +218,33 @@ const HansAI = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(wf.webhook, {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      // Proxy through Supabase edge function to avoid CORS issues with direct n8n calls
+      const TRIGGER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
+      const res = await fetch(TRIGGER_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "command_center", timestamp: new Date().toISOString() }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          webhook_url: wf.webhook,
+          payload: { source: "command_center", timestamp: new Date().toISOString() },
+        }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      let data: unknown;
-      const text = await res.text();
-      try { data = JSON.parse(text); } catch { data = text; }
+      const json = await res.json() as { success: boolean; data?: unknown; error?: string };
+      if (!json.success) throw new Error(json.error || "Workflow returned failure");
 
       addLine("workflow", `✓ ${wf.label} completed`);
-      if (data && typeof data === "object") {
-        addLine("system", "```json\n" + JSON.stringify(data, null, 2) + "\n```");
-      } else if (data) {
-        addLine("system", String(data));
+      if (json.data && typeof json.data === "object") {
+        addLine("system", "```json\n" + JSON.stringify(json.data, null, 2) + "\n```");
+      } else if (json.data) {
+        addLine("system", String(json.data));
       }
     } catch (err) {
       addLine("error", `✗ Error running ${wf.label} — ${err instanceof Error ? err.message : "Unknown error"}`);

@@ -51,7 +51,7 @@ services:
     networks:
       - empire
 
-  # ── Vault Adapter (Encrypted Secret Store Stub) ────
+  # ── Vault Adapter (Encrypted Secret Store — Gate 3) ────
   vault-adapter:
     image: node:20-alpine
     container_name: vault-adapter
@@ -67,6 +67,12 @@ services:
       - VAULT_PORT=4000
     command: node index.cjs
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:4000/health',r=>{r.on('data',()=>{});r.on('end',()=>process.exit(r.statusCode===200?0:1));}).on('error',()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
     networks:
       - empire
 

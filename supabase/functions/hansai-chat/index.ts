@@ -31,17 +31,84 @@ serve(async (req) => {
         ? `\n\nCommand Center focus: primaryGoal=${router_context.primaryGoal ?? "none"}, tabs=[${(router_context.activeTabs ?? []).join(", ")}], subTools=[${(router_context.subTools ?? []).join(", ")}]. When relevant, tailor answers to this context (e.g. SEO, n8n, campaigns, system health).`
         : "";
 
+    const systemContent = SYSTEM_PROMPT + hierarchyHint;
+    const selectedModel = model || "google/gemini-3-flash-preview";
+
+    // Option A: prefer direct Gemini API when GEMINI_API_KEY is set
+    const geminiKey = Deno.env.get("GEMINI_API_KEY");
+    if (geminiKey) {
+      const geminiModel = selectedModel.replace(/^google\//, "").replace(/\./g, "-") || "gemini-2.0-flash";
+      const contents = messages
+        .filter((m: { role: string }) => m.role === "user" || m.role === "assistant")
+        .map((m: { role: string; content: string }) => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: typeof m.content === "string" ? m.content : "" }],
+        }));
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:streamGenerateContent?key=${encodeURIComponent(geminiKey)}&alt=sse`;
+      const geminiRes = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemContent }] },
+          contents: contents.length ? contents : [{ role: "user", parts: [{ text: "" }] }],
+          generationConfig: { maxOutputTokens: 8192 },
+        }),
+      });
+      if (!geminiRes.ok) {
+        const errText = await geminiRes.text();
+        console.error("Gemini API error:", geminiRes.status, errText);
+        return new Response(JSON.stringify({ error: "Gemini API error" }), {
+          status: geminiRes.status >= 500 ? 500 : 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const reader = geminiRes.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      const stream = new ReadableStream({
+        async pull(controller) {
+          try {
+            for (;;) {
+              const { done, value } = await reader.read();
+              if (done) {
+                controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+                controller.close();
+                return;
+              }
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() ?? "";
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || !trimmed.startsWith("data: ")) continue;
+                const json = trimmed.slice(6).trim();
+                if (json === "[DONE]" || !json) continue;
+                try {
+                  const data = JSON.parse(json);
+                  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+                  if (text) {
+                    controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`));
+                  }
+                } catch (_) {}
+              }
+            }
+          } catch (e) {
+            controller.error(e);
+          }
+        },
+      });
+      return new Response(stream, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
+
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }), {
+      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY or GEMINI_API_KEY must be configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const selectedModel = model || "google/gemini-3-flash-preview";
-
-    const systemContent = SYSTEM_PROMPT + hierarchyHint;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

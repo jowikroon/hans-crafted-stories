@@ -37,7 +37,7 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
             exit={{ opacity: 0, scale: 0.96, y: -8 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="w-full max-w-2xl mx-4 flex flex-col rounded-2xl border-2 border-orange-500/40 bg-card shadow-2xl shadow-orange-500/10 overflow-hidden"
-            style={{ height: "72vh" }}
+            style={{ height: "100vh" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Overlay header — close button + link to full terminal */}

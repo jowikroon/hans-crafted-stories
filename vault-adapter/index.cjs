@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Vault adapter HTTP server.
+ * Vault adapter HTTP server (Gate 3).
  *
  * Endpoints:
- *   GET  /secret/:name  — returns { exists: true } (200) or 404; never returns the value via HTTP
- *   PUT  /secret/:name  — body { "value": "..." }; stores encrypted
- *   GET  /secrets        — returns { names: [...] }
- *   GET  /health         — returns { ok: true }
+ *   GET  /health        — returns { ok: true }
+ *   GET  /meta          — returns { names: [...] } (stored key names only)
+ *   GET  /secret/:name  — 200 { exists: true, name } or 404; never returns the value
+ *   PUT  /secret/:name  — body { "value": "..." }; stores encrypted; no secret in logs
  *
  * Env:
  *   VAULT_MASTER_KEY  — required (64 hex chars)
- *   VAULT_FILE        — path to encrypted store (default ./data/secrets.vault)
+ *   VAULT_FILE        — path to encrypted store (default ./data/secrets.vault, use /mnt/data/secrets.vault in Docker)
  *   VAULT_PORT        — listen port (default 4000)
  */
 
@@ -18,6 +18,20 @@ const http = require("node:http");
 const store = require("./store.cjs");
 
 const PORT = parseInt(process.env.VAULT_PORT || "4000", 10);
+
+// Redact any string that might be a secret (tokens, keys, passwords) from log output
+const REDACT_PATTERNS = [/Bearer\s+[\w-]+/gi, /api[_-]?key["\s:=]+[\w-]+/gi, /token["\s:=]+[\w-]+/gi, /password["\s:=]+[^\s"]+/gi, /value["\s:]+[^\s"}]+/gi];
+function redactLog(msg) {
+  if (typeof msg !== "string") return "[redacted]";
+  let out = msg;
+  for (const p of REDACT_PATTERNS) out = out.replace(p, "[redacted]");
+  return out;
+}
+
+function safeLog(...args) {
+  const line = args.map((a) => (typeof a === "string" ? redactLog(a) : a)).join(" ");
+  console.log(line);
+}
 
 function json(res, status, body) {
   res.writeHead(status, { "Content-Type": "application/json" });
@@ -44,24 +58,31 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { ok: true });
   }
 
-  // GET /secrets — list names only
-  if (req.method === "GET" && url.pathname === "/secrets") {
+  // GET /meta — list stored key names only (Gate 3 spec)
+  if (req.method === "GET" && url.pathname === "/meta") {
     const names = store.list();
-    console.log(`GET /secrets -> ${names.length} entries`);
+    safeLog(`GET /meta -> ${names.length} entries`);
     return json(res, 200, { names });
   }
 
-  // GET /secret/:name — check existence (never return value over HTTP)
+  // GET /secrets — backward compat alias for /meta
+  if (req.method === "GET" && url.pathname === "/secrets") {
+    const names = store.list();
+    safeLog(`GET /secrets -> ${names.length} entries`);
+    return json(res, 200, { names });
+  }
+
+  // GET /secret/:name — existence only; never return value
   if (req.method === "GET" && parts[0] === "secret" && parts[1]) {
     const name = parts[1];
     const exists = store.has(name);
-    console.log(`GET /secret/${name} -> ${exists ? 200 : 404}`);
+    safeLog(`GET /secret/${name} -> ${exists ? 200 : 404}`);
     return exists
       ? json(res, 200, { exists: true, name })
       : json(res, 404, { exists: false, name });
   }
 
-  // PUT /secret/:name — store encrypted value
+  // PUT /secret/:name — store encrypted; never log body or value
   if (req.method === "PUT" && parts[0] === "secret" && parts[1]) {
     const name = parts[1];
     try {
@@ -70,10 +91,10 @@ const server = http.createServer(async (req, res) => {
         return json(res, 400, { error: "body.value (string) required" });
       }
       store.set(name, body.value);
-      console.log(`PUT /secret/${name} -> stored`);
+      safeLog(`PUT /secret/${name} -> stored`);
       return json(res, 200, { stored: true, name });
     } catch (e) {
-      console.error(`PUT /secret/${name} -> error:`, e.message);
+      safeLog(`PUT /secret/${name} -> error:`, e.message);
       return json(res, 500, { error: e.message });
     }
   }
@@ -82,7 +103,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "DELETE" && parts[0] === "secret" && parts[1]) {
     const name = parts[1];
     const removed = store.remove(name);
-    console.log(`DELETE /secret/${name} -> ${removed ? "removed" : "not found"}`);
+    safeLog(`DELETE /secret/${name} -> ${removed ? "removed" : "not found"}`);
     return json(res, removed ? 200 : 404, { removed, name });
   }
 
@@ -90,6 +111,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Vault adapter listening on :${PORT}`);
-  console.log(`Store file: ${process.env.VAULT_FILE || "./data/secrets.vault"}`);
+  safeLog(`Vault adapter listening on :${PORT}`);
+  safeLog(`Store file: ${process.env.VAULT_FILE || "./data/secrets.vault"}`);
 });
