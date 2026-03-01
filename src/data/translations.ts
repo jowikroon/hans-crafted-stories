@@ -309,8 +309,8 @@ export const translations: Record<Lang, TranslationStrings> = {
         "20% weekly sales increase via targeted marketplace campaigns",
         "Out-of-stock rates below 2% through forecasting & logistics",
       ],
-      expertiseLabel: "What I do",
-      expertiseHeading: "E-commerce expertise that drives results",
+      expertiseLabel: "Amazon & Bol.com Services",
+      expertiseHeading: "Amazon & Bol.com Marketplace Management (NL/EU)",
       expertise: [
         {
           title: "Amazon Marketplace Management",
@@ -612,8 +612,8 @@ export const translations: Record<Lang, TranslationStrings> = {
         "20% wekelijkse omzetstijging via gerichte marktplaatscampagnes",
         "Out-of-stock rate onder de 2% dankzij verbeterde forecasting & logistiek",
       ],
-      expertiseLabel: "Wat ik doe",
-      expertiseHeading: "E-commerce-expertise die resultaat oplevert",
+      expertiseLabel: "Amazon & Bol.com Diensten",
+      expertiseHeading: "Amazon & Bol.com Marktplaatsbeheer (NL/EU)",
       expertise: [
         {
           title: "Amazon Marktplaatsbeheer",
