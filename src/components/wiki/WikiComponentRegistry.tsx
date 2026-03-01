@@ -1,4 +1,7 @@
-import { MessageSquare, Bot, Compass, Sparkles, HeartPulse, Search } from "lucide-react";
+import { useState } from "react";
+import { MessageSquare, Bot, Compass, Sparkles, HeartPulse, ChevronDown } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import WikiCommandFlow from "./WikiCommandFlow";
 
 const tools = [
   {
@@ -93,41 +96,74 @@ const badgeColorMap: Record<string, string> = {
   green: "bg-green-500/15 text-green-400",
 };
 
-const WikiComponentRegistry = () => (
-  <div className="grid gap-4 sm:grid-cols-2">
-    {tools.map((t) => {
-      const Icon = t.icon;
-      return (
-        <div
-          key={t.name}
-          className={`rounded-xl border p-4 transition-colors hover:bg-secondary/20 ${colorMap[t.color]}`}
-        >
-          <div className="mb-2 flex items-center gap-2">
-            <Icon size={16} className="shrink-0 text-muted-foreground" />
-            <h3 className="text-sm font-semibold text-foreground">{t.name}</h3>
-            <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeColorMap[t.color]}`}>
-              {t.tagline}
-            </span>
+const WikiComponentRegistry = () => {
+  const [showFlow, setShowFlow] = useState(false);
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {tools.map((t) => {
+        const Icon = t.icon;
+        const isCommandCenter = t.name === "Command Center";
+        return (
+          <div
+            key={t.name}
+            className={`rounded-xl border p-4 transition-colors hover:bg-secondary/20 ${colorMap[t.color]} ${isCommandCenter ? "sm:col-span-2" : ""}`}
+          >
+            <div className="mb-2 flex items-center gap-2">
+              <Icon size={16} className="shrink-0 text-muted-foreground" />
+              <h3 className="text-sm font-semibold text-foreground">{t.name}</h3>
+              <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeColorMap[t.color]}`}>
+                {t.tagline}
+              </span>
+            </div>
+            <p className="mb-3 text-xs leading-relaxed text-muted-foreground">{t.description}</p>
+            <div className="space-y-1.5 text-[11px]">
+              <div className="flex gap-2">
+                <span className="shrink-0 font-medium text-muted-foreground/70">📍 Find it</span>
+                <span className="text-muted-foreground">{t.findIt}</span>
+              </div>
+              <div className="flex gap-2">
+                <span className="shrink-0 font-medium text-muted-foreground/70">✦ Best for</span>
+                <span className="text-muted-foreground">{t.bestFor}</span>
+              </div>
+              <div className="flex gap-2">
+                <span className="shrink-0 font-medium text-muted-foreground/70">💡 Pro tip</span>
+                <span className="text-foreground/80">{t.tip}</span>
+              </div>
+            </div>
+
+            {isCommandCenter && (
+              <>
+                <button
+                  onClick={() => setShowFlow((v) => !v)}
+                  className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-orange-400 transition-colors hover:text-orange-300"
+                >
+                  <ChevronDown
+                    size={12}
+                    className={`transition-transform ${showFlow ? "rotate-180" : ""}`}
+                  />
+                  {showFlow ? "Hide workflow" : "See how it works"}
+                </button>
+                <AnimatePresence>
+                  {showFlow && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="overflow-hidden"
+                    >
+                      <WikiCommandFlow />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
           </div>
-          <p className="mb-3 text-xs leading-relaxed text-muted-foreground">{t.description}</p>
-          <div className="space-y-1.5 text-[11px]">
-            <div className="flex gap-2">
-              <span className="shrink-0 font-medium text-muted-foreground/70">📍 Find it</span>
-              <span className="text-muted-foreground">{t.findIt}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="shrink-0 font-medium text-muted-foreground/70">✦ Best for</span>
-              <span className="text-muted-foreground">{t.bestFor}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="shrink-0 font-medium text-muted-foreground/70">💡 Pro tip</span>
-              <span className="text-foreground/80">{t.tip}</span>
-            </div>
-          </div>
-        </div>
-      );
-    })}
-  </div>
-);
+        );
+      })}
+    </div>
+  );
+};
 
 export default WikiComponentRegistry;
