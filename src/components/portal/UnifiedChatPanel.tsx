@@ -69,9 +69,10 @@ const aiModels = [
 const HISTORY_KEY = "portal_chat_history_unified";
 const MODEL_STORAGE_KEY = "portal_command_center_model";
 const N8N_FILTER_PROXY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-filter-proxy`;
-const UNIVERSAL_ROUTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/universal-router`;
+const N8N_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-agent`;
 const GOOGLE_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-agent`;
 const GOOGLE_OAUTH_START_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-oauth-start`;
+const CREATE_WORKFLOW_RUN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-workflow-run`;
 
 /** n8n workflow list item from n8n-filter-proxy */
 interface N8nWorkflowItem {
@@ -108,6 +109,10 @@ const UnifiedChatPanel = () => {
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSub, setSelectedSub] = useState<string | null>(null);
+
+  /* Streaming sub-step bullets */
+  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
+  const [workflowLogs, setWorkflowLogs] = useState<Array<{ id: number; step: string; substep: string; status: string }>>([]);
 
   /* v6.1: Advanced bar + n8n filter */
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -193,6 +198,37 @@ const UnifiedChatPanel = () => {
       if (url) window.location.href = url;
     } catch { /* ignore */ }
   };
+
+  /* Subscribe to workflow_logs for the current run to show live sub-step bullets */
+  useEffect(() => {
+    if (!currentRunId) return;
+    setWorkflowLogs([]);
+    const channel = supabase
+      .channel(`workflow-logs-${currentRunId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "workflow_logs",
+          filter: `workflow_run_id=eq.${currentRunId}`,
+        },
+        (payload) => {
+          const row = payload.new as { id: number; step: string; substep: string; status: string };
+          setWorkflowLogs((prev) => [...prev, row]);
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentRunId]);
+
+  /* Clear logs when pipeline goes back to idle so the next run starts clean */
+  useEffect(() => {
+    if (pipelineStage === "idle") {
+      setCurrentRunId(null);
+      setWorkflowLogs([]);
+    }
+  }, [pipelineStage]);
 
   /* v6.1: Restore last filter + pinned examples from user_preferences */
   useEffect(() => {
@@ -313,6 +349,23 @@ const UnifiedChatPanel = () => {
     if (wf.name === "google") {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
+
+      // Create a workflow_run row so we can subscribe to workflow_logs for live bullets
+      let runId: string | null = null;
+      try {
+        if (token) {
+          const runRes = await fetch(CREATE_WORKFLOW_RUN_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          });
+          if (runRes.ok) {
+            const runData = await runRes.json();
+            runId = runData.run_id ?? null;
+          }
+        }
+      } catch { /* non-fatal — bullets just won't appear */ }
+      if (runId) setCurrentRunId(runId);
+
       const res = await fetch(GOOGLE_AGENT_URL, {
         method: "POST",
         headers: {
@@ -323,6 +376,7 @@ const UnifiedChatPanel = () => {
           message: userMessage ?? "",
           source: "command_center",
           timestamp: new Date().toISOString(),
+          ...(runId ? { workflow_run_id: runId } : {}),
         }),
       });
       const text = await res.text();
@@ -355,12 +409,16 @@ const UnifiedChatPanel = () => {
     setTimeout(() => { setPipelineStage("idle"); setLoading(false); }, 1500);
   };
 
-  /* ─── Fallback: send to AI model ─── */
+  /* ─── Fallback: send to AI model (direct to n8n-agent for reliability) ─── */
   const sendToAI = async (userMsg: string, allMessages: Message[]) => {
     const contextPrefix = buildContextPrefix(unifiedCategories, selectedCategory, selectedSub);
-    const systemWithContext = contextPrefix
+    let systemWithContext = contextPrefix
       ? `${UNIFIED_SYSTEM_PROMPT}\n\n${contextPrefix}`
       : UNIFIED_SYSTEM_PROMPT;
+    if (selectedCategory || selectedSub || n8nFilterActive) {
+      const filterCtx = JSON.stringify({ category: selectedCategory, sub: selectedSub, n8n_filter_active: n8nFilterActive });
+      systemWithContext = `[Filter context: ${filterCtx}]\n\n` + systemWithContext;
+    }
 
     setLoading(true);
     setPipelineStage("processing");
@@ -371,7 +429,7 @@ const UnifiedChatPanel = () => {
 
       setPipelineStage("generating");
 
-      const res = await fetch(UNIVERSAL_ROUTER_URL, {
+      const res = await fetch(N8N_AGENT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -381,15 +439,24 @@ const UnifiedChatPanel = () => {
           system: systemWithContext,
           messages: allMessages.filter((m) => m.role === "user" || m.role === "assistant").map((m) => ({ role: m.role, content: m.content })),
           model: selectedModel,
-          filter_context: {
-            category: selectedCategory,
-            sub: selectedSub,
-            n8n_filter_active: n8nFilterActive,
-          },
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: { reply?: string; error?: string; needs_choice?: boolean; llm_job_id?: string };
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { error: text || `HTTP ${res.status}` };
+      }
+
+      if (!res.ok) {
+        const errMsg = data?.error || (data as { message?: string }).message || `Request failed (${res.status})`;
+        appendMessage({ role: "assistant", content: errMsg });
+        setPipelineStage("error");
+        setTimeout(() => setPipelineStage("idle"), 3000);
+        return;
+      }
 
       // Primary failed — show model choice modal
       if (res.status === 202 && data.needs_choice && data.llm_job_id) {
@@ -398,7 +465,6 @@ const UnifiedChatPanel = () => {
           system: systemWithContext,
           messages: allMessages.filter((m) => m.role === "user" || m.role === "assistant").map((m) => ({ role: m.role, content: m.content })),
         });
-        setLoading(false);
         setPipelineStage("idle");
         return;
       }
@@ -429,8 +495,9 @@ const UnifiedChatPanel = () => {
       saveToHistory(finalMessages);
       setPipelineStage("done");
       setTimeout(() => setPipelineStage("idle"), 2000);
-    } catch {
-      appendMessage({ role: "assistant", content: "Connection error." });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      appendMessage({ role: "assistant", content: msg.includes("fetch") || msg.includes("Network") ? "Connection error. Check your network and try again." : msg });
       setPipelineStage("error");
       setTimeout(() => setPipelineStage("idle"), 3000);
     } finally {
@@ -618,6 +685,24 @@ const UnifiedChatPanel = () => {
               </div>
             );
           })}
+          {/* Live sub-step bullets — appear next to ANALYZE while processing */}
+          {pipelineStage === "processing" && workflowLogs.filter(l => l.step === "ANALYZE").length > 0 && (
+            <div className="relative z-20 ml-2 flex flex-col justify-center space-y-0.5">
+              {workflowLogs
+                .filter(l => l.step === "ANALYZE")
+                .map((l, i) => (
+                  <div
+                    key={l.id ?? i}
+                    className={`font-mono text-[9px] leading-tight text-orange-400 ${
+                      l.status === "done" ? "line-through opacity-50" :
+                      l.status === "error" ? "text-red-400" : ""
+                    }`}
+                  >
+                    • {l.substep}
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       )}
 

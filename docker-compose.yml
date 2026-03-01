@@ -1,12 +1,9 @@
-# hans-crafted-stories VPS stack (March 01 2026)
-# Services: n8n + Ollama + Qdrant (vector DB) + AnythingLLM (RAG UI)
+# hans-crafted-stories — Local-First VPS Stack (March 01 2026)
+# All core AI runs privately on Hans-owned Hostinger VPS (Ollama + Qdrant + AnythingLLM)
+# NOT on laptop, NOT on public cloud APIs for primary operations.
 # Qdrant: http://VPS-IP:6333/dashboard
-# AnythingLLM: http://VPS-IP:3001 (point to Ollama + Qdrant in wizard)
-# IMPACT SUMMARY:
-# Adds full local RAG: AnythingLLM UI uploads stories/Google data → Ollama embeds → Qdrant stores.
-# Google connect workflows now gain semantic search (no breaking changes).
-# RAM impact: +~2.5–3.5 GB under load (still safe on KVM2/KVM4).
-# No UI or code changes — pure infra.
+# AnythingLLM: http://VPS-IP:3001 → set LLM to http://ollama:11434 and Vector DB to http://qdrant:6333
+# Google connect → AnythingLLM/Qdrant gives full private RAG on crafted stories.
 
 services:
   n8n:
@@ -16,6 +13,8 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
     restart: unless-stopped
+    networks:
+      - hans-ai-net
 
   ollama:
     image: ollama/ollama
@@ -24,15 +23,31 @@ services:
     volumes:
       - ollama_models:/root/.ollama
     restart: unless-stopped
+    networks:
+      - hans-ai-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   qdrant:
     image: qdrant/qdrant:latest
     ports:
-      - "6333:6333"   # Web UI + REST API
-      - "6334:6334"   # gRPC
+      - "6333:6333"
+      - "6334:6334"
     volumes:
       - qdrant_storage:/qdrant/storage
     restart: unless-stopped
+    networks:
+      - hans-ai-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   anythingllm:
     image: mintplexlabs/anythingllm:latest
@@ -45,9 +60,30 @@ services:
     cap_add:
       - SYS_ADMIN
     restart: unless-stopped
+    networks:
+      - hans-ai-net
+    depends_on:
+      ollama:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 2g
 
 volumes:
   n8n_data:
   ollama_models:
   qdrant_storage:
   anythingllm_storage:
+
+networks:
+  hans-ai-net:
+    driver: bridge

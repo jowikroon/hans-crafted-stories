@@ -1,7 +1,26 @@
+import { WORKFLOWS } from "@/lib/config/workflows";
+
 export interface CommandSuggestion {
   text: string;
   verified: boolean;
 }
+
+/** Subcategory ID → workflow names that are "real" for that sub (used for availability filtering). */
+const SUB_TO_WORKFLOW_NAMES: Record<string, string[]> = {
+  autoseo: ["autoseo"],
+  "product-titles": ["product-titles"],
+  channable: ["product-feed"],
+  "channable-feeds": ["product-feed"],
+  custom: ["autoseo", "product-titles", "product-feed", "health-check", "campaign", "scraper", "monday-orchestrator", "google"],
+  health: ["health-check"],
+  "google-ads": ["campaign"],
+  campaign: ["campaign"],
+  "product-data": ["product-feed"],
+  "google-shopping": ["product-feed"],
+  scraper: ["scraper"],
+  "monday-orchestrator": ["monday-orchestrator"],
+  google: ["google"],
+};
 
 export const empireCommands: Record<string, CommandSuggestion[]> = {
   // Infrastructure
@@ -554,4 +573,58 @@ export function getSortedCommands(
     if (a.verified !== b.verified) return a.verified ? -1 : 1;
     return 0;
   });
+}
+
+/** Phrases from real workflows for a sub (examples + labels) for availability ranking. */
+function getAvailablePhrasesForSub(subId: string): Set<string> {
+  const names = SUB_TO_WORKFLOW_NAMES[subId];
+  if (!names?.length) return new Set();
+  const phrases = new Set<string>();
+  for (const w of WORKFLOWS) {
+    if (!names.includes(w.name)) continue;
+    phrases.add(w.label.toLowerCase());
+    for (const ex of w.examples) phrases.add(ex.toLowerCase());
+  }
+  return phrases;
+}
+
+/** True if the command text is covered by real workflow examples/label (logical match). */
+function commandMatchesAvailability(cmdText: string, availablePhrases: Set<string>): boolean {
+  if (availablePhrases.size === 0) return false;
+  const lower = cmdText.toLowerCase();
+  for (const p of availablePhrases) {
+    if (p.includes(lower) || lower.includes(p)) return true;
+  }
+  return false;
+}
+
+const TOP_10_LIMIT = 10;
+
+/**
+ * Top 10 commands for a sub: based on (1) latest success proxy = usage count,
+ * (2) real functions availability = verified or matches workflow examples,
+ * (3) logical ordering = usage desc, then verified, then availability match.
+ * Returns at most TOP_10_LIMIT (10) items.
+ */
+export function getTop10Commands(
+  subId: string,
+  context: "empire" | "hansai" | "unified",
+  usageCounts: Record<string, number>
+): CommandSuggestion[] {
+  const commandMap = context === "empire" ? empireCommands : context === "unified" ? unifiedCommands : hansAICommands;
+  const rawCommands: CommandSuggestion[] = commandMap[subId] || [];
+  const availablePhrases = getAvailablePhrasesForSub(subId);
+
+  const sorted = [...rawCommands].sort((a, b) => {
+    const usageA = usageCounts[a.text] || 0;
+    const usageB = usageCounts[b.text] || 0;
+    if (usageB !== usageA) return usageB - usageA;
+    if (a.verified !== b.verified) return a.verified ? -1 : 1;
+    const matchA = commandMatchesAvailability(a.text, availablePhrases) ? 1 : 0;
+    const matchB = commandMatchesAvailability(b.text, availablePhrases) ? 1 : 0;
+    if (matchB !== matchA) return matchB - matchA;
+    return 0;
+  });
+
+  return sorted.slice(0, TOP_10_LIMIT);
 }
