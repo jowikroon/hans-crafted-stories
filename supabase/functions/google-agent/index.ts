@@ -6,6 +6,8 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { streamLog } from "../_shared/stream-log.ts";
+import { streamLog as streamLogStep } from "../lib/stream-log.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -240,18 +242,34 @@ serve(async (req) => {
     });
   }
 
+  const body = await req.json().catch(() => ({}));
+  const runId: string | null = body.workflow_run_id ?? body.run_id ?? null;
+
   const tokens = await getOrRefreshTokens(supabaseAdmin, user.id);
   if (!tokens) {
+    if (runId) await streamLog(runId, "ANALYZE", "Google not connected — please click Connect Google", "error");
     return new Response(JSON.stringify({ reply: NOT_CONNECTED_REPLY }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
+  if (runId) await streamLog(runId, "ANALYZE", "Authenticating Gmail API...", "done");
+
   try {
-    const body = await req.json().catch(() => ({}));
+    // === ADD ONLY THESE LINES (do not delete or wrap existing code) ===
+    const startTime = Date.now();
+    if (runId) {
+      await streamLogStep(runId, "ANALYZE", "Authenticating Gmail API...", 1);
+      await streamLogStep(runId, "ANALYZE", "Syncing Google Sheets metadata...", 2);
+      await streamLogStep(runId, "ANALYZE", "Initializing Drive file watcher...", 3);
+      await streamLogStep(runId, "ANALYZE", "Google stack ready ✅", 4, "info", "done", { total_time_ms: Date.now() - startTime });
+    }
+    // === END OF ADDITION ===
     const message = body.message ?? body.input ?? "";
     const messages = Array.isArray(body.messages) ? body.messages : [{ role: "user" as const, content: message || "What can you do with my Google?" }];
+
+    if (runId) await streamLog(runId, "ANALYZE", "Connecting to Google APIs...");
 
     const geminiKey = Deno.env.get("GEMINI_API_KEY");
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
@@ -305,6 +323,12 @@ serve(async (req) => {
         if (textPart?.text) lastText = textPart.text;
         if (functionCall?.functionCall) {
           const { name, args } = functionCall.functionCall as { name: string; args?: Record<string, unknown> };
+          const toolLabel = name === "gmail_list_messages" ? "Fetching Gmail messages..."
+            : name === "gmail_send" ? "Sending Gmail message..."
+            : name === "sheets_append_row" ? "Syncing Google Sheets metadata..."
+            : name === "drive_list_files" ? "Initializing Drive file watcher..."
+            : `Running ${name}...`;
+          if (runId) await streamLog(runId, "ANALYZE", toolLabel);
           const result = await executeTool(name, args || {}, tokens.accessToken);
           contents.push({
             role: "model",
@@ -320,6 +344,7 @@ serve(async (req) => {
       }
 
       const reply = lastText || "No response.";
+      if (runId) await streamLog(runId, "ANALYZE", "Google stack ready ✅", "done");
       return new Response(JSON.stringify({ reply }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -342,11 +367,15 @@ serve(async (req) => {
     });
     const data = await res.json().catch(() => ({}));
     const reply = data?.choices?.[0]?.message?.content ?? "No response.";
+    if (runId) await streamLog(runId, "ANALYZE", "Google stack ready ✅", "done");
     return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("google-agent error:", error);
+    if (runId) {
+      await streamLog(runId, "ANALYZE", `Error: ${error instanceof Error ? error.message : "Unknown error"}`, "error");
+    }
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error", reply: "Something went wrong." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
