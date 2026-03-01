@@ -24,7 +24,7 @@ const STATIC_CONTENT = `<header>
   <main>
     <section aria-label="Introduction">
       <p>Freelance E-commerce Manager &middot; Amazon &amp; Bol.com Specialist</p>
-      <h1>Driving marketplace growth through <em>strategy</em> &amp; design.</h1>
+      <h1>Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h1>
       <h2>Available for freelance &amp; contract roles &mdash; Amazon &amp; Bol.com specialist (NL/EU)</h2>
       <p>I&rsquo;m Hans van Leeuwen &mdash; a freelance e-commerce manager based in Amersfoort, specializing in Amazon, Bol.com, and marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
       <p>Based in Amersfoort, Netherlands &middot; Available for NL &amp; EU projects</p>

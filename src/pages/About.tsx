@@ -32,19 +32,54 @@ const About = () => {
     title: seo.aboutTitle,
     description: seo.aboutDescription,
     url: "https://hansvanleeuwen.com/about",
+    hreflang: [
+      { lang: "en", href: "https://hansvanleeuwen.com/about" },
+      { lang: "nl", href: "https://hansvanleeuwen.com/about" },
+      { lang: "x-default", href: "https://hansvanleeuwen.com/about" },
+    ],
     jsonLd: {
       "@context": "https://schema.org",
-      "@type": "ProfilePage",
-      mainEntity: { "@id": "https://hansvanleeuwen.com/#person" },
-      name: seo.aboutTitle,
-      url: "https://hansvanleeuwen.com/about",
-      breadcrumb: {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-          { "@type": "ListItem", position: 2, name: "About" },
-        ],
-      },
+      "@graph": [
+        {
+          "@type": "ProfilePage",
+          mainEntity: { "@id": "https://hansvanleeuwen.com/#person" },
+          name: seo.aboutTitle,
+          url: "https://hansvanleeuwen.com/about",
+          isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
+        },
+        {
+          "@type": "Person",
+          "@id": "https://hansvanleeuwen.com/#person",
+          name: "Hans van Leeuwen",
+          url: "https://hansvanleeuwen.com/about",
+          jobTitle: "Freelance E-commerce Manager",
+          description: "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
+          image: {
+            "@type": "ImageObject",
+            url: "https://hansvanleeuwen.com/og-image.png",
+            width: 1200,
+            height: 630,
+            caption: "Hans van Leeuwen – Freelance E-commerce Manager",
+          },
+          knowsAbout: ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Conversion optimization", "Digital commerce", "SEO", "Amazon Ads", "Bol Ads"],
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: "Amersfoort",
+            addressCountry: "NL",
+          },
+          sameAs: [
+            "https://www.linkedin.com/in/hansvl3",
+            "https://www.behans.nl",
+          ],
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+            { "@type": "ListItem", position: 2, name: "About", item: "https://hansvanleeuwen.com/about" },
+          ],
+        },
+      ],
     },
   });
 
