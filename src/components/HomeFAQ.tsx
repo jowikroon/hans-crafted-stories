@@ -85,11 +85,15 @@ const HomeFAQ = () => {
                   />
                 </button>
               </dt>
-              {isOpen && (
-                <dd className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground border-t border-border/40 pt-3">
+              <dd
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground border-t border-border/40 pt-3">
                   {answer}
-                </dd>
-              )}
+                </div>
+              </dd>
             </motion.div>
           );
         })}

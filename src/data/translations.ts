@@ -322,11 +322,11 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           title: "Marketplace CRO & Growth",
-          description: "Data-driven conversion rate optimization, A/B testing, and revenue scaling for e-commerce businesses.",
+          description: "Data-driven conversion rate optimization (CRO), A/B testing, and revenue scaling for e-commerce businesses.",
         },
         {
           title: "SEO & Content Strategy",
-          description: "Search-first content strategies that drive organic traffic and improve marketplace rankings.",
+          description: "Search-first content strategies that drive organic traffic and improve marketplace rankings. User experience (UX) design focused on reducing friction.",
         },
       ],
       linkCases: "Amazon & Bol.com cases →",
@@ -448,7 +448,7 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "E-commerce Manager & Marketplace Specialist (Amazon & Bol.com) | Hans van Leeuwen",
+      homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
       homeDescription: "Freelance e-commerce manager with 10+ years of experience. Amazon & Bol.com marketplace growth | CRO | UX | NL/EU. Based in Amersfoort, Netherlands.",
       writingTitle: "E-commerce Insights & Articles | Hans van Leeuwen",
       writingDescription: "Read Hans van Leeuwen's thoughts on e-commerce strategy, marketplace optimization, Amazon & Bol.com growth, UX design, and digital commerce trends.",
@@ -625,11 +625,11 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           title: "Marktplaats CRO & Groei",
-          description: "Datagedreven conversieoptimalisatie, A/B-testen en omzetschaling voor e-commercebedrijven.",
+          description: "Datagedreven conversie-optimalisatie (CRO), A/B-testen en omzetschaling voor e-commercebedrijven.",
         },
         {
           title: "SEO & Contentstrategie",
-          description: "Zoekgerichte contentstrategieën die organisch verkeer stimuleren en marktplaatsrankings verbeteren.",
+          description: "Zoekgerichte contentstrategieën die organisch verkeer stimuleren en marktplaatsrankings verbeteren. Gebruikerservaring (UX) design gericht op frictieverlaging.",
         },
       ],
       linkCases: "Amazon & Bol.com cases →",
@@ -751,7 +751,7 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "E-commerce Manager & Marketplace Specialist (Amazon & Bol.com) | Hans van Leeuwen",
+      homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
       homeDescription: "Freelance e-commerce manager met 10+ jaar ervaring. Amazon & Bol.com marktplaatsgroei | CRO | UX | NL/EU. Gevestigd in Amersfoort, Nederland.",
       writingTitle: "E-commerce Inzichten & Artikelen | Hans van Leeuwen",
       writingDescription: "Lees de artikelen van Hans van Leeuwen over e-commercestrategie, marktplaatsoptimalisatie, Amazon & Bol.com groei, UX-design en digitale commercetrends.",
