@@ -260,7 +260,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         {/* ─── ROW 2: Command Center link (desktop) — always visible ─── */}
         {user && (
           <div className="mx-auto max-w-6xl px-6 hidden md:block">
-            <div className="flex items-center justify-end h-8">
+            <div className="flex items-center justify-end h-10">
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => navigate("/hansai")}
