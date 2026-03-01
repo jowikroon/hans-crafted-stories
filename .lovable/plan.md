@@ -1,65 +1,95 @@
 
 
-# Integrate System Analysis Dashboard into Status Sub-Menu
+# SEO Quick Wins Implementation
 
-## What changes
+Based on the audit, here are the fast, high-impact changes we can make within the current codebase.
 
-Replace the current Status sub-menu ("All", "Healthy", "Issues", "Tracking") with a new set of sub-pages that combine the existing status cards with the 4 analysis tabs from the uploaded file. The uploaded JSX serves as a living template -- its data (test results, architecture map, issues) should update as the site evolves.
+---
 
-## New sub-menu structure
+## 1. Host OG/social image on the same domain
 
-| Sub-filter | Content |
-|------------|---------|
-| **All** | The existing 5 status summary cards (System Health, Connectors, Monday, Intents, Tracking) -- unchanged |
-| **Overview** | KPI grid (test pass rate, avg confidence, workflows count, edge functions count) + system summary + issue distribution |
-| **Test Results** | Table of intent router test results with confidence bars and pass/fail indicators |
-| **Issues** | Expandable issue cards with severity badges, impact, and fix descriptions |
-| **Architecture** | Routes map, workflow registry, and tech stack grid |
+**Problem**: `og:image` and `twitter:image` point to `storage.googleapis.com`, reducing brand control.
 
-## Implementation details
+**Fix**: Copy the social image to `public/og-image.png` (already exists) and update all references in `index.html` and `functions/[[path]].ts` to use `https://hansvanleeuwen.com/og-image.png`.
 
-### 1. Update sub-menu items in Portal.tsx
+Files: `index.html` (lines 29, 41, 56, 75)
 
-Change the `status` entry in `subMenuItems` from:
-```
-["All", "Healthy", "Issues", "Tracking"]
-```
-to:
-```
-["All", "Overview", "Test Results", "Issues", "Architecture"]
-```
+---
 
-### 2. Create new component: `src/components/portal/status/AnalysisDashboard.tsx`
+## 2. Fix `og:locale` from `en_US` to `en_GB`
 
-A single component that accepts a `subFilter` prop and renders the appropriate analysis panel. This converts the uploaded JSX from inline styles to Tailwind CSS, matching the portal's dark theme.
+**Problem**: `og:locale` is `en_US` but primary audience is Netherlands/EU.
 
-**Data sources** (kept as module-level constants for now, designed to be swapped to live data later):
-- `testResults` array -- 20 intent router test cases with prompt, expected, matched, confidence, status
-- `architecture` object -- pages array, workflows array, edge function count, i18n languages
-- `issues` array -- 9 items with severity, area, issue description, impact, fix
+**Fix**: Change `og:locale` from `en_US` to `en_GB` in `index.html` (line 33). This is the closest standard OG locale for international English targeting EU.
 
-**Sub-sections:**
-- **Overview**: 4 KPI cards in a responsive grid (pass rate, avg confidence, workflow count, edge function count), system summary block, issue distribution bar
-- **Test Results**: Responsive table with ID, prompt, expected, matched (color-coded by workflow category), confidence bar, pass/fail icon
-- **Issues**: Expandable cards sorted by severity, click to reveal impact + fix
-- **Architecture**: Routes grid (public/auth/SEO badges), workflow registry (category chips + keyword counts), tech stack 3-column grid
+---
 
-All styled with Tailwind to match existing portal aesthetic (dark `bg-card`, `border-border`, `text-foreground`/`text-muted-foreground`).
+## 3. Shorten the page title
 
-### 3. Update `PortalStatusTab.tsx`
+**Problem**: Title is 80+ chars, risks SERP truncation.
 
-Add routing logic based on `subFilter`:
-- `"All"` -- render existing status cards grid (current behavior)
-- `"Overview"`, `"Test Results"`, `"Issues"`, `"Architecture"` -- render `AnalysisDashboard` with the active sub-filter
-- Remove old "Healthy"/"Tracking" sub-filter logic since those are replaced
+**Fix**: Change title across `index.html`, translations, and the `useSEO` default to:
+`Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen`
 
-### Files to create
-- `src/components/portal/status/AnalysisDashboard.tsx` -- The 4-panel analysis component
+Files: `index.html` (line 18, 27, 39, 62), `src/hooks/useSEO.ts` (DEFAULT_TITLE), `src/data/translations.ts` (seo.homeTitle)
 
-### Files to modify
-- `src/pages/Portal.tsx` -- Update `subMenuItems.status` array (line 32)
-- `src/components/portal/PortalStatusTab.tsx` -- Add conditional rendering for new sub-filters, import AnalysisDashboard
+---
 
-### No new dependencies needed
-Uses existing: Tailwind, lucide-react, existing UI components
+## 4. Make FAQ answers visible by default (no accordion hide)
+
+**Problem**: FAQ answers are hidden behind an accordion click, which Google may not index as FAQ rich results.
+
+**Fix**: In `HomeFAQ.tsx`, render all answers expanded by default (remove the toggle-to-show behavior). Keep the accordion interaction for UX but default `openIndex` to show all, or simply always render `<dd>` content visibly. The simplest approach: remove the conditional `{isOpen && ...}` wrapper so answers are always in the DOM (use CSS `max-height` transition for the expand/collapse animation instead).
+
+File: `src/components/HomeFAQ.tsx`
+
+---
+
+## 5. Fix BreadcrumbList schema (homepage should only have "Home")
+
+**Problem**: The homepage BreadcrumbList includes all sections (Home, Work, Writing, About), which is incorrect -- breadcrumbs should reflect the current page's hierarchy position.
+
+**Fix**: In `index.html`, reduce the BreadcrumbList to only one item (`Home`). Per-page breadcrumb schemas are already handled by the `useSEO` hook's `jsonLd` prop on inner pages.
+
+File: `index.html` (lines 87-114)
+
+---
+
+## 6. Add keyword-rich contextual internal links in Hero body copy
+
+**Problem**: Internal links only appear in nav/CTAs with generic anchors.
+
+**Fix**: In the Hero description paragraph and expertise cards, add contextual links like:
+- "Amazon marketplace case studies" linking to `/work`
+- "e-commerce insights" linking to `/writing`
+
+This means adding `<Link>` elements inside the Hero description or adding a new short paragraph with varied anchor text after the main description.
+
+File: `src/components/Hero.tsx`
+
+---
+
+## 7. Add CRO/jargon definitions on first use
+
+**Problem**: Terms like CRO and UX appear without explanation.
+
+**Fix**: In the expertise card descriptions (via translations), expand first occurrences:
+- "conversion rate optimization (CRO)" instead of just "CRO"
+- "user experience (UX)" instead of just "UX"
+
+File: `src/data/translations.ts` (expertise descriptions)
+
+---
+
+## Summary of files to change
+
+| File | Changes |
+|------|---------|
+| `index.html` | OG image URLs, og:locale, title, BreadcrumbList |
+| `src/hooks/useSEO.ts` | Shorter DEFAULT_TITLE |
+| `src/data/translations.ts` | Shorter homeTitle, jargon definitions in expertise |
+| `src/components/HomeFAQ.tsx` | Always-visible FAQ answers |
+| `src/components/Hero.tsx` | Contextual internal links with keyword anchors |
+| `functions/[[path]].ts` | No changes needed (inner pages only) |
+| `scripts/inject-static-content.cjs` | Update title to match shortened version |
 
