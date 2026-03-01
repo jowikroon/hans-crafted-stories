@@ -219,12 +219,14 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
 
-              <LangSwitch />
+              <div className="hidden sm:block">
+                <LangSwitch />
+              </div>
 
-              {/* Portal / Login — styled as outlined button */}
+              {/* Portal / Login — styled as outlined button (hidden on mobile) */}
               <Link
                 to="/portal"
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium transition-all ${
+                className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium transition-all ${
                   isActive("/portal")
                     ? isDark
                       ? "border-emerald-400 bg-emerald-500/10 text-emerald-300"
@@ -237,12 +239,12 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 {user ? (
                   <>
                     <img src={user.user_metadata?.avatar_url || ""} alt="" className="h-4 w-4 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                    <span className="hidden sm:inline">{t.portal}</span>
+                    <span>{t.portal}</span>
                   </>
                 ) : (
                   <>
                     <LogIn size={14} />
-                    <span className="hidden sm:inline">{t.login}</span>
+                    <span>{t.login}</span>
                   </>
                 )}
               </Link>
@@ -298,6 +300,9 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   </Link>
                 ))}
                 <div className={`my-1 h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />
+                <div className="flex items-center justify-between px-3 py-2">
+                  <LangSwitch />
+                </div>
                 <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-colors ${isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
                   <LogIn size={14} />
                   {user ? t.portal : t.login}
