@@ -1,0 +1,53 @@
+# hans-crafted-stories VPS stack (March 01 2026)
+# Services: n8n + Ollama + Qdrant (vector DB) + AnythingLLM (RAG UI)
+# Qdrant: http://VPS-IP:6333/dashboard
+# AnythingLLM: http://VPS-IP:3001 (point to Ollama + Qdrant in wizard)
+# IMPACT SUMMARY:
+# Adds full local RAG: AnythingLLM UI uploads stories/Google data → Ollama embeds → Qdrant stores.
+# Google connect workflows now gain semantic search (no breaking changes).
+# RAM impact: +~2.5–3.5 GB under load (still safe on KVM2/KVM4).
+# No UI or code changes — pure infra.
+
+services:
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"   # Web UI + REST API
+      - "6334:6334"   # gRPC
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+
+  anythingllm:
+    image: mintplexlabs/anythingllm:latest
+    ports:
+      - "3001:3001"
+    volumes:
+      - anythingllm_storage:/app/server/storage
+    environment:
+      - STORAGE_DIR=/app/server/storage
+    cap_add:
+      - SYS_ADMIN
+    restart: unless-stopped
+
+volumes:
+  n8n_data:
+  ollama_models:
+  qdrant_storage:
+  anythingllm_storage:
