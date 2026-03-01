@@ -174,7 +174,7 @@ const UnifiedChatPanel = () => {
           if (!cancelled) setGoogleConnected(false);
           return;
         }
-        const { data } = await supabase.from("user_google_tokens").select("user_id").eq("user_id", session.user.id).maybeSingle();
+        const { data } = await (supabase as any).from("user_google_tokens").select("user_id").eq("user_id", session.user.id).maybeSingle();
         if (!cancelled) setGoogleConnected(!!data);
       } catch {
         if (!cancelled) setGoogleConnected(false);
