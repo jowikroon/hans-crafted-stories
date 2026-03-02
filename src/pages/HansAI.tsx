@@ -360,7 +360,7 @@ const HansAI = () => {
         messages: typeof newAiMessages;
         router_context?: HierarchyContext;
         autonomous?: boolean;
-        voice?: { name: string; style: string; standard?: string };
+        voice?: { name: string; style: string; standard?: string; promptLanguage?: string };
         persona?: { key: string };
       } = { messages: newAiMessages };
       if (hierarchyContext) body.router_context = hierarchyContext;
@@ -368,7 +368,13 @@ const HansAI = () => {
       if (options?.persona === "jarvis") {
         body.persona = { key: "jarvis" };
       } else if (activeVoice) {
-        body.voice = { name: activeVoice.name, style: activeVoice.style, standard: activeVoice.standard ?? "" };
+        const isMichelle = activeVoice.name.toLowerCase().trim() === "michelle";
+        body.voice = {
+          name: activeVoice.name,
+          style: activeVoice.style,
+          standard: activeVoice.standard ?? "",
+          promptLanguage: isMichelle ? "zh" : (activeVoice.promptLanguage ?? ""),
+        };
       }
       // #region agent log
       fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:handleAI_before_fetch",message:"body_built",data:{hasVoice:!!body.voice,hasPersona:!!body.persona,activeVoiceId:activeVoice?.id ?? null},timestamp:Date.now(),hypothesisId:"H3_H4"})}).catch(()=>{});

@@ -5,12 +5,16 @@
 
 const STORAGE_KEY = "hansai_voice_personas";
 
+export type PromptLanguage = "" | "en" | "nl" | "zh";
+
 export interface VoicePersona {
   id: string;
   name: string;
   style: string;
   /** Default variables/context for this voice (e.g. "language is chinese"). Only admin can edit. */
   standard?: string;
+  /** Prompt/response language override ("en" | "nl" | "zh" | "" for none). */
+  promptLanguage?: PromptLanguage;
   createdAt?: number;
   updatedAt?: number;
 }
@@ -65,12 +69,14 @@ export function saveVoicePersona(persona: VoicePersona): void {
   const idx = list.findIndex((p) => p.id === id || p.name.toLowerCase() === persona.name.trim().toLowerCase());
   const now = Date.now();
   const existingStandard = idx >= 0 ? list[idx].standard : undefined;
+  const existingPromptLang = idx >= 0 ? list[idx].promptLanguage : undefined;
   const withMeta: VoicePersona = {
     ...persona,
     id,
     name: persona.name.trim(),
     style: persona.style.trim(),
     standard: persona.standard !== undefined ? (typeof persona.standard === "string" ? persona.standard.trim() : undefined) : existingStandard,
+    promptLanguage: persona.promptLanguage !== undefined ? persona.promptLanguage : existingPromptLang,
     updatedAt: now,
     createdAt: persona.createdAt ?? now,
   };

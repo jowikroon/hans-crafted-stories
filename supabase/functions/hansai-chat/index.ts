@@ -79,8 +79,10 @@ serve(async (req) => {
     if (persona && typeof persona === "object" && persona.key === "jarvis") {
       systemContent = JARVIS_PERSONA_PROMPT + hierarchyHint;
     } else if (voice && typeof voice === "object" && typeof voice.name === "string" && typeof voice.style === "string") {
+      const langMap: Record<string, string> = { en: "Respond in English.", nl: "Respond in Dutch.", zh: "Respond in Chinese." };
+      const langText = voice.promptLanguage && typeof voice.promptLanguage === "string" && langMap[voice.promptLanguage] ? langMap[voice.promptLanguage] + "\n\n" : "";
       const standardText = voice.standard && typeof voice.standard === "string" && voice.standard.trim() ? `Default context/variables (always apply): ${voice.standard.trim()}\n\n` : "";
-      const voiceBlock = `You are ${voice.name} AI. The user has chosen you to respond in this conversation with the following style and rules:\n\n${standardText}${voice.style}\n\n(Keep the rest of your capabilities for Command Center tasks, but respond in character as ${voice.name} AI. Sign off or refer to yourself as ${voice.name} AI when appropriate.)`;
+      const voiceBlock = `You are ${voice.name} AI. The user has chosen you to respond in this conversation with the following style and rules:\n\n${langText}${standardText}${voice.style}\n\n(Keep the rest of your capabilities for Command Center tasks, but respond in character as ${voice.name} AI. Sign off or refer to yourself as ${voice.name} AI when appropriate.)`;
       systemContent = voiceBlock + "\n\n---\n\n" + SYSTEM_PROMPT + hierarchyHint;
     } else {
       systemContent = SYSTEM_PROMPT + hierarchyHint;
