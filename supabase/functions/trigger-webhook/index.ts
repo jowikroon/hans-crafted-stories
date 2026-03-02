@@ -66,28 +66,31 @@ serve(async (req) => {
       );
     }
 
-    // ── 3. Insert workflow_runs row with status "pending" ─────────────────────
-    const { data: run, error: insertError } = await supabaseAdmin
-      .from("workflow_runs")
-      .insert({ user_id: user.id, status: "pending" })
-      .select("id")
-      .single();
+    // ── 3. Best-effort insert into workflow_runs ─────────────────────────────
+    let run_id: string = crypto.randomUUID();
+    let dbAvailable = false;
 
-    if (insertError || !run) {
-      console.error("workflow_runs insert failed:", insertError);
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to create workflow run record" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+    try {
+      const { data: run, error: insertError } = await supabaseAdmin
+        .from("workflow_runs")
+        .insert({ user_id: user.id, status: "pending" })
+        .select("id")
+        .single();
+
+      if (!insertError && run) {
+        run_id = run.id;
+        dbAvailable = true;
+      } else {
+        console.warn("[trigger-webhook] workflow_runs insert failed (non-fatal):", insertError);
+      }
+    } catch (dbErr) {
+      console.warn("[trigger-webhook] workflow_runs unavailable (non-fatal):", dbErr);
     }
 
-    const run_id: string = run.id;
-
-    // Mark as "processing" synchronously so the frontend can show a spinner
-    await supabaseAdmin
-      .from("workflow_runs")
-      .update({ status: "processing" })
-      .eq("id", run_id);
+    // Only update to "processing" if DB insert succeeded
+    if (dbAvailable) {
+      await supabaseAdmin.from("workflow_runs").update({ status: "processing" }).eq("id", run_id);
+    }
 
     // ── 4. Fire n8n — 30-second timeout (up from 5s to support complex workflows) ──
     const controller = new AbortController();
@@ -109,14 +112,16 @@ serve(async (req) => {
         const errBody = await n8nRes.text().catch(() => "");
         const errText = `n8n returned HTTP ${n8nRes.status}${errBody ? ": " + errBody.slice(0, 200) : ""}`;
         console.warn(`[trigger-webhook] ${errText} for run_id=${run_id}`);
-        await supabaseAdmin
-          .from("workflow_runs")
-          .update({
-            status: "error",
-            error_message: errText,
-            result_data: { n8n_status: n8nRes.status, n8n_body: errBody.slice(0, 500), webhook_url },
-          })
-          .eq("id", run_id);
+        if (dbAvailable) {
+          await supabaseAdmin
+            .from("workflow_runs")
+            .update({
+              status: "error",
+              error_message: errText,
+              result_data: { n8n_status: n8nRes.status, n8n_body: errBody.slice(0, 500), webhook_url },
+            })
+            .eq("id", run_id);
+        }
       }
     } catch (fetchErr) {
       clearTimeout(timeoutId);
@@ -126,14 +131,16 @@ serve(async (req) => {
         : (fetchErr instanceof Error ? fetchErr.message : "n8n unreachable");
 
       console.error(`[trigger-webhook] fetch error for run_id=${run_id}:`, errText);
-      await supabaseAdmin
-        .from("workflow_runs")
-        .update({
-          status: "error",
-          error_message: errText,
-          result_data: { timeout: isTimeout, webhook_url },
-        })
-        .eq("id", run_id);
+      if (dbAvailable) {
+        await supabaseAdmin
+          .from("workflow_runs")
+          .update({
+            status: "error",
+            error_message: errText,
+            result_data: { timeout: isTimeout, webhook_url },
+          })
+          .eq("id", run_id);
+      }
     }
 
     // ── 5. Return immediately with run_id — frontend subscribes to Realtime ───
