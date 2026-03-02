@@ -8,9 +8,9 @@ const socialLinks = [
 ];
 
 const internalLinks = [
-  { label: "Work", to: "/work" },
-  { label: "Writing", to: "/writing" },
-  { label: "About", to: "/about" },
+  { label: "Amazon NL Case Studies", to: "/work" },
+  { label: "Optimization Articles", to: "/writing" },
+  { label: "About Hans", to: "/about" },
 ];
 
 const Footer = () => {

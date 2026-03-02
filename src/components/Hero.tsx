@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import FeaturedArticles from "@/components/FeaturedArticles";
 import HomeFAQ from "@/components/HomeFAQ";
 import ServiceDetails from "@/components/ServiceDetails";
-import { ArrowRight, ShoppingCart, BarChart3, Search, TrendingUp, MapPin } from "lucide-react";
+import { ArrowRight, ShoppingCart, BarChart3, Search, TrendingUp, MapPin, Users, AlertTriangle } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageContent } from "@/hooks/usePageContent";
@@ -59,11 +59,11 @@ const Hero = () => {
           <p className="mb-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
             {isNl ? "Bekijk mijn " : "Explore my "}
             <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
-              {isNl ? "Amazon & Bol.com marketplace cases" : "Amazon & Bol.com marketplace case studies"}
+              {isNl ? "Amazon NL marktplaats case studies" : "Amazon NL marketplace case studies"}
             </Link>
             {isNl ? " of lees " : " or read "}
             <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
-              {isNl ? "e-commerce inzichten & artikelen" : "e-commerce insights & articles"}
+              {isNl ? "Amazon & Bol.com optimalisatie artikelen" : "Amazon & Bol.com optimization articles"}
             </Link>
             .
           </p>
@@ -71,7 +71,7 @@ const Hero = () => {
             <MapPin size={13} className="shrink-0 text-primary/60" />
             {getValue("hero_location", t.location)}
           </p>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4" role="group" aria-label={isNl ? "Actieknoppen" : "Call to action"}>
             <Link
               to="/work"
               className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
@@ -90,11 +90,17 @@ const Hero = () => {
             >
               {getValue("hero_cta_consult", t.ctaConsult)}
             </a>
+            <Link
+              to="/about#contact"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-border/60 px-6 py-3 text-sm font-medium text-muted-foreground transition-all duration-300 hover:border-foreground/30 hover:text-foreground"
+            >
+              {t.ctaConsultSecondary}
+            </Link>
           </div>
         </motion.div>
       </section>
 
-      {/* Results / Proof Section */}
+      {/* Results / Proof Section — enriched mini case studies */}
       <section
         className="section-container pb-8 pt-2"
         aria-label={getValue("hero_results_label", t.resultsLabel)}
@@ -107,14 +113,89 @@ const Hero = () => {
           className="flex flex-wrap gap-6 md:gap-10"
         >
           {t.results.map((result, i) => (
-            <div key={i} className="flex items-start gap-3">
+            <Link to="/work" key={i} className="group flex items-start gap-3 transition-colors hover:text-foreground">
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
                 {i + 1}
               </span>
-              <p className="text-sm leading-snug text-muted-foreground max-w-[220px]">{result}</p>
-            </div>
+              <div className="max-w-[260px]">
+                <p className="text-sm font-semibold leading-snug text-foreground">{result}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground group-hover:text-muted-foreground/80">
+                  {t.resultsDetail[i]}
+                </p>
+              </div>
+            </Link>
           ))}
         </motion.div>
+      </section>
+
+      {/* Who I Help Section */}
+      <section
+        className="section-container pb-10"
+        aria-label={t.whoIHelpLabel}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+            {t.whoIHelpLabel}
+          </h2>
+          <p className="mb-6 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+            {t.whoIHelpHeading}
+          </p>
+        </motion.div>
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {t.whoIHelp.map((item, i) => (
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.4, delay: i * 0.06 }}
+              className="flex items-start gap-3 rounded-lg border border-border/30 bg-card p-4"
+            >
+              <Users size={16} className="mt-0.5 shrink-0 text-primary" />
+              <span className="text-sm leading-relaxed text-muted-foreground">{item}</span>
+            </motion.li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Problems I Solve Section */}
+      <section
+        className="section-container pb-16"
+        aria-label={t.problemsLabel}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+            {t.problemsLabel}
+          </h2>
+          <p className="mb-6 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+            {t.problemsHeading}
+          </p>
+        </motion.div>
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {t.problems.map((problem, i) => (
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.4, delay: i * 0.05 }}
+              className="flex items-start gap-3 rounded-lg border border-border/30 bg-card p-4"
+            >
+              <AlertTriangle size={16} className="mt-0.5 shrink-0 text-primary/70" />
+              <span className="text-sm leading-relaxed text-muted-foreground">{problem}</span>
+            </motion.li>
+          ))}
+        </ul>
       </section>
 
       {/* Expertise Section */}
@@ -163,7 +244,7 @@ const Hero = () => {
           ))}
         </div>
 
-        {/* Quick links */}
+        {/* Quick links — keyword-rich anchors */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

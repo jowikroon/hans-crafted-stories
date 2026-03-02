@@ -136,6 +136,35 @@ class CanonicalHandler {
   }
 }
 
+class HreflangInjector {
+  private path: string;
+  private injected = false;
+  constructor(path: string) {
+    this.path = path;
+  }
+  element(element: Element) {
+    if (this.injected) return;
+    const rel = element.getAttribute("rel");
+    if (rel === "canonical") {
+      const enUrl = `${SITE_URL}${this.path === "/" ? "/" : this.path}`;
+      const nlUrl = `${enUrl}${this.path === "/" ? "" : ""}?lang=nl`;
+      element.after(
+        `<link rel="alternate" hreflang="en" href="${enUrl}" />`,
+        { html: true }
+      );
+      element.after(
+        `<link rel="alternate" hreflang="nl" href="${nlUrl}" />`,
+        { html: true }
+      );
+      element.after(
+        `<link rel="alternate" hreflang="x-default" href="${enUrl}" />`,
+        { html: true }
+      );
+      this.injected = true;
+    }
+  }
+}
+
 class JsonLdHandler {
   private newContent: string;
   private replaced = false;
@@ -169,7 +198,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   const meta = ROUTE_META[path];
   if (!meta) {
-    return env.ASSETS.fetch(request);
+    // Even without route meta, inject hreflang for all HTML pages
+    const assetResponse = await env.ASSETS.fetch(request);
+    return new HTMLRewriter()
+      .on("link[rel='canonical']", new HreflangInjector(path))
+      .transform(assetResponse);
   }
 
   // Fetch the static index.html from the asset pipeline
@@ -188,7 +221,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     .on("meta[name='description']", new MetaHandler("name", "description", meta.description))
     .on("meta[name='twitter:title']", new MetaHandler("name", "twitter:title", meta.title))
     .on("meta[name='twitter:description']", new MetaHandler("name", "twitter:description", twitterDesc))
-    .on("link[rel='canonical']", new CanonicalHandler(canonicalUrl));
+    .on("link[rel='canonical']", new CanonicalHandler(canonicalUrl))
+    .on("link[rel='canonical']", new HreflangInjector(path));
 
   // Replace homepage JSON-LD with route-specific schema if available
   const routeJsonLd = ROUTE_JSONLD[path];
