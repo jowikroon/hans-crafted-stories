@@ -66,29 +66,33 @@ serve(async (req) => {
       );
     }
 
-    // ── 3. Insert workflow_runs row with status "pending" (best effort) ───────
+    // ── 3. Best-effort insert into workflow_runs ─────────────────────────────
     // If this table is missing or schema diverged in a linked project, do not hard-fail.
     // We still trigger n8n and return success so /run commands keep working.
-    let run_id = crypto.randomUUID();
+    let run_id: string = crypto.randomUUID();
     let trackingEnabled = false;
 
-    const { data: run, error: insertError } = await supabaseAdmin
-      .from("workflow_runs")
-      .insert({ user_id: user.id, status: "pending" })
-      .select("id")
-      .single();
-
-    if (insertError || !run) {
-      console.error("workflow_runs insert failed (continuing without DB tracking):", insertError);
-    } else {
-      run_id = run.id;
-      trackingEnabled = true;
-
-      // Mark as "processing" synchronously so the frontend can show a spinner
-      await supabaseAdmin
+    try {
+      const { data: run, error: insertError } = await supabaseAdmin
         .from("workflow_runs")
-        .update({ status: "processing" })
-        .eq("id", run_id);
+        .insert({ user_id: user.id, status: "pending" })
+        .select("id")
+        .single();
+
+      if (!insertError && run) {
+        run_id = run.id;
+        trackingEnabled = true;
+
+        // Mark as "processing" synchronously so the frontend can show a spinner
+        await supabaseAdmin
+          .from("workflow_runs")
+          .update({ status: "processing" })
+          .eq("id", run_id);
+      } else {
+        console.warn("[trigger-webhook] workflow_runs insert failed (non-fatal):", insertError);
+      }
+    } catch (dbErr) {
+      console.warn("[trigger-webhook] workflow_runs unavailable (non-fatal):", dbErr);
     }
 
     // ── 4. Fire n8n — 30-second timeout (up from 5s to support complex workflows) ──
