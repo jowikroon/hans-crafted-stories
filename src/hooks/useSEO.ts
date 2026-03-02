@@ -52,9 +52,8 @@ export const useSEO = ({ title, description, url, type = "website", hreflang, js
     }
     canonical.href = url;
 
-    // Hreflang links
     const hreflangClass = "seo-hreflang";
-    document.querySelectorAll(`.${hreflangClass}`).forEach((el) => el.remove());
+    document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
     if (hreflang) {
       hreflang.forEach(({ lang, href }) => {
         const link = document.createElement("link");
@@ -81,7 +80,7 @@ export const useSEO = ({ title, description, url, type = "website", hreflang, js
     return () => {
       document.title = DEFAULT_TITLE;
       document.getElementById(ldId)?.remove();
-      document.querySelectorAll(`.${hreflangClass}`).forEach((el) => el.remove());
+      document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
     };
   }, [title, description, url, type, hreflang, jsonLd]);
 };
