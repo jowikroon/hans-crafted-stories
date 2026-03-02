@@ -2,31 +2,28 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- dataLayer init (must be before GTM) -->
+    <!-- dataLayer init (must be before GTM — actual GTM container is injected by TrackingScriptInjector after consent) -->
     <script>window.dataLayer = window.dataLayer || [];</script>
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
-    <!-- End Google Tag Manager -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="robots" content="index, follow" />
 
     <!-- Primary Meta Tags -->
     <title>Freelance E-commerce Manager (Amazon &amp; Bol.com) | Hans van Leeuwen</title>
-    <meta name="description" content="Freelance e-commerce manager with 10+ years of experience. Amazon &amp; Bol.com marketplace growth | CRO | UX | NL/EU. Based in Amersfoort, Netherlands." />
+    <meta name="description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Based in Amersfoort — NL/EU. Get a 7-point marketplace audit." />
     <meta name="author" content="Hans van Leeuwen" />
     <link rel="canonical" href="https://hansvanleeuwen.com/" />
+    <link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/" />
+    <link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://hansvanleeuwen.com/" />
     <meta property="og:site_name" content="Hans van Leeuwen" />
     <meta property="og:title" content="Freelance E-commerce Manager (Amazon &amp; Bol.com) | Hans van Leeuwen" />
-    <meta property="og:description" content="Freelance e-commerce manager with 10+ years of experience. Amazon &amp; Bol.com marketplace growth | CRO | UX | NL/EU. Based in Amersfoort." />
+    <meta property="og:description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Based in Amersfoort — NL/EU. Get a 7-point marketplace audit." />
     <meta property="og:image" content="https://hansvanleeuwen.com/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Hans van Leeuwen – Freelance E-commerce Manager" />
@@ -36,8 +33,9 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@hansvl3" />
     <meta name="twitter:creator" content="@hansvl3" />
+    <meta name="twitter:url" content="https://hansvanleeuwen.com/" />
     <meta name="twitter:title" content="Freelance E-commerce Manager (Amazon &amp; Bol.com) | Hans van Leeuwen" />
-    <meta name="twitter:description" content="Freelance e-commerce manager with 10+ years of experience. Amazon &amp; Bol.com marketplace growth | CRO | UX | NL/EU." />
+    <meta name="twitter:description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Based in Amersfoort — NL/EU." />
     <meta name="twitter:image" content="https://hansvanleeuwen.com/og-image.png" />
     <meta name="twitter:image:alt" content="Hans van Leeuwen – E-commerce Manager &amp; Marketplace Specialist" />
 
@@ -51,7 +49,7 @@
           "@id": "https://hansvanleeuwen.com/#website",
           "name": "Hans van Leeuwen",
           "url": "https://hansvanleeuwen.com/",
-          "description": "E-commerce manager specializing in marketplace growth, UX strategy, and digital commerce optimization.",
+          "description": "Freelance e-commerce manager specializing in Amazon & Bol.com marketplace growth, CRO, UX strategy, and digital commerce optimization.",
           "inLanguage": "en",
           "image": "https://hansvanleeuwen.com/og-image.png",
           "publisher": { "@id": "https://hansvanleeuwen.com/#organization" }
@@ -63,44 +61,78 @@
           "name": "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
           "isPartOf": { "@id": "https://hansvanleeuwen.com/#website" },
           "about": { "@id": "https://hansvanleeuwen.com/#person" },
-          "inLanguage": "en"
+          "inLanguage": "en",
+          "primaryImageOfPage": {
+            "@type": "ImageObject",
+            "url": "https://hansvanleeuwen.com/og-image.png",
+            "width": 1200,
+            "height": 630
+          }
         },
         {
           "@type": "Person",
           "@id": "https://hansvanleeuwen.com/#person",
           "name": "Hans van Leeuwen",
-          "url": "https://hansvanleeuwen.com/",
-          "mainEntityOfPage": "https://hansvanleeuwen.com/#webpage",
+          "url": "https://hansvanleeuwen.com/about",
+          "mainEntityOfPage": { "@id": "https://hansvanleeuwen.com/#webpage" },
           "jobTitle": "Freelance E-commerce Manager",
-          "description": "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
+          "description": "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce. Based in Amersfoort, NL.",
           "image": "https://hansvanleeuwen.com/og-image.png",
-          "knowsAbout": ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Conversion optimization", "Digital commerce", "SEO", "Google Ads", "Product listing optimization", "Amazon Ads", "Bol Ads", "Marketplace CRO", "A+ Content"],
+          "email": "hansvl3@gmail.com",
+          "knowsAbout": [
+            "E-commerce", "Amazon", "Bol.com", "Marketplace optimization",
+            "UX design", "Conversion rate optimization", "Digital commerce",
+            "SEO", "Amazon Ads", "Bol Ads", "Product listing optimization",
+            "A+ Content", "Marketplace CRO", "Inventory forecasting",
+            "Google Ads", "Demand planning"
+          ],
           "worksFor": { "@id": "https://hansvanleeuwen.com/#organization" },
           "address": {
             "@type": "PostalAddress",
             "addressLocality": "Amersfoort",
+            "addressRegion": "Utrecht",
             "addressCountry": "NL"
           },
           "sameAs": [
             "https://www.linkedin.com/in/hansvl3",
-            "https://www.behans.nl"
+            "https://www.behans.nl",
+            "https://twitter.com/hansvl3"
           ]
         },
         {
-          "@type": "ProfessionalService",
+          "@type": ["Organization", "ProfessionalService"],
           "@id": "https://hansvanleeuwen.com/#organization",
           "name": "Hans van Leeuwen – Freelance E-commerce Management",
           "url": "https://hansvanleeuwen.com/",
           "logo": "https://hansvanleeuwen.com/og-image.png",
+          "image": "https://hansvanleeuwen.com/og-image.png",
           "founder": { "@id": "https://hansvanleeuwen.com/#person" },
           "description": "Freelance e-commerce management, Amazon & Bol.com marketplace optimization, CRO, and digital commerce consulting for brands in the Netherlands and EU.",
+          "priceRange": "$$",
           "areaServed": [
-            { "@type": "Country", "name": "Netherlands" },
-            { "@type": "Place", "name": "European Union" }
+            {
+              "@type": "Country",
+              "name": "Netherlands",
+              "sameAs": "https://en.wikipedia.org/wiki/Netherlands"
+            },
+            {
+              "@type": "Place",
+              "name": "European Union"
+            }
           ],
+          "serviceArea": {
+            "@type": "GeoCircle",
+            "geoMidpoint": {
+              "@type": "GeoCoordinates",
+              "latitude": 52.1561,
+              "longitude": 5.3878
+            },
+            "geoRadius": "500 km"
+          },
           "address": {
             "@type": "PostalAddress",
             "addressLocality": "Amersfoort",
+            "addressRegion": "Utrecht",
             "addressCountry": "NL"
           },
           "contactPoint": {
@@ -108,6 +140,44 @@
             "contactType": "customer service",
             "email": "hansvl3@gmail.com",
             "availableLanguage": ["English", "Dutch"]
+          },
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "E-commerce & Marketplace Services",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Amazon Marketplace Management",
+                  "description": "Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations."
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Bol.com Optimization",
+                  "description": "Content optimization, Bol Ads management, catalog management, and performance analytics on the Netherlands' largest marketplace."
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Marketplace CRO & Growth",
+                  "description": "Data-driven conversion rate optimization, A/B testing, and revenue scaling for e-commerce businesses."
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "SEO & Content Strategy",
+                  "description": "Search-first content strategies that drive organic traffic and improve marketplace rankings."
+                }
+              }
+            ]
           },
           "sameAs": [
             "https://www.linkedin.com/in/hansvl3",
@@ -153,48 +223,21 @@
               }
             }
           ]
-        },
-        {
-          "@type": "HowTo",
-          "name": "How Freelance E-commerce Engagements Work with Hans van Leeuwen",
-          "description": "A four-step engagement model for Amazon and Bol.com marketplace management — from audit to scaling.",
-          "totalTime": "P90D",
-          "step": [
-            {
-              "@type": "HowToStep",
-              "position": 1,
-              "name": "Discovery",
-              "text": "Audit your current marketplace presence on Amazon and Bol.com, identify quick wins and long-term growth levers."
-            },
-            {
-              "@type": "HowToStep",
-              "position": 2,
-              "name": "Strategy",
-              "text": "Build a tailored action plan with KPIs, timelines, and clear ownership for marketplace growth."
-            },
-            {
-              "@type": "HowToStep",
-              "position": 3,
-              "name": "Execution",
-              "text": "Hands-on implementation — from product listing optimization to advertising campaigns — with weekly check-ins."
-            },
-            {
-              "@type": "HowToStep",
-              "position": 4,
-              "name": "Scale",
-              "text": "Iterate based on data, expand to new channels, and compound results over time."
-            }
-          ]
         }
       ]
     }
     </script>
 
-    <!-- Preload critical fonts -->
+    <!-- Fonts: preconnect + async load with display=swap -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" /></noscript>
+    <style>
+      /* Critical font-display fallback so text is visible while fonts load */
+      body { font-family: Inter, system-ui, -apple-system, sans-serif; }
+      .font-display { font-family: 'Playfair Display', Georgia, serif; }
+    </style>
 
     <!-- Favicon set -->
     <link rel="icon" href="/favicon.ico" />
@@ -221,8 +264,49 @@
       <main>
         <section>
           <h1>Hans van Leeuwen – Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h1>
-          <p>10+ years driving e-commerce growth on Amazon and Bol.com through data-driven strategy, CRO, and UX design. Available for freelance and contract roles. Based in Amersfoort, Netherlands — working with brands across NL and the EU.</p>
-          <p><a href="mailto:hansvl3@gmail.com">Request a marketplace audit</a> | <a href="https://www.linkedin.com/in/hansvl3">Connect on LinkedIn</a></p>
+          <h2>Available for freelance &amp; interim e-commerce roles — Amazon &amp; Bol.com specialist (NL/EU)</h2>
+          <p>I'm Hans van Leeuwen — a freelance e-commerce manager based in Amersfoort, specializing in Amazon, Bol.com, and marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
+          <p>Based in Amersfoort, Netherlands. Available for NL &amp; EU projects.</p>
+          <p><a href="mailto:hansvl3@gmail.com?subject=Marketplace Audit Request">Request a 7-point marketplace audit</a> | <a href="/work">Amazon &amp; Bol.com case studies</a> | <a href="https://www.linkedin.com/in/hansvl3">Connect on LinkedIn</a></p>
+          <h3>Proven Results</h3>
+          <ul>
+            <li>70% market share on Amazon NL (earplug category, Nielsen Data)</li>
+            <li>20% weekly sales increase via targeted marketplace campaigns</li>
+            <li>Out-of-stock rates below 2% through forecasting &amp; logistics</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Amazon &amp; Bol.com Marketplace Management (NL/EU)</h2>
+          <ul>
+            <li><strong>Amazon Marketplace Management</strong> — Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations.</li>
+            <li><strong>Bol.com Optimization</strong> — Content optimization, Bol Ads management, catalog management, and performance analytics on the Netherlands' largest marketplace.</li>
+            <li><strong>Marketplace CRO &amp; Growth</strong> — Data-driven conversion rate optimization, A/B testing, and revenue scaling for e-commerce businesses.</li>
+            <li><strong>SEO &amp; Content Strategy</strong> — Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Core Deliverables</h2>
+          <ul>
+            <li>Marketplace audit &amp; growth roadmap</li>
+            <li>Product listing optimization (SEO, A+ Content, images)</li>
+            <li>Amazon &amp; Bol.com advertising management (PPC)</li>
+            <li>Conversion rate optimization &amp; A/B testing</li>
+            <li>Catalog management &amp; inventory forecasting</li>
+            <li>Monthly performance reporting &amp; insights</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Engagement Model</h2>
+          <ol>
+            <li><strong>Discovery</strong> — Audit your current marketplace presence, identify quick wins and long-term growth levers.</li>
+            <li><strong>Strategy</strong> — Build a tailored action plan with KPIs, timelines, and clear ownership.</li>
+            <li><strong>Execution</strong> — Hands-on implementation from listing optimization to ad campaigns with weekly check-ins.</li>
+            <li><strong>Scale</strong> — Iterate based on data, expand to new channels, and compound results over time.</li>
+          </ol>
+        </section>
+        <section>
+          <h2>Industries &amp; Categories</h2>
+          <p>Health &amp; Personal Care, Consumer Electronics, Automotive Parts, Home &amp; Garden, Sports &amp; Outdoor, Beauty &amp; Cosmetics, Food &amp; Supplements, Fashion &amp; Accessories.</p>
         </section>
         <section>
           <h2>Frequently Asked Questions</h2>
@@ -238,15 +322,12 @@
       </main>
       <footer>
         <p>&copy; 2026 Hans van Leeuwen | Freelance E-commerce Manager | Amersfoort, Netherlands</p>
+        <p>Working across the Netherlands (Amersfoort, Utrecht, Amsterdam, Rotterdam) and EU.</p>
         <nav aria-label="Footer navigation">
-          <a href="/">Home</a> | <a href="/work">Case Studies</a> | <a href="/writing">Articles</a> | <a href="/about">About</a>
+          <a href="/">Home</a> | <a href="/work">Case Studies</a> | <a href="/writing">Articles</a> | <a href="/about">About</a> | <a href="/privacy">Privacy</a>
         </nav>
       </footer>
     </noscript>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

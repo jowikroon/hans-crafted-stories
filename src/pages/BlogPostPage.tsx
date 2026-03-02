@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Home, ChevronRight, Link2, Facebook, Linkedin, Twitter } from "lucide-react";
 import { getBlogPost, BlogPostRow } from "@/lib/api/content";
 import { blogContent } from "@/data/blogContent";
+import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { toast } from "sonner";
@@ -50,13 +51,21 @@ const shareUrl = (platform: string, url: string, title: string) => {
 
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<BlogPostRow | null | undefined>(undefined);
+  const preloaded = usePreloadedBlogPost(slug);
+  const [post, setPost] = useState<BlogPostRow | null | undefined>(
+    () => (preloaded ?? undefined) as BlogPostRow | undefined
+  );
   const { lang } = useLang();
 
   useEffect(() => {
     if (!slug) return;
+    if (preloaded?.slug === slug) {
+      setPost(preloaded);
+      return;
+    }
+    setPost(undefined);
     getBlogPost(slug).then(setPost);
-  }, [slug]);
+  }, [slug, preloaded]);
 
   // Language-aware fields
   const displayTitle = post ? ((lang === "nl" && post.title_nl) ? post.title_nl : post.title) : "";

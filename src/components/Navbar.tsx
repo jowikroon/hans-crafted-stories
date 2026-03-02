@@ -27,6 +27,9 @@ const searchablePages = [
   { to: "/work", label: "Work", keywords: ["work", "cases", "projects", "portfolio"] },
   { to: "/writing", label: "Writing", keywords: ["blog", "writing", "articles", "posts"] },
   { to: "/about", label: "About", keywords: ["about", "contact", "info", "cv"] },
+  { to: "/amazon-nl-specialist", label: "Amazon NL Specialist", keywords: ["amazon", "nl", "specialist", "ads", "listing"] },
+  { to: "/bol-com-consultant", label: "Bol.com Consultant", keywords: ["bol", "bol.com", "consultant", "ads", "marketplace"] },
+  { to: "/interim-ecommerce-manager", label: "Interim E-commerce Manager", keywords: ["interim", "manager", "freelance", "ecommerce", "lead"] },
   { to: "/portal", label: "Portal", keywords: ["portal", "dashboard", "login", "tools"] },
   { to: "/empire", label: "Empire", keywords: ["empire", "admin", "terminal", "system"] },
   { to: "/hansai", label: "Hans AI", keywords: ["ai", "chat", "llm", "claude", "gemini", "gpt"] },
@@ -186,7 +189,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
           <div className="flex items-center justify-between h-16">
             {/* Brand */}
             <Link to="/" className={`shrink-0 flex items-center gap-2.5 font-display text-lg font-bold tracking-tight transition-colors ${isDark ? "text-emerald-300" : "text-foreground"}`}>
-              <img src={logoImg} alt="Logo" className={`h-7 w-7 object-contain ${isDark ? "invert brightness-200" : ""}`} />
+              <img src={logoImg} alt="Hans van Leeuwen — Freelance E-commerce Manager" width={28} height={28} className={`h-7 w-7 object-contain ${isDark ? "invert brightness-200" : ""}`} />
               Hans van Leeuwen
             </Link>
 

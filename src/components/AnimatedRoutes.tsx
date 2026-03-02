@@ -13,6 +13,9 @@ import HansAI from "@/pages/HansAI";
 import Privacy from "@/pages/Privacy";
 import AuthCallback from "@/pages/AuthCallback";
 import NotFound from "@/pages/NotFound";
+import AmazonNlSpecialist from "@/pages/AmazonNlSpecialist";
+import BolComConsultant from "@/pages/BolComConsultant";
+import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -25,6 +28,9 @@ const AnimatedRoutes = () => {
         <Route path="/writing" element={<PageTransition><Writing /></PageTransition>} />
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+        <Route path="/amazon-nl-specialist" element={<PageTransition><AmazonNlSpecialist /></PageTransition>} />
+        <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
+        <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
         <Route path="/empire" element={<PageTransition><Empire /></PageTransition>} />

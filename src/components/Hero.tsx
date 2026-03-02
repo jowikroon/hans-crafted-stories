@@ -50,20 +50,20 @@ const Hero = () => {
               : <>Freelance E-commerce Manager — <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; design</>
             }
           </h1>
-          <h2 className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
+          <p className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
             {getValue("hero_freelance_h2", t.freelanceH2)}
-          </h2>
+          </p>
           <p className="mb-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
             {getValue("hero_description", t.description)}
           </p>
           <p className="mb-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
             {isNl ? "Bekijk mijn " : "Explore my "}
             <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
-              {isNl ? "Amazon & Bol.com marketplace cases" : "Amazon & Bol.com marketplace case studies"}
+              {isNl ? "Amazon NL & Bol.com marketplace cases met meetbare resultaten" : "Amazon NL & Bol.com case studies with measurable results"}
             </Link>
             {isNl ? " of lees " : " or read "}
             <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
-              {isNl ? "e-commerce inzichten & artikelen" : "e-commerce insights & articles"}
+              {isNl ? "e-commerce inzichten over marktplaatsgroei" : "e-commerce insights on marketplace growth"}
             </Link>
             .
           </p>
@@ -91,6 +91,11 @@ const Hero = () => {
               {getValue("hero_cta_consult", t.ctaConsult)}
             </a>
           </div>
+          <p className="mt-3 text-xs text-muted-foreground/60">
+            {isNl
+              ? "Reactie binnen 48 uur · Vrijblijvend · Voor merken en retailers op Amazon NL & Bol.com"
+              : "Response within 48h · No obligation · For brands & retailers on Amazon NL & Bol.com"}
+          </p>
         </motion.div>
       </section>
 
@@ -104,8 +109,9 @@ const Hero = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-wrap gap-6 md:gap-10"
         >
+          <h2 className="sr-only">{getValue("hero_results_label", t.resultsLabel)}</h2>
+          <div className="flex flex-wrap gap-6 md:gap-10">
           {t.results.map((result, i) => (
             <div key={i} className="flex items-start gap-3">
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
@@ -114,6 +120,7 @@ const Hero = () => {
               <p className="text-sm leading-snug text-muted-foreground max-w-[220px]">{result}</p>
             </div>
           ))}
+          </div>
         </motion.div>
       </section>
 
@@ -171,6 +178,15 @@ const Hero = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
         >
+          <Link to="/amazon-nl-specialist" className="font-semibold transition-colors hover:text-foreground">
+            {isNl ? "Amazon NL specialist →" : "Amazon NL specialist →"}
+          </Link>
+          <Link to="/bol-com-consultant" className="font-semibold transition-colors hover:text-foreground">
+            {isNl ? "Bol.com consultant →" : "Bol.com consultant →"}
+          </Link>
+          <Link to="/interim-ecommerce-manager" className="font-semibold transition-colors hover:text-foreground">
+            {isNl ? "Interim e-commerce manager →" : "Interim e-commerce manager →"}
+          </Link>
           <Link to="/work" className="font-semibold transition-colors hover:text-foreground">
             {t.linkCases}
           </Link>

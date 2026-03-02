@@ -300,8 +300,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       description:
         "I'm Hans van Leeuwen — a freelance e-commerce manager based in Amersfoort, specializing in Amazon, Bol.com, and marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.",
       location: "Based in Amersfoort, Netherlands · Available for NL & EU projects",
-      ctaWork: "Amazon & Bol.com case studies",
-      ctaConsult: "Request a marketplace audit",
+      ctaWork: "View case studies",
+      ctaConsult: "Get a 7-point marketplace audit",
       ctaAbout: "About me",
       resultsLabel: "Proven results",
       results: [
@@ -449,7 +449,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "Freelance e-commerce manager with 10+ years of experience. Amazon & Bol.com marketplace growth | CRO | UX | NL/EU. Based in Amersfoort, Netherlands.",
+      homeDescription: "10+ years growing Amazon NL & Bol.com revenue. Listings, ads, CRO & forecasting. Based in Amersfoort — NL/EU. Get a 7-point marketplace audit.",
       writingTitle: "E-commerce Insights & Articles | Hans van Leeuwen",
       writingDescription: "Read Hans van Leeuwen's thoughts on e-commerce strategy, marketplace optimization, Amazon & Bol.com growth, UX design, and digital commerce trends.",
       workTitle: "Design Portfolio & Case Studies | E-commerce, 3D & UX | Hans van Leeuwen",
@@ -603,8 +603,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       description:
         "Ik ben Hans van Leeuwen — freelance e-commerce manager gevestigd in Amersfoort, gespecialiseerd in Amazon, Bol.com en marktplaatsstrategie. Ik help merken in Nederland en de EU digitale kanalen om te zetten in omzetmotoren.",
       location: "Gevestigd in Amersfoort, Nederland · Beschikbaar voor NL & EU opdrachten",
-      ctaWork: "Amazon & Bol.com cases",
-      ctaConsult: "Vraag een marktplaats audit aan",
+      ctaWork: "Bekijk cases",
+      ctaConsult: "Vraag een 7-punts audit aan",
       ctaAbout: "Over mij",
       resultsLabel: "Bewezen resultaten",
       results: [
@@ -752,7 +752,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "Freelance e-commerce manager met 10+ jaar ervaring. Amazon & Bol.com marktplaatsgroei | CRO | UX | NL/EU. Gevestigd in Amersfoort, Nederland.",
+      homeDescription: "10+ jaar groei op Amazon NL & Bol.com. Listings, ads, CRO & forecasting. Gevestigd in Amersfoort — NL/EU. Vraag een 7-punts marktplaats audit aan.",
       writingTitle: "E-commerce Inzichten & Artikelen | Hans van Leeuwen",
       writingDescription: "Lees de artikelen van Hans van Leeuwen over e-commercestrategie, marktplaatsoptimalisatie, Amazon & Bol.com groei, UX-design en digitale commercetrends.",
       workTitle: "Designportfolio & Cases | E-commerce, 3D & UX | Hans van Leeuwen",

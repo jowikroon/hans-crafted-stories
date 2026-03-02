@@ -28,7 +28,18 @@ if (missing.length > 0) {
     </div>
   );
 } else {
+  const preloadedEl = document.getElementById("__PRELOADED__");
+  const preloadedData = preloadedEl?.textContent
+    ? (() => {
+        try {
+          return JSON.parse(preloadedEl.textContent!) as { blogPost?: unknown } | null;
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+
   import("./App").then(({ default: App }) => {
-    root.render(<App />);
+    root.render(<App preloadedData={preloadedData ?? undefined} />);
   });
 }

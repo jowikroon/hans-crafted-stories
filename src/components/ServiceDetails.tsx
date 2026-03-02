@@ -140,6 +140,25 @@ const ServiceDetails = () => {
         </div>
       </section>
 
+      {/* Service Area — captures high-intent keyword variants */}
+      <section className="section-container pb-12 pt-0" aria-label={lang === "nl" ? "Interim E-commerce Manager" : "Interim E-commerce Manager"}>
+        <motion.div {...fadeUp}>
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+            {lang === "nl" ? "Interim & Freelance" : "Interim & Freelance"}
+          </h2>
+          <p className="mb-4 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+            {lang === "nl"
+              ? "Interim E-commerce Manager voor Amazon NL & Bol.com"
+              : "Interim E-commerce Manager for Amazon NL & Bol.com"}
+          </p>
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {lang === "nl"
+              ? "Op zoek naar een hands-on interim e-commerce manager of freelance marketplace consultant? Ik werk als interim lead, account manager en marketplace specialist voor merken die structurele groei zoeken op Amazon Nederland en Bol.com. Van strategie tot dagelijkse uitvoering — flexibel inzetbaar per project of op contractbasis."
+              : "Looking for a hands-on interim e-commerce manager or freelance marketplace consultant? I work as an interim lead, account manager, and marketplace specialist for brands seeking structural growth on Amazon Netherlands and Bol.com. From strategy to day-to-day execution — available per project or on contract."}
+          </p>
+        </motion.div>
+      </section>
+
       {/* Industries */}
       <section className="section-container pb-20 pt-0" aria-label={t.industriesLabel}>
         <motion.div {...fadeUp}>

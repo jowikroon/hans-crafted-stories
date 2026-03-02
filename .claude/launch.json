@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vite-dev",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/.bin/vite"],
+      "port": 8080
+    },
+    {
+      "name": "vite-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/.bin/vite", "preview"],
+      "port": 4173
+    }
+  ]
+}

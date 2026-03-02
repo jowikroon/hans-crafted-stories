@@ -29,7 +29,9 @@ Making it easy to leave makes people more likely to stay. This counterintuitive 
 Dark patterns are a tax on your future self. Every shortcut today creates a trust deficit tomorrow. Build for the long game.
   `,
   "designing-with-llms": `
-Large language models are reshaping how we think about product experiences. But integrating AI well requires more than just adding a chatbot — it demands a new UX framework.
+Large language models are changing how we design digital products — but "just add AI" is a fast way to ship confusing, fragile experiences. Good LLM UX isn't a magic box; it's a set of deliberate choices about what the model should do, how confident it is, and how humans stay in control.
+
+In this article I share a practical framework for designing LLM-powered products: how to define confidence boundaries, keep humans in the loop, design for failure instead of pretending it won't happen, and gradually reveal capabilities as users build trust.
 
 ## The Problem with "Just Add AI"
 
