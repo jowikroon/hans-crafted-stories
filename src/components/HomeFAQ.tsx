@@ -85,15 +85,23 @@ const HomeFAQ = () => {
                   />
                 </button>
               </dt>
+              {/* Answer always in DOM for crawlability; visually collapsed via CSS */}
               <dd
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                className={`transition-all duration-300 ease-in-out ${
+                  isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
                 }`}
+                aria-hidden={!isOpen}
               >
                 <div className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground border-t border-border/40 pt-3">
                   {answer}
                 </div>
               </dd>
+              {/* Hidden copy always visible to crawlers */}
+              <noscript>
+                <dd className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground border-t border-border/40 pt-3">
+                  {answer}
+                </dd>
+              </noscript>
             </motion.div>
           );
         })}
