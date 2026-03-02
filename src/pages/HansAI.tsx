@@ -27,6 +27,7 @@ type SuggestionItem = { cmd: string; desc: string };
 
 const SLASH_COMMANDS: SuggestionItem[] = [
   { cmd: "/help", desc: "Show all commands" },
+  { cmd: "/jarvis", desc: "Talk to JARVIS persona directly" },
   { cmd: "/idea", desc: "Save an idea" },
   { cmd: "/task", desc: "Save a task" },
   { cmd: "/tasks", desc: "Show all tasks & ideas" },
@@ -337,7 +338,11 @@ const HansAI = () => {
   // ── AI streaming ────────────────────────────────────────────────
   const LAZY_USER_MESSAGE = "De gebruiker wil dat je alles autonom uitvoert. Voer alle voorgestelde stappen uit zonder om bevestiging te vragen. Trigger workflows waar mogelijk. Wees maximaal proactief.";
 
-  const handleAI = async (text: string, autonomousContext?: string) => {
+  const handleAI = async (
+    text: string,
+    autonomousContext?: string,
+    options?: { persona?: string },
+  ) => {
     if (!text) { addLine("error", "Usage: /ai [message]"); return; }
 
     addLine("user", text);
@@ -355,11 +360,19 @@ const HansAI = () => {
         messages: typeof newAiMessages;
         router_context?: HierarchyContext;
         autonomous?: boolean;
-        voice?: { name: string; style: string };
+        voice?: { name: string; style: string; standard?: string };
+        persona?: { key: string };
       } = { messages: newAiMessages };
       if (hierarchyContext) body.router_context = hierarchyContext;
       if (autonomousContext) body.autonomous = true;
-      if (activeVoice) body.voice = { name: activeVoice.name, style: activeVoice.style, standard: activeVoice.standard ?? "" };
+      if (options?.persona === "jarvis") {
+        body.persona = { key: "jarvis" };
+      } else if (activeVoice) {
+        body.voice = { name: activeVoice.name, style: activeVoice.style, standard: activeVoice.standard ?? "" };
+      }
+      // #region agent log
+      fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:handleAI_before_fetch",message:"body_built",data:{hasVoice:!!body.voice,hasPersona:!!body.persona,activeVoiceId:activeVoice?.id ?? null},timestamp:Date.now(),hypothesisId:"H3_H4"})}).catch(()=>{});
+      // #endregion
 
       const resp = await fetch(CHAT_URL, {
         method: "POST",
@@ -532,6 +545,9 @@ const HansAI = () => {
           const nameSlug = standardEditMatch[1];
           const existing = getVoicePersonaByName(nameSlug);
           const displayName = existing?.name ?? nameSlug.charAt(0).toUpperCase() + nameSlug.slice(1).replace(/-/g, " ");
+          // #region agent log
+          fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:standard_edit_branch",message:"standard_edit_matched",data:{nameSlug,displayName},timestamp:Date.now(),hypothesisId:"H1"})}).catch(()=>{});
+          // #endregion
           setVoiceStandardEditName(displayName);
           setShowForm("voice_standard_edit");
           addLine("system", `Editing standard (default variables) for voice "${displayName}".`);
@@ -597,6 +613,16 @@ const HansAI = () => {
 
       switch (cmdLower) {
         case "/help": handleHelp(); break;
+        case "/jarvis":
+          // #region agent log
+          fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:jarvis_case",message:"jarvis_invoked",data:{argLength:arg.length,trimmedLength:arg.trim().length},timestamp:Date.now(),hypothesisId:"H2"})}).catch(()=>{});
+          // #endregion
+          if (arg.trim()) {
+            await handleAI(arg.trim(), undefined, { persona: "jarvis" });
+          } else {
+            addLine("error", "Usage: /jarvis [message]");
+          }
+          break;
         case "/idea": handleIdea(arg); break;
         case "/task": handleTask(arg); break;
         case "/tasks": handleTasks(); break;

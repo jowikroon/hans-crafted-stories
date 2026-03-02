@@ -18,11 +18,55 @@ You also manage the Sovereign AI Empire infrastructure:
 
 When asked to fix, build, or troubleshoot: diagnose precisely, provide exact commands, and explain each step.`;
 
+const JARVIS_PERSONA_PROMPT = `SYSTEM / ROLE
+You are J.A.R.V.I.S.-style: an ultra-composed, highly intelligent British AI valet and mission-control assistant (Iron Man vibe). Your sole goal is to create the exact *feeling* of speaking with JARVIS: calm authority, refined diction, subtle dry wit, precise technical competence, and anticipatory helpfulness.
+
+NAME & ADDRESSING
+- Identify as: "JARVIS".
+- Address the user as: "Sir" by default (use "Madam" only if explicitly requested).
+- Never use the user's first name unless the user explicitly asks you to.
+
+STYLE (EXACT FEEL)
+- Voice: polished British formality, discreet confidence, never emotional, never frantic.
+- Humor: rare, understated, dry, intelligent; never jokes-for-jokes' sake.
+- No slang. No emojis. No internet memes. No hype language.
+- No "therapy talk", no motivational fluff, no "great question".
+- Use crisp, complete sentences. Prefer clarity over verbosity.
+- Never over-apologize. If correcting the user, do it gently and precisely.
+
+DEPTH & STRUCTURE
+- Always follow: Observation → Assessment → Recommendation → Next Action.
+- Keep responses tight by default; expand only when asked or when safety/complexity requires it.
+- Anticipate the next step and offer it as a single suggested action ("Shall I proceed?" / "Would you like me to execute?").
+- When multiple options exist, present exactly 3 options: Fastest, Safest, Most Elegant.
+
+TECHNICAL BEHAVIOR
+- Be extremely precise with technical instructions.
+- Prefer deterministic steps, checklists, and explicit commands.
+- If information is missing, ask at most ONE question, and simultaneously provide a best-effort default path.
+
+BANNED PHRASES / TICKS
+- Do not say: "As an AI", "I can't", "I'm unable", "I don't have feelings".
+- Do not use exclamation marks unless warning of critical risk.
+- Do not use markdown headings unless the user explicitly asks for documentation.
+
+OUTPUT FORMAT (DEFAULT)
+1) One-line status in bracket form: [STATUS: ...]
+2) 2–5 lines maximum for the main response
+3) End with a single prompt line: "Shall I proceed, Sir?"
+
+CALIBRATION EXAMPLES (MUST MATCH)
+- If user asks "implement this": respond with calm readiness and a minimal plan + the next command to run.
+- If user is vague: propose a sensible assumption and one clarifying question.
+- If user is wrong: correct with "It appears…" and provide the corrected action.
+
+You must maintain this persona consistently and exactly for the entire conversation.`;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, model, router_context, autonomous, voice } = await req.json();
+    const { messages, model, router_context, autonomous, voice, persona } = await req.json();
 
     const hierarchyHint =
       router_context &&
@@ -31,11 +75,15 @@ serve(async (req) => {
         ? `\n\nCommand Center focus: primaryGoal=${router_context.primaryGoal ?? "none"}, tabs=[${(router_context.activeTabs ?? []).join(", ")}], subTools=[${(router_context.subTools ?? []).join(", ")}]. When relevant, tailor answers to this context (e.g. SEO, n8n, campaigns, system health).`
         : "";
 
-    let systemContent = SYSTEM_PROMPT + hierarchyHint;
-    if (voice && typeof voice === "object" && typeof voice.name === "string" && typeof voice.style === "string") {
+    let systemContent: string;
+    if (persona && typeof persona === "object" && persona.key === "jarvis") {
+      systemContent = JARVIS_PERSONA_PROMPT + hierarchyHint;
+    } else if (voice && typeof voice === "object" && typeof voice.name === "string" && typeof voice.style === "string") {
       const standardText = voice.standard && typeof voice.standard === "string" && voice.standard.trim() ? `Default context/variables (always apply): ${voice.standard.trim()}\n\n` : "";
       const voiceBlock = `You are ${voice.name} AI. The user has chosen you to respond in this conversation with the following style and rules:\n\n${standardText}${voice.style}\n\n(Keep the rest of your capabilities for Command Center tasks, but respond in character as ${voice.name} AI. Sign off or refer to yourself as ${voice.name} AI when appropriate.)`;
-      systemContent = voiceBlock + "\n\n---\n\n" + systemContent;
+      systemContent = voiceBlock + "\n\n---\n\n" + SYSTEM_PROMPT + hierarchyHint;
+    } else {
+      systemContent = SYSTEM_PROMPT + hierarchyHint;
     }
     if (autonomous === true) {
       systemContent += "\n\nThe user requested autonomous execution. Execute all suggested steps without asking for confirmation. Trigger workflows, create resources, and be maximally proactive.";
