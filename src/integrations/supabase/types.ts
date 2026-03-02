@@ -726,6 +726,33 @@ export type Database = {
           },
         ]
       }
+      workflow_runs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          result_data: Json | null
+          status: Database["public"]["Enums"]["workflow_run_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          result_data?: Json | null
+          status?: Database["public"]["Enums"]["workflow_run_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          result_data?: Json | null
+          status?: Database["public"]["Enums"]["workflow_run_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -741,6 +768,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      workflow_run_status: "pending" | "processing" | "completed" | "error"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -869,6 +897,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      workflow_run_status: ["pending", "processing", "completed", "error"],
     },
   },
 } as const
