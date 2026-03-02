@@ -1,53 +1,57 @@
 
 
-# Add User Activity Log to Portal Users
+## Fix: Make trigger-webhook resilient to missing workflow_runs table
 
-## Overview
-Add a per-user "Activity" event log section within each user's expanded panel in the Portal Users manager. This will track and display actions like logins, permission changes, tool usage, and content edits for each user.
+### Problem
+The `trigger-webhook` edge function returns HTTP 500 when it can't insert into `workflow_runs` (table doesn't exist in the schema cache). This blocks all `/run` commands like health-check.
 
-## Database Changes
+### Solution
+Update `supabase/functions/trigger-webhook/index.ts` with three changes:
 
-### New table: `user_activity_log`
-| Column | Type | Default | Notes |
-|--------|------|---------|-------|
-| id | uuid | gen_random_uuid() | PK |
-| user_id | uuid | NOT NULL | The user the event belongs to |
-| action | text | NOT NULL | e.g. "login", "tool_used", "permission_changed" |
-| description | text | '' | Human-readable detail |
-| metadata | jsonb | '{}' | Extra context (tool name, IP, etc.) |
-| created_at | timestamptz | now() | When it happened |
+1. **Best-effort insert** -- Wrap the `workflow_runs` insert in a try/catch. If it fails, log the error but continue instead of returning 500.
 
-RLS policies:
-- Admins can read/insert/delete all activity logs
-- Users can view their own activity
+2. **Fallback run_id** -- When the insert fails, generate a `run_id` using `crypto.randomUUID()` so the response still includes a valid ID.
 
-Enable realtime so the log updates live when viewing.
+3. **Conditional updates** -- Only update `workflow_runs` (status to "processing" or "error") when the initial insert actually succeeded. Use a boolean flag `dbAvailable` to track this.
 
-## Frontend Changes
+### Technical changes
 
-### 1. Add "Activity" section to user panel (`PortalUsersManager.tsx`)
-- Add a 5th section to the `accessSections` array: `{ id: "activity", label: "Activity", icon: Activity, description: "Recent user actions" }`
-- Update the `AccessSection` type to include `"activity"`
-- Render a scrollable event log when the "Activity" section is selected, showing the most recent 50 events for that user in reverse chronological order
-- Each row shows: timestamp, action badge (color-coded by type), and description
-- Include a refresh button
+**File: `supabase/functions/trigger-webhook/index.ts`**
 
-### 2. Add API layer (`src/lib/api/users.ts`)
-- Add `getActivityLog(userId: string)` method to fetch recent activity for a user
-- Add `logActivity(userId, action, description, metadata)` method for recording events
+Replace the current insert block (steps 3-4) with:
 
-### 3. Auto-log key actions
-Insert activity log entries automatically when:
-- A user's permissions are changed (tab access, tool access, content access, AI access toggles)
-- A user is activated/deactivated
-- A user is created
+```text
+// Step 3: Best-effort insert
+let run_id: string = crypto.randomUUID();
+let dbAvailable = false;
 
-These inserts will be added inline to the existing handler functions in `PortalUsersManager.tsx`.
+try {
+  const { data: run, error: insertError } = await supabaseAdmin
+    .from("workflow_runs")
+    .insert({ user_id: user.id, status: "pending" })
+    .select("id")
+    .single();
 
-## Technical Details
+  if (!insertError && run) {
+    run_id = run.id;
+    dbAvailable = true;
+  } else {
+    console.warn("[trigger-webhook] workflow_runs insert failed (non-fatal):", insertError);
+  }
+} catch (dbErr) {
+  console.warn("[trigger-webhook] workflow_runs unavailable (non-fatal):", dbErr);
+}
 
-- The activity log panel will reuse the same card/badge styling as the existing permission sections
-- Events will be color-coded: green for grants/activations, amber for revocations/deactivations, blue for general actions
-- No new components needed -- the log renders inline within the existing expanded panel structure
-- The `user_activity_log` table uses `user_id` (not a FK to auth.users) consistent with the existing pattern
+// Only update to "processing" if DB insert succeeded
+if (dbAvailable) {
+  await supabaseAdmin.from("workflow_runs").update({ status: "processing" }).eq("id", run_id);
+}
+```
+
+Similarly, only update status to "error" inside the n8n fetch error handlers when `dbAvailable` is true.
+
+The final response remains: `{ success: true, run_id, data: { run_id } }` regardless of DB availability.
+
+### Deployment
+After updating the file, the edge function will be deployed automatically so the live site gets the fix immediately.
 
