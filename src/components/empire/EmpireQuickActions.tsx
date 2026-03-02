@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Zap, FileText, HeartPulse, ScrollText, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { WORKFLOWS } from "@/lib/config/workflows";
+import { WORKFLOWS, N8N_BASE } from "@/lib/config/workflows";
 
 interface QuickAction {
   icon: typeof Zap;
@@ -36,24 +36,41 @@ const EmpireQuickActions = () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
+      const authHeader = `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
 
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          webhook_url: `https://n8n.hansvanleeuwen.com/webhook/${action.webhookKey}`,
-          payload: { source: "empire-dashboard", action: action.webhookKey, timestamp: new Date().toISOString() },
-        }),
-      });
+      const wfDef = WORKFLOWS.find((w) => w.name === action.webhookKey);
 
-      const data = await res.json();
-      toast({
-        title: data.success ? `${action.label} triggered` : `${action.label} failed`,
-        description: data.success ? "Workflow started successfully." : (data.error || "Check n8n logs."),
-      });
+      if (wfDef?.direct) {
+        const res = await fetch(wfDef.webhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: authHeader },
+          body: JSON.stringify({ source: "empire-dashboard", timestamp: new Date().toISOString() }),
+        });
+        const data = await res.json();
+        const online = data.services
+          ? Object.values(data.services as Record<string, { ok: boolean }>).filter((s) => s.ok).length
+          : 0;
+        const total = data.services ? Object.keys(data.services).length : 0;
+        toast({
+          title: res.ok ? `${action.label}: ${online}/${total} online` : `${action.label} failed`,
+          description: res.ok ? "Health check completed." : "Edge function error.",
+        });
+      } else {
+        const webhookUrl = wfDef?.webhook || `${N8N_BASE}/webhook/${action.webhookKey}`;
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: authHeader },
+          body: JSON.stringify({
+            webhook_url: webhookUrl,
+            payload: { source: "empire-dashboard", action: action.webhookKey, timestamp: new Date().toISOString() },
+          }),
+        });
+        const data = await res.json();
+        toast({
+          title: data.success ? `${action.label} triggered` : `${action.label} failed`,
+          description: data.success ? "Workflow started successfully." : (data.error || "Check n8n logs."),
+        });
+      }
     } catch {
       toast({ title: "Connection error", description: "Could not reach webhook endpoint." });
     } finally {

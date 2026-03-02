@@ -29,7 +29,7 @@ serve(async (req) => {
     const [shield, portal, brain, memory, api] = await Promise.all([
       checkEndpoint("https://cloudflare.com/cdn-cgi/trace"),
       checkEndpoint("https://hansvanleeuwen.com"),
-      checkEndpoint("https://n8n.hansvanleeuwen.com/healthz"),
+      checkEndpoint("https://n8n.srv1402218.hstgr.cloud/healthz"),
       checkEndpoint(`${supabaseUrl}/rest/v1/`, 3000),
       checkEndpoint(`${supabaseUrl}/functions/v1/site-audit`, 3000),
     ]);

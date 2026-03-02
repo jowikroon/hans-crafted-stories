@@ -218,36 +218,81 @@ const HansAI = () => {
     setLoading(true);
 
     try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl || supabaseUrl === "undefined") {
+        addLine("error", "Supabase URL not set. Add VITE_SUPABASE_URL in Cloudflare Pages → Settings → Environment variables and redeploy.");
+        setLoading(false);
+        return;
+      }
+
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
-      // Proxy through Supabase edge function to avoid CORS issues with direct n8n calls
-      const TRIGGER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
-      const res = await fetch(TRIGGER_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          webhook_url: wf.webhook,
-          payload: { source: "command_center", timestamp: new Date().toISOString() },
-        }),
-      });
+      if (wf.direct) {
+        const res = await fetch(wf.webhook, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ source: "command_center", timestamp: new Date().toISOString() }),
+        });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
 
-      const json = await res.json() as { success: boolean; run_id?: string; data?: unknown; error?: string };
-      if (!json.success) throw new Error(json.error || "Workflow returned failure");
+        if (json.services && typeof json.services === "object") {
+          const svcEntries = Object.entries(json.services) as [string, { ok: boolean; latency: number; name: string; error?: string }][];
+          const total = svcEntries.length;
+          const online = svcEntries.filter(([, s]) => s.ok).length;
 
-      addLine("workflow", `✓ ${wf.label} triggered` + (json.run_id ? ` (run: ${json.run_id.slice(0, 8)}…)` : ""));
-      if (json.data && typeof json.data === "object") {
-        addLine("system", "```json\n" + JSON.stringify(json.data, null, 2) + "\n```");
-      } else if (json.data) {
-        addLine("system", String(json.data));
+          const header = `Empire Health — ${online}/${total} services online`;
+          const rows = svcEntries.map(([key, s]) => {
+            const icon = s.ok ? "●" : "○";
+            const status = s.ok ? "OK" : "DOWN";
+            const latency = `${s.latency}ms`;
+            return `  ${icon} ${s.name.padEnd(24)} ${status.padEnd(6)} ${latency}${s.error ? `  (${s.error})` : ""}`;
+          }).join("\n");
+
+          addLine("workflow", `✓ ${header}`);
+          addLine("system", `${rows}\n\n  Timestamp: ${json.timestamp || new Date().toISOString()}`);
+        } else {
+          addLine("workflow", `✓ ${wf.label} completed`);
+          addLine("system", "```json\n" + JSON.stringify(json, null, 2) + "\n```");
+        }
+      } else {
+        const TRIGGER_URL = `${supabaseUrl}/functions/v1/trigger-webhook`;
+        const res = await fetch(TRIGGER_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            webhook_url: wf.webhook,
+            payload: { source: "command_center", timestamp: new Date().toISOString() },
+          }),
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json = await res.json() as { success: boolean; run_id?: string; data?: unknown; error?: string };
+        if (!json.success) throw new Error(json.error || "Workflow returned failure");
+
+        addLine("workflow", `✓ ${wf.label} triggered` + (json.run_id ? ` (run: ${json.run_id.slice(0, 8)}…)` : ""));
+        if (json.data && typeof json.data === "object") {
+          addLine("system", "```json\n" + JSON.stringify(json.data, null, 2) + "\n```");
+        } else if (json.data) {
+          addLine("system", String(json.data));
+        }
       }
     } catch (err) {
-      addLine("error", `✗ Error running ${wf.label} — ${err instanceof Error ? err.message : "Unknown error"}`);
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      if (msg === "Failed to fetch") {
+        addLine("error", `✗ ${wf.label} — Failed to fetch. Check VITE_SUPABASE_URL is set in Cloudflare Pages env and the site was rebuilt.`);
+      } else {
+        addLine("error", `✗ Error running ${wf.label} — ${msg}`);
+      }
     } finally {
       setLoading(false);
     }

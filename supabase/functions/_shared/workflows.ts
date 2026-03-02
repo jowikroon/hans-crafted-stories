@@ -12,6 +12,8 @@ export interface WorkflowDef {
   keywords: string[];
   examples: string[];
   category: "seo" | "data" | "infra" | "ai" | "marketing";
+  /** When true, call the webhook URL directly (edge function) instead of routing through n8n. */
+  direct?: boolean;
 }
 
 export interface RouteResult {
@@ -21,7 +23,7 @@ export interface RouteResult {
   alternatives?: WorkflowDef[];
 }
 
-export const N8N_BASE = "https://n8n.hansvanleeuwen.com";
+export const N8N_BASE = "https://n8n.srv1402218.hstgr.cloud";
 
 export const WORKFLOWS: WorkflowDef[] = [
   {
@@ -45,11 +47,12 @@ export const WORKFLOWS: WorkflowDef[] = [
   {
     name: "health-check",
     label: "Health Check",
-    webhook: `${N8N_BASE}/webhook/health-check`,
+    webhook: `${Deno.env.get("SUPABASE_URL") ?? ""}/functions/v1/empire-health`,
     description: "Check all services and infrastructure health status",
     keywords: ["health", "check", "status", "ping", "uptime", "monitor", "alive"],
     examples: ["check health", "run health check", "are services up", "system status"],
     category: "infra",
+    direct: true,
   },
   {
     name: "product-feed",

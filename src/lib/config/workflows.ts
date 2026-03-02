@@ -6,12 +6,15 @@ export interface WorkflowDef {
   keywords: string[];
   examples: string[];
   category: "seo" | "data" | "infra" | "ai" | "marketing";
+  /** When true, call the webhook URL directly (Supabase edge function) instead of routing through trigger-webhook → n8n. */
+  direct?: boolean;
 }
 
-/** Same n8n instance runs on primary VPS (srv1402218); n8n.srv1402218.hstgr.cloud is the same server. */
-export const N8N_BASE = "https://n8n.hansvanleeuwen.com";
+/** n8n on Hostinger VPS. Use Hostinger URL until n8n.hansvanleeuwen.com DNS/origin is fixed in Cloudflare. */
+export const N8N_BASE = "https://n8n.srv1402218.hstgr.cloud";
 
 const SUPABASE_URL = typeof import.meta !== "undefined" ? (import.meta.env?.VITE_SUPABASE_URL ?? "") : "";
+const EMPIRE_HEALTH_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/empire-health` : "";
 
 export const WORKFLOWS: WorkflowDef[] = [
   {
@@ -35,11 +38,12 @@ export const WORKFLOWS: WorkflowDef[] = [
   {
     name: "health-check",
     label: "Health Check",
-    webhook: `${N8N_BASE}/webhook/health-check`,
+    webhook: EMPIRE_HEALTH_URL,
     description: "Check all services and infrastructure health status",
     keywords: ["health", "check", "status", "ping", "uptime", "monitor", "alive"],
     examples: ["check health", "run health check", "are services up", "system status"],
     category: "infra",
+    direct: true,
   },
   {
     name: "product-feed",
