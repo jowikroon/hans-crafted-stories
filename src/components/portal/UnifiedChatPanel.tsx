@@ -66,6 +66,8 @@ const aiModels = [
   { id: "openai/gpt-5", label: "GPT-5", tag: "Premium" },
 ];
 
+const LAZY_USER_MESSAGE = "De gebruiker wil dat je alles autonom uitvoert. Voer alle voorgestelde stappen uit zonder om bevestiging te vragen. Trigger workflows waar mogelijk. Wees maximaal proactief.";
+
 const HISTORY_KEY = "portal_chat_history_unified";
 const MODEL_STORAGE_KEY = "portal_command_center_model";
 const N8N_FILTER_PROXY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/n8n-filter-proxy`;
@@ -410,7 +412,11 @@ const UnifiedChatPanel = () => {
   };
 
   /* ─── Fallback: send to AI model (direct to n8n-agent for reliability) ─── */
-  const sendToAI = async (userMsg: string, allMessages: Message[]) => {
+  const sendToAI = async (
+    userMsg: string,
+    allMessages: Message[],
+    options?: { lastMessageContentForApi?: string },
+  ) => {
     const contextPrefix = buildContextPrefix(unifiedCategories, selectedCategory, selectedSub);
     let systemWithContext = contextPrefix
       ? `${UNIFIED_SYSTEM_PROMPT}\n\n${contextPrefix}`
@@ -429,6 +435,12 @@ const UnifiedChatPanel = () => {
 
       setPipelineStage("generating");
 
+      const filtered = allMessages.filter((m) => m.role === "user" || m.role === "assistant");
+      const messagesForApi =
+        options?.lastMessageContentForApi != null && filtered.length > 0
+          ? filtered.slice(0, -1).concat([{ ...filtered[filtered.length - 1], content: options.lastMessageContentForApi }])
+          : filtered;
+
       const res = await fetch(N8N_AGENT_URL, {
         method: "POST",
         headers: {
@@ -437,7 +449,7 @@ const UnifiedChatPanel = () => {
         },
         body: JSON.stringify({
           system: systemWithContext,
-          messages: allMessages.filter((m) => m.role === "user" || m.role === "assistant").map((m) => ({ role: m.role, content: m.content })),
+          messages: messagesForApi.map((m) => ({ role: m.role, content: m.content })),
           model: selectedModel,
         }),
       });
@@ -463,7 +475,7 @@ const UnifiedChatPanel = () => {
         setModelChoicePending({
           llmJobId: data.llm_job_id,
           system: systemWithContext,
-          messages: allMessages.filter((m) => m.role === "user" || m.role === "assistant").map((m) => ({ role: m.role, content: m.content })),
+          messages: messagesForApi.map((m) => ({ role: m.role, content: m.content })),
         });
         setPipelineStage("idle");
         return;
@@ -616,6 +628,24 @@ const UnifiedChatPanel = () => {
     appendMessage({ role: "system", content: "Task cancelled." });
     saveToHistory([...messages, { role: "system", content: "Task cancelled.", timestamp: Date.now() }]);
     setModelChoicePending(null);
+  };
+
+  const handleLazyExecute = async (assistantContent: string) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token ?? undefined;
+    const workflowJson = extractWorkflowJsonFromMarkdown(assistantContent);
+    if (workflowJson && token) {
+      try {
+        const result = await createWorkflowInN8n(workflowJson, token);
+        if (result.success) appendMessage({ role: "system", content: `Workflow created in n8n${result.name ? `: ${result.name}` : ""}.` });
+        else appendMessage({ role: "error", content: result.error || "Workflow creation failed." });
+      } catch {
+        appendMessage({ role: "error", content: "Workflow creation failed." });
+      }
+    }
+    const userMsgObj: Message = { role: "user", content: "/ik ben lui jij moet alles doen", timestamp: Date.now() };
+    appendMessage(userMsgObj);
+    await sendToAI(LAZY_USER_MESSAGE, [...messages, userMsgObj], { lastMessageContentForApi: LAZY_USER_MESSAGE });
   };
 
   const handleModelClose = () => {
@@ -1015,6 +1045,29 @@ const UnifiedChatPanel = () => {
                     <div className="max-w-[85%] rounded-xl border border-red-500/30 bg-red-500/5 px-3 py-2 text-xs leading-relaxed text-red-200">
                       <span className="mr-1.5 font-semibold text-red-400">Error</span>
                       {renderContent(msg.content)}
+                    </div>
+                  </div>
+                );
+              }
+              if (msg.role === "assistant" && msg.content.includes("```")) {
+                return (
+                  <div key={i} className="flex flex-col gap-1.5 justify-start">
+                    <div className="flex gap-2 justify-start">
+                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
+                        <Command size={10} className="text-orange-400" />
+                      </div>
+                      <div className="max-w-[85%] rounded-xl border border-orange-500/30 bg-secondary/30 px-3 py-2 text-xs leading-relaxed text-foreground">
+                        {renderContent(msg.content)}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pl-7">
+                      <button
+                        type="button"
+                        onClick={() => handleLazyExecute(msg.content)}
+                        className="rounded-lg border border-orange-500/25 bg-orange-500/10 px-2.5 py-1 text-[11px] font-medium text-orange-300 transition-all hover:border-orange-500/50 hover:bg-orange-500/20"
+                      >
+                        /ik ben lui jij moet alles doen
+                      </button>
                     </div>
                   </div>
                 );

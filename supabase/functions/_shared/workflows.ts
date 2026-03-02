@@ -170,7 +170,7 @@ export function fastRoute(input: string): RouteResult {
   if (best.score >= 0.5) {
     const alternatives = scored
       .filter((s) => s.score >= 0.3)
-      .slice(0, 3)
+      .slice(0, 10)
       .map((s) => s.wf);
     return {
       workflow: best.wf,

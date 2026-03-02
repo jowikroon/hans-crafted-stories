@@ -7,12 +7,25 @@ import { HierarchyControls, hierarchyStorage } from "@/components/command-center
 import { HierarchyErrorBoundary, defaultHierarchyFallback } from "@/components/command-center/HierarchyErrorBoundary";
 import { WORKFLOWS, type WorkflowDef } from "@/lib/config/workflows";
 import { runIntentPipeline, logUnhandledIntent } from "@/lib/intent/pipeline";
+import { extractWorkflowJsonFromMarkdown, createWorkflowInN8n } from "@/lib/n8n/create-workflow";
 import type { HierarchyContext } from "@/lib/intent/types";
+import { getContextSuggestionsList } from "@/data/contextSuggestions";
+import {
+  getVoicePersonas,
+  getVoicePersonaByName,
+  saveVoicePersona,
+  deleteVoicePersona,
+  type VoicePersona,
+} from "@/data/voicePersonas";
+import VoiceEditForm from "@/components/hansai/VoiceEditForm";
+import StandardEditForm from "@/components/hansai/StandardEditForm";
 
 // ── Config ─────────────────────────────────────────────────────────
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hansai-chat`;
 
-const SLASH_COMMANDS = [
+type SuggestionItem = { cmd: string; desc: string };
+
+const SLASH_COMMANDS: SuggestionItem[] = [
   { cmd: "/help", desc: "Show all commands" },
   { cmd: "/idea", desc: "Save an idea" },
   { cmd: "/task", desc: "Save a task" },
@@ -85,12 +98,15 @@ const HansAI = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
-  const [suggestions, setSuggestions] = useState<typeof SLASH_COMMANDS>([]);
+  const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState(0);
-  const [showForm, setShowForm] = useState<"campaign" | "prompt" | null>(null);
+  const [showForm, setShowForm] = useState<"campaign" | "prompt" | "voice_edit" | null>(null);
+  const [voiceEditName, setVoiceEditName] = useState<string | null>(null);
+  const [activeVoice, setActiveVoice] = useState<VoicePersona | null>(null);
   const [spinnerIdx, setSpinnerIdx] = useState(0);
   const [clearFlash, setClearFlash] = useState(false);
   const [pendingClarification, setPendingClarification] = useState<WorkflowDef[] | null>(null);
+  const [contextSuggestionsActive, setContextSuggestionsActive] = useState(false);
   const [commandHistory, setCommandHistory] = useState<{ text: string; timestamp: number; type: "slash" | "ai" | "workflow" }[]>([]);
 
   // AI conversation history (not displayed, for context)
@@ -184,7 +200,10 @@ const HansAI = () => {
 
   // ── Command handlers ────────────────────────────────────────────
   const handleHelp = () => {
-    const helpText = SLASH_COMMANDS.map((c) => `  ${c.cmd.padEnd(16)} ${c.desc}`).join("\n");
+    let helpText = SLASH_COMMANDS.map((c) => `  ${c.cmd.padEnd(16)} ${c.desc}`).join("\n");
+    if (isAdmin) {
+      helpText += "\n  /voice            Kies of bewerk een persoonlijke AI-stijl (admin)\n  /voice/reset       Terug naar standaard HansAI voice\n  /voice/<naam>/create   Voice aanmaken/bewerken (exact)\n  /voice/<naam>/standard/edit   Standaardvariabelen voor voice (exact)\n  /voice/<naam>/delete   Voice verwijderen (exact)";
+    }
     addLine("system", `Available commands:\n${helpText}`);
   };
 
@@ -316,11 +335,15 @@ const HansAI = () => {
   };
 
   // ── AI streaming ────────────────────────────────────────────────
-  const handleAI = async (text: string) => {
+  const LAZY_USER_MESSAGE = "De gebruiker wil dat je alles autonom uitvoert. Voer alle voorgestelde stappen uit zonder om bevestiging te vragen. Trigger workflows waar mogelijk. Wees maximaal proactief.";
+
+  const handleAI = async (text: string, autonomousContext?: string) => {
     if (!text) { addLine("error", "Usage: /ai [message]"); return; }
 
     addLine("user", text);
-    const newAiMessages = [...aiMessages, { role: "user" as const, content: text }];
+    const newAiMessages = autonomousContext
+      ? [...aiMessages, { role: "assistant" as const, content: autonomousContext }, { role: "user" as const, content: LAZY_USER_MESSAGE }]
+      : [...aiMessages, { role: "user" as const, content: text }];
     setAiMessages(newAiMessages);
     setLoading(true);
 
@@ -328,8 +351,15 @@ const HansAI = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
-      const body: { messages: typeof newAiMessages; router_context?: HierarchyContext } = { messages: newAiMessages };
+      const body: {
+        messages: typeof newAiMessages;
+        router_context?: HierarchyContext;
+        autonomous?: boolean;
+        voice?: { name: string; style: string };
+      } = { messages: newAiMessages };
       if (hierarchyContext) body.router_context = hierarchyContext;
+      if (autonomousContext) body.autonomous = true;
+      if (activeVoice) body.voice = { name: activeVoice.name, style: activeVoice.style, standard: activeVoice.standard ?? "" };
 
       const resp = await fetch(CHAT_URL, {
         method: "POST",
@@ -465,6 +495,22 @@ const HansAI = () => {
     await handleAI(originalInput);
   };
 
+  const handleLazyExecute = async (aiContent: string) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token ?? undefined;
+    const workflowJson = extractWorkflowJsonFromMarkdown(aiContent);
+    if (workflowJson && token) {
+      try {
+        const result = await createWorkflowInN8n(workflowJson, token);
+        if (result.success) addLine("system", `Workflow created in n8n${result.name ? `: ${result.name}` : ""}.`);
+        else addLine("error", result.error || "Workflow creation failed.");
+      } catch {
+        addLine("error", "Workflow creation failed.");
+      }
+    }
+    await handleAI("/ik ben lui jij moet alles doen", aiContent);
+  };
+
   // ── Main command router ─────────────────────────────────────────
   const processInput = async (raw: string) => {
     const trimmed = raw.trim();
@@ -477,8 +523,79 @@ const HansAI = () => {
     if (trimmed.startsWith("/")) {
       const [cmd, ...rest] = trimmed.split(" ");
       const arg = rest.join(" ").trim();
+      const cmdLower = cmd.toLowerCase();
 
-      switch (cmd.toLowerCase()) {
+      // Voice commands: only for admin; exact /voice/<name>/create, /voice/<name>/delete, /voice/<name>/standard/edit
+      if (isAdmin) {
+        const standardEditMatch = cmdLower.match(/^\/voice\/([^/]+)\/standard\/edit$/);
+        if (standardEditMatch) {
+          const nameSlug = standardEditMatch[1];
+          const existing = getVoicePersonaByName(nameSlug);
+          const displayName = existing?.name ?? nameSlug.charAt(0).toUpperCase() + nameSlug.slice(1).replace(/-/g, " ");
+          setVoiceStandardEditName(displayName);
+          setShowForm("voice_standard_edit");
+          addLine("system", `Editing standard (default variables) for voice "${displayName}".`);
+          return;
+        }
+
+        const createMatch = cmdLower.match(/^\/voice\/([^/]+)\/create$/);
+        if (createMatch) {
+          const nameSlug = createMatch[1];
+          const existing = getVoicePersonaByName(nameSlug);
+          const displayName = existing?.name ?? nameSlug.charAt(0).toUpperCase() + nameSlug.slice(1).replace(/-/g, " ");
+          setVoiceEditName(displayName);
+          setShowForm("voice_edit");
+          addLine("system", `Editing voice "${displayName}".`);
+          return;
+        }
+
+        const deleteMatch = cmdLower.match(/^\/voice\/([^/]+)\/delete$/);
+        if (deleteMatch) {
+          const nameSlug = deleteMatch[1];
+          const persona = getVoicePersonaByName(nameSlug);
+          if (persona) {
+            deleteVoicePersona(persona.id);
+            addLine("system", `Voice "${persona.name}" verwijderd.`);
+          } else {
+            addLine("error", `Voice "${nameSlug}" niet gevonden.`);
+          }
+          return;
+        }
+
+        if (cmdLower === "/voice/reset") {
+          setActiveVoice(null);
+          addLine("system", "Voice gereset. Je spreekt nu met de standaard HansAI.");
+          return;
+        }
+
+        const voiceActivateMatch = cmdLower.match(/^\/voice\/([^/]+)$/);
+        if (voiceActivateMatch) {
+          const nameSlug = voiceActivateMatch[1];
+          const persona = getVoicePersonaByName(nameSlug);
+          if (persona) {
+            setActiveVoice(persona);
+            addLine("system", `Voice "${persona.name}" actief. Je spreekt nu met ${persona.name} AI.`);
+          } else {
+            addLine("error", `Voice "${nameSlug}" niet gevonden. Gebruik /voice/${nameSlug}/create om deze aan te maken.`);
+          }
+          return;
+        }
+
+        if (cmdLower === "/voice") {
+          const personas = getVoicePersonas();
+          const list =
+            personas.length === 0
+              ? "  (geen voices opgeslagen)"
+              : personas.map((p) => `  • ${p.name} — /voice/${p.id} om te gebruiken, /voice/${p.id}/create om te bewerken, /voice/${p.id}/delete om te verwijderen`).join("\n");
+          addLine(
+            "system",
+            `Voices (admin): kies een persoonlijke AI-stijl.\n\n/voice/<naam> = wisselen | /voice/reset = standaard HansAI | /voice/<naam>/create = aanmaken/bewerken | /voice/<naam>/standard/edit = standaardvariabelen (exact) | /voice/<naam>/delete = verwijderen (exact).\n\n${list}`
+          );
+          return;
+        }
+      }
+
+      switch (cmdLower) {
         case "/help": handleHelp(); break;
         case "/idea": handleIdea(arg); break;
         case "/task": handleTask(arg); break;
@@ -489,6 +606,18 @@ const HansAI = () => {
         case "/ai": await handleAI(arg); break;
         case "/campaign": setShowForm("campaign"); addLine("system", "Opening campaign builder..."); break;
         case "/prompt": setShowForm("prompt"); addLine("system", "Opening prompt builder..."); break;
+        case "/suggestions": {
+          if (hierarchyContext.primaryGoal === "general") {
+            addLine("system", "Selecteer eerst een categorie (Laag 1) om suggesties te zien.");
+          } else {
+            setContextSuggestionsActive(true);
+            setInput("/");
+            setSuggestions(getContextSuggestionsList(hierarchyContext.primaryGoal, isAdmin));
+            setSelectedSuggestion(0);
+            inputRef.current?.focus();
+          }
+          break;
+        }
         default: addLine("error", `Unknown command: ${cmd}. Type /help for available commands.`);
       }
       return;
@@ -543,11 +672,46 @@ const HansAI = () => {
     const val = input;
     setInput("");
     setSuggestions([]);
-    // Show as user command line
+    setContextSuggestionsActive(false);
     if (val.trim().startsWith("/")) {
       addLine("user", val.trim());
     }
     processInput(val);
+  };
+
+  const selectSuggestionItem = (item: SuggestionItem) => {
+    if (contextSuggestionsActive) {
+      setContextSuggestionsActive(false);
+      setSuggestions([]);
+      setInput("");
+      if (item.cmd === "Ik ben lui jij moet alles doen") {
+        const lastAi = [...lines].reverse().find((l) => l.type === "ai");
+        if (lastAi) {
+          handleLazyExecute(lastAi.content);
+        } else {
+          handleAI("Ik ben lui jij moet alles doen");
+        }
+      } else {
+        handleAI(item.cmd);
+      }
+      return;
+    }
+    if (item.cmd === "/suggestions") {
+      setSuggestions([]);
+      if (hierarchyContext.primaryGoal === "general") {
+        addLine("system", "Selecteer eerst een categorie (Laag 1) om suggesties te zien.");
+      } else {
+        setContextSuggestionsActive(true);
+        setInput("/");
+        setSuggestions(getContextSuggestionsList(hierarchyContext.primaryGoal, isAdmin));
+        setSelectedSuggestion(0);
+      }
+      inputRef.current?.focus();
+      return;
+    }
+    setInput(item.cmd + " ");
+    setSuggestions([]);
+    inputRef.current?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -557,12 +721,15 @@ const HansAI = () => {
       if (e.key === "Tab" || e.key === "Enter") {
         if (suggestions[selectedSuggestion]) {
           e.preventDefault();
-          setInput(suggestions[selectedSuggestion].cmd + " ");
-          setSuggestions([]);
+          selectSuggestionItem(suggestions[selectedSuggestion]);
           return;
         }
       }
-      if (e.key === "Escape") { setSuggestions([]); return; }
+      if (e.key === "Escape") {
+        if (contextSuggestionsActive) { setContextSuggestionsActive(false); }
+        setSuggestions([]);
+        return;
+      }
     }
     if (e.key === "Escape" && hierarchyLastValue) {
       handleHierarchyUndo();
@@ -573,9 +740,29 @@ const HansAI = () => {
 
   const handleInputChange = (val: string) => {
     setInput(val);
+    if (contextSuggestionsActive) {
+      setSuggestions(getContextSuggestionsList(hierarchyContext.primaryGoal, isAdmin));
+      setSelectedSuggestion(0);
+      return;
+    }
     if (val.startsWith("/") && val.length > 0) {
-      const matching = SLASH_COMMANDS.filter((c) => c.cmd.startsWith(val.split(" ")[0]));
-      setSuggestions(matching.length > 0 && val.split(" ").length === 1 ? matching : []);
+      const prefix = val.split(" ")[0];
+      const isSingleToken = val.split(" ").length === 1;
+      let list: SuggestionItem[] = [];
+      if (pendingClarification && pendingClarification.length > 0 && isSingleToken) {
+        const workflowOpts = pendingClarification.map((wf) => ({ cmd: `/run ${wf.name}`, desc: wf.label }));
+        const slashMatches = SLASH_COMMANDS.filter((c) => c.cmd.startsWith(prefix));
+        const adminVoice = isAdmin && "/voice".startsWith(prefix) ? [{ cmd: "/voice", desc: "Kies of bewerk een persoonlijke AI-stijl (admin)" }] : [];
+        list = [...workflowOpts, ...adminVoice, ...slashMatches].slice(0, 10);
+      } else {
+        const base = SLASH_COMMANDS.filter((c) => c.cmd.startsWith(prefix));
+        const adminVoice = isAdmin && "/voice".startsWith(prefix) ? [{ cmd: "/voice", desc: "Kies of bewerk een persoonlijke AI-stijl (admin)" }] : [];
+        list = [...adminVoice, ...base].slice(0, 10);
+      }
+      if (hierarchyContext.primaryGoal !== "general" && isSingleToken && "/suggestions".startsWith(prefix)) {
+        list = [{ cmd: "/suggestions", desc: "Toon 5 suggesties voor deze categorie" }, ...list.filter((s) => s.cmd !== "/suggestions")].slice(0, 10);
+      }
+      setSuggestions(isSingleToken ? list : []);
       setSelectedSuggestion(0);
     } else {
       setSuggestions([]);
@@ -639,7 +826,7 @@ const HansAI = () => {
       >
         <div className="mx-auto max-w-3xl space-y-1">
           {lines.map((line) => (
-            <TerminalLineComponent key={line.id} line={line} tasks={tasks} onToggleTask={toggleTask} />
+            <TerminalLineComponent key={line.id} line={line} tasks={tasks} onToggleTask={toggleTask} onLazyExecute={handleLazyExecute} />
           ))}
 
           {/* Loading spinner */}
@@ -680,6 +867,34 @@ const HansAI = () => {
           {showForm === "prompt" && (
             <PromptForm onSubmit={handlePromptSubmit} onCancel={() => setShowForm(null)} />
           )}
+          {showForm === "voice_edit" && voiceEditName && (
+            <VoiceEditForm
+              personaName={voiceEditName}
+              onSave={(name) => {
+                addLine("system", `Voice "${name}" opgeslagen.`);
+                setShowForm(null);
+                setVoiceEditName(null);
+              }}
+              onCancel={() => {
+                setShowForm(null);
+                setVoiceEditName(null);
+              }}
+            />
+          )}
+          {showForm === "voice_standard_edit" && voiceStandardEditName && (
+            <StandardEditForm
+              personaName={voiceStandardEditName}
+              onSave={(name) => {
+                addLine("system", `Standaard voor "${name}" opgeslagen.`);
+                setShowForm(null);
+                setVoiceStandardEditName(null);
+              }}
+              onCancel={() => {
+                setShowForm(null);
+                setVoiceStandardEditName(null);
+              }}
+            />
+          )}
         </div>
       </div>
 
@@ -689,10 +904,15 @@ const HansAI = () => {
           {/* Autocomplete suggestions */}
           {suggestions.length > 0 && (
             <div className="mb-1 rounded-lg border p-1" style={{ background: "#111111", borderColor: "#1e1e1e" }}>
+              {contextSuggestionsActive && (
+                <div className="mb-1 px-3 py-1 text-[10px] uppercase tracking-wider" style={{ color: "#00ff88", opacity: 0.4 }}>
+                  Suggesties
+                </div>
+              )}
               {suggestions.map((s, i) => (
                 <button
                   key={s.cmd}
-                  onClick={() => { setInput(s.cmd + " "); setSuggestions([]); inputRef.current?.focus(); }}
+                  onClick={() => selectSuggestionItem(s)}
                   className={`flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left text-xs transition-colors ${
                     i === selectedSuggestion ? "" : ""
                   }`}
@@ -702,7 +922,7 @@ const HansAI = () => {
                   }}
                 >
                   <span className="font-semibold" style={{ color: "#00ff88" }}>{s.cmd}</span>
-                  <span>{s.desc}</span>
+                  {s.cmd !== s.desc && <span>{s.desc}</span>}
                 </button>
               ))}
             </div>
@@ -752,10 +972,12 @@ const TerminalLineComponent = ({
   line,
   tasks,
   onToggleTask,
+  onLazyExecute,
 }: {
   line: TerminalLine;
   tasks: TaskItem[];
   onToggleTask: (id: string) => void;
+  onLazyExecute?: (content: string) => void;
 }) => {
   const prefixMap: Record<string, { prefix: string; color: string }> = {
     user: { prefix: "hans@hq:~$ ", color: "#00ff88" },
@@ -800,18 +1022,33 @@ const TerminalLineComponent = ({
 
   // Code block detection
   const hasCode = line.content.includes("```");
+  const showLazyButton = line.type === "ai" && hasCode && onLazyExecute;
 
   return (
-    <div className="group flex items-start gap-0 py-0.5">
-      <div className="flex-1 text-xs leading-relaxed" style={{ color }}>
-        <span style={{ color: line.type === "user" ? "#00ff88" : color, opacity: line.type === "user" ? 0.7 : 1 }}>
-          {prefix}
-        </span>
-        {hasCode ? <CodeRenderer content={line.content} /> : (
-          <span className="whitespace-pre-wrap">{line.content}</span>
-        )}
+    <div className="py-0.5">
+      <div className="group flex items-start gap-0">
+        <div className="flex-1 text-xs leading-relaxed" style={{ color }}>
+          <span style={{ color: line.type === "user" ? "#00ff88" : color, opacity: line.type === "user" ? 0.7 : 1 }}>
+            {prefix}
+          </span>
+          {hasCode ? <CodeRenderer content={line.content} /> : (
+            <span className="whitespace-pre-wrap">{line.content}</span>
+          )}
+        </div>
+        <TimeStamp timestamp={line.timestamp} />
       </div>
-      <TimeStamp timestamp={line.timestamp} />
+      {showLazyButton && (
+        <div className="mt-1.5 pl-4">
+          <button
+            type="button"
+            onClick={() => onLazyExecute(line.content)}
+            className="rounded-md border px-2.5 py-1 text-[11px] font-medium transition-all hover:border-[#00ff88]/50 hover:bg-[#00ff88]/10"
+            style={{ borderColor: "#1e1e1e", color: "#00ff88", background: "rgba(0,255,136,0.05)" }}
+          >
+            /ik ben lui jij moet alles doen
+          </button>
+        </div>
+      )}
     </div>
   );
 };

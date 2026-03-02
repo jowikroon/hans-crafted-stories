@@ -157,7 +157,7 @@ export async function runIntentPipeline(
   if (llmResult.clarification) {
     const matchingWfs = WORKFLOWS.filter(
       (w) => w.name === llmResult.intent || llmResult.confidence >= 0.3,
-    ).slice(0, 3);
+    ).slice(0, 10);
 
     if (matchingWfs.length > 0) {
       return {

@@ -22,7 +22,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, model, router_context } = await req.json();
+    const { messages, model, router_context, autonomous, voice } = await req.json();
 
     const hierarchyHint =
       router_context &&
@@ -31,7 +31,15 @@ serve(async (req) => {
         ? `\n\nCommand Center focus: primaryGoal=${router_context.primaryGoal ?? "none"}, tabs=[${(router_context.activeTabs ?? []).join(", ")}], subTools=[${(router_context.subTools ?? []).join(", ")}]. When relevant, tailor answers to this context (e.g. SEO, n8n, campaigns, system health).`
         : "";
 
-    const systemContent = SYSTEM_PROMPT + hierarchyHint;
+    let systemContent = SYSTEM_PROMPT + hierarchyHint;
+    if (voice && typeof voice === "object" && typeof voice.name === "string" && typeof voice.style === "string") {
+      const standardText = voice.standard && typeof voice.standard === "string" && voice.standard.trim() ? `Default context/variables (always apply): ${voice.standard.trim()}\n\n` : "";
+      const voiceBlock = `You are ${voice.name} AI. The user has chosen you to respond in this conversation with the following style and rules:\n\n${standardText}${voice.style}\n\n(Keep the rest of your capabilities for Command Center tasks, but respond in character as ${voice.name} AI. Sign off or refer to yourself as ${voice.name} AI when appropriate.)`;
+      systemContent = voiceBlock + "\n\n---\n\n" + systemContent;
+    }
+    if (autonomous === true) {
+      systemContent += "\n\nThe user requested autonomous execution. Execute all suggested steps without asking for confirmation. Trigger workflows, create resources, and be maximally proactive.";
+    }
     const selectedModel = model || "google/gemini-3-flash-preview";
 
     // Option A: prefer direct Gemini API when GEMINI_API_KEY is set
