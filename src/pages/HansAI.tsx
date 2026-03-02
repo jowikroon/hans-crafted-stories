@@ -1,15 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import CommandSidebar from "@/components/hansai/CommandSidebar";
+import { HierarchyControls, hierarchyStorage } from "@/components/command-center/HierarchyControls";
+import { HierarchyErrorBoundary, defaultHierarchyFallback } from "@/components/command-center/HierarchyErrorBoundary";
 import { WORKFLOWS, type WorkflowDef } from "@/lib/config/workflows";
-import { fastRoute } from "@/lib/intent/router";
+import { runIntentPipeline, logUnhandledIntent } from "@/lib/intent/pipeline";
+import type { HierarchyContext } from "@/lib/intent/types";
 
 // ── Config ─────────────────────────────────────────────────────────
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hansai-chat`;
-const INTENT_ROUTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/intent-router`;
 
 const SLASH_COMMANDS = [
   { cmd: "/help", desc: "Show all commands" },
@@ -70,54 +71,6 @@ const mapNaturalLanguageSlash = (text: string): { cmd: string; arg: string } | n
   return null;
 };
 
-// ── LLM intent classification via edge function ──────────────────
-interface IntentResult {
-  intent: string;
-  confidence: number;
-  missing_params: string[] | null;
-  clarification: string | null;
-}
-
-async function classifyIntent(input: string): Promise<IntentResult> {
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData?.session?.access_token;
-
-    const res = await fetch(INTENT_ROUTER_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({ input }),
-    });
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (e) {
-    console.error("Intent classification failed:", e);
-    return { intent: "unknown", confidence: 0, missing_params: null, clarification: null };
-  }
-}
-
-async function logUnhandledIntent(
-  userInput: string,
-  fastRouteScore: number,
-  llmIntent?: string,
-  llmConfidence?: number,
-) {
-  try {
-    await (supabase.from("unhandled_intents" as any) as any).insert({
-      user_input: userInput,
-      source: "hansai",
-      fast_route_score: fastRouteScore,
-      llm_intent: llmIntent || null,
-      llm_confidence: llmConfidence || null,
-    });
-  } catch (e) {
-    console.error("Failed to log unhandled intent:", e);
-  }
-}
 
 // ── Component ──────────────────────────────────────────────────────
 const HansAI = () => {
@@ -143,21 +96,66 @@ const HansAI = () => {
   // AI conversation history (not displayed, for context)
   const [aiMessages, setAiMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
 
+  // Command Center hierarchy (Laag 1–3); persisted to localStorage with debounce
+  const [hierarchyContext, setHierarchyContext] = useState<HierarchyContext>(() => hierarchyStorage.load());
+  const [hierarchyLastValue, setHierarchyLastValue] = useState<HierarchyContext | null>(null);
+  const persistTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const spinnerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Load hierarchy from localStorage on mount (bulletproof: invalid → defaults)
+  useEffect(() => {
+    setHierarchyContext((prev) => {
+      const loaded = hierarchyStorage.load();
+      return loaded ?? prev;
+    });
+  }, []);
+
+  // Persist hierarchy to localStorage with 150ms debounce
+  useEffect(() => {
+    if (persistTimeoutRef.current) clearTimeout(persistTimeoutRef.current);
+    persistTimeoutRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(hierarchyStorage.key, JSON.stringify(hierarchyContext));
+      } catch {
+        // quota or disabled localStorage
+      }
+      persistTimeoutRef.current = null;
+    }, 150);
+    return () => {
+      if (persistTimeoutRef.current) clearTimeout(persistTimeoutRef.current);
+    };
+  }, [hierarchyContext]);
+
+  const handleHierarchyChange = useCallback((next: HierarchyContext) => {
+    setHierarchyContext((prev) => {
+      setHierarchyLastValue(prev);
+      return next;
+    });
+  }, []);
+
+  const handleHierarchyUndo = useCallback(() => {
+    if (hierarchyLastValue) {
+      setHierarchyContext(hierarchyLastValue);
+      setHierarchyLastValue(null);
+    }
+  }, [hierarchyLastValue]);
 
   // Auto-scroll
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [lines, loading]);
 
-  // Focus input on mount
+  // Focus input on mount + SEO noindex
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 300);
     document.title = "HansAI — Command Center";
-    const meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement;
-    if (meta) meta.content = "noindex, nofollow";
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!robots) { robots = document.createElement("meta"); robots.name = "robots"; document.head.appendChild(robots); }
+    robots.content = "noindex, nofollow";
+    return () => { if (robots) robots.content = "index, follow"; };
   }, []);
 
   // Spinner animation
@@ -220,23 +218,33 @@ const HansAI = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(wf.webhook, {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      // Proxy through Supabase edge function to avoid CORS issues with direct n8n calls
+      const TRIGGER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
+      const res = await fetch(TRIGGER_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "hansai", timestamp: new Date().toISOString() }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          webhook_url: wf.webhook,
+          payload: { source: "command_center", timestamp: new Date().toISOString() },
+        }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      let data: unknown;
-      const text = await res.text();
-      try { data = JSON.parse(text); } catch { data = text; }
+      const json = await res.json() as { success: boolean; run_id?: string; data?: unknown; error?: string };
+      if (!json.success) throw new Error(json.error || "Workflow returned failure");
 
-      addLine("workflow", `✓ ${wf.label} completed`);
-      if (data && typeof data === "object") {
-        addLine("system", "```json\n" + JSON.stringify(data, null, 2) + "\n```");
-      } else if (data) {
-        addLine("system", String(data));
+      addLine("workflow", `✓ ${wf.label} triggered` + (json.run_id ? ` (run: ${json.run_id.slice(0, 8)}…)` : ""));
+      if (json.data && typeof json.data === "object") {
+        addLine("system", "```json\n" + JSON.stringify(json.data, null, 2) + "\n```");
+      } else if (json.data) {
+        addLine("system", String(json.data));
       }
     } catch (err) {
       addLine("error", `✗ Error running ${wf.label} — ${err instanceof Error ? err.message : "Unknown error"}`);
@@ -275,13 +283,16 @@ const HansAI = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
+      const body: { messages: typeof newAiMessages; router_context?: HierarchyContext } = { messages: newAiMessages };
+      if (hierarchyContext) body.router_context = hierarchyContext;
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: newAiMessages }),
+        body: JSON.stringify(body),
       });
 
       if (!resp.ok) {
@@ -360,14 +371,28 @@ const HansAI = () => {
       const wf = WORKFLOWS.find((w) => w.name === "campaign");
       if (!wf) throw new Error("Campaign workflow not configured");
 
-      const res = await fetch(wf.webhook, {
+      // Route through proxy (was: direct n8n call → CORS errors, no auth, no tracking)
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const TRIGGER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
+
+      const res = await fetch(TRIGGER_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, source: "hansai" }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          webhook_url: wf.webhook,
+          payload: { ...data, source: "command_center" },
+        }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      addLine("workflow", `✓ Campaign launched for "${data.product}"`);
+      const json = await res.json() as { success: boolean; run_id?: string; error?: string };
+      if (!json.success) throw new Error(json.error || "Campaign launch failed");
+
+      addLine("workflow", `✓ Campaign launched for "${data.product}"` + (json.run_id ? ` (run: ${json.run_id.slice(0, 8)}…)` : ""));
     } catch (err) {
       addLine("error", `✗ Campaign error — ${err instanceof Error ? err.message : "Unknown"}`);
     } finally {
@@ -391,7 +416,7 @@ const HansAI = () => {
   const handleClarificationSomethingElse = async (originalInput: string) => {
     setPendingClarification(null);
     addLine("system", "I've logged this request. I'll learn from it over time.");
-    await logUnhandledIntent(originalInput, 0, undefined, undefined);
+    await logUnhandledIntent(originalInput, 0, "command_center");
     await handleAI(originalInput);
   };
 
@@ -438,64 +463,33 @@ const HansAI = () => {
       return;
     }
 
-    // 3. Fast keyword router
-    const route = fastRoute(trimmed);
+    // 3-5. Shared intent pipeline (fast route → LLM classify → log unhandled)
+    setLoading(true);
+    addLine("system", "Classifying intent...");
+    const pipelineResult = await runIntentPipeline(trimmed, "command_center");
+    setLoading(false);
 
-    if (route.confidence >= 0.85 && route.workflow) {
-      await handleRunWorkflow(route.workflow);
-      return;
-    }
+    switch (pipelineResult.outcome.type) {
+      case "workflow_match":
+        await handleRunWorkflow(pipelineResult.outcome.workflow);
+        return;
 
-    if (route.confidence >= 0.5 && route.alternatives && route.alternatives.length > 0) {
-      addLine("system", "Did you mean one of these workflows?");
-      setPendingClarification(route.alternatives);
-      return;
-    }
+      case "clarify":
+        if (pipelineResult.outcome.message) addLine("system", pipelineResult.outcome.message);
+        else addLine("system", "Did you mean one of these workflows?");
+        setPendingClarification(pipelineResult.outcome.workflows);
+        return;
 
-    // 4. LLM fallback for low-confidence input
-    if (route.confidence < 0.5) {
-      setLoading(true);
-      addLine("system", "Classifying intent...");
-      const llmResult = await classifyIntent(trimmed);
-      setLoading(false);
-
-      if (llmResult.intent !== "unknown" && llmResult.confidence >= 0.7) {
-        const wf = WORKFLOWS.find((w) => w.name === llmResult.intent);
-        if (wf) {
-          await handleRunWorkflow(wf);
-          return;
-        }
-      }
-
-      if (llmResult.clarification) {
-        addLine("system", llmResult.clarification);
-        // #region agent log
-        fetch('http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'03c957'},body:JSON.stringify({sessionId:'03c957',runId:'pre-fix',hypothesisId:'H1',location:'src/pages/HansAI.tsx:472',message:'LLM clarification branch entered',data:{intent:llmResult.intent,confidence:llmResult.confidence,workflowCount:WORKFLOWS.length},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
-        const matchingWfs = WORKFLOWS.filter(
-          (w) => w.name === llmResult.intent || llmResult.confidence >= 0.3,
-        ).slice(0, 3);
-        // #region agent log
-        fetch('http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'03c957'},body:JSON.stringify({sessionId:'03c957',runId:'pre-fix',hypothesisId:'H2',location:'src/pages/HansAI.tsx:476',message:'matching workflows computed',data:{intent:llmResult.intent,confidence:llmResult.confidence,matchedNames:matchingWfs.map((m)=>m.name),allNames:WORKFLOWS.map((wf)=>wf.name)},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
-        if (matchingWfs.length > 0) {
-          setPendingClarification(matchingWfs);
-          return;
-        }
-      }
-
-      if (llmResult.intent === "unknown") {
-        await logUnhandledIntent(
-          trimmed,
-          route.confidence,
-          llmResult.intent,
-          llmResult.confidence,
-        );
+      case "unhandled":
         addLine("system", "I've logged this request. I'll learn from it over time.");
-      }
+        break;
+
+      case "chat_fallback":
+      default:
+        break;
     }
 
-    // 5. Fallback: general AI chat
+    // Fallback: general AI chat
     await handleAI(trimmed);
   };
 
@@ -525,6 +519,10 @@ const HansAI = () => {
       }
       if (e.key === "Escape") { setSuggestions([]); return; }
     }
+    if (e.key === "Escape" && hierarchyLastValue) {
+      handleHierarchyUndo();
+      return;
+    }
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
   };
 
@@ -551,7 +549,6 @@ const HansAI = () => {
       </div>
     );
   }
-  if (!user || !isAdmin) return <Navigate to="/portal" replace />;
 
   // ── Render ──────────────────────────────────────────────────────
   return (
@@ -561,18 +558,32 @@ const HansAI = () => {
       {/* JetBrains Mono font */}
       <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-      {/* ── Compact status bar (replaces old header) ──────────── */}
+      {/* ── Compact status bar + hierarchy (Laag 1–3) ──────────── */}
       <div
-        className="flex h-8 shrink-0 items-center justify-between px-4"
-        style={{ borderBottom: "1px solid #1e1e1e" }}
+        className="shrink-0 border-b px-4 py-2"
+        style={{ borderColor: "#1e1e1e" }}
       >
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest" style={{ color: "#00ff88", opacity: 0.5 }}>
-          Command Center
+        <div className="flex h-8 items-center justify-between">
+          <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest" style={{ color: "#00ff88", opacity: 0.5 }}>
+            Command Center
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "#00ff88" }} />
+            <span style={{ color: "#00ff88", opacity: 0.5, fontSize: "10px" }}>Online</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "#00ff88" }} />
-          <span style={{ color: "#00ff88", opacity: 0.5, fontSize: "10px" }}>Online</span>
-        </div>
+        <HierarchyErrorBoundary
+          fallbackContext={defaultHierarchyFallback}
+          onReset={() => setHierarchyContext(defaultHierarchyFallback)}
+        >
+          <HierarchyControls
+            value={hierarchyContext}
+            onChange={handleHierarchyChange}
+            lastValue={hierarchyLastValue}
+            onUndo={handleHierarchyUndo}
+            className="mt-2"
+          />
+        </HierarchyErrorBoundary>
       </div>
 
       {/* ── Terminal output ───────────────────────────────────── */}

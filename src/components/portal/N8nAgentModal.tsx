@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Zap, Wrench, Bug, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { extractWorkflowJsonFromMarkdown, createWorkflowInN8n } from "@/lib/n8n/create-workflow";
 
 const SYSTEM_PROMPT = `You are an expert n8n workflow automation engineer and AI agent. You specialize in:
 1. **Building Workflows** – Designing complete n8n workflow JSON from scratch.
@@ -10,8 +11,15 @@ const SYSTEM_PROMPT = `You are an expert n8n workflow automation engineer and AI
 3. **Troubleshooting** – Debugging execution errors, credential issues, API failures.
 
 You have deep expertise in all n8n nodes, triggers, expressions, integrations, error handling, and self-hosted vs cloud differences.
-When building workflows, output complete, valid n8n JSON. When fixing, explain the root cause clearly.
-Format code in markdown code blocks. Be concise but thorough. Think step by step.`;
+
+When the user asks to **create**, **build**, or **generate** a workflow, you MUST output a single, valid n8n workflow as a \`\`\`json code block\`\`\` with this structure:
+- \`name\`: string (workflow name, max 128 chars)
+- \`nodes\`: array of nodes (each with id, type, name, position [x,y], parameters, typeVersion as needed)
+- \`connections\`: object mapping node outputs to inputs (e.g. { "Node1": { "main": [[{ "node": "Node2", "type": "main", "index": 0 }]] } })
+
+Use standard n8n node types (e.g. n8n-nodes-base.webhook, n8n-nodes-base.httpRequest). The system will create this workflow in n8n automatically from your JSON. Do not include credentials in the JSON; use placeholder text like "REPLACE_WITH_YOUR_CREDENTIAL_ID" for credential IDs.
+
+When fixing or troubleshooting, explain the root cause clearly and format any code in markdown code blocks. Be concise but thorough. Think step by step.`;
 
 const SUGGESTIONS = [
   { icon: Zap, text: "Build a Gmail → Slack alert workflow" },
@@ -77,7 +85,26 @@ const N8nAgentModal = ({ open, onClose }: N8nAgentModalProps) => {
       });
       const data = await res.json();
       const reply = data.reply || "Sorry, I couldn't generate a response.";
-      setMessages([...newMessages, { role: "assistant", content: reply }]);
+      const nextMessages: Message[] = [...newMessages, { role: "assistant", content: reply }];
+
+      // If the AI returned a workflow JSON in a code block, create it in n8n
+      const workflowJson = extractWorkflowJsonFromMarkdown(reply);
+      if (workflowJson && token) {
+        const createResult = await createWorkflowInN8n(workflowJson, token);
+        if (createResult.success && createResult.url) {
+          nextMessages.push({
+            role: "assistant",
+            content: `✓ **Workflow created in n8n:** [${createResult.name || "Open workflow"}](${createResult.url})`,
+          });
+        } else if (!createResult.success && createResult.error) {
+          nextMessages.push({
+            role: "assistant",
+            content: `Could not create workflow in n8n: ${createResult.error}`,
+          });
+        }
+      }
+
+      setMessages(nextMessages);
     } catch {
       setMessages([...newMessages, { role: "assistant", content: "Connection error. Please try again." }]);
     } finally {

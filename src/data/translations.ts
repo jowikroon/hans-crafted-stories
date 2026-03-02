@@ -28,6 +28,7 @@ type TranslationStrings = {
     work: string;
     writing: string;
     about: string;
+    commandCenter: string;
     search: string;
     searchPlaceholder: string;
     noResults: string;
@@ -40,9 +41,14 @@ type TranslationStrings = {
     subtitle: string;
     heading: string;
     headingEmphasis: string;
+    freelanceH2: string;
     description: string;
+    location: string;
     ctaWork: string;
+    ctaConsult: string;
     ctaAbout: string;
+    resultsLabel: string;
+    results: string[];
     expertiseLabel: string;
     expertiseHeading: string;
     expertise: { title: string; description: string }[];
@@ -115,6 +121,27 @@ type TranslationStrings = {
     privacy: string;
   };
 
+  /* ── Contact form ── */
+  contact: {
+    heading: string;
+    name: string;
+    namePlaceholder: string;
+    email: string;
+    emailPlaceholder: string;
+    reason: string;
+    reasonPlaceholder: string;
+    reasonFreelance: string;
+    reasonJob: string;
+    reasonCollaboration: string;
+    reasonGeneral: string;
+    message: string;
+    messagePlaceholder: string;
+    send: string;
+    sending: string;
+    successMessage: string;
+    errorMessage: string;
+  };
+
   /* ── SEO ── */
   seo: {
     homeTitle: string;
@@ -125,6 +152,9 @@ type TranslationStrings = {
     workDescription: string;
     privacyTitle: string;
     privacyDescription: string;
+    aboutTitle: string;
+    aboutDescription: string;
+    notFoundTitle: string;
   };
 };
 
@@ -253,6 +283,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       work: "Work",
       writing: "Writing",
       about: "About",
+      commandCenter: "Command Center",
       search: "Search",
       searchPlaceholder: "Search pages...",
       noResults: "No results found.",
@@ -262,35 +293,44 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── Hero ── */
     hero: {
-      subtitle: "E-commerce Manager · Marketplace Specialist",
-      heading: "Driving e-commerce growth through",
+      subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
+      heading: "Driving marketplace growth through",
       headingEmphasis: "strategy",
+      freelanceH2: "Available for freelance & contract roles — Amazon & Bol.com specialist (NL/EU)",
       description:
-        "I'm Hans van Leeuwen — an e-commerce manager based in Amersfoort, specializing in Amazon, Bol.com, and marketplace growth strategies. I help businesses turn digital channels into revenue engines.",
-      ctaWork: "View my work",
+        "I'm Hans van Leeuwen — a freelance e-commerce manager based in Amersfoort, specializing in Amazon, Bol.com, and marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.",
+      location: "Based in Amersfoort, Netherlands · Available for NL & EU projects",
+      ctaWork: "Amazon & Bol.com case studies",
+      ctaConsult: "Request a marketplace audit",
       ctaAbout: "About me",
-      expertiseLabel: "What I do",
-      expertiseHeading: "E-commerce expertise that drives results",
+      resultsLabel: "Proven results",
+      results: [
+        "70% market share on Amazon NL (earplug category, Nielsen Data)",
+        "20% weekly sales increase via targeted marketplace campaigns",
+        "Out-of-stock rates below 2% through forecasting & logistics",
+      ],
+      expertiseLabel: "Amazon & Bol.com Services",
+      expertiseHeading: "Amazon & Bol.com Marketplace Management (NL/EU)",
       expertise: [
         {
-          title: "Marketplace Management",
-          description: "Amazon, Bol.com, and multi-channel marketplace strategy to maximize visibility and sales.",
+          title: "Amazon Marketplace Management",
+          description: "Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations.",
         },
         {
-          title: "Growth & Optimization",
-          description: "Data-driven conversion optimization, A/B testing, and revenue scaling for e-commerce businesses.",
+          title: "Bol.com Optimization",
+          description: "Content optimization, Bol Ads management, catalog management, and performance analytics on the Netherlands' largest marketplace.",
+        },
+        {
+          title: "Marketplace CRO & Growth",
+          description: "Data-driven conversion rate optimization (CRO), A/B testing, and revenue scaling for e-commerce businesses.",
         },
         {
           title: "SEO & Content Strategy",
-          description: "Search-first content strategies that drive organic traffic and improve marketplace rankings.",
-        },
-        {
-          title: "Digital Commerce UX",
-          description: "User experience design focused on reducing friction and increasing customer lifetime value.",
+          description: "Search-first content strategies that drive organic traffic and improve marketplace rankings. User experience (UX) design focused on reducing friction.",
         },
       ],
-      linkCases: "Case Studies →",
-      linkWriting: "Writing & Insights →",
+      linkCases: "Amazon & Bol.com cases →",
+      linkWriting: "E-commerce insights →",
       linkAbout: "About Hans →",
     },
 
@@ -385,16 +425,40 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Footer ── */
     footer: { privacy: "Privacy" },
 
+    /* ── Contact form ── */
+    contact: {
+      heading: "Get in Touch",
+      name: "Name",
+      namePlaceholder: "Your name",
+      email: "Email",
+      emailPlaceholder: "your@email.com",
+      reason: "Reason for Contact",
+      reasonPlaceholder: "Select a reason…",
+      reasonFreelance: "Freelance / Project Inquiry",
+      reasonJob: "Job Opportunity",
+      reasonCollaboration: "Speaking / Collaboration",
+      reasonGeneral: "General Question",
+      message: "Message",
+      messagePlaceholder: "Tell me more…",
+      send: "Send Message",
+      sending: "Sending…",
+      successMessage: "Message sent! I'll get back to you soon.",
+      errorMessage: "Something went wrong. Please try again.",
+    },
+
     /* ── SEO ── */
     seo: {
-      homeTitle: "E-commerce Manager & Marketplace Specialist (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "Hans van Leeuwen – E-commerce manager with 10+ years of experience. Driving marketplace growth on Amazon & Bol.com through strategy, UX optimization, and revenue scaling. Based in Amersfoort, NL.",
+      homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
+      homeDescription: "Freelance e-commerce manager with 10+ years of experience. Amazon & Bol.com marketplace growth | CRO | UX | NL/EU. Based in Amersfoort, Netherlands.",
       writingTitle: "E-commerce Insights & Articles | Hans van Leeuwen",
       writingDescription: "Read Hans van Leeuwen's thoughts on e-commerce strategy, marketplace optimization, Amazon & Bol.com growth, UX design, and digital commerce trends.",
       workTitle: "Design Portfolio & Case Studies | E-commerce, 3D & UX | Hans van Leeuwen",
       workDescription: "Explore Hans van Leeuwen's portfolio: e-commerce UX case studies, 3D creative work, VR game design, and branding projects with measurable results.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
       privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
+      aboutTitle: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
+      aboutDescription: "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and digital commerce. Based in Amersfoort, NL.",
+      notFoundTitle: "Page Not Found | Hans van Leeuwen",
     },
   },
 
@@ -522,6 +586,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       work: "Werk",
       writing: "Artikelen",
       about: "Over mij",
+      commandCenter: "Command Center",
       search: "Zoeken",
       searchPlaceholder: "Zoek pagina's...",
       noResults: "Geen resultaten gevonden.",
@@ -531,35 +596,44 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── Hero ── */
     hero: {
-      subtitle: "E-commerce Manager · Marketplace Specialist",
-      heading: "E-commercegroei realiseren door",
+      subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
+      heading: "Marktplaatsgroei realiseren door",
       headingEmphasis: "strategie",
+      freelanceH2: "Beschikbaar voor freelance & opdrachten — Amazon & Bol.com specialist (NL/EU)",
       description:
-        "Ik ben Hans van Leeuwen — e-commerce manager gevestigd in Amersfoort, gespecialiseerd in Amazon, Bol.com en marktplaatsgroeistrategieën. Ik help bedrijven digitale kanalen om te zetten in omzetmotoren.",
-      ctaWork: "Bekijk mijn werk",
+        "Ik ben Hans van Leeuwen — freelance e-commerce manager gevestigd in Amersfoort, gespecialiseerd in Amazon, Bol.com en marktplaatsstrategie. Ik help merken in Nederland en de EU digitale kanalen om te zetten in omzetmotoren.",
+      location: "Gevestigd in Amersfoort, Nederland · Beschikbaar voor NL & EU opdrachten",
+      ctaWork: "Amazon & Bol.com cases",
+      ctaConsult: "Vraag een marktplaats audit aan",
       ctaAbout: "Over mij",
-      expertiseLabel: "Wat ik doe",
-      expertiseHeading: "E-commerce-expertise die resultaat oplevert",
+      resultsLabel: "Bewezen resultaten",
+      results: [
+        "70% marktaandeel op Amazon NL (oordopjescategorie, Nielsen Data)",
+        "20% wekelijkse omzetstijging via gerichte marktplaatscampagnes",
+        "Out-of-stock rate onder de 2% dankzij verbeterde forecasting & logistiek",
+      ],
+      expertiseLabel: "Amazon & Bol.com Diensten",
+      expertiseHeading: "Amazon & Bol.com Marktplaatsbeheer (NL/EU)",
       expertise: [
         {
-          title: "Marktplaatsbeheer",
-          description: "Amazon, Bol.com en multi-channel marktplaatsstrategie voor maximale zichtbaarheid en omzet.",
+          title: "Amazon Marktplaatsbeheer",
+          description: "Listing-optimalisatie, A+-content, Amazon Ads (Sponsored Products, Brands, Display), prijsstrategie en operations.",
         },
         {
-          title: "Groei & Optimalisatie",
-          description: "Datagedreven conversieoptimalisatie, A/B-testen en omzetschaling voor e-commercebedrijven.",
+          title: "Bol.com Optimalisatie",
+          description: "Content-optimalisatie, Bol Ads-beheer, catalogusbeheer en prestatieanalytics op de grootste Nederlandse marktplaats.",
+        },
+        {
+          title: "Marktplaats CRO & Groei",
+          description: "Datagedreven conversie-optimalisatie (CRO), A/B-testen en omzetschaling voor e-commercebedrijven.",
         },
         {
           title: "SEO & Contentstrategie",
-          description: "Zoekgerichte contentstrategieën die organisch verkeer stimuleren en marktplaatsrankings verbeteren.",
-        },
-        {
-          title: "Digitale Commerce UX",
-          description: "User experience design gericht op het verminderen van wrijving en het verhogen van klantwaarde.",
+          description: "Zoekgerichte contentstrategieën die organisch verkeer stimuleren en marktplaatsrankings verbeteren. Gebruikerservaring (UX) design gericht op frictieverlaging.",
         },
       ],
-      linkCases: "Cases →",
-      linkWriting: "Artikelen & Inzichten →",
+      linkCases: "Amazon & Bol.com cases →",
+      linkWriting: "E-commerce inzichten →",
       linkAbout: "Over Hans →",
     },
 
@@ -654,16 +728,40 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Footer ── */
     footer: { privacy: "Privacy" },
 
+    /* ── Contact form ── */
+    contact: {
+      heading: "Contact",
+      name: "Naam",
+      namePlaceholder: "Je naam",
+      email: "E-mail",
+      emailPlaceholder: "je@email.com",
+      reason: "Reden voor contact",
+      reasonPlaceholder: "Selecteer een reden…",
+      reasonFreelance: "Freelance / Projectaanvraag",
+      reasonJob: "Vacature",
+      reasonCollaboration: "Spreken / Samenwerking",
+      reasonGeneral: "Algemene vraag",
+      message: "Bericht",
+      messagePlaceholder: "Vertel me meer…",
+      send: "Verstuur bericht",
+      sending: "Verzenden…",
+      successMessage: "Bericht verzonden! Ik neem snel contact op.",
+      errorMessage: "Er ging iets mis. Probeer het opnieuw.",
+    },
+
     /* ── SEO ── */
     seo: {
-      homeTitle: "E-commerce Manager & Marketplace Specialist (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "Hans van Leeuwen – E-commerce manager met 10+ jaar ervaring. Marktplaatsgroei op Amazon & Bol.com via strategie, UX-optimalisatie en omzetschaling. Gevestigd in Amersfoort, NL.",
+      homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
+      homeDescription: "Freelance e-commerce manager met 10+ jaar ervaring. Amazon & Bol.com marktplaatsgroei | CRO | UX | NL/EU. Gevestigd in Amersfoort, Nederland.",
       writingTitle: "E-commerce Inzichten & Artikelen | Hans van Leeuwen",
       writingDescription: "Lees de artikelen van Hans van Leeuwen over e-commercestrategie, marktplaatsoptimalisatie, Amazon & Bol.com groei, UX-design en digitale commercetrends.",
       workTitle: "Designportfolio & Cases | E-commerce, 3D & UX | Hans van Leeuwen",
       workDescription: "Bekijk het portfolio van Hans van Leeuwen: e-commerce UX-cases, 3D-creatief werk, VR-gamedesign en brandingprojecten met meetbare resultaten.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
       privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
+      aboutTitle: "Over Hans van Leeuwen – E-commerce Manager | 10+ Jaar Ervaring",
+      aboutDescription: "Leer meer over Hans van Leeuwen: 10+ jaar ervaring in e-commercemanagement, marktplaatsstrategie (Amazon, Bol.com), UX-design en digitale commerce. Gevestigd in Amersfoort, NL.",
+      notFoundTitle: "Pagina Niet Gevonden | Hans van Leeuwen",
     },
   },
 };

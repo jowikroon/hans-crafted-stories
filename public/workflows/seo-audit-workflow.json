@@ -60,8 +60,8 @@
       "typeVersion": 1.2,
       "credentials": {
         "openAiApi": {
-          "id": "K6BcdLmg5csDdEHs",
-          "name": "OpenAi account 2"
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Prod - OpenAI"
         }
       }
     },
@@ -85,8 +85,8 @@
       "typeVersion": 1.2,
       "credentials": {
         "openAiApi": {
-          "id": "K6BcdLmg5csDdEHs",
-          "name": "OpenAi account 2"
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Prod - OpenAI"
         }
       }
     },
@@ -219,8 +219,8 @@
       "notesInFlow": false,
       "credentials": {
         "gmailOAuth2": {
-          "id": "m8zHwo4b2LMy6U6Z",
-          "name": "Gmail account"
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Prod - Gmail"
         }
       }
     },
@@ -249,8 +249,8 @@
       "name": "Gmail Trigger",
       "credentials": {
         "gmailOAuth2": {
-          "id": "m8zHwo4b2LMy6U6Z",
-          "name": "Gmail account"
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Prod - Gmail"
         }
       }
     }

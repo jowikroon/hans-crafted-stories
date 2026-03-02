@@ -63,3 +63,17 @@ Cursor   <-->  GitHub (jowikroon/hans-crafted-stories)  <-->  Cloudflare Pages
 | 4 | If builds fail: check build log, branch, and build settings. |
 
 Lovable, Cursor, and Cloudflare Pages are linked only through GitHub. Both editors push to GitHub; Cloudflare Pages pulls from GitHub and deploys.
+
+---
+
+## Required Frontend Environment Variables
+
+Cloudflare Pages must have these environment variables set (Settings → Environment variables) for both **Production** and **Preview**:
+
+| Variable | Example | Notes |
+|---|---|---|
+| `VITE_SUPABASE_URL` | `https://<project>.supabase.co` | Public client URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | `eyJ…` | Public anon key (safe to commit) |
+| `VITE_SUPABASE_PROJECT_ID` | `oejeojzaakfhculcoqdh` | Used by some helpers |
+
+These are also committed in `.env.development` and `.env.production` so local/Lovable builds work out of the box. If the Cloudflare build produces a white screen, check these variables first.

@@ -94,7 +94,7 @@ const CookieConsent = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="fixed bottom-4 left-4 right-4 z-[9999] mx-auto max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl sm:left-auto sm:right-6 sm:bottom-6"
+          className="fixed bottom-6 left-1/2 z-[9999] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 rounded-2xl border border-border bg-card p-5 shadow-2xl"
         >
           <button
             onClick={handleDecline}

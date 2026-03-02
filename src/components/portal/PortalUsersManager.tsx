@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserPlus, Users, Shield, Eye, EyeOff, ChevronDown, ChevronRight, Wrench, FileText, Activity, Bot, Terminal, Zap, ShieldCheck, ShieldX, Lock, Unlock, Trash2, CheckSquare, Square, UserCheck, Loader2 } from "lucide-react";
+import { UserPlus, Users, Shield, Eye, EyeOff, ChevronDown, ChevronRight, Wrench, FileText, Activity, Bot, Terminal, Zap, ShieldCheck, ShieldX, Lock, Unlock, Trash2, CheckSquare, Square, UserCheck, Loader2, RefreshCw, Clock } from "lucide-react";
 import { usersApi, PortalProfile } from "@/lib/api/users";
 import { portalApi, PortalTool } from "@/lib/api/portal";
 import { useToast } from "@/hooks/use-toast";
@@ -9,12 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface PortalUsersManagerProps {
   adminUserId: string;
+  subFilter?: string;
 }
 
 const contentTypes = [
@@ -35,9 +37,9 @@ const aiModels = [
   { key: "n8n_agent", label: "n8n Agent", icon: Zap, description: "Workflow builder & troubleshooter", color: "text-purple-500" },
 ];
 
-type AccessSection = "tabs" | "tools" | "content" | "ai";
+type AccessSection = "tabs" | "tools" | "content" | "ai" | "activity";
 
-const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
+const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps) => {
   const { toast } = useToast();
   const [profiles, setProfiles] = useState<PortalProfile[]>([]);
   const [tools, setTools] = useState<PortalTool[]>([]);
@@ -56,6 +58,8 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
   const [toolAccess, setToolAccess] = useState<Record<string, { can_view: boolean; can_use: boolean }>>({});
   const [contentAccess, setContentAccess] = useState<Record<string, { can_view: boolean; can_edit: boolean }>>({});
   const [aiAccess, setAiAccess] = useState<Record<string, boolean>>({});
+  const [activityLog, setActivityLog] = useState<{ id: string; action: string; description: string; metadata: Record<string, unknown>; created_at: string }[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -178,6 +182,9 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Failed to create user");
+      if (result.user_id) {
+        usersApi.logActivity(result.user_id, "user_created", `User "${newName.trim()}" created with email ${newEmail.trim()}`);
+      }
       toast({ title: "User added", description: `${newName.trim()} has been added with a real account.` });
       setNewName("");
       setNewEmail("");
@@ -227,6 +234,10 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
     try {
       await usersApi.updateProfile(profile.id, { tab_access: updated } as any);
       setProfiles(prev => prev.map(p => p.id === profile.id ? { ...p, tab_access: updated } : p));
+      const added = updated.filter(t => !current.includes(t));
+      const removed = current.filter(t => !updated.includes(t));
+      if (added.length) usersApi.logActivity(profile.user_id, "tab_granted", `Tab access granted: ${added.join(", ")}`);
+      if (removed.length) usersApi.logActivity(profile.user_id, "tab_revoked", `Tab access revoked: ${removed.join(", ")}`);
     } catch {
       toast({ title: "Error", description: "Failed to update tab access", variant: "destructive" });
     }
@@ -240,6 +251,8 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
     setToolAccess((prev) => ({ ...prev, [toolId]: updated }));
     try {
       await usersApi.setToolAccess(profile.user_id, toolId, updated.can_view, updated.can_use, adminUserId);
+      const toolName = tools.find(t => t.id === toolId)?.name || toolId;
+      usersApi.logActivity(profile.user_id, updated.can_view ? "tool_granted" : "tool_revoked", `Tool "${toolName}" — view: ${updated.can_view}, use: ${updated.can_use}`);
     } catch {
       toast({ title: "Error", description: "Failed to update access", variant: "destructive" });
     }
@@ -253,6 +266,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
     setContentAccess((prev) => ({ ...prev, [type]: updated }));
     try {
       await usersApi.setContentAccess(profile.user_id, type, updated.can_view, updated.can_edit, adminUserId);
+      usersApi.logActivity(profile.user_id, updated.can_view ? "content_granted" : "content_revoked", `Content "${type}" — view: ${updated.can_view}, edit: ${updated.can_edit}`);
     } catch {
       toast({ title: "Error", description: "Failed to update access", variant: "destructive" });
     }
@@ -264,6 +278,8 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
     setAiAccess((prev) => ({ ...prev, [model]: updated }));
     try {
       await usersApi.setAiAccess(profile.user_id, model, updated, adminUserId);
+      const modelLabel = aiModels.find(m => m.key === model)?.label || model;
+      usersApi.logActivity(profile.user_id, updated ? "ai_granted" : "ai_revoked", `AI model "${modelLabel}" ${updated ? "enabled" : "disabled"}`);
     } catch {
       toast({ title: "Error", description: "Failed to update AI access", variant: "destructive" });
     }
@@ -272,6 +288,7 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
   const toggleActive = async (profile: PortalProfile) => {
     try {
       await usersApi.updateProfile(profile.id, { is_active: !profile.is_active });
+      usersApi.logActivity(profile.user_id, profile.is_active ? "user_deactivated" : "user_activated", `User ${profile.is_active ? "deactivated" : "activated"}`);
       loadData();
       toast({ title: profile.is_active ? "Deactivated" : "Activated" });
     } catch {
@@ -331,7 +348,26 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
     { id: "tools", label: "Tool Permissions", icon: Wrench, description: "Per-tool view & use rights" },
     { id: "content", label: "Content Rights", icon: FileText, description: "CMS view & edit access" },
     { id: "ai", label: "AI Models", icon: Bot, description: "AI assistant access control" },
+    { id: "activity", label: "Activity", icon: Activity, description: "Recent user actions" },
   ];
+
+  const loadActivityLog = async (userId: string) => {
+    setActivityLoading(true);
+    try {
+      const log = await usersApi.getActivityLog(userId);
+      setActivityLog(log);
+    } catch {
+      toast({ title: "Error", description: "Failed to load activity log", variant: "destructive" });
+    } finally {
+      setActivityLoading(false);
+    }
+  };
+
+  const actionBadgeColor = (action: string) => {
+    if (action.includes("grant") || action.includes("activated") || action === "user_created") return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    if (action.includes("revoke") || action.includes("deactivated")) return "bg-amber-500/10 text-amber-600 border-amber-500/20";
+    return "bg-sky-500/10 text-sky-600 border-sky-500/20";
+  };
 
   const allSelected = profiles.length > 0 && selectedIds.size === profiles.length;
   const someSelected = selectedIds.size > 0;
@@ -400,7 +436,13 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
         </div>
       ) : (
         <div className="space-y-3">
-          {profiles.map((profile) => {
+          {profiles.filter((p) => {
+            if (!subFilter || subFilter === "All") return true;
+            const tabCount = (p.tab_access || []).length;
+            if (subFilter === "Admins") return tabCount >= 5;
+            if (subFilter === "Members") return tabCount < 5;
+            return true;
+          }).map((profile) => {
             const isExpanded = expandedUser === profile.id;
             const isSelected = selectedIds.has(profile.id);
             const summary = isExpanded ? getAccessSummary(profile) : null;
@@ -478,7 +520,10 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
                             return (
                               <button
                                 key={section.id}
-                                onClick={() => setExpandedSection(section.id)}
+                                onClick={() => {
+                                  setExpandedSection(section.id);
+                                  if (section.id === "activity") loadActivityLog(profile.user_id);
+                                }}
                                 className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-[11px] font-medium transition-all ${
                                   isActive
                                     ? "bg-background text-foreground shadow-sm border border-border/50"
@@ -621,7 +666,55 @@ const PortalUsersManager = ({ adminUserId }: PortalUsersManagerProps) => {
                           </motion.div>
                         )}
 
-                        {/* Access Summary Bar */}
+                        {/* Activity Log Section */}
+                        {expandedSection === "activity" && (
+                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
+                            <div className="flex items-center justify-between mb-3">
+                              <p className="text-[11px] text-muted-foreground/50">Recent actions and permission changes</p>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 gap-1.5 text-[10px] rounded-lg"
+                                onClick={() => loadActivityLog(profile.user_id)}
+                                disabled={activityLoading}
+                              >
+                                <RefreshCw size={10} className={activityLoading ? "animate-spin" : ""} />
+                                Refresh
+                              </Button>
+                            </div>
+                            {activityLoading ? (
+                              <div className="flex items-center justify-center py-8">
+                                <Loader2 size={16} className="animate-spin text-muted-foreground/40" />
+                              </div>
+                            ) : activityLog.length === 0 ? (
+                              <div className="rounded-xl border border-dashed border-border/50 p-6 text-center">
+                                <Clock size={16} className="mx-auto mb-2 text-muted-foreground/30" />
+                                <p className="text-xs text-muted-foreground/50">No activity recorded yet</p>
+                              </div>
+                            ) : (
+                              <ScrollArea className="h-[280px]">
+                                <div className="space-y-1.5 pr-3">
+                                  {activityLog.map((entry) => (
+                                    <div key={entry.id} className="flex items-start gap-3 rounded-xl border border-border/40 bg-secondary/10 p-3">
+                                      <div className="mt-0.5 shrink-0">
+                                        <div className={`rounded-md border px-1.5 py-0.5 text-[9px] font-semibold ${actionBadgeColor(entry.action)}`}>
+                                          {entry.action.replace(/_/g, " ")}
+                                        </div>
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-foreground">{entry.description}</p>
+                                        <p className="text-[10px] text-muted-foreground/40 mt-0.5">
+                                          {new Date(entry.created_at).toLocaleString()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </ScrollArea>
+                            )}
+                          </motion.div>
+                        )}
+
                         {summary && (
                           <div className="mt-5 flex flex-wrap gap-2">
                             <div className="flex items-center gap-1.5 rounded-lg bg-secondary/40 border border-border/30 px-2.5 py-1.5">

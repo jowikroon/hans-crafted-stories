@@ -13,6 +13,7 @@ const WORKFLOW_CONTEXT = [
   { name: "product-feed", description: "Optimize and sync product feeds across channels (Channable, Google Shopping)" },
   { name: "campaign", description: "Generate and launch marketing campaigns with AI-powered copy" },
   { name: "scraper", description: "Scrape competitor data, pricing, and product information from websites" },
+  { name: "google", description: "Control Gmail, Google Sheets, Drive — summarize emails, add rows, list files" },
 ];
 
 const SYSTEM_PROMPT = `You are an intent classifier for a digital marketing automation platform.
@@ -27,7 +28,8 @@ Rules:
 - If the input is ambiguous but could match, set confidence 0.4-0.7 and provide a clarification question
 - If no workflow matches at all, set intent to "unknown" and confidence to 0.0
 - missing_params should list any required parameters the user didn't provide
-- Be strict: only classify as a workflow if the user's intent genuinely relates to it`;
+- Be strict: only classify as a workflow if the user's intent genuinely relates to it
+- IMPORTANT: Generic conversational questions such as "what can you do", "tell me all you can do", "what are your capabilities", "help me", "who are you", "what do you know", or any greeting/capability question must ALWAYS be classified as intent "unknown" with confidence 0.0 — they are chat questions, not workflow requests`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -35,7 +37,7 @@ serve(async (req) => {
   }
 
   try {
-    const { input, context } = await req.json();
+    const { input, context, router_context } = await req.json();
 
     if (!input || typeof input !== "string") {
       return new Response(
@@ -43,6 +45,13 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    const hierarchyHint =
+      router_context &&
+      typeof router_context === "object" &&
+      (router_context.primaryGoal != null || router_context.activeTabs?.length || router_context.subTools?.length)
+        ? `\nCommand Center context: primaryGoal=${router_context.primaryGoal ?? "none"}, activeTabs=[${(router_context.activeTabs ?? []).join(", ")}], subTools=[${(router_context.subTools ?? []).join(", ")}]. Prefer intents that match this context when relevant.`
+        : "";
 
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
@@ -52,14 +61,11 @@ serve(async (req) => {
       );
     }
 
+    const userContent = [context ? `Context: ${context}` : "", hierarchyHint ? `Hierarchy: ${hierarchyHint}` : "", `User input: "${input}"`].filter(Boolean).join("\n\n");
+
     const messages = [
       { role: "system", content: SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: context
-          ? `Context: ${context}\n\nUser input: "${input}"`
-          : `User input: "${input}"`,
-      },
+      { role: "user", content: userContent },
     ];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

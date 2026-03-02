@@ -107,9 +107,9 @@ const PortalCommandPalette = ({
               />
               <button
                 onClick={onClose}
-                className="flex h-5 items-center rounded border border-border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground transition-colors hover:bg-secondary"
+                className="flex h-5 items-center rounded border border-border bg-muted px-1.5 text-[10px] text-muted-foreground transition-colors hover:bg-secondary"
               >
-                ESC
+                <X size={12} />
               </button>
             </div>
 
@@ -149,14 +149,6 @@ const PortalCommandPalette = ({
             </div>
 
             {/* Footer hint */}
-            <div className="flex items-center gap-4 border-t border-border px-4 py-2">
-              <span className="text-[10px] text-muted-foreground/40">
-                <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px]">↑↓</kbd> Navigate
-              </span>
-              <span className="text-[10px] text-muted-foreground/40">
-                <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px]">↵</kbd> Select
-              </span>
-            </div>
           </motion.div>
         </>
       )}

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home } from "lucide-react";
+import ContactForm from "@/components/ContactForm";
 import { Link } from "react-router-dom";
 import hansProfile from "@/assets/hans-profile.jpg";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageElements } from "@/hooks/usePageElements";
 import { useSEO } from "@/hooks/useSEO";
+import { usePageContent } from "@/hooks/usePageContent";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -22,11 +24,63 @@ const About = () => {
   const { lang } = useLang();
   const t = translations[lang];
   const { isVisible } = usePageElements("about");
+  const { getValue } = usePageContent("about");
+
+  const seo = t.seo;
 
   useSEO({
-    title: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
-    description: "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and digital commerce. Based in Amersfoort, NL.",
+    title: seo.aboutTitle,
+    description: seo.aboutDescription,
     url: "https://hansvanleeuwen.com/about",
+    hreflang: [
+      { lang: "en", href: "https://hansvanleeuwen.com/about" },
+      { lang: "nl", href: "https://hansvanleeuwen.com/about" },
+      { lang: "x-default", href: "https://hansvanleeuwen.com/about" },
+    ],
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "ProfilePage",
+          mainEntity: { "@id": "https://hansvanleeuwen.com/#person" },
+          name: seo.aboutTitle,
+          url: "https://hansvanleeuwen.com/about",
+          isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
+        },
+        {
+          "@type": "Person",
+          "@id": "https://hansvanleeuwen.com/#person",
+          name: "Hans van Leeuwen",
+          url: "https://hansvanleeuwen.com/about",
+          jobTitle: "Freelance E-commerce Manager",
+          description: "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
+          image: {
+            "@type": "ImageObject",
+            url: "https://hansvanleeuwen.com/og-image.png",
+            width: 1200,
+            height: 630,
+            caption: "Hans van Leeuwen – Freelance E-commerce Manager",
+          },
+          knowsAbout: ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Conversion optimization", "Digital commerce", "SEO", "Amazon Ads", "Bol Ads"],
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: "Amersfoort",
+            addressCountry: "NL",
+          },
+          sameAs: [
+            "https://www.linkedin.com/in/hansvl3",
+            "https://www.behans.nl",
+          ],
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+            { "@type": "ListItem", position: 2, name: "About", item: "https://hansvanleeuwen.com/about" },
+          ],
+        },
+      ],
+    },
   });
 
   return (
@@ -90,7 +144,7 @@ const About = () => {
                 </div>
                 <div className="absolute -bottom-2 -right-2 flex items-center gap-0.5 rounded-full border border-primary/20 bg-background px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-primary shadow-sm">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                  <span className="ml-1.5">10+ {lang === "nl" ? "jaar" : "years"}</span>
+                  <span className="ml-1.5">{getValue("about_years_badge", `10+ ${lang === "nl" ? "jaar" : "years"}`)}</span>
                 </div>
               </div>
             </motion.div>
@@ -100,29 +154,29 @@ const About = () => {
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
               <div className="mb-4 flex items-center gap-2">
                 <div className="h-px w-8 bg-primary/60" />
-                <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{t.about}</p>
+                <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{getValue("about_label", t.about)}</p>
               </div>
               <h1 className="mb-6 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                Hans van Leeuwen
+                {getValue("about_name", "Hans van Leeuwen")}
               </h1>
 
               {isVisible("bio_section") && (
-                <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
-                  <p>{t.bio[0]}</p>
-                  <p>{t.bio[1]}</p>
+              <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
+                  <p>{getValue("about_bio_1", t.bio[0])}</p>
+                  <p>{getValue("about_bio_2", t.bio[1])}</p>
                 </div>
               )}
 
               {isVisible("contact_details") && (
                 <div className="mt-8 flex flex-wrap gap-4 text-sm text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin size={14} className="text-primary" /> Amersfoort, NL
+                    <MapPin size={14} className="text-primary" /> {getValue("about_location", "Amersfoort, NL")}
                   </span>
-                  <a href="mailto:hansvl3@gmail.com" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                    <Mail size={14} className="text-primary" /> hansvl3@gmail.com
+                  <a href={`mailto:${getValue("about_email", "hansvl3@gmail.com")}`} className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+                    <Mail size={14} className="text-primary" /> {getValue("about_email", "hansvl3@gmail.com")}
                   </a>
-                  <a href="https://linkedin.com/in/hansvl3" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                    <Linkedin size={14} className="text-primary" /> LinkedIn
+                  <a href={getValue("about_linkedin_url", "https://linkedin.com/in/hansvl3")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+                    <Linkedin size={14} className="text-primary" /> {getValue("about_linkedin_label", "LinkedIn")}
                   </a>
                 </div>
               )}
@@ -130,11 +184,11 @@ const About = () => {
               {isVisible("cv_downloads") && (
                 <div className="mt-8 flex flex-wrap gap-3">
                   <a href="/Hans_CV_-_e-commerce_manager.pdf" download className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-all hover:opacity-80 hover:shadow-lg hover:shadow-foreground/10">
-                    <Download size={14} /> {t.downloadCvEn}
+                    <Download size={14} /> {getValue("about_cv_en_label", t.downloadCvEn)}
                     <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
                   <a href="/Cv_HvL_-_Ecommerce.pdf" download className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:border-primary/20">
-                    <Download size={14} /> {t.downloadCvNl}
+                    <Download size={14} /> {getValue("about_cv_nl_label", t.downloadCvNl)}
                     <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
                 </div>
@@ -150,7 +204,7 @@ const About = () => {
               <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
                 <div className="h-2 w-2 rounded-full bg-primary" />
               </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">{t.coreCompetencies}</h2>
+              <h2 className="font-display text-2xl font-medium text-foreground">{getValue("about_skills_heading", t.coreCompetencies)}</h2>
             </div>
             <motion.div className="flex flex-wrap gap-2" variants={staggerChildren} initial="initial" whileInView="animate" viewport={{ once: true }}>
               {t.skills.map((skill, i) => (
@@ -171,7 +225,7 @@ const About = () => {
               <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
                 <Briefcase size={14} className="text-primary" />
               </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">{t.experience}</h2>
+              <h2 className="font-display text-2xl font-medium text-foreground">{getValue("about_experience_heading", t.experience)}</h2>
             </div>
             <div className="space-y-0">
               {t.experienceList.map((job, i) => (
@@ -212,7 +266,7 @@ const About = () => {
               <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
                 <GraduationCap size={14} className="text-primary" />
               </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">{t.education}</h2>
+              <h2 className="font-display text-2xl font-medium text-foreground">{getValue("about_education_heading", t.education)}</h2>
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
               {t.educationList.map((edu, i) => (
@@ -231,6 +285,19 @@ const About = () => {
                 </motion.div>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Contact Form */}
+        {isVisible("contact_form") && (
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mt-20">
+            <div className="mb-8 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
+                <Mail size={14} className="text-primary" />
+              </div>
+              <h2 className="font-display text-2xl font-medium text-foreground">{t.contact.heading}</h2>
+            </div>
+            <ContactForm />
           </motion.div>
         )}
       </motion.div>

@@ -96,6 +96,9 @@ const WebhookTriggerModal = ({ open, onClose, defaultWebhookUrl = "", toolId, to
                 <h2 className="font-display text-xl font-medium">Trigger Webhook</h2>
               </div>
               <p className="text-sm text-muted-foreground">Send a POST request to an n8n webhook or any URL</p>
+              <p className="mt-1 text-[11px] text-muted-foreground/50">
+                For intent-based runs, use <span className="font-medium text-orange-400/70">Command Center</span> — it classifies your goal and picks the right workflow automatically.
+              </p>
             </div>
 
             {/* n8n setup guidance */}

@@ -1,0 +1,99 @@
+{
+  "name": "n8n Reconcile & Retry",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "n8n-reconcile-retry",
+        "options": { "rawBody": false },
+        "authentication": "headerAuth",
+        "responseMode": "lastNode"
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [200, 300],
+      "typeVersion": 2,
+      "webhookId": "n8n-reconcile-retry"
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [200, 500],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Re-run secrets registry verify via internal webhook.\nconst n8nBase = (process.env.N8N_BASE_URL || process.env.N8N_URL || 'https://n8n.hansvanleeuwen.com').replace(/\\/$/, '');\nconst token = process.env.COMMANDER_WEBHOOK_TOKEN || '';\n\ntry {\n  const resp = await fetch(`${n8nBase}/webhook/secrets-registry-verify`, {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'X-COMMANDER-TOKEN': token\n    },\n    body: JSON.stringify({})\n  });\n  const report = await resp.json();\n  return [{ json: { verify_status: resp.status, report } }];\n} catch (e) {\n  return [{ json: { verify_status: 0, error: e.message, report: null } }];\n}"
+      },
+      "id": "rerun-verify",
+      "name": "Re-run Verify",
+      "type": "n8n-nodes-base.code",
+      "position": [480, 400],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.report?.ok }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-ok",
+      "name": "All OK?",
+      "type": "n8n-nodes-base.if",
+      "position": [720, 400],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// All secrets present — run smoke tests.\nconst n8nBase = (process.env.N8N_BASE_URL || process.env.N8N_URL || 'https://n8n.hansvanleeuwen.com').replace(/\\/$/, '');\nconst smokeTests = [];\n\n// Test 1: n8n health\ntry {\n  const r = await fetch(`${n8nBase}/healthz`);\n  smokeTests.push({ test: 'n8n healthz', status: r.status, ok: r.ok });\n} catch (e) {\n  smokeTests.push({ test: 'n8n healthz', status: 0, ok: false, error: e.message });\n}\n\n// Test 2: n8n API credentials list\ntry {\n  const apiKey = process.env.N8N_API_KEY;\n  if (apiKey) {\n    const r = await fetch(`${n8nBase}/api/v1/credentials`, {\n      headers: { 'X-N8N-API-KEY': apiKey, 'Accept': 'application/json' }\n    });\n    const data = await r.json();\n    smokeTests.push({ test: 'n8n credentials API', status: r.status, ok: r.ok, count: (data.data || []).length });\n  }\n} catch (e) {\n  smokeTests.push({ test: 'n8n credentials API', status: 0, ok: false, error: e.message });\n}\n\nconst allPassed = smokeTests.every(t => t.ok);\n// Optionally activate target workflows (e.g. via n8n API when ACTIVATE_WORKFLOWS env is set)\nconst activated_workflows = [];\nreturn [{ json: {\n  reconciled: true,\n  ok: allPassed,\n  timestamp: new Date().toISOString(),\n  smoke_tests: smokeTests,\n  activated_workflows,\n  report: $input.first().json.report\n} }];"
+      },
+      "id": "smoke-tests",
+      "name": "Run Smoke Tests",
+      "type": "n8n-nodes-base.code",
+      "position": [960, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Still missing secrets — escalate.\nconst input = $input.first().json;\nconst report = input.report || {};\nreturn [{ json: {\n  reconciled: false,\n  ok: false,\n  timestamp: new Date().toISOString(),\n  escalation: 'Secrets still missing after provisioning. Manual intervention required.',\n  missing: report.all_missing || report.missing || [],\n  warnings: report.warnings || [],\n  action: 'Review docs/runbooks/missing-secrets.md and re-run: commander secrets:heal'\n} }];"
+      },
+      "id": "escalate",
+      "name": "Escalate",
+      "type": "n8n-nodes-base.code",
+      "position": [960, 500],
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{ "node": "Re-run Verify", "type": "main", "index": 0 }]]
+    },
+    "Manual Trigger": {
+      "main": [[{ "node": "Re-run Verify", "type": "main", "index": 0 }]]
+    },
+    "Re-run Verify": {
+      "main": [[{ "node": "All OK?", "type": "main", "index": 0 }]]
+    },
+    "All OK?": {
+      "main": [
+        [{ "node": "Run Smoke Tests", "type": "main", "index": 0 }],
+        [{ "node": "Escalate", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "templateId": "n8n-reconcile-retry-v1",
+    "description": "After provisioning, re-runs secrets verification. If all OK, runs smoke tests (n8n health, credentials API). If still missing, escalates with actionable report."
+  },
+  "tags": ["secrets", "self-healing", "infrastructure"]
+}

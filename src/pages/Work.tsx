@@ -10,6 +10,7 @@ import { useCategoryCards } from "@/hooks/useCategoryCards";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
+import { usePageContent } from "@/hooks/usePageContent";
 
 // Map detailed categories to filter groups
 const categoryGroupMap: Record<string, string> = {
@@ -33,6 +34,7 @@ const Work = () => {
   const { lang } = useLang();
   const tw = translations[lang].work;
   const seo = translations[lang].seo;
+  const { getValue } = usePageContent("work");
 
   useSEO({
     title: seo.workTitle,
@@ -68,8 +70,10 @@ const Work = () => {
       studies.map((s) => ({
         id: s.id,
         title: s.title,
+        titleNl: s.title_nl || undefined,
         category: s.category,
         description: s.description,
+        descriptionNl: s.description_nl || undefined,
         image: s.image,
         year: s.year,
         externalUrl: s.external_url ?? undefined,
@@ -120,7 +124,7 @@ const Work = () => {
   if (loading) {
     return (
       <section className="section-container pt-28">
-        <p className="text-muted-foreground">{tw.loading}</p>
+        <p className="text-muted-foreground">{getValue("work_loading_text", tw.loading)}</p>
       </section>
     );
   }
@@ -159,13 +163,13 @@ const Work = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            {tw.label}
+            {getValue("work_label", tw.label)}
           </p>
           <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
-            {tw.heading}
+            {getValue("work_heading", tw.heading)}
           </h1>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
-            {tw.description}
+            {getValue("work_description", tw.description)}
           </p>
         </motion.div>
       )}
@@ -201,12 +205,12 @@ const Work = () => {
 
       {filtered.length === 0 && (
         <div className="py-16 text-center">
-          <p className="mb-2 text-muted-foreground">{tw.noProjectsTitle}</p>
+          <p className="mb-2 text-muted-foreground">{getValue("work_no_projects_title", tw.noProjectsTitle)}</p>
           <button
             onClick={() => setFilter("all")}
             className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
           >
-            {tw.showAll}
+            {getValue("work_show_all_label", tw.showAll)}
           </button>
         </div>
       )}

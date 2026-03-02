@@ -2,41 +2,35 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Terminal, Zap, Cpu, HeartPulse, Bug, Search, Moon, Sun } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search, Zap, BookOpen } from "lucide-react";
+import { Link } from "react-router-dom";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
 import PortalUsersManager from "@/components/portal/PortalUsersManager";
 import PortalPagesTab from "@/components/portal/PortalPagesTab";
-import InlineChatPanel from "@/components/portal/InlineChatPanel";
+import UnifiedChatPanel from "@/components/portal/UnifiedChatPanel";
 import PortalFloatingDock from "@/components/portal/PortalFloatingDock";
 import PortalCommandPalette from "@/components/portal/PortalCommandPalette";
+import EmpireOverlay from "@/components/overlays/EmpireOverlay";
+import N8nAgentModal from "@/components/portal/N8nAgentModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
-import InfoTooltip from "@/components/portal/InfoTooltip";
+import { usePageElements } from "@/hooks/usePageElements";
 
-const EMPIRE_SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
-You manage n8n workflows, Cloudflare Workers, VPS servers, Docker MCP Gateway, Supabase, and Claude Code CLI sessions.
-Be concise, technical, and actionable. Format with markdown.`;
 
-const N8N_SYSTEM_PROMPT = `You are an expert n8n workflow automation engineer and AI agent. You specialize in building, fixing, and troubleshooting n8n workflows.
-Output complete, valid n8n JSON when building. When fixing, explain root cause clearly. Format code in markdown code blocks.`;
-
-const EMPIRE_SUGGESTIONS = [
-  { icon: Wrench, text: "Fix my AutoSEO workflow — it stopped triggering" },
-  { icon: Cpu, text: "Generate a new n8n workflow for Channable feed optimization" },
-  { icon: HeartPulse, text: "Run a full health check on all services" },
-];
-
-const N8N_SUGGESTIONS = [
-  { icon: Zap, text: "Build a Gmail → Slack alert workflow" },
-  { icon: Wrench, text: "Fix 'Cannot read property of undefined' in Code node" },
-  { icon: Bug, text: "Troubleshoot: my Schedule trigger isn't firing" },
-];
 
 type Tab = "tools" | "content" | "pages" | "status" | "users";
+
+const subMenuItems: Record<Tab, string[]> = {
+  tools: ["All", "SEO", "Automation", "Data", "AI", "General"],
+  content: ["All", "Blog Posts", "Case Studies", "Main Menu"],
+  pages: ["All", "Published", "Hidden"],
+  users: ["All", "Admins", "Members"],
+  status: ["All", "Overview", "Test Results", "Issues", "Architecture"],
+};
 
 const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
   { id: "tools", label: "Tools", icon: Wrench, hint: "Manage SEO tools and integrations" },
@@ -46,31 +40,43 @@ const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
   { id: "status", label: "Status", icon: Activity, hint: "System health and uptime" },
 ];
 
-const DARK_MODE_KEY = "portal_dark_mode";
+const THEME_KEY = "site_theme";
 
 const Portal = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [activeTab, setActiveTab] = useState<Tab>("tools");
+  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
+  const [subFilter, setSubFilter] = useState<string>("All");
+  const [commandOpen, setCommandOpen] = useState(false);
   const [empireOpen, setEmpireOpen] = useState(false);
   const [n8nOpen, setN8nOpen] = useState(false);
-  const [commandOpen, setCommandOpen] = useState(false);
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") return localStorage.getItem(DARK_MODE_KEY) === "true";
-    return false;
-  });
   const { toast } = useToast();
+  const { isVisible } = usePageElements("portal");
+
+  // Force dark mode when Portal mounts; restore previous theme on unmount
+  useEffect(() => {
+    const prev = localStorage.getItem(THEME_KEY) || "light";
+    document.documentElement.classList.add("dark");
+    localStorage.setItem(THEME_KEY, "dark");
+    return () => {
+      document.documentElement.classList.toggle("dark", prev === "dark");
+      localStorage.setItem(THEME_KEY, prev);
+    };
+  }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
-    localStorage.setItem(DARK_MODE_KEY, String(isDark));
-  }, [isDark]);
+    document.title = "Portal — Hans van Leeuwen";
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!robots) { robots = document.createElement("meta"); robots.name = "robots"; document.head.appendChild(robots); }
+    robots.content = "noindex, nofollow";
+    return () => { if (robots) robots.content = "index, follow"; };
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
-      if (e.key === "e") { e.preventDefault(); setEmpireOpen((v) => !v); }
-      else if (e.key === "j") { e.preventDefault(); setN8nOpen((v) => !v); }
+      if (e.key === "e" || e.key === "j") { e.preventDefault(); setCommandCenterOpen((v) => !v); }
       else if (e.key === "k") { e.preventDefault(); setCommandOpen((v) => !v); }
     };
     document.addEventListener("keydown", handler);
@@ -180,46 +186,58 @@ const Portal = () => {
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
-            <button
-              onClick={() => setIsDark(!isDark)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-2 text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
-              title={isDark ? "Light mode" : "Dark mode"}
+            {isVisible("empire_ai_button") && (
+              <button
+                onClick={() => setEmpireOpen((v) => !v)}
+                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
+                  empireOpen
+                    ? "border-2 border-violet-500 bg-violet-500/10 text-violet-500 shadow-[0_0_16px_hsl(263_70%_50%/0.35)]"
+                    : "border border-border text-muted-foreground hover:border-violet-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(263_70%_50%/0.15)]"
+                }`}
+              >
+                <Zap size={14} />
+                <span className="hidden sm:inline">Empire AI</span>
+              </button>
+            )}
+            {isVisible("n8n_agent_button") && (
+              <button
+                onClick={() => setN8nOpen((v) => !v)}
+                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
+                  n8nOpen
+                    ? "border-2 border-cyan-500 bg-cyan-500/10 text-cyan-500 shadow-[0_0_16px_hsl(188_95%_43%/0.35)]"
+                    : "border border-border text-muted-foreground hover:border-cyan-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(188_95%_43%/0.15)]"
+                }`}
+              >
+                <Wrench size={14} />
+                <span className="hidden sm:inline">n8n Agent</span>
+              </button>
+            )}
+            {isVisible("command_center_button") && (
+              <button
+                onClick={() => setCommandCenterOpen((v) => !v)}
+                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
+                  commandCenterOpen
+                    ? "border-2 border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_16px_hsl(25_95%_53%/0.35)]"
+                    : "border border-border text-muted-foreground hover:border-orange-500/40 hover:text-foreground hover:shadow-[0_0_12px_hsl(25_95%_53%/0.15)]"
+                }`}
+              >
+                <Command size={14} />
+                <span className="hidden sm:inline">Command Center</span>
+              </button>
+            )}
+            <Link
+              to="/wiki"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2"
+              title="AI Wiki"
             >
-              {isDark ? <Sun size={14} /> : <Moon size={14} />}
-            </button>
-
-            <button
-              onClick={() => setEmpireOpen((v) => !v)}
-              className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
-                empireOpen
-                  ? "border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_12px_hsl(160_80%_45%/0.2)]"
-                  : "border border-border text-muted-foreground hover:border-emerald-500/40 hover:text-foreground"
-              }`}
-            >
-              <Terminal size={14} />
-              <span className="hidden sm:inline">Empire AI</span>
-              <InfoTooltip text="AI assistant for infrastructure management and n8n workflows" />
-              <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘E</kbd>
-            </button>
-            <button
-              onClick={() => setN8nOpen((v) => !v)}
-              className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
-                n8nOpen
-                  ? "border-2 border-purple-500 bg-purple-500/10 text-purple-600 shadow-[0_0_12px_hsl(270_80%_55%/0.2)]"
-                  : "border border-border text-muted-foreground hover:border-purple-500/40 hover:text-foreground"
-              }`}
-            >
-              <Zap size={14} />
-              <span className="hidden sm:inline">n8n Agent</span>
-              <InfoTooltip text="Build, fix, and troubleshoot n8n automation workflows" />
-              <kbd className="hidden rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground sm:inline">⌘J</kbd>
-            </button>
+              <BookOpen size={14} />
+              <span className="hidden sm:inline">Wiki</span>
+            </Link>
             <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
             >
               <Search size={13} />
-              <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground">⌘K</kbd>
             </button>
             <button
               onClick={signOut}
@@ -230,59 +248,48 @@ const Portal = () => {
           </div>
         </div>
 
-        {/* Inline AI Panels */}
-        <AnimatePresence>
-          {empireOpen && (
-            <motion.div
-              key="empire-inline"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "40vh", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-4 overflow-hidden rounded-2xl border-2 border-emerald-500 bg-card shadow-lg"
-            >
-              <InlineChatPanel
-                systemPrompt={EMPIRE_SYSTEM_PROMPT}
-                suggestions={EMPIRE_SUGGESTIONS}
-                title="Empire Commander"
-                subtitle="Ask Claude · Manage Infrastructure"
-                icon={Terminal}
-                placeholder="Claude, fix my AutoSEO workflow..."
-                accentClass="emerald"
-              />
-            </motion.div>
-          )}
-          {n8nOpen && (
-            <motion.div
-              key="n8n-inline"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "40vh", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-4 overflow-hidden rounded-2xl border-2 border-purple-500 bg-card shadow-lg"
-            >
-              <InlineChatPanel
-                systemPrompt={N8N_SYSTEM_PROMPT}
-                suggestions={N8N_SUGGESTIONS}
-                title="n8n Workflow Agent"
-                subtitle="Build · Fix · Troubleshoot"
-                icon={Zap}
-                placeholder="Build a workflow for..."
-                accentClass="purple"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Unified Command Center Panel */}
+        {isVisible("command_center_button") && (
+          <AnimatePresence>
+            {commandCenterOpen && (
+              <motion.div
+                key="command-center"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "50vh", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className="mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card shadow-lg flex flex-col"
+              >
+                <div className="flex shrink-0 items-center justify-between border-b border-orange-500/20 px-3 py-2 bg-card/80">
+                  <span className="text-[11px] font-medium text-foreground">Command Center</span>
+                  {isAdmin ? (
+                    <Link
+                      to="/hansai"
+                      className="rounded-md px-2.5 py-1 text-[10px] font-medium text-orange-400 hover:bg-orange-500/10 hover:text-orange-300 transition-colors"
+                    >
+                      Open full Command Center (terminal + filters) →
+                    </Link>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">Log in as admin to open the full terminal.</span>
+                  )}
+                </div>
+                <div className="flex-1 min-h-0">
+                  <UnifiedChatPanel />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* Tab Navigation */}
-        <div className="mb-8 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:mb-8 sm:overflow-visible">
+        <div className="mb-2 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:overflow-visible">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => { setActiveTab(tab.id); setSubFilter("All"); }}
                 className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:py-2 ${
                   isActive
                     ? "bg-background text-foreground shadow-sm"
@@ -291,22 +298,48 @@ const Portal = () => {
               >
                 <Icon size={14} />
                 <span className="hidden sm:inline">{tab.label}</span>
-                <InfoTooltip text={tab.hint} />
               </button>
             );
           })}
         </div>
+        <nav className="mb-6 flex items-center overflow-x-auto">
+          {subMenuItems[activeTab].map((item, i) => {
+            const isActive = subFilter === item;
+            return (
+              <div key={item} className="flex items-center">
+                <button
+                  onClick={() => setSubFilter(item)}
+                  className={`whitespace-nowrap px-3 py-1.5 text-xs transition-colors ${
+                    isActive
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {item}
+                </button>
+                {i < subMenuItems[activeTab].length - 1 && (
+                  <div className="h-3.5 w-px bg-border" />
+                )}
+              </div>
+            );
+          })}
+        </nav>
+
 
         {/* Tab Content */}
-        {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} />}
-        {activeTab === "content" && <PortalContentTab userId={user.id} isAdmin={isAdmin} />}
-        {activeTab === "pages" && <PortalPagesTab />}
-        {activeTab === "users" && <PortalUsersManager adminUserId={user.id} />}
-        {activeTab === "status" && <PortalStatusTab />}
+        {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
+        {activeTab === "content" && <PortalContentTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
+        {activeTab === "pages" && <PortalPagesTab subFilter={subFilter} />}
+        {activeTab === "users" && <PortalUsersManager adminUserId={user.id} subFilter={subFilter} />}
+        {activeTab === "status" && <PortalStatusTab subFilter={subFilter} />}
       </motion.div>
 
-      <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
-      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => setEmpireOpen((v) => !v)} onN8nOpen={() => setN8nOpen((v) => !v)} onSignOut={signOut} />
+      {isVisible("terminal_button") && (
+        <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
+      )}
+      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => setCommandCenterOpen((v) => !v)} onN8nOpen={() => setCommandCenterOpen((v) => !v)} onSignOut={signOut} />
+      <EmpireOverlay open={empireOpen} onClose={() => setEmpireOpen(false)} />
+      <N8nAgentModal open={n8nOpen} onClose={() => setN8nOpen(false)} />
     </section>
   );
 };

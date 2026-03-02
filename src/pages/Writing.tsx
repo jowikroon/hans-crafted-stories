@@ -10,6 +10,7 @@ import { useCategoryCards } from "@/hooks/useCategoryCards";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
+import { usePageContent } from "@/hooks/usePageContent";
 
 type Filter = string;
 type TagFilter = string | null;
@@ -38,7 +39,7 @@ const Writing = () => {
   const { lang } = useLang();
   const t = translations[lang].writing;
   const seo = translations[lang].seo;
-
+  const { getValue } = usePageContent("writing");
   useSEO({
     title: seo.writingTitle,
     description: seo.writingDescription,
@@ -62,11 +63,14 @@ const Writing = () => {
       id: p.id,
       title: p.title,
       excerpt: p.excerpt,
+      titleNl: p.title_nl || undefined,
+      excerptNl: p.excerpt_nl || undefined,
       category: p.category as "professional" | "personal",
       tags: p.tags,
       date: p.created_at,
       readTime: p.read_time,
       slug: p.slug,
+      imageUrl: p.image_url || undefined,
     })),
   [blogPosts]);
 
@@ -133,7 +137,7 @@ const Writing = () => {
   if (loading) {
     return (
       <section className="section-container pt-28 pb-20">
-        <p className="text-muted-foreground">{t.loading}</p>
+        <p className="text-muted-foreground">{getValue("writing_loading_text", t.loading)}</p>
       </section>
     );
   }
@@ -176,12 +180,12 @@ const Writing = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">{t.label}</p>
+          <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">{getValue("writing_label", t.label)}</p>
           <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
-            {t.heading}
+            {getValue("writing_heading", t.heading)}
           </h1>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
-            {t.subtitle}
+            {getValue("writing_subtitle", t.subtitle)}
           </p>
         </motion.div>
       )}
@@ -212,7 +216,7 @@ const Writing = () => {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder={t.searchPlaceholder}
+                  placeholder={getValue("writing_search_placeholder", t.searchPlaceholder)}
                   className="h-9 w-full rounded-lg border border-border bg-card pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
                 />
                 {search && (
@@ -289,7 +293,7 @@ const Writing = () => {
         </motion.p>
       )}
 
-      <div>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <AnimatePresence mode="popLayout">
           {filtered.map((post, i) => (
             <BlogPostCard key={post.id} post={post} index={i} />
@@ -297,12 +301,12 @@ const Writing = () => {
         </AnimatePresence>
         {filtered.length === 0 && (
           <div className="py-16 text-center">
-            <p className="mb-2 text-muted-foreground">{t.noPostsTitle}</p>
+            <p className="mb-2 text-muted-foreground">{getValue("writing_no_posts_title", t.noPostsTitle)}</p>
             <button
               onClick={clearAll}
               className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
             >
-              {t.clearFilters}
+              {getValue("writing_clear_filters", t.clearFilters)}
             </button>
           </div>
         )}

@@ -16,7 +16,7 @@ import ToolPreviewModal from "./ToolPreviewModal";
 import IframeToolModal from "./IframeToolModal";
 import WorkflowViewerModal from "./WorkflowViewerModal";
 import N8nAgentModal from "./N8nAgentModal";
-import InfoTooltip from "./InfoTooltip";
+
 import SortableToolCard, { type CardSize, sizeCycle, categoryConfig } from "./SortableToolCard";
 
 const iconMap: Record<string, typeof Wrench> = { Wrench, Workflow, Globe, AppWindow, FileJson, Sparkles, Bot, Search, Zap, BarChart3, Code, Puzzle, Cpu };
@@ -26,9 +26,10 @@ const getIcon = (name: string) => iconMap[name] || Wrench;
 interface PortalToolsTabProps {
   userId: string;
   isAdmin?: boolean;
+  subFilter?: string;
 }
 
-const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
+const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabProps) => {
   const { toast } = useToast();
   const [tools, setTools] = useState<PortalTool[]>([]);
   const [toolsLoading, setToolsLoading] = useState(false);
@@ -39,6 +40,16 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
   const [previewTool, setPreviewTool] = useState<PortalTool | null>(null);
   const [accessMap, setAccessMap] = useState<Record<string, UserToolAccess> | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+
+  // Sync sub-menu filter from parent
+  useEffect(() => {
+    if (!subFilter || subFilter === "All") {
+      setActiveFilter(null);
+    } else {
+      const map: Record<string, string> = { SEO: "seo", Automation: "automation", Data: "data", AI: "ai", General: "general" };
+      setActiveFilter(map[subFilter] || null);
+    }
+  }, [subFilter]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [cardSizes, setCardSizes] = useState<Record<string, CardSize>>({});
   const seedingRef = useRef(false);
@@ -286,7 +297,6 @@ const PortalToolsTab = ({ userId, isAdmin = false }: PortalToolsTabProps) => {
               >
                 <Pencil size={12} />
                 Edit Layout
-                <InfoTooltip text="Drag to reorder, click resize to change card size" />
               </button>
             )}
           </div>

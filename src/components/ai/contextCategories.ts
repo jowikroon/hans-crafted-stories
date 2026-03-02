@@ -145,6 +145,23 @@ export const hansAICategories: ContextCategory[] = [
   },
 ];
 
+// Unified categories — merge empire + hansAI (de-duplicate channable which appears in both)
+export const unifiedCategories: ContextCategory[] = [
+  ...empireCategories,
+  ...hansAICategories.map(cat => {
+    // Avoid duplicate subcategory IDs across empire + hansAI
+    if (cat.id === "feeds") {
+      return {
+        ...cat,
+        subcategories: cat.subcategories.map(sub =>
+          sub.id === "channable" ? { ...sub, id: "channable-feeds", label: "Channable Feeds" } : sub
+        ),
+      };
+    }
+    return cat;
+  }),
+];
+
 export function buildContextPrefix(
   categories: ContextCategory[],
   categoryId: string | null,

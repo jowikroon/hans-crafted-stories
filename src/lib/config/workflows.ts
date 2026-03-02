@@ -8,7 +8,10 @@ export interface WorkflowDef {
   category: "seo" | "data" | "infra" | "ai" | "marketing";
 }
 
+/** Same n8n instance runs on primary VPS (srv1402218); n8n.srv1402218.hstgr.cloud is the same server. */
 export const N8N_BASE = "https://n8n.hansvanleeuwen.com";
+
+const SUPABASE_URL = typeof import.meta !== "undefined" ? (import.meta.env?.VITE_SUPABASE_URL ?? "") : "";
 
 export const WORKFLOWS: WorkflowDef[] = [
   {
@@ -72,6 +75,15 @@ export const WORKFLOWS: WorkflowDef[] = [
     description: "Central orchestrator that receives Monday.com item events and routes to specialist workflows",
     keywords: ["monday", "orchestrator", "board", "item", "task", "project"],
     examples: ["monday orchestrator", "process monday items", "monday automation"],
+    category: "ai",
+  },
+  {
+    name: "google",
+    label: "Google (Gmail, Sheets, Drive)",
+    webhook: `${SUPABASE_URL}/functions/v1/google-agent`,
+    description: "Control Gmail, Google Sheets, and Drive — summarize emails, add rows, list files (Gemini-backed)",
+    keywords: ["google", "gmail", "sheets", "drive", "email", "inbox", "spreadsheet", "documents"],
+    examples: ["check my gmail", "summarize my emails", "add row to my sheet", "list drive files", "google"],
     category: "ai",
   },
 ];

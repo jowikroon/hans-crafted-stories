@@ -7,6 +7,12 @@ const socialLinks = [
   { label: "BeHans.nl", href: "https://www.behans.nl" },
 ];
 
+const internalLinks = [
+  { label: "Work", to: "/work" },
+  { label: "Writing", to: "/writing" },
+  { label: "About", to: "/about" },
+];
+
 const Footer = () => {
   const { lang } = useLang();
   const t = translations[lang].footer;
@@ -18,6 +24,15 @@ const Footer = () => {
           © {new Date().getFullYear()} Hans van Leeuwen
         </p>
         <div className="flex items-center gap-6">
+          {internalLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="nav-link text-xs uppercase tracking-widest"
+            >
+              {link.label}
+            </Link>
+          ))}
           {socialLinks.map((s) => (
             <a
               key={s.label}

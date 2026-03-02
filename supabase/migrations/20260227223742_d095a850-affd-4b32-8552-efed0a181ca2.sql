@@ -1,0 +1,1 @@
+ALTER TABLE public.blog_posts ADD COLUMN image_url text NOT NULL DEFAULT '';

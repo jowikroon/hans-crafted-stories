@@ -10,6 +10,7 @@ import Footer from "./components/Footer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
 import EmpireTerminalCard from "./components/empire/EmpireTerminalCard";
 import CookieConsent from "./components/CookieConsent";
+import TrackingScriptInjector from "./components/TrackingScriptInjector";
 
 const queryClient = new QueryClient();
 
@@ -20,13 +21,16 @@ const AppShell = () => {
   return (
     <AuthProvider>
       <LangProvider>
-        <Navbar variant={isDarkPage ? "dark" : "default"} />
+        <header>
+          <Navbar variant={isDarkPage ? "dark" : "default"} />
+        </header>
         <main className="min-h-screen">
           <AnimatedRoutes />
         </main>
         {!isDarkPage && <Footer />}
         {!isDarkPage && <EmpireTerminalCard />}
         <CookieConsent />
+        <TrackingScriptInjector />
       </LangProvider>
     </AuthProvider>
   );

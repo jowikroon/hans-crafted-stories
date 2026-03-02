@@ -15,17 +15,33 @@ export function usePageElements(page: string) {
   const [elements, setElements] = useState<PageElement[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchElements = useCallback(() => {
     supabase
       .from("page_elements")
       .select("*")
       .eq("page", page)
       .order("sort_order")
       .then(({ data }) => {
-        setElements((data as PageElement[]) || []);
+        const list = (data as PageElement[]) || [];
+        setElements(list);
         setLoading(false);
       });
   }, [page]);
+
+  useEffect(() => {
+    fetchElements();
+
+    const channel = supabase
+      .channel(`page_elements_${page}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "page_elements", filter: `page=eq.${page}` },
+        () => fetchElements()
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [page, fetchElements]);
 
   const isVisible = useCallback(
     (key: string) => {

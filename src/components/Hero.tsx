@@ -1,19 +1,32 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, ShoppingCart, BarChart3, Search, Zap } from "lucide-react";
+import FeaturedArticles from "@/components/FeaturedArticles";
+import HomeFAQ from "@/components/HomeFAQ";
+import ServiceDetails from "@/components/ServiceDetails";
+import { ArrowRight, ShoppingCart, BarChart3, Search, TrendingUp, MapPin } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
+import { usePageContent } from "@/hooks/usePageContent";
 
 const icons = [
   <ShoppingCart size={20} />,
   <BarChart3 size={20} />,
+  <TrendingUp size={20} />,
   <Search size={20} />,
-  <Zap size={20} />,
 ];
 
 const Hero = () => {
   const { lang } = useLang();
+  const isNl = lang === "nl";
   const t = translations[lang].hero;
+  const { getValue } = usePageContent("home");
+
+  const expertise = [
+    { title: getValue("expertise_1_title", t.expertise[0].title), description: getValue("expertise_1_desc", t.expertise[0].description) },
+    { title: getValue("expertise_2_title", t.expertise[1].title), description: getValue("expertise_2_desc", t.expertise[1].description) },
+    { title: getValue("expertise_3_title", t.expertise[2].title), description: getValue("expertise_3_desc", t.expertise[2].description) },
+    { title: getValue("expertise_4_title", t.expertise[3].title), description: getValue("expertise_4_desc", t.expertise[3].description) },
+  ];
 
   return (
     <main>
@@ -29,42 +42,85 @@ const Hero = () => {
           className="max-w-3xl"
         >
           <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            {t.subtitle}
+            {getValue("hero_subtitle", t.subtitle)}
           </p>
-          <h1 className="mb-6 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            {t.heading}{" "}
-            <em className="text-primary">{t.headingEmphasis}</em> &amp; design.
+          <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
+            {isNl
+              ? <>Freelance E-commerce Manager &amp; Amazon/Bol.com <em className="text-primary">Specialist</em></>
+              : <>Freelance E-commerce Manager — <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; design</>
+            }
           </h1>
-          <p className="mb-10 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            {t.description}
+          <h2 className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
+            {getValue("hero_freelance_h2", t.freelanceH2)}
+          </h2>
+          <p className="mb-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
+            {getValue("hero_description", t.description)}
+          </p>
+          <p className="mb-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            {isNl ? "Bekijk mijn " : "Explore my "}
+            <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {isNl ? "Amazon & Bol.com marketplace cases" : "Amazon & Bol.com marketplace case studies"}
+            </Link>
+            {isNl ? " of lees " : " or read "}
+            <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {isNl ? "e-commerce inzichten & artikelen" : "e-commerce insights & articles"}
+            </Link>
+            .
+          </p>
+          <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground/70">
+            <MapPin size={13} className="shrink-0 text-primary/60" />
+            {getValue("hero_location", t.location)}
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
               to="/work"
               className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
-              aria-label={t.ctaWork}
+              aria-label={getValue("hero_cta_work", t.ctaWork)}
             >
-              {t.ctaWork}
+              {getValue("hero_cta_work", t.ctaWork)}
               <ArrowRight
                 size={16}
                 className="transition-transform duration-300 group-hover:translate-x-0.5"
               />
             </Link>
-            <Link
-              to="/about"
+            <a
+              href="mailto:hansvl3@gmail.com?subject=Marketplace Audit Request"
               className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-sm font-bold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
-              aria-label={t.ctaAbout}
+              aria-label={getValue("hero_cta_consult", t.ctaConsult)}
             >
-              {t.ctaAbout}
-            </Link>
+              {getValue("hero_cta_consult", t.ctaConsult)}
+            </a>
           </div>
+        </motion.div>
+      </section>
+
+      {/* Results / Proof Section */}
+      <section
+        className="section-container pb-8 pt-2"
+        aria-label={getValue("hero_results_label", t.resultsLabel)}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-wrap gap-6 md:gap-10"
+        >
+          {t.results.map((result, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                {i + 1}
+              </span>
+              <p className="text-sm leading-snug text-muted-foreground max-w-[220px]">{result}</p>
+            </div>
+          ))}
         </motion.div>
       </section>
 
       {/* Expertise Section */}
       <section
         className="section-container pb-20"
-        aria-label={t.expertiseLabel}
+        aria-label={getValue("expertise_label", t.expertiseLabel)}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -73,15 +129,15 @@ const Hero = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            {t.expertiseLabel}
+            {getValue("expertise_label", t.expertiseLabel)}
           </h2>
           <p className="mb-8 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-            {t.expertiseHeading}
+            {getValue("expertise_heading", t.expertiseHeading)}
           </p>
         </motion.div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {t.expertise.map((item, i) => (
+          {expertise.map((item, i) => (
             <motion.article
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -126,6 +182,15 @@ const Hero = () => {
           </Link>
         </motion.div>
       </section>
+
+      {/* Service Details — deliverables, engagement model, industries */}
+      <ServiceDetails />
+
+      {/* FAQ Section — matches FAQPage schema for parity */}
+      <HomeFAQ />
+
+      {/* Featured Articles */}
+      <FeaturedArticles />
     </main>
   );
 };

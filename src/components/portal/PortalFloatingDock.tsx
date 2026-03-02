@@ -65,7 +65,7 @@ const PortalFloatingDock = ({ activeTab, onTabChange, onCommandOpen }: PortalFlo
           <div className="flex h-5 w-5 items-center justify-center rounded-md border border-border bg-muted/80">
             <Search size={11} strokeWidth={2.5} />
           </div>
-          <span className="mt-0.5 text-[9px] font-medium leading-none text-muted-foreground/70">⌘K</span>
+          <span className="mt-0.5 text-[9px] font-medium leading-none text-muted-foreground/70">Search</span>
         </button>
       </div>
     </motion.div>

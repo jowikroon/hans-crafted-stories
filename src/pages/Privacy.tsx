@@ -11,6 +11,19 @@ const Privacy = () => {
     title: seo.privacyTitle,
     description: seo.privacyDescription,
     url: "https://hansvanleeuwen.com/privacy",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: seo.privacyTitle,
+      url: "https://hansvanleeuwen.com/privacy",
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+          { "@type": "ListItem", position: 2, name: t.title },
+        ],
+      },
+    },
   });
 
   return (

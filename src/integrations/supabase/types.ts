@@ -18,40 +18,52 @@ export type Database = {
         Row: {
           category: string
           content: string
+          content_nl: string
           created_at: string
           excerpt: string
+          excerpt_nl: string
           id: string
+          image_url: string
           published: boolean
           read_time: string
           slug: string
           tags: string[]
           title: string
+          title_nl: string
           updated_at: string
         }
         Insert: {
           category?: string
           content?: string
+          content_nl?: string
           created_at?: string
           excerpt?: string
+          excerpt_nl?: string
           id?: string
+          image_url?: string
           published?: boolean
           read_time?: string
           slug: string
           tags?: string[]
           title: string
+          title_nl?: string
           updated_at?: string
         }
         Update: {
           category?: string
           content?: string
+          content_nl?: string
           created_at?: string
           excerpt?: string
+          excerpt_nl?: string
           id?: string
+          image_url?: string
           published?: boolean
           read_time?: string
           slug?: string
           tags?: string[]
           title?: string
+          title_nl?: string
           updated_at?: string
         }
         Relationships: []
@@ -60,42 +72,51 @@ export type Database = {
         Row: {
           category: string
           content: string
+          content_nl: string
           created_at: string
           description: string
+          description_nl: string
           external_url: string | null
           id: string
           image: string
           published: boolean
           sort_order: number
           title: string
+          title_nl: string
           updated_at: string
           year: string
         }
         Insert: {
           category?: string
           content?: string
+          content_nl?: string
           created_at?: string
           description?: string
+          description_nl?: string
           external_url?: string | null
           id?: string
           image?: string
           published?: boolean
           sort_order?: number
           title: string
+          title_nl?: string
           updated_at?: string
           year?: string
         }
         Update: {
           category?: string
           content?: string
+          content_nl?: string
           created_at?: string
           description?: string
+          description_nl?: string
           external_url?: string | null
           id?: string
           image?: string
           published?: boolean
           sort_order?: number
           title?: string
+          title_nl?: string
           updated_at?: string
           year?: string
         }
@@ -161,6 +182,33 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_submissions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       empire_events: {
         Row: {
           created_at: string
@@ -188,6 +236,81 @@ export type Database = {
           metadata?: Json | null
           monday_item_id?: string | null
           source?: string
+        }
+        Relationships: []
+      }
+      page_content: {
+        Row: {
+          content_group: string
+          content_key: string
+          content_label: string
+          content_type: string
+          content_value: string
+          created_at: string
+          id: string
+          page: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          content_group?: string
+          content_key: string
+          content_label?: string
+          content_type?: string
+          content_value?: string
+          created_at?: string
+          id?: string
+          page: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          content_group?: string
+          content_key?: string
+          content_label?: string
+          content_type?: string
+          content_value?: string
+          created_at?: string
+          id?: string
+          page?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      page_content_versions: {
+        Row: {
+          changed_by: string | null
+          content_group: string
+          content_id: string
+          content_key: string
+          content_label: string
+          content_value: string
+          created_at: string
+          id: string
+          page: string
+        }
+        Insert: {
+          changed_by?: string | null
+          content_group?: string
+          content_id: string
+          content_key: string
+          content_label?: string
+          content_value?: string
+          created_at?: string
+          id?: string
+          page: string
+        }
+        Update: {
+          changed_by?: string | null
+          content_group?: string
+          content_id?: string
+          content_key?: string
+          content_label?: string
+          content_value?: string
+          created_at?: string
+          id?: string
+          page?: string
         }
         Relationships: []
       }
@@ -308,6 +431,45 @@ export type Database = {
         }
         Relationships: []
       }
+      system_issues: {
+        Row: {
+          area: string
+          created_at: string
+          fix: string
+          id: string
+          impact: string
+          is_resolved: boolean
+          issue: string
+          severity: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          area?: string
+          created_at?: string
+          fix?: string
+          id?: string
+          impact?: string
+          is_resolved?: boolean
+          issue?: string
+          severity?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          created_at?: string
+          fix?: string
+          id?: string
+          impact?: string
+          is_resolved?: boolean
+          issue?: string
+          severity?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tool_attributes: {
         Row: {
           created_at: string
@@ -339,6 +501,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tracking_scripts: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          is_verified: boolean
+          last_verified_at: string | null
+          name: string
+          position: string
+          script_type: string
+          sort_order: number
+          updated_at: string
+          verification_method: string
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          last_verified_at?: string | null
+          name: string
+          position?: string
+          script_type?: string
+          sort_order?: number
+          updated_at?: string
+          verification_method?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          last_verified_at?: string | null
+          name?: string
+          position?: string
+          script_type?: string
+          sort_order?: number
+          updated_at?: string
+          verification_method?: string
+        }
+        Relationships: []
       }
       unhandled_intents: {
         Row: {
@@ -373,6 +583,33 @@ export type Database = {
           resolved_workflow?: string | null
           source?: string
           user_input?: string
+        }
+        Relationships: []
+      }
+      user_activity_log: {
+        Row: {
+          action: string
+          created_at: string
+          description: string
+          id: string
+          metadata: Json
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json
+          user_id?: string
         }
         Relationships: []
       }

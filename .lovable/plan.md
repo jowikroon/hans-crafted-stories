@@ -1,81 +1,53 @@
 
 
-# Fix Build Errors + Switch from Netlify to Cloudflare Pages
+# Add User Activity Log to Portal Users
 
 ## Overview
+Add a per-user "Activity" event log section within each user's expanded panel in the Portal Users manager. This will track and display actions like logins, permission changes, tool usage, and content edits for each user.
 
-Three things to fix: (1) TypeScript build errors blocking deployment, (2) missing database tables/columns, and (3) replace Netlify deployment config with Cloudflare Pages.
+## Database Changes
 
-## 1. Create Missing Database Table: `unhandled_intents`
+### New table: `user_activity_log`
+| Column | Type | Default | Notes |
+|--------|------|---------|-------|
+| id | uuid | gen_random_uuid() | PK |
+| user_id | uuid | NOT NULL | The user the event belongs to |
+| action | text | NOT NULL | e.g. "login", "tool_used", "permission_changed" |
+| description | text | '' | Human-readable detail |
+| metadata | jsonb | '{}' | Extra context (tool name, IP, etc.) |
+| created_at | timestamptz | now() | When it happened |
 
-Both `PortalStatusTab.tsx` and `HansAI.tsx` reference an `unhandled_intents` table that doesn't exist in the database yet. Create it via migration:
+RLS policies:
+- Admins can read/insert/delete all activity logs
+- Users can view their own activity
 
-```text
-CREATE TABLE public.unhandled_intents (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_input TEXT NOT NULL,
-  source TEXT NOT NULL DEFAULT 'hansai',
-  fast_route_score NUMERIC,
-  llm_intent TEXT,
-  llm_confidence NUMERIC,
-  resolved BOOLEAN NOT NULL DEFAULT false,
-  resolved_workflow TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+Enable realtime so the log updates live when viewing.
 
-ALTER TABLE public.unhandled_intents ENABLE ROW LEVEL SECURITY;
+## Frontend Changes
 
-CREATE POLICY "Allow all access to unhandled_intents"
-  ON public.unhandled_intents FOR ALL USING (true) WITH CHECK (true);
-```
+### 1. Add "Activity" section to user panel (`PortalUsersManager.tsx`)
+- Add a 5th section to the `accessSections` array: `{ id: "activity", label: "Activity", icon: Activity, description: "Recent user actions" }`
+- Update the `AccessSection` type to include `"activity"`
+- Render a scrollable event log when the "Activity" section is selected, showing the most recent 50 events for that user in reverse chronological order
+- Each row shows: timestamp, action badge (color-coded by type), and description
+- Include a refresh button
 
-## 2. Add Missing Column: `empire_events.monday_item_id`
+### 2. Add API layer (`src/lib/api/users.ts`)
+- Add `getActivityLog(userId: string)` method to fetch recent activity for a user
+- Add `logActivity(userId, action, description, metadata)` method for recording events
 
-`PortalStatusTab.tsx` selects `monday_item_id` from `empire_events`, but the column doesn't exist.
+### 3. Auto-log key actions
+Insert activity log entries automatically when:
+- A user's permissions are changed (tab access, tool access, content access, AI access toggles)
+- A user is activated/deactivated
+- A user is created
 
-```text
-ALTER TABLE public.empire_events
-  ADD COLUMN monday_item_id TEXT;
-```
+These inserts will be added inline to the existing handler functions in `PortalUsersManager.tsx`.
 
-## 3. Fix Edge Function TypeScript Error
+## Technical Details
 
-In `supabase/functions/n8n-agent/index.ts`, line 47 uses `error.message` but `error` is typed as `unknown`. Fix:
-
-```typescript
-// Change:
-return new Response(JSON.stringify({ error: error.message }), {
-// To:
-return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
-```
-
-## 4. Replace Netlify with Cloudflare Pages
-
-**Delete:**
-- `netlify.toml` (no longer needed)
-
-**Create** `public/_redirects` for Cloudflare Pages SPA support:
-```text
-/*  /index.html  200
-```
-
-**Update** `docs/domain-nameservers-hansvanleeuwen.md` to reflect Cloudflare Pages instead of Netlify.
-
-**Update** `.env.example` to remove Netlify references and add Cloudflare Pages note.
-
-**Clean up** `docs/lovable-netlify-troubleshooting.md` — either delete or replace with Cloudflare Pages deployment notes.
-
-## 5. Summary of File Changes
-
-| File | Action |
-|---|---|
-| Database migration | Create `unhandled_intents` table + add `monday_item_id` to `empire_events` |
-| `supabase/functions/n8n-agent/index.ts` | Fix `error` type narrowing |
-| `netlify.toml` | Delete |
-| `public/_redirects` | Create (SPA redirect for Cloudflare Pages) |
-| `.env.example` | Remove Netlify env vars |
-| `docs/lovable-netlify-troubleshooting.md` | Delete or replace with Cloudflare Pages docs |
-| `docs/domain-nameservers-hansvanleeuwen.md` | Update to reflect Cloudflare Pages deployment |
-
-After these changes, the project will build cleanly and be ready for Cloudflare Pages deployment (connect the GitHub repo in Cloudflare dashboard with build command `npm run build` and output directory `dist`).
+- The activity log panel will reuse the same card/badge styling as the existing permission sections
+- Events will be color-coded: green for grants/activations, amber for revocations/deactivations, blue for general actions
+- No new components needed -- the log renders inline within the existing expanded panel structure
+- The `user_activity_log` table uses `user_id` (not a FK to auth.users) consistent with the existing pattern
 

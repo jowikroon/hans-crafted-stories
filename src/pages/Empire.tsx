@@ -22,15 +22,13 @@ const Empire = () => {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [claudeOpen, setClaudeOpen] = useState(false);
 
-  // SEO
+  // SEO — noindex internal tool
   useEffect(() => {
     document.title = "Empire Dashboard — Sovereign AI Operations";
-    const setMeta = (name: string, content: string) => {
-      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
-      if (!el) { el = document.createElement("meta"); el.setAttribute("name", name); document.head.appendChild(el); }
-      el.content = content;
-    };
-    setMeta("robots", "noindex, nofollow");
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!robots) { robots = document.createElement("meta"); robots.name = "robots"; document.head.appendChild(robots); }
+    robots.content = "noindex, nofollow";
+    return () => { if (robots) robots.content = "index, follow"; };
   }, []);
 
   if (authLoading || adminLoading) {

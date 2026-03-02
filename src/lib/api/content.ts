@@ -5,11 +5,15 @@ export interface BlogPostRow {
   title: string;
   excerpt: string;
   content: string;
+  title_nl: string;
+  excerpt_nl: string;
+  content_nl: string;
   category: string;
   tags: string[];
   slug: string;
   read_time: string;
   published: boolean;
+  image_url: string;
   created_at: string;
   updated_at: string;
 }
@@ -17,9 +21,12 @@ export interface BlogPostRow {
 export interface CaseStudyRow {
   id: string;
   title: string;
+  title_nl: string;
   category: string;
   description: string;
+  description_nl: string;
   content: string;
+  content_nl: string;
   image: string;
   year: string;
   external_url: string | null;

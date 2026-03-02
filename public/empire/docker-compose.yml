@@ -51,6 +51,31 @@ services:
     networks:
       - empire
 
+  # ── Vault Adapter (Encrypted Secret Store — Gate 3) ────
+  vault-adapter:
+    image: node:20-alpine
+    container_name: vault-adapter
+    working_dir: /app
+    volumes:
+      - ../../vault-adapter:/app
+      - vault-data:/mnt/data
+    ports:
+      - "4000:4000"
+    environment:
+      - VAULT_MASTER_KEY=${VAULT_MASTER_KEY}
+      - VAULT_FILE=/mnt/data/secrets.vault
+      - VAULT_PORT=4000
+    command: node index.cjs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:4000/health',r=>{r.on('data',()=>{});r.on('end',()=>process.exit(r.statusCode===200?0:1));}).on('error',()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - empire
+
   # ── Grafana (Visualization) ────────────────────────
   grafana:
     image: grafana/grafana:10.2.0
@@ -71,6 +96,7 @@ services:
 volumes:
   loki-data:
   grafana-data:
+  vault-data:
 
 networks:
   empire:

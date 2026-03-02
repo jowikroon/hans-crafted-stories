@@ -1,20 +1,24 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, LayoutDashboard, ChevronRight, Globe } from "lucide-react";
+import { Eye, EyeOff, LayoutDashboard, ChevronRight } from "lucide-react";
 import { useAllPageElements } from "@/hooks/usePageElements";
 import { Badge } from "@/components/ui/badge";
-import { useLang } from "@/hooks/useLang";
 import PremiumToggle from "./PremiumToggle";
+import PortalLangToggle from "./PortalLangToggle";
 
 const pageLabels: Record<string, string> = {
   home: "Home",
   about: "About",
   writing: "Writing",
   work: "Work",
+  portal: "Portal",
+  navbar: "Navbar",
 };
 
-const PortalPagesTab = () => {
-  const { lang, setLang } = useLang();
+const AI_TERMINALS_PAGES = ["portal", "navbar"];
+const AI_TERMINALS_LABEL = "AI Terminals";
+
+const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
   const { elements, loading, toggleVisibility } = useAllPageElements();
   const [activePage, setActivePage] = useState<string>("writing");
 
@@ -22,8 +26,22 @@ const PortalPagesTab = () => {
     return <p className="py-8 text-center text-muted-foreground">Loading page elements…</p>;
   }
 
-  const pages = Array.from(new Set(elements.map((e) => e.page)));
-  const pageElements = elements.filter((e) => e.page === activePage);
+  // Build display pages: merge portal+navbar into "ai_terminals"
+  const rawPages = Array.from(new Set(elements.map((e) => e.page)));
+  const displayPages = [
+    ...rawPages.filter((p) => !AI_TERMINALS_PAGES.includes(p)),
+    ...(rawPages.some((p) => AI_TERMINALS_PAGES.includes(p)) ? ["ai_terminals"] : []),
+  ];
+
+  const isAiTerminals = activePage === "ai_terminals";
+  const activeSourcePages = isAiTerminals ? AI_TERMINALS_PAGES : [activePage];
+
+  const pageElements = elements.filter((e) => {
+    if (!activeSourcePages.includes(e.page)) return false;
+    if (subFilter === "Published") return e.is_visible;
+    if (subFilter === "Hidden") return !e.is_visible;
+    return true;
+  });
   const groups = Array.from(new Set(pageElements.map((e) => e.element_group)));
 
   return (
@@ -31,10 +49,12 @@ const PortalPagesTab = () => {
       {/* Page selector + Language switch */}
       <div className="mb-6 flex items-center justify-between gap-3">
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {pages.map((page) => {
+          {displayPages.map((page) => {
             const isActive = activePage === page;
-            const visibleCount = elements.filter((e) => e.page === page && e.is_visible).length;
-            const totalCount = elements.filter((e) => e.page === page).length;
+            const sourcePages = page === "ai_terminals" ? AI_TERMINALS_PAGES : [page];
+            const visibleCount = elements.filter((e) => sourcePages.includes(e.page) && e.is_visible).length;
+            const totalCount = elements.filter((e) => sourcePages.includes(e.page)).length;
+            const label = page === "ai_terminals" ? AI_TERMINALS_LABEL : (pageLabels[page] || page);
             return (
               <button
                 key={page}
@@ -46,7 +66,7 @@ const PortalPagesTab = () => {
                 }`}
               >
                 <LayoutDashboard size={14} />
-                {pageLabels[page] || page}
+                {label}
                 <span className={`ml-1 text-[10px] font-semibold ${
                   visibleCount === totalCount ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
                 }`}>
@@ -57,30 +77,7 @@ const PortalPagesTab = () => {
           })}
         </div>
 
-        {/* NL / ENG switch */}
-        <div className="flex shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-2 py-1.5">
-          <Globe size={12} className="text-muted-foreground/50 mr-1" />
-          <button
-            onClick={() => setLang("nl")}
-            className={`rounded px-2 py-1 text-xs font-semibold transition-all ${
-              lang === "nl"
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground/50 hover:text-foreground"
-            }`}
-          >
-            NL
-          </button>
-          <button
-            onClick={() => setLang("en")}
-            className={`rounded px-2 py-1 text-xs font-semibold transition-all ${
-              lang === "en"
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground/50 hover:text-foreground"
-            }`}
-          >
-            ENG
-          </button>
-        </div>
+        <PortalLangToggle />
       </div>
 
       {/* Elements grouped */}
@@ -124,7 +121,7 @@ const PortalPagesTab = () => {
                             : "text-muted-foreground/30"
                         }`}>
                           <span className={el.is_visible ? "text-primary/70" : ""}>
-                            {pageLabels[el.page] || el.page}
+                            {AI_TERMINALS_PAGES.includes(el.page) ? AI_TERMINALS_LABEL : (pageLabels[el.page] || el.page)}
                           </span>
                           <ChevronRight size={9} className="shrink-0 opacity-40" />
                           <span className={el.is_visible ? "text-muted-foreground/80" : ""}>

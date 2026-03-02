@@ -3,16 +3,14 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Sparkles } from "lucide-react";
 import {
   type CommandSuggestion,
-  empireCommands,
-  hansAICommands,
   getUsageCounts,
   incrementUsage,
-  getSortedCommands,
+  getTop10Commands,
 } from "./commandSuggestions";
 
 interface CommandSuggestionListProps {
   subId: string;
-  context: "empire" | "hansai";
+  context: "empire" | "hansai" | "unified";
   onSelect: (text: string) => void;
   onDismiss: () => void;
   accentColor: "emerald" | "violet" | "orange";
@@ -48,10 +46,11 @@ const colorStyles = {
 const CommandSuggestionList = ({ subId, context, onSelect, onDismiss, accentColor }: CommandSuggestionListProps) => {
   const listRef = useRef<HTMLDivElement>(null);
   const colors = colorStyles[accentColor];
-  const commandMap = context === "empire" ? empireCommands : hansAICommands;
-  const rawCommands: CommandSuggestion[] = commandMap[subId] || [];
   const usageCounts = useMemo(() => getUsageCounts(context), [context, subId]);
-  const sorted = useMemo(() => getSortedCommands(rawCommands, usageCounts), [rawCommands, usageCounts]);
+  const sorted = useMemo(
+    () => getTop10Commands(subId, context, usageCounts),
+    [subId, context, usageCounts]
+  );
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -86,7 +85,7 @@ const CommandSuggestionList = ({ subId, context, onSelect, onDismiss, accentColo
       animate={{ height: "auto", opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className={`absolute left-0 right-0 z-30 overflow-hidden rounded-b-lg border-b border-x ${colors.bg} shadow-xl`}
+      className={`relative z-30 overflow-hidden rounded-b-lg border-b border-x ${colors.bg} shadow-xl`}
     >
       <div className="max-h-[280px] overflow-y-auto py-1">
         {sorted.map((cmd, i) => {

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { lovable } from "@/integrations/lovable/index";
 import type { User, Session } from "@supabase/supabase-js";
 
 const AUTH_REDIRECT_KEY = "auth_redirect_after_login";
@@ -51,8 +51,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [navigate]);
 
   const signInWithGoogle = async () => {
-    // Save current path so we can redirect back after OAuth completes
-    localStorage.setItem(AUTH_REDIRECT_KEY, location.pathname);
+    // Save the page the user came from; after OAuth the onAuthStateChange
+    // listener will read this and navigate back.
+    const returnPath = location.pathname || "/portal";
+    localStorage.setItem(AUTH_REDIRECT_KEY, returnPath);
 
     try {
       const result = await lovable.auth.signInWithOAuth("google", {

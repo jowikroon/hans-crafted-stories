@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Terminal, Search, Command, Bot } from "lucide-react";
+import { Menu, X, LogIn, Search, Command, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
 import HansAIOverlay from "@/components/overlays/HansAIOverlay";
-import EmpireOverlay from "@/components/overlays/EmpireOverlay";
 import { translations } from "@/data/translations";
 import type { Lang } from "@/hooks/useLang";
+import logoImg from "@/assets/logo.png";
+
+const THEME_KEY = "site_theme";
 
 const getLinks = (lang: Lang) => {
   const t = translations[lang].nav;
@@ -40,17 +42,31 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { lang, setLang } = useLang();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
-  const [empireOpen, setEmpireOpen] = useState(false);
+  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
   const t = translations[lang].nav;
-  const links = getLinks(lang);
+  const allLinks = getLinks(lang);
+  const links = user ? [...allLinks, { to: "/hansai", label: t.commandCenter }] : allLinks;
 
-  const isDark = variant === "dark";
+  // Global theme state — default light; Portal forces dark via its own effect
+  const [siteTheme, setSiteTheme] = useState<"light" | "dark">(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(THEME_KEY);
+      if (stored === "dark") return "dark";
+    }
+    return "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", siteTheme === "dark");
+    localStorage.setItem(THEME_KEY, siteTheme);
+  }, [siteTheme]);
+
+  const isDark = variant === "dark" || siteTheme === "dark";
 
   const filteredPages = searchQuery.trim()
     ? searchablePages.filter(
@@ -83,28 +99,28 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
 
   const isActive = (to: string) => location.pathname === to;
 
-  /* ─── Pill-style nav link (row 2) ─── */
-  const navPill = (to: string, label: string) => {
+  /* ─── Clean text nav link (inspired by reference) ─── */
+  const navLink = (to: string, label: string) => {
     const active = isActive(to);
     return (
       <Link
         key={to}
         to={to}
-        className={`relative rounded-full px-4 py-1.5 text-[13px] font-semibold tracking-wide transition-all duration-200 ${
+        className={`relative px-3 py-2 text-sm font-medium tracking-wide transition-colors duration-200 ${
           active
             ? isDark
-              ? "bg-emerald-500/15 text-emerald-300 shadow-[inset_0_1px_0_hsl(160_60%_70%/0.15)]"
-              : "bg-primary/10 text-primary shadow-[inset_0_1px_0_hsl(var(--primary)/0.15)]"
+              ? "text-emerald-300"
+              : "text-foreground"
             : isDark
-              ? "text-emerald-400/40 hover:text-emerald-300 hover:bg-emerald-500/5"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              ? "text-emerald-400/40 hover:text-emerald-300"
+              : "text-muted-foreground hover:text-foreground"
         }`}
       >
         {label}
         {active && (
           <motion.div
             layoutId="nav-indicator"
-            className={`absolute -bottom-[9px] left-1/2 h-[2px] w-6 -translate-x-1/2 rounded-full ${isDark ? "bg-emerald-400" : "bg-primary"}`}
+            className={`absolute bottom-0 left-3 right-3 h-[2px] rounded-full ${isDark ? "bg-emerald-400" : "bg-primary"}`}
             transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
           />
         )}
@@ -164,111 +180,106 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         )}
       </AnimatePresence>
 
-      {/* ═══ 2-ROW NAVBAR ═══ */}
-      <nav className={`fixed top-0 z-50 w-full backdrop-blur-md transition-colors ${isDark ? "bg-[hsl(220,20%,6%)]/90" : "bg-background/80"}`}>
-        {/* ─── ROW 1: Brand + Search + Lang + Login/Portal ─── */}
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="flex items-center justify-between h-12">
+      {/* ═══ NAVBAR ═══ */}
+      <nav aria-label="Primary navigation" className={`fixed top-0 z-50 w-full backdrop-blur-md transition-colors ${isDark ? "bg-[hsl(220,20%,6%)]/90" : "bg-background/80"}`}>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
             {/* Brand */}
-            <Link to="/" className={`font-display text-lg font-bold tracking-tight transition-colors ${isDark ? "text-emerald-300" : "text-foreground"}`}>
+            <Link to="/" className={`shrink-0 flex items-center gap-2.5 font-display text-lg font-bold tracking-tight transition-colors ${isDark ? "text-emerald-300" : "text-foreground"}`}>
+              <img src={logoImg} alt="Logo" className={`h-7 w-7 object-contain ${isDark ? "invert brightness-200" : ""}`} />
               Hans van Leeuwen
             </Link>
 
+            {/* Center nav links (desktop) */}
+            <div className="hidden md:flex items-center">
+              {links.map((l) => navLink(l.to, l.label))}
+            </div>
+
             {/* Right cluster */}
-            <div className="flex items-center gap-2.5">
-              {/* Search — desktop */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Search */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className={`hidden md:flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-all ${
+                className={`rounded-full p-2 transition-all ${
                   isDark
-                    ? "border-emerald-500/15 bg-emerald-500/5 text-emerald-400/50 hover:border-emerald-500/30 hover:text-emerald-300"
-                    : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground hover:border-primary/20"
+                    ? "text-emerald-400/50 hover:text-emerald-300 hover:bg-emerald-500/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
+                aria-label="Search"
               >
-                <Search size={12} />
-                <span className="hidden lg:inline">{t.search}</span>
-                <kbd className={`inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[9px] font-mono ${isDark ? "border-emerald-500/15 text-emerald-400/25" : "border-border bg-background text-muted-foreground/60"}`}>
-                  <Command size={8} />K
-                </kbd>
+                <Search size={16} />
               </button>
 
-              <LangSwitch />
+              {/* Theme toggle */}
+              <button
+                onClick={() => setSiteTheme(siteTheme === "dark" ? "light" : "dark")}
+                className={`rounded-full p-2 transition-all ${isDark ? "text-emerald-400/50 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+                aria-label={siteTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
 
-              <div className={`hidden md:block h-4 w-px ${isDark ? "bg-emerald-500/15" : "bg-border"}`} />
+              <div className="hidden sm:block">
+                <LangSwitch />
+              </div>
 
-              {/* Portal / Login */}
+              {/* Portal / Login — styled as outlined button (hidden on mobile) */}
               <Link
                 to="/portal"
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium transition-all ${
                   isActive("/portal")
-                    ? isDark ? "bg-emerald-500/15 text-emerald-300" : "bg-primary/10 text-primary"
-                    : isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? isDark
+                      ? "border-emerald-400 bg-emerald-500/10 text-emerald-300"
+                      : "border-primary bg-primary/10 text-primary"
+                    : isDark
+                      ? "border-emerald-500/30 text-emerald-400/60 hover:border-emerald-400 hover:text-emerald-300"
+                      : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
                 }`}
               >
                 {user ? (
                   <>
                     <img src={user.user_metadata?.avatar_url || ""} alt="" className="h-4 w-4 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                    {t.portal}
+                    <span>{t.portal}</span>
                   </>
                 ) : (
                   <>
-                    <LogIn size={12} />
-                    {t.login}
+                    <LogIn size={14} />
+                    <span>{t.login}</span>
                   </>
                 )}
               </Link>
 
-              {/* Mobile: search + hamburger */}
-              <button onClick={() => setSearchOpen(true)} className={`md:hidden rounded-lg p-1.5 transition-colors ${isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:text-foreground"}`} aria-label="Search">
-                <Search size={16} />
-              </button>
+              {/* Mobile hamburger */}
               <button onClick={() => setMobileOpen(!mobileOpen)} className={`md:hidden rounded-lg p-1.5 ${isDark ? "text-emerald-300" : "text-foreground"}`} aria-label="Toggle menu">
-                {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
           </div>
         </div>
 
         {/* Subtle separator */}
-        <div className={`h-px ${isDark ? "bg-emerald-500/8" : "bg-border/50"}`} />
+        <div className={`h-px ${isDark ? "bg-emerald-500/8" : "bg-border/40"}`} />
 
-        {/* ─── ROW 2: Nav pills + AI/Empire links ─── */}
-        <div className="mx-auto max-w-6xl px-6 hidden md:block">
-          <div className="flex items-center justify-between h-10">
-            {/* Page nav pills */}
-            <div className="flex items-center gap-0.5">
-              {links.map((l) => navPill(l.to, l.label))}
-            </div>
-
-            {/* AI + Empire quick links */}
-            {isAdmin && (
+        {/* ─── ROW 2: Command Center link (desktop) — always visible ─── */}
+        {user && (
+          <div className="mx-auto max-w-6xl px-6 hidden md:block">
+            <div className="flex items-center justify-end h-10">
               <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => setAiOpen(true)}
+                  onClick={() => navigate("/hansai")}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
-                    aiOpen
-                      ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-[0_0_10px_hsl(160_80%_45%/0.15)]"
-                      : `${isDark ? "border-emerald-500/15 text-emerald-400/40 hover:border-emerald-500/40 hover:text-emerald-300" : "border-border text-muted-foreground hover:border-emerald-500/30 hover:bg-emerald-500/5 hover:text-emerald-600"}`
+                    location.pathname === "/hansai"
+                      ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_10px_hsl(25_95%_53%/0.15)]"
+                      : `${isDark ? "border-orange-500/15 text-orange-400/40 hover:border-orange-500/40 hover:text-orange-300" : "border-border text-muted-foreground hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-600"}`
                   }`}
                 >
-                  <Bot size={11} />
-                  AI
-                </button>
-                <button
-                  onClick={() => setEmpireOpen(true)}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
-                    empireOpen
-                      ? "border-violet-500 bg-violet-500/10 text-violet-600 shadow-[0_0_10px_hsl(270_80%_55%/0.15)]"
-                      : `${isDark ? "border-violet-500/15 text-violet-400/40 hover:border-violet-500/40 hover:text-violet-300" : "border-border text-muted-foreground hover:border-violet-500/30 hover:bg-violet-500/5 hover:text-violet-600"}`
-                  }`}
-                >
-                  <Terminal size={11} />
-                  Empire
+                  <Command size={11} />
+                  Command Center
                 </button>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Bottom border */}
         <div className={`hidden md:block h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />
@@ -289,21 +300,18 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   </Link>
                 ))}
                 <div className={`my-1 h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />
+                <div className="flex items-center justify-between px-3 py-2">
+                  <LangSwitch />
+                </div>
                 <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-colors ${isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
                   <LogIn size={14} />
                   {user ? t.portal : t.login}
                 </Link>
-                {isAdmin && (
-                  <>
-                    <button onClick={() => { setMobileOpen(false); setAiOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-emerald-500/15 text-emerald-400/40" : "border-border text-muted-foreground"} hover:border-emerald-500/40 hover:text-emerald-600`}>
-                      <Bot size={14} />
-                      Hans AI
-                    </button>
-                    <button onClick={() => { setMobileOpen(false); setEmpireOpen(true); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-violet-500/15 text-violet-400/40" : "border-border text-muted-foreground"} hover:border-violet-500/40 hover:text-violet-600`}>
-                      <Terminal size={14} />
-                      Empire
-                    </button>
-                  </>
+                {user && (
+                  <button onClick={() => { setMobileOpen(false); navigate("/hansai"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
+                    <Command size={14} />
+                    Command Center
+                  </button>
                 )}
               </div>
             </motion.div>
@@ -311,9 +319,8 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         </AnimatePresence>
       </nav>
 
-      {/* AI & Empire Overlays */}
-      <HansAIOverlay open={aiOpen} onClose={() => setAiOpen(false)} />
-      <EmpireOverlay open={empireOpen} onClose={() => setEmpireOpen(false)} />
+      {/* AI Overlay — unified via HansAIOverlay for now */}
+      <HansAIOverlay open={commandCenterOpen} onClose={() => setCommandCenterOpen(false)} />
     </>
   );
 };

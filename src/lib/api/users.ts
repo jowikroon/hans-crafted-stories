@@ -126,4 +126,23 @@ export const usersApi = {
       .upsert({ user_id: userId, ai_model: aiModel, can_access: canAccess, granted_by: grantedBy } as never, { onConflict: "user_id,ai_model" });
     if (error) throw error;
   },
+
+  // Activity log
+  async getActivityLog(userId: string): Promise<{ id: string; user_id: string; action: string; description: string; metadata: Record<string, unknown>; created_at: string }[]> {
+    const { data, error } = await supabase
+      .from("user_activity_log" as any)
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return (data as any) || [];
+  },
+
+  async logActivity(userId: string, action: string, description: string, metadata: Record<string, unknown> = {}): Promise<void> {
+    const { error } = await supabase
+      .from("user_activity_log" as any)
+      .insert({ user_id: userId, action, description, metadata } as never);
+    if (error) console.error("Failed to log activity:", error);
+  },
 };
