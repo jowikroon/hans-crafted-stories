@@ -46,9 +46,17 @@ type TranslationStrings = {
     location: string;
     ctaWork: string;
     ctaConsult: string;
+    ctaConsultSecondary: string;
     ctaAbout: string;
     resultsLabel: string;
     results: string[];
+    resultsDetail: string[];
+    whoIHelpLabel: string;
+    whoIHelpHeading: string;
+    whoIHelp: string[];
+    problemsLabel: string;
+    problemsHeading: string;
+    problems: string[];
     expertiseLabel: string;
     expertiseHeading: string;
     expertise: { title: string; description: string }[];
@@ -296,12 +304,13 @@ export const translations: Record<Lang, TranslationStrings> = {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
       heading: "Driving marketplace growth through",
       headingEmphasis: "strategy",
-      freelanceH2: "Available for freelance & contract roles — Amazon & Bol.com specialist (NL/EU)",
+      freelanceH2: "Grow Amazon NL & Bol.com revenue with a hands-on interim marketplace lead",
       description:
-        "I'm Hans van Leeuwen — a freelance e-commerce manager based in Amersfoort, specializing in Amazon, Bol.com, and marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.",
-      location: "Based in Amersfoort, Netherlands · Available for NL & EU projects",
+        "I'm Hans van Leeuwen — a freelance e-commerce manager and marketplace consultant based in Amersfoort. I specialize in Amazon, Bol.com, and scalable marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.",
+      location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
       ctaWork: "View case studies",
       ctaConsult: "Get a 7-point marketplace audit",
+      ctaConsultSecondary: "Book a 30-min growth call",
       ctaAbout: "About me",
       resultsLabel: "Proven results",
       results: [
@@ -309,28 +318,51 @@ export const translations: Record<Lang, TranslationStrings> = {
         "20% weekly sales increase via targeted marketplace campaigns",
         "Out-of-stock rates below 2% through forecasting & logistics",
       ],
+      resultsDetail: [
+        "Challenge: Competitive earplug category on Amazon NL. Action: Full listing overhaul, A+ content, and Sponsored Products strategy. Result: 70% market share within 18 months.",
+        "Challenge: Stagnant weekly revenue on Bol.com. Action: Launched targeted Bol Ads campaigns and seasonal bundles. Result: 20% week-over-week sales increase.",
+        "Challenge: Frequent stockouts hurting Buy Box. Action: Built demand forecasting model and optimized logistics. Result: Out-of-stock rate reduced to below 2%.",
+      ],
+      whoIHelpLabel: "Who I help",
+      whoIHelpHeading: "Brands I work with",
+      whoIHelp: [
+        "D2C brands scaling into Amazon & Bol.com",
+        "Category leaders defending market share on marketplaces",
+        "Brands entering the Dutch & EU marketplace landscape",
+        "Companies seeking an interim e-commerce manager or marketplace strategist",
+      ],
+      problemsLabel: "Problems I solve",
+      problemsHeading: "Common challenges I tackle",
+      problems: [
+        "High ACOS eating into ad profitability",
+        "Low conversion rates on product detail pages",
+        "Stockouts and Buy Box loss due to poor forecasting",
+        "Listing suppression and catalog compliance issues",
+        "Weak organic ranking and poor indexing on Amazon or Bol.com",
+        "No clear marketplace strategy or KPI framework",
+      ],
       expertiseLabel: "Amazon & Bol.com Services",
       expertiseHeading: "Amazon & Bol.com Marketplace Management (NL/EU)",
       expertise: [
         {
           title: "Amazon Marketplace Management",
-          description: "Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations.",
+          description: "Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations. Your Amazon NL specialist for scalable growth.",
         },
         {
           title: "Bol.com Optimization",
-          description: "Content optimization, Bol Ads management, catalog management, and performance analytics on the Netherlands' largest marketplace.",
+          description: "Content optimization, Bol Ads management, catalog management, and performance analytics. Hands-on Bol.com consultant for the Netherlands' largest marketplace.",
         },
         {
           title: "Marketplace CRO & Growth",
-          description: "Data-driven conversion rate optimization (CRO), A/B testing, and revenue scaling for e-commerce businesses.",
+          description: "Data-driven conversion rate optimization (CRO), A/B testing, and revenue scaling. Reduce friction, improve Buy Box win rate, and grow profitably.",
         },
         {
           title: "SEO & Content Strategy",
-          description: "Search-first content strategies that drive organic traffic and improve marketplace rankings. User experience (UX) design focused on reducing friction.",
+          description: "Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction and increasing conversions.",
         },
       ],
-      linkCases: "Amazon & Bol.com cases →",
-      linkWriting: "E-commerce insights →",
+      linkCases: "Amazon NL marketplace case studies →",
+      linkWriting: "Amazon & Bol.com optimization articles →",
       linkAbout: "About Hans →",
     },
 
@@ -599,12 +631,13 @@ export const translations: Record<Lang, TranslationStrings> = {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
       heading: "Marktplaatsgroei realiseren door",
       headingEmphasis: "strategie",
-      freelanceH2: "Beschikbaar voor freelance & opdrachten — Amazon & Bol.com specialist (NL/EU)",
+      freelanceH2: "Groei Amazon NL & Bol.com omzet met een hands-on interim marktplaatsmanager",
       description:
-        "Ik ben Hans van Leeuwen — freelance e-commerce manager gevestigd in Amersfoort, gespecialiseerd in Amazon, Bol.com en marktplaatsstrategie. Ik help merken in Nederland en de EU digitale kanalen om te zetten in omzetmotoren.",
-      location: "Gevestigd in Amersfoort, Nederland · Beschikbaar voor NL & EU opdrachten",
+        "Ik ben Hans van Leeuwen — freelance e-commerce manager en marktplaatsconsultant, gevestigd in Amersfoort. Ik ben gespecialiseerd in Amazon, Bol.com en schaalbare marktplaatsgroei. Ik help merken in Nederland en de EU digitale kanalen om te zetten in omzetmotoren.",
+      location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
       ctaWork: "Bekijk cases",
       ctaConsult: "Vraag een 7-punts audit aan",
+      ctaConsultSecondary: "Plan een 30-min groeigesprek",
       ctaAbout: "Over mij",
       resultsLabel: "Bewezen resultaten",
       results: [
@@ -612,28 +645,51 @@ export const translations: Record<Lang, TranslationStrings> = {
         "20% wekelijkse omzetstijging via gerichte marktplaatscampagnes",
         "Out-of-stock rate onder de 2% dankzij verbeterde forecasting & logistiek",
       ],
+      resultsDetail: [
+        "Uitdaging: Competitieve oordoppencategorie op Amazon NL. Actie: Volledige listing-revisie, A+-content en Sponsored Products-strategie. Resultaat: 70% marktaandeel binnen 18 maanden.",
+        "Uitdaging: Stagnerende wekelijkse omzet op Bol.com. Actie: Gerichte Bol Ads-campagnes en seizoensbundels gelanceerd. Resultaat: 20% week-op-week omzetstijging.",
+        "Uitdaging: Frequente stockouts met Buy Box-verlies. Actie: Vraagvoorspellingsmodel gebouwd en logistiek geoptimaliseerd. Resultaat: Out-of-stock rate onder de 2%.",
+      ],
+      whoIHelpLabel: "Voor wie ik werk",
+      whoIHelpHeading: "Merken waarmee ik werk",
+      whoIHelp: [
+        "D2C-merken die opschalen naar Amazon & Bol.com",
+        "Categorieleiders die marktaandeel verdedigen op marktplaatsen",
+        "Merken die de Nederlandse & Europese marktplaats betreden",
+        "Bedrijven op zoek naar een interim e-commerce manager of marktplaatsstrateeg",
+      ],
+      problemsLabel: "Problemen die ik oplos",
+      problemsHeading: "Veelvoorkomende uitdagingen die ik aanpak",
+      problems: [
+        "Hoge ACOS die advertentiewinst opeet",
+        "Lage conversieratio's op productdetailpagina's",
+        "Stockouts en Buy Box-verlies door slechte forecasting",
+        "Listing-suppressie en catalogus-complianceproblemen",
+        "Zwakke organische ranking en slechte indexering op Amazon of Bol.com",
+        "Geen duidelijke marktplaatsstrategie of KPI-framework",
+      ],
       expertiseLabel: "Amazon & Bol.com Diensten",
       expertiseHeading: "Amazon & Bol.com Marktplaatsbeheer (NL/EU)",
       expertise: [
         {
           title: "Amazon Marktplaatsbeheer",
-          description: "Listing-optimalisatie, A+-content, Amazon Ads (Sponsored Products, Brands, Display), prijsstrategie en operations.",
+          description: "Listing-optimalisatie, A+-content, Amazon Ads (Sponsored Products, Brands, Display), prijsstrategie en operations. Uw Amazon NL specialist voor schaalbare groei.",
         },
         {
           title: "Bol.com Optimalisatie",
-          description: "Content-optimalisatie, Bol Ads-beheer, catalogusbeheer en prestatieanalytics op de grootste Nederlandse marktplaats.",
+          description: "Content-optimalisatie, Bol Ads-beheer, catalogusbeheer en prestatieanalytics. Hands-on Bol.com consultant voor de grootste Nederlandse marktplaats.",
         },
         {
           title: "Marktplaats CRO & Groei",
-          description: "Datagedreven conversie-optimalisatie (CRO), A/B-testen en omzetschaling voor e-commercebedrijven.",
+          description: "Datagedreven conversie-optimalisatie (CRO), A/B-testen en omzetschaling. Verminder frictie, verbeter Buy Box-winrate en groei winstgevend.",
         },
         {
           title: "SEO & Contentstrategie",
-          description: "Zoekgerichte contentstrategieën die organisch verkeer stimuleren en marktplaatsrankings verbeteren. Gebruikerservaring (UX) design gericht op frictieverlaging.",
+          description: "Zoekgerichte contentstrategieën die organisch verkeer stimuleren en marktplaatsrankings verbeteren. UX-design gericht op frictieverlaging en hogere conversies.",
         },
       ],
-      linkCases: "Amazon & Bol.com cases →",
-      linkWriting: "E-commerce inzichten →",
+      linkCases: "Amazon NL marktplaats case studies →",
+      linkWriting: "Amazon & Bol.com optimalisatie artikelen →",
       linkAbout: "Over Hans →",
     },
 

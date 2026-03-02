@@ -1,57 +1,44 @@
 
 
-## Fix: Make trigger-webhook resilient to missing workflow_runs table
+# Apply Command Center hover style to expertise cards + orange sub-menu text
 
-### Problem
-The `trigger-webhook` edge function returns HTTP 500 when it can't insert into `workflow_runs` (table doesn't exist in the schema cache). This blocks all `/run` commands like health-check.
+## 1. Expertise cards (kerncompetenties) — Hero.tsx
 
-### Solution
-Update `supabase/functions/trigger-webhook/index.ts` with three changes:
+The Command Center button in the Portal header has a distinctive hover style:
+- Hover: `hover:border-orange-500/40` + `hover:shadow-[0_0_12px_hsl(25_95%_53%/0.15)]`
+- Selected/active: `border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_16px_hsl(25_95%_53%/0.35)]`
 
-1. **Best-effort insert** -- Wrap the `workflow_runs` insert in a try/catch. If it fails, log the error but continue instead of returning 500.
+Apply these effects to the 4 expertise cards in `src/components/Hero.tsx` (line 232):
 
-2. **Fallback run_id** -- When the insert fails, generate a `run_id` using `crypto.randomUUID()` so the response still includes a valid ID.
-
-3. **Conditional updates** -- Only update `workflow_runs` (status to "processing" or "error") when the initial insert actually succeeded. Use a boolean flag `dbAvailable` to track this.
-
-### Technical changes
-
-**File: `supabase/functions/trigger-webhook/index.ts`**
-
-Replace the current insert block (steps 3-4) with:
-
-```text
-// Step 3: Best-effort insert
-let run_id: string = crypto.randomUUID();
-let dbAvailable = false;
-
-try {
-  const { data: run, error: insertError } = await supabaseAdmin
-    .from("workflow_runs")
-    .insert({ user_id: user.id, status: "pending" })
-    .select("id")
-    .single();
-
-  if (!insertError && run) {
-    run_id = run.id;
-    dbAvailable = true;
-  } else {
-    console.warn("[trigger-webhook] workflow_runs insert failed (non-fatal):", insertError);
-  }
-} catch (dbErr) {
-  console.warn("[trigger-webhook] workflow_runs unavailable (non-fatal):", dbErr);
-}
-
-// Only update to "processing" if DB insert succeeded
-if (dbAvailable) {
-  await supabaseAdmin.from("workflow_runs").update({ status: "processing" }).eq("id", run_id);
-}
+**Current:**
+```
+hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5
 ```
 
-Similarly, only update status to "error" inside the n8n fetch error handlers when `dbAvailable` is true.
+**New:**
+```
+hover:border-orange-500/40 hover:shadow-[0_0_12px_hsl(25_95%_53%/0.15)]
+```
 
-The final response remains: `{ success: true, run_id, data: { run_id } }` regardless of DB availability.
+This gives the same high-contrast orange glow on hover as the Command Center button.
 
-### Deployment
-After updating the file, the edge function will be deployed automatically so the live site gets the fix immediately.
+## 2. Portal sub-menu selected text — Portal.tsx
 
+In the sub-menu navigation (line 312-314), the active item currently uses `text-foreground` (white). Change this to orange.
+
+**Current:**
+```
+isActive ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
+```
+
+**New:**
+```
+isActive ? "font-medium text-orange-500" : "text-muted-foreground hover:text-foreground"
+```
+
+## Files changed
+
+- `src/components/Hero.tsx` — line 232: update hover classes on expertise cards
+- `src/pages/Portal.tsx` — line 313: change active sub-menu text color to orange
+
+Both changes are CSS-only, no logic changes.

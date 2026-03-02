@@ -311,7 +311,7 @@ const Portal = () => {
                   onClick={() => setSubFilter(item)}
                   className={`whitespace-nowrap px-3 py-1.5 text-xs transition-colors ${
                     isActive
-                      ? "font-medium text-foreground"
+                      ? "font-medium text-orange-500"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
