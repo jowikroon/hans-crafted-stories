@@ -66,7 +66,12 @@ serve(async (req) => {
       );
     }
 
-    // ── 3. Insert workflow_runs row with status "pending" ─────────────────────
+    // ── 3. Insert workflow_runs row with status "pending" (best effort) ───────
+    // If this table is missing or schema diverged in a linked project, do not hard-fail.
+    // We still trigger n8n and return success so /run commands keep working.
+    let run_id = crypto.randomUUID();
+    let trackingEnabled = false;
+
     const { data: run, error: insertError } = await supabaseAdmin
       .from("workflow_runs")
       .insert({ user_id: user.id, status: "pending" })
@@ -74,20 +79,17 @@ serve(async (req) => {
       .single();
 
     if (insertError || !run) {
-      console.error("workflow_runs insert failed:", insertError);
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to create workflow run record" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      console.error("workflow_runs insert failed (continuing without DB tracking):", insertError);
+    } else {
+      run_id = run.id;
+      trackingEnabled = true;
+
+      // Mark as "processing" synchronously so the frontend can show a spinner
+      await supabaseAdmin
+        .from("workflow_runs")
+        .update({ status: "processing" })
+        .eq("id", run_id);
     }
-
-    const run_id: string = run.id;
-
-    // Mark as "processing" synchronously so the frontend can show a spinner
-    await supabaseAdmin
-      .from("workflow_runs")
-      .update({ status: "processing" })
-      .eq("id", run_id);
 
     // ── 4. Fire n8n — 30-second timeout (up from 5s to support complex workflows) ──
     const controller = new AbortController();
@@ -109,14 +111,16 @@ serve(async (req) => {
         const errBody = await n8nRes.text().catch(() => "");
         const errText = `n8n returned HTTP ${n8nRes.status}${errBody ? ": " + errBody.slice(0, 200) : ""}`;
         console.warn(`[trigger-webhook] ${errText} for run_id=${run_id}`);
-        await supabaseAdmin
-          .from("workflow_runs")
-          .update({
-            status: "error",
-            error_message: errText,
-            result_data: { n8n_status: n8nRes.status, n8n_body: errBody.slice(0, 500), webhook_url },
-          })
-          .eq("id", run_id);
+        if (trackingEnabled) {
+          await supabaseAdmin
+            .from("workflow_runs")
+            .update({
+              status: "error",
+              error_message: errText,
+              result_data: { n8n_status: n8nRes.status, n8n_body: errBody.slice(0, 500), webhook_url },
+            })
+            .eq("id", run_id);
+        }
       }
     } catch (fetchErr) {
       clearTimeout(timeoutId);
@@ -126,19 +130,21 @@ serve(async (req) => {
         : (fetchErr instanceof Error ? fetchErr.message : "n8n unreachable");
 
       console.error(`[trigger-webhook] fetch error for run_id=${run_id}:`, errText);
-      await supabaseAdmin
-        .from("workflow_runs")
-        .update({
-          status: "error",
-          error_message: errText,
-          result_data: { timeout: isTimeout, webhook_url },
-        })
-        .eq("id", run_id);
+      if (trackingEnabled) {
+        await supabaseAdmin
+          .from("workflow_runs")
+          .update({
+            status: "error",
+            error_message: errText,
+            result_data: { timeout: isTimeout, webhook_url },
+          })
+          .eq("id", run_id);
+      }
     }
 
     // ── 5. Return immediately with run_id — frontend subscribes to Realtime ───
     return new Response(
-      JSON.stringify({ success: true, run_id, data: { run_id } }),
+      JSON.stringify({ success: true, run_id, data: { run_id, tracking_enabled: trackingEnabled } }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
