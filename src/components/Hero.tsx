@@ -229,7 +229,7 @@ const Hero = () => {
                 delay: i * 0.08,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="group rounded-xl border-2 border-border/40 bg-card p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5"
+              className="group rounded-xl border-2 border-border/40 bg-card p-5 transition-all duration-300 hover:border-orange-500/40 hover:shadow-[0_0_12px_hsl(25_95%_53%/0.15)] hover:-translate-y-0.5"
             >
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
                 {icons[i]}
