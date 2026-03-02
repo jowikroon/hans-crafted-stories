@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
+import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
 import { Link } from "react-router-dom";
 import hansProfile from "@/assets/hans-profile.jpg";
 import { Badge } from "@/components/ui/badge";
@@ -172,9 +173,12 @@ const About = () => {
                   <span className="inline-flex items-center gap-1.5">
                     <MapPin size={14} className="text-primary" /> {getValue("about_location", "Amersfoort, NL")}
                   </span>
-                  <a href={`mailto:${getValue("about_email", "hansvl3@gmail.com")}`} className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                    <Mail size={14} className="text-primary" /> {getValue("about_email", "hansvl3@gmail.com")}
+                  <a href="#contact" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+                    <Mail size={14} className="text-primary" /> {lang === "nl" ? "Stuur een bericht" : "Send a message"}
                   </a>
+                  <ObfuscatedMailto user="hansvl3" domain="gmail.com" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground" aria-label={lang === "nl" ? "E-mail sturen" : "Send email"}>
+                    {lang === "nl" ? "Of e-mail" : "Or email"}
+                  </ObfuscatedMailto>
                   <a href={getValue("about_linkedin_url", "https://linkedin.com/in/hansvl3")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
                     <Linkedin size={14} className="text-primary" /> {getValue("about_linkedin_label", "LinkedIn")}
                   </a>
@@ -206,6 +210,7 @@ const About = () => {
               </div>
               <h2 className="font-display text-2xl font-medium text-foreground">{getValue("about_skills_heading", t.coreCompetencies)}</h2>
             </div>
+            <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-muted-foreground">{lang === "nl" ? "Expertisegebieden" : "Key expertise areas"}</h3>
             <motion.div className="flex flex-wrap gap-2" variants={staggerChildren} initial="initial" whileInView="animate" viewport={{ once: true }}>
               {t.skills.map((skill, i) => (
                 <motion.div key={skill} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.03 }}>
@@ -290,7 +295,7 @@ const About = () => {
 
         {/* Contact Form */}
         {isVisible("contact_form") && (
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mt-20">
+          <motion.div id="contact" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mt-20">
             <div className="mb-8 flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
                 <Mail size={14} className="text-primary" />

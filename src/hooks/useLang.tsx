@@ -11,8 +11,14 @@ const LangContext = createContext<LangContextValue>({ lang: "nl", setLang: () =>
 
 export const useLang = () => useContext(LangContext);
 
-export const LangProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLang] = useState<Lang>("nl");
+interface LangProviderProps {
+  children: ReactNode;
+  /** Set during SSR/prerender to control initial language (e.g. "en" for /about). */
+  initialLang?: Lang;
+}
+
+export const LangProvider = ({ children, initialLang }: LangProviderProps) => {
+  const [lang, setLang] = useState<Lang>(initialLang ?? "nl");
   return (
     <LangContext.Provider value={{ lang, setLang }}>
       {children}

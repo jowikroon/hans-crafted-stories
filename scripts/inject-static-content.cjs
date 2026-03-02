@@ -29,7 +29,7 @@ const STATIC_CONTENT = `<header>
       <p>I&rsquo;m Hans van Leeuwen &mdash; a freelance e-commerce manager and marketplace consultant based in Amersfoort. I specialize in Amazon, Bol.com, and scalable marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
       <p>Based in Amersfoort, Netherlands &middot; Working with brands across Amsterdam, Utrecht, Rotterdam &amp; the wider EU</p>
       <a href="/work">Amazon NL marketplace case studies</a>
-      <a href="mailto:hansvl3@gmail.com?subject=Marketplace Audit Request">Get a 7-point marketplace audit (48h reply)</a>
+      <a href="/about#contact">Get a 7-point marketplace audit (48h reply)</a>
       <a href="/about#contact">Book a 30-min growth call</a>
     </section>
     <section aria-label="Proven results">
@@ -68,6 +68,15 @@ const STATIC_CONTENT = `<header>
         <li><strong>SEO &amp; Content Strategy</strong> &mdash; Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction and increasing conversions.</li>
       </ul>
     </section>
+    <section aria-label="Engagement Model">
+      <h2>Engagement Model</h2>
+      <ol>
+        <li><strong>Discovery</strong> &mdash; Audit your current marketplace presence, identify quick wins and long-term growth levers.</li>
+        <li><strong>Strategy</strong> &mdash; Build a tailored action plan with KPIs, timelines, and clear ownership.</li>
+        <li><strong>Execution</strong> &mdash; Hands-on implementation from listing optimization to ad campaigns with weekly check-ins.</li>
+        <li><strong>Scale</strong> &mdash; Iterate based on data, expand to new channels, and compound results over time.</li>
+      </ol>
+    </section>
     <section aria-label="FAQ">
       <h2>Frequently Asked Questions</h2>
       <dl>
@@ -81,7 +90,7 @@ const STATIC_CONTENT = `<header>
     </section>
   </main>
   <footer>
-    <p>&copy; 2026 Hans van Leeuwen | Freelance E-commerce Manager | Amersfoort, Netherlands</p>
+    <p>&copy; {{CURRENT_YEAR}} Hans van Leeuwen | Freelance E-commerce Manager | Amersfoort, Netherlands</p>
     <nav aria-label="Footer navigation">
       <a href="/">Home</a> |
       <a href="/work">Amazon NL Marketplace Case Studies</a> |
@@ -102,12 +111,12 @@ if (!html.includes('<div id="root">')) {
   process.exit(1);
 }
 
+const CURRENT_YEAR = String(new Date().getFullYear());
+
 const PLACEHOLDER = '<div id="root">';
 if (html.includes(`${PLACEHOLDER}</div>`)) {
   // Already empty root — safe to inject
   html = html.replace(`${PLACEHOLDER}</div>`, `${PLACEHOLDER}\n  ${STATIC_CONTENT}\n</div>`);
-  fs.writeFileSync(DIST_HTML, html, "utf8");
-  console.log("[inject-static-content] Static content injected into dist/index.html successfully.");
 } else if (html.includes(PLACEHOLDER)) {
   // Root has content already (e.g. previous run). Replace up to first </div> after root.
   const rootStart = html.indexOf(PLACEHOLDER);
@@ -117,9 +126,13 @@ if (html.includes(`${PLACEHOLDER}</div>`)) {
     process.exit(1);
   }
   html = html.slice(0, rootStart + PLACEHOLDER.length) + "\n  " + STATIC_CONTENT + "\n" + html.slice(afterRoot);
-  fs.writeFileSync(DIST_HTML, html, "utf8");
-  console.log("[inject-static-content] Static content replaced in dist/index.html successfully.");
 } else {
   console.error('[inject-static-content] <div id="root"> not found. Skipping.');
   process.exit(1);
 }
+
+// Replace build-time placeholders (e.g. copyright year in noscript and injected footer)
+html = html.replace(/\{\{CURRENT_YEAR\}\}/g, CURRENT_YEAR);
+
+fs.writeFileSync(DIST_HTML, html, "utf8");
+console.log("[inject-static-content] Static content injected and placeholders applied in dist/index.html successfully.");

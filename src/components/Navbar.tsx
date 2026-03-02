@@ -18,7 +18,7 @@ const getLinks = (lang: Lang) => {
     { to: "/", label: t.home },
     { to: "/work", label: t.work },
     { to: "/writing", label: t.writing },
-    { to: "/about", label: t.about },
+    { to: "/about", label: lang === "nl" ? "Over Hans" : "About Hans" },
   ];
 };
 

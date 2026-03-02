@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "permanent": true
+    }
+  ],
+  "trailingSlash": false
+}

@@ -83,13 +83,13 @@ const Hero = () => {
                 className="transition-transform duration-300 group-hover:translate-x-0.5"
               />
             </Link>
-            <a
-              href="mailto:hansvl3@gmail.com?subject=Marketplace Audit Request"
+            <Link
+              to="/about#contact"
               className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-sm font-bold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
               aria-label={getValue("hero_cta_consult", t.ctaConsult)}
             >
               {getValue("hero_cta_consult", t.ctaConsult)}
-            </a>
+            </Link>
             <Link
               to="/about#contact"
               className="inline-flex items-center gap-2 rounded-full border-2 border-border/60 px-6 py-3 text-sm font-medium text-muted-foreground transition-all duration-300 hover:border-foreground/30 hover:text-foreground"

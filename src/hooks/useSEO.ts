@@ -15,6 +15,8 @@ interface SEOConfig {
 }
 
 const DEFAULT_TITLE = "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen";
+const DEFAULT_OG_IMAGE = "https://hansvanleeuwen.com/og-image.png";
+const DEFAULT_OG_IMAGE_TYPE = "image/png";
 
 const setMeta = (name: string, content: string, attr = "name") => {
   let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
@@ -34,8 +36,11 @@ export const useSEO = ({ title, description, url, type = "website", hreflang, js
     setMeta("og:description", description, "property");
     setMeta("og:url", url, "property");
     setMeta("og:type", type, "property");
+    setMeta("og:image", DEFAULT_OG_IMAGE, "property");
+    setMeta("og:image:type", DEFAULT_OG_IMAGE_TYPE, "property");
     setMeta("og:image:alt", title, "property");
     setMeta("twitter:title", title);
+    setMeta("twitter:image", DEFAULT_OG_IMAGE);
     setMeta("twitter:description", description);
     setMeta("twitter:image:alt", title);
 

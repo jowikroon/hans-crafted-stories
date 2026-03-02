@@ -16,13 +16,17 @@ import TrackingScriptInjector from "./components/TrackingScriptInjector";
 
 const queryClient = new QueryClient();
 
-const AppShell = () => {
+interface AppShellProps {
+  initialLang?: "en" | "nl";
+}
+
+const AppShell = ({ initialLang }: AppShellProps) => {
   const location = useLocation();
   const isDarkPage = location.pathname === "/hansai" || location.pathname === "/empire";
 
   return (
     <AuthProvider>
-      <LangProvider>
+      <LangProvider initialLang={initialLang}>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground">
           Skip to content
         </a>
@@ -45,7 +49,12 @@ export interface AppProps {
   /** Client: from __PRELOADED__ script. Server: from prerender. */
   preloadedData?: PreloadedData | null;
   /** Set only during SSR/prerender; uses StaticRouter and preloaded blog post. */
-  serverContext?: { location: string; preloadedBlogPost?: import("@/lib/api/content").BlogPostRow | null };
+  serverContext?: {
+    location: string;
+    preloadedBlogPost?: import("@/lib/api/content").BlogPostRow | null;
+    /** Initial language for SSR (e.g. "en" for /about prerender). */
+    initialLang?: "en" | "nl";
+  };
 }
 
 const App = ({ preloadedData, serverContext }: AppProps) => {
@@ -62,7 +71,7 @@ const App = ({ preloadedData, serverContext }: AppProps) => {
         <Sonner />
         <Router {...routerProps}>
           <PreloadedDataProvider value={preloaded}>
-            <AppShell />
+            <AppShell initialLang={serverContext?.initialLang} />
           </PreloadedDataProvider>
         </Router>
       </TooltipProvider>
