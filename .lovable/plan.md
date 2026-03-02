@@ -1,29 +1,44 @@
 
 
-# Install Hotjar Tracking Code
+# Apply Command Center hover style to expertise cards + orange sub-menu text
 
-Add the Hotjar snippet (hjid: 6659262) directly into the `<head>` of `index.html`, right after the existing Google Tag Manager script. This ensures it loads on every page immediately.
+## 1. Expertise cards (kerncompetenties) — Hero.tsx
 
-## Change
+The Command Center button in the Portal header has a distinctive hover style:
+- Hover: `hover:border-orange-500/40` + `hover:shadow-[0_0_12px_hsl(25_95%_53%/0.15)]`
+- Selected/active: `border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_16px_hsl(25_95%_53%/0.35)]`
 
-**File: `index.html`**
-- Insert the Hotjar tracking script after the GTM closing comment (line ~11), before the viewport meta tag
-- The snippet will be exactly as provided by Hotjar
+Apply these effects to the 4 expertise cards in `src/components/Hero.tsx` (line 232):
 
-## Why index.html (not the tracking_scripts DB)
-
-Your project has a tracking scripts manager in the portal, but for guaranteed first-page-load coverage and simplicity, placing it directly in `index.html` is the most reliable approach -- exactly as Hotjar recommends. You can optionally also add it to the tracking_scripts table later for dashboard visibility.
-
-## Technical Detail
-
-```text
-index.html <head> order:
-  1. dataLayer init
-  2. Google Tag Manager
-  3. Hotjar  <-- NEW
-  4. viewport meta
-  5. ... rest of head
+**Current:**
+```
+hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5
 ```
 
-No other files need changes. The script is async and non-blocking.
+**New:**
+```
+hover:border-orange-500/40 hover:shadow-[0_0_12px_hsl(25_95%_53%/0.15)]
+```
 
+This gives the same high-contrast orange glow on hover as the Command Center button.
+
+## 2. Portal sub-menu selected text — Portal.tsx
+
+In the sub-menu navigation (line 312-314), the active item currently uses `text-foreground` (white). Change this to orange.
+
+**Current:**
+```
+isActive ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
+```
+
+**New:**
+```
+isActive ? "font-medium text-orange-500" : "text-muted-foreground hover:text-foreground"
+```
+
+## Files changed
+
+- `src/components/Hero.tsx` — line 232: update hover classes on expertise cards
+- `src/pages/Portal.tsx` — line 313: change active sub-menu text color to orange
+
+Both changes are CSS-only, no logic changes.
