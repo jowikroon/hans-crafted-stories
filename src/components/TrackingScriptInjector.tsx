@@ -3,6 +3,19 @@ import { getTrackingScripts, TrackingScript } from "@/lib/api/trackingScripts";
 
 const DEFER_TYPES = new Set(["hotjar", "linkedin", "meta_pixel", "custom"]);
 
+/** GA4 is configured inside GTM; do not inject a separate gtag/GA4 script when GTM is already on the page. */
+function isGtmAlreadyPresent(): boolean {
+  return typeof document !== "undefined" && !!document.querySelector('script[src*="googletagmanager.com/gtm.js"]');
+}
+
+function shouldSkipScript(script: TrackingScript): boolean {
+  if (!isGtmAlreadyPresent()) return false;
+  if (script.script_type === "ga4") return true;
+  const code = (script.code || "").toLowerCase();
+  if (code.includes("gtag/js") || code.includes("googletagmanager.com/gtag")) return true;
+  return false;
+}
+
 function injectScript(script: TrackingScript) {
   const container = script.position === "body" ? document.body : document.head;
   const wrapper = document.createElement("div");
@@ -32,7 +45,8 @@ const TrackingScriptInjector = () => {
 
   const inject = useCallback(async () => {
     try {
-      const scripts = await getTrackingScripts(true);
+      let scripts = await getTrackingScripts(true);
+      scripts = scripts.filter((s) => !shouldSkipScript(s));
       const critical: TrackingScript[] = [];
       const deferred: TrackingScript[] = [];
 

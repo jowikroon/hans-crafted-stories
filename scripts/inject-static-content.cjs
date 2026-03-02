@@ -26,11 +26,11 @@ const STATIC_CONTENT = `<header>
       <p>Freelance E-commerce Manager &middot; Amazon &amp; Bol.com Specialist</p>
       <h1>Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h1>
       <h2>Grow Amazon NL &amp; Bol.com revenue with a hands-on interim marketplace lead</h2>
-      <p>I&rsquo;m Hans van Leeuwen &mdash; a freelance e-commerce manager and marketplace consultant based in Amersfoort. I specialize in Amazon, Bol.com, and scalable marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
+      <p>I&rsquo;m Hans van Leeuwen &mdash; a freelance e-commerce manager and marketplace consultant based in Amersfoort, Netherlands. I specialize in <a href="/amazon-nl-specialist">Amazon marketplace management</a>, <a href="/bol-com-consultant">Bol.com optimization</a>, and scalable marketplace growth. As an experienced <a href="/interim-ecommerce-manager">interim e-commerce manager in the Netherlands</a>, I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
       <p>Based in Amersfoort, Netherlands &middot; Working with brands across Amsterdam, Utrecht, Rotterdam &amp; the wider EU</p>
       <a href="/work">Amazon NL marketplace case studies</a>
-      <a href="/about#contact">Get a 7-point marketplace audit (48h reply)</a>
-      <a href="/about#contact">Book a 30-min growth call</a>
+      <a href="/about#contact">Get a 7-point Amazon NL &amp; Bol.com marketplace audit (48h reply)</a>
+      <a href="/about#contact">Book a 30-min Amazon NL &amp; Bol.com growth call</a>
     </section>
     <section aria-label="Proven results">
       <ul>

@@ -233,6 +233,11 @@ for (const slug of HERO_SLUGS) {
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
 
+  page = page.replace(
+    /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
+    (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(head.canonical)}"`)
+  );
+
   const preloadedScript = `<script id="__PRELOADED__" type="application/json">${JSON.stringify(
     { blogPost: heroPost }
   )}</script>`;

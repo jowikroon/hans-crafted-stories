@@ -39,6 +39,8 @@ const BlogPostCard = ({ post, index }: { post: BlogPost; index: number }) => {
             <img
               src={post.imageUrl}
               alt={displayTitle}
+              width={640}
+              height={480}
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />

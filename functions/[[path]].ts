@@ -82,11 +82,55 @@ const ROUTE_JSONLD: Record<string, string> = {
           "https://www.behans.nl",
         ],
       },
-      {
+        {
         "@type": "BreadcrumbList",
         "itemListElement": [
           { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://hansvanleeuwen.com/" },
           { "@type": "ListItem", "position": 2, "name": "About", "item": "https://hansvanleeuwen.com/about" },
+        ],
+      },
+    ],
+  }),
+  "/work": JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": "https://hansvanleeuwen.com/work#page",
+        "name": "Design Portfolio & Case Studies – E-commerce, 3D & UX | Hans van Leeuwen",
+        "description": ROUTE_META["/work"].description,
+        "url": "https://hansvanleeuwen.com/work",
+        "isPartOf": { "@id": "https://hansvanleeuwen.com/#website" },
+        "about": { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person" },
+        "author": { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", "name": "Hans van Leeuwen" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://hansvanleeuwen.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Work", "item": "https://hansvanleeuwen.com/work" },
+        ],
+      },
+    ],
+  }),
+  "/writing": JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": "https://hansvanleeuwen.com/writing#page",
+        "name": ROUTE_META["/writing"].title,
+        "description": ROUTE_META["/writing"].description,
+        "url": "https://hansvanleeuwen.com/writing",
+        "isPartOf": { "@id": "https://hansvanleeuwen.com/#website" },
+        "about": { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person" },
+        "author": { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", "name": "Hans van Leeuwen" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://hansvanleeuwen.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Writing", "item": "https://hansvanleeuwen.com/writing" },
         ],
       },
     ],
@@ -136,6 +180,15 @@ class CanonicalHandler {
   }
 }
 
+class HreflangRemover {
+  element(element: Element) {
+    const rel = element.getAttribute("rel");
+    if (rel === "alternate" && element.getAttribute("hreflang")) {
+      element.remove();
+    }
+  }
+}
+
 class HreflangInjector {
   private path: string;
   private injected = false;
@@ -147,7 +200,7 @@ class HreflangInjector {
     const rel = element.getAttribute("rel");
     if (rel === "canonical") {
       const enUrl = `${SITE_URL}${this.path === "/" ? "/" : this.path}`;
-      const nlUrl = `${enUrl}${this.path === "/" ? "" : ""}?lang=nl`;
+      const nlUrl = `${enUrl}${enUrl.includes("?") ? "&" : "?"}lang=nl`;
       element.after(
         `<link rel="alternate" hreflang="en" href="${enUrl}" />`,
         { html: true }
@@ -198,9 +251,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   const meta = ROUTE_META[path];
   if (!meta) {
-    // Even without route meta, inject hreflang for all HTML pages
     const assetResponse = await env.ASSETS.fetch(request);
+    const canonicalUrl = `${SITE_URL}${path === "/" ? "/" : path}`;
     return new HTMLRewriter()
+      .on("link[rel='alternate']", new HreflangRemover())
+      .on("link[rel='canonical']", new CanonicalHandler(canonicalUrl))
       .on("link[rel='canonical']", new HreflangInjector(path))
       .transform(assetResponse);
   }
@@ -212,7 +267,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const ogUrl = canonicalUrl;
   const twitterDesc = meta.twitterDescription || meta.description;
 
-  // Use HTMLRewriter for safe, streaming tag replacement
   let rewriter = new HTMLRewriter()
     .on("title", new TitleHandler(meta.title))
     .on("meta[property='og:title']", new MetaHandler("property", "og:title", meta.title))
@@ -221,6 +275,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     .on("meta[name='description']", new MetaHandler("name", "description", meta.description))
     .on("meta[name='twitter:title']", new MetaHandler("name", "twitter:title", meta.title))
     .on("meta[name='twitter:description']", new MetaHandler("name", "twitter:description", twitterDesc))
+    .on("link[rel='alternate']", new HreflangRemover())
     .on("link[rel='canonical']", new CanonicalHandler(canonicalUrl))
     .on("link[rel='canonical']", new HreflangInjector(path));
 
