@@ -10,6 +10,7 @@ import Portal from "@/pages/Portal";
 import Wiki from "@/pages/Wiki";
 import Empire from "@/pages/Empire";
 import HansAI from "@/pages/HansAI";
+import CommandV3 from "@/pages/CommandV3";
 import Privacy from "@/pages/Privacy";
 import AuthCallback from "@/pages/AuthCallback";
 import NotFound from "@/pages/NotFound";
@@ -35,6 +36,7 @@ const AnimatedRoutes = () => {
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
         <Route path="/empire" element={<PageTransition><Empire /></PageTransition>} />
         <Route path="/hansai" element={<HansAI />} />
+        <Route path="/command" element={<CommandV3 />} />
         <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
