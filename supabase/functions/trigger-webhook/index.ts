@@ -4,10 +4,14 @@
  * Flow:
  *   1. Verify the caller's JWT → resolve user_id.
  *   2. INSERT a workflow_runs row with status "pending".
- *   3. Fire the n8n webhook with a 5-second AbortController timeout.
+ *   3. Fire the n8n webhook with a 30-second AbortController timeout.
  *      n8n is expected to ACK with 200 almost immediately, then run async.
- *   4. Return { ok: true, run_id } to the frontend immediately.
+ *   4. Return { success: true, run_id } to the frontend immediately.
  *      The frontend subscribes to Realtime to get the final result.
+ *
+ * CRITICAL FIX (2026-03-02): Changed all response fields from "ok" to "success"
+ * to match frontend expectation in HansAI.tsx (json.success check).
+ * Without this fix, every workflow call fails with "Workflow returned failure".
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -37,7 +41,7 @@ serve(async (req) => {
 
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ ok: false, error: "Unauthorized — valid session required" }),
+        JSON.stringify({ success: false, error: "Unauthorized — valid session required" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -48,7 +52,7 @@ serve(async (req) => {
 
     if (!webhook_url || typeof webhook_url !== "string") {
       return new Response(
-        JSON.stringify({ ok: false, error: "webhook_url is required" }),
+        JSON.stringify({ success: false, error: "webhook_url is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -57,7 +61,7 @@ serve(async (req) => {
       new URL(webhook_url);
     } catch {
       return new Response(
-        JSON.stringify({ ok: false, error: "Invalid webhook_url" }),
+        JSON.stringify({ success: false, error: "Invalid webhook_url" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -72,7 +76,7 @@ serve(async (req) => {
     if (insertError || !run) {
       console.error("workflow_runs insert failed:", insertError);
       return new Response(
-        JSON.stringify({ ok: false, error: "Failed to create workflow run record" }),
+        JSON.stringify({ success: false, error: "Failed to create workflow run record" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -85,9 +89,9 @@ serve(async (req) => {
       .update({ status: "processing" })
       .eq("id", run_id);
 
-    // ── 4. Fire n8n — 5-second timeout (n8n must ACK quickly) ─────────────────
+    // ── 4. Fire n8n — 30-second timeout (up from 5s to support complex workflows) ──
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5_000);
+    const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
     try {
       console.log(`[trigger-webhook] Firing n8n run_id=${run_id} → ${webhook_url}`);
@@ -102,36 +106,45 @@ serve(async (req) => {
       clearTimeout(timeoutId);
 
       if (!n8nRes.ok) {
-        const errText = `n8n returned HTTP ${n8nRes.status}`;
+        const errBody = await n8nRes.text().catch(() => "");
+        const errText = `n8n returned HTTP ${n8nRes.status}${errBody ? ": " + errBody.slice(0, 200) : ""}`;
         console.warn(`[trigger-webhook] ${errText} for run_id=${run_id}`);
         await supabaseAdmin
           .from("workflow_runs")
-          .update({ status: "error", error_message: errText })
+          .update({
+            status: "error",
+            error_message: errText,
+            result_data: { n8n_status: n8nRes.status, n8n_body: errBody.slice(0, 500), webhook_url },
+          })
           .eq("id", run_id);
       }
     } catch (fetchErr) {
       clearTimeout(timeoutId);
       const isTimeout = fetchErr instanceof Error && fetchErr.name === "AbortError";
       const errText = isTimeout
-        ? "n8n did not respond within 5 seconds (timeout)"
+        ? "n8n did not respond within 30 seconds (timeout)"
         : (fetchErr instanceof Error ? fetchErr.message : "n8n unreachable");
 
       console.error(`[trigger-webhook] fetch error for run_id=${run_id}:`, errText);
       await supabaseAdmin
         .from("workflow_runs")
-        .update({ status: "error", error_message: errText })
+        .update({
+          status: "error",
+          error_message: errText,
+          result_data: { timeout: isTimeout, webhook_url },
+        })
         .eq("id", run_id);
     }
 
     // ── 5. Return immediately with run_id — frontend subscribes to Realtime ───
     return new Response(
-      JSON.stringify({ ok: true, run_id }),
+      JSON.stringify({ success: true, run_id, data: { run_id } }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("[trigger-webhook] unexpected error:", err);
     return new Response(
-      JSON.stringify({ ok: false, error: err instanceof Error ? err.message : "Unknown error" }),
+      JSON.stringify({ success: false, error: err instanceof Error ? err.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

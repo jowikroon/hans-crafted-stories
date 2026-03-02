@@ -237,10 +237,10 @@ const HansAI = () => {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const json = await res.json() as { success: boolean; data?: unknown; error?: string };
+      const json = await res.json() as { success: boolean; run_id?: string; data?: unknown; error?: string };
       if (!json.success) throw new Error(json.error || "Workflow returned failure");
 
-      addLine("workflow", `✓ ${wf.label} completed`);
+      addLine("workflow", `✓ ${wf.label} triggered` + (json.run_id ? ` (run: ${json.run_id.slice(0, 8)}…)` : ""));
       if (json.data && typeof json.data === "object") {
         addLine("system", "```json\n" + JSON.stringify(json.data, null, 2) + "\n```");
       } else if (json.data) {
@@ -371,14 +371,28 @@ const HansAI = () => {
       const wf = WORKFLOWS.find((w) => w.name === "campaign");
       if (!wf) throw new Error("Campaign workflow not configured");
 
-      const res = await fetch(wf.webhook, {
+      // Route through proxy (was: direct n8n call → CORS errors, no auth, no tracking)
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const TRIGGER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
+
+      const res = await fetch(TRIGGER_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, source: "command_center" }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          webhook_url: wf.webhook,
+          payload: { ...data, source: "command_center" },
+        }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      addLine("workflow", `✓ Campaign launched for "${data.product}"`);
+      const json = await res.json() as { success: boolean; run_id?: string; error?: string };
+      if (!json.success) throw new Error(json.error || "Campaign launch failed");
+
+      addLine("workflow", `✓ Campaign launched for "${data.product}"` + (json.run_id ? ` (run: ${json.run_id.slice(0, 8)}…)` : ""));
     } catch (err) {
       addLine("error", `✗ Campaign error — ${err instanceof Error ? err.message : "Unknown"}`);
     } finally {
