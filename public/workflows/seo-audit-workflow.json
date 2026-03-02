@@ -1,16 +1,21 @@
 {
-  "name": "Analyze any website with OpenAI and get on-page SEO audit",
+  "name": "Analyze any website with OpenAI and get on-page SEO audit (with backend login support)",
   "nodes": [
     {
       "parameters": {
         "formTitle": "Conversion Rate Optimizer",
-        "formDescription": "Your Landing Page is Leaking Sales—Fix It Now",
+        "formDescription": "Your Landing Page is Leaking Sales—Fix It Now (works on protected /portal pages too)",
         "formFields": {
           "values": [
             {
               "fieldLabel": "Landing Page Url",
-              "placeholder": "https://yuzuu.co",
+              "placeholder": "https://hansvanleeuwen.com/portal/dashboard",
               "requiredField": true
+            },
+            {
+              "fieldLabel": "Session Cookie",
+              "placeholder": "session=...; (paste after login; leave empty for public pages)",
+              "requiredField": false
             }
           ]
         },
@@ -29,6 +34,9 @@
     {
       "parameters": {
         "url": "={{ $json['Landing Page Url'] }}",
+        "responseFormat": "text",
+        "dataPropertyName": "data",
+        "headerParametersJson": "={{ $json['Session Cookie'] ? { 'Cookie': $json['Session Cookie'] } : {} }}",
         "options": {}
       },
       "id": "e280139f-94b8-49dc-91e7-c6ffa0c04716",

@@ -5,6 +5,10 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  build: {
+    // SSR build must not clear dist so client build + inject-static-content stay
+    emptyOutDir: !process.env.BUILD_SSR,
+  },
   server: {
     host: "::",
     port: 8080,

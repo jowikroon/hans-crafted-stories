@@ -40,21 +40,32 @@ const Work = () => {
     title: seo.workTitle,
     description: seo.workDescription,
     url: "https://hansvanleeuwen.com/work",
+    hreflang: [
+      { lang: "en", href: "https://hansvanleeuwen.com/work" },
+      { lang: "nl", href: "https://hansvanleeuwen.com/work" },
+      { lang: "x-default", href: "https://hansvanleeuwen.com/work" },
+    ],
     jsonLd: {
       "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      name: tw.heading,
-      description: seo.workDescription,
-      url: "https://hansvanleeuwen.com/work",
-      author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
-      about: { "@type": "Thing", name: tw.heading },
-      breadcrumb: {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-          { "@type": "ListItem", position: 2, name: tw.label, item: "https://hansvanleeuwen.com/work" },
-        ],
-      },
+      "@graph": [
+        {
+          "@type": "CollectionPage",
+          "@id": "https://hansvanleeuwen.com/work#page",
+          name: tw.heading,
+          description: seo.workDescription,
+          url: "https://hansvanleeuwen.com/work",
+          isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
+          about: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person" },
+          author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+            { "@type": "ListItem", position: 2, name: tw.label, item: "https://hansvanleeuwen.com/work" },
+          ],
+        },
+      ],
     },
   });
 
@@ -170,6 +181,24 @@ const Work = () => {
           </h1>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
             {getValue("work_description", tw.description)}
+          </p>
+          <p className="mb-10 text-sm text-muted-foreground">
+            {tw.relatedHeading} —{" "}
+            <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {tw.linkWriting}
+            </Link>
+            {" · "}
+            <Link to="/about" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {tw.linkAbout}
+            </Link>
+            {" · "}
+            <Link to="/amazon-nl-specialist" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {tw.linkAmazonNl}
+            </Link>
+            {" · "}
+            <Link to="/bol-com-consultant" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {tw.linkBolCom}
+            </Link>
           </p>
         </motion.div>
       )}

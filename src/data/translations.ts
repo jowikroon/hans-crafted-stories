@@ -80,6 +80,11 @@ type TranslationStrings = {
     clearFilters: string;
     clear: string;
     loading: string;
+    relatedHeading: string;
+    linkWork: string;
+    linkAbout: string;
+    linkAmazonNl: string;
+    linkBolCom: string;
   };
 
   /* ── Work page ── */
@@ -93,6 +98,11 @@ type TranslationStrings = {
     noProjectsTitle: string;
     showAll: string;
     loading: string;
+    relatedHeading: string;
+    linkWriting: string;
+    linkAbout: string;
+    linkAmazonNl: string;
+    linkBolCom: string;
   };
 
   /* ── Privacy page ── */
@@ -381,6 +391,11 @@ export const translations: Record<Lang, TranslationStrings> = {
       clearFilters: "Clear all filters",
       clear: "Clear",
       loading: "Loading…",
+      relatedHeading: "Related",
+      linkWork: "Amazon NL & Bol.com case studies",
+      linkAbout: "About Hans",
+      linkAmazonNl: "Amazon NL specialist",
+      linkBolCom: "Bol.com consultant",
     },
 
     /* ── Work ── */
@@ -395,6 +410,11 @@ export const translations: Record<Lang, TranslationStrings> = {
       noProjectsTitle: "No projects in this category.",
       showAll: "Show all projects",
       loading: "Loading…",
+      relatedHeading: "Related",
+      linkWriting: "E-commerce insights & articles",
+      linkAbout: "About Hans",
+      linkAmazonNl: "Amazon NL specialist",
+      linkBolCom: "Bol.com consultant",
     },
 
     /* ── Privacy ── */
@@ -482,10 +502,10 @@ export const translations: Record<Lang, TranslationStrings> = {
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
       homeDescription: "10+ years growing Amazon NL & Bol.com revenue. Listings, ads, CRO & forecasting. Based in Amersfoort — NL/EU. Get a 7-point marketplace audit.",
-      writingTitle: "E-commerce Insights & Articles | Hans van Leeuwen",
-      writingDescription: "Read Hans van Leeuwen's thoughts on e-commerce strategy, marketplace optimization, Amazon & Bol.com growth, UX design, and digital commerce trends.",
-      workTitle: "Design Portfolio & Case Studies | E-commerce, 3D & UX | Hans van Leeuwen",
-      workDescription: "Explore Hans van Leeuwen's portfolio: e-commerce UX case studies, 3D creative work, VR game design, and branding projects with measurable results.",
+      writingTitle: "E-commerce Insights for Amazon NL & Bol.com | Hans van Leeuwen",
+      writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU. Get a 7-point audit or book a growth call.",
+      workTitle: "Amazon NL & Bol.com Case Studies | Portfolio | Hans van Leeuwen",
+      workDescription: "E-commerce and marketplace case studies with measurable results — Amazon NL, Bol.com, UX, and 3D work. Get a 7-point audit or book a 30-min growth call.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
       privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
       aboutTitle: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
@@ -708,6 +728,11 @@ export const translations: Record<Lang, TranslationStrings> = {
       clearFilters: "Wis alle filters",
       clear: "Wissen",
       loading: "Laden…",
+      relatedHeading: "Gerelateerd",
+      linkWork: "Amazon NL & Bol.com cases",
+      linkAbout: "Over Hans",
+      linkAmazonNl: "Amazon NL specialist",
+      linkBolCom: "Bol.com consultant",
     },
 
     /* ── Work ── */
@@ -722,6 +747,11 @@ export const translations: Record<Lang, TranslationStrings> = {
       noProjectsTitle: "Geen projecten in deze categorie.",
       showAll: "Toon alle projecten",
       loading: "Laden…",
+      relatedHeading: "Gerelateerd",
+      linkWriting: "E-commerce inzichten & artikelen",
+      linkAbout: "Over Hans",
+      linkAmazonNl: "Amazon NL specialist",
+      linkBolCom: "Bol.com consultant",
     },
 
     /* ── Privacy ── */
@@ -809,10 +839,10 @@ export const translations: Record<Lang, TranslationStrings> = {
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
       homeDescription: "10+ jaar groei op Amazon NL & Bol.com. Listings, ads, CRO & forecasting. Gevestigd in Amersfoort — NL/EU. Vraag een 7-punts marktplaats audit aan.",
-      writingTitle: "E-commerce Inzichten & Artikelen | Hans van Leeuwen",
-      writingDescription: "Lees de artikelen van Hans van Leeuwen over e-commercestrategie, marktplaatsoptimalisatie, Amazon & Bol.com groei, UX-design en digitale commercetrends.",
-      workTitle: "Designportfolio & Cases | E-commerce, 3D & UX | Hans van Leeuwen",
-      workDescription: "Bekijk het portfolio van Hans van Leeuwen: e-commerce UX-cases, 3D-creatief werk, VR-gamedesign en brandingprojecten met meetbare resultaten.",
+      writingTitle: "E-commerce Inzichten voor Amazon NL & Bol.com | Hans van Leeuwen",
+      writingDescription: "Artikelen over marktplaatsstrategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU. Vraag een 7-punts audit of plan een groeigesprek.",
+      workTitle: "Amazon NL & Bol.com Cases | Portfolio | Hans van Leeuwen",
+      workDescription: "E-commerce en marktplaats cases met meetbare resultaten — Amazon NL, Bol.com, UX en 3D. Vraag een 7-punts audit of plan een 30-min groeigesprek.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
       privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
       aboutTitle: "Over Hans van Leeuwen – E-commerce Manager | 10+ Jaar Ervaring",

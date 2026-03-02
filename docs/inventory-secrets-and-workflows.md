@@ -26,7 +26,7 @@
 | `intent-analysis.json` | scheduleTrigger, supabase, if, lmChatOpenAi, gmail, noOp | Supabase API (service role), OpenAI API (gemini-compatible), Gmail OAuth2 | `SUPABASE_URL` |
 | `autoseo-brain-v2.json` | stickyNote, webhook, scheduleTrigger, code, if, set, splitInBatches, lmChatAnthropic, googleSheets | Anthropic API (`AnthropicApi`), Google Sheets OAuth2 | `N8N_BASE_URL` |
 | `autoseo-n8n-v2.json` | Same family as autoseo-brain-v2 | Anthropic API, Google Sheets OAuth2 | `N8N_BASE_URL` |
-| `seo-audit-workflow.json` | formTrigger, httpRequest, lmChatOpenAi (x2), agent (x2), merge, aggregate, markdown, gmail, gmailTrigger | OpenAI API (Prod - OpenAI), Gmail OAuth2 (Prod - Gmail); credential IDs replaced with placeholder in export | — |
+| `seo-audit-workflow.json` | formTrigger, httpRequest, lmChatOpenAi (x2), agent (x2), merge, aggregate, markdown, gmail, gmailTrigger | OpenAI API (Prod - OpenAI), Gmail OAuth2 (Prod - Gmail); credential IDs replaced with placeholder in export. Supports optional session cookie for protected/backend pages. | — |
 | `product-title-optimizer.json` | googleSheets (x3) | Google Sheets OAuth2 (`REPLACE_WITH_YOUR_CREDENTIAL_ID`) | — |
 | `monday-orchestrator.json` | webhook trigger | (depends on downstream dispatch) | `N8N_BASE_URL` |
 

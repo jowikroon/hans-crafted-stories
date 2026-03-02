@@ -44,13 +44,32 @@ const Writing = () => {
     title: seo.writingTitle,
     description: seo.writingDescription,
     url: "https://hansvanleeuwen.com/writing",
+    hreflang: [
+      { lang: "en", href: "https://hansvanleeuwen.com/writing" },
+      { lang: "nl", href: "https://hansvanleeuwen.com/writing" },
+      { lang: "x-default", href: "https://hansvanleeuwen.com/writing" },
+    ],
     jsonLd: {
       "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      name: t.heading,
-      description: seo.writingDescription,
-      url: "https://hansvanleeuwen.com/writing",
-      author: { "@type": "Person", name: "Hans van Leeuwen" },
+      "@graph": [
+        {
+          "@type": "CollectionPage",
+          "@id": "https://hansvanleeuwen.com/writing#page",
+          name: t.heading,
+          description: seo.writingDescription,
+          url: "https://hansvanleeuwen.com/writing",
+          isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
+          about: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person" },
+          author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+            { "@type": "ListItem", position: 2, name: t.label, item: "https://hansvanleeuwen.com/writing" },
+          ],
+        },
+      ],
     },
   });
 
@@ -186,6 +205,24 @@ const Writing = () => {
           </h1>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
             {getValue("writing_subtitle", t.subtitle)}
+          </p>
+          <p className="mb-10 text-sm text-muted-foreground">
+            {t.relatedHeading} —{" "}
+            <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {t.linkWork}
+            </Link>
+            {" · "}
+            <Link to="/about" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {t.linkAbout}
+            </Link>
+            {" · "}
+            <Link to="/amazon-nl-specialist" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {t.linkAmazonNl}
+            </Link>
+            {" · "}
+            <Link to="/bol-com-consultant" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {t.linkBolCom}
+            </Link>
           </p>
         </motion.div>
       )}

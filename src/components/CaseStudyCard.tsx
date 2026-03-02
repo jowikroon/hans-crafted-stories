@@ -25,7 +25,9 @@ const CaseStudyCard = ({ study, index }: { study: CaseStudy; index: number }) =>
           {study.image && !study.image.includes("placeholder") ? (
             <img
               src={study.image}
-              alt={study.title}
+              alt={displayTitle}
+              width={640}
+              height={400}
               className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               loading="lazy"
             />
