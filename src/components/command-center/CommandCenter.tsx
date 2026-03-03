@@ -477,17 +477,10 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
               className={`mb-3 overflow-hidden rounded-lg border p-3 ${isTerminal ? "" : "border-border bg-card"}`}
               style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
-              {ACTIONS[cc.activeCat].hero.slice(0, 5).map((a) => (
+              {[...ACTIONS[cc.activeCat].hero, ...ACTIONS[cc.activeCat].compact].slice(0, 5).map((a) => (
                 <button key={a.id} onClick={() => cc.pickAction(a)}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[11px] text-muted-foreground transition-all hover:bg-secondary hover:text-foreground">
                   <span className="font-medium" style={isTerminal ? { color: isAutoFull ? neoGreen.primary : "#E8E8F0" } : undefined}>{a.label}</span>
-                  <span className="truncate text-[10px] opacity-50">{a.sub}</span>
-                </button>
-              ))}
-              {ACTIONS[cc.activeCat].compact.map((a) => (
-                <button key={a.id} onClick={() => cc.pickAction(a)}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[11px] text-muted-foreground transition-all hover:bg-secondary hover:text-foreground">
-                  <span className="font-medium">{a.label}</span>
                   <span className="truncate text-[10px] opacity-50">{a.sub}</span>
                 </button>
               ))}
