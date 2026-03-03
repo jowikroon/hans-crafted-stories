@@ -24,6 +24,23 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // ── Authentication: require valid JWT + admin role ──────────────────────
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+    if (!token) return err("Authorization required", 401);
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) return err("Unauthorized", 401);
+
+    const { data: roleRow } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!roleRow) return err("Admin access required", 403);
+    // ────────────────────────────────────────────────────────────────────────
+
     const body = await req.json();
     const { action } = body;
 
@@ -289,7 +306,7 @@ serve(async (req) => {
         const { email, password, display_name, role, tab_access } = body;
         if (!email || !password) return err("email and password required");
         
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        const { data: authData, error: authError2 } = await supabase.auth.admin.createUser({
           email,
           password,
           email_confirm: true,
@@ -297,22 +314,20 @@ serve(async (req) => {
 
         let userId: string;
 
-        if (authError) {
-          // If user already exists in auth, look them up and re-use
-          if (authError.message.includes("already been registered")) {
+        if (authError2) {
+          if (authError2.message.includes("already been registered")) {
             const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
             if (listError) return err(listError.message, 500);
             const existing = listData.users.find((u: any) => u.email === email);
             if (!existing) return err("User exists in auth but could not be found", 500);
             userId = existing.id;
           } else {
-            return err(authError.message, 500);
+            return err(authError2.message, 500);
           }
         } else {
           userId = authData.user.id;
         }
 
-        // Upsert portal profile (avoid duplicate if profile already exists)
         const { error: profileError } = await supabase
           .from("portal_profiles")
           .upsert({
@@ -323,7 +338,6 @@ serve(async (req) => {
           }, { onConflict: "user_id" });
         if (profileError) console.error("Profile upsert error:", profileError.message);
 
-        // Upsert role
         if (role) {
           const { error: roleError } = await supabase
             .from("user_roles")
@@ -338,14 +352,12 @@ serve(async (req) => {
         const { user_id } = body;
         if (!user_id) return err("user_id is required");
 
-        // Delete all related rows in correct order
         await supabase.from("user_tool_access").delete().eq("user_id", user_id);
         await supabase.from("user_content_access").delete().eq("user_id", user_id);
         await supabase.from("user_ai_access").delete().eq("user_id", user_id);
         await supabase.from("user_roles").delete().eq("user_id", user_id);
         await supabase.from("portal_profiles").delete().eq("user_id", user_id);
 
-        // Delete the auth user last
         const { error: authDeleteError } = await supabase.auth.admin.deleteUser(user_id);
         if (authDeleteError) {
           console.error("Auth delete error:", authDeleteError.message);
