@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Send, Loader2, CheckCircle2, Circle, Bot, ChevronDown, History,
+  Send, Loader2, CheckCircle2, Circle, Bot, ChevronDown, ChevronRight, History,
   Command, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -483,15 +483,22 @@ const CommandCenter = ({ mode, onClose, onAutoFullChange }: CommandCenterProps) 
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
               className={`mb-3 overflow-hidden rounded-lg border p-3 ${isTerminal ? "" : "border-border bg-card"}`}
               style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
-              {[...ACTIONS[cc.activeCat].hero, ...ACTIONS[cc.activeCat].compact].slice(0, 5).map((a) => (
-                <motion.button key={a.id} onClick={() => cc.pickAction(a)}
-                  whileTap={{ scale: 0.97, backgroundColor: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.12)" : "rgba(16,185,129,0.12)") : "rgba(249,115,22,0.12)" }}
-                  transition={{ duration: 0.15 }}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[11px] text-muted-foreground transition-all hover:bg-secondary hover:text-foreground">
-                  <span className="font-medium" style={isTerminal ? { color: isAutoFull ? neoGreen.primary : "#E8E8F0" } : undefined}>{a.label}</span>
-                  <span className="truncate text-[10px] opacity-50">{a.sub}</span>
-                </motion.button>
-              ))}
+              {(() => {
+                const heroCount = ACTIONS[cc.activeCat].hero.length;
+                return [...ACTIONS[cc.activeCat].hero, ...ACTIONS[cc.activeCat].compact].slice(0, 5).map((a, idx) => {
+                  const isHero = idx < heroCount;
+                  return (
+                    <motion.button key={a.id} onClick={() => cc.pickAction(a)}
+                      whileTap={{ scale: 0.97, backgroundColor: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.12)" : "rgba(16,185,129,0.12)") : "rgba(249,115,22,0.12)" }}
+                      transition={{ duration: 0.15 }}
+                      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[11px] text-muted-foreground transition-all ${isHero ? "hover:bg-primary/10 hover:text-foreground" : "hover:bg-secondary hover:text-foreground"}`}>
+                      <span className="font-medium" style={isTerminal ? { color: isAutoFull ? neoGreen.primary : "#E8E8F0" } : undefined}>{a.label}</span>
+                      <span className="truncate text-[10px] opacity-50 flex-1">{a.sub}</span>
+                      {isHero && <ChevronRight size={10} className="shrink-0 opacity-30" />}
+                    </motion.button>
+                  );
+                });
+              })()}
               {ACTIONS[cc.activeCat].history.length > 0 && (
                 <>
                   <div className="my-2 flex items-center gap-2" style={{ color: isAutoFull ? neoGreen.border : undefined }}>
