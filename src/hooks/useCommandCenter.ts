@@ -28,7 +28,9 @@ import {
   type HeroAction,
   type CompactAction,
   type DeliveryOption,
+  type DeliveryAction,
 } from "@/components/command-center/commandCenterData";
+import { downloadCSV } from "@/lib/utils/csv";
 import { unifiedCategories, buildContextPrefix } from "@/components/ai/contextCategories";
 
 // ── URLs ──────────────────────────────────────────────────────
@@ -319,15 +321,126 @@ export function useCommandCenter(mode: CommandCenterMode) {
     setPhase("delivery");
   }, [appendMessage]);
 
-  const pickDelivery = useCallback((d: DeliveryOption) => {
+  /** Map a category to the best-matching n8n workflow */
+  const matchWorkflowForAction = useCallback((action: HeroAction | CompactAction): WorkflowDef | undefined => {
+    const cmd = action.cmd.toLowerCase();
+    // Try keyword matching against available workflows
+    for (const wf of WORKFLOWS) {
+      if (wf.keywords.some((kw) => cmd.includes(kw))) return wf;
+    }
+    // Category-based fallback
+    const cat = activeCat || "";
+    const catMap: Record<string, string> = {
+      pricing: "autoseo", seo: "autoseo", product: "product-titles",
+      automate: "n8n-agent", infra: "health-check", comms: "google",
+    };
+    if (catMap[cat]) return WORKFLOWS.find((w) => w.name === catMap[cat]);
+    return undefined;
+  }, [activeCat]);
+
+  const pickDelivery = useCallback(async (d: DeliveryOption) => {
+    if (!pickedAction) return;
     setPhase("exec");
     setActiveCat(null);
-    setTimeout(() => {
-      appendMessage({ role: "workflow", content: `✓ **${pickedAction?.label}** → via ${d.label}` });
-      setPhase("done");
-      setTimeout(() => { setPhase("browse"); setPickedAction(null); }, 2000);
-    }, 1600);
-  }, [appendMessage, pickedAction]);
+
+    const action = d.action;
+    const cmd = pickedAction.cmd;
+    const label = pickedAction.label;
+
+    try {
+      switch (action) {
+        case "show_chat": {
+          // Send the command through AI and render response in chat
+          const userMsg: Message = { role: "user", content: cmd, timestamp: Date.now() };
+          const newMsgs = [...messages, userMsg];
+          setMessages(newMsgs);
+          if (mode === "terminal") {
+            await streamAI(cmd);
+          } else {
+            await sendToAI(cmd, newMsgs);
+          }
+          break;
+        }
+
+        case "csv_download": {
+          // Send to AI, then parse response and download as CSV
+          appendMessage({ role: "workflow", content: `Generating data for **${label}**…` });
+          setLoading(true);
+          setPipelineStage("generating");
+
+          const { data: sessionData } = await supabase.auth.getSession();
+          const token = sessionData?.session?.access_token;
+          const res = await fetch(N8N_AGENT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+            body: JSON.stringify({ system: SYSTEM_PROMPT, messages: [{ role: "user", content: `${cmd}\n\nReturn the results as a markdown table or JSON array.` }], model: selectedModel }),
+          });
+          const data = await res.json().catch(() => ({}));
+          const content = data.reply || data.error || "No data returned.";
+
+          appendMessage({ role: "assistant", content });
+          const filename = `${label.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.csv`;
+          downloadCSV(content, filename);
+          appendMessage({ role: "workflow", content: `✓ CSV downloaded: **${filename}**` });
+
+          setLoading(false);
+          setPipelineStage("done");
+          setTimeout(() => setPipelineStage("idle"), 2000);
+          break;
+        }
+
+        case "send_n8n": {
+          // Match to a workflow and trigger it
+          const wf = matchWorkflowForAction(pickedAction);
+          if (wf) {
+            await executeWorkflow(wf, cmd);
+          } else {
+            // Fallback: send through AI
+            appendMessage({ role: "system", content: "No matching n8n workflow found — routing to AI." });
+            const userMsg: Message = { role: "user", content: cmd, timestamp: Date.now() };
+            const newMsgs = [...messages, userMsg];
+            setMessages(newMsgs);
+            mode === "terminal" ? await streamAI(cmd) : await sendToAI(cmd, newMsgs);
+          }
+          break;
+        }
+
+        case "send_slack": {
+          // Check Slack connector and post
+          appendMessage({ role: "workflow", content: `Sending to Slack: **${label}**…` });
+          setLoading(true);
+          try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const token = sessionData?.session?.access_token;
+            // Call a lightweight edge function or just inform user
+            // Since we don't have a dedicated Slack edge function yet, inform user
+            appendMessage({
+              role: "system",
+              content: "⚠️ Slack connector is available but no Slack edge function is wired yet. To enable this, connect Slack via the connector settings and a posting function will be created.",
+            });
+          } finally {
+            setLoading(false);
+          }
+          break;
+        }
+
+        case "show_plan": {
+          // Ask AI to explain what will happen, don't execute
+          const planCmd = `Explain what this command will do step-by-step, without executing it:\n\n${cmd}`;
+          const userMsg: Message = { role: "user", content: planCmd, timestamp: Date.now() };
+          const newMsgs = [...messages, userMsg];
+          setMessages(newMsgs);
+          mode === "terminal" ? await streamAI(planCmd) : await sendToAI(planCmd, newMsgs);
+          break;
+        }
+      }
+    } catch (err) {
+      appendMessage({ role: "error", content: `Delivery failed: ${err instanceof Error ? err.message : "Unknown error"}` });
+    }
+
+    setPhase("done");
+    setTimeout(() => { setPhase("browse"); setPickedAction(null); }, 2000);
+  }, [appendMessage, pickedAction, messages, mode, streamAI, sendToAI, executeWorkflow, matchWorkflowForAction, selectedModel]);
 
   const rerunHistory = useCallback((h: { cmd: string; out: string }) => {
     appendMessage({ role: "system", content: `Re-running: ${h.cmd}` });
