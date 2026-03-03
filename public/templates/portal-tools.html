@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Portal Tools Panel — Standalone Template</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #07070B;
+    --bg-raised: #0C0C14;
+    --bg-card: #0A0A12;
+    --border: #12121E;
+    --border-hover: #1A1A28;
+    --text: #A0A4AA;
+    --text-bright: #E8E8F0;
+    --text-dim: #3A3A4A;
+    --emerald: #10B981;
+    --emerald-bg: rgba(16,185,129,0.08);
+    --emerald-border: rgba(16,185,129,0.2);
+    --violet: #8B5CF6;
+    --violet-bg: rgba(139,92,246,0.08);
+    --violet-border: rgba(139,92,246,0.2);
+    --amber: #F59E0B;
+    --amber-bg: rgba(245,158,11,0.08);
+    --amber-border: rgba(245,158,11,0.2);
+    --cyan: #06B6D4;
+    --cyan-bg: rgba(6,182,212,0.08);
+    --cyan-border: rgba(6,182,212,0.2);
+    --pink: #EC4899;
+    --pink-bg: rgba(236,72,153,0.08);
+    --pink-border: rgba(236,72,153,0.2);
+    --orange: #F97316;
+    --orange-bg: rgba(249,115,22,0.08);
+    --orange-border: rgba(249,115,22,0.2);
+    --font: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ──────────────────────────────────── */
+  .portal-layout {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  @media (max-width: 640px) { .portal-layout { padding: 20px 16px; } }
+
+  /* ── Header ──────────────────────────────────── */
+  .portal-header {
+    margin-bottom: 28px;
+  }
+
+  .portal-header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .portal-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--emerald-bg);
+    border: 1px solid var(--emerald-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .portal-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: -0.5px;
+  }
+
+  .portal-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    max-width: 480px;
+  }
+
+  /* ── Filter Bar ──────────────────────────────── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .filter-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    font-family: var(--font);
+  }
+
+  .filter-pill:hover {
+    border-color: var(--emerald-border);
+    color: var(--text);
+  }
+
+  .filter-pill.active {
+    border-color: var(--emerald);
+    background: var(--emerald-bg);
+    color: var(--emerald);
+  }
+
+  .filter-count {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    font-family: var(--font-mono);
+  }
+
+  /* ── Tools Grid ──────────────────────────────── */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  @media (max-width: 640px) {
+    .tools-grid { grid-template-columns: 1fr; }
+  }
+
+  .tool-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .tool-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .tool-card:hover::before { opacity: 1; }
+
+  .tool-card.seo::before { background: linear-gradient(90deg, var(--emerald), transparent); }
+  .tool-card.ai::before { background: linear-gradient(90deg, var(--violet), transparent); }
+  .tool-card.automation::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .tool-card.data::before { background: linear-gradient(90deg, var(--amber), transparent); }
+  .tool-card.content::before { background: linear-gradient(90deg, var(--pink), transparent); }
+
+  .tool-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .tool-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .tool-icon.seo { background: var(--emerald-bg); border: 1px solid var(--emerald-border); }
+  .tool-icon.ai { background: var(--violet-bg); border: 1px solid var(--violet-border); }
+  .tool-icon.automation { background: var(--cyan-bg); border: 1px solid var(--cyan-border); }
+  .tool-icon.data { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+  .tool-icon.content { background: var(--pink-bg); border: 1px solid var(--pink-border); }
+
+  .tool-badge {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--font-mono);
+  }
+
+  .tool-badge.seo { background: var(--emerald-bg); color: var(--emerald); }
+  .tool-badge.ai { background: var(--violet-bg); color: var(--violet); }
+  .tool-badge.automation { background: var(--cyan-bg); color: var(--cyan); }
+  .tool-badge.data { background: var(--amber-bg); color: var(--amber); }
+  .tool-badge.content { background: var(--pink-bg); color: var(--pink); }
+
+  .tool-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .tool-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .tool-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .tool-feature {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-family: var(--font-mono);
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  /* ── Footer ──────────────────────────────────── */
+  .portal-footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+<div class="portal-layout">
+  <!-- Header -->
+  <header class="portal-header">
+    <div class="portal-header-row">
+      <div class="portal-icon">🧰</div>
+      <h1 class="portal-title">Tools Panel</h1>
+    </div>
+    <p class="portal-sub">Interactive tools, AI agents, and automation interfaces — organized by category with drag-and-drop management.</p>
+  </header>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <button class="filter-pill active">All <span class="filter-count">12</span></button>
+    <button class="filter-pill">SEO <span class="filter-count">4</span></button>
+    <button class="filter-pill">AI <span class="filter-count">3</span></button>
+    <button class="filter-pill">Automation <span class="filter-count">3</span></button>
+    <button class="filter-pill">Data <span class="filter-count">1</span></button>
+    <button class="filter-pill">Content <span class="filter-count">1</span></button>
+  </div>
+
+  <!-- Tools Grid -->
+  <div class="tools-grid">
+    <div class="tool-card seo">
+      <div class="tool-card-header">
+        <div class="tool-icon seo">🔍</div>
+        <span class="tool-badge seo">SEO</span>
+      </div>
+      <div class="tool-name">SEO Title Generator</div>
+      <div class="tool-desc">AI-powered product title optimization with character limits, keyword injection, and A/B variants.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Title optimization</span>
+        <span class="tool-feature">Keyword analysis</span>
+        <span class="tool-feature">Batch processing</span>
+      </div>
+    </div>
+
+    <div class="tool-card ai">
+      <div class="tool-card-header">
+        <div class="tool-icon ai">🤖</div>
+        <span class="tool-badge ai">AI</span>
+      </div>
+      <div class="tool-name">Keyword Research</div>
+      <div class="tool-desc">Gemini-powered keyword analysis with search volume, difficulty scores, and content suggestions.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Volume estimates</span>
+        <span class="tool-feature">Difficulty scoring</span>
+        <span class="tool-feature">Content ideas</span>
+      </div>
+    </div>
+
+    <div class="tool-card automation">
+      <div class="tool-card-header">
+        <div class="tool-icon automation">⚡</div>
+        <span class="tool-badge automation">Automation</span>
+      </div>
+      <div class="tool-name">Channable Architect</div>
+      <div class="tool-desc">Visual feed rule builder for Channable — map, filter, and transform product data for marketplaces.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Rule builder</span>
+        <span class="tool-feature">Feed preview</span>
+        <span class="tool-feature">Export JSON</span>
+      </div>
+    </div>
+
+    <div class="tool-card seo">
+      <div class="tool-card-header">
+        <div class="tool-icon seo">📊</div>
+        <span class="tool-badge seo">SEO</span>
+      </div>
+      <div class="tool-name">Site Audit</div>
+      <div class="tool-desc">Full-site SEO health check — crawl errors, meta tags, performance scores, and actionable fixes.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Meta analysis</span>
+        <span class="tool-feature">Performance</span>
+        <span class="tool-feature">Accessibility</span>
+      </div>
+    </div>
+
+    <div class="tool-card ai">
+      <div class="tool-card-header">
+        <div class="tool-icon ai">✨</div>
+        <span class="tool-badge ai">AI</span>
+      </div>
+      <div class="tool-name">Content Suggest</div>
+      <div class="tool-desc">Generate copy for pages, product descriptions, and meta tags using Gemini language models.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Page copy</span>
+        <span class="tool-feature">Meta tags</span>
+        <span class="tool-feature">Descriptions</span>
+      </div>
+    </div>
+
+    <div class="tool-card automation">
+      <div class="tool-card-header">
+        <div class="tool-icon automation">🔗</div>
+        <span class="tool-badge automation">Automation</span>
+      </div>
+      <div class="tool-name">Webhook Trigger</div>
+      <div class="tool-desc">Manually trigger n8n webhooks with custom payloads — test workflows before going live.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Custom payload</span>
+        <span class="tool-feature">Response viewer</span>
+        <span class="tool-feature">History</span>
+      </div>
+    </div>
+
+    <div class="tool-card data">
+      <div class="tool-card-header">
+        <div class="tool-icon data">📈</div>
+        <span class="tool-badge data">Data</span>
+      </div>
+      <div class="tool-name">Analytics Dashboard</div>
+      <div class="tool-desc">Real-time analytics for tool usage, AI requests, workflow runs, and system performance.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Usage metrics</span>
+        <span class="tool-feature">AI costs</span>
+        <span class="tool-feature">Performance</span>
+      </div>
+    </div>
+
+    <div class="tool-card seo">
+      <div class="tool-card-header">
+        <div class="tool-icon seo">🏷️</div>
+        <span class="tool-badge seo">SEO</span>
+      </div>
+      <div class="tool-name">Product Page Analyzer</div>
+      <div class="tool-desc">Chrome extension companion — analyze any product page for SEO, pricing, and competitor data.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Chrome extension</span>
+        <span class="tool-feature">Competitor view</span>
+        <span class="tool-feature">Export</span>
+      </div>
+    </div>
+
+    <div class="tool-card content">
+      <div class="tool-card-header">
+        <div class="tool-icon content">📝</div>
+        <span class="tool-badge content">Content</span>
+      </div>
+      <div class="tool-name">Page Content Editor</div>
+      <div class="tool-desc">Visual CMS for editing live page content — inline editing with version history and rollback.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Inline editing</span>
+        <span class="tool-feature">Version history</span>
+        <span class="tool-feature">Live preview</span>
+      </div>
+    </div>
+
+    <div class="tool-card automation">
+      <div class="tool-card-header">
+        <div class="tool-icon automation">🔄</div>
+        <span class="tool-badge automation">Automation</span>
+      </div>
+      <div class="tool-name">Workflow Viewer</div>
+      <div class="tool-desc">Browse, inspect, and manage n8n workflow JSON templates with visual node previews.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Node graph</span>
+        <span class="tool-feature">JSON editor</span>
+        <span class="tool-feature">Import/Export</span>
+      </div>
+    </div>
+
+    <div class="tool-card ai">
+      <div class="tool-card-header">
+        <div class="tool-icon ai">🧠</div>
+        <span class="tool-badge ai">AI</span>
+      </div>
+      <div class="tool-name">Intent Router</div>
+      <div class="tool-desc">Classify user prompts into workflow actions or AI fallback using the 2-stage intent pipeline.</div>
+      <div class="tool-features">
+        <span class="tool-feature">Fast routing</span>
+        <span class="tool-feature">LLM fallback</span>
+        <span class="tool-feature">Analytics</span>
+      </div>
+    </div>
+
+    <div class="tool-card seo">
+      <div class="tool-card-header">
+        <div class="tool-icon seo">📋</div>
+        <span class="tool-badge seo">SEO</span>
+      </div>
+      <div class="tool-name">Tracking Scripts</div>
+      <div class="tool-desc">Manage GA4, GTM, Meta Pixel, and custom tracking scripts with verification status.</div>
+      <div class="tool-features">
+        <span class="tool-feature">GA4 / GTM</span>
+        <span class="tool-feature">Meta Pixel</span>
+        <span class="tool-feature">Verification</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="portal-footer">
+    <span>Portal Tools Template v1.0</span>
+    <span>12 tools · 5 categories</span>
+  </footer>
+</div>
+
+<script>
+  // Simple category filter
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const category = pill.textContent.trim().split(' ')[0].toLowerCase();
+      document.querySelectorAll('.tool-card').forEach(card => {
+        if (category === 'all') { card.style.display = ''; }
+        else { card.style.display = card.classList.contains(category) ? '' : 'none'; }
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Empire Dashboard — Standalone Template</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #07070B;
+    --bg-raised: #0C0C14;
+    --bg-card: #0A0A12;
+    --border: #12121E;
+    --border-hover: #1A1A28;
+    --text: #A0A4AA;
+    --text-bright: #E8E8F0;
+    --text-dim: #3A3A4A;
+    --violet: #8B5CF6;
+    --violet-dim: rgba(139,92,246,0.5);
+    --violet-bg: rgba(139,92,246,0.08);
+    --violet-border: rgba(139,92,246,0.2);
+    --emerald: #10B981;
+    --emerald-bg: rgba(16,185,129,0.08);
+    --amber: #F59E0B;
+    --amber-bg: rgba(245,158,11,0.08);
+    --red: #EF4444;
+    --red-bg: rgba(239,68,68,0.08);
+    --cyan: #06B6D4;
+    --cyan-bg: rgba(6,182,212,0.08);
+    --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ──────────────────────────────────── */
+  .empire-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .empire-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--bg-raised) 0%, var(--bg) 100%);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--violet-bg);
+    border: 1px solid var(--violet-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--violet);
+    font-size: 16px;
+  }
+
+  .header-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-bright);
+    font-family: var(--font-mono);
+    letter-spacing: -0.5px;
+  }
+
+  .header-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  .status-dot.green { background: var(--emerald); box-shadow: 0 0 8px var(--emerald); }
+  .status-dot.amber { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .status-dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .status-label {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+  }
+
+  /* ── Main ────────────────────────────────────── */
+  .empire-main {
+    flex: 1;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .empire-main { grid-template-columns: 1fr; padding: 16px; }
+  }
+
+  /* ── Status Grid ─────────────────────────────── */
+  .status-grid {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .status-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s;
+  }
+
+  .status-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  .status-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .status-card-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--font-mono);
+  }
+
+  .status-badge.online { background: var(--emerald-bg); color: var(--emerald); }
+  .status-badge.warning { background: var(--amber-bg); color: var(--amber); }
+  .status-badge.error { background: var(--red-bg); color: var(--red); }
+
+  .status-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-bright);
+    font-family: var(--font-mono);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .status-detail {
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  /* ── Audit Trail ─────────────────────────────── */
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+  }
+
+  .live-dot {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    color: var(--emerald);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .live-dot::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--emerald);
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    max-height: 340px;
+  }
+
+  .event-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: background 0.15s;
+    cursor: default;
+  }
+
+  .event-row:hover { background: rgba(255,255,255,0.02); }
+
+  .event-time {
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+    white-space: nowrap;
+    padding-top: 2px;
+    min-width: 50px;
+  }
+
+  .event-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .event-icon.deploy { background: var(--cyan-bg); color: var(--cyan); }
+  .event-icon.health { background: var(--emerald-bg); color: var(--emerald); }
+  .event-icon.alert { background: var(--amber-bg); color: var(--amber); }
+  .event-icon.error { background: var(--red-bg); color: var(--red); }
+  .event-icon.workflow { background: var(--violet-bg); color: var(--violet); }
+
+  .event-content { flex: 1; min-width: 0; }
+  .event-title { font-size: 11px; color: var(--text-bright); font-weight: 500; }
+  .event-detail { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+  /* ── Quick Actions ───────────────────────────── */
+  .actions-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 11px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+  }
+
+  .action-btn:hover {
+    border-color: var(--violet-border);
+    background: var(--violet-bg);
+    color: var(--text-bright);
+    transform: translateX(2px);
+  }
+
+  .action-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .action-icon.violet { background: var(--violet-bg); border: 1px solid var(--violet-border); }
+  .action-icon.cyan { background: var(--cyan-bg); border: 1px solid rgba(6,182,212,0.2); }
+  .action-icon.emerald { background: var(--emerald-bg); border: 1px solid rgba(16,185,129,0.2); }
+  .action-icon.amber { background: var(--amber-bg); border: 1px solid rgba(245,158,11,0.2); }
+
+  .action-text { font-weight: 500; }
+  .action-sub { font-size: 9px; color: var(--text-dim); margin-top: 1px; }
+
+  /* ── Commander Chat ──────────────────────────── */
+  .commander-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+  }
+
+  .commander-prompt {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--violet-dim);
+  }
+
+  .commander-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .commander-field::placeholder { color: var(--text-dim); }
+
+  .commander-send {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--violet);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: all 0.15s;
+  }
+
+  .commander-send:hover { background: #7C3AED; }
+
+  /* ── Footer ──────────────────────────────────── */
+  .empire-footer {
+    padding: 12px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+  }
+
+  .footer-spine {
+    display: flex;
+    gap: 12px;
+  }
+
+  .spine-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .spine-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+<div class="empire-layout">
+  <!-- Header -->
+  <header class="empire-header">
+    <div class="header-left">
+      <div class="header-icon">👑</div>
+      <div>
+        <div class="header-title">Empire Dashboard</div>
+        <div class="header-sub">Infrastructure · Diagnostics · Control</div>
+      </div>
+    </div>
+    <div class="status-bar">
+      <div class="status-dot green"></div>
+      <span class="status-label">All systems operational</span>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="empire-main">
+    <!-- Status Grid -->
+    <div class="status-grid">
+      <div class="status-card">
+        <div class="status-card-header">
+          <span class="status-card-label">VPS Primary</span>
+          <span class="status-badge online"><span class="status-dot green" style="width:4px;height:4px;animation:none"></span> Online</span>
+        </div>
+        <div class="status-value">99.9%</div>
+        <div class="status-detail">srv1402218 · 2 vCPU · 4GB</div>
+      </div>
+      <div class="status-card">
+        <div class="status-card-header">
+          <span class="status-card-label">VPS Industrial</span>
+          <span class="status-badge online"><span class="status-dot green" style="width:4px;height:4px;animation:none"></span> Online</span>
+        </div>
+        <div class="status-value">99.7%</div>
+        <div class="status-detail">srv1411336 · 4 vCPU · 8GB</div>
+      </div>
+      <div class="status-card">
+        <div class="status-card-header">
+          <span class="status-card-label">n8n Engine</span>
+          <span class="status-badge online"><span class="status-dot green" style="width:4px;height:4px;animation:none"></span> Active</span>
+        </div>
+        <div class="status-value">47</div>
+        <div class="status-detail">Active workflows running</div>
+      </div>
+      <div class="status-card">
+        <div class="status-card-header">
+          <span class="status-card-label">Cloudflare</span>
+          <span class="status-badge online"><span class="status-dot green" style="width:4px;height:4px;animation:none"></span> Active</span>
+        </div>
+        <div class="status-value">12</div>
+        <div class="status-detail">Workers deployed</div>
+      </div>
+      <div class="status-card">
+        <div class="status-card-header">
+          <span class="status-card-label">Docker</span>
+          <span class="status-badge warning"><span class="status-dot amber" style="width:4px;height:4px;animation:none"></span> 1 Alert</span>
+        </div>
+        <div class="status-value">8</div>
+        <div class="status-detail">Containers · MCP Gateway</div>
+      </div>
+      <div class="status-card">
+        <div class="status-card-header">
+          <span class="status-card-label">Edge Functions</span>
+          <span class="status-badge online"><span class="status-dot green" style="width:4px;height:4px;animation:none"></span> Healthy</span>
+        </div>
+        <div class="status-value">16</div>
+        <div class="status-detail">Supabase deployed</div>
+      </div>
+    </div>
+
+    <!-- Audit Trail -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Audit Trail</span>
+        <span class="live-dot">Live</span>
+      </div>
+      <div class="panel-body">
+        <div class="event-row">
+          <span class="event-time">12:34</span>
+          <div class="event-icon deploy">🚀</div>
+          <div class="event-content">
+            <div class="event-title">Edge function deployed</div>
+            <div class="event-detail">empire-health → production</div>
+          </div>
+        </div>
+        <div class="event-row">
+          <span class="event-time">12:31</span>
+          <div class="event-icon workflow">⚡</div>
+          <div class="event-content">
+            <div class="event-title">AutoSEO workflow completed</div>
+            <div class="event-detail">42 titles optimized · 0 errors</div>
+          </div>
+        </div>
+        <div class="event-row">
+          <span class="event-time">12:28</span>
+          <div class="event-icon health">✓</div>
+          <div class="event-content">
+            <div class="event-title">Health check passed</div>
+            <div class="event-detail">All 7 spine layers responding</div>
+          </div>
+        </div>
+        <div class="event-row">
+          <span class="event-time">12:15</span>
+          <div class="event-icon alert">⚠</div>
+          <div class="event-content">
+            <div class="event-title">Docker container restart</div>
+            <div class="event-detail">mcp-gateway memory limit reached · auto-recovered</div>
+          </div>
+        </div>
+        <div class="event-row">
+          <span class="event-time">11:58</span>
+          <div class="event-icon deploy">🚀</div>
+          <div class="event-content">
+            <div class="event-title">Cloudflare Worker updated</div>
+            <div class="event-detail">redirect-engine v2.1.4</div>
+          </div>
+        </div>
+        <div class="event-row">
+          <span class="event-time">11:42</span>
+          <div class="event-icon workflow">⚡</div>
+          <div class="event-content">
+            <div class="event-title">Channable feed sync</div>
+            <div class="event-detail">1,284 products · 3 new listings</div>
+          </div>
+        </div>
+        <div class="event-row">
+          <span class="event-time">11:30</span>
+          <div class="event-icon health">✓</div>
+          <div class="event-content">
+            <div class="event-title">SSL certificates renewed</div>
+            <div class="event-detail">4 domains · valid until 2026-06</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions + Commander -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Quick Actions</span>
+      </div>
+      <div class="actions-grid">
+        <button class="action-btn">
+          <div class="action-icon violet">⚡</div>
+          <div>
+            <div class="action-text">Trigger AutoSEO</div>
+            <div class="action-sub">Run batch product title optimization</div>
+          </div>
+        </button>
+        <button class="action-btn">
+          <div class="action-icon cyan">🔄</div>
+          <div>
+            <div class="action-text">Sync Channable Feed</div>
+            <div class="action-sub">Push latest product data to channels</div>
+          </div>
+        </button>
+        <button class="action-btn">
+          <div class="action-icon emerald">🩺</div>
+          <div>
+            <div class="action-text">Full Health Check</div>
+            <div class="action-sub">Verify all 7 infrastructure layers</div>
+          </div>
+        </button>
+        <button class="action-btn">
+          <div class="action-icon amber">🐳</div>
+          <div>
+            <div class="action-text">Restart MCP Gateway</div>
+            <div class="action-sub">Clear memory and restart containers</div>
+          </div>
+        </button>
+        <button class="action-btn">
+          <div class="action-icon violet">📊</div>
+          <div>
+            <div class="action-text">Generate Report</div>
+            <div class="action-sub">Weekly infrastructure summary</div>
+          </div>
+        </button>
+      </div>
+      <div class="commander-input">
+        <span class="commander-prompt">▸</span>
+        <input type="text" class="commander-field" placeholder="Ask Empire Commander..." />
+        <button class="commander-send">→</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="empire-footer">
+    <span>Empire Dashboard Template v1.0</span>
+    <div class="footer-spine">
+      <span class="spine-item"><span class="spine-dot" style="background:var(--emerald)"></span> DNS</span>
+      <span class="spine-item"><span class="spine-dot" style="background:var(--emerald)"></span> CDN</span>
+      <span class="spine-item"><span class="spine-dot" style="background:var(--emerald)"></span> VPS</span>
+      <span class="spine-item"><span class="spine-dot" style="background:var(--emerald)"></span> Docker</span>
+      <span class="spine-item"><span class="spine-dot" style="background:var(--emerald)"></span> n8n</span>
+      <span class="spine-item"><span class="spine-dot" style="background:var(--amber)"></span> MCP</span>
+      <span class="spine-item"><span class="spine-dot" style="background:var(--emerald)"></span> DB</span>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

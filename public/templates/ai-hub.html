@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>AI Hub — Standalone Template</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #07070B;
+    --bg-card: #0A0A12;
+    --border: #12121E;
+    --border-hover: #1A1A28;
+    --text: #A0A4AA;
+    --text-bright: #E8E8F0;
+    --text-dim: #3A3A4A;
+    --orange: #F97316;
+    --orange-bg: rgba(249,115,22,0.08);
+    --orange-border: rgba(249,115,22,0.25);
+    --violet: #8B5CF6;
+    --violet-bg: rgba(139,92,246,0.08);
+    --violet-border: rgba(139,92,246,0.2);
+    --cyan: #06B6D4;
+    --cyan-bg: rgba(6,182,212,0.08);
+    --cyan-border: rgba(6,182,212,0.2);
+    --emerald: #10B981;
+    --emerald-bg: rgba(16,185,129,0.08);
+    --emerald-border: rgba(16,185,129,0.2);
+    --amber: #F59E0B;
+    --amber-bg: rgba(245,158,11,0.08);
+    --amber-border: rgba(245,158,11,0.2);
+    --pink: #EC4899;
+    --pink-bg: rgba(236,72,153,0.08);
+    --pink-border: rgba(236,72,153,0.2);
+    --sky: #0EA5E9;
+    --sky-bg: rgba(14,165,233,0.08);
+    --sky-border: rgba(14,165,233,0.2);
+    --font: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .hub-layout {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  @media (max-width: 640px) { .hub-layout { padding: 28px 16px; } }
+
+  /* ── Hero ─────────────────────────────────────── */
+  .hero {
+    margin-bottom: 32px;
+  }
+
+  .hero-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .hero-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--orange-bg);
+    border: 1px solid var(--orange-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .hero-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-bright);
+    letter-spacing: -0.8px;
+    font-family: var(--font-mono);
+  }
+
+  .hero-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    max-width: 500px;
+  }
+
+  /* ── Tabs ─────────────────────────────────────── */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .tab {
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    font-family: var(--font);
+    letter-spacing: 0.3px;
+  }
+
+  .tab:hover { border-color: var(--orange-border); color: var(--text); }
+  .tab.active { border-color: var(--orange); background: var(--orange-bg); color: var(--orange); }
+
+  /* ── Cards Grid ──────────────────────────────── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  @media (max-width: 640px) { .cards-grid { grid-template-columns: 1fr; } }
+
+  .ai-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .ai-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .ai-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .ai-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+  }
+
+  .ai-status {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--font-mono);
+  }
+
+  .ai-status.active { background: var(--emerald-bg); color: var(--emerald); }
+  .ai-status.beta { background: var(--amber-bg); color: var(--amber); }
+  .ai-status.info { background: var(--sky-bg); color: var(--sky); }
+
+  .ai-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+  }
+
+  .ai-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .ai-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .ai-category {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+  }
+
+  .ai-action {
+    font-size: 11px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .ai-card:hover .ai-action { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="hub-layout">
+  <header class="hero">
+    <div class="hero-row">
+      <div class="hero-icon">🤖</div>
+      <h1 class="hero-title">AI Interfaces</h1>
+    </div>
+    <p class="hero-sub">Central hub for all AI agents, automation interfaces, and intelligence tools powering the system.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-filter="all">All</button>
+    <button class="tab" data-filter="agents">Agents</button>
+    <button class="tab" data-filter="interfaces">Interfaces</button>
+    <button class="tab" data-filter="tools">Tools</button>
+  </div>
+
+  <div class="cards-grid">
+    <div class="ai-card" data-cat="interfaces">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:var(--orange-bg);border:1px solid var(--orange-border)">💻</div>
+        <span class="ai-status active">Active</span>
+      </div>
+      <div class="ai-name">Command Center Terminal</div>
+      <div class="ai-desc">Full terminal at /hansai — slash commands, intent pipeline, streaming AI responses.</div>
+      <div class="ai-footer">
+        <span class="ai-category">Interfaces</span>
+        <span class="ai-action" style="color:var(--orange)">Open Terminal →</span>
+      </div>
+    </div>
+
+    <div class="ai-card" data-cat="interfaces">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:var(--orange-bg);border:1px solid var(--orange-border)">💬</div>
+        <span class="ai-status active">Active</span>
+      </div>
+      <div class="ai-name">Command Center Popup</div>
+      <div class="ai-desc">Overlay version — same 10 categories, compact mode, global shortcut access.</div>
+      <div class="ai-footer">
+        <span class="ai-category">Interfaces</span>
+        <span class="ai-action" style="color:var(--orange)">Open Popup →</span>
+      </div>
+    </div>
+
+    <div class="ai-card" data-cat="agents">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:var(--violet-bg);border:1px solid var(--violet-border)">⚡</div>
+        <span class="ai-status active">Active</span>
+      </div>
+      <div class="ai-name">Empire Commander</div>
+      <div class="ai-desc">Infrastructure ops AI — n8n, Cloudflare, VPS, Docker management via Claude.</div>
+      <div class="ai-footer">
+        <span class="ai-category">Agents</span>
+        <span class="ai-action" style="color:var(--violet)">Launch Agent →</span>
+      </div>
+    </div>
+
+    <div class="ai-card" data-cat="agents">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:var(--cyan-bg);border:1px solid var(--cyan-border)">🔧</div>
+        <span class="ai-status active">Active</span>
+      </div>
+      <div class="ai-name">n8n Agent</div>
+      <div class="ai-desc">Workflow engineer — build, fix, and troubleshoot n8n workflows with AI assistance.</div>
+      <div class="ai-footer">
+        <span class="ai-category">Agents</span>
+        <span class="ai-action" style="color:var(--cyan)">Launch Agent →</span>
+      </div>
+    </div>
+
+    <div class="ai-card" data-cat="tools">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:var(--emerald-bg);border:1px solid var(--emerald-border)">🧭</div>
+        <span class="ai-status info">Info</span>
+      </div>
+      <div class="ai-name">Intent Router</div>
+      <div class="ai-desc">Classify prompts into workflow actions or AI fallback using the intent pipeline.</div>
+      <div class="ai-footer">
+        <span class="ai-category">Tools</span>
+        <span class="ai-action" style="color:var(--emerald)">Info Only</span>
+      </div>
+    </div>
+
+    <div class="ai-card" data-cat="tools">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:var(--amber-bg);border:1px solid var(--amber-border)">🔍</div>
+        <span class="ai-status active">Active</span>
+      </div>
+      <div class="ai-name">AutoSEO Brain</div>
+      <div class="ai-desc">Batch SEO title optimization via n8n webhook — process product titles at scale.</div>
+      <div class="ai-footer">
+        <span class="ai-category">Tools</span>
+        <span class="ai-action" style="color:var(--amber)">Via Webhook</span>
+      </div>
+    </div>
+
+    <div class="ai-card" data-cat="tools">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:var(--pink-bg);border:1px solid var(--pink-border)">📝</div>
+        <span class="ai-status beta">Beta</span>
+      </div>
+      <div class="ai-name">AI Content Suggest</div>
+      <div class="ai-desc">Generate copy for pages, products, and descriptions using Gemini models.</div>
+      <div class="ai-footer">
+        <span class="ai-category">Tools</span>
+        <span class="ai-action" style="color:var(--pink)">In Portal</span>
+      </div>
+    </div>
+
+    <div class="ai-card" data-cat="tools">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:var(--sky-bg);border:1px solid var(--sky-border)">✨</div>
+        <span class="ai-status active">Active</span>
+      </div>
+      <div class="ai-name">Keyword Research</div>
+      <div class="ai-desc">Gemini-powered keyword analysis — find opportunities and search volumes.</div>
+      <div class="ai-footer">
+        <span class="ai-category">Tools</span>
+        <span class="ai-action" style="color:var(--sky)">Open Tool →</span>
+      </div>
+    </div>
+
+    <div class="ai-card" data-cat="interfaces">
+      <div class="ai-card-header">
+        <div class="ai-icon" style="background:var(--emerald-bg);border:1px solid var(--emerald-border)">📄</div>
+        <span class="ai-status active">Active</span>
+      </div>
+      <div class="ai-name">Standalone Template</div>
+      <div class="ai-desc">Self-contained HTML export of the Command Center — no dependencies required.</div>
+      <div class="ai-footer">
+        <span class="ai-category">Interfaces</span>
+        <span class="ai-action" style="color:var(--emerald)">View Template →</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.dataset.filter;
+      document.querySelectorAll('.ai-card').forEach(card => {
+        card.style.display = (filter === 'all' || card.dataset.cat === filter) ? '' : 'none';
+      });
+    });
+  });
+</script>
+</body>
+</html>
