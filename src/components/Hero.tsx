@@ -32,7 +32,7 @@ const Hero = () => {
     <main>
       {/* Hero Section */}
       <section
-        className="section-container flex min-h-[85vh] flex-col justify-center pt-28"
+        className="section-container flex min-h-[85vh] flex-col justify-center pt-24"
         aria-label="Introduction"
       >
         <motion.div
@@ -41,7 +41,7 @@ const Hero = () => {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-3xl"
         >
-          <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+          <p className="mb-4 text-[13px] font-normal uppercase tracking-[0.15em] text-primary">
             {getValue("hero_subtitle", t.subtitle)}
           </p>
           <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
@@ -74,7 +74,7 @@ const Hero = () => {
           <div className="flex flex-wrap gap-4" role="group" aria-label={isNl ? "Actieknoppen" : "Call to action"}>
             <Link
               to="/work"
-              className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
+              className="group inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-3 text-sm font-semibold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
               aria-label={getValue("hero_cta_work", t.ctaWork)}
             >
               {getValue("hero_cta_work", t.ctaWork)}
@@ -85,7 +85,7 @@ const Hero = () => {
             </Link>
             <Link
               to="/about#contact"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-sm font-bold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
+              className="inline-flex items-center gap-2 rounded-full border border-border px-7 py-3 text-sm font-medium text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
               aria-label={getValue("hero_cta_consult", t.ctaConsult)}
             >
               {getValue("hero_cta_consult", t.ctaConsult)}

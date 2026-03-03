@@ -87,12 +87,14 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
+    letter-spacing: 0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    letter-spacing: -0.015em;
   }
 }
 
@@ -112,7 +114,7 @@
     @apply text-foreground;
   }
   .section-container {
-    @apply mx-auto max-w-6xl px-6 py-24 md:py-32;
+    @apply mx-auto max-w-6xl px-6 py-20 md:py-28;
   }
   .card-hover {
     @apply transition-all duration-500 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-foreground/[0.04] hover:border-primary/20;

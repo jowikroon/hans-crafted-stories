@@ -85,7 +85,7 @@ const About = () => {
   });
 
   return (
-    <section className="relative section-container pt-28 pb-20 overflow-hidden">
+    <section className="relative section-container pt-24 pb-20 overflow-hidden">
       {/* Subtle Stargate-inspired background rings */}
       {isVisible("stargate_decorations") && (
         <>
