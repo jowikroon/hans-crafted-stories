@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Loader2, Terminal, X, Crown, Wrench, Cpu, HeartPulse } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ContextFilterPills from "@/components/ai/ContextFilterPills";
 import CommandSuggestionList from "@/components/ai/CommandSuggestionList";
 import { empireCategories, buildContextPrefix } from "@/components/ai/contextCategories";
+import AutoSuggestInput from "@/components/command-center/AutoSuggestInput";
+import { empireCommands } from "@/components/ai/commandSuggestions";
 
 const SYSTEM_PROMPT = `You are the Sovereign AI Empire Commander — an expert system operator for Hans van Leeuwen's AI infrastructure.
 
@@ -49,6 +51,17 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
   const [showCommands, setShowCommands] = useState(false); // Added state for command list visibility
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ── Auto-suggest pool ──────────────────────────────────────
+  const empireSuggestions = useMemo(() => {
+    const pool = SUGGESTIONS.map((s) => s.text);
+    if (selectedSub && empireCommands[selectedSub]) {
+      pool.push(...empireCommands[selectedSub].map((c) => c.text));
+    }
+    const recent = messages.filter((m) => m.role === "user").slice(-10).map((m) => m.content);
+    pool.push(...recent);
+    return [...new Set(pool)];
+  }, [selectedSub, messages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -236,11 +249,14 @@ const EmpireOverlay = ({ open, onClose }: EmpireOverlayProps) => {
             <div className="border-t border-violet-500/10 px-4 py-3">
               <div className="flex items-center gap-2 rounded-lg border border-violet-500/15 bg-black/30 px-3 py-2">
                 <span className="text-[10px] text-violet-500/30 font-mono">▸</span>
-                <input
+                <AutoSuggestInput
                   ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  onAcceptSuggestion={(full) => setInput(full)}
+                  suggestions={empireSuggestions}
+                  ghostColor="rgb(167,139,250)"
                   placeholder="Ask Empire Commander..."
                   className="flex-1 bg-transparent text-xs text-violet-200 placeholder:text-violet-500/25 outline-none"
                 />
