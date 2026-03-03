@@ -96,6 +96,7 @@ const Portal = () => {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setCommandCenterOpen(false); return; }
       if (!(e.metaKey || e.ctrlKey)) return;
       if (e.key === "e" || e.key === "j") { e.preventDefault(); setCommandCenterOpen((v) => !v); }
       else if (e.key === "k") { e.preventDefault(); setCommandOpen((v) => !v); }
@@ -236,6 +237,7 @@ const Portal = () => {
             {isVisible("command_center_button") && (
               <button
                 onClick={() => setCommandCenterOpen((v) => !v)}
+                style={{ position: 'relative', zIndex: 40 }}
                 className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2 ${
                   commandCenterOpen
                     ? "border-2 border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_16px_hsl(25_95%_53%/0.35)]"
@@ -337,8 +339,8 @@ const Portal = () => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="fixed inset-0 z-30 bg-background/60 backdrop-blur-md"
-                  style={{ pointerEvents: "none" }}
+                  className="fixed inset-0 z-30 cursor-pointer bg-background/60 backdrop-blur-md"
+                  onClick={() => setCommandCenterOpen(false)}
                 />
                 <motion.div
                   key="command-center"
@@ -360,6 +362,7 @@ const Portal = () => {
                     boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" },
                   }}
                   className="relative z-40 mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card flex flex-col"
+                  onClick={e => e.stopPropagation()}
                 >
                   <div className="flex shrink-0 items-center justify-between border-b border-orange-500/20 px-3 py-2 bg-card/80">
                     <span className="text-[11px] font-medium text-foreground">Command Center</span>
