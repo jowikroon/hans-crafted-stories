@@ -22,7 +22,7 @@ interface AppShellProps {
 
 const AppShell = ({ initialLang }: AppShellProps) => {
   const location = useLocation();
-  const isDarkPage = location.pathname === "/hansai" || location.pathname === "/empire" || location.pathname === "/ai";
+  const isDarkPage = location.pathname === "/hansai" || location.pathname === "/empire" || location.pathname === "/ai" || location.pathname === "/templates";
 
   return (
     <AuthProvider>
