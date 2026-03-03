@@ -1,56 +1,75 @@
 
 
-# Add All AI Models to Command Center Model Picker
+# Add VPS2 Ollama Models to Command Center
 
-## What Changes
+Add self-hosted Ollama models running on VPS2 (187.124.2.66) as a new "LOCAL / VPS" group in the model picker, and route requests to the Ollama API in the edge function.
 
-The model picker currently shows 5 models. Lovable AI supports 12 models total. This adds all missing models to the dropdown, organized into clear groups (Google Gemini and OpenAI) so users can pick any available model.
+---
 
-## Models to Add
+## 1. Add Ollama models to `commandCenterData.ts`
 
-Currently missing from `AI_MODELS`:
-- `google/gemini-3-pro-preview` (Pro, next-gen)
-- `google/gemini-2.5-flash-lite` (cheapest/fastest)
-- `openai/gpt-5-nano` (fast/cheap)
-- `openai/gpt-5.2` (latest reasoning)
-
-Also adding image generation models as a separate visual group:
-- `google/gemini-2.5-flash-image` (image gen)
-- `google/gemini-3-pro-image-preview` (next-gen image gen)
-
-## Updated `AI_MODELS` Array
+Add a new group `"ollama"` to the `AIModelGroup` type and add models to `AI_MODELS`:
 
 ```text
-Google Gemini:
-  Gemini 3 Pro         - "Next-Gen"
-  Gemini 3 Flash       - "Fast"
-  Gemini 2.5 Pro       - "Powerful"
-  Gemini 2.5 Flash     - "Balanced"
-  Gemini 2.5 Flash Lite - "Lite"
+AIModelGroup = "gemini" | "openai" | "image" | "ollama"
 
-OpenAI:
-  GPT-5.2              - "Latest"
-  GPT-5                - "Premium"
-  GPT-5 Mini           - "Smart"
-  GPT-5 Nano           - "Speed"
-
-Image Generation:
-  Gemini 3 Pro Image   - "Image"
-  Gemini 2.5 Flash Image - "Image"
+New entries:
+  Qwen 2.5 7B     - tag: "7B"    - group: "ollama"
+  Llama 3.2 3B    - tag: "3B"    - group: "ollama"
 ```
 
-## UI Changes in `CommandCenter.tsx`
+## 2. Update model picker UI in `CommandCenter.tsx`
 
-The dropdown gets group headers to separate providers:
+Add `"ollama"` to the group iteration with label **"LOCAL / VPS"**. These models get a server icon or tag instead of the camera/badge pattern used by other groups. The dropdown already handles groups via the `(["gemini", "openai", "image"] as const).map(...)` block -- just extend it to include `"ollama"`.
 
-- A thin `text-[8px] uppercase tracking-widest text-muted-foreground/40` label before each group: "GOOGLE GEMINI", "OPENAI", "IMAGE GEN"
-- Dropdown width increases slightly from `w-52` to `w-56` to accommodate longer names
-- Image models show a small camera icon instead of the tag badge to differentiate them visually
+## 3. Route Ollama models in `hansai-chat/index.ts`
 
-## Files to Modify
+Add a third routing branch before the Lovable AI gateway fallback:
+
+- If `selectedModel` starts with `"ollama/"`, extract the model name (e.g. `qwen2.5:7b`) and call the Ollama API directly at `http://187.124.2.66:11434/v1/chat/completions` (Ollama's OpenAI-compatible endpoint).
+- This endpoint returns SSE in the same OpenAI format, so the existing streaming response logic works unchanged.
+- No API key needed -- Ollama runs open on the VPS, firewalled to VPS1 only.
+
+The routing order becomes:
+1. Model starts with `ollama/` -- call VPS2 Ollama directly
+2. `GEMINI_API_KEY` is set and model is Google -- call Gemini API
+3. Fallback -- call Lovable AI Gateway
+
+## 4. Store the Ollama base URL as a secret
+
+Add `OLLAMA_BASE_URL` as a Supabase secret (`http://187.124.2.66:11434`) so the edge function doesn't hardcode the IP. This also makes it easy to change if the VPS moves.
+
+---
+
+## Files to modify
 
 | File | Change |
 |------|--------|
-| `src/components/command-center/commandCenterData.ts` | Expand `AI_MODELS` array with all 11 models, add a `group` field to each entry |
-| `src/components/command-center/CommandCenter.tsx` | Update model picker dropdown to render group headers and handle the expanded list |
+| `src/components/command-center/commandCenterData.ts` | Add `"ollama"` to `AIModelGroup`, add 2 Ollama model entries |
+| `src/components/command-center/CommandCenter.tsx` | Add `"ollama"` to group iteration with "LOCAL / VPS" header |
+| `supabase/functions/hansai-chat/index.ts` | Add Ollama routing branch using OpenAI-compatible `/v1/chat/completions` endpoint |
 
+## Technical details
+
+**Ollama model IDs in the data:**
+- `ollama/qwen2.5:7b` -- maps to Ollama model name `qwen2.5:7b`
+- `ollama/llama3.2:3b` -- maps to Ollama model name `llama3.2:3b`
+
+**Edge function Ollama call:**
+```typescript
+// Strip "ollama/" prefix to get the actual model name
+const ollamaModel = selectedModel.replace("ollama/", "");
+const ollamaBase = Deno.env.get("OLLAMA_BASE_URL") || "http://187.124.2.66:11434";
+
+const ollamaRes = await fetch(`${ollamaBase}/v1/chat/completions`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    model: ollamaModel,
+    messages: [{ role: "system", content: systemContent }, ...messages],
+    stream: true,
+  }),
+});
+```
+
+Since Ollama's `/v1/chat/completions` returns standard OpenAI SSE format, the response can be passed through directly -- same as the existing Lovable AI gateway path.
