@@ -1,56 +1,57 @@
 
 
-## Navbar and Typography Refresh -- Match Reference Aesthetic
+## Add 3 More Wiki Examples + AI "Generate More" Button
 
 ### What We're Doing
-Redesigning the navbar to match the reference image's clean, editorial style and applying the same refined font approach across all pages. The reference shows a **flat, full-width navbar** (not a floating pill), with generous spacing, serif logo, well-spaced sans-serif nav links, and a single rounded CTA pill on the right.
+Expanding the WikiExamples component from 4 static examples to 7, all showing the "2nd filter layer" flow (Category then Sub-category then prompt). Adding a "Generate 5 More" button at the bottom that calls the existing `hansai-chat` edge function to produce 5 AI-generated, context-relevant examples.
 
-### Key Changes
+### Changes
 
-**1. Navbar Redesign (Navbar.tsx)**
-The current floating rounded pill navbar will be replaced with a flat, full-width bar that matches the reference:
-- Full-width with a subtle bottom border (no floating pill, no rounded corners on the bar itself)
-- Logo on the left using the existing Playfair Display serif font
-- Center-aligned nav links with wider letter-spacing (`tracking-widest`) and lighter weight (`font-normal`)
-- Right side: theme toggle icon + Portal/Login as a rounded pill CTA (like "Join Now" in the reference)
-- Remove the search icon and Command Center button from the navbar (keep `Cmd+K` keyboard shortcut working)
-- Simpler, cleaner height (`h-16`) with more horizontal padding
-- Remove scroll-aware shadow behavior -- the reference navbar is static and clean
-- Remove the emerald/dark variant color logic from nav links -- use simple foreground/muted-foreground
+**1. Add 3 new static examples to WikiExamples.tsx**
+New examples that demonstrate the 2nd-layer filter flow (selecting a subcategory before typing):
 
-**2. Font and Typography Consistency (index.css)**
-- Keep the existing Playfair Display + Inter pairing (it already matches the reference's serif heading / sans body approach)
-- Increase base letter-spacing on body text slightly for a more editorial feel
-- Ensure heading font weights are `font-medium` rather than `font-bold` for that softer, premium look
-- Soften section label text: reduce uppercase tracking from `0.2em` to `0.15em`
+- **"Optimize your Channable product feed"** (pink) -- Feeds > Channable > prompt
+- **"Audit your Google Ads campaigns"** (amber) -- Campaigns > Google Ads > prompt  
+- **"Track keyword position changes"** (sky) -- Analytics > Search Console > prompt
 
-**3. Hero Section Adjustments (Hero.tsx)**
-- Adjust top padding to work with the new flat navbar height
-- Soften CTA button styles: reduce `font-bold` to `font-semibold`, slightly larger padding
+Each follows the same card format: icon, color, goal, 3 steps (with the sub-category selection as step 2), and an outcome block.
 
-**4. Footer Alignment (Footer.tsx)**
-- Match the navbar's full-width style with consistent horizontal padding
-- Keep the current max-width for content alignment
+**2. Convert WikiExamples to a stateful component**
+- Add `useState` for `extraExamples` (array of AI-generated examples) and `loading` state
+- Render the 7 static examples in the grid, then any AI-generated extras below them
 
-**5. About Page (About.tsx)**
-- Adjust `pt-28` to match new navbar clearance
+**3. Add "Generate 5 More" button**
+- Placed after the grid of example cards
+- Styled as an outline button with a Sparkles icon
+- On click: calls the `hansai-chat` edge function with a prompt asking for 5 more examples in the same JSON structure (title, goal, steps, result)
+- Shows a loading spinner while generating
+- Appends the 5 new examples to the grid with a subtle fade-in animation
+- Uses `supabase.functions.invoke('hansai-chat', ...)` -- non-streaming, since we need structured JSON back
+
+**4. AI prompt design**
+The prompt sent to `hansai-chat` will include:
+- The 10 command center categories and their subcategories as context
+- Instructions to return exactly 5 examples in a specific JSON format
+- Each example must reference a specific Category > Sub-category > prompt flow
+- The edge function already uses the Lovable AI gateway with `LOVABLE_API_KEY`
 
 ### Technical Details
 
 **Files to modify:**
-- `src/components/Navbar.tsx` -- Full redesign: flat bar, wider spacing, cleaner right cluster, remove floating pill wrapper
-- `src/index.css` -- Minor typography tweaks: body letter-spacing, softer heading weights
-- `src/components/Hero.tsx` -- Adjust `pt-28` for new navbar height
-- `src/pages/About.tsx` -- Adjust section top padding
-- `src/components/Footer.tsx` -- Align padding with navbar
+- `src/components/wiki/WikiExamples.tsx` -- Add 3 examples, convert to stateful component, add generate button + AI call
 
-**No new dependencies.** All changes use existing Tailwind classes and the current Playfair Display + Inter font stack.
+**Files to read (already done):**
+- `src/components/command-center/commandCenterData.ts` -- category/action data for AI context
+- `src/components/ai/contextCategories.ts` -- subcategory structure for AI context
+- `supabase/functions/hansai-chat/index.ts` -- existing edge function (already uses Lovable AI)
 
-### What Stays the Same
-- `Cmd+K` search overlay functionality (just removed the icon from navbar)
-- Mobile hamburger menu (restyled to match flat aesthetic)
-- Language switcher (stays in navbar)
-- Theme toggle (stays, repositioned)
-- All page content and routing
-- Portal/Login pill button concept (restyled to match reference "Join Now" shape)
+**No new dependencies needed.** Uses existing supabase client and hansai-chat edge function.
+
+**Color assignments for new cards:**
+- pink, amber, sky (extending the existing emerald/violet/orange/cyan palette)
+
+**Error handling:**
+- If AI generation fails, show a toast error via sonner
+- Button becomes disabled while loading
+- Generated examples get a subtle `motion.div` fade-in
 
