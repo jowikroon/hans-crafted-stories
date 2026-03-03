@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Terminal, Layout, ExternalLink } from "lucide-react";
+import { Terminal, Layout, ExternalLink, Crown, Wrench, Bot } from "lucide-react";
 
 const templates = [
   {
@@ -13,6 +12,33 @@ const templates = [
     href: "/templates/command-center.html",
     tags: ["HTML", "Standalone", "AI"],
     accent: "text-orange-400 border-orange-500/30 bg-orange-500/5",
+  },
+  {
+    id: "empire-dashboard",
+    name: "Empire Dashboard",
+    description: "Infrastructure monitoring template — status grid, audit trail, quick actions, and 7-layer spine indicator.",
+    icon: <Crown size={20} />,
+    href: "/templates/empire-dashboard.html",
+    tags: ["HTML", "Standalone", "Infra"],
+    accent: "text-violet-400 border-violet-500/30 bg-violet-500/5",
+  },
+  {
+    id: "portal-tools",
+    name: "Portal Tools Panel",
+    description: "Tool catalog with category filters, gradient glass cards, feature badges — 12 tools across 5 categories.",
+    icon: <Wrench size={20} />,
+    href: "/templates/portal-tools.html",
+    tags: ["HTML", "Standalone", "Tools"],
+    accent: "text-emerald-400 border-emerald-500/30 bg-emerald-500/5",
+  },
+  {
+    id: "ai-hub",
+    name: "AI Hub",
+    description: "Central hub for AI agents and interfaces — category tabs, status badges, and launch actions for 9 AI systems.",
+    icon: <Bot size={20} />,
+    href: "/templates/ai-hub.html",
+    tags: ["HTML", "Standalone", "AI"],
+    accent: "text-amber-400 border-amber-500/30 bg-amber-500/5",
   },
 ];
 
@@ -48,13 +74,13 @@ const Templates = () => {
               rel="noopener noreferrer"
               className="block group"
             >
-              <Card className="relative overflow-hidden border bg-[hsl(220,20%,8%)] hover:bg-[hsl(220,20%,10%)] transition-all duration-200 border-orange-500/30">
+              <Card className={`relative overflow-hidden border bg-[hsl(220,20%,8%)] hover:bg-[hsl(220,20%,10%)] transition-all duration-200 ${tpl.accent.split(" ").filter(c => c.startsWith("border-"))[0]}`}>
                 <div className="p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div className={`p-2 rounded-lg border ${tpl.accent}`}>
                       {tpl.icon}
                     </div>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5 flex-wrap justify-end">
                       {tpl.tags.map((tag) => (
                         <Badge
                           key={tag}
@@ -72,7 +98,7 @@ const Templates = () => {
                   <p className="text-xs text-emerald-400/50 leading-relaxed mb-4">
                     {tpl.description}
                   </p>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-orange-400 group-hover:underline">
+                  <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${tpl.accent.split(" ").filter(c => c.startsWith("text-"))[0]} group-hover:underline`}>
                     Open Template <ExternalLink size={10} />
                   </span>
                 </div>
