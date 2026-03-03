@@ -90,8 +90,8 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
           {/* Center nav links */}
           <div className="hidden md:flex items-center gap-1">
             {links.map((l) => (
+              <motion.div key={l.to} whileTap={{ scale: 0.95 }} className="inline-flex">
               <Link
-                key={l.to}
                 to={l.to}
                 className={`group relative px-4 py-2 text-[13px] tracking-[0.08em] uppercase rounded-full transition-all duration-300 ease-out ${
                   isActive(l.to)
@@ -108,6 +108,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   />
                 )}
               </Link>
+              </motion.div>
             ))}
           </div>
 
