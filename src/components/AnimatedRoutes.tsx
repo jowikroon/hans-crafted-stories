@@ -10,6 +10,7 @@ import Portal from "@/pages/Portal";
 import Wiki from "@/pages/Wiki";
 import Empire from "@/pages/Empire";
 import HansAI from "@/pages/HansAI";
+import AIHub from "@/pages/AIHub";
 
 import Privacy from "@/pages/Privacy";
 import AuthCallback from "@/pages/AuthCallback";
@@ -36,6 +37,7 @@ const AnimatedRoutes = () => {
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
         <Route path="/empire" element={<PageTransition><Empire /></PageTransition>} />
         <Route path="/hansai" element={<HansAI />} />
+        <Route path="/ai" element={<AIHub />} />
         
         <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
         <Route path="/auth/callback" element={<AuthCallback />} />
