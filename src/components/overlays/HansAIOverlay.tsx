@@ -20,6 +20,9 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
   const previousFocus = useRef<HTMLElement | null>(null);
   const previousScroll = useRef<number>(0);
   const [isAutoFull, setIsAutoFull] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => { setIsMounted(true); }, []);
 
   // ── Body scroll lock + save/restore scroll & focus ──────────
   useEffect(() => {
@@ -195,7 +198,8 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
     </AnimatePresence>
   );
 
-  // Portal to document.body — escapes all layout containers
+  // Portal to document.body — escapes all layout containers; guard for SSR
+  if (!isMounted) return null;
   return createPortal(overlay, document.body);
 };
 
