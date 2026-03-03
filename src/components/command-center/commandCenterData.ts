@@ -41,11 +41,14 @@ export interface CategoryActions {
   history: HistoryItem[];
 }
 
+export type DeliveryAction = "show_chat" | "csv_download" | "send_n8n" | "send_slack" | "show_plan";
+
 export interface DeliveryOption {
   icon: string;
   label: string;
   note: string;
   best?: boolean;
+  action: DeliveryAction;
 }
 
 // ═══ CATEGORIES ═══════════════════════════════════════════
@@ -249,34 +252,32 @@ export const ACTIONS: Record<string, CategoryActions> = {
 // ═══ DELIVERY OPTIONS ═══════════════════════════════════════
 export const DELIVERY_OPTIONS: Record<string, DeliveryOption[]> = {
   data: [
-    { icon: "📗", label: "Google Sheet", note: "Live-updating, shareable, filterable", best: true },
-    { icon: "📥", label: "CSV Download", note: "Import into any system" },
-    { icon: "📊", label: "Monday.com Board", note: "Visual cards with status tracking" },
+    { icon: "💬", label: "Show in Chat", note: "Formatted results in the message area", best: true, action: "show_chat" },
+    { icon: "📥", label: "CSV Download", note: "Download as spreadsheet file", action: "csv_download" },
+    { icon: "🔄", label: "Send to n8n", note: "Forward to n8n for further processing", action: "send_n8n" },
   ],
   alert: [
-    { icon: "⚡", label: "Slack / Push", note: "Instant when triggered", best: true },
-    { icon: "📧", label: "Email Alert", note: "Detailed with context" },
-    { icon: "📋", label: "Auto-create Task", note: "Linear or Monday.com issue" },
+    { icon: "💬", label: "Show in Chat", note: "Display alert setup confirmation", action: "show_chat" },
+    { icon: "💬", label: "Send to Slack", note: "Post alert via Slack connector", best: true, action: "send_slack" },
+    { icon: "🔄", label: "Create n8n Monitor", note: "Trigger n8n to schedule monitoring", action: "send_n8n" },
   ],
   report: [
-    { icon: "📄", label: "PDF Report", note: "Professional, shareable document", best: true },
-    { icon: "📧", label: "Email to Me", note: "HTML email — forward to anyone" },
-    { icon: "📊", label: "Live Dashboard", note: "Monday.com or Google Sheet widget" },
+    { icon: "💬", label: "Show in Chat", note: "Full report with tables & charts", best: true, action: "show_chat" },
+    { icon: "📥", label: "CSV Download", note: "Export tabular data as CSV", action: "csv_download" },
+    { icon: "📧", label: "Email via n8n", note: "n8n sends the report by email", action: "send_n8n" },
   ],
   content: [
-    { icon: "📗", label: "Export Spreadsheet", note: "Channable + Magento ready columns", best: true },
-    { icon: "📦", label: "Push to Store", note: "Direct API update via Magento" },
-    { icon: "📝", label: "Preview First", note: "Review here before exporting" },
+    { icon: "💬", label: "Show in Chat", note: "Preview & edit content inline", best: true, action: "show_chat" },
+    { icon: "📥", label: "CSV Download", note: "Export as spreadsheet-ready CSV", action: "csv_download" },
+    { icon: "🔄", label: "Send to n8n", note: "Push to n8n for Channable/store integration", action: "send_n8n" },
   ],
   action: [
-    { icon: "✅", label: "Execute Now", note: "Run it immediately", best: true },
-    { icon: "📋", label: "Add as Task", note: "Create follow-up on Monday.com" },
-    { icon: "📧", label: "Email Instructions", note: "Send steps to a team member" },
+    { icon: "🔄", label: "Execute via n8n", note: "Trigger the relevant n8n webhook now", best: true, action: "send_n8n" },
+    { icon: "📋", label: "Show Plan", note: "AI explains what will happen first", action: "show_plan" },
   ],
   comms: [
-    { icon: "📧", label: "Save as Gmail Draft", note: "Review and send from inbox", best: true },
-    { icon: "📝", label: "Show Preview", note: "Edit here before saving" },
-    { icon: "📋", label: "Draft + Follow-up Task", note: "Save draft and track it" },
+    { icon: "💬", label: "Show Draft", note: "Render email/message in chat for copy-paste", best: true, action: "show_chat" },
+    { icon: "📧", label: "Send via n8n", note: "Trigger n8n Gmail workflow to create draft", action: "send_n8n" },
   ],
 };
 
