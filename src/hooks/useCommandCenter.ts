@@ -131,6 +131,14 @@ export function useCommandCenter(mode: CommandCenterMode) {
   const [pickedAction, setPickedAction] = useState<(HeroAction | CompactAction) | null>(null);
   const [phase, setPhase] = useState<"browse" | "delivery" | "exec" | "done">("browse");
 
+  // ── Selected sub-item for category sub-menu ─────────────────
+  const [selectedSubItem, setSelectedSubItem] = useState<string | null>(null);
+
+  // Reset sub-item when category changes
+  useEffect(() => {
+    setSelectedSubItem(null);
+  }, [activeCat]);
+
   // ── AI model ────────────────────────────────────────────────
   const [selectedModel, setSelectedModel] = useState(getStoredModel);
   useEffect(() => { try { localStorage.setItem(MODEL_STORAGE_KEY, selectedModel); } catch {} }, [selectedModel]);
@@ -629,6 +637,7 @@ export function useCommandCenter(mode: CommandCenterMode) {
     pendingClarification, setPendingClarification,
     selectedCategory, setSelectedCategory, selectedSub, setSelectedSub,
     autoFullMode, pipelineStartTime,
+    selectedSubItem, setSelectedSubItem,
     // Refs
     scrollRef, inputRef,
     // Auth

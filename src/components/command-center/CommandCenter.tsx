@@ -2,7 +2,7 @@
  * Unified Command Center — 1 Component, 3 Modes
  * popup | inline | terminal
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Loader2, CheckCircle2, Circle, Bot, ChevronDown, History,
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCommandCenter, type CommandCenterMode, type PipelineStage } from "@/hooks/useCommandCenter";
 import {
-  CATEGORIES, ACTIONS, DELIVERY_OPTIONS, AI_MODELS,
+  CATEGORIES, ACTIONS, DELIVERY_OPTIONS, AI_MODELS, CATEGORY_SUBS,
 } from "@/components/command-center/commandCenterData";
 import ContextFilterPills from "@/components/ai/ContextFilterPills";
 import { unifiedCategories } from "@/components/ai/contextCategories";
@@ -269,6 +269,65 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
           );
         })}
       </nav>
+
+      {/* Sub-menu pills + prompt chips per category */}
+      {cc.activeCat && CATEGORY_SUBS[cc.activeCat] && cc.phase === "browse" && (() => {
+        const subs = CATEGORY_SUBS[cc.activeCat!];
+        const catColor = isAutoFull ? neoGreen.primary : CATEGORIES[cc.activeCat!]?.color || "#ff6600";
+        const activeSub = cc.selectedSubItem ? subs.find(s => s.id === cc.selectedSubItem) : null;
+        const visiblePrompts = activeSub
+          ? activeSub.prompts
+          : subs.flatMap(s => s.prompts).slice(0, 6);
+
+        return (
+          <div
+            className={`px-4 py-1.5 ${isTerminal ? "" : "border-b border-border bg-secondary/10"}`}
+            style={isTerminal ? { background: isAutoFull ? "#060A06" : "#08080E", borderBottom: `1px solid ${isAutoFull ? neoGreen.border : "#12121E"}` } : undefined}
+          >
+            {/* Sub-item pills */}
+            <div className="flex gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+              {subs.map(sub => {
+                const isActive = cc.selectedSubItem === sub.id;
+                return (
+                  <button
+                    key={sub.id}
+                    onClick={() => cc.setSelectedSubItem(isActive ? null : sub.id)}
+                    className="whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-medium transition-all"
+                    style={{
+                      background: isActive ? `${catColor}20` : "transparent",
+                      color: isActive ? catColor : isTerminal ? (isAutoFull ? "rgba(0,255,65,0.4)" : "#555") : undefined,
+                      border: `1px solid ${isActive ? `${catColor}50` : isTerminal ? (isAutoFull ? "rgba(0,255,65,0.15)" : "#1A1A28") : "transparent"}`,
+                    }}
+                    onMouseEnter={(e) => { if (!isActive) (e.target as HTMLElement).style.color = catColor; }}
+                    onMouseLeave={(e) => { if (!isActive) (e.target as HTMLElement).style.color = isTerminal ? (isAutoFull ? "rgba(0,255,65,0.4)" : "#555") : ""; }}
+                  >
+                    {sub.label}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Prompt suggestion chips */}
+            <div className="flex flex-wrap gap-1 pt-0.5">
+              {visiblePrompts.map((prompt, i) => (
+                <button
+                  key={i}
+                  onClick={() => cc.setInput(prompt)}
+                  className="rounded-full px-2 py-0.5 text-[10px] transition-all hover:scale-[1.02]"
+                  style={{
+                    background: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.06)" : "rgba(255,255,255,0.03)") : undefined,
+                    border: `1px solid ${isTerminal ? (isAutoFull ? "rgba(0,255,65,0.15)" : "#1A1A28") : "hsl(var(--border))"}`,
+                    color: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.5)" : "#777") : undefined,
+                  }}
+                  onMouseEnter={(e) => { (e.target as HTMLElement).style.borderColor = `${catColor}60`; (e.target as HTMLElement).style.color = catColor; }}
+                  onMouseLeave={(e) => { (e.target as HTMLElement).style.borderColor = isTerminal ? (isAutoFull ? "rgba(0,255,65,0.15)" : "#1A1A28") : ""; (e.target as HTMLElement).style.color = isTerminal ? (isAutoFull ? "rgba(0,255,65,0.5)" : "#777") : ""; }}
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Context filter pills (popup/inline) */}
       {!isTerminal && (

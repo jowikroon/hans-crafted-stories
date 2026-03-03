@@ -322,6 +322,68 @@ export function getStoredModel(): string {
   return AI_MODELS[0].id;
 }
 
+// ═══ CATEGORY SUB-ITEMS WITH PROMPT SUGGESTIONS ═════════════
+export interface CategorySubItem {
+  id: string;
+  label: string;
+  prompts: string[];
+}
+
+export const CATEGORY_SUBS: Record<string, CategorySubItem[]> = {
+  pricing: [
+    { id: "competitor-monitor", label: "Competitor Monitor", prompts: ["Compare my prices vs autodoc right now", "Set up daily price tracking for top 50 SKUs"] },
+    { id: "margin-analysis", label: "Margin Analysis", prompts: ["Show margin breakdown by category", "Which products have the lowest margin?"] },
+    { id: "price-alerts", label: "Price Alerts", prompts: ["Alert me when competitors drop below my price", "Price history for brake pads 90 days"] },
+  ],
+  seo: [
+    { id: "rankings", label: "Rankings", prompts: ["How am I ranking today?", "Which keywords did I lose this week?"] },
+    { id: "technical-audit", label: "Technical Audit", prompts: ["Run a full technical SEO audit", "Find all broken links"] },
+    { id: "content-seo", label: "Content SEO", prompts: ["Generate SEO titles for new SKUs", "Which pages need better meta descriptions?"] },
+    { id: "backlinks", label: "Backlinks", prompts: ["Compare my backlinks vs autodoc", "Find new link building opportunities"] },
+  ],
+  product: [
+    { id: "titles-descriptions", label: "Titles & Descriptions", prompts: ["Generate SEO titles for 500 products", "Find products with thin descriptions"] },
+    { id: "catalog-management", label: "Catalog Management", prompts: ["Audit category structure", "Bulk update vehicle compatibility"] },
+    { id: "content-generation", label: "Content Generation", prompts: ["AI descriptions for new stock", "Create product images with AI"] },
+  ],
+  research: [
+    { id: "competitors", label: "Competitors", prompts: ["Who's winning in my niche?", "Deep-dive autodoc.nl strategy"] },
+    { id: "market-gaps", label: "Market Gaps", prompts: ["Find underserved keywords in brake parts", "NL vs DE market comparison"] },
+    { id: "trends", label: "Trends", prompts: ["What's trending in car parts Q1?", "Seasonal demand forecast for winter tires"] },
+  ],
+  automate: [
+    { id: "workflow-status", label: "Workflow Status", prompts: ["Show status of all running workflows", "Execution logs for pricing monitor"] },
+    { id: "build-schedule", label: "Build & Schedule", prompts: ["Create a new automation", "Schedule SEO brain every Monday 6AM"] },
+    { id: "chains-alerts", label: "Chains & Alerts", prompts: ["Chain pricing → repricing → notifications", "Stock level alerts for top 50"] },
+  ],
+  infra: [
+    { id: "system-health", label: "System Health", prompts: ["Is everything running?", "Show recent errors across all services"] },
+    { id: "deploy", label: "Deploy", prompts: ["Push latest to production", "List all edge functions"] },
+    { id: "database-dns", label: "Database & DNS", prompts: ["Database health check", "Show DNS records for hansvanleeuwen.com"] },
+    { id: "claude-cli", label: "Claude CLI", prompts: ["Start a Claude Code session", "Ask Claude to review infrastructure"] },
+  ],
+  report: [
+    { id: "weekly-monthly", label: "Weekly/Monthly", prompts: ["This week's performance overview", "Traffic sources last 30 days"] },
+    { id: "rankings-report", label: "Rankings", prompts: ["Compare rankings vs competitors", "Keyword position changes this week"] },
+    { id: "custom", label: "Custom", prompts: ["Build custom KPI dashboard", "Top 50 pages by traffic"] },
+  ],
+  comms: [
+    { id: "email-drafts", label: "Email & Drafts", prompts: ["Draft supplier email about Q2 pricing", "Draft response to customer complaint"] },
+    { id: "calendar", label: "Calendar", prompts: ["What's on my calendar today?", "Find meeting time for team sync"] },
+    { id: "claude-contact", label: "Claude Contact", prompts: ["Ask Claude to draft a professional message", "Get Claude's help writing a brief"] },
+  ],
+  manage: [
+    { id: "sprint-tasks", label: "Sprint & Tasks", prompts: ["Where's my sprint at?", "Create high-priority task"] },
+    { id: "boards-briefs", label: "Boards & Briefs", prompts: ["Create project board for Q2", "Write project brief for German launch"] },
+    { id: "workload", label: "Workload", prompts: ["Team workload overview", "Update task status"] },
+  ],
+  ailab: [
+    { id: "image-generation", label: "Image Generation", prompts: ["Generate product images", "Run background removal on photos"] },
+    { id: "models-research", label: "Models & Research", prompts: ["Find models on HuggingFace", "Search AI research papers"] },
+    { id: "claude-ai", label: "Claude AI", prompts: ["Ask Claude to analyze this data", "Use Claude for code generation"] },
+  ],
+};
+
 export const SYSTEM_PROMPT = `You are the Sovereign AI Command Center — a unified expert system for Hans van Leeuwen's complete digital infrastructure and marketing operations.
 
 INFRASTRUCTURE: You manage n8n workflows, Cloudflare Workers, VPS servers (primary srv1402218 + industrial srv1411336), Docker MCP Gateway, Supabase, SSL/DNS, and Claude Code CLI sessions.
