@@ -212,10 +212,14 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
             {/* Theme toggle */}
             <button
               onClick={() => setSiteTheme(siteTheme === "dark" ? "light" : "dark")}
-              className="rounded-full p-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-muted"
+              className={`group relative rounded-full p-2 transition-all duration-300 ease-out active:scale-90 ${
+                siteTheme === "dark"
+                  ? "text-[hsl(45,80%,55%)] hover:text-[hsl(50,95%,60%)] hover:bg-[hsl(45,80%,55%,0.12)] hover:shadow-[0_0_14px_hsl(45,80%,55%/0.25)] active:shadow-[0_0_20px_hsl(50,95%,60%/0.45)] active:bg-[hsl(50,95%,60%,0.18)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
               aria-label={siteTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             >
-              {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              {siteTheme === "dark" ? <Sun size={16} className="transition-transform duration-300 group-hover:rotate-45 group-active:rotate-90" /> : <Moon size={16} className="transition-transform duration-300 group-hover:-rotate-12" />}
             </button>
 
             <div className="hidden sm:block">
