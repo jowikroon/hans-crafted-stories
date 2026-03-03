@@ -176,20 +176,24 @@ const WikiExamples = () => {
   const generateMore = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("hansai-chat", {
-        body: {
+      // Use fetch directly to get the raw SSE stream
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hansai-chat`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
           messages: [{ role: "user", content: GENERATE_PROMPT }],
           model: "google/gemini-2.5-flash",
-        },
+        }),
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      // The edge function streams SSE — the invoke collects the full body as text
-      let text = typeof data === "string" ? data : "";
-      if (!text && data instanceof Blob) {
-        text = await data.text();
-      }
+      const text = await response.text();
 
       // Parse SSE stream: extract content deltas
       let fullContent = "";
