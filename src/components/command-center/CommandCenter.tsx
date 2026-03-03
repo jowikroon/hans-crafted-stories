@@ -2,7 +2,7 @@
  * Unified Command Center — 1 Component, 3 Modes
  * popup | inline | terminal
  */
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Loader2, CheckCircle2, Circle, Bot, ChevronDown, History,
@@ -69,6 +69,10 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
   const modelPickerRef = useRef<HTMLDivElement>(null);
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showAllPrompts, setShowAllPrompts] = useState(false);
+
+  // Reset prompt limit when category or sub-item changes
+  useEffect(() => setShowAllPrompts(false), [cc.selectedSubItem, cc.activeCat]);
 
   // ── Elapsed timer for pipeline ──────────────────────────────
   const [elapsed, setElapsed] = useState(0);
@@ -122,43 +126,92 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
         }} />
       )}
 
-      {/* Pipeline bar */}
-      {cc.pipelineStage !== "idle" && (
-        <div className={`relative flex flex-col px-4 py-2 font-mono overflow-hidden ${isTerminal ? "" : "border-b border-orange-500/20"}`}
-          style={isTerminal ? { borderBottom: `1px solid ${isAutoFull ? neoGreen.border : "#12121E"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
-          <div className="flex items-center gap-1.5">
-            {pipelineSteps.map((step, i) => {
-              const isActive = step.key === cc.pipelineStage;
-              const isDone = pipelineSteps.findIndex(s => s.key === cc.pipelineStage) > i;
-              return (
-                <div key={step.key} className="flex items-center gap-1.5">
-                  <div className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest transition-all ${
-                    isActive ? (isTerminal ? "animate-pulse" : "bg-orange-500/20 text-orange-400 animate-pulse")
-                    : isDone ? (isTerminal ? "" : "bg-orange-500/10 text-orange-300")
-                    : "text-muted-foreground/30"
-                  }`}
-                    style={isTerminal ? {
-                      color: isActive ? (isAutoFull ? neoGreen.primary : "#34D399") : isDone ? (isAutoFull ? neoGreen.dim : "#6EE7B7") : undefined,
-                    } : undefined}
-                  >
-                    {isActive ? <Loader2 size={8} className="animate-spin" /> : isDone ? <CheckCircle2 size={8} /> : <Circle size={8} />}
-                    <span className="hidden sm:inline">{step.label}</span>
-                    {isActive && <span className="ml-1 text-[8px] tabular-nums opacity-70">{elapsed.toFixed(1)}s</span>}
+      {/* Pipeline bar — enlarged with segmented progress */}
+      {cc.pipelineStage !== "idle" && (() => {
+        const activeIdx = pipelineSteps.findIndex(s => s.key === cc.pipelineStage);
+        const pipeAccent = isAutoFull ? neoGreen.primary : isTerminal ? "#34D399" : "#f97316";
+        const pipeAccentDim = isAutoFull ? neoGreen.dim : isTerminal ? "rgba(52,211,153,0.5)" : "rgba(249,115,22,0.5)";
+        return (
+          <div className={`relative flex flex-col gap-1.5 px-4 py-3.5 font-mono overflow-hidden ${isTerminal ? "" : "border-b border-orange-500/20"}`}
+            style={{
+              minHeight: 56,
+              ...(isTerminal ? { borderBottom: `1px solid ${isAutoFull ? neoGreen.border : "#12121E"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : {}),
+            }}>
+            {/* Pulsing gradient bottom edge */}
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 h-[2px]"
+              style={{ background: `linear-gradient(90deg, transparent, ${pipeAccent}, transparent)` }}
+              animate={{ opacity: [0.3, 0.8, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <div className="flex items-center gap-2">
+              {pipelineSteps.map((step, i) => {
+                const isActive = step.key === cc.pipelineStage;
+                const isDone = activeIdx > i;
+                return (
+                  <div key={step.key} className="flex items-center gap-2">
+                    <motion.div
+                      className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest transition-all ${
+                        isActive ? (isTerminal ? "" : "bg-orange-500/20 text-orange-400")
+                        : isDone ? (isTerminal ? "" : "bg-orange-500/10 text-orange-300")
+                        : "text-muted-foreground/30"
+                      }`}
+                      animate={isActive ? { scale: [1, 1.08, 1] } : isDone ? { scale: 1 } : {}}
+                      transition={isActive ? { duration: 1.5, repeat: Infinity, ease: "easeInOut" } : {}}
+                      style={{
+                        color: isActive ? pipeAccent : isDone ? pipeAccentDim : undefined,
+                        ...(isActive ? { boxShadow: `0 0 12px ${pipeAccent}40` } : {}),
+                      }}
+                    >
+                      {isActive ? <Loader2 size={11} className="animate-spin" /> : isDone ? (
+                        <motion.span initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400 }}>
+                          <CheckCircle2 size={11} />
+                        </motion.span>
+                      ) : <Circle size={11} />}
+                      <span className="hidden sm:inline">{step.label}</span>
+                    </motion.div>
+                    {i < pipelineSteps.length - 1 && <span className="font-mono text-[9px] tracking-[3px] text-muted-foreground/20">···</span>}
                   </div>
-                  {i < pipelineSteps.length - 1 && <span className="font-mono text-[8px] tracking-[3px] text-muted-foreground/20">···</span>}
-                </div>
-              );
-            })}
+                );
+              })}
+              {/* Timer */}
+              <span className="ml-auto text-[11px] font-mono tabular-nums" style={{ color: pipeAccentDim }}>
+                {elapsed.toFixed(1)}s
+              </span>
+            </div>
+            {/* Detail text */}
+            {pipelineSteps.map(step => step.key === cc.pipelineStage && (
+              <p key={step.key} className="text-[10px] tracking-wide" style={{ color: pipeAccentDim }}>
+                {step.detail}
+              </p>
+            ))}
+            {/* Segmented progress bar */}
+            <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden" style={{ background: `${pipeAccent}10` }}>
+              {pipelineSteps.map((step, i) => {
+                const isDone = activeIdx > i;
+                const isActive = activeIdx === i;
+                return (
+                  <motion.div
+                    key={step.key}
+                    className="flex-1 rounded-full"
+                    initial={{ scaleX: 0 }}
+                    animate={{
+                      scaleX: isDone ? 1 : isActive ? 0.6 : 0,
+                      opacity: isDone || isActive ? 1 : 0.15,
+                    }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    style={{
+                      background: isDone ? pipeAccent : isActive ? `${pipeAccent}90` : `${pipeAccent}20`,
+                      transformOrigin: "left",
+                      ...(isActive ? { boxShadow: `0 0 8px ${pipeAccent}60` } : {}),
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
-          {/* Detail text for active stage */}
-          {pipelineSteps.map(step => step.key === cc.pipelineStage && (
-            <p key={step.key} className="mt-0.5 text-[8px] tracking-wide"
-              style={{ color: isAutoFull ? neoGreen.dim : isTerminal ? "rgba(52,211,153,0.5)" : "rgba(249,115,22,0.5)" }}>
-              {step.detail}
-            </p>
-          ))}
-        </div>
-      )}
+        );
+      })()}
 
       {/* Header */}
       <div className={`flex items-center justify-between gap-3 px-4 py-2 ${isTerminal ? "" : "border-b border-border"}`}
@@ -270,29 +323,42 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
         })}
       </nav>
 
-      {/* Sub-menu pills + prompt chips per category */}
+      {/* Sub-menu pills + prompt chips per category (BJ Fogg: staggered, 3-max) */}
       {cc.activeCat && CATEGORY_SUBS[cc.activeCat] && cc.phase === "browse" && (() => {
         const subs = CATEGORY_SUBS[cc.activeCat!];
         const catColor = isAutoFull ? neoGreen.primary : CATEGORIES[cc.activeCat!]?.color || "#ff6600";
         const activeSub = cc.selectedSubItem ? subs.find(s => s.id === cc.selectedSubItem) : null;
-        const visiblePrompts = activeSub
+        const allPrompts = activeSub
           ? activeSub.prompts
           : subs.flatMap(s => s.prompts).slice(0, 6);
 
+        const pillContainer = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
+        const pillItem = { hidden: { opacity: 0, x: -6 }, show: { opacity: 1, x: 0, transition: { duration: 0.2 } } };
+        const chipContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } } };
+        const chipItem = { hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.25 } } };
+
         return (
           <div
-            className={`px-4 py-1.5 ${isTerminal ? "" : "border-b border-border bg-secondary/10"}`}
+            className={`px-4 py-2 ${isTerminal ? "" : "border-b border-border bg-secondary/10"}`}
             style={isTerminal ? { background: isAutoFull ? "#060A06" : "#08080E", borderBottom: `1px solid ${isAutoFull ? neoGreen.border : "#12121E"}` } : undefined}
           >
-            {/* Sub-item pills */}
-            <div className="flex gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+            {/* Sub-item pills — staggered entrance */}
+            <motion.div
+              className="flex gap-1.5 overflow-x-auto pb-1.5"
+              style={{ scrollbarWidth: "none" }}
+              variants={pillContainer}
+              initial="hidden"
+              animate="show"
+              key={cc.activeCat}
+            >
               {subs.map(sub => {
                 const isActive = cc.selectedSubItem === sub.id;
                 return (
-                  <button
+                  <motion.button
                     key={sub.id}
+                    variants={pillItem}
                     onClick={() => cc.setSelectedSubItem(isActive ? null : sub.id)}
-                    className="whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-medium transition-all"
+                    className="whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] font-medium transition-all flex items-center gap-1.5"
                     style={{
                       background: isActive ? `${catColor}20` : "transparent",
                       color: isActive ? catColor : isTerminal ? (isAutoFull ? "rgba(0,255,65,0.4)" : "#555") : undefined,
@@ -301,30 +367,59 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
                     onMouseEnter={(e) => { if (!isActive) (e.target as HTMLElement).style.color = catColor; }}
                     onMouseLeave={(e) => { if (!isActive) (e.target as HTMLElement).style.color = isTerminal ? (isAutoFull ? "rgba(0,255,65,0.4)" : "#555") : ""; }}
                   >
+                    {isActive && <span className="h-1.5 w-1.5 rounded-full" style={{ background: catColor }} />}
                     {sub.label}
-                  </button>
+                  </motion.button>
                 );
               })}
-            </div>
-            {/* Prompt suggestion chips */}
-            <div className="flex flex-wrap gap-1 pt-0.5">
-              {visiblePrompts.map((prompt, i) => (
-                <button
-                  key={i}
-                  onClick={() => cc.setInput(prompt)}
-                  className="rounded-full px-2 py-0.5 text-[10px] transition-all hover:scale-[1.02]"
-                  style={{
-                    background: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.06)" : "rgba(255,255,255,0.03)") : undefined,
-                    border: `1px solid ${isTerminal ? (isAutoFull ? "rgba(0,255,65,0.15)" : "#1A1A28") : "hsl(var(--border))"}`,
-                    color: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.5)" : "#777") : undefined,
-                  }}
-                  onMouseEnter={(e) => { (e.target as HTMLElement).style.borderColor = `${catColor}60`; (e.target as HTMLElement).style.color = catColor; }}
-                  onMouseLeave={(e) => { (e.target as HTMLElement).style.borderColor = isTerminal ? (isAutoFull ? "rgba(0,255,65,0.15)" : "#1A1A28") : ""; (e.target as HTMLElement).style.color = isTerminal ? (isAutoFull ? "rgba(0,255,65,0.5)" : "#777") : ""; }}
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
+              {!cc.selectedSubItem && (
+                <motion.span variants={pillItem} className="self-center text-[9px] italic text-muted-foreground/40 pl-1">
+                  Pick a focus ↑
+                </motion.span>
+              )}
+            </motion.div>
+            {/* Prompt chips — staggered typewriter reveal, 3-max default */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                className="flex flex-wrap gap-1.5 pt-1"
+                variants={chipContainer}
+                initial="hidden"
+                animate="show"
+                exit="hidden"
+                key={`${cc.activeCat}-${cc.selectedSubItem || "all"}`}
+              >
+                {allPrompts.slice(0, showAllPrompts ? allPrompts.length : 3).map((prompt, i) => (
+                  <motion.button
+                    key={prompt}
+                    variants={chipItem}
+                    onClick={() => cc.setInput(prompt)}
+                    className="rounded-full px-2.5 py-1 text-[10px] transition-all hover:scale-[1.03]"
+                    style={{
+                      background: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.06)" : "rgba(255,255,255,0.03)") : undefined,
+                      border: `1px solid ${isTerminal ? (isAutoFull ? "rgba(0,255,65,0.15)" : "#1A1A28") : "hsl(var(--border))"}`,
+                      color: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.5)" : "#777") : undefined,
+                    }}
+                    whileHover={{ borderColor: `${catColor}60`, color: catColor }}
+                  >
+                    {prompt}
+                  </motion.button>
+                ))}
+                {allPrompts.length > 3 && !showAllPrompts && (
+                  <motion.button
+                    variants={chipItem}
+                    onClick={() => setShowAllPrompts(true)}
+                    className="rounded-full px-2.5 py-1 text-[9px] font-medium transition-all"
+                    style={{
+                      color: `${catColor}90`,
+                      border: `1px dashed ${catColor}30`,
+                    }}
+                    whileHover={{ borderColor: `${catColor}60` }}
+                  >
+                    +{allPrompts.length - 3} more
+                  </motion.button>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
         );
       })()}
