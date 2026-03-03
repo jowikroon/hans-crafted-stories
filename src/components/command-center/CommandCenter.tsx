@@ -256,6 +256,11 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          {/* Context filter dropdown */}
+          {!isTerminal && (
+            <ContextFilterPills categories={unifiedCategories} selectedCategory={cc.selectedCategory} selectedSub={cc.selectedSub}
+              onSelect={(catId, subId) => { cc.setSelectedCategory(catId); cc.setSelectedSub(subId); }} accentColor="orange" />
+          )}
           <div className="relative" ref={modelPickerRef}>
             <button onClick={() => setShowModelPicker(!showModelPicker)}
               className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-medium transition-all ${isTerminal ? "" : "border-border bg-secondary/30 text-foreground hover:border-primary/40"}`}
@@ -445,11 +450,6 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
         );
       })()}
 
-      {/* Context filter pills (popup/inline) */}
-      {!isTerminal && (
-        <ContextFilterPills categories={unifiedCategories} selectedCategory={cc.selectedCategory} selectedSub={cc.selectedSub}
-          onSelect={(catId, subId) => { cc.setSelectedCategory(catId); cc.setSelectedSub(subId); }} accentColor="orange" />
-      )}
 
       {/* Main content area */}
       <div ref={cc.scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
