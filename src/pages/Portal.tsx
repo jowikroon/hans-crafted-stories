@@ -40,7 +40,8 @@ const mainTabs: { id: Tab; label: string; icon: typeof Wrench }[] = [
   { id: "users", label: "Users", icon: Users },
 ];
 
-const accountMenuItems: { id: Tab; label: string; icon: typeof Wrench }[] = [
+const accountMenuItems: { id: Tab | "ai-hub"; label: string; icon: typeof Wrench; href?: string }[] = [
+  { id: "ai-hub", label: "AI Hub", icon: Zap, href: "/ai" },
   { id: "content", label: "Content", icon: FileText },
   { id: "pages", label: "Pages", icon: LayoutDashboard },
   { id: "status", label: "Status", icon: Activity },
@@ -244,14 +245,6 @@ const Portal = () => {
                 <span className="hidden sm:inline">Command Center</span>
               </button>
             )}
-            <Link
-              to="/wiki"
-              className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2"
-              title="AI Wiki"
-            >
-              <BookOpen size={14} />
-              <span className="hidden sm:inline">Wiki</span>
-            </Link>
              <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
@@ -285,11 +278,24 @@ const Portal = () => {
                     <div className="p-1">
                       {accountMenuItems.map((item) => {
                         const Icon = item.icon;
+                        if (item.href) {
+                          return (
+                            <Link
+                              key={item.id}
+                              to={item.href}
+                              onClick={() => setAccountMenuOpen(false)}
+                              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                            >
+                              <Icon size={13} />
+                              {item.label}
+                            </Link>
+                          );
+                        }
                         const isActive = activeTab === item.id;
                         return (
                           <button
                             key={item.id}
-                            onClick={() => { setActiveTab(item.id); setSubFilter("All"); setAccountMenuOpen(false); }}
+                            onClick={() => { setActiveTab(item.id as Tab); setSubFilter("All"); setAccountMenuOpen(false); }}
                             className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs transition-all ${
                               isActive
                                 ? "bg-primary/10 font-medium text-foreground"
