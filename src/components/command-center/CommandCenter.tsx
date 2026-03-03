@@ -477,19 +477,13 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
               className={`mb-3 overflow-hidden rounded-lg border p-3 ${isTerminal ? "" : "border-border bg-card"}`}
               style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
-              <div className="grid grid-cols-2 gap-2 mb-2">
-                {ACTIONS[cc.activeCat].hero.map((a) => (
-                  <button key={a.id} onClick={() => cc.pickAction(a)}
-                    className={`rounded-lg border p-3 text-left transition-all hover:scale-[1.01] ${isTerminal ? "" : "border-border hover:border-orange-500/40 bg-secondary/30"}`}
-                    style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#070B07" : "#09090F" } : undefined}>
-                    <p className="text-xs font-semibold" style={isTerminal ? { color: isAutoFull ? neoGreen.primary : "#E8E8F0" } : undefined}>{a.label}</p>
-                    <p className="mt-1 text-[10px] text-muted-foreground line-clamp-2">{a.sub}</p>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {a.tools.map(t => <span key={t} className="rounded bg-secondary px-1.5 py-0.5 text-[8px] text-muted-foreground">{t}</span>)}
-                    </div>
-                  </button>
-                ))}
-              </div>
+              {ACTIONS[cc.activeCat].hero.slice(0, 5).map((a) => (
+                <button key={a.id} onClick={() => cc.pickAction(a)}
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[11px] text-muted-foreground transition-all hover:bg-secondary hover:text-foreground">
+                  <span className="font-medium" style={isTerminal ? { color: isAutoFull ? neoGreen.primary : "#E8E8F0" } : undefined}>{a.label}</span>
+                  <span className="truncate text-[10px] opacity-50">{a.sub}</span>
+                </button>
+              ))}
               {ACTIONS[cc.activeCat].compact.map((a) => (
                 <button key={a.id} onClick={() => cc.pickAction(a)}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[11px] text-muted-foreground transition-all hover:bg-secondary hover:text-foreground">
