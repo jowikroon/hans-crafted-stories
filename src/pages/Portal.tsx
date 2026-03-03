@@ -196,14 +196,14 @@ const Portal = () => {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-10 flex flex-col gap-5 sm:mb-12 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="mb-1.5 text-sm font-medium uppercase tracking-[0.2em] text-primary sm:mb-2">Portal</p>
-            <h1 className="mb-1.5 font-display text-2xl font-medium tracking-tight text-foreground sm:mb-2 sm:text-4xl">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-primary/80 sm:mb-2.5">Portal</p>
+            <h1 className="mb-2 font-display text-3xl font-medium tracking-tight text-foreground sm:mb-3 sm:text-4xl">
               Welcome back{user.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(" ")[0]}` : ""}
             </h1>
-            <p className="text-sm leading-relaxed text-muted-foreground/80 sm:text-base sm:leading-normal sm:text-muted-foreground">
-              Your tools board — manage tools, content one place.
+            <p className="max-w-md text-sm leading-relaxed text-muted-foreground/60 sm:text-[15px]">
+              Your tools board — manage tools, content & workflows in one place.
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 sm:mt-0 sm:gap-2">
@@ -274,7 +274,7 @@ const Portal = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 4, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-xl shadow-foreground/[0.05]"
+                    className="absolute right-0 top-full z-50 mt-2.5 w-52 overflow-hidden rounded-2xl border-2 border-border/60 bg-card/95 shadow-2xl shadow-foreground/[0.08] backdrop-blur-xl"
                   >
                     <div className="p-1">
                       {accountMenuItems.map((item) => {
@@ -359,44 +359,45 @@ const Portal = () => {
         )}
 
         {/* Tab Navigation */}
-        <div className="mb-2 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:overflow-visible">
+        <div className="mb-3 flex gap-1 overflow-x-auto rounded-2xl border-2 border-border/60 bg-secondary/30 p-1.5 backdrop-blur-sm sm:overflow-visible">
           {mainTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
-              <button
+              <motion.button
                 key={tab.id}
                 onClick={() => { setActiveTab(tab.id); setSubFilter("All"); }}
-                className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:py-2 ${
+                whileTap={{ scale: 0.97 }}
+                className={`flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all sm:min-h-0 sm:py-2.5 ${
                   isActive
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-background text-foreground shadow-md shadow-foreground/[0.05]"
+                    : "text-muted-foreground/60 hover:text-foreground"
                 }`}
               >
-                <Icon size={14} />
+                <Icon size={14} strokeWidth={isActive ? 2.2 : 1.8} />
                 <span className="hidden sm:inline">{tab.label}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
         {subMenuItems[activeTab].length > 0 && (
-          <nav className="mb-6 flex items-center overflow-x-auto">
+          <nav className="mb-8 flex items-center gap-0.5 overflow-x-auto py-1">
             {subMenuItems[activeTab].map((item, i) => {
               const isActive = subFilter === item;
               return (
                 <div key={item} className="flex items-center">
                   <button
                     onClick={() => setSubFilter(item)}
-                    className={`whitespace-nowrap px-3 py-1.5 text-xs transition-colors ${
+                    className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs transition-all ${
                       isActive
-                        ? "font-medium text-orange-500"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "font-semibold text-primary"
+                        : "text-muted-foreground/50 hover:text-foreground"
                     }`}
                   >
                     {item}
                   </button>
                   {i < subMenuItems[activeTab].length - 1 && (
-                    <div className="h-3.5 w-px bg-border" />
+                    <div className="h-3 w-px bg-border/50" />
                   )}
                 </div>
               );
