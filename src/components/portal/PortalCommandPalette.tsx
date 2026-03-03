@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Terminal, Zap, Wrench, FileText, LayoutDashboard, Users, Activity, X, ArrowRight } from "lucide-react";
 
-type Tab = "tools" | "content" | "pages" | "status" | "users";
+type Tab = "dashboard" | "tools" | "content" | "pages" | "status" | "users";
 
 interface Command {
   id: string;
