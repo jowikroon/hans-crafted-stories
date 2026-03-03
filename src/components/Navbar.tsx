@@ -184,12 +184,12 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
       </AnimatePresence>
 
       {/* ═══ NAVBAR ═══ */}
-      <nav aria-label="Primary navigation" className={`fixed top-0 z-50 w-full backdrop-blur-md transition-colors ${isDark ? "bg-[hsl(220,20%,6%)]/90" : "bg-background/80"}`}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
+      <nav aria-label="Primary navigation" className="fixed top-0 z-50 w-full pt-3 px-4 sm:px-6">
+        <div className={`mx-auto max-w-5xl rounded-2xl border backdrop-blur-xl transition-all ${isDark ? "border-white/[0.06] bg-[hsl(220,20%,6%)]/85 shadow-2xl shadow-black/30" : "border-border/60 bg-background/75 shadow-lg shadow-foreground/[0.04]"}`}>
+          <div className="flex items-center justify-between h-14 px-5">
             {/* Brand */}
             <Link to="/" className={`shrink-0 flex items-center gap-2.5 font-display text-lg font-bold tracking-tight transition-colors ${isDark ? "text-emerald-300" : "text-foreground"}`}>
-              <img src={logoImg} alt="Hans van Leeuwen — Freelance E-commerce Manager" width={28} height={28} className={`h-7 w-7 object-contain ${isDark ? "invert brightness-200" : ""}`} />
+              <img src={logoImg} alt="Hans van Leeuwen — Freelance E-commerce Manager" width={26} height={26} className={`h-[26px] w-[26px] object-contain ${isDark ? "invert brightness-200" : ""}`} />
               Hans van Leeuwen
             </Link>
 
@@ -199,7 +199,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
             </div>
 
             {/* Right cluster */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {/* Search */}
               <button
                 onClick={() => setSearchOpen(true)}
@@ -210,7 +210,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 }`}
                 aria-label="Search"
               >
-                <Search size={16} />
+                <Search size={15} />
               </button>
 
               {/* Theme toggle */}
@@ -219,17 +219,17 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 className={`rounded-full p-2 transition-all ${isDark ? "text-emerald-400/50 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
                 aria-label={siteTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               >
-                {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                {siteTheme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
               </button>
 
               <div className="hidden sm:block">
                 <LangSwitch />
               </div>
 
-              {/* Portal / Login — styled as outlined button (hidden on mobile) */}
+              {/* Portal / Login */}
               <Link
                 to="/portal"
-                className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium transition-all ${
+                className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium transition-all ${
                   isActive("/portal")
                     ? isDark
                       ? "border-emerald-400 bg-emerald-500/10 text-emerald-300"
@@ -246,11 +246,26 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   </>
                 ) : (
                   <>
-                    <LogIn size={14} />
+                    <LogIn size={13} />
                     <span>{t.login}</span>
                   </>
                 )}
               </Link>
+
+              {/* Command Center (desktop) */}
+              {user && (
+                <button
+                  onClick={() => navigate("/ai")}
+                  className={`hidden md:inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
+                    location.pathname === "/ai"
+                      ? "border-orange-500/40 bg-orange-500/10 text-orange-500 shadow-[0_0_10px_hsl(25_95%_53%/0.12)]"
+                      : `${isDark ? "border-orange-500/15 text-orange-400/40 hover:border-orange-500/40 hover:text-orange-300" : "border-border text-muted-foreground hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-600"}`
+                  }`}
+                >
+                  <Command size={10} />
+                  Command Center
+                </button>
+              )}
 
               {/* Mobile hamburger */}
               <button onClick={() => setMobileOpen(!mobileOpen)} className={`md:hidden rounded-lg p-1.5 ${isDark ? "text-emerald-300" : "text-foreground"}`} aria-label="Toggle menu">
@@ -260,33 +275,6 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
           </div>
         </div>
 
-        {/* Subtle separator */}
-        <div className={`h-px ${isDark ? "bg-emerald-500/8" : "bg-border/40"}`} />
-
-        {/* ─── ROW 2: Command Center link (desktop) — always visible ─── */}
-        {user && (
-          <div className="mx-auto max-w-6xl px-6 hidden md:block">
-            <div className="flex items-center justify-end h-10">
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => navigate("/ai")}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
-                    location.pathname === "/ai"
-                      ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_10px_hsl(25_95%_53%/0.15)]"
-                      : `${isDark ? "border-orange-500/15 text-orange-400/40 hover:border-orange-500/40 hover:text-orange-300" : "border-border text-muted-foreground hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-600"}`
-                  }`}
-                >
-                  <Command size={11} />
-                  Command Center
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Bottom border */}
-        <div className={`hidden md:block h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />
-
         {/* ═══ MOBILE MENU ═══ */}
         <AnimatePresence>
           {mobileOpen && (
@@ -294,28 +282,30 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className={`overflow-hidden border-b md:hidden ${isDark ? "border-emerald-500/10 bg-[hsl(220,20%,6%)]" : "border-border bg-background"}`}
+              className="mx-auto max-w-5xl px-4 sm:px-6 overflow-hidden md:hidden"
             >
-              <div className="flex flex-col gap-1 px-4 py-4">
-                {links.map((link) => (
-                  <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${isActive(link.to) ? (isDark ? "bg-emerald-500/10 text-emerald-300" : "bg-accent text-accent-foreground") : (isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground")}`}>
-                    {link.label}
+              <div className={`mt-2 rounded-2xl border backdrop-blur-xl ${isDark ? "border-white/[0.06] bg-[hsl(220,20%,6%)]/90" : "border-border/60 bg-background/90"}`}>
+                <div className="flex flex-col gap-1 p-4">
+                  {links.map((link) => (
+                    <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)} className={`rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${isActive(link.to) ? (isDark ? "bg-emerald-500/10 text-emerald-300" : "bg-accent/10 text-accent-foreground") : (isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground")}`}>
+                      {link.label}
+                    </Link>
+                  ))}
+                  <div className={`my-1 h-px ${isDark ? "bg-white/[0.06]" : "bg-border/50"}`} />
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <LangSwitch />
+                  </div>
+                  <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-xl px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-colors ${isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                    <LogIn size={14} />
+                    {user ? t.portal : t.login}
                   </Link>
-                ))}
-                <div className={`my-1 h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />
-                <div className="flex items-center justify-between px-3 py-2">
-                  <LangSwitch />
+                  {user && (
+                    <button onClick={() => { setMobileOpen(false); navigate("/ai"); }} className={`rounded-xl px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
+                      <Command size={14} />
+                      Command Center
+                    </button>
+                  )}
                 </div>
-                <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-colors ${isDark ? "text-emerald-400/40 hover:text-emerald-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
-                  <LogIn size={14} />
-                  {user ? t.portal : t.login}
-                </Link>
-                {user && (
-                  <button onClick={() => { setMobileOpen(false); navigate("/ai"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
-                    <Command size={14} />
-                    Command Center
-                  </button>
-                )}
               </div>
             </motion.div>
           )}
