@@ -11,6 +11,7 @@ import HansAIOverlay from "@/components/overlays/HansAIOverlay";
 import EmpireOverlay from "@/components/overlays/EmpireOverlay";
 import N8nAgentModal from "@/components/portal/N8nAgentModal";
 import KeywordResearchModal from "@/components/portal/KeywordResearchModal";
+import CommandCenter from "@/components/command-center/CommandCenter";
 
 type Category = "All" | "Agents" | "Interfaces" | "Tools";
 
@@ -248,6 +249,19 @@ const AIHub = () => {
               </div>
             </Card>
           ))}
+        </div>
+
+        {/* Inline Command Center */}
+        <div className="mt-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
+              <Terminal size={18} className="text-orange-400" />
+            </div>
+            <h2 className="text-lg font-semibold text-white font-mono">Command Center</h2>
+          </div>
+          <div className="rounded-xl border border-orange-500/20 bg-[hsl(220,20%,8%)] overflow-hidden" style={{ height: "50vh" }}>
+            <CommandCenter mode="inline" />
+          </div>
         </div>
       </div>
 
