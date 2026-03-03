@@ -309,7 +309,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   <Link
                     key={link.to}
                     to={link.to}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() => { setMobileOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                     className={`rounded-lg px-3 py-3 text-[13px] uppercase tracking-[0.08em] transition-colors ${
                       isActive(link.to)
                         ? "text-foreground font-medium bg-muted/50"
@@ -325,7 +325,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   <Link
                     key={p.to}
                     to={p.to}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() => { setMobileOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                     className="rounded-lg px-3 py-3 text-[13px] uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/30"
                   >
                     {p.label}
@@ -338,7 +338,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                       <Link
                         key={p.to}
                         to={p.to}
-                        onClick={() => setMobileOpen(false)}
+                        onClick={() => { setMobileOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                         className="rounded-lg px-3 py-3 text-[13px] uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/30"
                       >
                         {p.label}
@@ -352,7 +352,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 </div>
                 <Link
                   to="/portal"
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => { setMobileOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                   className="mt-1 rounded-full border border-border px-4 py-3 text-center text-[13px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-foreground hover:text-background"
                 >
                   {user ? t.portal : t.login}
