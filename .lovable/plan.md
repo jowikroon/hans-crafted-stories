@@ -1,102 +1,122 @@
 
 
-# Improve Progress Bar Details, User Prompt After Delivery, and /autofull Command
+# Dynamic Sub-Menu Per Category with Prompt Suggestions
 
-## 1. Richer Pipeline Progress Bar
+## What Changes
 
-The current pipeline bar shows 5 stages with single-word labels (TRANSMIT, INTENT, ANALYZE, SYNTHESIZE, COMPLETE). Replace these with descriptive sub-labels that explain what's actually happening at each step.
+When a user clicks one of the 10 category tabs (PRICING, SEO, PRODUCT, etc.), a **contextual sub-menu row** appears directly below the tabs. Each category gets its own set of sub-items that filter/scope the context. Each sub-item shows **quick prompt chips** the user can click to instantly populate the input.
 
-**Changes in `CommandCenter.tsx` (pipeline bar section, lines 26-111):**
+Additionally, Claude is added as a tool/contact reference across relevant categories.
 
-Update `pipelineSteps` to include a `detail` field:
+---
+
+## 1. Add Category Sub-Items Data to `commandCenterData.ts`
+
+New export: `CATEGORY_SUBS` -- a mapping from each category key to its sub-items, each with a label, icon, and array of prompt suggestions.
 
 ```text
-sending   -> "TRANSMIT"   detail: "Packaging request..."
-routing   -> "INTENT"     detail: "Classifying intent and matching workflows..."
-processing -> "ANALYZE"   detail: "Running matched workflow or agent..."
-generating -> "SYNTHESIZE" detail: "AI generating response..."
-done      -> "COMPLETE"   detail: "Ready"
-error     -> (shown as)   detail: "Something went wrong"
+pricing:
+  - Competitor Monitor  -> "Compare my prices vs autodoc right now", "Set up daily price tracking for top 50 SKUs"
+  - Margin Analysis     -> "Show margin breakdown by category", "Which products have the lowest margin?"
+  - Price Alerts        -> "Alert me when competitors drop below my price", "Price history for brake pads 90 days"
+
+seo:
+  - Rankings            -> "How am I ranking today?", "Which keywords did I lose this week?"
+  - Technical Audit     -> "Run a full technical SEO audit", "Find all broken links"
+  - Content SEO         -> "Generate SEO titles for new SKUs", "Which pages need better meta descriptions?"
+  - Backlinks           -> "Compare my backlinks vs autodoc", "Find new link building opportunities"
+
+product:
+  - Titles & Descriptions -> "Generate SEO titles for 500 products", "Find products with thin descriptions"
+  - Catalog Management    -> "Audit category structure", "Bulk update vehicle compatibility"
+  - Content Generation    -> "AI descriptions for new stock", "Create product images with AI"
+
+research:
+  - Competitors     -> "Who's winning in my niche?", "Deep-dive autodoc.nl strategy"
+  - Market Gaps     -> "Find underserved keywords in brake parts", "NL vs DE market comparison"
+  - Trends          -> "What's trending in car parts Q1?", "Seasonal demand forecast for winter tires"
+
+automate:
+  - Workflow Status  -> "Show status of all running workflows", "Execution logs for pricing monitor"
+  - Build & Schedule -> "Create a new automation", "Schedule SEO brain every Monday 6AM"
+  - Chains & Alerts  -> "Chain pricing -> repricing -> notifications", "Stock level alerts for top 50"
+
+infra:
+  - System Health    -> "Is everything running?", "Show recent errors across all services"
+  - Deploy           -> "Push latest to production", "List all edge functions"
+  - Database & DNS   -> "Database health check", "Show DNS records for hansvanleeuwen.com"
+  - Claude CLI       -> "Start a Claude Code session", "Ask Claude to review infrastructure"
+
+report:
+  - Weekly/Monthly   -> "This week's performance overview", "Traffic sources last 30 days"
+  - Rankings         -> "Compare rankings vs competitors", "Keyword position changes this week"
+  - Custom           -> "Build custom KPI dashboard", "Top 50 pages by traffic"
+
+comms:
+  - Email & Drafts   -> "Draft supplier email about Q2 pricing", "Draft response to customer complaint"
+  - Calendar         -> "What's on my calendar today?", "Find meeting time for team sync"
+  - Claude Contact   -> "Ask Claude to draft a professional message", "Get Claude's help writing a brief"
+
+manage:
+  - Sprint & Tasks   -> "Where's my sprint at?", "Create high-priority task"
+  - Boards & Briefs  -> "Create project board for Q2", "Write project brief for German launch"
+  - Workload         -> "Team workload overview", "Update task status"
+
+ailab:
+  - Image Generation -> "Generate product images", "Run background removal on photos"
+  - Models & Research -> "Find models on HuggingFace", "Search AI research papers"
+  - Claude AI        -> "Ask Claude to analyze this data", "Use Claude for code generation"
 ```
 
-Render the detail text below the step labels as a small `text-[8px]` line that only shows for the currently active stage. Add an elapsed timer (seconds) next to the active stage so users see real-time progress.
+Each sub-item has: `{ id, label, prompts: string[] }`
 
-**New state in `useCommandCenter.ts`:** Add `pipelineStartTime` (timestamp set when stage leaves idle) and expose it. The UI calculates elapsed seconds via a 100ms interval.
+## 2. Update `CommandCenter.tsx` -- Render Sub-Menu Row
 
-## 2. Always End With a User Prompt After Delivery
+Between the category tabs nav and the action drawer, add a new section that appears when `activeCat` is set:
 
-After every delivery execution completes (the `pickDelivery` function in `useCommandCenter.ts`), append a follow-up system message asking the user what to do next with the results.
+- A horizontal scrollable row of **sub-item pills** (styled like the existing category tabs but smaller)
+- Below the pills, show **prompt suggestion chips** for the selected sub-item (or for the first sub-item by default)
+- Clicking a prompt chip sets `cc.input` to the prompt text and optionally auto-submits it
 
-**Change in `useCommandCenter.ts` `pickDelivery` (around line 441):**
+The sub-menu has two states:
+1. **Sub-item selected**: shows that sub-item's prompts
+2. **No sub-item selected** (default): shows all prompts from all sub-items of the active category, limited to 4-6
 
-After `setPhase("done")`, append a contextual prompt message based on the delivery action:
+Visual style:
+- Sub-item pills: small rounded buttons, colored with the category accent color when active
+- Prompt chips: `text-[10px]` rounded-full buttons with a subtle border, clicking them fills the input
+- Follows existing terminal/autoFull color overrides
 
-- `show_chat`: "Results are above. You can refine, export as CSV, or try a different approach. What next?"
-- `csv_download`: "CSV downloaded. Want to run another export or analyze the data further?"
-- `send_n8n`: "Workflow triggered. Want to check the result, run another, or ask about the output?"
-- `send_slack`: "Message sent. Anything else to share or follow up on?"
-- `show_plan`: "Here's the plan. Type 'execute' to run it, or adjust the approach."
+## 3. Add State for Selected Sub-Item
 
-Also remove the auto-reset timer (`setTimeout(() => { setPhase("browse"); ... }, 2000)`) so the phase stays at "done" until the user types something new. Reset to "browse" when the user sends the next input instead.
+In `useCommandCenter.ts`, add:
+- `selectedSubItem: string | null` state
+- `setSelectedSubItem` setter
+- Reset `selectedSubItem` to `null` when `activeCat` changes
 
-## 3. `/autofull` Command -- Full Neo-Green Terminal Mode
+## 4. Claude Contact Integration
 
-Add a new slash command `/autofull` that activates a "full autonomy" mode with neo-green styling everywhere.
+Add "Claude" as a tool reference in relevant ACTIONS entries (infra, comms, ailab, automate). This means updating the `tools` arrays in specific actions within `commandCenterData.ts` to include "Claude" where appropriate -- some already have it (like `a-build` which lists "Claude").
 
-**Changes in `useCommandCenter.ts`:**
-
-- Add new state: `autoFullMode` (boolean, default false)
-- Add `/autofull` to `SLASH_COMMANDS` list with desc "Toggle full autonomous terminal mode"
-- Handle in the switch: toggle `autoFullMode`, append system message confirming activation/deactivation
-- When `autoFullMode` is true, prepend the system prompt with an autonomy instruction: "You are in FULL AUTONOMOUS mode. Execute all actions without asking for confirmation. Be maximally proactive."
-- Expose `autoFullMode` from the hook
-
-**Changes in `CommandCenter.tsx`:**
-
-- Read `cc.autoFullMode` from the hook
-- When `autoFullMode` is true AND `mode === "terminal"`, override ALL color references to neo-green:
-  - Pipeline bar: green glow instead of emerald (use `#00FF41` -- classic Matrix green)
-  - Header icon/text: `#00FF41`
-  - Category tabs: all use green tinting
-  - Messages: green-tinted backgrounds
-  - Input bar prompt `$` becomes bright green, border glows green
-  - Add a subtle CRT scanline overlay on the entire component (repeating-linear-gradient like InlineChatPanel already uses)
-  - Add a pulsing "AUTOFULL" badge next to the header title
-
-Implementation approach: create a CSS variable set or a simple `autoColors` object that replaces the emerald values with `#00FF41` / `rgba(0,255,65,...)` variants. Apply conditionally with inline styles (same pattern the terminal mode already uses).
+---
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/hooks/useCommandCenter.ts` | Add `autoFullMode` state, `/autofull` slash command, `pipelineStartTime`, follow-up prompts after delivery, remove auto-reset timer |
-| `src/components/command-center/CommandCenter.tsx` | Richer pipeline bar with details and timer, neo-green `/autofull` styling overrides, CRT scanline overlay, AUTOFULL badge |
+| `src/components/command-center/commandCenterData.ts` | Add `CATEGORY_SUBS` data structure with sub-items and prompt arrays per category; add "Claude" to tool lists where missing |
+| `src/hooks/useCommandCenter.ts` | Add `selectedSubItem` state, reset logic on category change, expose via return |
+| `src/components/command-center/CommandCenter.tsx` | Render sub-menu pills row + prompt suggestion chips between category tabs and action drawer |
 
-## Technical Details
+## UX Flow (Step by Step)
 
-**Pipeline timer implementation:**
-```typescript
-// In CommandCenter.tsx
-const [elapsed, setElapsed] = useState(0);
-useEffect(() => {
-  if (cc.pipelineStage === "idle") { setElapsed(0); return; }
-  const start = Date.now();
-  const interval = setInterval(() => setElapsed(((Date.now() - start) / 1000)), 100);
-  return () => clearInterval(interval);
-}, [cc.pipelineStage]);
-```
+1. User clicks a category tab (e.g. "SEO")
+2. Sub-menu pills appear: `Rankings | Technical Audit | Content SEO | Backlinks`
+3. First sub-item is auto-highlighted, showing its prompts below as clickable chips
+4. User clicks a prompt chip like "How am I ranking today?" -- it fills the input bar
+5. User can edit the prompt or hit Enter to send
+6. The action drawer (hero cards + compact actions) still shows below, unchanged
+7. User can click a different sub-item pill to see different prompts
+8. Switching categories resets the sub-item selection
 
-**AutoFull color object:**
-```typescript
-const neoGreen = {
-  primary: "#00FF41",
-  bg10: "rgba(0,255,65,0.1)",
-  bg20: "rgba(0,255,65,0.2)",
-  bg5: "rgba(0,255,65,0.05)",
-  border: "rgba(0,255,65,0.3)",
-  dim: "rgba(0,255,65,0.6)",
-};
-```
-
-Applied via the existing `isTerminal ? { ... } : undefined` inline style pattern, extended with an `isAutoFull` check.
-
+This keeps the existing action drawer intact while adding a discovery-friendly layer of contextual prompts on top.
