@@ -282,12 +282,30 @@ export const DELIVERY_OPTIONS: Record<string, DeliveryOption[]> = {
 };
 
 // ═══ AI MODELS ═══════════════════════════════════════════════
-export const AI_MODELS = [
-  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash", tag: "Fast" },
-  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash", tag: "Balanced" },
-  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro", tag: "Powerful" },
-  { id: "openai/gpt-5-mini", label: "GPT-5 Mini", tag: "Smart" },
-  { id: "openai/gpt-5", label: "GPT-5", tag: "Premium" },
+export type AIModelGroup = "gemini" | "openai" | "image";
+
+export interface AIModel {
+  id: string;
+  label: string;
+  tag: string;
+  group: AIModelGroup;
+}
+
+export const AI_MODELS: AIModel[] = [
+  // Google Gemini
+  { id: "google/gemini-3-pro-preview", label: "Gemini 3 Pro", tag: "Next-Gen", group: "gemini" },
+  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash", tag: "Fast", group: "gemini" },
+  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro", tag: "Powerful", group: "gemini" },
+  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash", tag: "Balanced", group: "gemini" },
+  { id: "google/gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite", tag: "Lite", group: "gemini" },
+  // OpenAI
+  { id: "openai/gpt-5.2", label: "GPT-5.2", tag: "Latest", group: "openai" },
+  { id: "openai/gpt-5", label: "GPT-5", tag: "Premium", group: "openai" },
+  { id: "openai/gpt-5-mini", label: "GPT-5 Mini", tag: "Smart", group: "openai" },
+  { id: "openai/gpt-5-nano", label: "GPT-5 Nano", tag: "Speed", group: "openai" },
+  // Image Generation
+  { id: "google/gemini-3-pro-image-preview", label: "Gemini 3 Pro Image", tag: "Image", group: "image" },
+  { id: "google/gemini-2.5-flash-image", label: "Gemini 2.5 Flash Image", tag: "Image", group: "image" },
 ];
 
 export const MODEL_STORAGE_KEY = "portal_command_center_model";
