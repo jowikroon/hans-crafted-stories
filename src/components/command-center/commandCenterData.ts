@@ -282,7 +282,7 @@ export const DELIVERY_OPTIONS: Record<string, DeliveryOption[]> = {
 };
 
 // ═══ AI MODELS ═══════════════════════════════════════════════
-export type AIModelGroup = "gemini" | "openai" | "image";
+export type AIModelGroup = "gemini" | "openai" | "image" | "ollama";
 
 export interface AIModel {
   id: string;
@@ -306,6 +306,9 @@ export const AI_MODELS: AIModel[] = [
   // Image Generation
   { id: "google/gemini-3-pro-image-preview", label: "Gemini 3 Pro Image", tag: "Image", group: "image" },
   { id: "google/gemini-2.5-flash-image", label: "Gemini 2.5 Flash Image", tag: "Image", group: "image" },
+  // Local / VPS (Ollama on VPS2)
+  { id: "ollama/qwen2.5:7b", label: "Qwen 2.5 7B", tag: "7B", group: "ollama" },
+  { id: "ollama/llama3.2:3b", label: "Llama 3.2 3B", tag: "3B", group: "ollama" },
 ];
 
 export const MODEL_STORAGE_KEY = "portal_command_center_model";

@@ -92,6 +92,32 @@ serve(async (req) => {
     }
     const selectedModel = model || "google/gemini-3-flash-preview";
 
+    // Option 0: Ollama models on VPS2 — OpenAI-compatible endpoint, no key needed
+    if (selectedModel.startsWith("ollama/")) {
+      const ollamaModel = selectedModel.replace("ollama/", "");
+      const ollamaBase = Deno.env.get("OLLAMA_BASE_URL") || "http://187.124.2.66:11434";
+      const ollamaRes = await fetch(`${ollamaBase}/v1/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: ollamaModel,
+          messages: [{ role: "system", content: systemContent }, ...messages],
+          stream: true,
+        }),
+      });
+      if (!ollamaRes.ok) {
+        const errText = await ollamaRes.text();
+        console.error("Ollama API error:", ollamaRes.status, errText);
+        return new Response(JSON.stringify({ error: "Ollama API error", detail: errText }), {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(ollamaRes.body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
+
     // Option A: prefer direct Gemini API when GEMINI_API_KEY is set
     const geminiKey = Deno.env.get("GEMINI_API_KEY");
     if (geminiKey) {
