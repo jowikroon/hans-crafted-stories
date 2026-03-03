@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow, FileJson, Sparkles, Pencil, Check, X, Bot, Search, Zap, BarChart3, Code, Puzzle, Cpu } from "lucide-react";
+import { ExternalLink, Wrench, Workflow, Globe, Plus, Settings, AppWindow, FileJson, Sparkles, Pencil, Check, X, Bot, Search, Zap, BarChart3, Code, Puzzle, Cpu, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { portalApi, PortalTool } from "@/lib/api/portal";
@@ -30,6 +30,8 @@ interface PortalToolsTabProps {
 }
 
 const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabProps) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [tools, setTools] = useState<PortalTool[]>([]);
   const [toolsLoading, setToolsLoading] = useState(false);
@@ -53,6 +55,15 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
   const [isEditMode, setIsEditMode] = useState(false);
   const [cardSizes, setCardSizes] = useState<Record<string, CardSize>>({});
   const seedingRef = useRef(false);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    if (menuOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -240,168 +251,160 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
 
   return (
     <>
-      {/* Top bar: filters (mobile) + edit mode */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        {/* Mobile horizontal filter chips */}
-        {availableCategories.length > 1 && (
-          <div className="flex flex-wrap gap-2 lg:hidden">
+      {/* Top bar: dropdown menu */}
+      <div className="mb-6 flex items-center justify-end">
+        <div ref={menuRef} className="relative">
+          {isEditMode ? (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleSaveLayout}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20"
+              >
+                <Check size={12} />
+                Save Layout
+              </button>
+              <button
+                onClick={() => setIsEditMode(false)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+              >
+                <X size={12} />
+                Cancel
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={() => setActiveFilter(null)}
-              className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
-                !activeFilter ? "border-white/20 bg-white/[0.08] text-white shadow-sm" : "border-white/[0.08] text-white/40 hover:text-white/70"
+              onClick={() => setMenuOpen((v) => !v)}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
+                menuOpen
+                  ? "border-primary/30 bg-primary/10 text-foreground"
+                  : "border-border text-muted-foreground hover:border-primary/20 hover:text-foreground"
               }`}
             >
-              All <span className="ml-1 opacity-50">({toolCounts.all})</span>
+              <SlidersHorizontal size={12} />
+              {activeFilter ? (categoryConfig[activeFilter] || categoryConfig.general).label : "Filter & Edit"}
+              <ChevronDown size={10} className={`transition-transform ${menuOpen ? "rotate-180" : ""}`} />
             </button>
-            {availableCategories.map((cat) => {
-              const cfg = categoryConfig[cat] || categoryConfig.general;
-              const count = toolCounts[cat] || 0;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setActiveFilter(activeFilter === cat ? null : cat)}
-                  className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
-                    activeFilter === cat ? cfg.color + " border-current shadow-sm" : "border-white/[0.08] text-white/40 hover:text-white/70"
-                  }`}
-                >
-                  {cfg.label} <span className="ml-1 opacity-50">({count})</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+          )}
 
-        {isAdmin && (
-          <div className="ml-auto flex items-center">
-            {isEditMode ? (
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={handleSaveLayout}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20"
-                >
-                  <Check size={12} />
-                  Save Layout
-                </button>
-                <button
-                  onClick={() => setIsEditMode(false)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs font-medium text-white/40 transition-all hover:bg-white/[0.04] hover:text-white/70"
-                >
-                  <X size={12} />
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setIsEditMode(true)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs font-medium text-white/40 transition-all hover:border-white/20 hover:text-white/70"
+          <AnimatePresence>
+            {menuOpen && !isEditMode && (
+              <motion.div
+                initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-border bg-card shadow-xl shadow-foreground/[0.05]"
               >
-                <Pencil size={12} />
-                Edit Layout
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Two-column layout: Grid + Categories sidebar */}
-      <div className="flex gap-6">
-        {/* Main grid */}
-        <div className="min-w-0 flex-1">
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={visibleTools.map((t) => t.id)} strategy={rectSortingStrategy}>
-              <div className={`grid gap-4 sm:gap-5 ${
-                isEditMode
-                  ? "grid-cols-2 sm:grid-cols-3 auto-rows-[110px] sm:auto-rows-[130px] md:auto-rows-[150px]"
-                  : "grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-auto"
-              }`}>
-                <AnimatePresence mode="popLayout">
-                  {visibleTools.map((tool, i) => (
-                    <motion.div
-                      key={tool.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.25, delay: i * 0.03 }}
-                    >
-                      <SortableToolCard
-                        tool={tool}
-                        index={i}
-                        isAdmin={isAdmin}
-                        isEditMode={isEditMode}
-                        cardSize={isEditMode ? (cardSizes[tool.id] || "1x1") : "1x1"}
-                        IconComponent={getIcon(tool.icon)}
-                        onToolClick={handleToolClick}
-                        onOpenTool={handleOpenTool}
-                        onSettings={(t) => setSettingsTool(t)}
-                        onCycleSize={handleCycleSize}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-
-                {isAdmin && !isEditMode && (
-                  <motion.button
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: visibleTools.length * 0.05 }}
-                    onClick={() => setShowAddTool(true)}
-                    className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-white/[0.08] p-4 text-white/20 transition-all hover:border-white/20 hover:text-white/40"
-                  >
-                    <div className="text-center">
-                      <Plus size={20} className="mx-auto mb-1" />
-                      <p className="text-xs">Add tool</p>
-                    </div>
-                  </motion.button>
-                )}
-              </div>
-            </SortableContext>
-          </DndContext>
-        </div>
-
-        {/* Right-side categories panel (desktop only) */}
-        {availableCategories.length > 1 && (
-          <div className="hidden w-44 shrink-0 lg:block">
-            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/30">
-              Categories
-            </p>
-            <div className="flex flex-col gap-1">
-              <button
-                onClick={() => setActiveFilter(null)}
-                className={`flex items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-medium transition-all ${
-                  !activeFilter
-                    ? "bg-white/[0.08] text-white"
-                    : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
-                }`}
-              >
-                <span>All</span>
-                <span className="tabular-nums opacity-50">{toolCounts.all}</span>
-              </button>
-              {availableCategories.map((cat) => {
-                const cfg = categoryConfig[cat] || categoryConfig.general;
-                const count = toolCounts[cat] || 0;
-                const isActive = activeFilter === cat;
-                return (
+                {/* Category filters */}
+                <div className="p-1">
+                  <p className="px-3 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
+                    Categories
+                  </p>
                   <button
-                    key={cat}
-                    onClick={() => setActiveFilter(isActive ? null : cat)}
-                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-medium transition-all ${
-                      isActive
-                        ? "bg-white/[0.08] text-white"
-                        : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
+                    onClick={() => { setActiveFilter(null); setMenuOpen(false); }}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-all ${
+                      !activeFilter
+                        ? "bg-primary/10 font-medium text-foreground"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                     }`}
                   >
-                    <span className="flex items-center gap-2">
-                      <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                      {cfg.label}
-                    </span>
-                    <span className="tabular-nums opacity-50">{count}</span>
+                    <span>All</span>
+                    <span className="tabular-nums text-[10px] opacity-50">{toolCounts.all}</span>
                   </button>
-                );
-              })}
+                  {availableCategories.map((cat) => {
+                    const cfg = categoryConfig[cat] || categoryConfig.general;
+                    const count = toolCounts[cat] || 0;
+                    const isActive = activeFilter === cat;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => { setActiveFilter(isActive ? null : cat); setMenuOpen(false); }}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-all ${
+                          isActive
+                            ? "bg-primary/10 font-medium text-foreground"
+                            : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                          {cfg.label}
+                        </span>
+                        <span className="tabular-nums text-[10px] opacity-50">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Edit layout action */}
+                {isAdmin && (
+                  <div className="border-t border-border p-1">
+                    <button
+                      onClick={() => { setIsEditMode(true); setMenuOpen(false); }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                    >
+                      <Pencil size={12} />
+                      Edit Layout
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={visibleTools.map((t) => t.id)} strategy={rectSortingStrategy}>
+            <div className={`grid gap-4 sm:gap-5 ${
+              isEditMode
+                ? "grid-cols-2 sm:grid-cols-3 auto-rows-[110px] sm:auto-rows-[130px] md:auto-rows-[150px]"
+                : "grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-auto"
+            }`}>
+              <AnimatePresence mode="popLayout">
+                {visibleTools.map((tool, i) => (
+                  <motion.div
+                    key={tool.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.25, delay: i * 0.03 }}
+                  >
+                    <SortableToolCard
+                      tool={tool}
+                      index={i}
+                      isAdmin={isAdmin}
+                      isEditMode={isEditMode}
+                      cardSize={isEditMode ? (cardSizes[tool.id] || "1x1") : "1x1"}
+                      IconComponent={getIcon(tool.icon)}
+                      onToolClick={handleToolClick}
+                      onOpenTool={handleOpenTool}
+                      onSettings={(t) => setSettingsTool(t)}
+                      onCycleSize={handleCycleSize}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {isAdmin && !isEditMode && (
+                <motion.button
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: visibleTools.length * 0.05 }}
+                  onClick={() => setShowAddTool(true)}
+                  className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border p-4 text-muted-foreground/30 transition-all hover:border-primary/20 hover:text-muted-foreground/60"
+                >
+                  <div className="text-center">
+                    <Plus size={20} className="mx-auto mb-1" />
+                    <p className="text-xs">Add tool</p>
+                  </div>
+                </motion.button>
+              )}
             </div>
-          </div>
-        )}
+          </SortableContext>
+        </DndContext>
       </div>
 
       <ToolPreviewModal tool={previewTool} onClose={() => setPreviewTool(null)} onEdit={handleEditFromPreview} onOpen={handleOpenTool} onToolUpdated={reloadTools} />
