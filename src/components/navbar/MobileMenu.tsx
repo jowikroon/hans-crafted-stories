@@ -68,11 +68,11 @@ const MobileMenu = ({ open, onClose, links, user, lang, setLang }: MobileMenuPro
         >
           <div className="flex flex-col gap-1 px-6 py-5">
             {links.map((link) => (
+              <motion.div key={link.to} whileTap={{ scale: 0.95 }}>
               <Link
-                key={link.to}
                 to={link.to}
                 onClick={handleClick}
-                className={`rounded-lg px-3 py-3 text-[13px] uppercase tracking-[0.08em] transition-colors ${
+                className={`block rounded-lg px-3 py-3 text-[13px] uppercase tracking-[0.08em] transition-colors ${
                   isActive(link.to)
                     ? "text-foreground font-medium bg-muted/50"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
@@ -80,6 +80,7 @@ const MobileMenu = ({ open, onClose, links, user, lang, setLang }: MobileMenuPro
               >
                 {link.label}
               </Link>
+              </motion.div>
             ))}
             <div className="my-2 h-px bg-border/50" />
             <span className="px-3 py-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
