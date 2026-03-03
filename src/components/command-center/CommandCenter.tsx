@@ -507,11 +507,13 @@ const CommandCenter = ({ mode, onClose, onAutoFullChange }: CommandCenterProps) 
                     <div className={`h-px flex-1 bg-current ${isAutoFull ? "" : isTerminal ? "text-emerald-500/30" : "text-orange-500/30"}`} />
                   </div>
                   {ACTIONS[cc.activeCat].history.map((h, i) => (
-                    <button key={i} onClick={() => cc.rerunHistory(h)}
+                    <motion.button key={i} onClick={() => cc.rerunHistory(h)}
+                      whileTap={{ scale: 0.97, backgroundColor: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.12)" : "rgba(16,185,129,0.12)") : "rgba(249,115,22,0.12)" }}
+                      transition={{ duration: 0.15 }}
                       className="flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-left text-[10px] text-muted-foreground/50 transition-all hover:text-foreground">
                       <span className="truncate">{h.cmd}</span>
                       <span className="shrink-0 text-[9px]">{h.ago}</span>
-                    </button>
+                    </motion.button>
                   ))}
                 </>
               )}
