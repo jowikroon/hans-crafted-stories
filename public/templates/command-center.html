@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>HansAI — Command Center Template</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #07070B;
+    --bg-raised: #0C0C14;
+    --bg-input: #09090F;
+    --border: #12121E;
+    --border-hover: #1A1A28;
+    --text: #A0A4AA;
+    --text-bright: #E8E8F0;
+    --text-dim: #3A3A4A;
+    --accent: #10B981;
+    --accent-dim: rgba(16,185,129,0.6);
+    --accent-bg: rgba(16,185,129,0.1);
+    --accent-bg2: rgba(16,185,129,0.05);
+    --error: #EF4444;
+    --orange: #F97316;
+    --font: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    font-size: 12px;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Pipeline Bar ────────────────────────────── */
+  .pipeline-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-raised);
+  }
+  .pipeline-bar.hidden { display: none; }
+  .pipeline-step {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    transition: all .3s;
+  }
+  .pipeline-step.active { color: var(--accent); animation: pulse 1.5s ease-in-out infinite; }
+  .pipeline-step.done { color: #6EE7B7; }
+  .pipeline-sep { font-size: 8px; letter-spacing: 3px; color: rgba(255,255,255,0.06); }
+
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Header ──────────────────────────────────── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 16px;
+    background: linear-gradient(180deg, #0C0C14 0%, #09090F 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-icon {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    background: var(--accent-bg);
+    font-size: 14px;
+  }
+  .header-title { font-size: 12px; font-weight: 600; color: var(--text-bright); }
+  .header-sub { font-size: 9px; color: var(--text); }
+  .header-right { display: flex; align-items: center; gap: 6px; }
+
+  /* ── Model Picker ────────────────────────────── */
+  .model-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-hover);
+    background: var(--bg-raised);
+    color: var(--text);
+    font-size: 10px;
+    font-family: var(--font);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .model-btn:hover { border-color: var(--accent); }
+  .model-btn .bot-icon { color: rgba(16,185,129,0.8); }
+  .model-dropdown {
+    position: absolute; right: 0; top: 100%;
+    margin-top: 6px;
+    width: 208px;
+    border-radius: 12px;
+    border: 1px solid var(--border-hover);
+    background: var(--bg-raised);
+    padding: 6px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    z-index: 200;
+    display: none;
+  }
+  .model-dropdown.open { display: block; }
+  .model-option {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 11px;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .model-option:hover { background: var(--bg-input); color: var(--text-bright); }
+  .model-option.selected { color: var(--accent); }
+  .model-tag {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--bg-input);
+    font-size: 8px;
+    font-weight: 700;
+  }
+
+  .icon-btn {
+    padding: 6px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: rgba(160,164,170,0.4);
+    cursor: pointer;
+    transition: all .2s;
+    font-size: 12px;
+  }
+  .icon-btn:hover { color: var(--text-bright); }
+  .icon-btn.active { color: var(--accent); background: var(--accent-bg); }
+
+  /* ── Category Tabs ───────────────────────────── */
+  .category-nav {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    padding: 4px 16px;
+    background: #08080E;
+    scrollbar-width: none;
+  }
+  .category-nav::-webkit-scrollbar { display: none; }
+  .cat-tab {
+    white-space: nowrap;
+    padding: 6px 10px;
+    border-radius: 6px 6px 0 0;
+    font-size: 10px;
+    font-weight: 400;
+    font-family: var(--font);
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .cat-tab:hover { color: inherit; }
+  .cat-tab.active { font-weight: 600; }
+
+  /* ── Main Content ────────────────────────────── */
+  .main-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 12px 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  /* ── Action Drawer ───────────────────────────── */
+  .action-drawer {
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-hover);
+    background: var(--bg-raised);
+    padding: 12px;
+    display: none;
+    animation: slideDown .2s ease-out;
+  }
+  .action-drawer.open { display: block; }
+
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .hero-card {
+    border-radius: 8px;
+    border: 1px solid var(--border-hover);
+    background: var(--bg-input);
+    padding: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: var(--font);
+  }
+  .hero-card:hover { transform: scale(1.01); border-color: var(--accent); }
+  .hero-card h4 { font-size: 12px; font-weight: 600; color: var(--text-bright); margin-bottom: 4px; }
+  .hero-card p { font-size: 10px; color: var(--text); margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .tool-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tool-tag { padding: 2px 6px; border-radius: 4px; background: var(--bg); font-size: 8px; color: var(--text); }
+
+  .compact-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .2s;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    font-family: var(--font);
+    color: var(--text);
+  }
+  .compact-row:hover { background: var(--bg-input); color: var(--text-bright); }
+  .compact-row .label { font-size: 11px; font-weight: 500; }
+  .compact-row .sub { font-size: 10px; opacity: .5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .history-sep {
+    display: flex; align-items: center; gap: 8px;
+    margin: 8px 0;
+    color: rgba(16,185,129,0.3);
+  }
+  .history-sep .line { flex: 1; height: 1px; background: currentColor; }
+  .history-sep span { font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+
+  .history-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .2s;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    font-family: var(--font);
+    color: rgba(160,164,170,0.5);
+    font-size: 10px;
+  }
+  .history-row:hover { color: var(--text-bright); }
+  .history-row .cmd { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .history-row .ago { flex-shrink: 0; font-size: 9px; }
+
+  /* ── Delivery Picker ─────────────────────────── */
+  .delivery-picker {
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-hover);
+    background: var(--bg-raised);
+    padding: 12px;
+    display: none;
+    animation: slideDown .2s ease-out;
+  }
+  .delivery-picker.open { display: block; }
+  .delivery-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-dim); margin-bottom: 8px; }
+
+  .delivery-option {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: all .2s;
+    margin-bottom: 6px;
+    font-family: var(--font);
+    color: var(--text);
+  }
+  .delivery-option:hover { border-color: var(--accent); }
+  .delivery-option.best { border-color: rgba(16,185,129,0.3); }
+  .delivery-option .icon { font-size: 18px; }
+  .delivery-option .dlabel { font-size: 12px; font-weight: 500; color: var(--text-bright); }
+  .delivery-option .dnote { font-size: 10px; color: var(--text); }
+  .delivery-option .best-badge {
+    margin-left: auto;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(16,185,129,0.2);
+    color: var(--accent);
+    font-size: 8px;
+    font-weight: 700;
+  }
+  .back-btn {
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font);
+  }
+  .back-btn:hover { color: var(--text-bright); }
+
+  /* ── Messages ────────────────────────────────── */
+  .message {
+    margin-bottom: 8px;
+    max-width: 85%;
+  }
+  .message.user { margin-left: auto; text-align: right; }
+  .message .bubble {
+    display: inline-block;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    line-height: 1.6;
+    text-align: left;
+  }
+  .message.user .bubble { background: rgba(16,185,129,0.1); color: #6EE7B7; }
+  .message.assistant .bubble { color: var(--text-bright); }
+  .message.system .bubble { color: var(--text); }
+  .message.workflow .bubble { background: var(--accent-bg2); color: #6EE7B7; }
+  .message.error .bubble { background: rgba(239,68,68,0.1); color: var(--error); }
+
+  .message .bubble code {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--bg-input);
+    font-family: var(--font);
+    font-size: 11px;
+    color: var(--accent);
+  }
+  .message .bubble strong { font-weight: 600; }
+
+  /* ── Exec spinner ────────────────────────────── */
+  .exec-spinner {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .exec-spinner.visible { display: flex; }
+  .exec-spinner .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  .exec-spinner span { font-size: 12px; color: var(--text); }
+
+  /* ── Thinking indicator ──────────────────────── */
+  .thinking { display: none; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .thinking.visible { display: flex; }
+  .thinking .spinner {
+    width: 12px; height: 12px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  .thinking span { font-size: 10px; color: var(--text); }
+
+  /* ── Input Bar ───────────────────────────────── */
+  .input-bar {
+    flex-shrink: 0;
+    padding: 8px 16px 12px;
+    background: var(--bg);
+  }
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 768px;
+    margin: 0 auto;
+  }
+  .prompt-char { font-size: 10px; color: var(--accent-dim); }
+  .input-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--text);
+  }
+  .input-field::placeholder { color: rgba(160,164,170,0.4); }
+  .send-btn {
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: rgba(160,164,170,0.2);
+    cursor: pointer;
+    transition: all .2s;
+    font-size: 14px;
+  }
+  .send-btn.active { color: var(--accent); }
+
+  /* ── History Panel ───────────────────────────── */
+  .history-panel {
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-hover);
+    background: var(--bg-raised);
+    padding: 8px;
+    display: none;
+  }
+  .history-panel.open { display: block; }
+  .history-panel .title { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(160,164,170,0.6); margin-bottom: 4px; }
+  .history-panel .entry {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--text);
+    transition: all .2s;
+  }
+  .history-panel .entry:hover { background: var(--bg-input); color: var(--text-bright); }
+  .history-panel .entry .preview { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .history-panel .entry .date { flex-shrink: 0; font-size: 9px; color: rgba(160,164,170,0.4); }
+
+  /* ── Footer credit ───────────────────────────── */
+  .template-credit {
+    padding: 8px 16px;
+    text-align: center;
+    font-size: 9px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+  }
+  .template-credit a { color: var(--accent); text-decoration: none; }
+  .template-credit a:hover { text-decoration: underline; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .pipeline-step span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Pipeline Bar -->
+<div class="pipeline-bar hidden" id="pipeline">
+  <div class="pipeline-step" data-stage="sending"><span>TRANSMIT</span></div>
+  <span class="pipeline-sep">···</span>
+  <div class="pipeline-step" data-stage="routing"><span>INTENT</span></div>
+  <span class="pipeline-sep">···</span>
+  <div class="pipeline-step" data-stage="processing"><span>ANALYZE</span></div>
+  <span class="pipeline-sep">···</span>
+  <div class="pipeline-step" data-stage="generating"><span>SYNTHESIZE</span></div>
+  <span class="pipeline-sep">···</span>
+  <div class="pipeline-step" data-stage="done"><span>COMPLETE</span></div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">⌘</div>
+    <div>
+      <div class="header-title">Command Center</div>
+      <div class="header-sub">Intent · Workflows · AI</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div style="position:relative" id="model-picker-wrap">
+      <button class="model-btn" id="model-btn">
+        <span class="bot-icon">🤖</span>
+        <span id="model-label">Gemini 3 Flash</span>
+        <span>▾</span>
+      </button>
+      <div class="model-dropdown" id="model-dropdown"></div>
+    </div>
+    <button class="icon-btn" id="history-btn" title="History">🕒</button>
+  </div>
+</div>
+
+<!-- Category Tabs -->
+<nav class="category-nav" id="cat-nav"></nav>
+
+<!-- Main Content -->
+<div class="main-content" id="main-content">
+  <div class="history-panel" id="history-panel">
+    <div class="title">History</div>
+    <div id="history-entries"></div>
+  </div>
+  <div class="action-drawer" id="action-drawer"></div>
+  <div class="delivery-picker" id="delivery-picker"></div>
+  <div class="exec-spinner" id="exec-spinner"><div class="spinner"></div><span>Executing…</span></div>
+  <div id="messages"></div>
+  <div class="thinking" id="thinking"><div class="spinner"></div><span>Thinking…</span></div>
+</div>
+
+<!-- Input Bar -->
+<div class="input-bar">
+  <div class="input-row">
+    <span class="prompt-char">$</span>
+    <input class="input-field" id="input" placeholder="Type a command or ask anything…" autocomplete="off">
+    <button class="send-btn" id="send-btn">➤</button>
+  </div>
+</div>
+
+<!-- Credit -->
+<div class="template-credit">
+  HansAI Command Center Template · <a href="https://hansvanleeuwen.com" target="_blank">hansvanleeuwen.com</a>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATA — All V3 categories, actions, delivery options, AI models
+// ══════════════════════════════════════════════════════════════
+
+const CATEGORIES = {
+  pricing:  { icon: "💰", label: "PRICING",  color: "#EAB308", desc: "Monitor, compare, alert" },
+  seo:      { icon: "📈", label: "SEO",      color: "#22C55E", desc: "Rank, audit, optimize" },
+  product:  { icon: "📦", label: "PRODUCT",  color: "#A78BFA", desc: "Titles, content, catalog" },
+  research: { icon: "🔍", label: "RESEARCH", color: "#60A5FA", desc: "Market, gaps, trends" },
+  automate: { icon: "🔄", label: "AUTOMATE", color: "#F472B6", desc: "Schedule, chain, monitor" },
+  infra:    { icon: "🌐", label: "INFRA",    color: "#818CF8", desc: "Deploy, logs, health" },
+  report:   { icon: "📊", label: "REPORT",   color: "#2DD4BF", desc: "KPIs, traffic, rankings" },
+  comms:    { icon: "📬", label: "COMMS",    color: "#FB923C", desc: "Email, calendar, Slack" },
+  manage:   { icon: "📋", label: "MANAGE",   color: "#94A3B8", desc: "Tasks, sprints, boards" },
+  ailab:    { icon: "🧠", label: "AI LAB",   color: "#C084FC", desc: "Generate, analyze, learn" },
+};
+
+const ACTIONS = {
+  pricing: {
+    hero: [
+      { id: "p-pulse", label: "Am I being undercut?", sub: "Scan active products — flag every SKU where a competitor is cheaper right now", tools: ["Bright Data", "OpenAI", "n8n"], deliveryType: "data" },
+      { id: "p-check", label: "Quick price check", sub: "Instant comparison on specific SKUs against your known competitors", tools: ["Bright Data", "Google Sheets"], deliveryType: "data" },
+    ],
+    compact: [
+      { id: "p-monitor", label: "Set up competitor monitor", sub: "Recurring tracker with change alerts", tools: ["Bright Data", "OpenAI", "n8n Schedule"], deliveryType: "data" },
+      { id: "p-margin", label: "Margin analysis by category", sub: "Revenue × cost × positioning per category", tools: ["Supabase", "OpenAI"], deliveryType: "report" },
+      { id: "p-history", label: "Price trend for a product", sub: "90-day movements for you and competitors on one SKU", tools: ["Bright Data"], deliveryType: "report" },
+      { id: "p-alert", label: "Create price drop alert", sub: "Instant notification when a competitor goes below threshold", tools: ["n8n", "Slack/Gmail"], deliveryType: "alert" },
+    ],
+    history: [
+      { cmd: "compare brake pads vs autodoc + winparts + proxyparts", ago: "2h ago", out: "📗 340 SKU comparisons → 28 undercut" },
+      { cmd: "alert when proxyparts drops oil filters < €8", ago: "Yesterday", out: "🔔 Active — checking every 6h" },
+      { cmd: "full competitor sheet Q1 NL — 4 competitors", ago: "3 days", out: "📗 1,200 SKUs tracked across 4 stores" },
+      { cmd: "margin analysis brake category all markets", ago: "1 week", out: "📊 Avg margin 34% — 12 repricing flags" },
+    ],
+  },
+  seo: {
+    hero: [
+      { id: "s-rank", label: "How am I ranking today?", sub: "Current keyword positions vs last week — winners, losers, and movers", tools: ["Ahrefs Rank Tracker"], deliveryType: "report" },
+      { id: "s-bleed", label: "Pages losing traffic", sub: "Product and category pages with declining organic visits this month", tools: ["Ahrefs Site Explorer"], deliveryType: "report" },
+    ],
+    compact: [
+      { id: "s-gaps", label: "Keywords I'm missing", sub: "What competitors rank for that you don't", tools: ["Ahrefs Organic Keywords"], deliveryType: "data" },
+      { id: "s-audit", label: "Full technical audit", sub: "Crawl issues, broken links, speed, meta coverage", tools: ["Ahrefs Site Audit"], deliveryType: "report" },
+      { id: "s-links", label: "Backlink comparison", sub: "Your link profile vs a competitor", tools: ["Ahrefs Backlinks"], deliveryType: "report" },
+      { id: "s-titles", label: "Generate SEO titles", sub: "AutoSEO Brain — batch optimized titles for any SKU set", tools: ["AutoSEO Brain v2", "OpenAI"], deliveryType: "content" },
+    ],
+    history: [
+      { cmd: "full audit connectcarparts.nl deep", ago: "4h ago", out: "📄 DR 42 — 156 issues, 23 critical" },
+      { cmd: "keyword gaps vs autodoc.nl NL market", ago: "Yesterday", out: "📗 287 missing keywords, 45 quick wins" },
+      { cmd: "generate titles 200 filter SKUs NL+DE", ago: "2 days", out: "📗 200 titles — avg score 87/100" },
+      { cmd: "pages losing traffic this month", ago: "5 days", out: "📉 23 pages down >20% — actions created" },
+    ],
+  },
+  product: {
+    hero: [
+      { id: "pr-weak", label: "Products needing attention", sub: "Low traffic, thin content, missing meta, poor conversion", tools: ["Ahrefs", "Supabase"], deliveryType: "data" },
+      { id: "pr-batch", label: "Batch SEO title generator", sub: "AutoSEO Brain v2 — multi-market titles with intent detection", tools: ["AutoSEO Brain v2", "Magento API"], deliveryType: "content" },
+    ],
+    compact: [
+      { id: "pr-desc", label: "AI descriptions for new stock", sub: "Unique SEO descriptions for recently added products", tools: ["OpenAI", "Supabase"], deliveryType: "content" },
+      { id: "pr-cat", label: "Category structure audit", sub: "Hierarchy depth, internal linking, SEO coverage", tools: ["Ahrefs Site Explorer"], deliveryType: "report" },
+      { id: "pr-thin", label: "Find weak product content", sub: "SKUs with short descriptions or missing images", tools: ["Supabase", "Magento API"], deliveryType: "data" },
+      { id: "pr-bulk", label: "Bulk attribute update", sub: "Mass-update tags, compatibility data, or specifications", tools: ["Magento API", "Supabase"], deliveryType: "action" },
+    ],
+    history: [
+      { cmd: "batch SEO titles 500 brake pads NL+DE", ago: "1 day", out: "📗 489 optimal titles — Channable exported" },
+      { cmd: "find weak descriptions exhaust category", ago: "3 days", out: "⚠️ 67 SKUs flagged under 100 chars" },
+    ],
+  },
+  research: {
+    hero: [
+      { id: "r-land", label: "Who's winning in my niche?", sub: "Top competitors ranked by organic traffic, domain authority", tools: ["Ahrefs Batch Analysis"], deliveryType: "report" },
+      { id: "r-trend", label: "What's trending right now?", sub: "Rising search terms, seasonal shifts, emerging categories", tools: ["Ahrefs Keywords Explorer"], deliveryType: "report" },
+    ],
+    compact: [
+      { id: "r-deep", label: "Deep-dive a competitor", sub: "Full breakdown: top pages, keywords, backlinks, strategy", tools: ["Ahrefs"], deliveryType: "report" },
+      { id: "r-gaps", label: "Market gaps in my category", sub: "Underserved queries with high volume, low competition", tools: ["Ahrefs"], deliveryType: "data" },
+      { id: "r-season", label: "Seasonal demand forecast", sub: "Historical volume patterns for stock + campaign planning", tools: ["Ahrefs"], deliveryType: "report" },
+      { id: "r-expand", label: "NL vs DE market comparison", sub: "Side-by-side metrics for expansion planning", tools: ["Ahrefs"], deliveryType: "report" },
+    ],
+    history: [
+      { cmd: "top 10 auto parts NL organic traffic", ago: "2 days", out: "🏆 autodoc #1, bol.com #2, winparts #3" },
+      { cmd: "seasonal trends winter tires 2024-2026", ago: "1 week", out: "📈 Peak Oct-Nov, +340% volume swing" },
+    ],
+  },
+  automate: {
+    hero: [
+      { id: "a-status", label: "Status of my automations", sub: "Active workflows, last run times, success rates", tools: ["n8n"], deliveryType: "report" },
+      { id: "a-sched", label: "Schedule a workflow", sub: "Set any workflow to run daily, weekly, or custom cron", tools: ["n8n Schedule Trigger"], deliveryType: "action" },
+    ],
+    compact: [
+      { id: "a-build", label: "Build new automation", sub: "Describe it — AI builds the n8n workflow", tools: ["n8n", "Claude"], deliveryType: "action" },
+      { id: "a-stock", label: "Stock level alerts", sub: "Notify when products drop below threshold", tools: ["n8n", "Magento API"], deliveryType: "alert" },
+      { id: "a-chain", label: "Chain workflows together", sub: "Connect output of one workflow as input to another", tools: ["n8n Workflow"], deliveryType: "action" },
+      { id: "a-logs", label: "Execution logs", sub: "Debug recent runs — errors, timing, data flow", tools: ["n8n"], deliveryType: "report" },
+    ],
+    history: [
+      { cmd: "schedule SEO brain every Monday 6AM", ago: "3 days", out: "✅ Active — next run Mon 6:00 CET" },
+      { cmd: "status all workflows", ago: "Yesterday", out: "📡 2 active, 0 errors, 14 runs/week" },
+    ],
+  },
+  infra: {
+    hero: [
+      { id: "i-status", label: "Is everything running?", sub: "Deploy status, error count, database health — one glance", tools: ["Cloudflare", "Vercel", "Supabase"], deliveryType: "report" },
+      { id: "i-errors", label: "Show me recent errors", sub: "Errors across all services in the last 24 hours", tools: ["Supabase Logs", "Vercel"], deliveryType: "report" },
+    ],
+    compact: [
+      { id: "i-deploy", label: "Push a deploy", sub: "Trigger deployment to Cloudflare or Vercel", tools: ["Vercel", "Cloudflare"], deliveryType: "action" },
+      { id: "i-db", label: "Database health", sub: "Tables, advisories, connections, migration status", tools: ["Supabase"], deliveryType: "report" },
+      { id: "i-dns", label: "DNS & domain check", sub: "Records, SSL status, propagation", tools: ["Cloudflare DNS"], deliveryType: "data" },
+      { id: "i-edge", label: "Edge function status", sub: "List Supabase functions and Cloudflare workers", tools: ["Supabase", "Cloudflare"], deliveryType: "data" },
+    ],
+    history: [
+      { cmd: "deploy status hansvanleeuwen.com", ago: "1h ago", out: "🚀 Live — build 847, 09:12 CET" },
+      { cmd: "error logs last 24h all services", ago: "Yesterday", out: "🟢 0 errors across all services" },
+    ],
+  },
+  report: {
+    hero: [
+      { id: "rp-week", label: "This week's performance", sub: "Traffic, keyword movements, competitor changes, top pages", tools: ["Ahrefs Web Analytics"], deliveryType: "report" },
+      { id: "rp-where", label: "Where does my traffic come from?", sub: "Source breakdown: organic, direct, referral, social", tools: ["Ahrefs Web Analytics"], deliveryType: "report" },
+    ],
+    compact: [
+      { id: "rp-top", label: "Top pages by traffic", sub: "Best performing URLs ranked by organic visits", tools: ["Ahrefs"], deliveryType: "data" },
+      { id: "rp-vs", label: "Rankings vs competitors", sub: "Your positions vs theirs on shared keywords", tools: ["Ahrefs Rank Tracker"], deliveryType: "report" },
+      { id: "rp-moves", label: "Keyword position changes", sub: "Winners and losers — what moved this week", tools: ["Ahrefs"], deliveryType: "data" },
+      { id: "rp-custom", label: "Build custom dashboard", sub: "Monday.com or sheet with your chosen metrics", tools: ["Monday.com", "Google Sheets"], deliveryType: "action" },
+    ],
+    history: [
+      { cmd: "weekly performance connectcarparts.nl", ago: "Monday", out: "📧 Sent — traffic +12%, 3 rank gains" },
+      { cmd: "top 50 pages by organic traffic", ago: "3 days", out: "🏆 Brake pads hub #1 at 4.2K/mo" },
+    ],
+  },
+  comms: {
+    hero: [
+      { id: "c-cal", label: "What's on my calendar today?", sub: "Today's meetings, deadlines, and blocks at a glance", tools: ["Google Calendar"], deliveryType: "data" },
+      { id: "c-draft", label: "Draft a business email", sub: "AI-assisted email for suppliers, partners, or team", tools: ["Gmail", "Claude"], deliveryType: "comms" },
+    ],
+    compact: [
+      { id: "c-meet", label: "Find meeting time", sub: "Check team availability, suggest slots", tools: ["Google Calendar"], deliveryType: "action" },
+      { id: "c-find", label: "Find an email thread", sub: "Search Gmail for a specific conversation", tools: ["Gmail Search"], deliveryType: "data" },
+      { id: "c-update", label: "Send project update", sub: "Status email from your recent activity", tools: ["Gmail", "Claude"], deliveryType: "comms" },
+      { id: "c-respond", label: "Draft customer response", sub: "Professional reply for inquiries or complaints", tools: ["Gmail", "Claude"], deliveryType: "comms" },
+    ],
+    history: [
+      { cmd: "draft supplier email Q2 pricing", ago: "Yesterday", out: "📧 Draft saved — ready to review" },
+      { cmd: "find team sync slot this week", ago: "2 days", out: "📅 Wed 14:00-15:00 — all available" },
+    ],
+  },
+  manage: {
+    hero: [
+      { id: "m-sprint", label: "Where's my sprint at?", sub: "Active items, progress bar, blockers, what's overdue", tools: ["Linear", "Monday.com"], deliveryType: "report" },
+      { id: "m-task", label: "Create a task", sub: "Add to monday.com or Linear with priority and assignment", tools: ["Monday.com", "Linear"], deliveryType: "action" },
+    ],
+    compact: [
+      { id: "m-status", label: "Update task status", sub: "Move items between done, in progress, blocked", tools: ["Monday.com"], deliveryType: "action" },
+      { id: "m-board", label: "Create project board", sub: "New board with columns and groups for a project", tools: ["Monday.com"], deliveryType: "action" },
+      { id: "m-brief", label: "Write a project brief", sub: "Goals, scope, timeline, owners in one doc", tools: ["Monday.com Docs", "Claude"], deliveryType: "content" },
+      { id: "m-load", label: "Team workload overview", sub: "Who's doing what — capacity across all boards", tools: ["Monday.com"], deliveryType: "report" },
+    ],
+    history: [
+      { cmd: "create task: update pricing rules", ago: "Today", out: "➕ Created — assigned, high priority" },
+      { cmd: "current sprint status", ago: "Yesterday", out: "🏃 8/12 done, 2 in progress, 2 blocked" },
+    ],
+  },
+  ailab: {
+    hero: [
+      { id: "ai-brand", label: "How do AI assistants talk about me?", sub: "Brand mentions in ChatGPT, Perplexity, Gemini", tools: ["Ahrefs Brand Radar"], deliveryType: "report" },
+      { id: "ai-gen", label: "Generate product images", sub: "AI backgrounds, lifestyle shots, or clean cutouts", tools: ["Stable Diffusion"], deliveryType: "content" },
+    ],
+    compact: [
+      { id: "ai-model", label: "Find a model on HuggingFace", sub: "Search by task — classification, OCR, generation", tools: ["Hugging Face Hub"], deliveryType: "data" },
+      { id: "ai-run", label: "Run an AI task", sub: "Execute a HuggingFace Space — image gen, OCR, TTS", tools: ["Hugging Face Spaces"], deliveryType: "content" },
+      { id: "ai-figma", label: "Figma design to code", sub: "Convert component or screen into production React", tools: ["Figma MCP"], deliveryType: "content" },
+      { id: "ai-papers", label: "Search AI research", sub: "Latest papers on pricing algorithms, recommendation engines", tools: ["Hugging Face Papers"], deliveryType: "data" },
+    ],
+    history: [
+      { cmd: "background removal 15 product photos", ago: "2 days", out: "🎨 15 clean cutouts saved" },
+      { cmd: "brand mentions ChatGPT auto parts NL", ago: "1 week", out: "👁️ Mentioned 23% of queries, #4 rank" },
+    ],
+  },
+};
+
+const DELIVERY_OPTIONS = {
+  data:    [{ icon: "📗", label: "Google Sheet", note: "Live-updating, shareable, filterable", best: true }, { icon: "📥", label: "CSV Download", note: "Import into any system" }, { icon: "📊", label: "Monday.com Board", note: "Visual cards with status tracking" }],
+  alert:   [{ icon: "⚡", label: "Slack / Push", note: "Instant when triggered", best: true }, { icon: "📧", label: "Email Alert", note: "Detailed with context" }, { icon: "📋", label: "Auto-create Task", note: "Linear or Monday.com issue" }],
+  report:  [{ icon: "📄", label: "PDF Report", note: "Professional, shareable document", best: true }, { icon: "📧", label: "Email to Me", note: "HTML email — forward to anyone" }, { icon: "📊", label: "Live Dashboard", note: "Monday.com or Google Sheet widget" }],
+  content: [{ icon: "📗", label: "Export Spreadsheet", note: "Channable + Magento ready columns", best: true }, { icon: "📦", label: "Push to Store", note: "Direct API update via Magento" }, { icon: "📝", label: "Preview First", note: "Review here before exporting" }],
+  action:  [{ icon: "✅", label: "Execute Now", note: "Run it immediately", best: true }, { icon: "📋", label: "Add as Task", note: "Create follow-up on Monday.com" }, { icon: "📧", label: "Email Instructions", note: "Send steps to a team member" }],
+  comms:   [{ icon: "📧", label: "Save as Gmail Draft", note: "Review and send from inbox", best: true }, { icon: "📝", label: "Show Preview", note: "Edit here before saving" }, { icon: "📋", label: "Draft + Follow-up Task", note: "Save draft and track it" }],
+};
+
+const AI_MODELS = [
+  { id: "gemini-3-flash", label: "Gemini 3 Flash", tag: "Fast" },
+  { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash", tag: "Balanced" },
+  { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro", tag: "Powerful" },
+  { id: "gpt-5-mini", label: "GPT-5 Mini", tag: "Smart" },
+  { id: "gpt-5", label: "GPT-5", tag: "Premium" },
+];
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let state = {
+  activeCat: null,
+  pickedAction: null,
+  phase: "browse", // browse | delivery | exec
+  selectedModel: AI_MODELS[0].id,
+  messages: [
+    { role: "system", content: "HansAI Command Center v2.0 — Template" },
+    { role: "system", content: 'Type /help to see available commands, or click a category tab above.' },
+  ],
+  chatHistory: [],
+  showHistory: false,
+  showModelPicker: false,
+};
+
+// ══════════════════════════════════════════════════════════════
+// RENDER FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+
+function renderCategoryTabs() {
+  const nav = document.getElementById("cat-nav");
+  nav.innerHTML = "";
+  for (const [key, cat] of Object.entries(CATEGORIES)) {
+    const btn = document.createElement("button");
+    btn.className = "cat-tab" + (state.activeCat === key ? " active" : "");
+    btn.textContent = cat.icon + " " + cat.label;
+    btn.style.cssText = state.activeCat === key
+      ? `color:${cat.color};border-bottom-color:${cat.color};background:${cat.color}12;`
+      : "";
+    btn.onmouseenter = () => { if (state.activeCat !== key) btn.style.color = cat.color; };
+    btn.onmouseleave = () => { if (state.activeCat !== key) btn.style.color = ""; };
+    btn.onclick = () => {
+      if (state.phase === "delivery" || state.phase === "exec") return;
+      state.activeCat = state.activeCat === key ? null : key;
+      state.pickedAction = null;
+      state.phase = "browse";
+      render();
+    };
+    nav.appendChild(btn);
+  }
+}
+
+function renderActionDrawer() {
+  const el = document.getElementById("action-drawer");
+  if (!state.activeCat || !ACTIONS[state.activeCat] || state.phase !== "browse") {
+    el.className = "action-drawer"; return;
+  }
+  const acts = ACTIONS[state.activeCat];
+  let html = '<div class="hero-grid">';
+  for (const a of acts.hero) {
+    html += `<div class="hero-card" onclick="pickAction('${a.id}')">
+      <h4>${a.label}</h4><p>${a.sub}</p>
+      <div class="tool-tags">${a.tools.map(t => `<span class="tool-tag">${t}</span>`).join("")}</div>
+    </div>`;
+  }
+  html += '</div>';
+  for (const a of acts.compact) {
+    html += `<button class="compact-row" onclick="pickAction('${a.id}')">
+      <span class="label">${a.label}</span><span class="sub">${a.sub}</span>
+    </button>`;
+  }
+  if (acts.history.length) {
+    html += '<div class="history-sep"><div class="line"></div><span>Last Run — Verified</span><div class="line"></div></div>';
+    for (const h of acts.history) {
+      html += `<button class="history-row" onclick="rerunHistory('${h.cmd.replace(/'/g,"\\'")}')">
+        <span class="cmd">${h.cmd}</span><span class="ago">${h.ago}</span>
+      </button>`;
+    }
+  }
+  el.innerHTML = html;
+  el.className = "action-drawer open";
+}
+
+function renderDeliveryPicker() {
+  const el = document.getElementById("delivery-picker");
+  if (state.phase !== "delivery" || !state.pickedAction) { el.className = "delivery-picker"; return; }
+  const opts = DELIVERY_OPTIONS[state.pickedAction.deliveryType] || DELIVERY_OPTIONS.data;
+  let html = `<div class="delivery-label">Deliver: ${state.pickedAction.label}</div>`;
+  for (const d of opts) {
+    html += `<button class="delivery-option${d.best ? " best" : ""}" onclick="pickDelivery('${d.label}')">
+      <span class="icon">${d.icon}</span>
+      <div><div class="dlabel">${d.label}</div><div class="dnote">${d.note}</div></div>
+      ${d.best ? '<span class="best-badge">BEST</span>' : ''}
+    </button>`;
+  }
+  html += '<button class="back-btn" onclick="goBack()">← Back</button>';
+  el.innerHTML = html;
+  el.className = "delivery-picker open";
+}
+
+function renderMessages() {
+  const el = document.getElementById("messages");
+  el.innerHTML = state.messages.map(m => {
+    const cls = m.role === "user" ? "message user" : `message ${m.role}`;
+    return `<div class="${cls}"><div class="bubble">${escapeHtml(m.content)}</div></div>`;
+  }).join("");
+  const main = document.getElementById("main-content");
+  main.scrollTop = main.scrollHeight;
+}
+
+function renderModelDropdown() {
+  const dd = document.getElementById("model-dropdown");
+  dd.innerHTML = AI_MODELS.map(m =>
+    `<button class="model-option${m.id === state.selectedModel ? " selected" : ""}" onclick="selectModel('${m.id}')">
+      <span>${m.label}</span><span class="model-tag">${m.tag}</span>
+    </button>`
+  ).join("");
+  dd.className = "model-dropdown" + (state.showModelPicker ? " open" : "");
+  document.getElementById("model-label").textContent = AI_MODELS.find(m => m.id === state.selectedModel)?.label || "";
+}
+
+function renderExecSpinner() {
+  document.getElementById("exec-spinner").className = "exec-spinner" + (state.phase === "exec" ? " visible" : "");
+}
+
+function render() {
+  renderCategoryTabs();
+  renderActionDrawer();
+  renderDeliveryPicker();
+  renderMessages();
+  renderModelDropdown();
+  renderExecSpinner();
+  document.getElementById("history-btn").className = "icon-btn" + (state.showHistory ? " active" : "");
+}
+
+// ══════════════════════════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════════════════════════
+
+function findAction(id) {
+  for (const [, cat] of Object.entries(ACTIONS)) {
+    for (const a of [...cat.hero, ...cat.compact]) { if (a.id === id) return a; }
+  }
+  return null;
+}
+
+function pickAction(id) {
+  const action = findAction(id);
+  if (!action) return;
+  addMessage("system", "→ " + (action.label || id));
+  state.pickedAction = action;
+  state.phase = "delivery";
+  render();
+}
+
+function pickDelivery(label) {
+  state.phase = "exec";
+  state.activeCat = null;
+  render();
+  setTimeout(() => {
+    addMessage("workflow", "✓ " + state.pickedAction.label + " → via " + label);
+    state.phase = "browse";
+    state.pickedAction = null;
+    render();
+  }, 1600);
+}
+
+function goBack() {
+  state.phase = "browse";
+  state.pickedAction = null;
+  render();
+}
+
+function rerunHistory(cmd) {
+  addMessage("system", "Re-running: " + cmd);
+  // Find matching action or simulate
+  state.pickedAction = { id: "re", label: cmd, deliveryType: "data", tools: [], sub: "" };
+  state.phase = "delivery";
+  render();
+}
+
+function selectModel(id) {
+  state.selectedModel = id;
+  state.showModelPicker = false;
+  render();
+}
+
+function addMessage(role, content) {
+  state.messages.push({ role, content, timestamp: Date.now() });
+  render();
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
+// ══════════════════════════════════════════════════════════════
+// SLASH COMMANDS (template demo)
+// ══════════════════════════════════════════════════════════════
+const HELP_TEXT = `Available commands:
+/help — Show this help
+/clear — Clear messages
+/pricing — Open pricing category
+/seo — Open SEO category
+/product — Open product category
+/research — Open research category
+/automate — Open automation category
+/infra — Open infrastructure category
+/report — Open reports category
+/comms — Open communications category
+/manage — Open management category
+/ailab — Open AI Lab category
+
+Or type any question to chat with AI.`;
+
+function processInput(raw) {
+  const trimmed = raw.trim();
+  if (!trimmed) return;
+
+  // Category matching
+  for (const key of Object.keys(CATEGORIES)) {
+    if (trimmed.toLowerCase() === "/" + key) {
+      state.activeCat = key;
+      state.phase = "browse";
+      render();
+      return;
+    }
+  }
+
+  if (trimmed === "/help") { addMessage("system", HELP_TEXT); return; }
+  if (trimmed === "/clear") { state.messages = []; render(); return; }
+
+  // Regular message (demo — no backend)
+  addMessage("user", trimmed);
+  setTimeout(() => {
+    addMessage("assistant", "This is a standalone template demo. Connect your backend to enable AI responses.\n\nYou typed: `" + trimmed + "`");
+  }, 800);
+}
+
+// ══════════════════════════════════════════════════════════════
+// EVENT LISTENERS
+// ══════════════════════════════════════════════════════════════
+
+const inputEl = document.getElementById("input");
+const sendBtn = document.getElementById("send-btn");
+
+inputEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    processInput(inputEl.value);
+    inputEl.value = "";
+    sendBtn.className = "send-btn";
+  }
+});
+
+inputEl.addEventListener("input", () => {
+  sendBtn.className = "send-btn" + (inputEl.value.trim() ? " active" : "");
+});
+
+sendBtn.addEventListener("click", () => {
+  processInput(inputEl.value);
+  inputEl.value = "";
+  sendBtn.className = "send-btn";
+});
+
+document.getElementById("model-btn").addEventListener("click", () => {
+  state.showModelPicker = !state.showModelPicker;
+  renderModelDropdown();
+});
+
+document.getElementById("history-btn").addEventListener("click", () => {
+  state.showHistory = !state.showHistory;
+  document.getElementById("history-panel").className = "history-panel" + (state.showHistory ? " open" : "");
+  document.getElementById("history-btn").className = "icon-btn" + (state.showHistory ? " active" : "");
+});
+
+document.addEventListener("mousedown", (e) => {
+  if (state.showModelPicker && !document.getElementById("model-picker-wrap").contains(e.target)) {
+    state.showModelPicker = false;
+    renderModelDropdown();
+  }
+});
+
+// ── INIT ──
+render();
+inputEl.focus();
+</script>
+</body>
+</html>
