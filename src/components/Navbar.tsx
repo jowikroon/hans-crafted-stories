@@ -1,7 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Search, Sun, Moon } from "lucide-react";
+import { Menu, X, LogIn, Search, Sun, Moon, Grid3X3 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
@@ -21,6 +29,19 @@ const getLinks = (lang: Lang) => {
     { to: "/about", label: lang === "nl" ? "Over Hans" : "About" },
   ];
 };
+
+const servicePages = [
+  { to: "/amazon-nl-specialist", label: "Amazon NL Specialist" },
+  { to: "/bol-com-consultant", label: "Bol.com Consultant" },
+  { to: "/interim-ecommerce-manager", label: "Interim E-commerce Manager" },
+];
+
+const toolPages = [
+  { to: "/portal", label: "Portal" },
+  { to: "/empire", label: "Empire" },
+  { to: "/hansai", label: "Hans AI" },
+  { to: "/wiki", label: "Wiki" },
+];
 
 const searchablePages = [
   { to: "/", label: "Home", keywords: ["home", "start", "landing"] },
@@ -201,6 +222,49 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
               <LangSwitch />
             </div>
 
+            {/* Quick Access dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="rounded-full p-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-muted"
+                  aria-label="Quick access pages"
+                >
+                  <Grid3X3 size={16} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-normal">
+                  Services
+                </DropdownMenuLabel>
+                {servicePages.map((p) => (
+                  <DropdownMenuItem
+                    key={p.to}
+                    onClick={() => navigate(p.to)}
+                    className="cursor-pointer text-[13px]"
+                  >
+                    {p.label}
+                  </DropdownMenuItem>
+                ))}
+                {user && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-normal">
+                      Tools
+                    </DropdownMenuLabel>
+                    {toolPages.map((p) => (
+                      <DropdownMenuItem
+                        key={p.to}
+                        onClick={() => navigate(p.to)}
+                        className="cursor-pointer text-[13px]"
+                      >
+                        {p.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Portal / Login — pill CTA */}
             <Link
               to="/portal"
@@ -255,6 +319,33 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                     {link.label}
                   </Link>
                 ))}
+                <div className="my-2 h-px bg-border/50" />
+                <span className="px-3 py-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Services</span>
+                {servicePages.map((p) => (
+                  <Link
+                    key={p.to}
+                    to={p.to}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-lg px-3 py-3 text-[13px] uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/30"
+                  >
+                    {p.label}
+                  </Link>
+                ))}
+                {user && (
+                  <>
+                    <span className="px-3 py-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground mt-1">Tools</span>
+                    {toolPages.map((p) => (
+                      <Link
+                        key={p.to}
+                        to={p.to}
+                        onClick={() => setMobileOpen(false)}
+                        className="rounded-lg px-3 py-3 text-[13px] uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/30"
+                      >
+                        {p.label}
+                      </Link>
+                    ))}
+                  </>
+                )}
                 <div className="my-2 h-px bg-border/50" />
                 <div className="flex items-center justify-between px-3 py-2">
                   <LangSwitch />
