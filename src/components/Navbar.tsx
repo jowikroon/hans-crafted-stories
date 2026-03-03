@@ -184,23 +184,23 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
           </Link>
 
           {/* Center nav links — sans-serif, wide tracking */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-1">
             {links.map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
-                className={`relative text-[13px] tracking-[0.08em] uppercase transition-colors duration-200 ${
+                className={`group relative px-4 py-2 text-[13px] tracking-[0.08em] uppercase rounded-full transition-all duration-300 ease-out ${
                   isActive(l.to)
-                    ? "text-foreground font-medium"
-                    : "text-muted-foreground font-normal hover:text-foreground"
+                    ? "text-foreground font-medium bg-foreground/[0.06]"
+                    : "text-muted-foreground font-normal hover:text-foreground hover:bg-foreground/[0.04]"
                 }`}
               >
-                {l.label}
+                <span className="relative z-10">{l.label}</span>
                 {isActive(l.to) && (
                   <motion.div
-                    layoutId="nav-indicator"
-                    className="absolute -bottom-[21px] left-0 right-0 h-[1.5px] bg-foreground"
-                    transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                    layoutId="nav-pill"
+                    className="absolute inset-0 rounded-full border-2 border-foreground/20 bg-foreground/[0.06]"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
                   />
                 )}
               </Link>
