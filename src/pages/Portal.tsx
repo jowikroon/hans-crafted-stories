@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search, Zap, BookOpen } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search, Zap, BookOpen, ChevronDown, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
 import PortalStatusTab from "@/components/portal/PortalStatusTab";
 import PortalUsersManager from "@/components/portal/PortalUsersManager";
 import PortalPagesTab from "@/components/portal/PortalPagesTab";
+import PortalDashboardTab from "@/components/portal/PortalDashboardTab";
 import UnifiedChatPanel from "@/components/portal/UnifiedChatPanel";
 import PortalFloatingDock from "@/components/portal/PortalFloatingDock";
 import PortalCommandPalette from "@/components/portal/PortalCommandPalette";
@@ -22,9 +23,10 @@ import { usePageElements } from "@/hooks/usePageElements";
 
 
 
-type Tab = "tools" | "content" | "pages" | "status" | "users";
+type Tab = "dashboard" | "tools" | "content" | "pages" | "status" | "users";
 
 const subMenuItems: Record<Tab, string[]> = {
+  dashboard: [],
   tools: ["All", "SEO", "Automation", "Data", "AI", "General"],
   content: ["All", "Blog Posts", "Case Studies", "Main Menu"],
   pages: ["All", "Published", "Hidden"],
@@ -32,12 +34,16 @@ const subMenuItems: Record<Tab, string[]> = {
   status: ["All", "Overview", "Test Results", "Issues", "Architecture"],
 };
 
-const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
-  { id: "tools", label: "Tools", icon: Wrench, hint: "Manage SEO tools and integrations" },
-  { id: "content", label: "Content", icon: FileText, hint: "Blog posts and case studies" },
-  { id: "pages", label: "Pages", icon: LayoutDashboard, hint: "Page visibility and elements" },
-  { id: "users", label: "Users", icon: Users, hint: "Manage user roles and access" },
-  { id: "status", label: "Status", icon: Activity, hint: "System health and uptime" },
+const mainTabs: { id: Tab; label: string; icon: typeof Wrench }[] = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "tools", label: "Tools", icon: Wrench },
+  { id: "users", label: "Users", icon: Users },
+];
+
+const accountMenuItems: { id: Tab; label: string; icon: typeof Wrench }[] = [
+  { id: "content", label: "Content", icon: FileText },
+  { id: "pages", label: "Pages", icon: LayoutDashboard },
+  { id: "status", label: "Status", icon: Activity },
 ];
 
 const THEME_KEY = "site_theme";
@@ -45,14 +51,27 @@ const THEME_KEY = "site_theme";
 const Portal = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
-  const [activeTab, setActiveTab] = useState<Tab>("tools");
+  const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [commandCenterOpen, setCommandCenterOpen] = useState(false);
   const [subFilter, setSubFilter] = useState<string>("All");
   const [commandOpen, setCommandOpen] = useState(false);
   const [empireOpen, setEmpireOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
   const [n8nOpen, setN8nOpen] = useState(false);
   const { toast } = useToast();
   const { isVisible } = usePageElements("portal");
+
+  // Close account menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false);
+      }
+    };
+    if (accountMenuOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [accountMenuOpen]);
 
   // Force dark mode when Portal mounts; restore previous theme on unmount
   useEffect(() => {
@@ -233,18 +252,69 @@ const Portal = () => {
               <BookOpen size={14} />
               <span className="hidden sm:inline">Wiki</span>
             </Link>
-            <button
+             <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
             >
               <Search size={13} />
             </button>
-            <button
-              onClick={signOut}
-              className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97] sm:min-h-0 sm:py-2"
-            >
-              <LogOut size={14} />
-            </button>
+
+            {/* Account dropdown */}
+            <div ref={accountMenuRef} className="relative">
+              <button
+                onClick={() => setAccountMenuOpen((v) => !v)}
+                className={`inline-flex min-h-[48px] items-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-medium transition-all active:scale-[0.97] sm:min-h-0 sm:py-2 ${
+                  accountMenuOpen
+                    ? "border-primary/30 bg-primary/10 text-foreground"
+                    : "border-border text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <User size={14} />
+                <span className="hidden sm:inline">{user.user_metadata?.full_name?.split(" ")[0] || "Account"}</span>
+                <ChevronDown size={10} className={`transition-transform ${accountMenuOpen ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {accountMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-xl shadow-foreground/[0.05]"
+                  >
+                    <div className="p-1">
+                      {accountMenuItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = activeTab === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => { setActiveTab(item.id); setSubFilter("All"); setAccountMenuOpen(false); }}
+                            className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs transition-all ${
+                              isActive
+                                ? "bg-primary/10 font-medium text-foreground"
+                                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                            }`}
+                          >
+                            <Icon size={13} />
+                            {item.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="border-t border-border p-1">
+                      <button
+                        onClick={() => { setAccountMenuOpen(false); signOut(); }}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <LogOut size={13} />
+                        Sign out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
@@ -283,7 +353,7 @@ const Portal = () => {
 
         {/* Tab Navigation */}
         <div className="mb-2 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:overflow-visible">
-          {tabs.map((tab) => {
+          {mainTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
@@ -302,31 +372,34 @@ const Portal = () => {
             );
           })}
         </div>
-        <nav className="mb-6 flex items-center overflow-x-auto">
-          {subMenuItems[activeTab].map((item, i) => {
-            const isActive = subFilter === item;
-            return (
-              <div key={item} className="flex items-center">
-                <button
-                  onClick={() => setSubFilter(item)}
-                  className={`whitespace-nowrap px-3 py-1.5 text-xs transition-colors ${
-                    isActive
-                      ? "font-medium text-orange-500"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {item}
-                </button>
-                {i < subMenuItems[activeTab].length - 1 && (
-                  <div className="h-3.5 w-px bg-border" />
-                )}
-              </div>
-            );
-          })}
-        </nav>
+        {subMenuItems[activeTab].length > 0 && (
+          <nav className="mb-6 flex items-center overflow-x-auto">
+            {subMenuItems[activeTab].map((item, i) => {
+              const isActive = subFilter === item;
+              return (
+                <div key={item} className="flex items-center">
+                  <button
+                    onClick={() => setSubFilter(item)}
+                    className={`whitespace-nowrap px-3 py-1.5 text-xs transition-colors ${
+                      isActive
+                        ? "font-medium text-orange-500"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                  {i < subMenuItems[activeTab].length - 1 && (
+                    <div className="h-3.5 w-px bg-border" />
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+        )}
 
 
         {/* Tab Content */}
+        {activeTab === "dashboard" && <PortalDashboardTab onNavigate={(tab) => { setActiveTab(tab as Tab); setSubFilter("All"); }} />}
         {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
         {activeTab === "content" && <PortalContentTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
         {activeTab === "pages" && <PortalPagesTab subFilter={subFilter} />}

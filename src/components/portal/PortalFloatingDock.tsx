@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { Wrench, FileText, LayoutDashboard, Users, Activity, Search } from "lucide-react";
 
-type Tab = "tools" | "content" | "pages" | "status" | "users";
+type Tab = "dashboard" | "tools" | "content" | "pages" | "status" | "users";
 
 const dockItems: { id: Tab; icon: typeof Wrench; label: string }[] = [
+  { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { id: "tools", icon: Wrench, label: "Tools" },
   { id: "content", icon: FileText, label: "Content" },
   { id: "pages", icon: LayoutDashboard, label: "Pages" },
