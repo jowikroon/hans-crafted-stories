@@ -59,7 +59,7 @@ export interface AppProps {
 
 const App = ({ preloadedData, serverContext }: AppProps) => {
   const Router = serverContext ? StaticRouter : BrowserRouter;
-  const routerProps = serverContext ? { location: serverContext.location } : {};
+  const routerProps: Record<string, unknown> = serverContext ? { location: serverContext.location } : {};
   const preloaded: PreloadedData = serverContext
     ? { blogPost: serverContext.preloadedBlogPost ?? null }
     : (preloadedData ?? { blogPost: null });
@@ -69,6 +69,7 @@ const App = ({ preloadedData, serverContext }: AppProps) => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        {/* @ts-expect-error StaticRouter/BrowserRouter union */}
         <Router {...routerProps}>
           <PreloadedDataProvider value={preloaded}>
             <AppShell initialLang={serverContext?.initialLang} />
