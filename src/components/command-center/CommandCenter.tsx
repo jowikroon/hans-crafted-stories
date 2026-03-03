@@ -484,11 +484,13 @@ const CommandCenter = ({ mode, onClose, onAutoFullChange }: CommandCenterProps) 
               className={`mb-3 overflow-hidden rounded-lg border p-3 ${isTerminal ? "" : "border-border bg-card"}`}
               style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
               {[...ACTIONS[cc.activeCat].hero, ...ACTIONS[cc.activeCat].compact].slice(0, 5).map((a) => (
-                <button key={a.id} onClick={() => cc.pickAction(a)}
+                <motion.button key={a.id} onClick={() => cc.pickAction(a)}
+                  whileTap={{ scale: 0.97, backgroundColor: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.12)" : "rgba(16,185,129,0.12)") : "rgba(249,115,22,0.12)" }}
+                  transition={{ duration: 0.15 }}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[11px] text-muted-foreground transition-all hover:bg-secondary hover:text-foreground">
                   <span className="font-medium" style={isTerminal ? { color: isAutoFull ? neoGreen.primary : "#E8E8F0" } : undefined}>{a.label}</span>
                   <span className="truncate text-[10px] opacity-50">{a.sub}</span>
-                </button>
+                </motion.button>
               ))}
               {ACTIONS[cc.activeCat].history.length > 0 && (
                 <>
