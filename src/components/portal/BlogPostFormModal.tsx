@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import DOMPurify from "dompurify";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -262,7 +263,7 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
             {previewing ? (
               <div
                 className="min-h-[336px] max-h-[336px] overflow-y-auto rounded-md border border-border bg-card p-4 text-sm leading-relaxed prose-sm"
-                dangerouslySetInnerHTML={{ __html: content ? `<p class="my-2 text-sm leading-relaxed">${renderedMarkdown}</p>` : '<p class="text-muted-foreground/40 italic">Nothing to preview yet…</p>' }}
+                dangerouslySetInnerHTML={{ __html: content ? DOMPurify.sanitize(`<p class="my-2 text-sm leading-relaxed">${renderedMarkdown}</p>`) : '<p class="text-muted-foreground/40 italic">Nothing to preview yet…</p>' }}
               />
             ) : (
               <Textarea
@@ -331,7 +332,7 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
               {previewingNl ? (
                 <div
                   className="min-h-[200px] max-h-[200px] overflow-y-auto rounded-md border border-border bg-card p-4 text-sm leading-relaxed prose-sm"
-                  dangerouslySetInnerHTML={{ __html: contentNl ? `<p class="my-2 text-sm leading-relaxed">${contentNl}</p>` : '<p class="text-muted-foreground/40 italic">Nog niets om te laten zien…</p>' }}
+                  dangerouslySetInnerHTML={{ __html: contentNl ? DOMPurify.sanitize(`<p class="my-2 text-sm leading-relaxed">${contentNl}</p>`) : '<p class="text-muted-foreground/40 italic">Nog niets om te laten zien…</p>' }}
                 />
               ) : (
                 <Textarea
