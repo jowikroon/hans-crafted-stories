@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search, Zap, BookOpen, ChevronDown, User } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Command, Search, Zap, BookOpen, ChevronDown, User, Store } from "lucide-react";
 import { Link } from "react-router-dom";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
@@ -40,8 +40,9 @@ const mainTabs: { id: Tab; label: string; icon: typeof Wrench }[] = [
   { id: "users", label: "Users", icon: Users },
 ];
 
-const accountMenuItems: { id: Tab | "ai-hub"; label: string; icon: typeof Wrench; href?: string }[] = [
+const accountMenuItems: { id: Tab | "ai-hub" | "marketplaces"; label: string; icon: typeof Wrench; href?: string }[] = [
   { id: "ai-hub", label: "AI Hub", icon: Zap, href: "/ai" },
+  { id: "marketplaces", label: "Marketplaces", icon: Store, href: "/bol-com-consultant" },
   { id: "content", label: "Content", icon: FileText },
   { id: "pages", label: "Pages", icon: LayoutDashboard },
   { id: "status", label: "Status", icon: Activity },
