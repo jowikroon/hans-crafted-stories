@@ -103,9 +103,32 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                 {isActive(l.to) && (
                   <motion.div
                     layoutId="nav-pill"
-                    className="absolute inset-0 rounded-full border-2 border-foreground/20 bg-foreground/[0.06]"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-                  />
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      border: "2px solid hsl(var(--foreground) / 0.35)",
+                      boxShadow:
+                        "inset 0 0 6px hsl(var(--foreground) / 0.08), 0 0 10px hsl(var(--foreground) / 0.06), inset 0 1px 0 hsl(var(--foreground) / 0.12)",
+                      background:
+                        "linear-gradient(180deg, hsl(var(--foreground) / 0.07) 0%, hsl(var(--foreground) / 0.03) 100%)",
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 28,
+                      mass: 0.8,
+                    }}
+                  >
+                    {/* Chevron lock-in flash */}
+                    <motion.div
+                      className="absolute inset-0 rounded-full"
+                      initial={{ opacity: 0.6 }}
+                      animate={{ opacity: 0 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      style={{
+                        boxShadow: "inset 0 0 12px hsl(var(--foreground) / 0.15)",
+                      }}
+                    />
+                  </motion.div>
                 )}
               </Link>
               </motion.div>
