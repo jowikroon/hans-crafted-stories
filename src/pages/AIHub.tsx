@@ -126,8 +126,8 @@ const cards: AICard[] = [
     category: "Interfaces",
     status: "active",
     accent: "text-emerald-400 border-emerald-500/30 bg-emerald-500/5",
-    action: "link",
-    actionLabel: "View Template",
+    action: "overlay",
+    actionLabel: "Open Popup",
   },
 ];
 
@@ -164,7 +164,7 @@ const AIHub = () => {
       case "empire": setEmpireOpen(true); break;
       case "n8n": setN8nOpen(true); break;
       case "keyword": setKeywordOpen(true); break;
-      case "template": window.open("/templates/command-center.html", "_blank"); break;
+      case "template": setHansaiOpen(true); break;
       default: break;
     }
   };
