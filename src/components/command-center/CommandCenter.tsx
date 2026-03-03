@@ -136,17 +136,29 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
             <AnimatePresence>
               {showModelPicker && (
                 <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                  className={`absolute right-0 top-full z-[200] mt-1.5 w-52 rounded-xl border p-1.5 shadow-xl ${isTerminal ? "" : "border-border bg-card"}`}
+                  className={`absolute right-0 top-full z-[200] mt-1.5 w-56 max-h-80 overflow-y-auto rounded-xl border p-1.5 shadow-xl ${isTerminal ? "" : "border-border bg-card"}`}
                   style={isTerminal ? { border: "1px solid #1A1A28", background: "#0C0C14" } : undefined}>
-                  {AI_MODELS.map(m => (
-                    <button key={m.id} onClick={() => { cc.setSelectedModel(m.id); setShowModelPicker(false); }}
-                      className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[11px] transition-all ${
-                        cc.selectedModel === m.id ? (isTerminal ? "text-emerald-400" : "bg-orange-500/15 text-orange-400") : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                      }`}>
-                      <span>{m.label}</span>
-                      <span className="rounded bg-secondary px-1.5 py-0.5 text-[8px] font-bold">{m.tag}</span>
-                    </button>
-                  ))}
+                  {(["gemini", "openai", "image"] as const).map(group => {
+                    const groupModels = AI_MODELS.filter(m => m.group === group);
+                    const groupLabel = group === "gemini" ? "GOOGLE GEMINI" : group === "openai" ? "OPENAI" : "IMAGE GEN";
+                    return (
+                      <div key={group}>
+                        <p className="px-2.5 pt-2 pb-1 text-[8px] font-bold uppercase tracking-widest text-muted-foreground/40">{groupLabel}</p>
+                        {groupModels.map(m => (
+                          <button key={m.id} onClick={() => { cc.setSelectedModel(m.id); setShowModelPicker(false); }}
+                            className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[11px] transition-all ${
+                              cc.selectedModel === m.id ? (isTerminal ? "text-emerald-400" : "bg-orange-500/15 text-orange-400") : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                            }`}>
+                            <span>{m.label}</span>
+                            {group === "image"
+                              ? <span className="text-[10px]">📷</span>
+                              : <span className="rounded bg-secondary px-1.5 py-0.5 text-[8px] font-bold">{m.tag}</span>
+                            }
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
