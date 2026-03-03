@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import DOMPurify from "dompurify";
 import { getBlogPosts } from "@/lib/api/content";
 import BlogPostCard from "@/components/BlogPostCard";
 import { useParams, Link } from "react-router-dom";
@@ -283,7 +284,7 @@ const BlogPostPage = () => {
 
         <div className="prose prose-stone mx-auto max-w-3xl dark:prose-invert prose-headings:font-display prose-headings:font-medium prose-h2:text-2xl prose-p:leading-relaxed prose-li:leading-relaxed">
           {fullContent ? (
-            <div dangerouslySetInnerHTML={{ __html: renderMarkdown(fullContent) }} />
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(fullContent)) }} />
           ) : (
             <p className="text-muted-foreground italic">Full article coming soon.</p>
           )}
