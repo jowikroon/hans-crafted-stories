@@ -58,19 +58,21 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const isActive = (to: string) => location.pathname === to;
 
   const LangSwitch = () => (
-    <div className="flex items-center gap-0.5 text-xs tracking-widest">
+    <div className="flex items-center gap-1">
       <button
         onClick={() => setLang("nl")}
-        className={`px-1.5 py-0.5 rounded transition-colors ${lang === "nl" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+        className={`text-base leading-none rounded px-1 py-0.5 transition-all ${lang === "nl" ? "opacity-100 scale-110" : "opacity-40 hover:opacity-70"}`}
+        aria-label="Nederlands"
       >
-        NL
+        🇳🇱
       </button>
-      <span className="text-border">/</span>
+      <span className="text-border text-xs">/</span>
       <button
         onClick={() => setLang("en")}
-        className={`px-1.5 py-0.5 rounded transition-colors ${lang === "en" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+        className={`text-base leading-none rounded px-1 py-0.5 transition-all ${lang === "en" ? "opacity-100 scale-110" : "opacity-40 hover:opacity-70"}`}
+        aria-label="English"
       >
-        EN
+        🇬🇧
       </button>
     </div>
   );
