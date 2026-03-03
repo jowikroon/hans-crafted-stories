@@ -32,7 +32,7 @@ if (missing.length > 0) {
   const preloadedData = preloadedEl?.textContent
     ? (() => {
         try {
-          return JSON.parse(preloadedEl.textContent!) as { blogPost?: unknown } | null;
+          return JSON.parse(preloadedEl.textContent!) as import("@/contexts/PreloadedDataContext").PreloadedData | null;
         } catch {
           return null;
         }
