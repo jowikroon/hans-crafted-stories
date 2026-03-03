@@ -413,7 +413,7 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
                   <motion.button
                     key={prompt}
                     variants={chipItem}
-                    onClick={() => cc.setInput(prompt)}
+                    onClick={() => cc.processInput(prompt)}
                     className="rounded-full px-2.5 py-1 text-[10px] transition-all hover:scale-[1.03]"
                     style={{
                       background: isTerminal ? (isAutoFull ? "rgba(0,255,65,0.06)" : "rgba(255,255,255,0.03)") : undefined,
