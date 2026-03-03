@@ -53,7 +53,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
   const { isAdmin } = useAdmin();
   const t = translations[lang].nav;
   const allLinks = getLinks(lang);
-  const links = user ? [...allLinks, { to: "/hansai", label: t.commandCenter }] : allLinks;
+  const links = user ? [...allLinks, { to: "/ai", label: "AI Hub" }] : allLinks;
 
   // Global theme state — default light; Portal forces dark via its own effect
   const [siteTheme, setSiteTheme] = useState<"light" | "dark">(() => {
@@ -269,9 +269,9 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
             <div className="flex items-center justify-end h-10">
               <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => navigate("/hansai")}
+                  onClick={() => navigate("/ai")}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-all ${
-                    location.pathname === "/hansai"
+                    location.pathname === "/ai"
                       ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-[0_0_10px_hsl(25_95%_53%/0.15)]"
                       : `${isDark ? "border-orange-500/15 text-orange-400/40 hover:border-orange-500/40 hover:text-orange-300" : "border-border text-muted-foreground hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-600"}`
                   }`}
@@ -311,7 +311,7 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                   {user ? t.portal : t.login}
                 </Link>
                 {user && (
-                  <button onClick={() => { setMobileOpen(false); navigate("/hansai"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
+                  <button onClick={() => { setMobileOpen(false); navigate("/ai"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
                     <Command size={14} />
                     Command Center
                   </button>
