@@ -329,31 +329,56 @@ const Portal = () => {
         {isVisible("command_center_button") && (
           <AnimatePresence>
             {commandCenterOpen && (
-              <motion.div
-                key="command-center"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "50vh", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card shadow-lg flex flex-col"
-              >
-                <div className="flex shrink-0 items-center justify-between border-b border-orange-500/20 px-3 py-2 bg-card/80">
-                  <span className="text-[11px] font-medium text-foreground">Command Center</span>
-                  {isAdmin ? (
-                    <Link
-                      to="/hansai"
-                      className="rounded-md px-2.5 py-1 text-[10px] font-medium text-orange-400 hover:bg-orange-500/10 hover:text-orange-300 transition-colors"
-                    >
-                      Open full Command Center (terminal + filters) →
-                    </Link>
-                  ) : (
-                    <span className="text-[10px] text-muted-foreground">Log in as admin to open the full terminal.</span>
-                  )}
-                </div>
-                <div className="flex-1 min-h-0">
-                  <UnifiedChatPanel />
-                </div>
-              </motion.div>
+              <>
+                {/* Blur overlay for everything behind */}
+                <motion.div
+                  key="cc-backdrop"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="fixed inset-0 z-30 bg-background/60 backdrop-blur-md"
+                  style={{ pointerEvents: "none" }}
+                />
+                <motion.div
+                  key="command-center"
+                  initial={{ height: 0, opacity: 0, scale: 0.97 }}
+                  animate={{
+                    height: "50vh",
+                    opacity: 1,
+                    scale: 1,
+                    boxShadow: [
+                      "0 8px 30px -8px rgba(249,115,22,0.15), 0 0 0 1px rgba(249,115,22,0.1)",
+                      "0 16px 50px -12px rgba(249,115,22,0.25), 0 0 0 1px rgba(249,115,22,0.15)",
+                      "0 8px 30px -8px rgba(249,115,22,0.15), 0 0 0 1px rgba(249,115,22,0.1)",
+                    ],
+                  }}
+                  exit={{ height: 0, opacity: 0, scale: 0.97 }}
+                  transition={{
+                    duration: 0.4,
+                    ease: [0.22, 1, 0.36, 1],
+                    boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+                  }}
+                  className="relative z-40 mb-4 overflow-hidden rounded-2xl border-2 border-orange-500 bg-card flex flex-col"
+                >
+                  <div className="flex shrink-0 items-center justify-between border-b border-orange-500/20 px-3 py-2 bg-card/80">
+                    <span className="text-[11px] font-medium text-foreground">Command Center</span>
+                    {isAdmin ? (
+                      <Link
+                        to="/hansai"
+                        className="rounded-md px-2.5 py-1 text-[10px] font-medium text-orange-400 hover:bg-orange-500/10 hover:text-orange-300 transition-colors"
+                      >
+                        Open full Command Center (terminal + filters) →
+                      </Link>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground">Log in as admin to open the full terminal.</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-h-0">
+                    <UnifiedChatPanel />
+                  </div>
+                </motion.div>
+              </>
             )}
           </AnimatePresence>
         )}
