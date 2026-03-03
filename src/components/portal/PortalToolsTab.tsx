@@ -251,106 +251,171 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
 
   return (
     <>
-      {/* Top bar: dropdown menu */}
-      <div className="mb-6 flex items-center justify-end">
-        <div ref={menuRef} className="relative">
-          {isEditMode ? (
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={handleSaveLayout}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20"
-              >
-                <Check size={12} />
-                Save Layout
-              </button>
-              <button
-                onClick={() => setIsEditMode(false)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
-              >
-                <X size={12} />
-                Cancel
-              </button>
-            </div>
-          ) : (
+      {/* Top bar: category chips + edit mode */}
+      <div className="mb-6 flex flex-wrap items-center gap-2">
+        {/* Category chips */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {/* "All" chip — acts as dropdown trigger when active */}
+          <div ref={!activeFilter ? menuRef : undefined} className="relative">
             <button
-              onClick={() => setMenuOpen((v) => !v)}
+              onClick={() => {
+                if (!activeFilter) { setMenuOpen((v) => !v); }
+                else { setActiveFilter(null); setMenuOpen(false); }
+              }}
               className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
-                menuOpen
+                !activeFilter
                   ? "border-primary/30 bg-primary/10 text-foreground"
                   : "border-border text-muted-foreground hover:border-primary/20 hover:text-foreground"
               }`}
             >
-              <SlidersHorizontal size={12} />
-              {activeFilter ? (categoryConfig[activeFilter] || categoryConfig.general).label : "Filter & Edit"}
-              <ChevronDown size={10} className={`transition-transform ${menuOpen ? "rotate-180" : ""}`} />
+              All
+              <span className="tabular-nums text-[10px] opacity-50">{toolCounts.all}</span>
+              {!activeFilter && <ChevronDown size={10} className={`transition-transform ${menuOpen ? "rotate-180" : ""}`} />}
             </button>
-          )}
 
-          <AnimatePresence>
-            {menuOpen && !isEditMode && (
-              <motion.div
-                initial={{ opacity: 0, y: 4, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-border bg-card shadow-xl shadow-foreground/[0.05]"
-              >
-                {/* Category filters */}
-                <div className="p-1">
-                  <p className="px-3 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
-                    Categories
-                  </p>
-                  <button
-                    onClick={() => { setActiveFilter(null); setMenuOpen(false); }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-all ${
-                      !activeFilter
-                        ? "bg-primary/10 font-medium text-foreground"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
-                  >
-                    <span>All</span>
-                    <span className="tabular-nums text-[10px] opacity-50">{toolCounts.all}</span>
-                  </button>
-                  {availableCategories.map((cat) => {
-                    const cfg = categoryConfig[cat] || categoryConfig.general;
-                    const count = toolCounts[cat] || 0;
-                    const isActive = activeFilter === cat;
-                    return (
-                      <button
-                        key={cat}
-                        onClick={() => { setActiveFilter(isActive ? null : cat); setMenuOpen(false); }}
-                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-all ${
-                          isActive
-                            ? "bg-primary/10 font-medium text-foreground"
-                            : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                          {cfg.label}
-                        </span>
-                        <span className="tabular-nums text-[10px] opacity-50">{count}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Edit layout action */}
-                {isAdmin && (
-                  <div className="border-t border-border p-1">
-                    <button
-                      onClick={() => { setIsEditMode(true); setMenuOpen(false); }}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
-                    >
-                      <Pencil size={12} />
-                      Edit Layout
-                    </button>
+            {/* Dropdown from active "All" chip */}
+            <AnimatePresence>
+              {menuOpen && !activeFilter && !isEditMode && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-xl shadow-foreground/[0.05]"
+                >
+                  <div className="p-1">
+                    {availableCategories.map((cat) => {
+                      const cfg = categoryConfig[cat] || categoryConfig.general;
+                      const count = toolCounts[cat] || 0;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => { setActiveFilter(cat); setMenuOpen(false); }}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                            {cfg.label}
+                          </span>
+                          <span className="tabular-nums text-[10px] opacity-50">{count}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  {isAdmin && (
+                    <div className="border-t border-border p-1">
+                      <button
+                        onClick={() => { setIsEditMode(true); setMenuOpen(false); }}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                      >
+                        <Pencil size={12} />
+                        Edit Layout
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Individual category chips */}
+          {availableCategories.map((cat) => {
+            const cfg = categoryConfig[cat] || categoryConfig.general;
+            const count = toolCounts[cat] || 0;
+            const isActive = activeFilter === cat;
+            return (
+              <div key={cat} ref={isActive ? menuRef : undefined} className="relative">
+                <button
+                  onClick={() => {
+                    if (isActive) { setMenuOpen((v) => !v); }
+                    else { setActiveFilter(cat); setMenuOpen(false); }
+                  }}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
+                    isActive
+                      ? "border-primary/30 bg-primary/10 text-foreground"
+                      : "border-border text-muted-foreground hover:border-primary/20 hover:text-foreground"
+                  }`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                  {cfg.label}
+                  <span className="tabular-nums text-[10px] opacity-50">{count}</span>
+                  {isActive && <ChevronDown size={10} className={`transition-transform ${menuOpen ? "rotate-180" : ""}`} />}
+                </button>
+
+                {/* Dropdown from active category chip */}
+                <AnimatePresence>
+                  {menuOpen && isActive && !isEditMode && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute left-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-xl shadow-foreground/[0.05]"
+                    >
+                      <div className="p-1">
+                        <button
+                          onClick={() => { setActiveFilter(null); setMenuOpen(false); }}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                        >
+                          <span>All</span>
+                          <span className="tabular-nums text-[10px] opacity-50">{toolCounts.all}</span>
+                        </button>
+                        {availableCategories.filter(c => c !== cat).map((otherCat) => {
+                          const otherCfg = categoryConfig[otherCat] || categoryConfig.general;
+                          const otherCount = toolCounts[otherCat] || 0;
+                          return (
+                            <button
+                              key={otherCat}
+                              onClick={() => { setActiveFilter(otherCat); setMenuOpen(false); }}
+                              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                            >
+                              <span className="flex items-center gap-2">
+                                <span className={`h-1.5 w-1.5 rounded-full ${otherCfg.dot}`} />
+                                {otherCfg.label}
+                              </span>
+                              <span className="tabular-nums text-[10px] opacity-50">{otherCount}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {isAdmin && (
+                        <div className="border-t border-border p-1">
+                          <button
+                            onClick={() => { setIsEditMode(true); setMenuOpen(false); }}
+                            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                          >
+                            <Pencil size={12} />
+                            Edit Layout
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
+
+        {/* Edit mode controls */}
+        {isEditMode && (
+          <div className="ml-auto flex items-center gap-1.5">
+            <button
+              onClick={handleSaveLayout}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 transition-all hover:bg-emerald-500/20"
+            >
+              <Check size={12} />
+              Save Layout
+            </button>
+            <button
+              onClick={() => setIsEditMode(false)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+            >
+              <X size={12} />
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Grid */}
