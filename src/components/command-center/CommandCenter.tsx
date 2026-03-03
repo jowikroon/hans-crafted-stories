@@ -26,6 +26,7 @@ const SLASH_CMD_POOL = ["/help", "/jarvis", "/idea", "/task", "/tasks", "/run", 
 interface CommandCenterProps {
   mode: CommandCenterMode;
   onClose?: () => void;
+  onAutoFullChange?: (active: boolean) => void;
 }
 
 const pipelineSteps: { key: PipelineStage; label: string; detail: string }[] = [
@@ -66,10 +67,15 @@ function renderContent(text: string) {
   });
 }
 
-const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
+const CommandCenter = ({ mode, onClose, onAutoFullChange }: CommandCenterProps) => {
   const cc = useCommandCenter(mode);
   const isTerminal = mode === "terminal";
   const isAutoFull = cc.autoFullMode && isTerminal;
+  const isPopupAutoFull = cc.autoFullMode && mode === "popup";
+
+  useEffect(() => {
+    onAutoFullChange?.(cc.autoFullMode);
+  }, [cc.autoFullMode, onAutoFullChange]);
   const modelPickerRef = useRef<HTMLDivElement>(null);
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);

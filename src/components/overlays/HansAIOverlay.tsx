@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import CommandCenter from "@/components/command-center/CommandCenter";
@@ -19,6 +19,7 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const previousScroll = useRef<number>(0);
+  const [isAutoFull, setIsAutoFull] = useState(false);
 
   // ── Body scroll lock + save/restore scroll & focus ──────────
   useEffect(() => {
@@ -92,9 +93,44 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.3 }}
             style={{
-              background: "radial-gradient(ellipse at center, rgba(5,5,12,0.88) 0%, rgba(2,2,6,0.95) 100%)",
+              background: isAutoFull
+                ? "radial-gradient(ellipse at center, rgba(0,12,2,0.92) 0%, rgba(0,4,0,0.97) 100%)"
+                : "radial-gradient(ellipse at center, rgba(5,5,12,0.88) 0%, rgba(2,2,6,0.95) 100%)",
             }}
           />
+
+          {/* CRT scanlines — autofull only */}
+          <AnimatePresence>
+            {isAutoFull && (
+              <motion.div
+                className="pointer-events-none absolute inset-0 z-[1]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                style={{
+                  background: "repeating-linear-gradient(0deg, rgba(0,255,65,0.04) 0px, rgba(0,255,65,0.04) 1px, transparent 1px, transparent 3px)",
+                  mixBlendMode: "overlay",
+                }}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* Vignette — autofull only */}
+          <AnimatePresence>
+            {isAutoFull && (
+              <motion.div
+                className="pointer-events-none absolute inset-0 z-[1]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                style={{
+                  background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)",
+                }}
+              />
+            )}
+          </AnimatePresence>
 
           {/* Subtle ambient glow behind terminal */}
           <motion.div
@@ -106,7 +142,9 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
             style={{
               width: "min(90vw, 800px)",
               height: "70vh",
-              background: "radial-gradient(ellipse, rgba(249,115,22,0.06) 0%, transparent 70%)",
+              background: isAutoFull
+                ? "radial-gradient(ellipse, rgba(0,255,65,0.06) 0%, transparent 70%)"
+                : "radial-gradient(ellipse, rgba(249,115,22,0.06) 0%, transparent 70%)",
               filter: "blur(60px)",
             }}
           />
@@ -150,7 +188,7 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
             />
 
             {/* Command Center fills the entire terminal */}
-            <CommandCenter mode="popup" onClose={onClose} />
+            <CommandCenter mode="popup" onClose={onClose} onAutoFullChange={setIsAutoFull} />
           </motion.div>
         </motion.div>
       )}
