@@ -620,9 +620,18 @@ const CommandCenter = ({ mode, onClose, onAutoFullChange }: CommandCenterProps) 
 
       {/* Input bar */}
       <div className="shrink-0 px-4 pb-3 pt-2" style={isTerminal ? { background: isAutoFull ? "#050A05" : "#07070B" } : undefined}>
-        <div className="mx-auto flex max-w-3xl items-center gap-2"
-          style={isAutoFull ? { borderBottom: `1px solid ${neoGreen.border}`, paddingBottom: 4 } : undefined}>
-          {isTerminal && <span className="text-[10px] font-mono" style={{ color: isAutoFull ? neoGreen.primary : "rgba(16,185,129,0.6)" }}>$</span>}
+        <div className="mx-auto flex max-w-3xl items-center gap-2 rounded-md px-3 py-2"
+          style={isTerminal ? {
+            border: `1px solid ${isAutoFull ? neoGreen.border : "rgba(16,185,129,0.25)"}`,
+            background: isAutoFull ? "rgba(0,255,65,0.04)" : "rgba(16,185,129,0.04)",
+            boxShadow: `inset 0 1px 4px rgba(0,0,0,0.3), 0 0 8px ${isAutoFull ? "rgba(0,255,65,0.06)" : "rgba(16,185,129,0.06)"}`,
+          } : undefined}>
+          {isTerminal && (
+            <span className="select-none font-mono text-[11px] font-bold tracking-wider"
+              style={{ color: isAutoFull ? neoGreen.primary : "#34D399", textShadow: `0 0 6px ${isAutoFull ? "rgba(0,255,65,0.4)" : "rgba(52,211,153,0.4)"}` }}>
+              $
+            </span>
+          )}
           <AutoSuggestInput
             ref={cc.inputRef as React.RefObject<HTMLInputElement>}
             value={cc.input}
@@ -632,13 +641,29 @@ const CommandCenter = ({ mode, onClose, onAutoFullChange }: CommandCenterProps) 
             suggestions={terminalSuggestions}
             ghostColor={isAutoFull ? neoGreen.dim : isTerminal ? "rgb(52,211,153)" : "hsl(var(--primary))"}
             placeholder={isTerminal ? "Type a command or ask anything…" : "Ask anything or type / for commands…"}
-            className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/40"
-            style={isTerminal ? { color: isAutoFull ? neoGreen.dim : "#A0A4AA" } : undefined}
+            className="flex-1 bg-transparent text-xs outline-none font-mono placeholder:opacity-40"
+            style={isTerminal ? {
+              color: isAutoFull ? neoGreen.primary : "#34D399",
+              textShadow: `0 0 4px ${isAutoFull ? "rgba(0,255,65,0.2)" : "rgba(52,211,153,0.2)"}`,
+              caretColor: isAutoFull ? neoGreen.primary : "#34D399",
+            } : { color: undefined }}
             disabled={cc.loading}
           />
+          {isTerminal && cc.input.length >= 2 && (
+            <span className="hidden sm:inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[8px] font-mono tracking-wider opacity-40"
+              style={{
+                borderColor: isAutoFull ? neoGreen.border : "rgba(52,211,153,0.2)",
+                color: isAutoFull ? neoGreen.dim : "rgba(52,211,153,0.5)",
+              }}>
+              TAB
+            </span>
+          )}
           <button onClick={() => cc.processInput(cc.input)} disabled={cc.loading || !cc.input.trim()}
             className={`rounded-lg p-2 transition-all ${cc.input.trim() ? (isAutoFull ? "" : isTerminal ? "text-emerald-400" : "bg-primary/20 text-primary hover:bg-primary/30") : "text-muted-foreground/20"}`}
-            style={cc.input.trim() && isAutoFull ? { color: neoGreen.primary } : undefined}>
+            style={cc.input.trim() && isTerminal ? {
+              color: isAutoFull ? neoGreen.primary : "#34D399",
+              filter: `drop-shadow(0 0 4px ${isAutoFull ? "rgba(0,255,65,0.3)" : "rgba(52,211,153,0.3)"})`,
+            } : undefined}>
             <Send size={14} />
           </button>
         </div>
