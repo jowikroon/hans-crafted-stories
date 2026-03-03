@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,23 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // ── Authentication ──────────────────────────────────────────────────────
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+    if (!token) {
+      return new Response(JSON.stringify({ success: false, error: "Authorization required" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const supabaseAuth = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     let body: { url?: string } = {};
     const contentType = req.headers.get("content-type") || "";
     if (req.method === "POST" && contentType.includes("application/json")) {
@@ -65,13 +83,11 @@ serve(async (req) => {
       });
     }
 
-    // Extract SEO signals from the scraped data
     const html = data.data?.html || data.html || "";
     const metadata = data.data?.metadata || data.metadata || {};
     const links = data.data?.links || data.links || [];
     const markdown = data.data?.markdown || data.markdown || "";
 
-    // Parse headings from HTML
     const headings: { tag: string; text: string }[] = [];
     const headingRegex = /<(h[1-6])[^>]*>([\s\S]*?)<\/\1>/gi;
     let match;
@@ -79,7 +95,6 @@ serve(async (req) => {
       headings.push({ tag: match[1].toUpperCase(), text: match[2].replace(/<[^>]*>/g, "").trim() });
     }
 
-    // Count images without alt text
     const imgRegex = /<img\s[^>]*?>/gi;
     const altRegex = /alt\s*=\s*["']([^"']*)["']/i;
     let totalImages = 0;
@@ -91,12 +106,10 @@ serve(async (req) => {
       if (!altMatch || altMatch[1].trim() === "") imagesWithoutAlt++;
     }
 
-    // Check meta description
     const metaDescRegex = /<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i;
     const metaDescMatch = metaDescRegex.exec(html);
     const metaDescription = metaDescMatch ? metaDescMatch[1] : metadata.description || "";
 
-    // Check title
     const titleRegex = /<title[^>]*>([\s\S]*?)<\/title>/i;
     const titleMatch = titleRegex.exec(html);
     const pageTitle = titleMatch ? titleMatch[1].trim() : metadata.title || "";
@@ -116,7 +129,6 @@ serve(async (req) => {
       issues: [] as string[],
     };
 
-    // Generate issues
     if (!pageTitle) audit.issues.push("Missing page title");
     else if (pageTitle.length > 60) audit.issues.push(`Title too long (${pageTitle.length} chars, recommended < 60)`);
     if (!metaDescription) audit.issues.push("Missing meta description");

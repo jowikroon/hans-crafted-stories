@@ -65,16 +65,20 @@ export interface PortalTool {
   attributes?: ToolAttribute[];
 }
 
-const headers = () => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-});
+const getAuthHeaders = async () => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+  };
+};
 
 export const portalApi = {
   async runSiteAudit(url: string): Promise<{ success: boolean; data?: SiteAuditResult; error?: string }> {
     const res = await fetch(`${FUNCTIONS_URL}/site-audit`, {
       method: "POST",
-      headers: headers(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ url }),
     });
     return res.json();
@@ -83,7 +87,7 @@ export const portalApi = {
   async triggerWebhook(webhook_url: string, payload?: Record<string, unknown>): Promise<{ success: boolean; data?: WebhookResult; error?: string }> {
     const res = await fetch(`${FUNCTIONS_URL}/trigger-webhook`, {
       method: "POST",
-      headers: headers(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ webhook_url, payload }),
     });
     return res.json();
@@ -92,7 +96,7 @@ export const portalApi = {
   async keywordResearch(keyword: string): Promise<{ success: boolean; data?: KeywordResult; error?: string }> {
     const res = await fetch(`${FUNCTIONS_URL}/keyword-research`, {
       method: "POST",
-      headers: headers(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ keyword }),
     });
     return res.json();
