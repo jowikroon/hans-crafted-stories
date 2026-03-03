@@ -18,6 +18,10 @@ import ContextFilterPills from "@/components/ai/ContextFilterPills";
 import { unifiedCategories } from "@/components/ai/contextCategories";
 import VoiceEditForm from "@/components/hansai/VoiceEditForm";
 import StandardEditForm from "@/components/hansai/StandardEditForm";
+import AutoSuggestInput from "@/components/command-center/AutoSuggestInput";
+import { hansAICommands } from "@/components/ai/commandSuggestions";
+
+const SLASH_CMD_POOL = ["/help", "/jarvis", "/idea", "/task", "/tasks", "/run", "/workflows", "/clear", "/ai", "/campaign", "/prompt", "/autofull"];
 
 interface CommandCenterProps {
   mode: CommandCenterMode;
@@ -73,6 +77,23 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
 
   // Reset prompt limit when category or sub-item changes
   useEffect(() => setShowAllPrompts(false), [cc.selectedSubItem, cc.activeCat]);
+
+  // ── Auto-suggest pool ──────────────────────────────────────
+  const terminalSuggestions = useMemo(() => {
+    const pool = [...SLASH_CMD_POOL];
+    // Add prompts from active sub-item
+    if (cc.selectedSubItem && hansAICommands[cc.selectedSubItem]) {
+      pool.push(...hansAICommands[cc.selectedSubItem].map((c) => c.text));
+    }
+    // Add active category sub prompts from CATEGORY_SUBS
+    if (cc.activeCat && CATEGORY_SUBS[cc.activeCat]) {
+      CATEGORY_SUBS[cc.activeCat].forEach((sub) => pool.push(...sub.prompts));
+    }
+    // Add recent user messages
+    const recent = cc.messages.filter((m) => m.role === "user").slice(-10).map((m) => m.content);
+    pool.push(...recent);
+    return [...new Set(pool)];
+  }, [cc.selectedSubItem, cc.activeCat, cc.messages]);
 
   // ── Elapsed timer for pipeline ──────────────────────────────
   const [elapsed, setElapsed] = useState(0);
@@ -598,11 +619,14 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
         <div className="mx-auto flex max-w-3xl items-center gap-2"
           style={isAutoFull ? { borderBottom: `1px solid ${neoGreen.border}`, paddingBottom: 4 } : undefined}>
           {isTerminal && <span className="text-[10px] font-mono" style={{ color: isAutoFull ? neoGreen.primary : "rgba(16,185,129,0.6)" }}>$</span>}
-          <input
+          <AutoSuggestInput
             ref={cc.inputRef as React.RefObject<HTMLInputElement>}
             value={cc.input}
             onChange={(e) => cc.setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            onAcceptSuggestion={(full) => cc.setInput(full)}
+            suggestions={terminalSuggestions}
+            ghostColor={isAutoFull ? neoGreen.dim : isTerminal ? "rgb(52,211,153)" : "hsl(var(--primary))"}
             placeholder={isTerminal ? "Type a command or ask anything…" : "Ask anything or type / for commands…"}
             className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/40"
             style={isTerminal ? { color: isAutoFull ? neoGreen.dim : "#A0A4AA" } : undefined}
