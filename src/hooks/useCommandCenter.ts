@@ -73,7 +73,17 @@ const SLASH_COMMANDS = [
   { cmd: "/ai", desc: "Chat with AI" },
   { cmd: "/campaign", desc: "Launch campaign form" },
   { cmd: "/prompt", desc: "Open prompt builder" },
+  { cmd: "/autofull", desc: "Toggle full autonomous terminal mode" },
 ];
+
+// ── Delivery follow-up prompts ────────────────────────────────
+const DELIVERY_FOLLOWUPS: Record<DeliveryAction, string> = {
+  show_chat: "Results are above. You can refine, export as CSV, or try a different approach. What next?",
+  csv_download: "CSV downloaded. Want to run another export or analyze the data further?",
+  send_n8n: "Workflow triggered. Want to check the result, run another, or ask about the output?",
+  send_slack: "Message sent. Anything else to share or follow up on?",
+  show_plan: "Here's the plan. Type 'execute' to run it, or adjust the approach.",
+};
 
 const mapNaturalLanguageSlash = (text: string): { cmd: string; arg: string } | null => {
   const lower = text.toLowerCase().trim();
@@ -100,6 +110,21 @@ export function useCommandCenter(mode: CommandCenterMode) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [pipelineStage, setPipelineStage] = useState<PipelineStage>("idle");
+
+  // ── Pipeline start time (for elapsed timer) ─────────────────
+  const [pipelineStartTime, setPipelineStartTime] = useState<number | null>(null);
+
+  // Track pipeline start
+  useEffect(() => {
+    if (pipelineStage !== "idle" && pipelineStage !== "done" && pipelineStage !== "error" && !pipelineStartTime) {
+      setPipelineStartTime(Date.now());
+    } else if (pipelineStage === "idle") {
+      setPipelineStartTime(null);
+    }
+  }, [pipelineStage]);
+
+  // ── AutoFull mode ───────────────────────────────────────────
+  const [autoFullMode, setAutoFullMode] = useState(false);
 
   // ── V3 Category/Action/Delivery state ───────────────────────
   const [activeCat, setActiveCat] = useState<string | null>(null);
@@ -208,7 +233,10 @@ export function useCommandCenter(mode: CommandCenterMode) {
   // ── Send to AI (n8n-agent, non-streaming) ───────────────────
   const sendToAI = useCallback(async (userMsg: string, allMessages: Message[]) => {
     const contextPrefix = buildContextPrefix(unifiedCategories, selectedCategory, selectedSub);
-    const systemWithContext = contextPrefix ? `${SYSTEM_PROMPT}\n\n${contextPrefix}` : SYSTEM_PROMPT;
+    let systemWithContext = contextPrefix ? `${SYSTEM_PROMPT}\n\n${contextPrefix}` : SYSTEM_PROMPT;
+    if (autoFullMode) {
+      systemWithContext = "You are in FULL AUTONOMOUS mode. Execute all actions without asking for confirmation. Be maximally proactive.\n\n" + systemWithContext;
+    }
     setLoading(true);
     setPipelineStage("generating");
 
@@ -254,7 +282,7 @@ export function useCommandCenter(mode: CommandCenterMode) {
     } finally {
       setLoading(false);
     }
-  }, [appendMessage, saveToHistory, selectedModel, selectedCategory, selectedSub]);
+  }, [appendMessage, saveToHistory, selectedModel, selectedCategory, selectedSub, autoFullMode]);
 
   // ── AI streaming (terminal mode via hansai-chat) ────────────
   const streamAI = useCallback(async (text: string, options?: { persona?: string }) => {
@@ -270,6 +298,7 @@ export function useCommandCenter(mode: CommandCenterMode) {
       const body: Record<string, unknown> = { messages: newAiMsgs };
       if (options?.persona === "jarvis") body.persona = { key: "jarvis" };
       else if (activeVoice) body.voice = { name: activeVoice.name, style: activeVoice.style, standard: activeVoice.standard ?? "" };
+      if (autoFullMode) body.autoFull = true;
 
       const resp = await fetch(CHAT_URL, {
         method: "POST",
@@ -312,7 +341,7 @@ export function useCommandCenter(mode: CommandCenterMode) {
       setAiMessages([...newAiMsgs, { role: "assistant", content: fullResponse }]);
     } catch { appendMessage({ role: "error", content: "Connection error" }); }
     finally { setLoading(false); }
-  }, [appendMessage, aiMessages, activeVoice]);
+  }, [appendMessage, aiMessages, activeVoice, autoFullMode]);
 
   // ── V3 Action/Delivery handlers ─────────────────────────────
   const pickAction = useCallback((action: HeroAction | CompactAction) => {
@@ -324,11 +353,9 @@ export function useCommandCenter(mode: CommandCenterMode) {
   /** Map a category to the best-matching n8n workflow */
   const matchWorkflowForAction = useCallback((action: HeroAction | CompactAction): WorkflowDef | undefined => {
     const cmd = action.cmd.toLowerCase();
-    // Try keyword matching against available workflows
     for (const wf of WORKFLOWS) {
       if (wf.keywords.some((kw) => cmd.includes(kw))) return wf;
     }
-    // Category-based fallback
     const cat = activeCat || "";
     const catMap: Record<string, string> = {
       pricing: "autoseo", seo: "autoseo", product: "product-titles",
@@ -350,7 +377,6 @@ export function useCommandCenter(mode: CommandCenterMode) {
     try {
       switch (action) {
         case "show_chat": {
-          // Send the command through AI and render response in chat
           const userMsg: Message = { role: "user", content: cmd, timestamp: Date.now() };
           const newMsgs = [...messages, userMsg];
           setMessages(newMsgs);
@@ -363,7 +389,6 @@ export function useCommandCenter(mode: CommandCenterMode) {
         }
 
         case "csv_download": {
-          // Send to AI, then parse response and download as CSV
           appendMessage({ role: "workflow", content: `Generating data for **${label}**…` });
           setLoading(true);
           setPipelineStage("generating");
@@ -390,12 +415,10 @@ export function useCommandCenter(mode: CommandCenterMode) {
         }
 
         case "send_n8n": {
-          // Match to a workflow and trigger it
           const wf = matchWorkflowForAction(pickedAction);
           if (wf) {
             await executeWorkflow(wf, cmd);
           } else {
-            // Fallback: send through AI
             appendMessage({ role: "system", content: "No matching n8n workflow found — routing to AI." });
             const userMsg: Message = { role: "user", content: cmd, timestamp: Date.now() };
             const newMsgs = [...messages, userMsg];
@@ -406,14 +429,9 @@ export function useCommandCenter(mode: CommandCenterMode) {
         }
 
         case "send_slack": {
-          // Check Slack connector and post
           appendMessage({ role: "workflow", content: `Sending to Slack: **${label}**…` });
           setLoading(true);
           try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const token = sessionData?.session?.access_token;
-            // Call a lightweight edge function or just inform user
-            // Since we don't have a dedicated Slack edge function yet, inform user
             appendMessage({
               role: "system",
               content: "⚠️ Slack connector is available but no Slack edge function is wired yet. To enable this, connect Slack via the connector settings and a posting function will be created.",
@@ -425,7 +443,6 @@ export function useCommandCenter(mode: CommandCenterMode) {
         }
 
         case "show_plan": {
-          // Ask AI to explain what will happen, don't execute
           const planCmd = `Explain what this command will do step-by-step, without executing it:\n\n${cmd}`;
           const userMsg: Message = { role: "user", content: planCmd, timestamp: Date.now() };
           const newMsgs = [...messages, userMsg];
@@ -438,8 +455,13 @@ export function useCommandCenter(mode: CommandCenterMode) {
       appendMessage({ role: "error", content: `Delivery failed: ${err instanceof Error ? err.message : "Unknown error"}` });
     }
 
+    // Append follow-up prompt and stay at "done" — no auto-reset
+    const followUp = DELIVERY_FOLLOWUPS[action];
+    if (followUp) {
+      appendMessage({ role: "system", content: followUp });
+    }
     setPhase("done");
-    setTimeout(() => { setPhase("browse"); setPickedAction(null); }, 2000);
+    // Don't auto-reset to browse — wait for next user input
   }, [appendMessage, pickedAction, messages, mode, streamAI, sendToAI, executeWorkflow, matchWorkflowForAction, selectedModel]);
 
   const rerunHistory = useCallback((h: { cmd: string; out: string }) => {
@@ -454,6 +476,12 @@ export function useCommandCenter(mode: CommandCenterMode) {
     if (!trimmed || loading) return;
     setInput("");
     setPendingClarification(null);
+
+    // Reset phase from "done" when user types new input
+    if (phase === "done") {
+      setPhase("browse");
+      setPickedAction(null);
+    }
 
     // 1. V3 category matching (e.g. /pricing, /seo)
     for (const key of Object.keys(CATEGORIES)) {
@@ -518,6 +546,17 @@ export function useCommandCenter(mode: CommandCenterMode) {
         case "/ai": if (arg) { mode === "terminal" ? await streamAI(arg) : await sendToAI(arg, [...messages, { role: "user", content: arg }]); } return;
         case "/campaign": setShowForm("campaign"); appendMessage({ role: "system", content: "Opening campaign builder..." }); return;
         case "/prompt": setShowForm("prompt"); appendMessage({ role: "system", content: "Opening prompt builder..." }); return;
+        case "/autofull": {
+          const newVal = !autoFullMode;
+          setAutoFullMode(newVal);
+          appendMessage({
+            role: "system",
+            content: newVal
+              ? "⚡ AUTOFULL MODE ACTIVATED — Full autonomous terminal. All actions execute without confirmation. Neo-green override engaged."
+              : "AUTOFULL MODE DEACTIVATED — Returning to standard mode.",
+          });
+          return;
+        }
         default: appendMessage({ role: "error", content: `Unknown command: ${cmd}. Type /help.` }); return;
       }
     }
@@ -535,7 +574,6 @@ export function useCommandCenter(mode: CommandCenterMode) {
 
     // 4. Intent pipeline
     if (mode !== "terminal") {
-      // Non-streaming: intent → workflow or AI
       const userMsgObj: Message = { role: "user", content: trimmed, timestamp: Date.now() };
       const newMessages = [...messages, userMsgObj];
       setMessages(newMessages);
@@ -550,7 +588,6 @@ export function useCommandCenter(mode: CommandCenterMode) {
         default: await sendToAI(trimmed, newMessages); return;
       }
     } else {
-      // Terminal: intent → workflow or streaming AI
       appendMessage({ role: "user", content: trimmed });
       setLoading(true);
       const result = await runIntentPipeline(trimmed, "command_center");
@@ -562,7 +599,7 @@ export function useCommandCenter(mode: CommandCenterMode) {
         default: await streamAI(trimmed); return;
       }
     }
-  }, [loading, mode, messages, tasks, isAdmin, activeVoice, appendMessage, pickAction, executeWorkflow, sendToAI, streamAI, saveToHistory, selectedCategory, selectedSub]);
+  }, [loading, mode, messages, tasks, isAdmin, activeVoice, appendMessage, pickAction, executeWorkflow, sendToAI, streamAI, saveToHistory, selectedCategory, selectedSub, autoFullMode, phase]);
 
   // ── Clarification handlers ──────────────────────────────────
   const handleClarificationSelect = useCallback(async (wf: WorkflowDef) => {
@@ -591,6 +628,7 @@ export function useCommandCenter(mode: CommandCenterMode) {
     voiceStandardEditName, setVoiceStandardEditName,
     pendingClarification, setPendingClarification,
     selectedCategory, setSelectedCategory, selectedSub, setSelectedSub,
+    autoFullMode, pipelineStartTime,
     // Refs
     scrollRef, inputRef,
     // Auth

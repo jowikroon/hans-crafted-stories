@@ -9,6 +9,7 @@ import {
   Command, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useCommandCenter, type CommandCenterMode, type PipelineStage } from "@/hooks/useCommandCenter";
 import {
   CATEGORIES, ACTIONS, DELIVERY_OPTIONS, AI_MODELS,
@@ -23,13 +24,23 @@ interface CommandCenterProps {
   onClose?: () => void;
 }
 
-const pipelineSteps: { key: PipelineStage; label: string }[] = [
-  { key: "sending", label: "TRANSMIT" },
-  { key: "routing", label: "INTENT" },
-  { key: "processing", label: "ANALYZE" },
-  { key: "generating", label: "SYNTHESIZE" },
-  { key: "done", label: "COMPLETE" },
+const pipelineSteps: { key: PipelineStage; label: string; detail: string }[] = [
+  { key: "sending", label: "TRANSMIT", detail: "Packaging request…" },
+  { key: "routing", label: "INTENT", detail: "Classifying intent & matching workflows…" },
+  { key: "processing", label: "ANALYZE", detail: "Running matched workflow or agent…" },
+  { key: "generating", label: "SYNTHESIZE", detail: "AI generating response…" },
+  { key: "done", label: "COMPLETE", detail: "Ready" },
 ];
+
+// ── Neo-green color set for /autofull mode ───────────────────
+const neoGreen = {
+  primary: "#00FF41",
+  bg10: "rgba(0,255,65,0.1)",
+  bg20: "rgba(0,255,65,0.2)",
+  bg5: "rgba(0,255,65,0.05)",
+  border: "rgba(0,255,65,0.3)",
+  dim: "rgba(0,255,65,0.6)",
+};
 
 function renderContent(text: string) {
   const parts = text.split(/(```[\s\S]*?```|`[^`]+`|\*\*[^*]+\*\*)/g);
@@ -54,9 +65,25 @@ function renderContent(text: string) {
 const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
   const cc = useCommandCenter(mode);
   const isTerminal = mode === "terminal";
+  const isAutoFull = cc.autoFullMode && isTerminal;
   const modelPickerRef = useRef<HTMLDivElement>(null);
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+
+  // ── Elapsed timer for pipeline ──────────────────────────────
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (cc.pipelineStage === "idle") { setElapsed(0); return; }
+    const start = cc.pipelineStartTime || Date.now();
+    const interval = setInterval(() => setElapsed(((Date.now() - start) / 1000)), 100);
+    return () => clearInterval(interval);
+  }, [cc.pipelineStage, cc.pipelineStartTime]);
+
+  // ── Color helpers for autoFull ──────────────────────────────
+  const accent = isAutoFull ? neoGreen.primary : isTerminal ? "#10B981" : undefined;
+  const accentDim = isAutoFull ? neoGreen.dim : isTerminal ? "rgba(16,185,129,0.6)" : undefined;
+  const accentBg10 = isAutoFull ? neoGreen.bg10 : isTerminal ? "rgba(16,185,129,0.1)" : undefined;
+  const accentBg5 = isAutoFull ? neoGreen.bg5 : isTerminal ? "rgba(16,185,129,0.05)" : undefined;
 
   useEffect(() => {
     setTimeout(() => (cc.inputRef.current as HTMLElement | null)?.focus(), 300);
@@ -84,43 +111,73 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
 
   return (
     <div
-      className={isTerminal ? "flex flex-col min-h-screen" : "flex h-full flex-col"}
-      style={isTerminal ? { fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace", fontSize: 12, background: "#07070B", color: "#A0A4AA" } : undefined}
+      className={isTerminal ? "flex flex-col min-h-screen relative" : "flex h-full flex-col"}
+      style={isTerminal ? { fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace", fontSize: 12, background: isAutoFull ? "#050A05" : "#07070B", color: isAutoFull ? neoGreen.dim : "#A0A4AA" } : undefined}
     >
+      {/* CRT scanline overlay for autofull */}
+      {isAutoFull && (
+        <div className="pointer-events-none absolute inset-0 z-[50]" style={{
+          background: "repeating-linear-gradient(0deg, rgba(0,255,65,0.03) 0px, rgba(0,255,65,0.03) 1px, transparent 1px, transparent 3px)",
+          mixBlendMode: "overlay",
+        }} />
+      )}
+
       {/* Pipeline bar */}
       {cc.pipelineStage !== "idle" && (
-        <div className={`relative flex items-center gap-1.5 px-4 py-2 font-mono overflow-hidden ${isTerminal ? "" : "border-b border-orange-500/20"}`}
-          style={isTerminal ? { borderBottom: "1px solid #12121E", background: "#0C0C14" } : undefined}>
-          {pipelineSteps.map((step, i) => {
-            const isActive = step.key === cc.pipelineStage;
-            const isDone = pipelineSteps.findIndex(s => s.key === cc.pipelineStage) > i;
-            return (
-              <div key={step.key} className="flex items-center gap-1.5">
-                <div className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest transition-all ${
-                  isActive ? (isTerminal ? "text-emerald-400 animate-pulse" : "bg-orange-500/20 text-orange-400 animate-pulse")
-                  : isDone ? (isTerminal ? "text-emerald-300" : "bg-orange-500/10 text-orange-300")
-                  : "text-muted-foreground/30"
-                }`}>
-                  {isActive ? <Loader2 size={8} className="animate-spin" /> : isDone ? <CheckCircle2 size={8} /> : <Circle size={8} />}
-                  <span className="hidden sm:inline">{step.label}</span>
+        <div className={`relative flex flex-col px-4 py-2 font-mono overflow-hidden ${isTerminal ? "" : "border-b border-orange-500/20"}`}
+          style={isTerminal ? { borderBottom: `1px solid ${isAutoFull ? neoGreen.border : "#12121E"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
+          <div className="flex items-center gap-1.5">
+            {pipelineSteps.map((step, i) => {
+              const isActive = step.key === cc.pipelineStage;
+              const isDone = pipelineSteps.findIndex(s => s.key === cc.pipelineStage) > i;
+              return (
+                <div key={step.key} className="flex items-center gap-1.5">
+                  <div className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest transition-all ${
+                    isActive ? (isTerminal ? "animate-pulse" : "bg-orange-500/20 text-orange-400 animate-pulse")
+                    : isDone ? (isTerminal ? "" : "bg-orange-500/10 text-orange-300")
+                    : "text-muted-foreground/30"
+                  }`}
+                    style={isTerminal ? {
+                      color: isActive ? (isAutoFull ? neoGreen.primary : "#34D399") : isDone ? (isAutoFull ? neoGreen.dim : "#6EE7B7") : undefined,
+                    } : undefined}
+                  >
+                    {isActive ? <Loader2 size={8} className="animate-spin" /> : isDone ? <CheckCircle2 size={8} /> : <Circle size={8} />}
+                    <span className="hidden sm:inline">{step.label}</span>
+                    {isActive && <span className="ml-1 text-[8px] tabular-nums opacity-70">{elapsed.toFixed(1)}s</span>}
+                  </div>
+                  {i < pipelineSteps.length - 1 && <span className="font-mono text-[8px] tracking-[3px] text-muted-foreground/20">···</span>}
                 </div>
-                {i < pipelineSteps.length - 1 && <span className="font-mono text-[8px] tracking-[3px] text-muted-foreground/20">···</span>}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          {/* Detail text for active stage */}
+          {pipelineSteps.map(step => step.key === cc.pipelineStage && (
+            <p key={step.key} className="mt-0.5 text-[8px] tracking-wide"
+              style={{ color: isAutoFull ? neoGreen.dim : isTerminal ? "rgba(52,211,153,0.5)" : "rgba(249,115,22,0.5)" }}>
+              {step.detail}
+            </p>
+          ))}
         </div>
       )}
 
       {/* Header */}
       <div className={`flex items-center justify-between gap-3 px-4 py-2 ${isTerminal ? "" : "border-b border-border"}`}
-        style={isTerminal ? { background: "linear-gradient(180deg, #0C0C14 0%, #09090F 100%)", borderBottom: "1px solid #12121E" } : undefined}>
+        style={isTerminal ? { background: isAutoFull ? "linear-gradient(180deg, #0A0F0A 0%, #070B07 100%)" : "linear-gradient(180deg, #0C0C14 0%, #09090F 100%)", borderBottom: `1px solid ${isAutoFull ? neoGreen.border : "#12121E"}` } : undefined}>
         <div className="flex items-center gap-2.5">
           <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${isTerminal ? "" : "bg-orange-500/10"}`}
-            style={isTerminal ? { background: "rgba(16,185,129,0.1)" } : undefined}>
-            <Command size={14} className={isTerminal ? "text-emerald-400" : "text-orange-400"} />
+            style={isTerminal ? { background: accentBg10 } : undefined}>
+            <Command size={14} style={isTerminal ? { color: accent } : undefined} className={isTerminal ? "" : "text-orange-400"} />
           </div>
           <div>
-            <h3 className="text-xs font-semibold" style={isTerminal ? { color: "#E8E8F0" } : undefined}>Command Center</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-semibold" style={isTerminal ? { color: isAutoFull ? neoGreen.primary : "#E8E8F0" } : undefined}>Command Center</h3>
+              {isAutoFull && (
+                <span className="animate-pulse rounded px-1.5 py-0.5 text-[8px] font-black tracking-widest"
+                  style={{ background: neoGreen.bg20, color: neoGreen.primary, border: `1px solid ${neoGreen.border}` }}>
+                  AUTOFULL
+                </span>
+              )}
+            </div>
             <p className="text-[9px] text-muted-foreground">Intent · Workflows · AI</p>
           </div>
         </div>
@@ -128,8 +185,8 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
           <div className="relative" ref={modelPickerRef}>
             <button onClick={() => setShowModelPicker(!showModelPicker)}
               className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-medium transition-all ${isTerminal ? "" : "border-border bg-secondary/30 text-foreground hover:border-primary/40"}`}
-              style={isTerminal ? { border: "1px solid #1A1A28", background: "#0C0C14", color: "#A0A4AA" } : undefined}>
-              <Bot size={12} className={isTerminal ? "text-emerald-400/80" : "text-orange-400/80"} />
+              style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14", color: isAutoFull ? neoGreen.dim : "#A0A4AA" } : undefined}>
+              <Bot size={12} style={isTerminal ? { color: isAutoFull ? neoGreen.primary : "rgba(16,185,129,0.8)" } : undefined} className={isTerminal ? "" : "text-orange-400/80"} />
               <span>{currentModel.label}</span>
               <ChevronDown size={10} className={`transition-transform ${showModelPicker ? "rotate-180" : ""}`} />
             </button>
@@ -137,7 +194,7 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
               {showModelPicker && (
                 <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
                   className={`absolute right-0 top-full z-[200] mt-1.5 w-56 max-h-80 overflow-y-auto rounded-xl border p-1.5 shadow-xl ${isTerminal ? "" : "border-border bg-card"}`}
-                  style={isTerminal ? { border: "1px solid #1A1A28", background: "#0C0C14" } : undefined}>
+                  style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
                   {(["gemini", "openai", "image", "ollama"] as const).map(group => {
                     const groupModels = AI_MODELS.filter(m => m.group === group);
                     const groupLabel = group === "gemini" ? "GOOGLE GEMINI" : group === "openai" ? "OPENAI" : group === "image" ? "IMAGE GEN" : "LOCAL / VPS";
@@ -147,8 +204,12 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
                         {groupModels.map(m => (
                           <button key={m.id} onClick={() => { cc.setSelectedModel(m.id); setShowModelPicker(false); }}
                             className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-[11px] transition-all ${
-                              cc.selectedModel === m.id ? (isTerminal ? "text-emerald-400" : "bg-orange-500/15 text-orange-400") : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                            }`}>
+                              cc.selectedModel === m.id
+                                ? (isAutoFull ? "" : isTerminal ? "text-emerald-400" : "bg-orange-500/15 text-orange-400")
+                                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                            }`}
+                            style={cc.selectedModel === m.id && isAutoFull ? { color: neoGreen.primary, background: neoGreen.bg10 } : undefined}
+                          >
                             <span>{m.label}</span>
                             {group === "image"
                               ? <span className="text-[10px]">📷</span>
@@ -166,7 +227,8 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
             </AnimatePresence>
           </div>
           <button onClick={() => setShowHistory(!showHistory)}
-            className={`rounded-lg p-1.5 transition-all ${showHistory ? (isTerminal ? "text-emerald-400" : "bg-orange-500/10 text-orange-400") : "text-muted-foreground/40 hover:text-foreground"}`}>
+            className={`rounded-lg p-1.5 transition-all ${showHistory ? (isAutoFull ? "" : isTerminal ? "text-emerald-400" : "bg-orange-500/10 text-orange-400") : "text-muted-foreground/40 hover:text-foreground"}`}
+            style={showHistory && isAutoFull ? { color: neoGreen.primary } : undefined}>
             <History size={12} />
           </button>
           {mode === "popup" && onClose && (
@@ -180,9 +242,10 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
 
       {/* V3 Category tabs */}
       <nav className={`flex gap-0.5 overflow-x-auto px-4 py-1 ${isTerminal ? "" : "border-b border-border bg-secondary/20"}`}
-        style={isTerminal ? { background: "#08080E", borderBottom: cc.activeCat ? "none" : "1px solid #12121E", scrollbarWidth: "none" } : { scrollbarWidth: "none" }}>
+        style={isTerminal ? { background: isAutoFull ? "#060A06" : "#08080E", borderBottom: cc.activeCat ? "none" : `1px solid ${isAutoFull ? neoGreen.border : "#12121E"}`, scrollbarWidth: "none" } : { scrollbarWidth: "none" }}>
         {Object.entries(CATEGORIES).map(([key, v]) => {
           const active = cc.activeCat === key;
+          const tabColor = isAutoFull ? neoGreen.primary : v.color;
           return (
             <button key={key} onClick={() => {
               if (cc.phase === "delivery" || cc.phase === "exec") return;
@@ -192,14 +255,14 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
             }}
               className="whitespace-nowrap rounded-t-md px-2.5 py-1.5 text-[10px] font-medium transition-all"
               style={{
-                color: active ? v.color : isTerminal ? "#3A3A4A" : undefined,
-                borderBottom: active ? `2px solid ${v.color}` : "2px solid transparent",
-                background: active ? `${v.color}12` : undefined,
+                color: active ? tabColor : isTerminal ? (isAutoFull ? "rgba(0,255,65,0.25)" : "#3A3A4A") : undefined,
+                borderBottom: active ? `2px solid ${tabColor}` : "2px solid transparent",
+                background: active ? `${tabColor}12` : undefined,
                 fontWeight: active ? 600 : 400,
                 opacity: (cc.phase === "delivery" || cc.phase === "exec") && !active ? 0.3 : 1,
               }}
-              onMouseEnter={(e) => { if (!active) (e.target as HTMLElement).style.color = v.color; }}
-              onMouseLeave={(e) => { if (!active) (e.target as HTMLElement).style.color = isTerminal ? "#3A3A4A" : ""; }}
+              onMouseEnter={(e) => { if (!active) (e.target as HTMLElement).style.color = tabColor; }}
+              onMouseLeave={(e) => { if (!active) (e.target as HTMLElement).style.color = isTerminal ? (isAutoFull ? "rgba(0,255,65,0.25)" : "#3A3A4A") : ""; }}
             >
               {v.icon} {v.label}
             </button>
@@ -220,7 +283,7 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
           {showHistory && cc.chatHistory.length > 0 && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
               className={`mb-3 overflow-hidden rounded-lg border p-2 ${isTerminal ? "" : "border-border bg-card"}`}
-              style={isTerminal ? { border: "1px solid #1A1A28", background: "#0C0C14" } : undefined}>
+              style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
               <p className="mb-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60">History</p>
               {cc.chatHistory.slice(0, 8).map((h, i) => (
                 <button key={i} onClick={() => { cc.setMessages(h.messages); setShowHistory(false); }}
@@ -238,13 +301,13 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
           {cc.activeCat && ACTIONS[cc.activeCat] && cc.phase === "browse" && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
               className={`mb-3 overflow-hidden rounded-lg border p-3 ${isTerminal ? "" : "border-border bg-card"}`}
-              style={isTerminal ? { border: "1px solid #1A1A28", background: "#0C0C14" } : undefined}>
+              style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
               <div className="grid grid-cols-2 gap-2 mb-2">
                 {ACTIONS[cc.activeCat].hero.map((a) => (
                   <button key={a.id} onClick={() => cc.pickAction(a)}
                     className={`rounded-lg border p-3 text-left transition-all hover:scale-[1.01] ${isTerminal ? "" : "border-border hover:border-orange-500/40 bg-secondary/30"}`}
-                    style={isTerminal ? { border: "1px solid #1A1A28", background: "#09090F" } : undefined}>
-                    <p className="text-xs font-semibold" style={isTerminal ? { color: "#E8E8F0" } : undefined}>{a.label}</p>
+                    style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#070B07" : "#09090F" } : undefined}>
+                    <p className="text-xs font-semibold" style={isTerminal ? { color: isAutoFull ? neoGreen.primary : "#E8E8F0" } : undefined}>{a.label}</p>
                     <p className="mt-1 text-[10px] text-muted-foreground line-clamp-2">{a.sub}</p>
                     <div className="mt-2 flex flex-wrap gap-1">
                       {a.tools.map(t => <span key={t} className="rounded bg-secondary px-1.5 py-0.5 text-[8px] text-muted-foreground">{t}</span>)}
@@ -261,10 +324,10 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
               ))}
               {ACTIONS[cc.activeCat].history.length > 0 && (
                 <>
-                  <div className={`my-2 flex items-center gap-2 ${isTerminal ? "text-emerald-500/30" : "text-orange-500/30"}`}>
-                    <div className="h-px flex-1 bg-current" />
-                    <span className="text-[8px] font-bold uppercase tracking-widest">Last Run — Verified</span>
-                    <div className="h-px flex-1 bg-current" />
+                  <div className="my-2 flex items-center gap-2" style={{ color: isAutoFull ? neoGreen.border : undefined }}>
+                    <div className={`h-px flex-1 bg-current ${isAutoFull ? "" : isTerminal ? "text-emerald-500/30" : "text-orange-500/30"}`} />
+                    <span className={`text-[8px] font-bold uppercase tracking-widest ${isAutoFull ? "" : isTerminal ? "text-emerald-500/30" : "text-orange-500/30"}`}>Last Run — Verified</span>
+                    <div className={`h-px flex-1 bg-current ${isAutoFull ? "" : isTerminal ? "text-emerald-500/30" : "text-orange-500/30"}`} />
                   </div>
                   {ACTIONS[cc.activeCat].history.map((h, i) => (
                     <button key={i} onClick={() => cc.rerunHistory(h)}
@@ -284,22 +347,26 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
           {cc.phase === "delivery" && cc.pickedAction && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               className={`mb-3 rounded-lg border p-3 ${isTerminal ? "" : "border-border bg-card"}`}
-              style={isTerminal ? { border: "1px solid #1A1A28", background: "#0C0C14" } : undefined}>
-              <p className={`mb-2 text-[10px] font-bold uppercase tracking-wider ${isTerminal ? "text-emerald-400/60" : "text-orange-400/60"}`}>
+              style={isTerminal ? { border: `1px solid ${isAutoFull ? neoGreen.border : "#1A1A28"}`, background: isAutoFull ? "#0A0F0A" : "#0C0C14" } : undefined}>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-wider"
+                style={{ color: isAutoFull ? neoGreen.dim : isTerminal ? "rgba(16,185,129,0.6)" : "rgba(249,115,22,0.6)" }}>
                 Deliver: {cc.pickedAction.label}
               </p>
               <div className="space-y-1.5">
                 {(DELIVERY_OPTIONS[cc.pickedAction.deliveryType] || DELIVERY_OPTIONS.data).map((d, i) => (
                   <button key={i} onClick={() => cc.pickDelivery(d)}
                     className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all ${
-                      d.best ? (isTerminal ? "border-emerald-500/30" : "border-orange-500/30 bg-orange-500/5") : "border-border"
-                    } hover:border-primary/40`}>
+                      d.best ? (isAutoFull ? "" : isTerminal ? "border-emerald-500/30" : "border-orange-500/30 bg-orange-500/5") : "border-border"
+                    } hover:border-primary/40`}
+                    style={d.best && isAutoFull ? { borderColor: neoGreen.border, background: neoGreen.bg5 } : undefined}>
                     <span className="text-lg">{d.icon}</span>
                     <div>
                       <p className="text-xs font-medium">{d.label}</p>
                       <p className="text-[10px] text-muted-foreground">{d.note}</p>
                     </div>
-                    {d.best && <span className={`ml-auto rounded px-1.5 py-0.5 text-[8px] font-bold ${isTerminal ? "bg-emerald-500/20 text-emerald-400" : "bg-orange-500/20 text-orange-400"}`}>BEST</span>}
+                    {d.best && <span
+                      className={`ml-auto rounded px-1.5 py-0.5 text-[8px] font-bold ${isAutoFull ? "" : isTerminal ? "bg-emerald-500/20 text-emerald-400" : "bg-orange-500/20 text-orange-400"}`}
+                      style={isAutoFull ? { background: neoGreen.bg20, color: neoGreen.primary } : undefined}>BEST</span>}
                   </button>
                 ))}
               </div>
@@ -311,8 +378,11 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
 
         {/* Exec spinner */}
         {cc.phase === "exec" && (
-          <div className="mb-3 flex items-center gap-2 rounded-lg border border-border p-4">
-            <Loader2 size={14} className={`animate-spin ${isTerminal ? "text-emerald-400" : "text-orange-400"}`} />
+          <div className="mb-3 flex items-center gap-2 rounded-lg border border-border p-4"
+            style={isAutoFull ? { borderColor: neoGreen.border } : undefined}>
+            <Loader2 size={14}
+              className={`animate-spin ${isAutoFull ? "" : isTerminal ? "text-emerald-400" : "text-orange-400"}`}
+              style={isAutoFull ? { color: neoGreen.primary } : undefined} />
             <span className="text-xs text-muted-foreground">Executing…</span>
           </div>
         )}
@@ -321,12 +391,18 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
         {cc.messages.map((msg, i) => (
           <div key={i} className={`mb-2 ${msg.role === "user" ? "flex justify-end" : ""}`}>
             <div className={`rounded-lg px-3 py-2 text-xs leading-relaxed max-w-[85%] ${
-              msg.role === "user" ? (isTerminal ? "bg-emerald-500/10 text-emerald-200" : "bg-primary/10 text-foreground")
+              msg.role === "user" ? (isAutoFull ? "" : isTerminal ? "bg-emerald-500/10 text-emerald-200" : "bg-primary/10 text-foreground")
               : msg.role === "error" ? "bg-destructive/10 text-destructive"
-              : msg.role === "workflow" ? (isTerminal ? "bg-emerald-500/5 text-emerald-300" : "bg-orange-500/5 text-orange-300")
+              : msg.role === "workflow" ? (isAutoFull ? "" : isTerminal ? "bg-emerald-500/5 text-emerald-300" : "bg-orange-500/5 text-orange-300")
               : msg.role === "system" ? "text-muted-foreground"
               : "text-foreground"
-            }`}>
+            }`}
+              style={isAutoFull ? (
+                msg.role === "user" ? { background: neoGreen.bg10, color: neoGreen.primary } :
+                msg.role === "workflow" ? { background: neoGreen.bg5, color: neoGreen.dim } :
+                undefined
+              ) : undefined}
+            >
               {renderContent(msg.content)}
             </div>
           </div>
@@ -344,7 +420,8 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
 
         {cc.loading && cc.pipelineStage === "idle" && (
           <div className="mb-2 flex items-center gap-2">
-            <Loader2 size={12} className={`animate-spin ${isTerminal ? "text-emerald-400" : "text-orange-400"}`} />
+            <Loader2 size={12} className={`animate-spin ${isAutoFull ? "" : isTerminal ? "text-emerald-400" : "text-orange-400"}`}
+              style={isAutoFull ? { color: neoGreen.primary } : undefined} />
             <span className="text-[10px] text-muted-foreground">Thinking…</span>
           </div>
         )}
@@ -363,9 +440,10 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
       </div>
 
       {/* Input bar */}
-      <div className="shrink-0 px-4 pb-3 pt-2" style={isTerminal ? { background: "#07070B" } : undefined}>
-        <div className="mx-auto flex max-w-3xl items-center gap-2">
-          {isTerminal && <span className="text-[10px] font-mono" style={{ color: "rgba(16,185,129,0.6)" }}>$</span>}
+      <div className="shrink-0 px-4 pb-3 pt-2" style={isTerminal ? { background: isAutoFull ? "#050A05" : "#07070B" } : undefined}>
+        <div className="mx-auto flex max-w-3xl items-center gap-2"
+          style={isAutoFull ? { borderBottom: `1px solid ${neoGreen.border}`, paddingBottom: 4 } : undefined}>
+          {isTerminal && <span className="text-[10px] font-mono" style={{ color: isAutoFull ? neoGreen.primary : "rgba(16,185,129,0.6)" }}>$</span>}
           <input
             ref={cc.inputRef as React.RefObject<HTMLInputElement>}
             value={cc.input}
@@ -373,11 +451,12 @@ const CommandCenter = ({ mode, onClose }: CommandCenterProps) => {
             onKeyDown={handleKeyDown}
             placeholder={isTerminal ? "Type a command or ask anything…" : "Ask anything or type / for commands…"}
             className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/40"
-            style={isTerminal ? { color: "#A0A4AA" } : undefined}
+            style={isTerminal ? { color: isAutoFull ? neoGreen.dim : "#A0A4AA" } : undefined}
             disabled={cc.loading}
           />
           <button onClick={() => cc.processInput(cc.input)} disabled={cc.loading || !cc.input.trim()}
-            className={`rounded-lg p-2 transition-all ${cc.input.trim() ? (isTerminal ? "text-emerald-400" : "bg-primary/20 text-primary hover:bg-primary/30") : "text-muted-foreground/20"}`}>
+            className={`rounded-lg p-2 transition-all ${cc.input.trim() ? (isAutoFull ? "" : isTerminal ? "text-emerald-400" : "bg-primary/20 text-primary hover:bg-primary/30") : "text-muted-foreground/20"}`}
+            style={cc.input.trim() && isAutoFull ? { color: neoGreen.primary } : undefined}>
             <Send size={14} />
           </button>
         </div>
