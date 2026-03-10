@@ -1,9 +1,21 @@
+/**
+ * intent-router — LLM-based intent classification with auth + provider fallback.
+ *
+ * Hardened version:
+ *   - Auth guard (JWT / apikey / commander token)
+ *   - Provider cascade: Lovable → Gemini → Anthropic → graceful unknown
+ *   - On total provider failure, returns { intent: "unknown", confidence: 0 }
+ *     instead of a 5xx error, so the frontend pipeline degrades gracefully
+ *   - X-AI-Provider response header
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { validateRequest } from "../_shared/auth.ts";
+import { textCompletion } from "../_shared/ai-fallback.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-commander-token, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const WORKFLOW_CONTEXT = [
@@ -31,10 +43,14 @@ Rules:
 - Be strict: only classify as a workflow if the user's intent genuinely relates to it
 - IMPORTANT: Generic conversational questions such as "what can you do", "tell me all you can do", "what are your capabilities", "help me", "who are you", "what do you know", or any greeting/capability question must ALWAYS be classified as intent "unknown" with confidence 0.0 — they are chat questions, not workflow requests`;
 
+const FALLBACK_RESULT = { intent: "unknown", confidence: 0, missing_params: null, clarification: null };
+
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // ── Auth guard ──────────────────────────────────────
+  const auth = await validateRequest(req);
+  if (auth.error) return auth.error;
 
   try {
     const { input, context, router_context } = await req.json();
@@ -53,58 +69,40 @@ serve(async (req) => {
         ? `\nCommand Center context: primaryGoal=${router_context.primaryGoal ?? "none"}, activeTabs=[${(router_context.activeTabs ?? []).join(", ")}], subTools=[${(router_context.subTools ?? []).join(", ")}]. Prefer intents that match this context when relevant.`
         : "";
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: "API key not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    const userContent = [
+      context ? `Context: ${context}` : "",
+      hierarchyHint ? `Hierarchy: ${hierarchyHint}` : "",
+      `User input: "${input}"`,
+    ].filter(Boolean).join("\n\n");
 
-    const userContent = [context ? `Context: ${context}` : "", hierarchyHint ? `Hierarchy: ${hierarchyHint}` : "", `User input: "${input}"`].filter(Boolean).join("\n\n");
-
-    const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: userContent },
-    ];
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages,
-        max_tokens: 300,
-        temperature: 0.1,
-      }),
+    // ── Provider fallback (non-streaming) ────────────────
+    const { text, provider, error } = await textCompletion({
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: userContent }],
+      model: "google/gemini-2.5-flash",
+      maxTokens: 300,
+      temperature: 0.1,
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      return new Response(
-        JSON.stringify({ error: "AI gateway error", status: response.status }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+    if (error || !text) {
+      console.error("[intent-router] All providers failed:", error);
+      // Graceful degradation: return unknown instead of 5xx
+      return new Response(JSON.stringify(FALLBACK_RESULT), {
+        headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "none" },
+      });
     }
-
-    const data = await response.json();
-    const raw = data.choices?.[0]?.message?.content || "";
 
     let result;
     try {
-      const cleaned = raw.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+      const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
       result = JSON.parse(cleaned);
     } catch {
-      console.error("Failed to parse LLM response:", raw);
-      result = { intent: "unknown", confidence: 0, missing_params: null, clarification: null };
+      console.error("[intent-router] Failed to parse LLM response:", text.slice(0, 200));
+      result = FALLBACK_RESULT;
     }
 
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": provider },
     });
   } catch (error) {
     console.error("intent-router error:", error);
