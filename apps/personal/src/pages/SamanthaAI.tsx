@@ -220,10 +220,10 @@ function InlineHealthBar({ cache, onExpand }: { cache: ServiceHealthEntry[] | nu
     >
       <button
         onClick={onExpand}
-        className="w-full flex items-center gap-2 px-4 sm:px-6 py-1 hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center gap-2 px-4 sm:px-6 py-1 hover:bg-white/[0.02] transition-colors min-w-0"
       >
         {/* Service dots */}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 shrink-0">
           {cache.map(s => (
             <span
               key={s.name}
@@ -233,13 +233,13 @@ function InlineHealthBar({ cache, onExpand }: { cache: ServiceHealthEntry[] | nu
           ))}
         </div>
         <span className={cn(
-          "text-[9px] font-medium",
+          "text-[9px] font-medium truncate",
           allGood ? "text-emerald-400/40" : "text-red-400/70"
         )}>
           {allGood ? "All systems operational" : `${down.length} down: ${down.map(s => s.name).join(", ")}`}
         </span>
         {!allGood && (
-          <span className="ml-auto text-[8px] text-white/20">Details →</span>
+          <span className="ml-auto text-[8px] text-white/20 shrink-0">Details →</span>
         )}
       </button>
     </motion.div>
@@ -969,10 +969,35 @@ export default function SamanthaAI() {
           <h1 className="text-sm font-semibold text-white/80">Samantha</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setPickerOpen(!pickerOpen)} className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[10px] font-medium text-white/50 hover:text-white/70 hover:border-white/15 transition-all">
-            <span className="truncate max-w-[100px]">{cur.label}</span>
-            <ChevronDown size={10} />
-          </button>
+          {/* Model selector — relative container for dropdown anchor */}
+          <div className="relative" ref={pickerRef}>
+            <button onClick={() => setPickerOpen(!pickerOpen)} className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[10px] font-medium text-white/50 hover:text-white/70 hover:border-white/15 transition-all">
+              <span className="truncate max-w-[100px]">{cur.label}</span>
+              <ChevronDown size={10} />
+            </button>
+            <AnimatePresence>
+              {pickerOpen && (
+                <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute top-full right-0 mt-1 z-50 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-white/15 bg-black/95 backdrop-blur-xl shadow-2xl overflow-hidden">
+                  <div className="p-2 max-h-[320px] overflow-y-auto">
+                    {["cloud", "local", "agent"].map(kind => {
+                      const models = AI_MODELS.filter(m => m.kind === kind);
+                      return (
+                        <div key={kind} className="mb-2">
+                          <p className="text-[9px] uppercase tracking-wider text-white/20 px-2 py-1">{kind === "cloud" ? "Cloud Models" : kind === "local" ? "Local / VPS" : "Agents"}</p>
+                          {models.map(m => (
+                            <button key={m.id} onClick={() => { setSelectedModel(m.id); setPickerOpen(false); }} className={cn("w-full flex items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors", m.id === selectedModel ? "bg-white/10" : "hover:bg-white/5")}>
+                              <span className="text-xs font-medium text-white/70">{m.label}</span>
+                              <span className="text-[9px] text-white/30 ml-auto">{m.tag}</span>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           <Link to="/god-structure" className="hidden sm:flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-white/30 hover:text-white/50 transition-colors"><Network size={10} /> Dashboard</Link>
           <Link to="/wiki" className="hidden sm:flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-white/30 hover:text-white/50 transition-colors"><BookOpen size={10} /> Wiki</Link>
           <button onClick={() => { if (isMobile) { setPanelOpen(!panelOpen); if (!panel) setSearchParams({ panel: "health" }); } else setSearchParams(panel ? {} : { panel: "health" }); }} className="flex items-center justify-center rounded-md p-1.5 text-white/30 hover:text-white/50 hover:bg-white/5 transition-all">
@@ -990,30 +1015,6 @@ export default function SamanthaAI() {
 
       {/* Inline health bar — compact status indicator */}
       <InlineHealthBar cache={healthCache} onExpand={() => setPanel("health")} />
-
-      {/* Model picker */}
-      <AnimatePresence>
-        {pickerOpen && (
-          <motion.div ref={pickerRef} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute top-14 right-4 z-50 w-72 rounded-xl border border-white/15 bg-black/95 backdrop-blur-xl shadow-2xl overflow-hidden">
-            <div className="p-2 max-h-[320px] overflow-y-auto">
-              {["cloud", "local", "agent"].map(kind => {
-                const models = AI_MODELS.filter(m => m.kind === kind);
-                return (
-                  <div key={kind} className="mb-2">
-                    <p className="text-[9px] uppercase tracking-wider text-white/20 px-2 py-1">{kind === "cloud" ? "Cloud Models" : kind === "local" ? "Local / VPS" : "Agents"}</p>
-                    {models.map(m => (
-                      <button key={m.id} onClick={() => { setSelectedModel(m.id); setPickerOpen(false); }} className={cn("w-full flex items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors", m.id === selectedModel ? "bg-white/10" : "hover:bg-white/5")}>
-                        <span className="text-xs font-medium text-white/70">{m.label}</span>
-                        <span className="text-[9px] text-white/30 ml-auto">{m.tag}</span>
-                      </button>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto py-3 min-h-0">
@@ -1101,8 +1102,8 @@ export default function SamanthaAI() {
       <QuickActionBar onAction={handleQuickAction} hasInput={input.length > 0} isIdle={stage === "idle"} />
 
       {/* Input */}
-      <div className="shrink-0 border-t border-white/10 bg-black/40 backdrop-blur-xl py-2 relative">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+      <div className="shrink-0 border-t border-white/10 bg-black/40 backdrop-blur-xl py-2">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 relative">
         <AnimatePresence>
           {slashOpen && <SlashPicker query={input} onSelect={handleSlashCommand} onClose={() => setSlashOpen(false)} />}
         </AnimatePresence>
