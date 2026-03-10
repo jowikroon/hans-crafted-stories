@@ -155,7 +155,8 @@ function ActionQueue({ ops, onRetry }: { ops: Operation[]; onRetry?: (op: Operat
   if (visible.length === 0) return null;
 
   return (
-    <div className="shrink-0 border-t border-white/[0.06] bg-white/[0.015] px-4 sm:px-6 py-1.5">
+    <div className="shrink-0 border-t border-white/[0.06] bg-white/[0.015] py-1.5">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
       <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
         <Activity size={9} className="text-white/20 shrink-0" />
         {visible.map(op => (
@@ -191,6 +192,7 @@ function ActionQueue({ ops, onRetry }: { ops: Operation[]; onRetry?: (op: Operat
             )}
           </motion.div>
         ))}
+      </div>
       </div>
     </div>
   );
@@ -257,7 +259,8 @@ function QuickActionBar({ onAction, hasInput, isIdle }: { onAction: (cmd: string
   ];
 
   return (
-    <div className="shrink-0 px-4 sm:px-6 pb-1.5">
+    <div className="shrink-0 pb-1.5">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
         {actions.map(a => {
           const Icon = a.icon;
@@ -275,6 +278,7 @@ function QuickActionBar({ onAction, hasInput, isIdle }: { onAction: (cmd: string
             </button>
           );
         })}
+      </div>
       </div>
     </div>
   );
@@ -1012,7 +1016,8 @@ export default function SamanthaAI() {
       </AnimatePresence>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-3 min-h-0">
+      <div className="flex-1 overflow-y-auto py-3 min-h-0">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-3">
         {!hasMessages && (
           <div className="flex flex-col items-center justify-center h-full gap-5 py-8">
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-rose-400/15 to-amber-400/15 flex items-center justify-center">
@@ -1084,6 +1089,7 @@ export default function SamanthaAI() {
           </div>
         ))}
         <div ref={bottomRef} />
+        </div>
       </div>
 
       {/* Action Queue — above input */}
@@ -1095,7 +1101,8 @@ export default function SamanthaAI() {
       <QuickActionBar onAction={handleQuickAction} hasInput={input.length > 0} isIdle={stage === "idle"} />
 
       {/* Input */}
-      <div className="shrink-0 border-t border-white/10 bg-black/40 backdrop-blur-xl px-4 sm:px-6 py-2 relative">
+      <div className="shrink-0 border-t border-white/10 bg-black/40 backdrop-blur-xl py-2 relative">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <AnimatePresence>
           {slashOpen && <SlashPicker query={input} onSelect={handleSlashCommand} onClose={() => setSlashOpen(false)} />}
         </AnimatePresence>
@@ -1121,6 +1128,7 @@ export default function SamanthaAI() {
             </button>
           )}
         </div>
+        </div>
       </div>
     </div>
   );
@@ -1129,6 +1137,12 @@ export default function SamanthaAI() {
 
   return (
     <div className="h-dvh bg-[#0a0a0c] text-white/80 relative overflow-hidden">
+      {/* Immersive background — subtle depth layer */}
+      <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 80% 60% at 20% 10%, rgba(244,63,94,0.03) 0%, transparent 60%), radial-gradient(ellipse 70% 50% at 80% 90%, rgba(139,92,246,0.025) 0%, transparent 60%)"
+        }} />
+      </div>
       {isMobile ? (
         <>
           {chatContent}
