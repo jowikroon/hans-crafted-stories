@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-//  SAMANTHA — Unified AI Cockpit v2
-//  Audit fixes: abort, click-outside, textarea, tab switching,
-//  /tasks command, elapsed timer, mobile a11y, caching
+//  SAMANTHA — Unified AI Cockpit v3
+//  AI Operating Layer: Command Center strip, Action Queue,
+//  system state visibility, multi-step task awareness
 // ═══════════════════════════════════════════════════════════════
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
@@ -11,7 +11,8 @@ import {
   Send, Loader2, ChevronDown, Network, BookOpen,
   HeartPulse, ScrollText, Lightbulb, ListChecks, GitBranch,
   Wifi, WifiOff, PanelRightOpen, PanelRightClose,
-  RefreshCw, StopCircle, Mic, MicOff,
+  RefreshCw, StopCircle, Zap, Brain, CheckCircle2, XCircle,
+  Clock, Activity,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,11 +32,151 @@ import ToolResultRenderer from "@/features/samantha/components/tools/ToolResultR
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
+// ═══ Types for the operating layer ═══
+
+interface Operation {
+  id: string;
+  label: string;
+  type: "health" | "workflow" | "chat" | "agent" | "task";
+  status: "running" | "success" | "error";
+  startedAt: number;
+  completedAt?: number;
+}
+
 // ═══ Samantha Dot ═══
 
 function SamanthaDot({ emotion, size = 8 }: { emotion: Emotion; size?: number }) {
   const colors: Record<Emotion, string> = { calm: "bg-white/60", thinking: "bg-white/80", working: "bg-amber-400", speaking: "bg-violet-400", error: "bg-red-400", success: "bg-emerald-400" };
   return <span className={cn("inline-block rounded-full", colors[emotion], (emotion === "thinking" || emotion === "working") && "animate-pulse")} style={{ width: size, height: size }} />;
+}
+
+// ═══ Command Center Strip ═══
+
+function CommandStrip({
+  emotion, healthCache, model, stage, taskCount, ops, isMobile,
+  onAction,
+}: {
+  emotion: Emotion; healthCache: ServiceHealthEntry[] | null; model: string;
+  stage: Stage; taskCount: number; ops: Operation[]; isMobile: boolean;
+  onAction: (action: string) => void;
+}) {
+  const healthOnline = healthCache?.filter(s => s.ok).length ?? 0;
+  const healthTotal = healthCache?.length ?? 0;
+  const runningOps = ops.filter(o => o.status === "running").length;
+  const lastFailed = ops.findLast(o => o.status === "error");
+
+  // System status line
+  const statusText = useMemo(() => {
+    if (stage === "thinking") return "Thinking…";
+    if (stage === "executing" || stage === "routing") return `${runningOps} running`;
+    if (lastFailed && Date.now() - (lastFailed.completedAt || 0) < 30_000) return "Last op failed";
+    if (healthCache && healthOnline < healthTotal) return `${healthTotal - healthOnline} service${healthTotal - healthOnline > 1 ? "s" : ""} down`;
+    return "Idle";
+  }, [stage, runningOps, lastFailed, healthCache, healthOnline, healthTotal]);
+
+  const actions: { key: string; label: string; icon: typeof HeartPulse }[] = [
+    { key: "health", label: "Health", icon: HeartPulse },
+    { key: "workflows", label: "Flows", icon: GitBranch },
+    { key: "tasks", label: "Tasks", icon: ListChecks },
+    { key: "audit", label: "Audit", icon: ScrollText },
+    { key: "model", label: "Model", icon: Brain },
+  ];
+
+  return (
+    <div className="shrink-0 flex items-center gap-2 px-4 sm:px-6 py-1.5 border-b border-white/[0.06] bg-white/[0.015] overflow-x-auto no-scrollbar">
+      {/* System state */}
+      <div className="flex items-center gap-2 shrink-0">
+        <SamanthaDot emotion={emotion} size={6} />
+        <span className="text-[10px] text-white/35 font-medium whitespace-nowrap">{statusText}</span>
+      </div>
+
+      <span className="w-px h-3 bg-white/10 shrink-0" />
+
+      {/* Health summary */}
+      {healthCache && (
+        <button onClick={() => onAction("health")} className="flex items-center gap-1 text-[10px] shrink-0 hover:text-white/60 transition-colors">
+          <span className={cn("h-1.5 w-1.5 rounded-full", healthOnline === healthTotal ? "bg-emerald-400" : "bg-amber-400")} />
+          <span className="text-white/30 font-mono">{healthOnline}/{healthTotal}</span>
+        </button>
+      )}
+
+      {/* Task count */}
+      {taskCount > 0 && (
+        <button onClick={() => onAction("tasks")} className="flex items-center gap-1 text-[10px] text-white/30 shrink-0 hover:text-white/50 transition-colors">
+          <ListChecks size={9} /><span className="font-mono">{taskCount}</span>
+        </button>
+      )}
+
+      {/* Model tag */}
+      <span className="text-[9px] text-white/20 font-mono truncate max-w-[80px] shrink-0 hidden sm:block">{model}</span>
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Quick actions */}
+      <div className="flex items-center gap-1 shrink-0">
+        {actions.map(a => {
+          const Icon = a.icon;
+          return (
+            <button key={a.key} onClick={() => onAction(a.key)} className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[9px] text-white/25 hover:text-white/50 hover:bg-white/5 transition-all" title={a.label}>
+              <Icon size={10} />
+              {!isMobile && <span>{a.label}</span>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ═══ Action Queue (above input) ═══
+
+function ActionQueue({ ops }: { ops: Operation[] }) {
+  const visible = ops.filter(o => {
+    if (o.status === "running") return true;
+    // Show completed/failed ops for 15 seconds
+    return o.completedAt && Date.now() - o.completedAt < 15_000;
+  }).slice(0, 4);
+
+  if (visible.length === 0) return null;
+
+  return (
+    <div className="shrink-0 border-t border-white/[0.06] bg-white/[0.015] px-4 sm:px-6 py-1.5">
+      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+        <Activity size={9} className="text-white/20 shrink-0" />
+        {visible.map(op => (
+          <motion.div
+            key={op.id}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] shrink-0",
+              op.status === "running" ? "border-amber-500/20 bg-amber-500/5 text-amber-400/80" :
+              op.status === "success" ? "border-emerald-500/15 bg-emerald-500/5 text-emerald-400/60" :
+              "border-red-500/15 bg-red-500/5 text-red-400/60"
+            )}
+          >
+            {op.status === "running" ? <Loader2 size={8} className="animate-spin" /> :
+             op.status === "success" ? <CheckCircle2 size={8} /> :
+             <XCircle size={8} />}
+            <span className="truncate max-w-[100px]">{op.label}</span>
+            {op.status === "running" ? (
+              <ElapsedTimer startedAt={op.startedAt} />
+            ) : op.completedAt ? (
+              <span className="text-[8px] text-white/20 font-mono">{((op.completedAt - op.startedAt) / 1000).toFixed(1)}s</span>
+            ) : null}
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ElapsedTimer({ startedAt }: { startedAt: number }) {
+  const [, setTick] = useState(0);
+  useEffect(() => { const i = setInterval(() => setTick(t => t + 1), 500); return () => clearInterval(i); }, []);
+  return <span className="text-[8px] text-white/30 font-mono">{((Date.now() - startedAt) / 1000).toFixed(0)}s</span>;
 }
 
 // ═══ Health Panel (with cache) ═══
@@ -86,7 +227,7 @@ function WorkflowsPanel({ onTrigger }: { onTrigger: (name: string) => void }) {
       <div className="space-y-1.5">
         {WORKFLOWS.map(w => (
           <button key={w.name} onClick={() => onTrigger(w.name)} className="w-full flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left hover:bg-white/[0.06] hover:border-white/15 transition-all group">
-            <HeartPulse size={12} className="text-purple-400/70 group-hover:text-purple-400 transition-colors shrink-0" />
+            <Zap size={12} className="text-purple-400/70 group-hover:text-purple-400 transition-colors shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-white/70 group-hover:text-white/90 transition-colors">{w.label}</p>
               <p className="text-[10px] text-white/30 truncate">{w.description}</p>
@@ -99,7 +240,7 @@ function WorkflowsPanel({ onTrigger }: { onTrigger: (name: string) => void }) {
   );
 }
 
-// ═══ Audit Panel — reads from samantha_memory (category=audit) + realtime ═══
+// ═══ Audit Panel ═══
 
 function AuditPanel() {
   const [events, setEvents] = useState<any[]>([]);
@@ -117,7 +258,6 @@ function AuditPanel() {
   }, []);
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 
-  // Realtime subscription for live audit updates
   useEffect(() => {
     const channel = supabase.channel("audit-feed")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "samantha_memory", filter: "category=eq.audit" },
@@ -166,7 +306,7 @@ function AuditPanel() {
   );
 }
 
-// ═══ Context Panel — FIX: tabs now switch via setPanel ═══
+// ═══ Context Panel ═══
 
 function ContextPanel({ panel, setPanel, onTriggerWorkflow, healthCache, setHealthCache }: {
   panel: PanelId; setPanel: (p: PanelId) => void;
@@ -201,7 +341,7 @@ function ContextPanel({ panel, setPanel, onTriggerWorkflow, healthCache, setHeal
   );
 }
 
-// ═══ Slash Command Picker — FIX: preserve arg text ═══
+// ═══ Slash Command Picker ═══
 
 function SlashPicker({ query, onSelect, onClose }: { query: string; onSelect: (cmd: string, arg: string) => void; onClose: () => void }) {
   const parts = query.split(" ");
@@ -244,8 +384,27 @@ export default function SamanthaAI() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [tasks, setTasks] = useState<TaskRecord[]>(() => { try { const s = localStorage.getItem(TASKS_KEY); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [healthCache, setHealthCache] = useState<ServiceHealthEntry[] | null>(null);
+  const [operations, setOperations] = useState<Operation[]>([]);
 
-  // ─── Task Supabase sync: hydrate from DB, write-through ──
+  // ─── Operation tracking helpers ────────────────────
+  const startOp = useCallback((label: string, type: Operation["type"]): string => {
+    const id = uid();
+    setOperations(prev => [{ id, label, type, status: "running", startedAt: Date.now() }, ...prev].slice(0, 8));
+    return id;
+  }, []);
+  const endOp = useCallback((id: string, status: "success" | "error") => {
+    setOperations(prev => prev.map(o => o.id === id ? { ...o, status, completedAt: Date.now() } : o));
+  }, []);
+
+  // Auto-prune completed ops older than 20 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setOperations(prev => prev.filter(o => o.status === "running" || (o.completedAt && Date.now() - o.completedAt < 20_000)));
+    }, 5_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // ─── Task Supabase sync ────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -255,15 +414,11 @@ export default function SamanthaAI() {
           .order("created_at", { ascending: false })
           .limit(100);
         if (data && data.length > 0) {
-          const dbTasks: TaskRecord[] = data.map(d => {
-            try { return JSON.parse(d.value); } catch { return null; }
-          }).filter(Boolean);
+          const dbTasks: TaskRecord[] = data.map(d => { try { return JSON.parse(d.value); } catch { return null; } }).filter(Boolean);
           if (dbTasks.length > 0) {
             setTasks(prev => {
-              // Merge: DB tasks win on duplicate IDs
               const ids = new Set(dbTasks.map(t => t.id));
-              const localOnly = prev.filter(t => !ids.has(t.id));
-              return [...dbTasks, ...localOnly];
+              return [...dbTasks, ...prev.filter(t => !ids.has(t.id))];
             });
           }
         }
@@ -274,11 +429,7 @@ export default function SamanthaAI() {
   const persistTask = useCallback(async (t: TaskRecord) => {
     try {
       await supabase.from("samantha_memory").upsert({
-        key: `task_${t.id}`,
-        value: JSON.stringify(t),
-        category: t.type,
-        source: "samantha",
-        user_id: "00000000-0000-0000-0000-000000000001",
+        key: `task_${t.id}`, value: JSON.stringify(t), category: t.type, source: "samantha", user_id: "00000000-0000-0000-0000-000000000001",
       }, { onConflict: "key" });
     } catch {}
   }, []);
@@ -313,17 +464,14 @@ export default function SamanthaAI() {
   useEffect(() => { if (messages.length > 0) try { localStorage.setItem(HISTORY_KEY, JSON.stringify(messages.filter(m => !m.streaming).slice(-60))); } catch {} }, [messages]);
   useEffect(() => { try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch {} }, [tasks]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, stage]);
-
   useEffect(() => { document.title = "Samantha — AI Cockpit"; }, []);
 
-  // Emotion is derived from stage — no state, no effect, no extra render
   const emotion: Emotion = useMemo(() => {
     if (stage === "thinking") return "thinking";
     if (stage === "executing" || stage === "routing") return "working";
     return "calm";
   }, [stage]);
 
-  // ─── Click outside model picker ────────────────────
   useEffect(() => {
     if (!pickerOpen) return;
     const h = (e: MouseEvent) => { if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) setPickerOpen(false); };
@@ -331,7 +479,6 @@ export default function SamanthaAI() {
     return () => document.removeEventListener("mousedown", h);
   }, [pickerOpen]);
 
-  // ─── Keyboard shortcuts ────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "/" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); inputRef.current?.focus(); }
@@ -362,11 +509,23 @@ export default function SamanthaAI() {
     if (isMobile && p) setPanelOpen(true);
   }, [isMobile, setSearchParams]);
 
-  // ─── Slash commands ────────────────────────────────
+  // ─── Command Strip action handler ──────────────────
+  const handleStripAction = useCallback((action: string) => {
+    switch (action) {
+      case "health": handleSendRef.current("/health"); break;
+      case "workflows": setPanel("workflows"); break;
+      case "tasks": handleSendRef.current("/tasks"); break;
+      case "audit": setPanel("audit"); break;
+      case "model": setPickerOpen(true); break;
+    }
+  }, [setPanel]);
+
+  // ─── Slash commands (with operation tracking) ──────
   const handleSlashCommand = async (handler: string, arg: string) => {
     switch (handler) {
       case "health": {
         setStage("executing");
+        const opId = startOp("Health Check", "health");
         const toolMsg = append({ role: "tool", content: "", toolName: "Health Check", toolStatus: "running" });
         try {
           const services = await fetchHealthStatus();
@@ -375,7 +534,8 @@ export default function SamanthaAI() {
           updateMessage(toolMsg.id, { toolStatus: "success", toolResult: { type: "health", services } });
           append({ role: "samantha", content: `**Health check complete:** ${on}/${services.length} services online.`, model: "System" });
           setPanel("health");
-        } catch { updateMessage(toolMsg.id, { toolStatus: "error" }); append({ role: "samantha", content: "Health check failed.", model: "System" }); }
+          endOp(opId, "success");
+        } catch { updateMessage(toolMsg.id, { toolStatus: "error" }); endOp(opId, "error"); append({ role: "samantha", content: "Health check failed.", model: "System" }); }
         setStage("idle"); return;
       }
       case "workflows": {
@@ -387,12 +547,14 @@ export default function SamanthaAI() {
         const wf = WORKFLOWS.find(w => w.name === arg || w.label.toLowerCase() === arg.toLowerCase());
         if (!wf) { append({ role: "samantha", content: `Workflow "${arg}" not found. Try \`/workflows\`.`, model: "System" }); return; }
         setStage("executing");
+        const opId = startOp(wf.label, "workflow");
         const toolMsg = append({ role: "tool", content: "", toolName: wf.label, toolStatus: "running" });
         try {
           const res = await triggerWorkflow(wf, "samantha", { message: arg });
           updateMessage(toolMsg.id, { toolStatus: res.ok ? "success" : "error", toolResult: { type: "workflow", workflowName: wf.label, status: res.ok ? "success" : "error", message: res.ok ? "Completed" : (res.error || "Failed") } });
           append({ role: "samantha", content: res.ok ? `✅ **${wf.label}** completed.` : `❌ **${wf.label}** failed: ${res.error}`, model: wf.label });
-        } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); }
+          endOp(opId, res.ok ? "success" : "error");
+        } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); endOp(opId, "error"); }
         setStage("idle"); return;
       }
       case "task": {
@@ -435,25 +597,23 @@ export default function SamanthaAI() {
         else { append({ role: "samantha", content: `Model "${arg}" not found.`, model: "System" }); }
         return;
       }
-      case "clear": { setMessages([]); return; }
+      case "clear": { setMessages([]); setOperations([]); return; }
     }
   };
 
-  // ─── Abort handler ─────────────────────────────────
   const handleAbort = () => {
     if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
     if (streamingId) { updateMessage(streamingId, { streaming: false, content: messages.find(m => m.id === streamingId)?.content + "\n\n*(cancelled)*" }); setStreamingId(null); }
     setStage("idle");
   };
 
-  // ─── Send ──────────────────────────────────────────
+  // ─── Send (with operation tracking) ────────────────
   const handleSend = async (override?: string) => {
     const text = (override || input).trim();
     if (!text || stage !== "idle") return;
     setInput("");
     setSlashOpen(false);
 
-    // Slash detection
     if (text.startsWith("/")) {
       const parts = text.split(" ");
       const cmd = parts[0].toLowerCase();
@@ -464,40 +624,42 @@ export default function SamanthaAI() {
 
     append({ role: "user", content: text });
 
-    // Natural language health detection
     if (/\b(health|status|services?\s+(up|down|check|online))\b/i.test(text.toLowerCase())) {
       await handleSlashCommand("health", ""); return;
     }
 
-    // Agent model
     if (cur.kind === "agent") {
       setStage("executing");
+      const opId = startOp(cur.label, "agent");
       const toolMsg = append({ role: "tool", content: "", toolName: cur.label, toolStatus: "running" });
       try {
         const result = await callAgent(cur.id, text);
         updateMessage(toolMsg.id, { toolStatus: "success", toolResult: result.healthData ? { type: "health", services: result.healthData } : undefined });
         append({ role: "samantha", content: result.text, model: cur.label });
         if (result.healthData) setPanel("health");
+        endOp(opId, "success");
       } catch (e: any) {
         updateMessage(toolMsg.id, { toolStatus: "error" });
         append({ role: "samantha", content: `Something went wrong: ${e?.message}`, model: cur.label });
+        endOp(opId, "error");
       }
       setStage("idle"); return;
     }
 
-    // Intent pipeline
     setStage("routing");
     const result = await runIntentPipeline(text, "samantha");
 
     if (result.outcome.type === "workflow_match") {
       setStage("executing");
       const wf = result.outcome.workflow;
+      const opId = startOp(wf.label, "workflow");
       const toolMsg = append({ role: "tool", content: "", toolName: wf.label, toolStatus: "running" });
       try {
         const res = await triggerWorkflow(wf, "samantha", { message: text });
         updateMessage(toolMsg.id, { toolStatus: res.ok ? "success" : "error", toolResult: { type: "workflow", workflowName: wf.label, status: res.ok ? "success" : "error", message: res.ok ? "Done" : (res.error || "Failed") } });
         append({ role: "samantha", content: res.ok ? `Done — ${typeof res.data === "string" ? res.data : JSON.stringify(res.data).slice(0, 300)}` : `${wf.label} failed: ${res.error}`, model: wf.label });
-      } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); }
+        endOp(opId, res.ok ? "success" : "error");
+      } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); endOp(opId, "error"); }
       setStage("idle"); return;
     }
 
@@ -506,8 +668,9 @@ export default function SamanthaAI() {
       setStage("idle"); return;
     }
 
-    // Chat — with abort support
+    // Chat
     setStage("thinking");
+    const opId = startOp("Chat", "chat");
     const streamMsg = append({ role: "samantha", content: "", streaming: true, model: cur.label });
     setStreamingId(streamMsg.id);
     abortRef.current = new AbortController();
@@ -516,9 +679,13 @@ export default function SamanthaAI() {
       history.push({ role: "user", content: text });
       const reply = await sendToModel(cur.id, history, systemPrompt, (chunk) => { updateMessage(streamMsg.id, { content: chunk }); }, abortRef.current?.signal);
       updateMessage(streamMsg.id, { content: reply, streaming: false });
+      endOp(opId, "success");
     } catch (e: any) {
       if (e?.name !== "AbortError") {
         updateMessage(streamMsg.id, { content: `⚠️ ${e?.message || "Unknown error"}`, streaming: false });
+        endOp(opId, "error");
+      } else {
+        endOp(opId, "error");
       }
     }
     abortRef.current = null;
@@ -531,7 +698,6 @@ export default function SamanthaAI() {
     setSlashOpen(val.startsWith("/") && val.length > 0 && val.length < 20 && !val.includes("\n"));
   };
 
-  // Ref to latest handleSend so callbacks don't go stale
   const handleSendRef = useRef(handleSend);
   handleSendRef.current = handleSend;
 
@@ -541,10 +707,12 @@ export default function SamanthaAI() {
 
   // ─── Chat content ──────────────────────────────────
 
+  const pendingTaskCount = tasks.filter(t => !t.done).length;
+
   const chatContent = (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+      <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-2.5 border-b border-white/10 bg-black/40 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <SamanthaDot emotion={emotion} size={10} />
           <h1 className="text-sm font-semibold text-white/80">Samantha</h1>
@@ -562,7 +730,14 @@ export default function SamanthaAI() {
         </div>
       </div>
 
-      {/* Model picker — FIX: click-outside closes */}
+      {/* Command Center Strip */}
+      <CommandStrip
+        emotion={emotion} healthCache={healthCache} model={cur.tag}
+        stage={stage} taskCount={pendingTaskCount} ops={operations} isMobile={isMobile}
+        onAction={handleStripAction}
+      />
+
+      {/* Model picker */}
       <AnimatePresence>
         {pickerOpen && (
           <motion.div ref={pickerRef} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute top-14 right-4 z-50 w-72 rounded-xl border border-white/15 bg-black/95 backdrop-blur-xl shadow-2xl overflow-hidden">
@@ -632,7 +807,12 @@ export default function SamanthaAI() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input — FIX: textarea for multiline + abort button */}
+      {/* Action Queue — above input */}
+      <AnimatePresence>
+        <ActionQueue ops={operations} />
+      </AnimatePresence>
+
+      {/* Input */}
       <div className="shrink-0 border-t border-white/10 bg-black/40 backdrop-blur-xl px-4 sm:px-6 py-3 relative">
         <AnimatePresence>
           {slashOpen && <SlashPicker query={input} onSelect={handleSlashCommand} onClose={() => setSlashOpen(false)} />}
