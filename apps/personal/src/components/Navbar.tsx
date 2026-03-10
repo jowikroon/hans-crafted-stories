@@ -270,13 +270,10 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
 
                           {/* Menu items — grouped by function */}
                           <div className="py-1">
-                            {/* Converse */}
+                            {/* AI Cockpit */}
                             <Link to="/samantha" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10" : "text-rose-500/70 hover:text-rose-600 hover:bg-rose-50"}`}>
-                              <Sparkles size={15} /> Samantha AI
-                            </Link>
-                            <Link to="/hansai" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-emerald-400/70 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}>
-                              <Bot size={15} /> Terminal
-                              <span className={`ml-auto text-[9px] ${isDark ? "text-emerald-500/40" : "text-muted-foreground/50"}`}>⌘J</span>
+                              <Sparkles size={15} /> Samantha
+                              <span className={`ml-auto text-[9px] ${isDark ? "text-rose-500/40" : "text-muted-foreground/50"}`}>⌘J</span>
                             </Link>
                           </div>
                           <div className={`border-t ${isDark ? "border-emerald-500/10" : "border-border"}`} />
@@ -290,11 +287,6 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
                             <Link to="/portal" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-emerald-400/70 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}>
                               <LayoutDashboard size={15} /> Portal
                             </Link>
-                            {isAdmin && (
-                              <Link to="/empire" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-orange-400/70 hover:text-orange-300 hover:bg-orange-500/10" : "text-orange-600/70 hover:text-orange-600 hover:bg-orange-50"}`}>
-                                <Shield size={15} /> Empire
-                              </Link>
-                            )}
                             <Link to="/wiki" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-emerald-400/50 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground/70 hover:text-foreground hover:bg-accent"}`}>
                               <BookOpen size={15} /> Docs
                             </Link>

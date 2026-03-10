@@ -10,7 +10,7 @@ import { PreloadedDataProvider, type PreloadedData } from "@/contexts/PreloadedD
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
-import EmpireTerminalCard from "./components/empire/EmpireTerminalCard";
+import SamanthaGlobalButton from "@/features/samantha/components/global/SamanthaGlobalButton";
 import CookieConsent from "./components/CookieConsent";
 import TrackingScriptInjector from "./components/TrackingScriptInjector";
 
@@ -22,7 +22,8 @@ interface AppShellProps {
 
 const AppShell = ({ initialLang }: AppShellProps) => {
   const location = useLocation();
-  const isDarkPage = location.pathname === "/hansai" || location.pathname === "/empire" || location.pathname === "/god-structure" || location.pathname === "/samantha";
+  const isFullscreen = location.pathname === "/samantha";
+  const isDarkPage = isFullscreen || location.pathname === "/god-structure";
 
   return (
     <AuthProvider>
@@ -30,14 +31,16 @@ const AppShell = ({ initialLang }: AppShellProps) => {
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground">
           Skip to content
         </a>
-        <header>
-          <Navbar variant={isDarkPage ? "dark" : "default"} />
-        </header>
-        <main id="main-content" className="min-h-screen">
+        {!isFullscreen && (
+          <header>
+            <Navbar variant={isDarkPage ? "dark" : "default"} />
+          </header>
+        )}
+        <main id="main-content" className={isFullscreen ? "" : "min-h-screen"}>
           <AnimatedRoutes />
         </main>
-        {!isDarkPage && <Footer />}
-        {!isDarkPage && <EmpireTerminalCard />}
+        {!isDarkPage && !isFullscreen && <Footer />}
+        <SamanthaGlobalButton />
         <CookieConsent />
         <TrackingScriptInjector />
       </LangProvider>

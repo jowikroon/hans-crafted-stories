@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "./PageTransition";
 import Index from "@/pages/Index";
@@ -8,9 +8,6 @@ import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
 import Portal from "@/pages/Portal";
 import Wiki from "@/pages/Wiki";
-import Empire from "@/pages/Empire";
-import HansAI from "@/pages/HansAI";
-import CommandV3 from "@/pages/CommandV3";
 import Privacy from "@/pages/Privacy";
 import AuthCallback from "@/pages/AuthCallback";
 import NotFound from "@/pages/NotFound";
@@ -38,11 +35,12 @@ const AnimatedRoutes = () => {
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
-        <Route path="/empire" element={<PageTransition><Empire /></PageTransition>} />
         <Route path="/god-structure" element={<GodStructure />} />
         <Route path="/samantha" element={<SamanthaAI />} />
-        <Route path="/hansai" element={<HansAI />} />
-        <Route path="/command" element={<CommandV3 />} />
+        {/* Deprecated pages → redirect to Samantha */}
+        <Route path="/empire" element={<Navigate to="/samantha" replace />} />
+        <Route path="/hansai" element={<Navigate to="/samantha" replace />} />
+        <Route path="/command" element={<Navigate to="/samantha" replace />} />
         <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
