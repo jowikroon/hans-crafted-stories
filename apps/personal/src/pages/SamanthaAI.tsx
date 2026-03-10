@@ -202,6 +202,84 @@ function ElapsedTimer({ startedAt }: { startedAt: number }) {
   return <span className="text-[8px] text-white/30 font-mono">{((Date.now() - startedAt) / 1000).toFixed(0)}s</span>;
 }
 
+// ═══ Inline Health Bar (compact, below command strip) ═══
+
+function InlineHealthBar({ cache, onExpand }: { cache: ServiceHealthEntry[] | null; onExpand: () => void }) {
+  if (!cache || cache.length === 0) return null;
+  const online = cache.filter(s => s.ok).length;
+  const allGood = online === cache.length;
+  const down = cache.filter(s => !s.ok);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      className="shrink-0 border-b border-white/[0.04]"
+    >
+      <button
+        onClick={onExpand}
+        className="w-full flex items-center gap-2 px-4 sm:px-6 py-1 hover:bg-white/[0.02] transition-colors"
+      >
+        {/* Service dots */}
+        <div className="flex items-center gap-0.5">
+          {cache.map(s => (
+            <span
+              key={s.name}
+              className={cn("h-1 w-1 rounded-full", s.ok ? "bg-emerald-400/60" : "bg-red-400")}
+              title={`${s.name}: ${s.ok ? "online" : "down"}`}
+            />
+          ))}
+        </div>
+        <span className={cn(
+          "text-[9px] font-medium",
+          allGood ? "text-emerald-400/40" : "text-red-400/70"
+        )}>
+          {allGood ? "All systems operational" : `${down.length} down: ${down.map(s => s.name).join(", ")}`}
+        </span>
+        {!allGood && (
+          <span className="ml-auto text-[8px] text-white/20">Details →</span>
+        )}
+      </button>
+    </motion.div>
+  );
+}
+
+// ═══ Quick Actions (above input) ═══
+
+function QuickActionBar({ onAction, hasInput, isIdle }: { onAction: (cmd: string) => void; hasInput: boolean; isIdle: boolean }) {
+  if (hasInput || !isIdle) return null;
+
+  const actions = [
+    { key: "/health", label: "Check Health", icon: HeartPulse, color: "text-emerald-400/60 hover:text-emerald-400 hover:bg-emerald-500/10 border-emerald-500/10" },
+    { key: "/workflows", label: "Run Workflow", icon: Zap, color: "text-purple-400/60 hover:text-purple-400 hover:bg-purple-500/10 border-purple-500/10" },
+    { key: "/task ", label: "New Task", icon: ListChecks, color: "text-blue-400/60 hover:text-blue-400 hover:bg-blue-500/10 border-blue-500/10" },
+    { key: "/audit", label: "Audit", icon: ScrollText, color: "text-amber-400/60 hover:text-amber-400 hover:bg-amber-500/10 border-amber-500/10" },
+  ];
+
+  return (
+    <div className="shrink-0 px-4 sm:px-6 pb-1.5">
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        {actions.map(a => {
+          const Icon = a.icon;
+          return (
+            <button
+              key={a.key}
+              onClick={() => onAction(a.key)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[10px] font-medium transition-all shrink-0",
+                a.color
+              )}
+            >
+              <Icon size={10} />
+              {a.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ═══ Health Panel (with cache) ═══
 
 function HealthPanel({ cache, setCache }: { cache: ServiceHealthEntry[] | null; setCache: (s: ServiceHealthEntry[]) => void }) {
@@ -263,7 +341,17 @@ function WorkflowsPanel({ onTrigger }: { onTrigger: (name: string) => void }) {
   );
 }
 
-// ═══ Audit Panel ═══
+// ═══ Audit Panel — Recent Activity ═══
+
+function relativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
 
 function AuditPanel() {
   const [events, setEvents] = useState<any[]>([]);
@@ -293,33 +381,67 @@ function AuditPanel() {
   return (
     <div className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-white/40">Audit Trail</h3>
         <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" title="Live" />
-          <button onClick={fetchEvents} disabled={loading} className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors disabled:opacity-30"><RefreshCw size={12} className={loading ? "animate-spin" : ""} /></button>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-white/40">Recent Activity</h3>
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" title="Live feed" />
         </div>
+        <button onClick={fetchEvents} disabled={loading} className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors disabled:opacity-30"><RefreshCw size={12} className={loading ? "animate-spin" : ""} /></button>
       </div>
       {loading && events.length === 0 ? (
         <div className="flex items-center justify-center py-8"><Loader2 size={16} className="animate-spin text-white/30" /></div>
       ) : events.length === 0 ? (
-        <p className="text-xs text-white/30 text-center py-4">No events yet. Run <code className="text-white/50">/health</code> to generate one.</p>
+        <div className="text-center py-6">
+          <ScrollText size={20} className="text-white/10 mx-auto mb-2" />
+          <p className="text-[11px] text-white/30">No events yet.</p>
+          <p className="text-[10px] text-white/20 mt-1">Run <code className="text-white/40 bg-white/5 px-1 rounded">/health</code> to generate the first entry.</p>
+        </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-2">
           {events.map((e: any) => {
             let parsed: any = {};
             try { parsed = JSON.parse(e.value); } catch {}
+            const isHealth = e.source === "empire-health";
             const isHealthy = parsed.online === parsed.total;
+            const downCount = parsed.down?.length || 0;
+
             return (
-              <div key={e.id} className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", isHealthy ? "bg-emerald-400" : "bg-amber-400")} />
-                  <span className="text-[10px] text-white/40 font-mono">{e.source || "system"}</span>
-                  <span className="text-[10px] text-white/20 ml-auto">{new Date(e.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+              <div key={e.id} className={cn(
+                "rounded-xl border px-3 py-2.5 transition-colors",
+                isHealth
+                  ? isHealthy ? "border-emerald-500/10 bg-emerald-500/[0.02]" : "border-red-500/10 bg-red-500/[0.02]"
+                  : "border-white/[0.06] bg-white/[0.02]"
+              )}>
+                <div className="flex items-start gap-2.5">
+                  {/* Event icon */}
+                  <div className={cn(
+                    "mt-0.5 h-5 w-5 rounded-md flex items-center justify-center shrink-0",
+                    isHealth
+                      ? isHealthy ? "bg-emerald-500/10" : "bg-red-500/10"
+                      : "bg-white/5"
+                  )}>
+                    {isHealth
+                      ? (isHealthy ? <CheckCircle2 size={10} className="text-emerald-400/70" /> : <XCircle size={10} className="text-red-400/70" />)
+                      : <Activity size={10} className="text-white/30" />
+                    }
+                  </div>
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-medium text-white/50">{e.source || "system"}</span>
+                      <span className="text-[9px] text-white/20 ml-auto shrink-0">{relativeTime(e.created_at)}</span>
+                    </div>
+                    <p className="text-[11px] text-white/40 mt-0.5 leading-relaxed">
+                      {isHealth && parsed.online != null ? (
+                        <>
+                          <span className={isHealthy ? "text-emerald-400/60" : "text-white/50"}>{parsed.online}/{parsed.total} services online</span>
+                          {downCount > 0 && <span className="text-red-400/60"> · {parsed.down.join(", ")} down</span>}
+                        </>
+                      ) : (
+                        e.key
+                      )}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[11px] text-white/50 mt-1">
-                  {parsed.online != null ? `${parsed.online}/${parsed.total} services online` : e.key}
-                  {parsed.down?.length > 0 && <span className="text-red-400/70"> — down: {parsed.down.join(", ")}</span>}
-                </p>
               </div>
             );
           })}
@@ -408,7 +530,7 @@ function ContextPanel({ panel, setPanel, onTriggerWorkflow, healthCache, setHeal
     { id: "health", label: "Health", icon: HeartPulse },
     { id: "workflows", label: "Workflows", icon: GitBranch },
     { id: "operations", label: "Ops", icon: Activity, badge: runningCount || undefined },
-    { id: "audit", label: "Audit", icon: ScrollText },
+    { id: "audit", label: "Activity", icon: ScrollText },
   ];
   const active = panel || "health";
 
@@ -819,6 +941,17 @@ export default function SamanthaAI() {
     }
   }, []);
 
+  const handleQuickAction = useCallback((cmd: string) => {
+    // Commands that need user input: set as input value so user can complete
+    if (cmd.endsWith(" ")) {
+      setInput(cmd);
+      inputRef.current?.focus();
+      return;
+    }
+    // Complete commands: send immediately
+    handleSendRef.current(cmd);
+  }, []);
+
   // ─── Chat content ──────────────────────────────────
 
   const pendingTaskCount = tasks.filter(t => !t.done).length;
@@ -826,7 +959,7 @@ export default function SamanthaAI() {
   const chatContent = (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-2.5 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+      <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-1.5 border-b border-white/10 bg-black/40 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <SamanthaDot emotion={emotion} size={10} />
           <h1 className="text-sm font-semibold text-white/80">Samantha</h1>
@@ -850,6 +983,9 @@ export default function SamanthaAI() {
         stage={stage} taskCount={pendingTaskCount} ops={operations} isMobile={isMobile}
         onAction={handleStripAction}
       />
+
+      {/* Inline health bar — compact status indicator */}
+      <InlineHealthBar cache={healthCache} onExpand={() => setPanel("health")} />
 
       {/* Model picker */}
       <AnimatePresence>
@@ -876,20 +1012,49 @@ export default function SamanthaAI() {
       </AnimatePresence>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 min-h-0">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-3 min-h-0">
         {!hasMessages && (
-          <div className="flex flex-col items-center justify-center h-full gap-6 py-12">
-            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-rose-400/20 to-amber-400/20 flex items-center justify-center">
-              <SamanthaDot emotion={emotion} size={12} />
+          <div className="flex flex-col items-center justify-center h-full gap-5 py-8">
+            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-rose-400/15 to-amber-400/15 flex items-center justify-center">
+              <SamanthaDot emotion={emotion} size={10} />
             </div>
             <div className="text-center max-w-sm">
-              <h2 className="text-lg font-semibold text-white/80 mb-2">Hey there</h2>
-              <p className="text-xs text-white/40 leading-relaxed">I'm Samantha — your AI companion and system cockpit. Chat, run workflows, check health, manage tasks. Type <code className="text-white/50 bg-white/10 px-1 rounded">/</code> for commands.</p>
+              <h2 className="text-base font-semibold text-white/80 mb-1">Samantha</h2>
+              <p className="text-[11px] text-white/35 leading-relaxed">AI cockpit. Chat naturally or use commands.</p>
             </div>
-            <div className="flex flex-wrap justify-center gap-2 max-w-md">
-              {cur.suggestions.slice(0, 4).map((s, i) => (
-                <button key={i} onClick={() => handleSend(s)} className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/50 hover:text-white/70 hover:bg-white/10 hover:border-white/15 transition-all">{s}</button>
-              ))}
+
+            {/* Command examples — grouped */}
+            <div className="w-full max-w-md space-y-2">
+              <p className="text-[9px] uppercase tracking-wider text-white/20 text-center">Try these</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { cmd: "/health", desc: "Check all services", icon: HeartPulse, color: "text-emerald-400/50" },
+                  { cmd: "/run autoseo", desc: "Trigger AutoSEO Brain", icon: Zap, color: "text-purple-400/50" },
+                  { cmd: "/task Review Q1 feeds", desc: "Save a task", icon: ListChecks, color: "text-blue-400/50" },
+                  { cmd: "/audit", desc: "View recent activity", icon: ScrollText, color: "text-amber-400/50" },
+                ].map(ex => {
+                  const Icon = ex.icon;
+                  return (
+                    <button
+                      key={ex.cmd}
+                      onClick={() => handleSend(ex.cmd)}
+                      className="flex items-start gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-left hover:bg-white/[0.05] hover:border-white/10 transition-all group"
+                    >
+                      <Icon size={12} className={cn("mt-0.5 shrink-0 group-hover:opacity-100 transition-opacity", ex.color)} />
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-mono text-white/50 group-hover:text-white/70 transition-colors">{ex.cmd}</p>
+                        <p className="text-[9px] text-white/25 truncate">{ex.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Chat suggestions */}
+              <div className="flex flex-wrap justify-center gap-1.5 pt-1">
+                {cur.suggestions.slice(0, 3).map((s, i) => (
+                  <button key={i} onClick={() => handleSend(s)} className="rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-1 text-[10px] text-white/35 hover:text-white/60 hover:bg-white/5 hover:border-white/10 transition-all">{s}</button>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -926,8 +1091,11 @@ export default function SamanthaAI() {
         <ActionQueue ops={operations} onRetry={handleRetryOp} />
       </AnimatePresence>
 
+      {/* Quick command buttons — visible when idle and input empty */}
+      <QuickActionBar onAction={handleQuickAction} hasInput={input.length > 0} isIdle={stage === "idle"} />
+
       {/* Input */}
-      <div className="shrink-0 border-t border-white/10 bg-black/40 backdrop-blur-xl px-4 sm:px-6 py-3 relative">
+      <div className="shrink-0 border-t border-white/10 bg-black/40 backdrop-blur-xl px-4 sm:px-6 py-2 relative">
         <AnimatePresence>
           {slashOpen && <SlashPicker query={input} onSelect={handleSlashCommand} onClose={() => setSlashOpen(false)} />}
         </AnimatePresence>
@@ -940,16 +1108,16 @@ export default function SamanthaAI() {
             placeholder={stage !== "idle" ? "Thinking..." : "Message Samantha... (/ for commands)"}
             disabled={stage !== "idle"}
             rows={1}
-            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white/80 placeholder:text-white/25 outline-none focus:border-white/20 focus:bg-white/[0.07] transition-all disabled:opacity-40 resize-none max-h-32 min-h-[42px]"
-            style={{ height: input.split("\n").length > 1 ? `${Math.min(input.split("\n").length * 24 + 18, 128)}px` : "42px" }}
+            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white/80 placeholder:text-white/25 outline-none focus:border-white/20 focus:bg-white/[0.07] transition-all disabled:opacity-40 resize-none max-h-32 min-h-[38px]"
+            style={{ height: input.split("\n").length > 1 ? `${Math.min(input.split("\n").length * 24 + 14, 128)}px` : "38px" }}
           />
           {stage !== "idle" ? (
-            <button onClick={handleAbort} className="flex items-center justify-center h-10 w-10 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all shrink-0">
-              <StopCircle size={16} />
+            <button onClick={handleAbort} className="flex items-center justify-center h-[38px] w-[38px] rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all shrink-0">
+              <StopCircle size={15} />
             </button>
           ) : (
-            <button onClick={() => handleSend()} disabled={!input.trim()} className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/10 text-white/60 hover:bg-white/15 hover:text-white/80 transition-all disabled:opacity-30 shrink-0">
-              <Send size={16} />
+            <button onClick={() => handleSend()} disabled={!input.trim()} className="flex items-center justify-center h-[38px] w-[38px] rounded-xl bg-white/10 text-white/60 hover:bg-white/15 hover:text-white/80 transition-all disabled:opacity-30 shrink-0">
+              <Send size={15} />
             </button>
           )}
         </div>
