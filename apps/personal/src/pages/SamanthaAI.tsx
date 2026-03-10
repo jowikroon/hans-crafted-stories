@@ -209,7 +209,6 @@ export default function SamanthaAI() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [stage, setStage] = useState<Stage>("idle");
-  const [emotion, setEmotion] = useState<Emotion>("calm");
   const [selectedModel, setSelectedModel] = useState(() => { try { return localStorage.getItem(MODEL_KEY) || AI_MODELS[0].id; } catch { return AI_MODELS[0].id; } });
   const [pickerOpen, setPickerOpen] = useState(false);
   const [slashOpen, setSlashOpen] = useState(false);
@@ -251,11 +250,11 @@ export default function SamanthaAI() {
 
   useEffect(() => { document.title = "Samantha — AI Cockpit"; }, []);
 
-  // ─── Emotion ───────────────────────────────────────
-  useEffect(() => {
-    if (stage === "thinking") setEmotion("thinking");
-    else if (stage === "executing" || stage === "routing") setEmotion("working");
-    else setEmotion("calm");
+  // Emotion is derived from stage — no state, no effect, no extra render
+  const emotion: Emotion = useMemo(() => {
+    if (stage === "thinking") return "thinking";
+    if (stage === "executing" || stage === "routing") return "working";
+    return "calm";
   }, [stage]);
 
   // ─── Click outside model picker ────────────────────
@@ -292,10 +291,10 @@ export default function SamanthaAI() {
   const updateMessage = (id: string, updates: Partial<Message>) => {
     setMessages(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
   };
-  const setPanel = (p: PanelId) => {
+  const setPanel = useCallback((p: PanelId) => {
     if (p) setSearchParams({ panel: p }); else setSearchParams({});
     if (isMobile && p) setPanelOpen(true);
-  };
+  }, [isMobile, setSearchParams]);
 
   // ─── Slash commands ────────────────────────────────
   const handleSlashCommand = async (handler: string, arg: string) => {
@@ -437,12 +436,11 @@ export default function SamanthaAI() {
     try {
       const history = messages.filter(m => m.role === "user" || m.role === "samantha").slice(-20).map(m => ({ role: m.role === "samantha" ? "assistant" : "user", content: m.content }));
       history.push({ role: "user", content: text });
-      const reply = await sendToModel(cur.id, history, systemPrompt, (chunk) => { updateMessage(streamMsg.id, { content: chunk }); });
+      const reply = await sendToModel(cur.id, history, systemPrompt, (chunk) => { updateMessage(streamMsg.id, { content: chunk }); }, abortRef.current?.signal);
       updateMessage(streamMsg.id, { content: reply, streaming: false });
     } catch (e: any) {
       if (e?.name !== "AbortError") {
         updateMessage(streamMsg.id, { content: `⚠️ ${e?.message || "Unknown error"}`, streaming: false });
-        setEmotion("error"); setTimeout(() => setEmotion("calm"), 3000);
       }
     }
     abortRef.current = null;
@@ -455,10 +453,13 @@ export default function SamanthaAI() {
     setSlashOpen(val.startsWith("/") && val.length > 0 && val.length < 20 && !val.includes("\n"));
   };
 
-  const handlePanelWorkflowTrigger = (name: string) => {
-    setInput(`/run ${name}`);
-    setTimeout(() => handleSend(`/run ${name}`), 50);
-  };
+  // Ref to latest handleSend so callbacks don't go stale
+  const handleSendRef = useRef(handleSend);
+  handleSendRef.current = handleSend;
+
+  const handlePanelWorkflowTrigger = useCallback((name: string) => {
+    handleSendRef.current(`/run ${name}`);
+  }, []);
 
   // ─── Chat content ──────────────────────────────────
 

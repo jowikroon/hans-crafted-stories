@@ -57,7 +57,8 @@ export async function callCloud(
   model: string,
   msgs: { role: string; content: string }[],
   systemPrompt: string,
-  onChunk?: StreamCallback
+  onChunk?: StreamCallback,
+  signal?: AbortSignal
 ): Promise<string> {
   const url = SB_URL();
   if (!url) throw new Error("Backend not configured — set VITE_SUPABASE_URL.");
@@ -67,6 +68,7 @@ export async function callCloud(
     method: "POST",
     headers,
     body: JSON.stringify({ model, messages: [{ role: "system", content: systemPrompt }, ...msgs] }),
+    signal,
   });
 
   if (!res.ok) {
@@ -94,7 +96,8 @@ export async function callOllama(
   modelId: string,
   msgs: { role: string; content: string }[],
   systemPrompt: string,
-  onChunk?: StreamCallback
+  onChunk?: StreamCallback,
+  signal?: AbortSignal
 ): Promise<string> {
   const model = modelId.replace("ollama/", "");
   const isVps1 = model.includes("llama3.2");
@@ -105,6 +108,7 @@ export async function callOllama(
   const res = await fetch(`${url}/functions/v1/hansai-chat`, {
     method: "POST",
     headers,
+    signal,
     body: JSON.stringify({
       model: modelId,
       messages: [{ role: "system", content: systemPrompt }, ...msgs],
@@ -236,19 +240,20 @@ export async function sendToModel(
   modelId: string,
   messages: { role: string; content: string }[],
   systemPrompt: string,
-  onChunk?: StreamCallback
+  onChunk?: StreamCallback,
+  signal?: AbortSignal
 ): Promise<string> {
   if (modelId.startsWith("agent/")) {
     const result = await callAgent(modelId, messages[messages.length - 1]?.content || "");
     return result.text;
   }
   if (modelId.startsWith("ollama/")) {
-    return callOllama(modelId, messages, systemPrompt, onChunk);
+    return callOllama(modelId, messages, systemPrompt, onChunk, signal);
   }
   if (modelId === "anythingllm") {
     return callAnythingLLM(messages, systemPrompt);
   }
-  return callCloud(modelId, messages, systemPrompt, onChunk);
+  return callCloud(modelId, messages, systemPrompt, onChunk, signal);
 }
 
 // ─── System prompt builder ───────────────────────────
