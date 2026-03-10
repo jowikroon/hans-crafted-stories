@@ -99,39 +99,67 @@ function WorkflowsPanel({ onTrigger }: { onTrigger: (name: string) => void }) {
   );
 }
 
-// ═══ Audit Panel (with refresh) ═══
+// ═══ Audit Panel — reads from samantha_memory (category=audit) + realtime ═══
 
 function AuditPanel() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchEvents = useCallback(async () => {
     setLoading(true);
-    try { const { data } = await supabase.from("empire_events").select("*").order("created_at", { ascending: false }).limit(20); if (data) setEvents(data); } catch {} finally { setLoading(false); }
+    try {
+      const { data } = await supabase.from("samantha_memory")
+        .select("id,key,value,source,created_at")
+        .eq("category", "audit")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (data) setEvents(data);
+    } catch {} finally { setLoading(false); }
   }, []);
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
+
+  // Realtime subscription for live audit updates
+  useEffect(() => {
+    const channel = supabase.channel("audit-feed")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "samantha_memory", filter: "category=eq.audit" },
+        (payload) => { setEvents(prev => [payload.new as any, ...prev].slice(0, 20)); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   return (
     <div className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-white/40">Audit Trail</h3>
-        <button onClick={fetchEvents} disabled={loading} className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors disabled:opacity-30"><RefreshCw size={12} className={loading ? "animate-spin" : ""} /></button>
+        <div className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" title="Live" />
+          <button onClick={fetchEvents} disabled={loading} className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors disabled:opacity-30"><RefreshCw size={12} className={loading ? "animate-spin" : ""} /></button>
+        </div>
       </div>
       {loading && events.length === 0 ? (
         <div className="flex items-center justify-center py-8"><Loader2 size={16} className="animate-spin text-white/30" /></div>
       ) : events.length === 0 ? (
-        <p className="text-xs text-white/30 text-center py-4">No events yet</p>
+        <p className="text-xs text-white/30 text-center py-4">No events yet. Run <code className="text-white/50">/health</code> to generate one.</p>
       ) : (
         <div className="space-y-1">
-          {events.map((e: any) => (
-            <div key={e.id} className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
-              <div className="flex items-center gap-2">
-                <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", e.event_type === "error" ? "bg-red-400" : e.event_type === "action" ? "bg-amber-400" : "bg-cyan-400")} />
-                <span className="text-[10px] text-white/40 font-mono">{e.source}</span>
-                <span className="text-[10px] text-white/20 ml-auto">{new Date(e.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+          {events.map((e: any) => {
+            let parsed: any = {};
+            try { parsed = JSON.parse(e.value); } catch {}
+            const isHealthy = parsed.online === parsed.total;
+            return (
+              <div key={e.id} className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", isHealthy ? "bg-emerald-400" : "bg-amber-400")} />
+                  <span className="text-[10px] text-white/40 font-mono">{e.source || "system"}</span>
+                  <span className="text-[10px] text-white/20 ml-auto">{new Date(e.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+                <p className="text-[11px] text-white/50 mt-1">
+                  {parsed.online != null ? `${parsed.online}/${parsed.total} services online` : e.key}
+                  {parsed.down?.length > 0 && <span className="text-red-400/70"> — down: {parsed.down.join(", ")}</span>}
+                </p>
               </div>
-              <p className="text-[11px] text-white/50 mt-1">{e.message}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -216,6 +244,44 @@ export default function SamanthaAI() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [tasks, setTasks] = useState<TaskRecord[]>(() => { try { const s = localStorage.getItem(TASKS_KEY); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [healthCache, setHealthCache] = useState<ServiceHealthEntry[] | null>(null);
+
+  // ─── Task Supabase sync: hydrate from DB, write-through ──
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase.from("samantha_memory")
+          .select("key,value,category")
+          .in("category", ["task", "idea"])
+          .order("created_at", { ascending: false })
+          .limit(100);
+        if (data && data.length > 0) {
+          const dbTasks: TaskRecord[] = data.map(d => {
+            try { return JSON.parse(d.value); } catch { return null; }
+          }).filter(Boolean);
+          if (dbTasks.length > 0) {
+            setTasks(prev => {
+              // Merge: DB tasks win on duplicate IDs
+              const ids = new Set(dbTasks.map(t => t.id));
+              const localOnly = prev.filter(t => !ids.has(t.id));
+              return [...dbTasks, ...localOnly];
+            });
+          }
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const persistTask = useCallback(async (t: TaskRecord) => {
+    try {
+      await supabase.from("samantha_memory").upsert({
+        key: `task_${t.id}`,
+        value: JSON.stringify(t),
+        category: t.type,
+        source: "samantha",
+        user_id: "00000000-0000-0000-0000-000000000001",
+      }, { onConflict: "key" });
+    } catch {}
+  }, []);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -333,6 +399,7 @@ export default function SamanthaAI() {
         if (!arg) { append({ role: "samantha", content: "Usage: `/task <description>`", model: "System" }); return; }
         const t: TaskRecord = { id: uid(), text: arg, type: "task", created_at: Date.now() };
         setTasks(prev => [...prev, t]);
+        persistTask(t);
         append({ role: "tool", content: "", toolResult: { type: "task", task: t }, toolStatus: "success", toolName: "Task" });
         return;
       }
@@ -340,13 +407,24 @@ export default function SamanthaAI() {
         if (!arg) { append({ role: "samantha", content: "Usage: `/idea <description>`", model: "System" }); return; }
         const t: TaskRecord = { id: uid(), text: arg, type: "idea", created_at: Date.now() };
         setTasks(prev => [...prev, t]);
+        persistTask(t);
         append({ role: "tool", content: "", toolResult: { type: "idea", idea: t }, toolStatus: "success", toolName: "Idea" });
+        return;
+      }
+      case "done": {
+        if (!arg) { append({ role: "samantha", content: "Usage: `/done <task number>` — use `/tasks` to see numbers.", model: "System" }); return; }
+        const idx = parseInt(arg, 10) - 1;
+        if (isNaN(idx) || idx < 0 || idx >= tasks.length) { append({ role: "samantha", content: `Invalid task number. You have ${tasks.length} tasks.`, model: "System" }); return; }
+        const updated = { ...tasks[idx], done: !tasks[idx].done };
+        setTasks(prev => prev.map((t, i) => i === idx ? updated : t));
+        persistTask(updated);
+        append({ role: "samantha", content: updated.done ? `✅ Marked done: "${updated.text}"` : `↩️ Reopened: "${updated.text}"`, model: "System" });
         return;
       }
       case "tasks": {
         if (tasks.length === 0) { append({ role: "samantha", content: "No tasks or ideas yet. Use `/task` or `/idea` to add some.", model: "System" }); return; }
-        const taskList = tasks.map(t => `${t.type === "task" ? "📋" : "💡"} ${t.done ? "~~" : ""}${t.text}${t.done ? "~~" : ""}`).join("\n");
-        append({ role: "samantha", content: `**Your tasks & ideas** (${tasks.length}):\n\n${taskList}`, model: "System" });
+        const taskList = tasks.map((t, i) => `${i + 1}. ${t.type === "task" ? "📋" : "💡"} ${t.done ? "~~" : ""}${t.text}${t.done ? "~~" : ""}`).join("\n");
+        append({ role: "samantha", content: `**Your tasks & ideas** (${tasks.length}):\n\n${taskList}\n\nUse \`/done <number>\` to mark complete.`, model: "System" });
         return;
       }
       case "audit": { setPanel("audit"); append({ role: "samantha", content: "Opening audit trail →", model: "System" }); return; }

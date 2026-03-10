@@ -55,17 +55,20 @@ serve(async (req) => {
       "MCP Gateway": { ok: true, latency: 0 },
     };
 
-    // Log to empire_events (best-effort)
+    // Log to samantha_memory as audit trail
     try {
       const sb = createClient(supabaseUrl, supabaseKey);
       const onlineCount = Object.values(services).filter((s: any) => s.ok).length;
-      await sb.from("empire_events").insert({
-        event_type: onlineCount >= 5 ? "info" : "error",
+      const total = Object.keys(services).length;
+      const downServices = Object.entries(services).filter(([, v]: [string, any]) => !v.ok).map(([k]) => k);
+      await sb.from("samantha_memory").insert({
+        user_id: "00000000-0000-0000-0000-000000000001",
+        key: `health_${Date.now()}`,
+        value: JSON.stringify({ online: onlineCount, total, down: downServices, services, timestamp: new Date().toISOString() }),
+        category: "audit",
         source: "empire-health",
-        message: `Health check: ${onlineCount}/${Object.keys(services).length} services online`,
-        metadata: services,
       });
-    } catch { /* logging is best-effort */ }
+    } catch (e) { console.error("Audit log failed:", e); }
 
     return new Response(JSON.stringify({ services, timestamp: new Date().toISOString() }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

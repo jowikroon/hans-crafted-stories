@@ -85,11 +85,23 @@ export async function triggerWorkflow(
   source: string = "command_center",
   extraPayload?: Record<string, unknown>,
 ): Promise<{ ok: boolean; data: unknown; error?: string }> {
+  const startTime = Date.now();
   try {
     const body = { source, timestamp: new Date().toISOString(), ...extraPayload };
+
+    // Direct Supabase Edge Function calls need apikey + auth headers
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (wf.direct) {
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token || anonKey;
+      headers.apikey = anonKey;
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     const res = await fetch(wf.webhook, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
     });
 
@@ -98,8 +110,30 @@ export async function triggerWorkflow(
     const text = await res.text();
     let data: unknown;
     try { data = JSON.parse(text); } catch { data = text; }
+
+    // Log workflow execution to samantha_memory
+    try {
+      await supabase.from("samantha_memory").insert({
+        key: `wf_${wf.name}_${Date.now()}`,
+        value: JSON.stringify({ workflow: wf.name, label: wf.label, status: "success", duration_ms: Date.now() - startTime, source }),
+        category: "workflow",
+        source: "samantha",
+        user_id: "00000000-0000-0000-0000-000000000001",
+      });
+    } catch {}
+
     return { ok: true, data };
   } catch (err) {
+    // Log failure too
+    try {
+      await supabase.from("samantha_memory").insert({
+        key: `wf_${wf.name}_${Date.now()}`,
+        value: JSON.stringify({ workflow: wf.name, label: wf.label, status: "error", error: err instanceof Error ? err.message : "Unknown", duration_ms: Date.now() - startTime, source }),
+        category: "workflow",
+        source: "samantha",
+        user_id: "00000000-0000-0000-0000-000000000001",
+      });
+    } catch {}
     return { ok: false, data: null, error: err instanceof Error ? err.message : "Unknown error" };
   }
 }
