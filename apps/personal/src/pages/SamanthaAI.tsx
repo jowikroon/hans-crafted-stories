@@ -62,33 +62,47 @@ function CommandStrip({
 }) {
   const healthOnline = healthCache?.filter(s => s.ok).length ?? 0;
   const healthTotal = healthCache?.length ?? 0;
-  const runningOps = ops.filter(o => o.status === "running").length;
-  const lastFailed = ops.findLast(o => o.status === "error");
+  const runningOps = ops.filter(o => o.status === "running");
+  const lastFailed = [...ops].reverse().find(o => o.status === "error");
 
-  // System status line
+  // System status line — now shows *what's* running
   const statusText = useMemo(() => {
     if (stage === "thinking") return "Thinking…";
-    if (stage === "executing" || stage === "routing") return `${runningOps} running`;
-    if (lastFailed && Date.now() - (lastFailed.completedAt || 0) < 30_000) return "Last op failed";
+    if (stage === "executing" || stage === "routing") {
+      if (runningOps.length === 1) return runningOps[0].label;
+      if (runningOps.length > 1) return `${runningOps.length} running`;
+      return "Executing…";
+    }
+    if (lastFailed && Date.now() - (lastFailed.completedAt || 0) < 30_000) return `Failed: ${lastFailed.label}`;
     if (healthCache && healthOnline < healthTotal) return `${healthTotal - healthOnline} service${healthTotal - healthOnline > 1 ? "s" : ""} down`;
     return "Idle";
   }, [stage, runningOps, lastFailed, healthCache, healthOnline, healthTotal]);
 
+  const isActive = stage !== "idle" || runningOps.length > 0;
+
   const actions: { key: string; label: string; icon: typeof HeartPulse }[] = [
     { key: "health", label: "Health", icon: HeartPulse },
     { key: "workflows", label: "Flows", icon: GitBranch },
+    { key: "operations", label: "Ops", icon: Activity },
     { key: "tasks", label: "Tasks", icon: ListChecks },
     { key: "audit", label: "Audit", icon: ScrollText },
     { key: "model", label: "Model", icon: Brain },
   ];
 
   return (
-    <div className="shrink-0 flex items-center gap-2 px-4 sm:px-6 py-1.5 border-b border-white/[0.06] bg-white/[0.015] overflow-x-auto no-scrollbar">
-      {/* System state */}
-      <div className="flex items-center gap-2 shrink-0">
+    <div className={cn(
+      "shrink-0 flex items-center gap-2 px-4 sm:px-6 py-1.5 border-b overflow-x-auto no-scrollbar transition-colors duration-500",
+      isActive ? "border-amber-500/10 bg-amber-500/[0.02]" : "border-white/[0.06] bg-white/[0.015]"
+    )}>
+      {/* System state — clickable to open operations */}
+      <button onClick={() => onAction("operations")} className="flex items-center gap-2 shrink-0 hover:text-white/50 transition-colors">
         <SamanthaDot emotion={emotion} size={6} />
-        <span className="text-[10px] text-white/35 font-medium whitespace-nowrap">{statusText}</span>
-      </div>
+        <span className={cn(
+          "text-[10px] font-medium whitespace-nowrap truncate max-w-[120px]",
+          lastFailed && Date.now() - (lastFailed.completedAt || 0) < 30_000 ? "text-red-400/60" :
+          isActive ? "text-amber-400/60" : "text-white/35"
+        )}>{statusText}</span>
+      </button>
 
       <span className="w-px h-3 bg-white/10 shrink-0" />
 
@@ -131,7 +145,7 @@ function CommandStrip({
 
 // ═══ Action Queue (above input) ═══
 
-function ActionQueue({ ops }: { ops: Operation[] }) {
+function ActionQueue({ ops, onRetry }: { ops: Operation[]; onRetry?: (op: Operation) => void }) {
   const visible = ops.filter(o => {
     if (o.status === "running") return true;
     // Show completed/failed ops for 15 seconds
@@ -166,6 +180,15 @@ function ActionQueue({ ops }: { ops: Operation[] }) {
             ) : op.completedAt ? (
               <span className="text-[8px] text-white/20 font-mono">{((op.completedAt - op.startedAt) / 1000).toFixed(1)}s</span>
             ) : null}
+            {op.status === "error" && onRetry && (
+              <button
+                onClick={() => onRetry(op)}
+                className="ml-0.5 rounded px-1 py-px text-[8px] text-red-400/80 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                title="Retry"
+              >
+                <RefreshCw size={7} />
+              </button>
+            )}
           </motion.div>
         ))}
       </div>
@@ -306,16 +329,85 @@ function AuditPanel() {
   );
 }
 
+// ═══ Operations History Panel ═══
+
+function OperationsPanel({ ops, onRetry }: { ops: Operation[]; onRetry?: (op: Operation) => void }) {
+  const sorted = [...ops].sort((a, b) => b.startedAt - a.startedAt);
+  const running = sorted.filter(o => o.status === "running");
+  const completed = sorted.filter(o => o.status !== "running");
+
+  return (
+    <div className="p-4 space-y-4">
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-white/40">Operations</h3>
+
+      {sorted.length === 0 && (
+        <div className="text-center py-8">
+          <Activity size={20} className="text-white/15 mx-auto mb-2" />
+          <p className="text-[11px] text-white/30">No operations yet.</p>
+          <p className="text-[10px] text-white/20 mt-1">Run a workflow or health check to see activity here.</p>
+        </div>
+      )}
+
+      {running.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[9px] uppercase tracking-wider text-amber-400/50 font-medium">Active</p>
+          {running.map(op => (
+            <div key={op.id} className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs">
+              <Loader2 size={11} className="animate-spin text-amber-400 shrink-0" />
+              <span className="text-white/70 flex-1 truncate">{op.label}</span>
+              <ElapsedTimer startedAt={op.startedAt} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {completed.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[9px] uppercase tracking-wider text-white/25 font-medium">History</p>
+          {completed.map(op => (
+            <div key={op.id} className={cn(
+              "flex items-center gap-2 rounded-lg border px-3 py-2 text-xs",
+              op.status === "success" ? "border-emerald-500/10 bg-emerald-500/[0.03]" : "border-red-500/10 bg-red-500/[0.03]"
+            )}>
+              {op.status === "success" ? <CheckCircle2 size={11} className="text-emerald-400/60 shrink-0" /> : <XCircle size={11} className="text-red-400/60 shrink-0" />}
+              <div className="flex-1 min-w-0">
+                <span className="text-white/60 truncate block">{op.label}</span>
+                <span className="text-[9px] text-white/25 font-mono">
+                  {op.completedAt ? `${((op.completedAt - op.startedAt) / 1000).toFixed(1)}s · ${new Date(op.startedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : ""}
+                </span>
+              </div>
+              <span className={cn("text-[9px] font-medium shrink-0 rounded px-1.5 py-0.5",
+                op.type === "workflow" ? "bg-purple-500/10 text-purple-400/60" :
+                op.type === "health" ? "bg-emerald-500/10 text-emerald-400/60" :
+                op.type === "agent" ? "bg-blue-500/10 text-blue-400/60" :
+                "bg-white/5 text-white/30"
+              )}>{op.type}</span>
+              {op.status === "error" && onRetry && (
+                <button onClick={() => onRetry(op)} className="rounded px-1.5 py-0.5 text-[9px] text-red-400/60 hover:text-red-300 hover:bg-red-500/10 transition-colors" title="Retry">
+                  <RefreshCw size={9} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ═══ Context Panel ═══
 
-function ContextPanel({ panel, setPanel, onTriggerWorkflow, healthCache, setHealthCache }: {
+function ContextPanel({ panel, setPanel, onTriggerWorkflow, healthCache, setHealthCache, ops, onRetryOp }: {
   panel: PanelId; setPanel: (p: PanelId) => void;
   onTriggerWorkflow: (name: string) => void;
   healthCache: ServiceHealthEntry[] | null; setHealthCache: (s: ServiceHealthEntry[]) => void;
+  ops: Operation[]; onRetryOp?: (op: Operation) => void;
 }) {
-  const tabs: { id: "health" | "workflows" | "audit"; label: string; icon: typeof HeartPulse }[] = [
+  const runningCount = ops.filter(o => o.status === "running").length;
+  const tabs: { id: "health" | "workflows" | "operations" | "audit"; label: string; icon: typeof HeartPulse; badge?: number }[] = [
     { id: "health", label: "Health", icon: HeartPulse },
     { id: "workflows", label: "Workflows", icon: GitBranch },
+    { id: "operations", label: "Ops", icon: Activity, badge: runningCount || undefined },
     { id: "audit", label: "Audit", icon: ScrollText },
   ];
   const active = panel || "health";
@@ -328,6 +420,9 @@ function ContextPanel({ panel, setPanel, onTriggerWorkflow, healthCache, setHeal
           return (
             <button key={t.id} onClick={() => setPanel(t.id)} className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[10px] font-medium transition-all", active === t.id ? "bg-white/10 text-white/80" : "text-white/30 hover:text-white/50 hover:bg-white/5")}>
               <Icon size={11} />{t.label}
+              {t.badge && t.badge > 0 && (
+                <span className="h-3.5 min-w-[14px] rounded-full bg-amber-500/30 text-amber-400 text-[8px] font-bold flex items-center justify-center px-1">{t.badge}</span>
+              )}
             </button>
           );
         })}
@@ -335,6 +430,7 @@ function ContextPanel({ panel, setPanel, onTriggerWorkflow, healthCache, setHeal
       <div className="flex-1 overflow-y-auto">
         {active === "health" && <HealthPanel cache={healthCache} setCache={setHealthCache} />}
         {active === "workflows" && <WorkflowsPanel onTrigger={onTriggerWorkflow} />}
+        {active === "operations" && <OperationsPanel ops={ops} onRetry={onRetryOp} />}
         {active === "audit" && <AuditPanel />}
       </div>
     </div>
@@ -389,18 +485,18 @@ export default function SamanthaAI() {
   // ─── Operation tracking helpers ────────────────────
   const startOp = useCallback((label: string, type: Operation["type"]): string => {
     const id = uid();
-    setOperations(prev => [{ id, label, type, status: "running", startedAt: Date.now() }, ...prev].slice(0, 8));
+    setOperations(prev => [{ id, label, type, status: "running", startedAt: Date.now() }, ...prev].slice(0, 20));
     return id;
   }, []);
   const endOp = useCallback((id: string, status: "success" | "error") => {
     setOperations(prev => prev.map(o => o.id === id ? { ...o, status, completedAt: Date.now() } : o));
   }, []);
 
-  // Auto-prune completed ops older than 20 seconds
+  // Auto-prune completed ops older than 5 minutes (keeps history in panel)
   useEffect(() => {
     const timer = setInterval(() => {
-      setOperations(prev => prev.filter(o => o.status === "running" || (o.completedAt && Date.now() - o.completedAt < 20_000)));
-    }, 5_000);
+      setOperations(prev => prev.filter(o => o.status === "running" || (o.completedAt && Date.now() - o.completedAt < 300_000)));
+    }, 15_000);
     return () => clearInterval(timer);
   }, []);
 
@@ -443,18 +539,24 @@ export default function SamanthaAI() {
   const hasMessages = messages.length > 0;
   const cur = AI_MODELS.find(m => m.id === selectedModel) || AI_MODELS[0];
 
-  // ─── Health context ────────────────────────────────
+  // ─── Health context + auto-refresh ──────────────────
   const [healthContext, setHealthContext] = useState("");
-  useEffect(() => {
-    (async () => {
-      try {
-        const services = await fetchHealthStatus();
-        setHealthCache(services);
-        const on = services.filter(s => s.ok).length;
-        setHealthContext(`${on}/${services.length} services online. ${services.filter(s => !s.ok).map(s => `${s.name} is DOWN`).join(", ") || "All healthy."}`);
-      } catch {}
-    })();
+  const refreshHealth = useCallback(async () => {
+    try {
+      const services = await fetchHealthStatus();
+      setHealthCache(services);
+      const on = services.filter(s => s.ok).length;
+      setHealthContext(`${on}/${services.length} services online. ${services.filter(s => !s.ok).map(s => `${s.name} is DOWN`).join(", ") || "All healthy."}`);
+    } catch {}
   }, []);
+  useEffect(() => { refreshHealth(); }, [refreshHealth]);
+  // Auto-refresh every 60 seconds (only when tab is visible)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") refreshHealth();
+    }, 60_000);
+    return () => clearInterval(timer);
+  }, [refreshHealth]);
 
   const systemPrompt = useMemo(() => buildSystemPrompt(healthContext), [healthContext]);
 
@@ -514,6 +616,7 @@ export default function SamanthaAI() {
     switch (action) {
       case "health": handleSendRef.current("/health"); break;
       case "workflows": setPanel("workflows"); break;
+      case "operations": setPanel("operations"); break;
       case "tasks": handleSendRef.current("/tasks"); break;
       case "audit": setPanel("audit"); break;
       case "model": setPickerOpen(true); break;
@@ -705,6 +808,17 @@ export default function SamanthaAI() {
     handleSendRef.current(`/run ${name}`);
   }, []);
 
+  const handleRetryOp = useCallback((op: Operation) => {
+    // Re-run based on operation type
+    if (op.type === "health") {
+      handleSendRef.current("/health");
+    } else if (op.type === "workflow") {
+      // label matches workflow label — find and re-trigger
+      const wf = WORKFLOWS.find(w => w.label === op.label);
+      if (wf) handleSendRef.current(`/run ${wf.name}`);
+    }
+  }, []);
+
   // ─── Chat content ──────────────────────────────────
 
   const pendingTaskCount = tasks.filter(t => !t.done).length;
@@ -809,7 +923,7 @@ export default function SamanthaAI() {
 
       {/* Action Queue — above input */}
       <AnimatePresence>
-        <ActionQueue ops={operations} />
+        <ActionQueue ops={operations} onRetry={handleRetryOp} />
       </AnimatePresence>
 
       {/* Input */}
@@ -853,7 +967,7 @@ export default function SamanthaAI() {
           <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
             <SheetContent side="right" className="w-[85vw] p-0 bg-[#0a0a0c] border-white/10">
               <SheetTitle className="sr-only">System Panel</SheetTitle>
-              <ContextPanel panel={panel} setPanel={setPanel} onTriggerWorkflow={handlePanelWorkflowTrigger} healthCache={healthCache} setHealthCache={setHealthCache} />
+              <ContextPanel panel={panel} setPanel={setPanel} onTriggerWorkflow={handlePanelWorkflowTrigger} healthCache={healthCache} setHealthCache={setHealthCache} ops={operations} onRetryOp={handleRetryOp} />
             </SheetContent>
           </Sheet>
         </>
@@ -864,7 +978,7 @@ export default function SamanthaAI() {
           </ResizablePanel>
           <ResizableHandle withHandle className="bg-white/5 hover:bg-white/10 transition-colors" />
           <ResizablePanel defaultSize={35} minSize={20} collapsible>
-            <ContextPanel panel={panel} setPanel={setPanel} onTriggerWorkflow={handlePanelWorkflowTrigger} healthCache={healthCache} setHealthCache={setHealthCache} />
+            <ContextPanel panel={panel} setPanel={setPanel} onTriggerWorkflow={handlePanelWorkflowTrigger} healthCache={healthCache} setHealthCache={setHealthCache} ops={operations} onRetryOp={handleRetryOp} />
           </ResizablePanel>
         </ResizablePanelGroup>
       ) : (

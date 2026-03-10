@@ -7,7 +7,7 @@ export type Stage = "idle" | "listening" | "thinking" | "routing" | "executing";
 export type Emotion = "calm" | "thinking" | "working" | "speaking" | "error" | "success";
 export type ProviderKind = "cloud" | "local" | "agent";
 export type ToolExecStatus = "running" | "success" | "error";
-export type PanelId = "health" | "workflows" | "audit" | null;
+export type PanelId = "health" | "workflows" | "audit" | "operations" | null;
 
 export interface Message {
   id: string;
