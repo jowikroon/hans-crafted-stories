@@ -95,7 +95,7 @@ serve(async (req) => {
     // Option A: prefer direct Gemini API when GEMINI_API_KEY is set
     const geminiKey = Deno.env.get("GEMINI_API_KEY");
     if (geminiKey) {
-      const geminiModel = selectedModel.replace(/^google\//, "").replace(/\./g, "-") || "gemini-2.0-flash";
+      const geminiModel = selectedModel.replace(/^google\//, "") || "gemini-2.5-flash";
       const contents = messages
         .filter((m: { role: string }) => m.role === "user" || m.role === "assistant")
         .map((m: { role: string; content: string }) => ({
