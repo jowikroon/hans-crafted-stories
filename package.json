@@ -24,7 +24,7 @@
     "test:personal": "npm run test --workspace=@hans/personal",
     "test:thought-canvas": "npm run test --workspace=@hans/thought-canvas",
     "dev": "echo \"Use dev:personal, dev:saas, or dev:thought-canvas\"",
-    "build": "npm run build --workspace=@hans/personal && npm run build --workspace=@hans/saas && npm run build --workspace=@hans/thought-canvas",
+    "build": "npm run build --workspace=@hans/personal",
     "lint": "npm run lint --workspace=@hans/personal && npm run lint --workspace=@hans/saas && npm run lint --workspace=@hans/thought-canvas",
     "test": "npm run test --workspace=@hans/personal && npm run test --workspace=@hans/saas && npm run test --workspace=@hans/thought-canvas",
     "typecheck": "npm run typecheck --workspace=@hans/personal && npm run typecheck --workspace=@hans/saas && npm run typecheck --workspace=@hans/thought-canvas",
