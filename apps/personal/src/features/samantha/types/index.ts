@@ -88,6 +88,7 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   { cmd: "/run", label: "Run Workflow", description: "Trigger an n8n workflow", icon: "Zap", handler: "run" },
   { cmd: "/task", label: "Create Task", description: "Save a task for later", icon: "ListChecks", handler: "task" },
   { cmd: "/idea", label: "Save Idea", description: "Capture an idea", icon: "Lightbulb", handler: "idea" },
+  { cmd: "/tasks", label: "View Tasks", description: "Show all tasks & ideas", icon: "ListChecks", handler: "tasks" },
   { cmd: "/workflows", label: "List Workflows", description: "Show available workflows", icon: "GitBranch", handler: "workflows" },
   { cmd: "/health", label: "Health Check", description: "Check all services", icon: "HeartPulse", handler: "health" },
   { cmd: "/audit", label: "Audit Log", description: "View recent changes", icon: "ScrollText", handler: "audit" },
