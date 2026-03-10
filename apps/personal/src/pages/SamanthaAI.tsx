@@ -91,7 +91,7 @@ function CommandStrip({
 
   return (
     <div className={cn(
-      "shrink-0 flex items-center gap-2 px-4 sm:px-6 py-1.5 border-b overflow-x-auto no-scrollbar transition-colors duration-500",
+      "shrink-0 flex items-center gap-2 px-4 sm:px-6 py-1.5 border-b overflow-x-auto scrollbar-none transition-colors duration-500",
       isActive ? "border-amber-500/10 bg-amber-500/[0.02]" : "border-white/[0.06] bg-white/[0.015]"
     )}>
       {/* System state — clickable to open operations */}
@@ -157,7 +157,7 @@ function ActionQueue({ ops, onRetry }: { ops: Operation[]; onRetry?: (op: Operat
   return (
     <div className="shrink-0 border-t border-white/[0.06] bg-white/[0.015] py-1.5">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
-      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
         <Activity size={9} className="text-white/20 shrink-0" />
         {visible.map(op => (
           <motion.div
@@ -261,7 +261,7 @@ function QuickActionBar({ onAction, hasInput, isIdle }: { onAction: (cmd: string
   return (
     <div className="shrink-0 pb-1.5">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
         {actions.map(a => {
           const Icon = a.icon;
           return (
