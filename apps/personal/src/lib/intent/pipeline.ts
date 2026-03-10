@@ -36,12 +36,14 @@ async function classifyIntent(input: string): Promise<LLMIntentResult> {
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 
     const res = await fetch(INTENT_ROUTER_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        apikey: anonKey,
+        Authorization: `Bearer ${token || anonKey}`,
       },
       body: JSON.stringify({ input }),
     });

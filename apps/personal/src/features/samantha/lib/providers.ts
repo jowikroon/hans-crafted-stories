@@ -8,9 +8,21 @@ import type { ServiceHealthEntry } from "../types";
 
 // ─── Auth + URL helpers ──────────────────────────────
 
+const ANON_KEY = () => import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+
 export async function getAuthToken(): Promise<string> {
   const { data } = await supabase.auth.getSession();
-  return data?.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+  return data?.session?.access_token || ANON_KEY();
+}
+
+/** Standard headers for all Supabase Edge Function calls */
+async function sbHeaders(): Promise<Record<string, string>> {
+  const token = await getAuthToken();
+  return {
+    "Content-Type": "application/json",
+    apikey: ANON_KEY(),
+    Authorization: `Bearer ${token}`,
+  };
 }
 
 const SB_URL = () => import.meta.env.VITE_SUPABASE_URL || "";
@@ -47,13 +59,13 @@ export async function callCloud(
   systemPrompt: string,
   onChunk?: StreamCallback
 ): Promise<string> {
-  const token = await getAuthToken();
   const url = SB_URL();
   if (!url) throw new Error("Backend not configured — set VITE_SUPABASE_URL.");
+  const headers = await sbHeaders();
 
   const res = await fetch(`${url}/functions/v1/hansai-chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    headers,
     body: JSON.stringify({ model, messages: [{ role: "system", content: systemPrompt }, ...msgs] }),
   });
 
@@ -86,13 +98,13 @@ export async function callOllama(
 ): Promise<string> {
   const model = modelId.replace("ollama/", "");
   const isVps1 = model.includes("llama3.2");
-  const token = await getAuthToken();
   const url = SB_URL();
   if (!url) throw new Error("Backend not configured.");
+  const headers = await sbHeaders();
 
   const res = await fetch(`${url}/functions/v1/hansai-chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    headers,
     body: JSON.stringify({
       model: modelId,
       messages: [{ role: "system", content: systemPrompt }, ...msgs],
@@ -125,12 +137,12 @@ export async function callAnythingLLM(
   msgs: { role: string; content: string }[],
   systemPrompt: string
 ): Promise<string> {
-  const token = await getAuthToken();
   const url = SB_URL();
+  const headers = await sbHeaders();
 
   const res = await fetch(`${url}/functions/v1/hansai-chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    headers,
     body: JSON.stringify({ model: "anythingllm", messages: [{ role: "system", content: systemPrompt }, ...msgs], provider: "anythingllm" }),
   });
 
@@ -154,9 +166,9 @@ export async function callAnythingLLM(
 // ─── Edge Function Agents ────────────────────────────
 
 export async function callAgent(agentId: string, userMessage: string): Promise<{ text: string; healthData?: ServiceHealthEntry[] }> {
-  const token = await getAuthToken();
   const url = SB_URL();
   if (!url) throw new Error("Backend not configured.");
+  const headers = await sbHeaders();
 
   const routes: Record<string, string> = {
     "agent/google": `${url}/functions/v1/google-agent`,
@@ -173,7 +185,7 @@ export async function callAgent(agentId: string, userMessage: string): Promise<{
 
   const res = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    headers,
     body: JSON.stringify(body),
   });
 
@@ -200,20 +212,22 @@ export async function callAgent(agentId: string, userMessage: string): Promise<{
 // ─── Health check (direct, for sidebar) ──────────────
 
 export async function fetchHealthStatus(): Promise<ServiceHealthEntry[]> {
-  const token = await getAuthToken();
   const url = SB_URL();
   if (!url) return [];
 
-  const res = await fetch(`${url}/functions/v1/empire-health`, {
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
-  if (!data.services) return [];
+  try {
+    const headers = await sbHeaders();
+    const res = await fetch(`${url}/functions/v1/empire-health`, { headers });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.services) return [];
 
-  return Object.entries(data.services).map(([name, v]: [string, any]) => ({
-    name, ok: v.ok, latency: v.latency, error: v.error,
-  }));
+    return Object.entries(data.services).map(([name, v]: [string, any]) => ({
+      name, ok: v.ok, latency: v.latency, error: v.error,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 // ─── Unified send — routes to the right provider ────
