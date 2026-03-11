@@ -49,12 +49,13 @@ export async function getBlogPosts(publishedOnly = true): Promise<BlogPostRow[]>
   return (data as unknown as BlogPostRow[]) || [];
 }
 
-export async function getBlogPost(slug: string): Promise<BlogPostRow | null> {
-  const { data, error } = await supabase
+export async function getBlogPost(slug: string, publishedOnly = true): Promise<BlogPostRow | null> {
+  let query = supabase
     .from("blog_posts")
     .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
+    .eq("slug", slug);
+  if (publishedOnly) query = query.eq("published", true);
+  const { data, error } = await query.maybeSingle();
   if (error) throw error;
   return data as unknown as BlogPostRow | null;
 }
