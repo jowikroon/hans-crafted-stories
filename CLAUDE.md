@@ -117,9 +117,15 @@ ssh -N -f -L 5678:localhost:5678 \
 ## Key n8n Webhooks
 
 ```
-AutoSEO:           https://hansvanleeuwen.app.n8n.cloud/webhook/autoseo
-Product Titles:    https://hansvanleeuwen.app.n8n.cloud/webhook/product-titles
-Health Check:      https://hansvanleeuwen.app.n8n.cloud/webhook/health-check
+N8N Base:          https://n8n.srv1402218.hstgr.cloud
+AutoSEO:           https://n8n.srv1402218.hstgr.cloud/webhook/autoseo
+Product Titles:    https://n8n.srv1402218.hstgr.cloud/webhook/product-titles
+Product Feed:      https://n8n.srv1402218.hstgr.cloud/webhook/product-feed
+Campaign:          https://n8n.srv1402218.hstgr.cloud/webhook/campaign
+Scraper:           https://n8n.srv1402218.hstgr.cloud/webhook/scraper
+Monday Orch:       https://n8n.srv1402218.hstgr.cloud/webhook/monday-orchestrator
+Claude Relay v2:   https://n8n.srv1402218.hstgr.cloud/webhook/claude-relay-v2
+N8N Architect:     https://n8n.srv1402218.hstgr.cloud/webhook/n8n-architect
 ```
 
 ## Supabase
