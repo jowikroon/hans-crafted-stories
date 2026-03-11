@@ -195,17 +195,17 @@ const AdminSidebar = ({
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  tooltip="HansAI Terminal"
-                  onClick={() => navigate("/hansai")}
-                  isActive={location.pathname === "/hansai"}
+                  tooltip="Samantha AI"
+                  onClick={() => navigate("/samantha")}
+                  isActive={location.pathname === "/samantha"}
                   className={
-                    location.pathname === "/hansai"
+                    location.pathname === "/samantha"
                       ? "bg-white/[0.08] text-white font-medium"
                       : "text-white/50 hover:bg-white/[0.04] hover:text-white/80"
                   }
                 >
                   <Workflow size={16} />
-                  <span>HansAI</span>
+                  <span>Samantha</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
