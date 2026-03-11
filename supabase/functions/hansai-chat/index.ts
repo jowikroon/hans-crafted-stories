@@ -160,9 +160,14 @@ serve(async (req) => {
   if (auth.error) return auth.error;
 
   try {
-    const { messages, model, router_context, autonomous, voice, persona } = await req.json();
+    const { messages, model, router_context, autonomous, voice, persona, system_prompt } = await req.json();
 
-    // ── Build system prompt (persona / voice / default) ──
+    // ── Separate system messages from conversation messages ──
+    const rawMessages = messages || [];
+    const conversationMessages = rawMessages.filter((m: any) => m.role !== "system");
+    const clientSystemMsg = rawMessages.find((m: any) => m.role === "system");
+
+    // ── Build system prompt (client override > persona > voice > default) ──
     const hierarchyHint =
       router_context &&
       typeof router_context === "object" &&
@@ -171,7 +176,14 @@ serve(async (req) => {
         : "";
 
     let systemContent: string;
-    if (persona && typeof persona === "object" && persona.key === "jarvis") {
+
+    // If the client sends an explicit system_prompt field or a system message,
+    // use it directly. This is how Samantha sends its context-rich prompt.
+    if (system_prompt && typeof system_prompt === "string" && system_prompt.length > 50) {
+      systemContent = system_prompt + hierarchyHint;
+    } else if (clientSystemMsg && typeof clientSystemMsg.content === "string" && clientSystemMsg.content.length > 50) {
+      systemContent = clientSystemMsg.content + hierarchyHint;
+    } else if (persona && typeof persona === "object" && persona.key === "jarvis") {
       systemContent = JARVIS_PERSONA_PROMPT + hierarchyHint;
     } else if (voice && typeof voice === "object" && typeof voice.name === "string" && typeof voice.style === "string") {
       const langMap: Record<string, string> = { en: "Respond in English.", nl: "Respond in Dutch.", zh: "Respond in Chinese." };
@@ -189,7 +201,7 @@ serve(async (req) => {
     // ── Provider fallback (streaming) ───────────────────
     const result = await completionWithFallback({
       system: systemContent,
-      messages: messages || [],
+      messages: conversationMessages,
       model: model || "google/gemini-3-flash-preview",
       stream: true,
     });
