@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { runIntentPipeline, triggerWorkflow } from "@/lib/intent/pipeline";
+import { triggerWorkflow } from "@/lib/intent/pipeline";
+import { fastRoute } from "@/lib/intent/router";
 import { WORKFLOWS } from "@/lib/config/workflows";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -684,12 +685,40 @@ export default function SamanthaAI() {
     return () => clearInterval(timer);
   }, [refreshHealth]);
 
-  const systemPrompt = useMemo(() => buildSystemPrompt(healthContext), [healthContext]);
+  const systemPrompt = useMemo(() => {
+    const taskCtx = tasks.filter(t => !t.done).length > 0
+      ? tasks.filter(t => !t.done).map((t, i) => `${i + 1}. [${t.type}] ${t.text}`).join("\n")
+      : undefined;
+    return buildSystemPrompt(healthContext, taskCtx);
+  }, [healthContext, tasks]);
 
   // ─── Persistence ───────────────────────────────────
+  const conversationId = useRef<string>(() => {
+    try { return localStorage.getItem("samantha_conv_id") || uid() + uid(); } catch { return uid() + uid(); }
+  });
   useEffect(() => { try { localStorage.setItem(MODEL_KEY, selectedModel); } catch {} }, [selectedModel]);
   useEffect(() => { try { const s = localStorage.getItem(HISTORY_KEY); if (s) { const p = JSON.parse(s); if (Array.isArray(p)) setMessages(p.map((m: any) => ({ ...m, streaming: false }))); } } catch {} }, []);
-  useEffect(() => { if (messages.length > 0) try { localStorage.setItem(HISTORY_KEY, JSON.stringify(messages.filter(m => !m.streaming).slice(-60))); } catch {} }, [messages]);
+  useEffect(() => {
+    if (messages.length > 0) {
+      const saveable = messages.filter(m => !m.streaming).slice(-60);
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(saveable)); } catch {}
+      // Persist to Supabase (debounced, fire-and-forget)
+      const timer = setTimeout(async () => {
+        try {
+          const convId = typeof conversationId.current === "function" ? conversationId.current() : conversationId.current;
+          localStorage.setItem("samantha_conv_id", convId);
+          await supabase.from("samantha_conversations").upsert({
+            id: convId,
+            messages: JSON.stringify(saveable.slice(-40)),
+            model: selectedModel,
+            updated_at: new Date().toISOString(),
+            user_id: "00000000-0000-0000-0000-000000000001",
+          }, { onConflict: "id" });
+        } catch {} // Silent fail — localStorage is the primary store
+      }, 3000); // 3-second debounce
+      return () => clearTimeout(timer);
+    }
+  }, [messages, selectedModel]);
   useEffect(() => { try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch {} }, [tasks]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, stage]);
   useEffect(() => { document.title = "Samantha — AI Cockpit"; }, []);
@@ -697,8 +726,12 @@ export default function SamanthaAI() {
   const emotion: Emotion = useMemo(() => {
     if (stage === "thinking") return "thinking";
     if (stage === "executing" || stage === "routing") return "working";
+    // Show success/error briefly after last operation
+    const lastOp = operations.find(o => o.status !== "running" && o.completedAt && Date.now() - o.completedAt < 3000);
+    if (lastOp?.status === "error") return "error";
+    if (lastOp?.status === "success") return "success";
     return "calm";
-  }, [stage]);
+  }, [stage, operations]);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -875,12 +908,17 @@ export default function SamanthaAI() {
       setStage("idle"); return;
     }
 
+    // ─── Smart routing: fast keyword match → workflow, otherwise → chat ────
+    // Skip the slow LLM intent classifier. The fastRoute handles all keyword
+    // matches. Conversational messages go straight to chat without the 1-3s
+    // round-trip to the intent-router edge function.
     setStage("routing");
-    const result = await runIntentPipeline(text, "samantha");
+    const route = fastRoute(text);
 
-    if (result.outcome.type === "workflow_match") {
+    if (route.confidence >= 0.85 && route.workflow) {
+      // High-confidence workflow match
       setStage("executing");
-      const wf = result.outcome.workflow;
+      const wf = route.workflow;
       const opId = startOp(wf.label, "workflow");
       const toolMsg = append({ role: "tool", content: "", toolName: wf.label, toolStatus: "running" });
       try {
@@ -892,12 +930,13 @@ export default function SamanthaAI() {
       setStage("idle"); return;
     }
 
-    if (result.outcome.type === "clarify") {
-      append({ role: "samantha", content: `I found a few options:\n\n${result.outcome.workflows.map(w => `• **${w.label}** — ${w.description}`).join("\n")}\n\nWhich one?`, model: "System" });
+    if (route.confidence >= 0.5 && route.alternatives && route.alternatives.length > 0) {
+      // Medium-confidence — offer alternatives
+      append({ role: "samantha", content: `I found a few options:\n\n${route.alternatives.map(w => `• **${w.label}** — ${w.description}`).join("\n")}\n\nWhich one?`, model: "System" });
       setStage("idle"); return;
     }
 
-    // Chat
+    // Chat — go directly to the AI model (skip LLM intent classification)
     setStage("thinking");
     const opId = startOp("Chat", "chat");
     const streamMsg = append({ role: "samantha", content: "", streaming: true, model: cur.label });
@@ -1026,7 +1065,15 @@ export default function SamanthaAI() {
             </div>
             <div className="text-center max-w-sm">
               <h2 className="text-base font-semibold text-white/80 mb-1">Samantha</h2>
-              <p className="text-[11px] text-white/35 leading-relaxed">AI cockpit. Chat naturally or use commands.</p>
+              <p className="text-[11px] text-white/35 leading-relaxed">AI operating layer. Talk naturally or use commands.</p>
+              {healthCache && (
+                <p className="text-[10px] text-white/25 mt-1 font-mono">
+                  {healthCache.filter(s => s.ok).length}/{healthCache.length} systems online · {cur.label}
+                </p>
+              )}
+              {pendingTaskCount > 0 && (
+                <p className="text-[10px] text-amber-400/40 mt-0.5">{pendingTaskCount} pending task{pendingTaskCount > 1 ? "s" : ""}</p>
+              )}
             </div>
 
             {/* Command examples — grouped */}
