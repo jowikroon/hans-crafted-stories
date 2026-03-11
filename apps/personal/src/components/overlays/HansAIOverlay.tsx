@@ -51,7 +51,7 @@ const HansAIOverlay = ({ open, onClose }: HansAIOverlayProps) => {
               </div>
               <div className="flex items-center gap-2">
                 <a
-                  href="/hansai"
+                  href="/samantha"
                   className="rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground/50 transition-colors hover:bg-secondary hover:text-foreground"
                 >
                   Full Terminal →
