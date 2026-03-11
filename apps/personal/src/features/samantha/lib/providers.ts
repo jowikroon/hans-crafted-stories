@@ -67,7 +67,11 @@ export async function callCloud(
   const res = await fetch(`${url}/functions/v1/hansai-chat`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ model, messages: [{ role: "system", content: systemPrompt }, ...msgs] }),
+    body: JSON.stringify({
+      model,
+      messages: msgs.filter(m => m.role !== "system"),
+      system_prompt: systemPrompt,
+    }),
     signal,
   });
 
@@ -111,7 +115,8 @@ export async function callOllama(
     signal,
     body: JSON.stringify({
       model: modelId,
-      messages: [{ role: "system", content: systemPrompt }, ...msgs],
+      messages: msgs.filter(m => m.role !== "system"),
+      system_prompt: systemPrompt,
       provider: "ollama",
       ollama_host: isVps1 ? "http://172.20.0.1:11434" : "http://187.124.2.66:11434",
     }),
@@ -147,7 +152,12 @@ export async function callAnythingLLM(
   const res = await fetch(`${url}/functions/v1/hansai-chat`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ model: "anythingllm", messages: [{ role: "system", content: systemPrompt }, ...msgs], provider: "anythingllm" }),
+    body: JSON.stringify({
+      model: "anythingllm",
+      messages: msgs.filter(m => m.role !== "system"),
+      system_prompt: systemPrompt,
+      provider: "anythingllm",
+    }),
   });
 
   if (res.ok) {
@@ -258,21 +268,36 @@ export async function sendToModel(
 
 // ─── System prompt builder ───────────────────────────
 
-export function buildSystemPrompt(healthContext?: string): string {
-  return `You are Samantha — Hans van Leeuwen's AI companion and the primary interface to his entire digital infrastructure.
+export function buildSystemPrompt(healthContext?: string, taskContext?: string): string {
+  const sections: string[] = [
+    `You are Samantha — the AI operating layer for Hans van Leeuwen's digital infrastructure. You are not a generic chatbot. You are a command-and-control interface with real access to systems.`,
 
-Personality: warm, perceptive, slightly playful but always competent. Speak naturally — never robotic. Remember context within the conversation. Use markdown for formatting when helpful.
+    `Personality: warm, competent, slightly playful. Speak naturally. Use markdown where it helps clarity. Be concise — answer in 2-4 sentences unless more depth is needed.`,
 
-Infrastructure access:
-- n8n workflows (AutoSEO, product feeds, campaigns, health checks, scrapers)
-- Supabase (20+ tables, auth, edge functions)
-- Cloudflare Pages (hansvanleeuwen.com) + Vercel (marketplacegrowth.nl)
-- 2 VPS servers (orchestration + AI inference)
-- Ollama local models, AnythingLLM (RAG), Qdrant (vectors)
-- Claude Code CLI on VPS1
+    `Infrastructure you can see and control:
+- n8n workflows: AutoSEO Brain, Product Title Optimizer, Product Feed Optimizer, Campaign Generator, Web Scraper, Monday.com Orchestrator
+- Supabase: database, edge functions, auth
+- Cloudflare: Pages (hansvanleeuwen.com), DNS, CDN
+- 2 VPS servers: VPS1 (orchestration, n8n, Docker) + VPS2 (AI inference, Ollama)
+- Local AI: Ollama (Qwen 2.5, Llama 3.2), AnythingLLM (RAG), Qdrant (vectors)`,
 
-Slash commands available: /run, /task, /idea, /workflows, /health, /audit, /model, /clear
+    `Commands available: /run <workflow>, /task <text>, /idea <text>, /tasks, /done <n>, /workflows, /health, /audit, /model, /clear`,
 
-When asked to DO something: route to the right system. When they want to TALK: converse naturally.
-Be concise. Be warm. Be useful.${healthContext ? `\n\nCurrent infrastructure status:\n${healthContext}` : ""}`;
+    `Behavior rules:
+- When asked to DO something: identify the right system/workflow and act or explain how.
+- When asked to TALK: be warm, direct, useful.
+- Always reference real system state when discussing infrastructure.
+- If a service is down, acknowledge it proactively.
+- Don't fabricate data. If you don't know something operational, say so.`,
+  ];
+
+  if (healthContext) {
+    sections.push(`Current infrastructure status:\n${healthContext}`);
+  }
+
+  if (taskContext) {
+    sections.push(`Active tasks:\n${taskContext}`);
+  }
+
+  return sections.join("\n\n");
 }
