@@ -1,14 +1,25 @@
-import { useState, useEffect, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Tag, Clock, Globe, X, Eye, Pencil } from "lucide-react";
+import {
+  BookOpen, Tag, Clock, Globe, X, Eye, Pencil, Copy, Check,
+  ChevronDown, ChevronRight, AlertCircle, Languages,
+  Send, Save,
+} from "lucide-react";
 import { BlogPostRow } from "@/lib/api/content";
 import ImageCropUploader from "./ImageCropUploader";
+
+// ═══════════════════════════════════════════════════════════
+//  BlogPostFormModal — Premium Editorial Blog Builder
+//  Redesigned interior: content editor, translation workflow,
+//  classification, publish confidence, footer actions.
+//  Surrounding portal/modal chrome remains unchanged.
+// ═══════════════════════════════════════════════════════════
 
 interface Props {
   open: boolean;
@@ -17,7 +28,192 @@ interface Props {
   onSave: (data: Partial<BlogPostRow>) => Promise<void>;
 }
 
+// ─── Completeness logic ──────────────────────────────────
+
+interface ReadinessCheck {
+  label: string;
+  met: boolean;
+}
+
+function computeReadiness(
+  title: string, slug: string, excerpt: string, content: string,
+  imageUrl: string, tagList: string[], category: string,
+): ReadinessCheck[] {
+  return [
+    { label: "Title", met: title.trim().length >= 3 },
+    { label: "URL slug", met: slug.trim().length >= 3 },
+    { label: "Excerpt", met: excerpt.trim().length >= 20 },
+    { label: "Content", met: content.trim().split(/\s+/).length >= 50 },
+    { label: "Cover image", met: !!imageUrl },
+    { label: "At least 1 tag", met: tagList.length >= 1 },
+    { label: "Category set", met: !!category },
+  ];
+}
+
+function nlCompleteness(titleNl: string, excerptNl: string, contentNl: string): { filled: number; total: number; pct: number } {
+  const total = 3;
+  let filled = 0;
+  if (titleNl.trim()) filled++;
+  if (excerptNl.trim()) filled++;
+  if (contentNl.trim()) filled++;
+  return { filled, total, pct: Math.round((filled / total) * 100) };
+}
+
+// ─── Markdown renderer (simple, reused for both EN and NL) ──
+
+function renderMarkdownToHtml(md: string): string {
+  if (!md) return "";
+  return md
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="rounded-md bg-secondary/60 border border-border p-3 overflow-x-auto text-xs font-mono my-3"><code>$2</code></pre>')
+    .replace(/`([^`]+)`/g, '<code class="rounded bg-secondary/60 px-1.5 py-0.5 text-xs font-mono">$1</code>')
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="rounded-md max-w-full my-2" />')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline" target="_blank" rel="noopener noreferrer">$1</a>')
+    .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-4 mb-1">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-5 mb-1.5">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-6 mb-2">$1</h1>')
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^> (.+)$/gm, '<blockquote class="border-l-2 border-primary/30 pl-3 italic text-muted-foreground my-2">$1</blockquote>')
+    .replace(/^[-*] (.+)$/gm, '<li class="ml-4 list-disc text-sm">$1</li>')
+    .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal text-sm">$1</li>')
+    .replace(/^---$/gm, '<hr class="border-border my-4" />')
+    .replace(/\n\n/g, '</p><p class="my-2 text-sm leading-relaxed">')
+    .replace(/\n/g, '<br />');
+}
+
+// ─── Section header (collapsible) ────────────────────────
+
+function SectionHeader({ icon: Icon, title, subtitle, badge, open, onToggle, children }: {
+  icon: typeof BookOpen; title: string; subtitle?: string;
+  badge?: React.ReactNode; open?: boolean; onToggle?: () => void;
+  children?: React.ReactNode;
+}) {
+  const isCollapsible = onToggle !== undefined;
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={!isCollapsible}
+        className={`w-full flex items-center gap-2.5 py-2 text-left group ${isCollapsible ? "cursor-pointer" : "cursor-default"}`}
+      >
+        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/8 shrink-0">
+          <Icon size={13} className="text-primary/70" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-foreground">{title}</span>
+            {badge}
+          </div>
+          {subtitle && <p className="text-[11px] text-muted-foreground/60 mt-0.5 leading-tight">{subtitle}</p>}
+        </div>
+        {isCollapsible && (
+          <div className="text-muted-foreground/30 group-hover:text-muted-foreground/50 transition-colors shrink-0">
+            {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </div>
+        )}
+      </button>
+      {(!isCollapsible || open) && children && (
+        <div className="mt-2">{children}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── Write/Preview toggle ────────────────────────────────
+
+function WritePreviewToggle({ previewing, onChange }: { previewing: boolean; onChange: (p: boolean) => void }) {
+  return (
+    <div className="flex rounded-lg border border-border/60 bg-secondary/20 p-0.5" role="tablist" aria-label="Editor mode">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={!previewing}
+        onClick={() => onChange(false)}
+        className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
+          !previewing ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-muted-foreground"
+        }`}
+      >
+        <Pencil size={10} /> Write
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={previewing}
+        onClick={() => onChange(true)}
+        className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
+          previewing ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-muted-foreground"
+        }`}
+      >
+        <Eye size={10} /> Preview
+      </button>
+    </div>
+  );
+}
+
+// ─── Content metrics bar ─────────────────────────────────
+
+function ContentMetrics({ wordCount, charCount, readTime }: { wordCount: number; charCount: number; readTime: string }) {
+  return (
+    <div className="flex items-center gap-3 text-[10px] text-muted-foreground/40 font-mono tabular-nums">
+      <span>{wordCount.toLocaleString()} words</span>
+      <span className="h-2 w-px bg-border" />
+      <span>{charCount.toLocaleString()} chars</span>
+      <span className="h-2 w-px bg-border" />
+      <span className="flex items-center gap-1"><Clock size={9} />{readTime}</span>
+    </div>
+  );
+}
+
+// ─── Excerpt field with counter ──────────────────────────
+
+function ExcerptField({ value, onChange, placeholder, maxLength = 200 }: {
+  value: string; onChange: (v: string) => void; placeholder: string; maxLength?: number;
+}) {
+  const remaining = maxLength - value.length;
+  const nearLimit = remaining < 30;
+  return (
+    <div className="space-y-1">
+      <Textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={2}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        className="text-sm leading-relaxed resize-none"
+      />
+      <div className="flex justify-end">
+        <span className={`text-[10px] font-mono tabular-nums ${nearLimit ? "text-amber-500/70" : "text-muted-foreground/30"}`}>
+          {remaining} remaining
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Missing fields indicator (lightweight) ─────────────
+
+function MissingFields({ checks }: { checks: ReadinessCheck[] }) {
+  const missing = checks.filter(c => !c.met);
+  if (missing.length === 0) return (
+    <p className="text-[11px] text-emerald-500/70 flex items-center gap-1.5">
+      <Check size={11} /> All fields complete
+    </p>
+  );
+  return (
+    <p className="text-[11px] text-muted-foreground/50">
+      Missing: {missing.map(m => m.label.toLowerCase()).join(", ")}
+    </p>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════
+
 const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
+  // ─── State ─────────────────────────────────────────────
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -25,7 +221,6 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [titleNl, setTitleNl] = useState("");
   const [excerptNl, setExcerptNl] = useState("");
   const [contentNl, setContentNl] = useState("");
-  const [previewingNl, setPreviewingNl] = useState(false);
   const [category, setCategory] = useState("professional");
   const [tags, setTags] = useState("");
   const [readTime, setReadTime] = useState("5 min read");
@@ -34,40 +229,13 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [saving, setSaving] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [previewing, setPreviewing] = useState(false);
+  const [previewingNl, setPreviewingNl] = useState(false);
+  const [nlExpanded, setNlExpanded] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const renderedMarkdown = useMemo(() => {
-    if (!previewing || !content) return "";
-    return content
-      // code blocks
-      .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="rounded-md bg-secondary/60 border border-border p-3 overflow-x-auto text-xs font-mono my-3"><code>$2</code></pre>')
-      // inline code
-      .replace(/`([^`]+)`/g, '<code class="rounded bg-secondary/60 px-1.5 py-0.5 text-xs font-mono">$1</code>')
-      // images
-      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="rounded-md max-w-full my-2" />')
-      // links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline" target="_blank" rel="noopener noreferrer">$1</a>')
-      // headings
-      .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-4 mb-1">$1</h3>')
-      .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-5 mb-1.5">$1</h2>')
-      .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-6 mb-2">$1</h1>')
-      // bold & italic
-      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      // blockquotes
-      .replace(/^> (.+)$/gm, '<blockquote class="border-l-2 border-primary/30 pl-3 italic text-muted-foreground my-2">$1</blockquote>')
-      // unordered lists
-      .replace(/^[-*] (.+)$/gm, '<li class="ml-4 list-disc text-sm">$1</li>')
-      // ordered lists
-      .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal text-sm">$1</li>')
-      // horizontal rule
-      .replace(/^---$/gm, '<hr class="border-border my-4" />')
-      // paragraphs (double newline)
-      .replace(/\n\n/g, '</p><p class="my-2 text-sm leading-relaxed">')
-      // single newlines
-      .replace(/\n/g, '<br />');
-  }, [content, previewing]);
+  const isEdit = !!post;
 
+  // ─── Init from post ────────────────────────────────────
   useEffect(() => {
     if (post) {
       setTitle(post.title);
@@ -82,30 +250,65 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
       setReadTime(post.read_time);
       setPublished(post.published);
       setImageUrl(post.image_url || "");
+      // Auto-expand NL if any translations exist
+      setNlExpanded(!!(post.title_nl || post.excerpt_nl || post.content_nl));
     } else {
       setTitle(""); setSlug(""); setExcerpt(""); setContent("");
       setTitleNl(""); setExcerptNl(""); setContentNl("");
       setCategory("professional"); setTags(""); setReadTime("5 min read");
       setPublished(false); setImageUrl("");
+      setNlExpanded(false);
     }
-    setTagInput("");
+    setTagInput(""); setPreviewing(false); setPreviewingNl(false);
   }, [post, open]);
 
+  // ─── Derived ───────────────────────────────────────────
   const autoSlug = (t: string) =>
     t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
   const tagList = tags.split(",").map((t) => t.trim()).filter(Boolean);
+  const wordCount = content ? content.trim().split(/\s+/).length : 0;
+  const charCount = content.length;
 
-  const addTag = (tag: string) => {
+  const readiness = useMemo(
+    () => computeReadiness(title, slug, excerpt, content, imageUrl, tagList, category),
+    [title, slug, excerpt, content, imageUrl, tagList, category],
+  );
+  const readyCount = readiness.filter(c => c.met).length;
+  const isReady = readyCount === readiness.length;
+
+  const nlStatus = useMemo(() => nlCompleteness(titleNl, excerptNl, contentNl), [titleNl, excerptNl, contentNl]);
+
+  const renderedMarkdown = useMemo(() => {
+    if (!previewing || !content) return "";
+    return renderMarkdownToHtml(content);
+  }, [content, previewing]);
+
+  const renderedNlMarkdown = useMemo(() => {
+    if (!previewingNl || !contentNl) return "";
+    return renderMarkdownToHtml(contentNl);
+  }, [contentNl, previewingNl]);
+
+  // ─── Auto read time ────────────────────────────────────
+  useEffect(() => {
+    if (content) {
+      const words = content.trim().split(/\s+/).length;
+      const mins = Math.max(1, Math.ceil(words / 200));
+      setReadTime(`${mins} min read`);
+    }
+  }, [content]);
+
+  // ─── Tag helpers ───────────────────────────────────────
+  const addTag = useCallback((tag: string) => {
     const clean = tag.trim().toUpperCase();
     if (!clean || tagList.includes(clean)) return;
     setTags(tagList.length > 0 ? `${tags}, ${clean}` : clean);
     setTagInput("");
-  };
+  }, [tagList, tags]);
 
-  const removeTag = (tag: string) => {
+  const removeTag = useCallback((tag: string) => {
     setTags(tagList.filter((t) => t !== tag).join(", "));
-  };
+  }, [tagList]);
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
@@ -117,15 +320,16 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
     }
   };
 
-  // Auto-calculate read time from content
-  useEffect(() => {
-    if (content) {
-      const words = content.trim().split(/\s+/).length;
-      const mins = Math.max(1, Math.ceil(words / 200));
-      setReadTime(`${mins} min read`);
-    }
-  }, [content]);
+  // ─── Copy from English helper ──────────────────────────
+  const copyFromEnglish = useCallback((field: "title" | "excerpt" | "content") => {
+    if (field === "title") setTitleNl(title);
+    if (field === "excerpt") setExcerptNl(excerpt);
+    if (field === "content") setContentNl(content);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1500);
+  }, [title, excerpt, content]);
 
+  // ─── Save ──────────────────────────────────────────────
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -149,28 +353,44 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
     }
   };
 
-  const wordCount = content ? content.trim().split(/\s+/).length : 0;
-  const charCount = content.length;
+  const canSave = title.trim().length >= 1 && slug.trim().length >= 1;
 
+  // ─── Render ────────────────────────────────────────────
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+        {/* ─── Header ─────────────────────────────────────── */}
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 bg-gradient-to-b from-secondary/20 to-transparent">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 border border-primary/10">
               <BookOpen size={16} className="text-primary" />
             </div>
-            <div>
-              <DialogTitle className="font-display">{post ? "Edit Blog Post" : "New Blog Post"}</DialogTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {post ? "Update your article content and settings" : "Create a new article for your blog"}
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-base font-display">
+                {isEdit ? "Edit Article" : "New Article"}
+              </DialogTitle>
+              <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+                {isEdit ? "Refine your content, translations, and settings" : "Write, translate, and publish"}
               </p>
             </div>
+            {/* Readiness badge — only shown when editing or user has started filling fields */}
+            {(isEdit || readyCount > 0) && (
+              <div className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium ${
+                isReady
+                  ? "border-emerald-500/30 bg-emerald-500/8 text-emerald-600 dark:text-emerald-400"
+                  : "border-border bg-secondary/30 text-muted-foreground/50"
+              }`}>
+                {isReady ? <Check size={10} /> : null}
+                {isReady ? "Ready" : `${readyCount}/${readiness.length}`}
+              </div>
+            )}
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Cover Image with Crop */}
+        {/* ─── Body ───────────────────────────────────────── */}
+        <div className="px-6 py-5 space-y-7">
+
+          {/* ═══ 1. COVER IMAGE ═══ */}
           <ImageCropUploader
             imageUrl={imageUrl}
             onImageChange={setImageUrl}
@@ -178,242 +398,332 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
             filePrefix={slug || autoSlug(title) || "untitled"}
             aspectRatio={4 / 3}
             label="Cover Image"
-            hint="Recommended: 1200×900px (4:3 ratio). You'll be able to crop after selecting."
+            hint="Recommended: 1200×900px (4:3). Crop after selecting."
           />
 
-          {/* Title & Slug */}
-          <div className="space-y-4">
+          {/* ═══ 2. TITLE & SLUG ═══ */}
+          <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">Title</Label>
               <Input
                 value={title}
                 onChange={(e) => { setTitle(e.target.value); if (!post) setSlug(autoSlug(e.target.value)); }}
-                placeholder="Enter a compelling title..."
-                className="text-base"
+                placeholder="Article title…"
+                className="text-lg font-semibold border-0 border-b border-border/40 rounded-none px-0 py-2 bg-transparent placeholder:text-muted-foreground/25 focus-visible:ring-0 focus-visible:border-primary/50 transition-colors"
               />
             </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Globe size={12} className="text-muted-foreground/50" />
-                <Label className="text-xs text-muted-foreground">URL Slug</Label>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-md border border-border bg-secondary/30 px-3">
-                <span className="text-xs text-muted-foreground/50 select-none">/writing/</span>
-                <input
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  className="h-9 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/40"
-                  placeholder="auto-generated-slug"
-                />
-              </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground/40">
+              <Globe size={11} className="shrink-0" />
+              <span className="select-none">/writing/</span>
+              <input
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                className="flex-1 bg-transparent text-xs text-muted-foreground/60 outline-none placeholder:text-muted-foreground/25 font-mono focus-visible:text-foreground/80 rounded-sm focus-visible:ring-1 focus-visible:ring-primary/30 px-1 -mx-1"
+                placeholder="auto-generated-slug"
+                aria-label="URL slug"
+              />
             </div>
           </div>
 
-          {/* Excerpt */}
+          {/* ═══ 3. EXCERPT ═══ */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Excerpt</Label>
-              <span className="text-[11px] text-muted-foreground/50">{excerpt.length}/200</span>
-            </div>
-            <Textarea
+            <Label className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider">
+              Excerpt
+            </Label>
+            <ExcerptField
               value={excerpt}
-              onChange={(e) => setExcerpt(e.target.value)}
-              rows={2}
-              placeholder="A short summary that appears on the blog card and in search results..."
-              maxLength={200}
+              onChange={setExcerpt}
+              placeholder="A compelling summary for blog cards and search results…"
             />
           </div>
 
-          {/* Content */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium">Content (Markdown)</Label>
-                <div className="flex rounded-md border border-border p-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewing(false)}
-                    className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
-                      !previewing ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Pencil size={10} /> Write
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewing(true)}
-                    className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
-                      previewing ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Eye size={10} /> Preview
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-[11px] text-muted-foreground/50">
-                <span>{wordCount} words</span>
-                <span>{charCount} chars</span>
-                <span className="flex items-center gap-1">
-                  <Clock size={10} />
-                  {readTime}
-                </span>
-              </div>
+          {/* ═══ 4. CONTENT (MARKDOWN) ═══ */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider">
+                Content (Markdown)
+              </Label>
+              <WritePreviewToggle previewing={previewing} onChange={setPreviewing} />
             </div>
+
             {previewing ? (
               <div
-                className="min-h-[336px] max-h-[336px] overflow-y-auto rounded-md border border-border bg-card p-4 text-sm leading-relaxed prose-sm"
-                dangerouslySetInnerHTML={{ __html: content ? `<p class="my-2 text-sm leading-relaxed">${renderedMarkdown}</p>` : '<p class="text-muted-foreground/40 italic">Nothing to preview yet…</p>' }}
+                className="min-h-[320px] max-h-[400px] overflow-y-auto rounded-xl border border-border/60 bg-card/50 p-5 text-sm leading-relaxed prose-sm"
+                dangerouslySetInnerHTML={{
+                  __html: content
+                    ? `<p class="my-2 text-sm leading-relaxed">${renderedMarkdown}</p>`
+                    : '<p class="text-muted-foreground/30 italic text-center py-12">Nothing to preview yet…</p>',
+                }}
               />
             ) : (
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={14}
-                className="font-mono text-xs leading-relaxed"
-                placeholder="Write your article in Markdown..."
+                className="font-mono text-xs leading-relaxed rounded-xl border-border/60 bg-secondary/10 focus:bg-card/50 transition-colors resize-y min-h-[320px]"
+                placeholder={"Start writing your article…\n\nUse Markdown: # Heading, **bold**, *italic*, [link](url), ```code```"}
               />
             )}
+
+            <ContentMetrics wordCount={wordCount} charCount={charCount} readTime={readTime} />
           </div>
 
-          {/* ── Dutch Translations ── */}
-          <div className="space-y-4 rounded-lg border border-border bg-secondary/10 p-4">
-            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-              🇳🇱 Dutch Translations <span className="text-[11px] font-normal text-muted-foreground">(optional – falls back to English)</span>
-            </p>
+          {/* ═══ 5. DUTCH TRANSLATION ═══ */}
+          <div className="rounded-xl border border-border/50 bg-gradient-to-b from-secondary/10 to-transparent px-4 pt-3 pb-1">
+            <SectionHeader
+              icon={Languages}
+              title="Dutch Translation"
+              subtitle="Optional — English is used when Dutch is empty"
+              badge={
+                nlStatus.filled > 0 ? (
+                  <span className={`text-[10px] font-mono tabular-nums rounded-full px-1.5 py-0.5 ${
+                    nlStatus.pct === 100
+                      ? "bg-emerald-500/10 text-emerald-500/70"
+                      : "bg-amber-500/10 text-amber-500/60"
+                  }`}>
+                    {nlStatus.filled}/{nlStatus.total}
+                  </span>
+                ) : undefined
+              }
+              open={nlExpanded}
+              onToggle={() => setNlExpanded(!nlExpanded)}
+            >
+              <div className="space-y-4 pb-3">
+                  {/* NL Title */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium text-muted-foreground/60">Titel (NL)</Label>
+                      {title && (
+                        <button
+                          type="button"
+                          onClick={() => copyFromEnglish("title")}
+                          className="flex items-center gap-1 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors"
+                        >
+                          {copiedField === "title" ? <><Check size={9} /> Copied</> : <><Copy size={9} /> Copy EN</>}
+                        </button>
+                      )}
+                    </div>
+                    <Input
+                      value={titleNl}
+                      onChange={(e) => setTitleNl(e.target.value)}
+                      placeholder="Nederlandse titel…"
+                      className="text-sm"
+                    />
+                  </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">Title (NL)</Label>
-              <Input
-                value={titleNl}
-                onChange={(e) => setTitleNl(e.target.value)}
-                placeholder="Nederlandse titel…"
-              />
-            </div>
+                  {/* NL Excerpt */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium text-muted-foreground/60">Samenvatting (NL)</Label>
+                      {excerpt && (
+                        <button
+                          type="button"
+                          onClick={() => copyFromEnglish("excerpt")}
+                          className="flex items-center gap-1 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors"
+                        >
+                          {copiedField === "excerpt" ? <><Check size={9} /> Copied</> : <><Copy size={9} /> Copy EN</>}
+                        </button>
+                      )}
+                    </div>
+                    <ExcerptField
+                      value={excerptNl}
+                      onChange={setExcerptNl}
+                      placeholder="Korte samenvatting in het Nederlands…"
+                    />
+                  </div>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">Excerpt (NL)</Label>
-                <span className="text-[11px] text-muted-foreground/50">{excerptNl.length}/200</span>
-              </div>
-              <Textarea
-                value={excerptNl}
-                onChange={(e) => setExcerptNl(e.target.value)}
-                rows={2}
-                placeholder="Korte samenvatting in het Nederlands…"
-                maxLength={200}
-              />
-            </div>
+                  {/* NL Content */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-xs font-medium text-muted-foreground/60">Inhoud (NL)</Label>
+                        <WritePreviewToggle previewing={previewingNl} onChange={setPreviewingNl} />
+                      </div>
+                      {content && (
+                        <button
+                          type="button"
+                          onClick={() => copyFromEnglish("content")}
+                          className="flex items-center gap-1 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors"
+                        >
+                          {copiedField === "content" ? <><Check size={9} /> Copied</> : <><Copy size={9} /> Copy EN</>}
+                        </button>
+                      )}
+                    </div>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium">Content (NL) (Markdown)</Label>
-                <div className="flex rounded-md border border-border p-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewingNl(false)}
-                    className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
-                      !previewingNl ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Pencil size={10} /> Write
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewingNl(true)}
-                    className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
-                      previewingNl ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Eye size={10} /> Preview
-                  </button>
+                    {previewingNl ? (
+                      <div
+                        className="min-h-[180px] max-h-[200px] overflow-y-auto rounded-lg border border-border/50 bg-card/50 p-4 text-sm leading-relaxed prose-sm"
+                        dangerouslySetInnerHTML={{
+                          __html: contentNl
+                            ? `<p class="my-2 text-sm leading-relaxed">${renderedNlMarkdown}</p>`
+                            : '<p class="text-muted-foreground/30 italic text-center py-8">Nog niets om te laten zien…</p>',
+                        }}
+                      />
+                    ) : (
+                      <Textarea
+                        value={contentNl}
+                        onChange={(e) => setContentNl(e.target.value)}
+                        rows={8}
+                        className="font-mono text-xs leading-relaxed rounded-lg border-border/50 bg-secondary/10 resize-y"
+                        placeholder="Schrijf je artikel in Markdown…"
+                      />
+                    )}
+                  </div>
+                </div>
+              </SectionHeader>
+          </div>
+
+          {/* ═══ 6. CATEGORY & TAGS ═══ */}
+          <div className="space-y-4 pt-1 border-t border-border/30">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Category */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider">Category</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: "professional", label: "Professional", desc: "Industry & expertise", color: "emerald" as const },
+                    { id: "personal", label: "Personal", desc: "Thoughts & stories", color: "amber" as const },
+                  ].map((cat) => {
+                    const selected = category === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setCategory(cat.id)}
+                        className={`flex flex-col items-start rounded-xl border px-3 py-2.5 text-left transition-all ${
+                          selected
+                            ? cat.color === "emerald"
+                              ? "border-emerald-500/40 bg-emerald-500/8 ring-1 ring-emerald-500/20"
+                              : "border-amber-500/40 bg-amber-500/8 ring-1 ring-amber-500/20"
+                            : "border-border/60 bg-card/30 hover:border-muted-foreground/30 hover:bg-card/60"
+                        }`}
+                      >
+                        <span className={`text-sm font-medium ${
+                          selected
+                            ? cat.color === "emerald" ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"
+                            : "text-foreground/70"
+                        }`}>
+                          {cat.label}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/40 mt-0.5">{cat.desc}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              {previewingNl ? (
-                <div
-                  className="min-h-[200px] max-h-[200px] overflow-y-auto rounded-md border border-border bg-card p-4 text-sm leading-relaxed prose-sm"
-                  dangerouslySetInnerHTML={{ __html: contentNl ? `<p class="my-2 text-sm leading-relaxed">${contentNl}</p>` : '<p class="text-muted-foreground/40 italic">Nog niets om te laten zien…</p>' }}
-                />
-              ) : (
-                <Textarea
-                  value={contentNl}
-                  onChange={(e) => setContentNl(e.target.value)}
-                  rows={8}
-                  className="font-mono text-xs leading-relaxed"
-                  placeholder="Schrijf je artikel in Markdown…"
-                />
-              )}
+
+              {/* Tags */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1.5">
+                  <Tag size={10} />
+                  Tags
+                </Label>
+                <div className="flex min-h-[42px] flex-wrap items-center gap-1.5 rounded-xl border border-border/60 bg-card/30 px-3 py-2 focus-within:border-primary/40 focus-within:ring-1 focus-within:ring-primary/15 transition-all">
+                  {tagList.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="gap-1 rounded-md text-[10px] uppercase tracking-wider font-medium border border-border/50">
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)} className="ml-0.5 p-0.5 -mr-0.5 rounded hover:text-destructive hover:bg-destructive/10 transition-colors" aria-label={`Remove tag ${tag}`}>
+                        <X size={10} />
+                      </button>
+                    </Badge>
+                  ))}
+                  <input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleTagKeyDown}
+                    onBlur={() => { if (tagInput) addTag(tagInput); }}
+                    placeholder={tagList.length === 0 ? "Add tags (Enter to add)…" : "+"}
+                    className="h-5 min-w-[60px] flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground/30"
+                  />
+                </div>
+                {tagList.length === 0 && (
+                  <p className="text-[10px] text-muted-foreground/30">Press Enter or comma to add tags. Helps with SEO and discovery.</p>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Category & Tags */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">Category</Label>
-              <div className="flex gap-2">
-                {["professional", "personal"].map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setCategory(cat)}
-                    className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium capitalize transition-all ${
-                      category === cat
-                        ? cat === "professional"
-                          ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                          : "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                        : "border-border bg-card text-muted-foreground hover:border-muted-foreground/40"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+          {/* ═══ 7. PUBLISH STATUS ═══ */}
+          <div className={`rounded-xl border p-4 transition-all ${
+            published
+              ? "border-emerald-500/30 bg-emerald-500/5"
+              : "border-border/50 bg-secondary/10"
+          }`}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                    published
+                      ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                      : "bg-muted/50 text-muted-foreground/60"
+                  }`}>
+                    {published ? "Published" : "Draft"}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground/50 leading-relaxed">
+                  {published
+                    ? "Live on your blog. Visible to everyone and indexed by search engines."
+                    : "Saved privately. Only you can see this in the portal."
+                  }
+                </p>
+                {published && !isReady && (
+                  <p className="text-[10px] text-amber-500/70 mt-1.5 flex items-center gap-1">
+                    <AlertCircle size={10} /> Some fields are incomplete — consider adding them before publishing.
+                  </p>
+                )}
               </div>
+              <Switch checked={published} onCheckedChange={setPublished} />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium flex items-center gap-1.5">
-                <Tag size={12} className="text-muted-foreground/50" />
-                Tags
-              </Label>
-              <div className="flex min-h-[40px] flex-wrap items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
-                {tagList.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="gap-1 text-[11px] uppercase tracking-wide">
-                    {tag}
-                    <button type="button" onClick={() => removeTag(tag)} className="ml-0.5 hover:text-destructive transition-colors">
-                      <X size={10} />
-                    </button>
-                  </Badge>
-                ))}
-                <input
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagKeyDown}
-                  onBlur={() => { if (tagInput) addTag(tagInput); }}
-                  placeholder={tagList.length === 0 ? "Type and press Enter..." : ""}
-                  className="h-6 min-w-[80px] flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground/40"
-                />
+            {/* Readiness — only visible when published */}
+            {published && (
+              <div className="mt-3 pt-3 border-t border-border/30">
+                <MissingFields checks={readiness} />
               </div>
-              <p className="text-[10px] text-muted-foreground/40">Press Enter or comma to add a tag</p>
-            </div>
-          </div>
-
-          {/* Published toggle */}
-          <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/20 px-4 py-3">
-            <div>
-              <p className="text-sm font-medium text-foreground">Published</p>
-              <p className="text-xs text-muted-foreground">
-                {published ? "This post is visible to everyone" : "This post is saved as a draft"}
-              </p>
-            </div>
-            <Switch checked={published} onCheckedChange={setPublished} />
+            )}
           </div>
         </div>
 
-        <DialogFooter className="mt-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving || !title || !slug}>
-            {saving ? "Saving…" : post ? "Update Post" : "Create Post"}
-          </Button>
-        </DialogFooter>
+        {/* ─── Footer ─────────────────────────────────────── */}
+        <div className="sticky bottom-0 border-t border-border/50 bg-background/95 backdrop-blur-sm px-6 py-3">
+          <div className="flex items-center justify-between gap-3">
+            {/* Left: cancel */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              className="text-muted-foreground/60 hover:text-foreground"
+            >
+              Cancel
+            </Button>
+
+            {/* Right: actions */}
+            <div className="flex items-center gap-2">
+              {published ? (
+                /* Publishing mode: single publish button */
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={saving || !canSave}
+                  className="gap-1.5"
+                >
+                  <Send size={13} />
+                  {saving ? "Publishing…" : isEdit ? "Update & Publish" : "Publish"}
+                </Button>
+              ) : (
+                /* Draft mode: single save button */
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={saving || !canSave}
+                  className="gap-1.5"
+                >
+                  <Save size={13} />
+                  {saving ? "Saving…" : isEdit ? "Update Draft" : "Save Draft"}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
