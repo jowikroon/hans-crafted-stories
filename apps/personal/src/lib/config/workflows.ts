@@ -10,8 +10,8 @@ export interface WorkflowDef {
   direct?: boolean;
 }
 
-/** n8n Cloud instance (pre-installed credentials; import templates and run). */
-export const N8N_BASE = "https://hansvanleeuwen.app.n8n.cloud";
+/** Self-hosted n8n on Hostinger VPS (srv1402218) */
+export const N8N_BASE = "https://n8n.srv1402218.hstgr.cloud";
 
 const SUPABASE_URL = typeof import.meta !== "undefined" ? (import.meta.env?.VITE_SUPABASE_URL ?? "") : "";
 const EMPIRE_HEALTH_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/empire-health` : "";
