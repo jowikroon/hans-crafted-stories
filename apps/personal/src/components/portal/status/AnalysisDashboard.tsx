@@ -17,7 +17,7 @@ const ROUTES = [
   { path: "/about", name: "About + Contact", public: true, seo: true },
   { path: "/privacy", name: "Privacy Policy", public: true, seo: true },
   { path: "/portal", name: "Admin Portal", public: false, seo: false },
-  { path: "/hansai", name: "Command Center", public: false, seo: false },
+  { path: "/samantha", name: "Samantha AI", public: false, seo: false },
   { path: "/empire", name: "Empire Dashboard", public: false, seo: false },
   { path: "/wiki", name: "System Wiki", public: false, seo: false },
 ];
@@ -180,7 +180,7 @@ const OverviewPanel = ({ intents, intentsLoading, issues, issuesLoading }: { int
           <p className="text-xs leading-relaxed text-muted-foreground"><strong className="text-foreground">Stack:</strong> Vite + React + TypeScript + shadcn/ui → Cloudflare Pages. Supabase (auth, DB, {EDGE_FUNCTION_COUNT} edge functions). n8n (Hostinger VPS) for workflow automation. Intent pipeline: fastRoute (keyword) → LLM classify → AI chat fallback.</p>
           <p className="text-xs leading-relaxed text-muted-foreground"><strong className="text-foreground">Pages:</strong> {ROUTES.length} routes — {ROUTES.filter(r => r.public).length} public (SEO-indexed), {ROUTES.filter(r => !r.public).length} private (noindex). Bilingual (EN/NL). Supabase-backed CMS for content, case studies, blog posts.</p>
           <p className="text-xs leading-relaxed text-muted-foreground"><strong className="text-foreground">Workflows:</strong> {WORKFLOWS.length} registered — {WORKFLOWS.map(w => w.category).filter((v, i, a) => a.indexOf(v) === i).join(", ")} categories. Total {WORKFLOWS.reduce((a, w) => a + w.keywords.length, 0)} keywords mapped.</p>
-          <p className="text-xs leading-relaxed text-muted-foreground"><strong className="text-foreground">Command Center:</strong> Terminal-style interface at /hansai with slash commands, AI chat (streaming), intent classification, n8n workflow triggers, campaign builder, prompt builder, hierarchy-based context filtering (3-layer BJ Fogg model).</p>
+          <p className="text-xs leading-relaxed text-muted-foreground"><strong className="text-foreground">Samantha AI:</strong> AI operating layer at /samantha with slash commands, AI chat (streaming), intent classification, n8n workflow triggers, health monitoring, task management, and multi-model support.</p>
         </CardContent>
       </Card>
 
