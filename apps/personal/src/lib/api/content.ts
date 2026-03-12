@@ -14,6 +14,11 @@ export interface BlogPostRow {
   read_time: string;
   published: boolean;
   image_url: string;
+  meta_title: string;
+  meta_description: string;
+  og_image: string;
+  canonical_url: string;
+  scheduled_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -32,6 +37,8 @@ export interface CaseStudyRow {
   external_url: string | null;
   published: boolean;
   sort_order: number;
+  meta_title: string;
+  meta_description: string;
   created_at: string;
   updated_at: string;
 }

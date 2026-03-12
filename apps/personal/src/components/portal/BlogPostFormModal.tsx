@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   BookOpen, Tag, Clock, Globe, X, Copy, Check,
   ChevronDown, ChevronRight, AlertCircle, Languages,
-  Send, Save,
+  Send, Save, Search, CalendarClock,
 } from "lucide-react";
 import { BlogPostRow } from "@/lib/api/content";
 import ImageCropUploader from "./ImageCropUploader";
@@ -176,7 +176,13 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [saving, setSaving] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [nlExpanded, setNlExpanded] = useState(false);
+  const [seoExpanded, setSeoExpanded] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [metaTitle, setMetaTitle] = useState("");
+  const [metaDescription, setMetaDescription] = useState("");
+  const [ogImage, setOgImage] = useState("");
+  const [canonicalUrl, setCanonicalUrl] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
 
   const isEdit = !!post;
 
@@ -195,14 +201,21 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
       setReadTime(post.read_time);
       setPublished(post.published);
       setImageUrl(post.image_url || "");
+      setMetaTitle(post.meta_title || "");
+      setMetaDescription(post.meta_description || "");
+      setOgImage(post.og_image || "");
+      setCanonicalUrl(post.canonical_url || "");
+      setScheduledAt(post.scheduled_at || "");
       // Auto-expand NL if any translations exist
       setNlExpanded(!!(post.title_nl || post.excerpt_nl || post.content_nl));
+      setSeoExpanded(!!(post.meta_title || post.meta_description));
     } else {
       setTitle(""); setSlug(""); setExcerpt(""); setContent("");
       setTitleNl(""); setExcerptNl(""); setContentNl("");
       setCategory("professional"); setTags(""); setReadTime("5 min read");
       setPublished(false); setImageUrl("");
-      setNlExpanded(false);
+      setMetaTitle(""); setMetaDescription(""); setOgImage(""); setCanonicalUrl(""); setScheduledAt("");
+      setNlExpanded(false); setSeoExpanded(false);
     }
     setTagInput("");
   }, [post, open]);
@@ -281,6 +294,11 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
         read_time: readTime,
         published,
         image_url: imageUrl,
+        meta_title: metaTitle,
+        meta_description: metaDescription,
+        og_image: ogImage,
+        canonical_url: canonicalUrl,
+        scheduled_at: scheduledAt || null,
       });
       onOpenChange(false);
     } finally {
@@ -547,6 +565,96 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
               </div>
             </div>
           </div>
+
+          {/* ═══ 6b. SEO SETTINGS ═══ */}
+          <div className="rounded-xl border border-border/50 bg-gradient-to-b from-secondary/10 to-transparent px-4 pt-3 pb-1">
+            <SectionHeader
+              icon={Search}
+              title="SEO Settings"
+              subtitle="Meta tags for search engines and social sharing"
+              badge={
+                (metaTitle || metaDescription) ? (
+                  <span className="text-[10px] font-mono tabular-nums rounded-full px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500/70">
+                    configured
+                  </span>
+                ) : undefined
+              }
+              open={seoExpanded}
+              onToggle={() => setSeoExpanded(!seoExpanded)}
+            >
+              <div className="space-y-3 pb-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground/60">Meta Title</Label>
+                  <Input
+                    value={metaTitle}
+                    onChange={(e) => setMetaTitle(e.target.value)}
+                    placeholder={title || "Defaults to article title"}
+                    className="text-sm"
+                  />
+                  <p className="text-[10px] text-muted-foreground/40">
+                    {(metaTitle || title).length}/60 characters — {(metaTitle || title).length <= 60 ? "good length" : "consider shortening"}
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground/60">Meta Description</Label>
+                  <ExcerptField
+                    value={metaDescription}
+                    onChange={setMetaDescription}
+                    placeholder={excerpt || "Defaults to excerpt"}
+                    maxLength={160}
+                  />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-muted-foreground/60">OG Image URL</Label>
+                    <Input
+                      value={ogImage}
+                      onChange={(e) => setOgImage(e.target.value)}
+                      placeholder={imageUrl ? "Defaults to cover image" : "https://..."}
+                      className="text-xs font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-muted-foreground/60">Canonical URL</Label>
+                    <Input
+                      value={canonicalUrl}
+                      onChange={(e) => setCanonicalUrl(e.target.value)}
+                      placeholder="Leave empty for default"
+                      className="text-xs font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+            </SectionHeader>
+          </div>
+
+          {/* ═══ 6c. SCHEDULED PUBLISHING ═══ */}
+          {!published && (
+            <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-secondary/10 px-4 py-3">
+              <CalendarClock size={15} className="text-muted-foreground/50 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-foreground/70">Schedule Publishing</p>
+                <p className="text-[10px] text-muted-foreground/40 mt-0.5">
+                  {scheduledAt ? `Scheduled for ${new Date(scheduledAt).toLocaleString()}` : "Set a future date to auto-publish"}
+                </p>
+              </div>
+              <input
+                type="datetime-local"
+                value={scheduledAt ? scheduledAt.slice(0, 16) : ""}
+                onChange={(e) => setScheduledAt(e.target.value ? new Date(e.target.value).toISOString() : "")}
+                className="rounded-lg border border-border/50 bg-card/50 px-2 py-1 text-xs text-foreground/70 outline-none focus:border-primary/40"
+              />
+              {scheduledAt && (
+                <button
+                  type="button"
+                  onClick={() => setScheduledAt("")}
+                  className="text-muted-foreground/40 hover:text-destructive transition-colors"
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+          )}
 
           {/* ═══ 7. PUBLISH STATUS ═══ */}
           <div className={`rounded-xl border p-4 transition-all ${
