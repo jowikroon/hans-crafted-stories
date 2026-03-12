@@ -7,12 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
-  BookOpen, Tag, Clock, Globe, X, Eye, Pencil, Copy, Check,
+  BookOpen, Tag, Clock, Globe, X, Copy, Check,
   ChevronDown, ChevronRight, AlertCircle, Languages,
   Send, Save,
 } from "lucide-react";
 import { BlogPostRow } from "@/lib/api/content";
 import ImageCropUploader from "./ImageCropUploader";
+import RichTextEditor from "./RichTextEditor";
 
 // ═══════════════════════════════════════════════════════════
 //  BlogPostFormModal — Premium Editorial Blog Builder
@@ -59,29 +60,6 @@ function nlCompleteness(titleNl: string, excerptNl: string, contentNl: string): 
   return { filled, total, pct: Math.round((filled / total) * 100) };
 }
 
-// ─── Markdown renderer (simple, reused for both EN and NL) ──
-
-function renderMarkdownToHtml(md: string): string {
-  if (!md) return "";
-  return md
-    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="rounded-md bg-secondary/60 border border-border p-3 overflow-x-auto text-xs font-mono my-3"><code>$2</code></pre>')
-    .replace(/`([^`]+)`/g, '<code class="rounded bg-secondary/60 px-1.5 py-0.5 text-xs font-mono">$1</code>')
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="rounded-md max-w-full my-2" />')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline" target="_blank" rel="noopener noreferrer">$1</a>')
-    .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-4 mb-1">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-5 mb-1.5">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-6 mb-2">$1</h1>')
-    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^> (.+)$/gm, '<blockquote class="border-l-2 border-primary/30 pl-3 italic text-muted-foreground my-2">$1</blockquote>')
-    .replace(/^[-*] (.+)$/gm, '<li class="ml-4 list-disc text-sm">$1</li>')
-    .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal text-sm">$1</li>')
-    .replace(/^---$/gm, '<hr class="border-border my-4" />')
-    .replace(/\n\n/g, '</p><p class="my-2 text-sm leading-relaxed">')
-    .replace(/\n/g, '<br />');
-}
-
 // ─── Section header (collapsible) ────────────────────────
 
 function SectionHeader({ icon: Icon, title, subtitle, badge, open, onToggle, children }: {
@@ -117,37 +95,6 @@ function SectionHeader({ icon: Icon, title, subtitle, badge, open, onToggle, chi
       {(!isCollapsible || open) && children && (
         <div className="mt-2">{children}</div>
       )}
-    </div>
-  );
-}
-
-// ─── Write/Preview toggle ────────────────────────────────
-
-function WritePreviewToggle({ previewing, onChange }: { previewing: boolean; onChange: (p: boolean) => void }) {
-  return (
-    <div className="flex rounded-lg border border-border/60 bg-secondary/20 p-0.5" role="tablist" aria-label="Editor mode">
-      <button
-        type="button"
-        role="tab"
-        aria-selected={!previewing}
-        onClick={() => onChange(false)}
-        className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
-          !previewing ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-muted-foreground"
-        }`}
-      >
-        <Pencil size={10} /> Write
-      </button>
-      <button
-        type="button"
-        role="tab"
-        aria-selected={previewing}
-        onClick={() => onChange(true)}
-        className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
-          previewing ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-muted-foreground"
-        }`}
-      >
-        <Eye size={10} /> Preview
-      </button>
     </div>
   );
 }
@@ -228,8 +175,6 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [imageUrl, setImageUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [tagInput, setTagInput] = useState("");
-  const [previewing, setPreviewing] = useState(false);
-  const [previewingNl, setPreviewingNl] = useState(false);
   const [nlExpanded, setNlExpanded] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -259,7 +204,7 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
       setPublished(false); setImageUrl("");
       setNlExpanded(false);
     }
-    setTagInput(""); setPreviewing(false); setPreviewingNl(false);
+    setTagInput("");
   }, [post, open]);
 
   // ─── Derived ───────────────────────────────────────────
@@ -278,16 +223,6 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const isReady = readyCount === readiness.length;
 
   const nlStatus = useMemo(() => nlCompleteness(titleNl, excerptNl, contentNl), [titleNl, excerptNl, contentNl]);
-
-  const renderedMarkdown = useMemo(() => {
-    if (!previewing || !content) return "";
-    return renderMarkdownToHtml(content);
-  }, [content, previewing]);
-
-  const renderedNlMarkdown = useMemo(() => {
-    if (!previewingNl || !contentNl) return "";
-    return renderMarkdownToHtml(contentNl);
-  }, [contentNl, previewingNl]);
 
   // ─── Auto read time ────────────────────────────────────
   useEffect(() => {
@@ -436,33 +371,18 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
             />
           </div>
 
-          {/* ═══ 4. CONTENT (MARKDOWN) ═══ */}
+          {/* ═══ 4. CONTENT ═══ */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <Label className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider">
-                Content (Markdown)
-              </Label>
-              <WritePreviewToggle previewing={previewing} onChange={setPreviewing} />
-            </div>
+            <Label className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider">
+              Content
+            </Label>
 
-            {previewing ? (
-              <div
-                className="min-h-[320px] max-h-[400px] overflow-y-auto rounded-xl border border-border/60 bg-card/50 p-5 text-sm leading-relaxed prose-sm"
-                dangerouslySetInnerHTML={{
-                  __html: content
-                    ? `<p class="my-2 text-sm leading-relaxed">${renderedMarkdown}</p>`
-                    : '<p class="text-muted-foreground/30 italic text-center py-12">Nothing to preview yet…</p>',
-                }}
-              />
-            ) : (
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={14}
-                className="font-mono text-xs leading-relaxed rounded-xl border-border/60 bg-secondary/10 focus:bg-card/50 transition-colors resize-y min-h-[320px]"
-                placeholder={"Start writing your article…\n\nUse Markdown: # Heading, **bold**, *italic*, [link](url), ```code```"}
-              />
-            )}
+            <RichTextEditor
+              value={content}
+              onChange={setContent}
+              placeholder="Start writing your article…"
+              minHeight="320px"
+            />
 
             <ContentMetrics wordCount={wordCount} charCount={charCount} readTime={readTime} />
           </div>
@@ -534,10 +454,7 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
                   {/* NL Content */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Label className="text-xs font-medium text-muted-foreground/60">Inhoud (NL)</Label>
-                        <WritePreviewToggle previewing={previewingNl} onChange={setPreviewingNl} />
-                      </div>
+                      <Label className="text-xs font-medium text-muted-foreground/60">Inhoud (NL)</Label>
                       {content && (
                         <button
                           type="button"
@@ -549,24 +466,13 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
                       )}
                     </div>
 
-                    {previewingNl ? (
-                      <div
-                        className="min-h-[180px] max-h-[200px] overflow-y-auto rounded-lg border border-border/50 bg-card/50 p-4 text-sm leading-relaxed prose-sm"
-                        dangerouslySetInnerHTML={{
-                          __html: contentNl
-                            ? `<p class="my-2 text-sm leading-relaxed">${renderedNlMarkdown}</p>`
-                            : '<p class="text-muted-foreground/30 italic text-center py-8">Nog niets om te laten zien…</p>',
-                        }}
-                      />
-                    ) : (
-                      <Textarea
-                        value={contentNl}
-                        onChange={(e) => setContentNl(e.target.value)}
-                        rows={8}
-                        className="font-mono text-xs leading-relaxed rounded-lg border-border/50 bg-secondary/10 resize-y"
-                        placeholder="Schrijf je artikel in Markdown…"
-                      />
-                    )}
+                    <RichTextEditor
+                      value={contentNl}
+                      onChange={setContentNl}
+                      placeholder="Schrijf je artikel…"
+                      minHeight="180px"
+                      compact
+                    />
                   </div>
                 </div>
               </SectionHeader>

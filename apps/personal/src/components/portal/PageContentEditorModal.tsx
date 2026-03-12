@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Save, Loader2, ExternalLink, RotateCcw, Sparkles, Home, Briefcase, PenLine, User, History } from "lucide-react";
 import VersionHistoryPanel from "./VersionHistoryPanel";
 import PortalLangToggle from "./PortalLangToggle";
+import RichTextEditor from "./RichTextEditor";
 
 interface Props {
   open: boolean;
@@ -245,10 +246,19 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
                             )}
                           </div>
                           {fieldType === "long" ? (
+                            <RichTextEditor
+                              value={val}
+                              onChange={(md) => setValues((v) => ({ ...v, [item.id]: md }))}
+                              placeholder="Enter content…"
+                              minHeight="120px"
+                              compact
+                              className={isChanged ? "ring-1 ring-primary/20" : ""}
+                            />
+                          ) : fieldType === "medium" ? (
                             <Textarea
                               value={val}
                               onChange={(e) => setValues((v) => ({ ...v, [item.id]: e.target.value }))}
-                              rows={Math.max(3, Math.ceil(val.length / 80))}
+                              rows={Math.max(2, Math.ceil(val.length / 80))}
                               className={`text-sm transition-colors ${isChanged ? "border-primary/30 bg-primary/[0.02]" : ""}`}
                             />
                           ) : (

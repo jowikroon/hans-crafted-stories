@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { FolderOpen } from "lucide-react";
 import { CaseStudyRow } from "@/lib/api/content";
 import ImageCropUploader from "./ImageCropUploader";
+import RichTextEditor from "./RichTextEditor";
 
 interface Props {
   open: boolean;
@@ -105,8 +106,8 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Content (Markdown)</Label>
-            <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={8} className="font-mono text-xs" placeholder="Full case study content..." />
+            <Label>Content</Label>
+            <RichTextEditor value={content} onChange={setContent} placeholder="Full case study content..." minHeight="200px" />
           </div>
 
           {/* Dutch Translations */}
@@ -121,8 +122,8 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
               <Textarea value={descriptionNl} onChange={(e) => setDescriptionNl(e.target.value)} rows={2} placeholder="Korte samenvatting..." />
             </div>
             <div className="space-y-1.5">
-              <Label>Content (NL — Markdown)</Label>
-              <Textarea value={contentNl} onChange={(e) => setContentNl(e.target.value)} rows={6} className="font-mono text-xs" placeholder="Volledige case study inhoud..." />
+              <Label>Content (NL)</Label>
+              <RichTextEditor value={contentNl} onChange={setContentNl} placeholder="Volledige case study inhoud..." minHeight="150px" compact />
             </div>
           </div>
 
