@@ -9,11 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import {
   BookOpen, Tag, Clock, Globe, X, Copy, Check,
   ChevronDown, ChevronRight, AlertCircle, Languages,
-  Send, Save, Search, CalendarClock,
+  Send, Save, Search, CalendarClock, History, ExternalLink,
 } from "lucide-react";
 import { BlogPostRow } from "@/lib/api/content";
 import ImageCropUploader from "./ImageCropUploader";
 import RichTextEditor from "./RichTextEditor";
+import BlogPostVersionHistory from "./BlogPostVersionHistory";
+import { BlogPostVersion } from "@/lib/api/blogPostVersions";
 
 // ═══════════════════════════════════════════════════════════
 //  BlogPostFormModal — Premium Editorial Blog Builder
@@ -183,6 +185,7 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [ogImage, setOgImage] = useState("");
   const [canonicalUrl, setCanonicalUrl] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const isEdit = !!post;
 
@@ -697,21 +700,54 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
           </div>
         </div>
 
+        {/* ─── Version History ─────────────────────────────── */}
+        <BlogPostVersionHistory
+          postId={post?.id}
+          open={historyOpen}
+          onRestore={(v: BlogPostVersion) => {
+            setTitle(v.title);
+            setContent(v.content);
+            setExcerpt(v.excerpt);
+          }}
+        />
+
         {/* ─── Footer ─────────────────────────────────────── */}
         <div className="sticky bottom-0 border-t border-border/50 bg-background/95 backdrop-blur-sm px-6 py-3">
           <div className="flex items-center justify-between gap-3">
-            {/* Left: cancel */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              className="text-muted-foreground/60 hover:text-foreground"
-            >
-              Cancel
-            </Button>
+            {/* Left: cancel + history */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                className="text-muted-foreground/60 hover:text-foreground"
+              >
+                Cancel
+              </Button>
+              {isEdit && (
+                <Button
+                  variant={historyOpen ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setHistoryOpen(h => !h)}
+                  className="text-muted-foreground/60"
+                >
+                  <History size={13} className="mr-1" /> History
+                </Button>
+              )}
+            </div>
 
             {/* Right: actions */}
             <div className="flex items-center gap-2">
+              {isEdit && slug && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => window.open(`/writing/${slug}?preview=true`, "_blank")}
+                  className="gap-1.5 text-muted-foreground"
+                >
+                  <ExternalLink size={12} /> Preview
+                </Button>
+              )}
               {published ? (
                 /* Publishing mode: single publish button */
                 <Button

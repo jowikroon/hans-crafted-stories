@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, FolderOpen, Plus, Pencil, Trash2, Eye, EyeOff, FileText, Layout, Home, Briefcase, PenLine, User, Search, ArrowUpDown, CheckSquare, Square } from "lucide-react";
+import { BookOpen, FolderOpen, Plus, Pencil, Trash2, Eye, EyeOff, FileText, Layout, Home, Briefcase, PenLine, User, Search, ArrowUpDown, CheckSquare, Square, ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ import { getAllPageContent, PageContentRow } from "@/lib/api/pageContent";
 import BlogPostFormModal from "./BlogPostFormModal";
 import CaseStudyFormModal from "./CaseStudyFormModal";
 import PageContentEditorModal from "./PageContentEditorModal";
+import MediaLibraryModal from "./MediaLibraryModal";
 import InfoTooltip from "./InfoTooltip";
 import PortalLangToggle from "./PortalLangToggle";
 
@@ -44,6 +45,7 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title">("newest");
   const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
   const [selectedStudies, setSelectedStudies] = useState<Set<string>>(new Set());
+  const [mediaOpen, setMediaOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -215,6 +217,14 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
         >
           <ArrowUpDown size={13} />
           {sortBy === "newest" ? "Newest" : sortBy === "oldest" ? "Oldest" : "A–Z"}
+        </button>
+        <button
+          onClick={() => setMediaOpen(true)}
+          className="flex items-center gap-1.5 rounded-lg border border-border bg-card/50 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          title="Media Library"
+        >
+          <ImageIcon size={13} />
+          Media
         </button>
         <PortalLangToggle />
       </div>
@@ -442,6 +452,11 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
           onSaved={load}
         />
       )}
+
+      <MediaLibraryModal
+        open={mediaOpen}
+        onOpenChange={setMediaOpen}
+      />
     </div>
   );
 };
