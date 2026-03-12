@@ -480,7 +480,7 @@ Infrastructure and monitoring tables have indexes that have never been used. Con
               ┌──────────────▼──────────────┐
               │  CDN / EDGE                  │
               │  Vercel (marketplacegrowth)  │
-              │  Cloudflare (hansvanleeuwen)  │
+              │  Vercel (hansvanleeuwen)      │
               │  Route-split bundles         │
               │  Edge Middleware (auth check) │
               └──────────────┬──────────────┘
@@ -524,7 +524,7 @@ Infrastructure and monitoring tables have indexes that have never been used. Con
 
 ### Key Principles
 
-1. **Separate repos, separate deploys.** marketplacegrowth → Vercel. hansvanleeuwen → Cloudflare Pages. No monorepo.
+1. **Separate repos, separate deploys.** marketplacegrowth → Vercel. hansvanleeuwen → Vercel. No monorepo.
 2. **One database, domain separation.** SaaS tables in default schema with full RLS. Infrastructure in `infra` schema or separate project.
 3. **Every table has RLS.** No exceptions. n8n writes via service_role key, never anon.
 4. **RLS uses `(select auth.uid())`.** Subquery pattern prevents per-row re-evaluation.
@@ -577,7 +577,7 @@ Infrastructure and monitoring tables have indexes that have never been used. Con
 | Service | URL / ID | Role | Status |
 |---|---|---|---|
 | **Vercel** | `prj_jpiL4aZ58kd1tCwGJ9kbZSWSb9lW` | marketplacegrowth frontend | ✅ Live |
-| **Cloudflare Pages** | project: `hansvanleeuwen` | hansvanleeuwen frontend | ✅ Live |
+| **Vercel** | `prj_AzLljugBWGCWo9lJiclEKKNTqLLz` | hansvanleeuwen frontend | ✅ Live |
 | **Cloudflare** | Account: `7fe1db55d4caa07b7488d8b298fd9f39` | DNS, Workers, CDN | ✅ Active |
 | **GitHub** | `jowikroon/marketplacegrowth` | MG source code (standalone) | ✅ Connected |
 | **GitHub** | `jowikroon/hans-crafted-stories` | HVL source code | ✅ Connected |
@@ -660,7 +660,7 @@ hans-crafted-stories/
 
 1. **Separate repos.** `marketplacegrowth` is standalone. `hans-crafted-stories` is for hansvanleeuwen.com. No more monorepo.
 2. **npm only.** No bun. No yarn. Compatibility across all deploy targets.
-3. **Vercel for marketplacegrowth, Cloudflare Pages for hansvanleeuwen.** Separate deploy pipelines.
+3. **Vercel for both marketplacegrowth and hansvanleeuwen.** Separate repos, separate Vercel projects, separate deploy pipelines.
 4. **Single Supabase project** (cloud) for both sites. Separate schemas later if needed.
 5. **VPS1 = orchestration, VPS2 = inference.** Do not mix compute roles.
 6. **One builder per request.** BJ Fogg filter → single AI builder. No chaining.
