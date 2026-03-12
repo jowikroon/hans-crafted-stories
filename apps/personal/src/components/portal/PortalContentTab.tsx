@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, FolderOpen, Plus, Pencil, Trash2, Eye, EyeOff, FileText, Layout, Home, Briefcase, PenLine, User } from "lucide-react";
+import { BookOpen, FolderOpen, Plus, Pencil, Trash2, Eye, EyeOff, FileText, Layout, Home, Briefcase, PenLine, User, Search, ArrowUpDown, CheckSquare, Square } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -39,6 +39,12 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
   const [pageEditorOpen, setPageEditorOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<string | null>(null);
 
+  // Search, sort, bulk selection
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title">("newest");
+  const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
+  const [selectedStudies, setSelectedStudies] = useState<Set<string>>(new Set());
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -69,6 +75,50 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
   const canEditStudies = isAdmin || accessMap?.["case_studies"]?.can_edit === true;
 
   const hasNoAccess = !isAdmin && accessMap !== null && !canViewBlogs && !canViewStudies;
+
+  // Filtered and sorted posts
+  const filteredPosts = useMemo(() => {
+    let result = posts.filter((p) => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return p.title.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q)) || p.category.toLowerCase().includes(q);
+    });
+    if (sortBy === "newest") result.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    else if (sortBy === "oldest") result.sort((a, b) => a.created_at.localeCompare(b.created_at));
+    else result.sort((a, b) => a.title.localeCompare(b.title));
+    return result;
+  }, [posts, searchQuery, sortBy]);
+
+  const filteredStudies = useMemo(() => {
+    if (!searchQuery) return studies;
+    const q = searchQuery.toLowerCase();
+    return studies.filter(s => s.title.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
+  }, [studies, searchQuery]);
+
+  // Bulk handlers
+  const togglePostSelection = (id: string) => {
+    setSelectedPosts(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  };
+  const toggleStudySelection = (id: string) => {
+    setSelectedStudies(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  };
+  const selectAllPosts = () => {
+    if (selectedPosts.size === filteredPosts.length) setSelectedPosts(new Set());
+    else setSelectedPosts(new Set(filteredPosts.map(p => p.id)));
+  };
+  const handleBulkDeletePosts = async () => {
+    if (!confirm(`Delete ${selectedPosts.size} post(s)?`)) return;
+    for (const id of selectedPosts) await deleteBlogPost(id);
+    toast({ title: `${selectedPosts.size} post(s) deleted` });
+    setSelectedPosts(new Set());
+    load();
+  };
+  const handleBulkTogglePosts = async (publish: boolean) => {
+    for (const id of selectedPosts) await updateBlogPost(id, { published: publish });
+    toast({ title: `${selectedPosts.size} post(s) ${publish ? "published" : "unpublished"}` });
+    setSelectedPosts(new Set());
+    load();
+  };
 
   // ── Blog Post handlers ─────────────────────────────────
   const handleSavePost = async (data: Partial<BlogPostRow>) => {
@@ -147,8 +197,25 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
 
   return (
     <div className="space-y-8">
-      {/* Language toggle */}
-      <div className="flex justify-end">
+      {/* Search bar + Language toggle */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search posts, studies, tags…"
+            className="w-full rounded-lg border border-border bg-card/50 py-2 pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/30 focus:border-primary/40 focus:ring-1 focus:ring-primary/15 transition-all"
+          />
+        </div>
+        <button
+          onClick={() => setSortBy(sortBy === "newest" ? "oldest" : sortBy === "oldest" ? "title" : "newest")}
+          className="flex items-center gap-1.5 rounded-lg border border-border bg-card/50 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          title={`Sort: ${sortBy}`}
+        >
+          <ArrowUpDown size={13} />
+          {sortBy === "newest" ? "Newest" : sortBy === "oldest" ? "Oldest" : "A–Z"}
+        </button>
         <PortalLangToggle />
       </div>
 
@@ -159,7 +226,9 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
             <div className="flex items-center gap-2">
               <BookOpen size={15} className="text-primary" />
               <h2 className="font-display text-sm font-medium text-foreground">Blog Posts</h2>
-              <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">{posts.length}</span>
+              <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                {searchQuery ? `${filteredPosts.length}/${posts.length}` : posts.length}
+              </span>
               <InfoTooltip text="Manage blog articles, toggle visibility, and edit content" />
             </div>
             {canEditBlogs && (
@@ -169,26 +238,59 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
             )}
           </div>
 
+          {/* Bulk actions bar */}
+          {canEditBlogs && selectedPosts.size > 0 && (
+            <div className="mb-3 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
+              <span className="text-xs font-medium text-primary">{selectedPosts.size} selected</span>
+              <div className="flex-1" />
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleBulkTogglePosts(true)}>
+                <Eye size={12} className="mr-1" /> Publish
+              </Button>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleBulkTogglePosts(false)}>
+                <EyeOff size={12} className="mr-1" /> Unpublish
+              </Button>
+              <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive" onClick={handleBulkDeletePosts}>
+                <Trash2 size={12} className="mr-1" /> Delete
+              </Button>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setSelectedPosts(new Set())}>
+                Clear
+              </Button>
+            </div>
+          )}
+
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : posts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No blog posts yet.</p>
+          ) : filteredPosts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{searchQuery ? "No posts match your search." : "No blog posts yet."}</p>
           ) : (
             <div className="space-y-2">
-              {posts.map((p) => (
+              {canEditBlogs && filteredPosts.length > 1 && (
+                <button onClick={selectAllPosts} className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50 hover:text-muted-foreground transition-colors mb-1">
+                  {selectedPosts.size === filteredPosts.length ? <CheckSquare size={12} /> : <Square size={12} />}
+                  {selectedPosts.size === filteredPosts.length ? "Deselect all" : "Select all"}
+                </button>
+              )}
+              {filteredPosts.map((p) => (
                 <div key={p.id} className="group flex items-center justify-between rounded-lg border border-border bg-card p-3 transition-all hover:border-primary/30">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="truncate text-sm font-medium text-foreground">{p.title}</h3>
-                      {p.published ? (
-                        <Eye size={12} className="shrink-0 text-primary" />
-                      ) : (
-                        <EyeOff size={12} className="shrink-0 text-muted-foreground/50" />
-                      )}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    {canEditBlogs && (
+                      <button onClick={() => togglePostSelection(p.id)} className="shrink-0 text-muted-foreground/40 hover:text-primary transition-colors">
+                        {selectedPosts.has(p.id) ? <CheckSquare size={14} className="text-primary" /> : <Square size={14} />}
+                      </button>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="truncate text-sm font-medium text-foreground">{p.title}</h3>
+                        {p.published ? (
+                          <Eye size={12} className="shrink-0 text-primary" />
+                        ) : (
+                          <EyeOff size={12} className="shrink-0 text-muted-foreground/50" />
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {p.category} · {p.tags.join(", ")} · {new Date(p.created_at).toLocaleDateString()}
+                      </p>
                     </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {p.category} · {p.tags.join(", ")} · {new Date(p.created_at).toLocaleDateString()}
-                    </p>
                   </div>
                   {canEditBlogs && (
                     <div className="ml-2 flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
@@ -214,7 +316,9 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
             <div className="flex items-center gap-2">
               <FolderOpen size={15} className="text-primary" />
               <h2 className="font-display text-sm font-medium text-foreground">Case Studies</h2>
-              <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">{studies.length}</span>
+              <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                {searchQuery ? `${filteredStudies.length}/${studies.length}` : studies.length}
+              </span>
               <InfoTooltip text="Portfolio case studies with images, categories, and publication status" />
             </div>
             {canEditStudies && (
@@ -226,11 +330,11 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
 
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : studies.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No case studies yet.</p>
+          ) : filteredStudies.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{searchQuery ? "No studies match your search." : "No case studies yet."}</p>
           ) : (
             <div className="space-y-2">
-              {studies.map((s) => (
+              {filteredStudies.map((s) => (
                 <div key={s.id} className="group flex items-center justify-between rounded-lg border border-border bg-card p-3 transition-all hover:border-primary/30">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     {s.image && (
