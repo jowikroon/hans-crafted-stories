@@ -7,6 +7,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { fastRoute } from "@/lib/intent/router";
 import { WORKFLOWS, type WorkflowDef } from "@/lib/config/workflows";
+import { writeMemory } from "@/lib/samantha/memory";
 
 const INTENT_ROUTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/intent-router`;
 
@@ -111,29 +112,22 @@ export async function triggerWorkflow(
     let data: unknown;
     try { data = JSON.parse(text); } catch { data = text; }
 
-    // Log workflow execution to samantha_memory
-    try {
-      await supabase.from("samantha_memory").insert({
-        key: `wf_${wf.name}_${Date.now()}`,
-        value: JSON.stringify({ workflow: wf.name, label: wf.label, status: "success", duration_ms: Date.now() - startTime, source }),
-        category: "workflow",
-        source: "samantha",
-        user_id: "00000000-0000-0000-0000-000000000001",
-      });
-    } catch {}
+    await writeMemory("workflow.success", "workflow", {
+      workflow: wf.name,
+      label: wf.label,
+      duration_ms: Date.now() - startTime,
+      source,
+    });
 
     return { ok: true, data };
   } catch (err) {
-    // Log failure too
-    try {
-      await supabase.from("samantha_memory").insert({
-        key: `wf_${wf.name}_${Date.now()}`,
-        value: JSON.stringify({ workflow: wf.name, label: wf.label, status: "error", error: err instanceof Error ? err.message : "Unknown", duration_ms: Date.now() - startTime, source }),
-        category: "workflow",
-        source: "samantha",
-        user_id: "00000000-0000-0000-0000-000000000001",
-      });
-    } catch {}
+    await writeMemory("workflow.error", "workflow", {
+      workflow: wf.name,
+      label: wf.label,
+      error: err instanceof Error ? err.message : "Unknown",
+      duration_ms: Date.now() - startTime,
+      source,
+    });
     return { ok: false, data: null, error: err instanceof Error ? err.message : "Unknown error" };
   }
 }

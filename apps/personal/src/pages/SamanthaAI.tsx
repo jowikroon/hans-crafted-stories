@@ -29,6 +29,7 @@ import type { Message, Stage, Emotion, ToolResult, TaskRecord, PanelId, ServiceH
 import { SLASH_COMMANDS } from "@/features/samantha/types";
 import { AI_MODELS, MODEL_KEY, HISTORY_KEY, TASKS_KEY } from "@/features/samantha/lib/models";
 import { sendToModel, callAgent, fetchHealthStatus, buildSystemPrompt } from "@/features/samantha/lib/providers";
+import { writeMemory } from "@/lib/samantha/memory";
 import MarkdownContent from "@/features/samantha/components/chat/MarkdownContent";
 import ToolResultRenderer from "@/features/samantha/components/tools/ToolResultRenderer";
 
@@ -632,11 +633,13 @@ export default function SamanthaAI() {
 
   // ─── Task Supabase sync ────────────────────────────
   useEffect(() => {
+    if (!user?.id) return;
     (async () => {
       try {
         const { data } = await supabase.from("samantha_memory")
           .select("key,value,category")
           .in("category", ["task", "idea"])
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(100);
         if (data && data.length > 0) {
@@ -644,13 +647,16 @@ export default function SamanthaAI() {
           if (dbTasks.length > 0) {
             setTasks(prev => {
               const ids = new Set(dbTasks.map(t => t.id));
-              return [...dbTasks, ...prev.filter(t => !ids.has(t.id))];
+              const merged = [...dbTasks, ...prev.filter(t => !ids.has(t.id))];
+              // Keep localStorage in sync with DB state
+              try { localStorage.setItem(TASKS_KEY, JSON.stringify(merged)); } catch {}
+              return merged;
             });
           }
         }
       } catch {}
     })();
-  }, []);
+  }, [user?.id]);
 
   const persistTask = useCallback(async (t: TaskRecord) => {
     try {
@@ -876,6 +882,7 @@ export default function SamanthaAI() {
     if (!confirmingWorkflow) return;
     const { wf, arg } = confirmingWorkflow;
     setConfirmingWorkflow(null);
+    await writeMemory("confirmation.accepted", "confirmation", { workflow: wf.name, label: wf.label, input: arg });
     setStage("executing");
     const opId = startOp(wf.label, "workflow");
     const toolMsg = append({ role: "tool", content: "", toolName: wf.label, toolStatus: "running" });
@@ -890,9 +897,10 @@ export default function SamanthaAI() {
 
   const handleCancelWorkflow = useCallback(() => {
     if (!confirmingWorkflow) return;
-    const label = confirmingWorkflow.wf.label;
+    const { wf } = confirmingWorkflow;
     setConfirmingWorkflow(null);
-    append({ role: "samantha", content: `Cancelled — **${label}** was not triggered.`, model: "System" });
+    writeMemory("confirmation.cancelled", "confirmation", { workflow: wf.name, label: wf.label });
+    append({ role: "samantha", content: `Cancelled — **${wf.label}** was not triggered.`, model: "System" });
   }, [confirmingWorkflow]);
 
   const handleAbort = () => {
@@ -984,6 +992,7 @@ export default function SamanthaAI() {
         const { outcome } = await runIntentPipeline(text, "samantha");
         if (outcome.type === "workflow_match") {
           const wf = outcome.workflow;
+          writeMemory("intent.matched", "intent", { workflow: wf.name, label: wf.label, input: text, method: outcome.method });
           if (wf.tier === "write") {
             if (!isAdmin) {
               append({ role: "samantha", content: "Write operations are restricted to the admin account.", model: "System" });
