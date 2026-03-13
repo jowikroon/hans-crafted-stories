@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Globe, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import {
+  X, Globe, AlertTriangle, CheckCircle, Loader2,
+  History, ChevronRight, Trash2, BarChart3, Clock,
+  ExternalLink, FolderOpen,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { portalApi, SiteAuditResult } from "@/lib/api/portal";
+import {
+  SeoAudit, saveAudit, getAuditDomains, getAuditsByDomain,
+  deleteAudit, extractDomain, extractPath, computeSeoScore,
+} from "@/lib/api/seoAudits";
 import { useToast } from "@/hooks/use-toast";
 
 interface SiteAuditModalProps {
@@ -11,142 +20,284 @@ interface SiteAuditModalProps {
   onClose: () => void;
 }
 
+type View = "audit" | "history";
+
+function ScoreBadge({ score }: { score: number }) {
+  const color = score >= 80 ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
+    : score >= 50 ? "text-amber-500 bg-amber-500/10 border-amber-500/20"
+    : "text-red-500 bg-red-500/10 border-red-500/20";
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-bold tabular-nums ${color}`}>
+      {score}
+    </span>
+  );
+}
+
+function relTime(iso: string): string {
+  const d = Date.now() - new Date(iso).getTime();
+  if (d < 60000) return "just now";
+  if (d < 3600000) return `${Math.floor(d / 60000)}m ago`;
+  if (d < 86400000) return `${Math.floor(d / 3600000)}h ago`;
+  return `${Math.floor(d / 86400000)}d ago`;
+}
+
 const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SiteAuditResult | null>(null);
+  const [savedAudit, setSavedAudit] = useState<SeoAudit | null>(null);
   const { toast } = useToast();
+
+  const [view, setView] = useState<View>("audit");
+  const [domains, setDomains] = useState<{ domain: string; count: number; latest: string }[]>([]);
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [domainAudits, setDomainAudits] = useState<SeoAudit[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const loadDomains = useCallback(async () => {
+    try { setDomains(await getAuditDomains()); } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => { if (open) loadDomains(); }, [open, loadDomains]);
+
+  const loadDomainAudits = async (domain: string) => {
+    setSelectedDomain(domain);
+    setLoadingHistory(true);
+    try { setDomainAudits(await getAuditsByDomain(domain)); }
+    catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }); }
+    finally { setLoadingHistory(false); }
+  };
+
+  const handleDeleteAudit = async (id: string) => {
+    if (!confirm("Delete this audit?")) return;
+    try {
+      await deleteAudit(id);
+      toast({ title: "Audit deleted" });
+      if (selectedDomain) loadDomainAudits(selectedDomain);
+      loadDomains();
+    } catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }); }
+  };
+
+  const viewSavedAudit = (audit: SeoAudit) => {
+    setResult({
+      url: audit.url, title: audit.title, titleLength: audit.title_length,
+      metaDescription: audit.meta_description, metaDescriptionLength: audit.meta_description_length,
+      headings: audit.headings || [], h1Count: audit.h1_count,
+      totalLinks: audit.total_links, totalImages: audit.total_images,
+      imagesWithoutAlt: audit.images_without_alt, wordCount: audit.word_count, issues: audit.issues || [],
+    });
+    setSavedAudit(audit);
+    setUrl(audit.url);
+    setView("audit");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
-    setLoading(true);
-    setResult(null);
+    setLoading(true); setResult(null); setSavedAudit(null);
     try {
       const res = await portalApi.runSiteAudit(url);
       if (res.success && res.data) {
         setResult(res.data);
+        const domain = extractDomain(url);
+        const path = extractPath(url);
+        const scores = computeSeoScore(res.data);
+        try {
+          const saved = await saveAudit({
+            url: url.trim(), domain, path,
+            title: res.data.title || "", title_length: res.data.titleLength || 0,
+            meta_description: res.data.metaDescription || "", meta_description_length: res.data.metaDescriptionLength || 0,
+            h1_count: res.data.h1Count || 0, headings: res.data.headings || [],
+            total_links: res.data.totalLinks || 0, total_images: res.data.totalImages || 0,
+            images_without_alt: res.data.imagesWithoutAlt || 0, word_count: res.data.wordCount || 0,
+            issues: res.data.issues || [], seo_score: scores.score,
+            critical_count: scores.critical, warning_count: scores.warning, passed_count: scores.passed,
+            technical_audit: "", content_audit: "", audited_by: "portal",
+          });
+          setSavedAudit(saved);
+          loadDomains();
+          toast({ title: "Audit saved", description: `Stored under ${domain}` });
+        } catch (saveErr: any) { console.error("Failed to save audit:", saveErr); }
       } else {
         toast({ title: "Audit failed", description: res.error || "Unknown error", variant: "destructive" });
       }
-    } catch {
-      toast({ title: "Error", description: "Failed to run audit", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+    } catch { toast({ title: "Error", description: "Failed to run audit", variant: "destructive" }); }
+    finally { setLoading(false); }
   };
 
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-border bg-background p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button onClick={onClose} className="absolute right-4 top-4 text-muted-foreground hover:text-foreground">
-              <X size={20} />
-            </button>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+          <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-border bg-background p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}>
 
-            <div className="mb-6">
-              <div className="mb-1 flex items-center gap-2">
+            <button onClick={onClose} className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"><X size={20} /></button>
+
+            {/* Header */}
+            <div className="mb-5">
+              <div className="mb-2 flex items-center gap-2">
                 <Globe size={20} className="text-green-500" />
                 <h2 className="font-display text-xl font-medium">Site Audit</h2>
+                <div className="flex-1" />
+                <div className="flex rounded-lg border border-border/60 bg-secondary/20 p-0.5">
+                  <button onClick={() => setView("audit")}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all ${view === "audit" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-muted-foreground"}`}>
+                    <BarChart3 size={12} /> Audit
+                  </button>
+                  <button onClick={() => { setView("history"); loadDomains(); }}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all ${view === "history" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-muted-foreground"}`}>
+                    <History size={12} /> History
+                    {domains.length > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[9px]">{domains.reduce((s, d) => s + d.count, 0)}</Badge>}
+                  </button>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">Run a quick SEO audit on any URL</p>
+              <p className="text-sm text-muted-foreground">
+                {view === "audit" ? "Run a quick SEO audit — results are saved automatically by domain" : "Browse saved audits grouped by domain"}
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="mb-6 flex gap-2">
-              <Input
-                type="text"
-                placeholder="https://example.com"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="flex-1"
-              />
-              <Button type="submit" disabled={loading} className="shrink-0">
-                {loading ? <Loader2 size={16} className="animate-spin" /> : "Audit"}
-              </Button>
-            </form>
+            {/* ═══ AUDIT VIEW ═══ */}
+            {view === "audit" && (<>
+              <form onSubmit={handleSubmit} className="mb-6 flex gap-2">
+                <Input type="text" placeholder="https://hansvanleeuwen.com/writing/seo-guide" value={url} onChange={(e) => setUrl(e.target.value)} className="flex-1" />
+                <Button type="submit" disabled={loading} className="shrink-0">{loading ? <Loader2 size={16} className="animate-spin" /> : "Audit"}</Button>
+              </form>
 
-            {loading && (
-              <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
-                <Loader2 size={28} className="animate-spin" />
-                <p className="text-sm">Crawling and analyzing…</p>
-              </div>
-            )}
+              {loading && (<div className="flex flex-col items-center gap-3 py-12 text-muted-foreground"><Loader2 size={28} className="animate-spin" /><p className="text-sm">Crawling and analyzing…</p></div>)}
 
-            {result && (
-              <div className="space-y-6">
-                {/* Score overview */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {[
-                    { label: "Words", value: result.wordCount },
-                    { label: "Links", value: result.totalLinks },
-                    { label: "Images", value: result.totalImages },
-                    { label: "Issues", value: result.issues.length },
-                  ].map((s) => (
-                    <div key={s.label} className="rounded-lg border border-border p-3 text-center">
-                      <p className="text-2xl font-semibold text-foreground">{s.value}</p>
-                      <p className="text-xs text-muted-foreground">{s.label}</p>
+              {result && (
+                <div className="space-y-6">
+                  {savedAudit && (
+                    <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs">
+                      <CheckCircle size={13} className="text-emerald-500" />
+                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">Saved to {savedAudit.domain}</span>
+                      <span className="text-muted-foreground/50">·</span>
+                      <ScoreBadge score={savedAudit.seo_score} />
+                      <span className="text-muted-foreground/50">{savedAudit.critical_count} critical · {savedAudit.warning_count} warnings · {savedAudit.passed_count} passed</span>
                     </div>
-                  ))}
-                </div>
+                  )}
 
-                {/* Title & meta */}
-                <div className="space-y-3">
-                  <div className="rounded-lg border border-border p-4">
-                    <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">Title ({result.titleLength} chars)</p>
-                    <p className="text-sm text-foreground">{result.title || "—"}</p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {[{ label: "Words", value: result.wordCount }, { label: "Links", value: result.totalLinks }, { label: "Images", value: result.totalImages }, { label: "Issues", value: result.issues.length }].map((s) => (
+                      <div key={s.label} className="rounded-lg border border-border p-3 text-center">
+                        <p className="text-2xl font-semibold text-foreground">{s.value}</p>
+                        <p className="text-xs text-muted-foreground">{s.label}</p>
+                      </div>
+                    ))}
                   </div>
-                  <div className="rounded-lg border border-border p-4">
-                    <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">Meta Description ({result.metaDescriptionLength} chars)</p>
-                    <p className="text-sm text-foreground">{result.metaDescription || "—"}</p>
-                  </div>
-                </div>
 
-                {/* Issues */}
-                {result.issues.length > 0 && (
-                  <div>
-                    <h3 className="mb-2 text-sm font-medium text-foreground">Issues Found</h3>
-                    <ul className="space-y-1">
-                      {result.issues.map((issue, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm">
-                          <AlertTriangle size={14} className="mt-0.5 shrink-0 text-orange-500" />
-                          <span className="text-muted-foreground">{issue}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {result.issues.length === 0 && (
-                  <div className="flex items-center gap-2 text-sm text-green-500">
-                    <CheckCircle size={14} /> No major issues found
-                  </div>
-                )}
-
-                {/* Headings */}
-                {result.headings.length > 0 && (
-                  <div>
-                    <h3 className="mb-2 text-sm font-medium text-foreground">Headings Structure</h3>
-                    <div className="max-h-48 space-y-1 overflow-y-auto">
-                      {result.headings.slice(0, 20).map((h, i) => (
-                        <div key={i} className="flex items-baseline gap-2 text-sm">
-                          <span className="shrink-0 rounded bg-secondary px-1.5 py-0.5 text-xs font-mono font-medium text-secondary-foreground">
-                            {h.tag}
-                          </span>
-                          <span className="truncate text-muted-foreground">{h.text}</span>
-                        </div>
-                      ))}
+                  <div className="space-y-3">
+                    <div className="rounded-lg border border-border p-4">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">Title ({result.titleLength} chars)</p>
+                      <p className="text-sm text-foreground">{result.title || "—"}</p>
+                    </div>
+                    <div className="rounded-lg border border-border p-4">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">Meta Description ({result.metaDescriptionLength} chars)</p>
+                      <p className="text-sm text-foreground">{result.metaDescription || "—"}</p>
                     </div>
                   </div>
+
+                  {result.issues.length > 0 ? (
+                    <div>
+                      <h3 className="mb-2 text-sm font-medium text-foreground">Issues Found</h3>
+                      <ul className="space-y-1">
+                        {result.issues.map((issue, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm">
+                            <AlertTriangle size={14} className="mt-0.5 shrink-0 text-orange-500" />
+                            <span className="text-muted-foreground">{issue}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-green-500"><CheckCircle size={14} /> No major issues found</div>
+                  )}
+
+                  {result.headings.length > 0 && (
+                    <div>
+                      <h3 className="mb-2 text-sm font-medium text-foreground">Headings Structure</h3>
+                      <div className="max-h-48 space-y-1 overflow-y-auto">
+                        {result.headings.slice(0, 20).map((h, i) => (
+                          <div key={i} className="flex items-baseline gap-2 text-sm">
+                            <span className="shrink-0 rounded bg-secondary px-1.5 py-0.5 text-xs font-mono font-medium text-secondary-foreground">{h.tag}</span>
+                            <span className="truncate text-muted-foreground">{h.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>)}
+
+            {/* ═══ HISTORY VIEW ═══ */}
+            {view === "history" && (
+              <div className="space-y-4">
+                {!selectedDomain ? (
+                  domains.length === 0 ? (
+                    <div className="flex flex-col items-center py-12 text-center">
+                      <FolderOpen size={32} className="mb-3 text-muted-foreground/20" />
+                      <p className="text-sm text-muted-foreground">No audits saved yet.</p>
+                      <p className="mt-1 text-xs text-muted-foreground/50">Run an audit to start tracking SEO.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {domains.map((d) => (
+                        <button key={d.domain} onClick={() => loadDomainAudits(d.domain)}
+                          className="group flex w-full items-center gap-3 rounded-lg border border-border bg-card/50 p-4 text-left transition-all hover:border-primary/30">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/15">
+                            <Globe size={18} className="text-primary" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-sm font-semibold text-foreground">{d.domain}</h3>
+                            <p className="mt-0.5 text-xs text-muted-foreground">{d.count} audit{d.count !== 1 ? "s" : ""} · last {relTime(d.latest)}</p>
+                          </div>
+                          <Badge variant="secondary" className="shrink-0 text-[10px]">{d.count}</Badge>
+                          <ChevronRight size={14} className="shrink-0 text-muted-foreground/30 group-hover:text-muted-foreground/60" />
+                        </button>
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 mb-2">
+                      <button onClick={() => setSelectedDomain(null)} className="text-xs text-muted-foreground hover:text-foreground transition-colors">← All domains</button>
+                      <ChevronRight size={11} className="text-muted-foreground/30" />
+                      <span className="text-xs font-semibold text-foreground">{selectedDomain}</span>
+                      <Badge variant="secondary" className="text-[10px]">{domainAudits.length}</Badge>
+                    </div>
+
+                    {loadingHistory ? (
+                      <div className="flex items-center justify-center py-8"><Loader2 size={20} className="animate-spin text-muted-foreground" /></div>
+                    ) : domainAudits.length === 0 ? (
+                      <p className="text-center text-sm text-muted-foreground py-8">No audits for this domain.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {domainAudits.map((a) => (
+                          <div key={a.id} className="group flex items-center gap-3 rounded-lg border border-border bg-card/30 p-3 transition-all hover:border-primary/30">
+                            <ScoreBadge score={a.seo_score} />
+                            <div className="min-w-0 flex-1">
+                              <code className="truncate text-xs font-mono text-foreground/80">{a.path}</code>
+                              <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground/50">
+                                <Clock size={9} /><span>{new Date(a.created_at).toLocaleString()}</span>
+                                <span>·</span><span>{a.word_count} words</span>
+                                <span>·</span><span className={a.critical_count > 0 ? "text-red-400" : "text-emerald-400"}>{a.critical_count} critical</span>
+                                <span>·</span><span>{a.warning_count} warnings</span>
+                              </div>
+                              <p className="mt-0.5 truncate text-[10px] text-muted-foreground/40">{a.title || "(no title)"}</p>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => viewSavedAudit(a)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/40 hover:bg-secondary/60 hover:text-foreground" title="View"><ExternalLink size={12} /></button>
+                              <button onClick={() => handleDeleteAudit(a.id)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/40 hover:bg-red-500/10 hover:text-red-500" title="Delete"><Trash2 size={12} /></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
