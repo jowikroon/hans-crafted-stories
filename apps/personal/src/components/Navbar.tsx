@@ -39,9 +39,10 @@ const searchablePages = [
 
 interface NavbarProps {
   variant?: "default" | "dark";
+  compact?: boolean;
 }
 
-const Navbar = ({ variant = "default" }: NavbarProps) => {
+const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -196,10 +197,12 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
               Hans van Leeuwen
             </Link>
 
-            {/* Center nav links (desktop) */}
-            <div className="hidden md:flex items-center">
-              {links.map((l) => navLink(l.to, l.label))}
-            </div>
+            {/* Center nav links (desktop) — hidden in compact mode */}
+            {!compact && (
+              <div className="hidden md:flex items-center">
+                {links.map((l) => navLink(l.to, l.label))}
+              </div>
+            )}
 
             {/* Right cluster */}
             <div className="flex items-center gap-2 sm:gap-3">
@@ -328,8 +331,8 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
         {/* Subtle separator */}
         <div className={`h-px ${isDark ? "bg-emerald-500/8" : "bg-border/40"}`} />
 
-        {/* ─── ROW 2: Command Center link (desktop) — always visible ─── */}
-        {user && (
+        {/* ─── ROW 2: Command Center link (desktop) — hidden in compact mode ─── */}
+        {user && !compact && (
           <div className="mx-auto max-w-6xl px-6 hidden md:block">
             <div className="flex items-center justify-end h-10">
               <div className="flex items-center gap-1.5">
@@ -349,8 +352,8 @@ const Navbar = ({ variant = "default" }: NavbarProps) => {
           </div>
         )}
 
-        {/* Bottom border */}
-        <div className={`hidden md:block h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />
+        {/* Bottom border — only shown when row 2 is present */}
+        {user && !compact && <div className={`hidden md:block h-px ${isDark ? "bg-emerald-500/10" : "bg-border"}`} />}
 
         {/* ═══ MOBILE MENU ═══ */}
         <AnimatePresence>

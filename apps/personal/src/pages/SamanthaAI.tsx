@@ -1305,7 +1305,7 @@ export default function SamanthaAI() {
   // ─── Layout ────────────────────────────────────────
 
   return (
-    <div className="h-dvh bg-[#0a0a0c] text-white/80 relative overflow-hidden">
+    <div className="h-[calc(100dvh-4rem)] mt-16 bg-[#0a0a0c] text-white/80 relative overflow-hidden">
       {/* Immersive background — subtle depth layer */}
       <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
         <div className="absolute inset-0" style={{

@@ -95,8 +95,8 @@ serve(async (req) => {
       const onlineCount = Object.values(services).filter((s: any) => s.ok).length;
       const total = Object.keys(services).length;
       const downServices = Object.entries(services).filter(([, v]: [string, any]) => !v.ok).map(([k]) => k);
-      await sb.from("samantha_memory").insert({
-        user_id: "00000000-0000-0000-0000-000000000001",
+      await sb.from("event_log").insert({
+        user_id: null,
         key: `health_${Date.now()}`,
         value: JSON.stringify({ online: onlineCount, total, down: downServices, services, timestamp }),
         category: "audit",

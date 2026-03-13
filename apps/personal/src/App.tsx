@@ -22,8 +22,8 @@ interface AppShellProps {
 
 const AppShell = ({ initialLang }: AppShellProps) => {
   const location = useLocation();
-  const isFullscreen = location.pathname === "/samantha";
-  const isDarkPage = isFullscreen || location.pathname === "/god-structure";
+  const isCompact = location.pathname === "/samantha";
+  const isDarkPage = isCompact || location.pathname === "/god-structure";
 
   return (
     <AuthProvider>
@@ -31,15 +31,13 @@ const AppShell = ({ initialLang }: AppShellProps) => {
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground">
           Skip to content
         </a>
-        {!isFullscreen && (
-          <header>
-            <Navbar variant={isDarkPage ? "dark" : "default"} />
-          </header>
-        )}
-        <main id="main-content" className={isFullscreen ? "" : "min-h-screen"}>
+        <header>
+          <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
+        </header>
+        <main id="main-content" className="min-h-screen">
           <AnimatedRoutes />
         </main>
-        {!isDarkPage && !isFullscreen && <Footer />}
+        {!isDarkPage && <Footer />}
         <SamanthaGlobalButton />
         <CookieConsent />
         <TrackingScriptInjector />
