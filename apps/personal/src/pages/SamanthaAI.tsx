@@ -366,7 +366,7 @@ function AuditPanel() {
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await supabase.from("samantha_memory")
+      const { data } = await supabase.from("event_log")
         .select("id,key,value,source,created_at")
         .eq("category", "audit")
         .order("created_at", { ascending: false })
@@ -378,7 +378,7 @@ function AuditPanel() {
 
   useEffect(() => {
     const channel = supabase.channel("audit-feed")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "samantha_memory", filter: "category=eq.audit" },
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "event_log", filter: "category=eq.audit" },
         (payload) => { setEvents(prev => [payload.new as any, ...prev].slice(0, 20)); }
       )
       .subscribe();
@@ -636,7 +636,7 @@ export default function SamanthaAI() {
     if (!user?.id) return;
     (async () => {
       try {
-        const { data } = await supabase.from("samantha_memory")
+        const { data } = await supabase.from("event_log")
           .select("key,value,category")
           .in("category", ["task", "idea"])
           .eq("user_id", user.id)
@@ -660,8 +660,8 @@ export default function SamanthaAI() {
 
   const persistTask = useCallback(async (t: TaskRecord) => {
     try {
-      await supabase.from("samantha_memory").upsert({
-        key: `task_${t.id}`, value: JSON.stringify(t), category: t.type, source: "samantha", user_id: user?.id || "00000000-0000-0000-0000-000000000001",
+      await supabase.from("event_log").upsert({
+        key: `task_${t.id}`, value: JSON.stringify(t), category: t.type, source: "samantha", user_id: user?.id || null,
       }, { onConflict: "key" });
     } catch {}
   }, [user?.id]);

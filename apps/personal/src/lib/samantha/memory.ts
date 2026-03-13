@@ -1,5 +1,5 @@
 /**
- * writeMemory — consistent samantha_memory writer.
+ * writeMemory — consistent event_log writer.
  *
  * All entries share the same value envelope:
  *   { event: string, data: Record<string, unknown>, ts: ISO string }
@@ -30,7 +30,7 @@ export async function writeMemory(
     const { data: session } = await supabase.auth.getSession();
     const userId = session?.session?.user?.id;
     const slug = event.replace(/\./g, "_");
-    await supabase.from("samantha_memory").insert({
+    await supabase.from("event_log").insert({
       key: `${category}_${slug}_${Date.now()}`,
       value: JSON.stringify({ event, data, ts: new Date().toISOString() }),
       category,
