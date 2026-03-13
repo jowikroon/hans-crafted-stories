@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════
 //  Infrastructure data — Single source of truth for Dashboard + Wiki
-//  Verified against God Structure v2.0 (2026-03-08)
+//  Verified against God Structure v2.0 (2026-03-13)
 // ═══════════════════════════════════════════════════════════
 
 export type ServiceStatus = "online" | "offline" | "checking" | "degraded" | "unknown";
@@ -76,7 +76,11 @@ export const INFRA_LAYERS: InfraLayer[] = [
       "Service Endpoint Health Checker (5 min)",
       "State Snapshot Logger (15 min)",
       "Change Detector (15 min)",
-      "22 total workflows, 7 active",
+      "Samantha AI (6 e-commerce workflows — claude-opus-4-5)",
+      "Live SEO Audit — Multi-Signal + AI Scorecard",
+      "Order Processing Pipeline (WC + Shopify)",
+      "Price Monitor (Bol.com + Amazon NL daily digest)",
+      "20 total workflows, 18 active",
     ],
     urls: [
       { label: "n8n Hostinger", url: "https://n8n.srv1402218.hstgr.cloud" },
@@ -200,8 +204,16 @@ export const DATABASE_TABLES: DatabaseTable[] = [
   { name: "workflow_history", purpose: "n8n workflow execution log", domain: "infra", rls: "off", rowEstimate: "Low", risk: "low" },
   { name: "sov_projects", purpose: "Sovereign OS project tracking", domain: "infra", rls: "partial", rowEstimate: "Low", risk: "low" },
   { name: "sov_executions", purpose: "Sovereign OS execution log", domain: "infra", rls: "partial", rowEstimate: "Low", risk: "low" },
+  // CMS Domain
+  { name: "blog_posts", purpose: "CMS blog content (EN + NL + SEO fields)", domain: "other", rls: "on", rowEstimate: "Active", risk: "none" },
+  { name: "blog_post_versions", purpose: "Blog post version history (admin-only writes)", domain: "other", rls: "on", rowEstimate: "Low", risk: "none" },
+  { name: "case_studies", purpose: "Portfolio case studies (EN + NL)", domain: "other", rls: "on", rowEstimate: "Active", risk: "none" },
+  { name: "media_library", purpose: "Uploaded media assets (admin-only writes)", domain: "other", rls: "on", rowEstimate: "Low", risk: "none" },
+  // Infra / AI
+  { name: "workflow_runs", purpose: "Samantha AI workflow execution log (result_data JSONB)", domain: "infra", rls: "on", rowEstimate: "Active", risk: "none" },
+  { name: "system_issues", purpose: "Live infrastructure issues tracker for God Structure", domain: "infra", rls: "on", rowEstimate: "8 seeded", risk: "none" },
   // Other
-  { name: "seo_news_digest", purpose: "SEO news (written by n8n)", domain: "other", rls: "permissive", rowEstimate: "Varies", risk: "medium" },
+  { name: "seo_news_digest", purpose: "SEO news (written by n8n service_role)", domain: "other", rls: "on", rowEstimate: "Varies", risk: "none" },
   { name: "user_roles", purpose: "Admin role detection", domain: "other", rls: "partial", rowEstimate: "Low", risk: "low" },
 ];
 
@@ -225,12 +237,19 @@ export const ROADMAP: RoadmapItem[] = [
   { task: "Auth — email + Google OAuth", status: "done", priority: "P0", category: "auth" },
   { task: "4 VPS monitoring workflows active", status: "done", priority: "P0", category: "monitoring" },
   { task: "Separate repos (marketplacegrowth standalone)", status: "done", priority: "P0", category: "infra" },
+  { task: "blog_post_versions + media_library RLS hardened (admin-only writes)", status: "done", priority: "P0", category: "security" },
+  { task: "seo_news_digest RLS — restricted to authenticated writes (was anon-permissive)", status: "done", priority: "P0", category: "security" },
   { task: "Ollama deployed on VPS2 (qwen2.5:7b + 14b)", status: "done", priority: "P1", category: "ai" },
   { task: "God Structure dashboard", status: "done", priority: "P1", category: "frontend" },
   { task: "9 infra services registered in Supabase", status: "done", priority: "P1", category: "monitoring" },
   { task: "Hans Site Update Engine v3 (BJ Fogg routing)", status: "done", priority: "P1", category: "automation" },
+  { task: "Samantha AI — 6 e-commerce AI workflows (claude-opus-4-5, write-back to workflow_runs)", status: "done", priority: "P1", category: "automation" },
+  { task: "Live SEO Audit workflow (fetch HTML + PageSpeed + 3 Claude auditors + scorecard)", status: "done", priority: "P1", category: "seo" },
+  { task: "n8n write-back: runId + result_data threading to workflow_runs for all 6 write workflows", status: "done", priority: "P1", category: "automation" },
+  { task: "CMS editor: og_title, og_description, primary_keyword fields wired to DB", status: "done", priority: "P1", category: "frontend" },
+  { task: "system_issues table — live DB-backed issues tracker for God Structure", status: "done", priority: "P1", category: "backend" },
   // In progress
-  { task: "Wire frontend to Supabase backend", status: "doing", priority: "P1", category: "frontend", effort: "4 hr" },
+  { task: "Wire marketplacegrowth.nl frontend to Supabase backend", status: "doing", priority: "P1", category: "frontend", effort: "4 hr" },
   { task: "AutoSEO Brain v2 (connectcarparts.nl)", status: "doing", priority: "P1", category: "seo", effort: "ongoing" },
   // P0 — Security (immediate)
   { task: "Rotate exposed GitHub PAT + Cloudflare token", status: "todo", priority: "P0", category: "security", effort: "10 min", description: "Both tokens were exposed in a previous session. Must be revoked and regenerated immediately." },
@@ -294,8 +313,7 @@ export const SECURITY_ISSUES: SecurityIssue[] = [
   { id: "sec-2", severity: "critical", area: "Database", issue: "6 infrastructure tables have no RLS policies", impact: "Anyone with anon key can query infra topology, AI sessions, system state", fix: "Enable RLS with admin-only policies or move to infra schema", effort: "30 min" },
   { id: "sec-3", severity: "critical", area: "Edge Functions", issue: "No LLM API key set in Supabase secrets", impact: "All AI content generation silently fails", fix: "Add GEMINI_API_KEY or ANTHROPIC_API_KEY to Edge Function secrets", effort: "2 min" },
   { id: "sec-4", severity: "high", area: "Auth", issue: "Leaked password protection disabled", impact: "Users can register with passwords from known breaches", fix: "Enable HaveIBeenPwned check in Supabase Auth → Security", effort: "2 min" },
-  { id: "sec-5", severity: "high", area: "Database", issue: "seo_news_digest has overly permissive RLS", impact: "Anonymous users can INSERT and UPDATE any row", fix: "Restrict to service_role writes from n8n only", effort: "15 min" },
-  { id: "sec-6", severity: "medium", area: "Auth", issue: "Google OAuth via third-party @lovable.dev proxy", impact: "Dependency on external service for auth flow", fix: "Replace with direct Supabase Google OAuth provider", effort: "1 hr" },
+  { id: "sec-5", severity: "medium", area: "Auth", issue: "Google OAuth via third-party @lovable.dev proxy", impact: "Dependency on external service for auth flow", fix: "Replace with direct Supabase Google OAuth provider", effort: "1 hr" },
 ];
 
 // ─── Performance Issues ──────────────────────────────────

@@ -5,7 +5,6 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, ChevronRight, Link2, Facebook, Linkedin, Twitter } from "lucide-react";
 import { getBlogPost, BlogPostRow } from "@/lib/api/content";
-import { blogContent } from "@/data/blogContent";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
@@ -72,7 +71,7 @@ const BlogPostPage = () => {
   const displayExcerpt = post ? ((lang === "nl" && post.excerpt_nl) ? post.excerpt_nl : post.excerpt) : "";
   const displayContent = post ? ((lang === "nl" && post.content_nl) ? post.content_nl : post.content) : "";
 
-  const fullContent = displayContent || (slug ? blogContent[slug] : "") || "";
+  const fullContent = displayContent || "";
   const wordCount = useMemo(
     () => (fullContent ? fullContent.trim().split(/\s+/).length : 0),
     [fullContent]

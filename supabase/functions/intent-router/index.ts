@@ -27,6 +27,7 @@ const WORKFLOW_CONTEXT = [
   { name: "scraper", description: "Scrape competitor data, pricing, and product information from websites" },
   { name: "monday-orchestrator", description: "Central orchestrator that receives Monday.com item events and routes to specialist workflows" },
   { name: "google", description: "Control Gmail, Google Sheets, Drive — summarize emails, add rows, list files" },
+  { name: "site-audit", description: "Full multi-signal SEO audit of a URL: technical checks, content analysis, PageSpeed, AI scorecard report" },
 ];
 
 const SYSTEM_PROMPT = `You are an intent classifier for a digital marketing automation platform.
