@@ -195,12 +195,12 @@ export const DATABASE_TABLES: DatabaseTable[] = [
   { name: "export_jobs", purpose: "Bulk export tracking", domain: "saas", rls: "on", rowEstimate: "Active", risk: "none" },
   { name: "validation_rules", purpose: "Amazon DE/FR marketplace rules", domain: "saas", rls: "on", rowEstimate: "14 seeded", risk: "none" },
   // Infra Domain
-  { name: "infrastructure_services", purpose: "Registered services (9 entries)", domain: "infra", rls: "off", rowEstimate: "9", risk: "high" },
-  { name: "infrastructure_state", purpose: "CPU/memory/disk snapshots", domain: "infra", rls: "off", rowEstimate: "~0", risk: "high" },
-  { name: "infrastructure_change_log", purpose: "Change detection log", domain: "infra", rls: "off", rowEstimate: "~0", risk: "medium" },
-  { name: "empire_vector_memory", purpose: "pgvector embeddings (384-dim)", domain: "infra", rls: "off", rowEstimate: "Low", risk: "medium" },
-  { name: "ai_sessions", purpose: "AI session tracking", domain: "infra", rls: "off", rowEstimate: "Low", risk: "high" },
-  { name: "ai_lessons_learned", purpose: "AI learning memory", domain: "infra", rls: "off", rowEstimate: "Low", risk: "medium" },
+  { name: "infrastructure_services", purpose: "Registered services (9 entries)", domain: "infra", rls: "on", rowEstimate: "9", risk: "none" },
+  { name: "infrastructure_state", purpose: "CPU/memory/disk snapshots", domain: "infra", rls: "on", rowEstimate: "~0", risk: "none" },
+  { name: "infrastructure_change_log", purpose: "Change detection log", domain: "infra", rls: "on", rowEstimate: "~0", risk: "none" },
+  { name: "empire_vector_memory", purpose: "pgvector embeddings (384-dim)", domain: "infra", rls: "on", rowEstimate: "Low", risk: "none" },
+  { name: "ai_sessions", purpose: "AI session tracking", domain: "infra", rls: "on", rowEstimate: "Low", risk: "none" },
+  { name: "ai_lessons_learned", purpose: "AI learning memory", domain: "infra", rls: "on", rowEstimate: "Low", risk: "none" },
   { name: "workflow_history", purpose: "n8n workflow execution log", domain: "infra", rls: "off", rowEstimate: "Low", risk: "low" },
   { name: "sov_projects", purpose: "Sovereign OS project tracking", domain: "infra", rls: "partial", rowEstimate: "Low", risk: "low" },
   { name: "sov_executions", purpose: "Sovereign OS execution log", domain: "infra", rls: "partial", rowEstimate: "Low", risk: "low" },
@@ -254,11 +254,11 @@ export const ROADMAP: RoadmapItem[] = [
   // P0 — Security (immediate)
   { task: "Rotate exposed GitHub PAT + Cloudflare token", status: "todo", priority: "P0", category: "security", effort: "10 min", description: "Both tokens were exposed in a previous session. Must be revoked and regenerated immediately." },
   { task: "Set LLM API key in Edge Function secrets", status: "todo", priority: "P0", category: "backend", effort: "2 min", description: "generate-content and cb-generate read GEMINI_API_KEY from secrets. Neither is set — all AI generation fails silently." },
-  { task: "Enable RLS on 6 legacy infra tables", status: "todo", priority: "P0", category: "security", effort: "30 min", description: "ai_sessions, infrastructure_services, infrastructure_state, infrastructure_change_log, ai_lessons_learned, empire_vector_memory all queryable via anon key." },
+  { task: "Enable RLS on 6 legacy infra tables", status: "done", priority: "P0", category: "security" },
   { task: "Enable leaked password protection", status: "todo", priority: "P0", category: "security", effort: "2 min", description: "Supabase HaveIBeenPwned check is off. Enable in Auth → Security." },
   // P1 — Core
-  { task: "Fix RLS auth.uid() → (select auth.uid()) — 28 policies", status: "todo", priority: "P1", category: "performance", effort: "1 hr", description: "28 RLS policies re-evaluate auth.uid() per row instead of using subquery pattern. Causes geometric query degradation at scale." },
-  { task: "Add missing FK indexes (6 tables)", status: "todo", priority: "P1", category: "performance", effort: "15 min", description: "brands.workspace_id, content_projects.brand_id, generated_content.workspace_id, publications.content_id, publications.workspace_id, empire_vector_memory.service_id" },
+  { task: "Fix RLS auth.uid() → (select auth.uid()) — 30 policies", status: "done", priority: "P1", category: "performance" },
+  { task: "Add missing FK indexes (6 tables)", status: "done", priority: "P1", category: "performance" },
   { task: "Replace Lovable OAuth → direct Supabase Google OAuth", status: "todo", priority: "P1", category: "auth", effort: "1 hr", description: "Google OAuth currently routes through @lovable.dev/cloud-auth-js — a third-party proxy. Replace with direct Supabase provider." },
   { task: "Verify Supabase Site URL = marketplacegrowth.nl", status: "todo", priority: "P1", category: "auth", effort: "2 min" },
   { task: "Fix n8n reverse proxy 502", status: "blocked", priority: "P1", category: "infra", effort: "1 hr", description: "n8n.hansvanleeuwen.com returns 502. Traefik routing misconfiguration." },
@@ -328,11 +328,9 @@ export interface PerformanceIssue {
 }
 
 export const PERFORMANCE_ISSUES: PerformanceIssue[] = [
-  { id: "perf-1", area: "Database", issue: "28 RLS policies use auth.uid() instead of (select auth.uid())", impact: "Auth function re-evaluates per row scanned — O(n) instead of O(1)", fix: "Convert all policies to use subquery pattern", severity: "high" },
-  { id: "perf-2", area: "Database", issue: "6 foreign keys lack covering indexes", impact: "Slow JOINs on brands, content_projects, generated_content, publications, empire_vector_memory", fix: "Add indexes on FK columns", severity: "medium" },
-  { id: "perf-3", area: "Database", issue: "Duplicate SELECT RLS policies on workspaces table", impact: "Both permissive policies fire for every query — unnecessary overhead", fix: "Merge into single policy", severity: "low" },
-  { id: "perf-4", area: "Frontend", issue: "930KB single JS bundle", impact: "Slow initial load, poor LCP on mobile", fix: "Route-level code splitting with React.lazy()", severity: "high" },
-  { id: "perf-5", area: "Database", issue: "46 unused indexes", impact: "Wasted storage, slower INSERT/UPDATE operations", fix: "Audit and drop indexes with zero scans", severity: "low" },
+  { id: "perf-1", area: "Database", issue: "Duplicate SELECT RLS policies on workspaces table", impact: "Both permissive policies fire for every query — unnecessary overhead", fix: "Merge into single policy", severity: "low" },
+  { id: "perf-2", area: "Frontend", issue: "930KB single JS bundle", impact: "Slow initial load, poor LCP on mobile", fix: "Route-level code splitting with React.lazy()", severity: "high" },
+  { id: "perf-3", area: "Database", issue: "46 unused indexes", impact: "Wasted storage, slower INSERT/UPDATE operations", fix: "Audit and drop indexes with zero scans", severity: "low" },
 ];
 
 // ─── Deployment Pipelines ────────────────────────────────
