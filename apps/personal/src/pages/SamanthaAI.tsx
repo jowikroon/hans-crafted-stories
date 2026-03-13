@@ -670,6 +670,7 @@ export default function SamanthaAI() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const channelsRef = useRef<Set<any>>(new Set());
 
   const panel = (searchParams.get("panel") as PanelId) || null;
   const hasMessages = messages.length > 0;
@@ -716,12 +717,13 @@ export default function SamanthaAI() {
         try {
           const convId = typeof conversationId.current === "function" ? conversationId.current() : conversationId.current;
           localStorage.setItem("samantha_conv_id", convId);
+          if (!user?.id) return;
           await supabase.from("samantha_conversations").upsert({
             id: convId,
-            messages: JSON.stringify(saveable.slice(-40)),
+            messages: saveable.slice(-40) as any,
             model: selectedModel,
             updated_at: new Date().toISOString(),
-            user_id: user?.id || "00000000-0000-0000-0000-000000000001",
+            user_id: user.id,
           }, { onConflict: "id" });
         } catch {} // Silent fail — localStorage is the primary store
       }, 3000); // 3-second debounce
@@ -731,6 +733,11 @@ export default function SamanthaAI() {
   useEffect(() => { try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch {} }, [tasks]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, stage]);
   useEffect(() => { document.title = "Samantha — AI Cockpit"; }, []);
+  // Clean up all Realtime channels on unmount
+  useEffect(() => {
+    const channels = channelsRef.current;
+    return () => { channels.forEach((c) => supabase.removeChannel(c)); };
+  }, []);
 
   const emotion: Emotion = useMemo(() => {
     if (stage === "thinking") return "thinking";
@@ -888,9 +895,56 @@ export default function SamanthaAI() {
     const toolMsg = append({ role: "tool", content: "", toolName: wf.label, toolStatus: "running" });
     try {
       const res = await triggerWorkflow(wf, "samantha", { message: arg });
-      updateMessage(toolMsg.id, { toolStatus: res.ok ? "success" : "error", toolResult: { type: "workflow", workflowName: wf.label, status: res.ok ? "success" : "error", message: res.ok ? "Completed" : (res.error || "Failed") } });
-      append({ role: "samantha", content: res.ok ? `✅ **${wf.label}** triggered.` : `❌ **${wf.label}** failed: ${res.error}`, model: wf.label });
-      endOp(opId, res.ok ? "success" : "error");
+      if (!res.ok) {
+        updateMessage(toolMsg.id, { toolStatus: "error", toolResult: { type: "workflow", workflowName: wf.label, status: "error", message: res.error || "Failed" } });
+        append({ role: "samantha", content: `❌ **${wf.label}** failed: ${res.error}`, model: wf.label });
+        endOp(opId, "error");
+      } else {
+        const resData = typeof res.data === "object" && res.data !== null ? res.data as Record<string, unknown> : {};
+        const runId = resData.run_id as string | undefined;
+        const trackingEnabled = !!(resData.data as Record<string, unknown>)?.tracking_enabled;
+
+        if (runId && trackingEnabled) {
+          // Webhook accepted — keep spinner, subscribe for n8n completion
+          updateMessage(toolMsg.id, { toolResult: { type: "workflow", workflowName: wf.label, status: "running", message: "Triggered — waiting for completion…" } });
+          append({ role: "samantha", content: `✅ **${wf.label}** triggered — I'll update you when it completes.`, model: wf.label });
+
+          const channel = supabase
+            .channel(`run-${runId}`)
+            .on("postgres_changes", { event: "UPDATE", schema: "public", table: "workflow_runs", filter: `id=eq.${runId}` },
+              (payload) => {
+                const newStatus = (payload.new as Record<string, unknown>)?.status as string;
+                if (newStatus === "completed" || newStatus === "error") {
+                  const isOk = newStatus === "completed";
+                  const errMsg = (payload.new as Record<string, unknown>)?.error_message as string | undefined;
+                  updateMessage(toolMsg.id, {
+                    toolStatus: isOk ? "success" : "error",
+                    toolResult: { type: "workflow", workflowName: wf.label, status: isOk ? "success" : "error", message: isOk ? "Completed" : (errMsg || "Failed") },
+                  });
+                  append({ role: "samantha", content: isOk ? `✅ **${wf.label}** completed.` : `❌ **${wf.label}** failed: ${errMsg || "error"}`, model: wf.label });
+                  endOp(opId, isOk ? "success" : "error");
+                  supabase.removeChannel(channel);
+                  channelsRef.current.delete(channel);
+                }
+              })
+            .subscribe();
+
+          channelsRef.current.add(channel);
+          // Safety net: clean up after 5 min if n8n never writes back
+          setTimeout(() => {
+            if (channelsRef.current.has(channel)) {
+              supabase.removeChannel(channel);
+              channelsRef.current.delete(channel);
+              endOp(opId, "success");
+            }
+          }, 300_000);
+        } else {
+          // No run_id / tracking disabled — update immediately
+          updateMessage(toolMsg.id, { toolStatus: "success", toolResult: { type: "workflow", workflowName: wf.label, status: "success", message: "Triggered" } });
+          append({ role: "samantha", content: `✅ **${wf.label}** triggered.`, model: wf.label });
+          endOp(opId, "success");
+        }
+      }
     } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); endOp(opId, "error"); }
     setStage("idle");
   }, [confirmingWorkflow, startOp, endOp]);

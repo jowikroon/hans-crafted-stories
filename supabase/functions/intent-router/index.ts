@@ -25,6 +25,7 @@ const WORKFLOW_CONTEXT = [
   { name: "product-feed", description: "Optimize and sync product feeds across channels (Channable, Google Shopping)" },
   { name: "campaign", description: "Generate and launch marketing campaigns with AI-powered copy" },
   { name: "scraper", description: "Scrape competitor data, pricing, and product information from websites" },
+  { name: "monday-orchestrator", description: "Central orchestrator that receives Monday.com item events and routes to specialist workflows" },
   { name: "google", description: "Control Gmail, Google Sheets, Drive — summarize emails, add rows, list files" },
 ];
 
