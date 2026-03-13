@@ -15,6 +15,7 @@ import {
   Clock, Activity,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { triggerWorkflow } from "@/lib/intent/pipeline";
 import { fastRoute } from "@/lib/intent/router";
@@ -594,6 +595,7 @@ function SlashPicker({ query, onSelect, onClose }: { query: string; onSelect: (c
 
 export default function SamanthaAI() {
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin } = useAdmin();
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -807,6 +809,7 @@ export default function SamanthaAI() {
       }
       case "run": {
         if (!arg) { append({ role: "samantha", content: "Usage: `/run <workflow-name>`\n\nAvailable: " + WORKFLOWS.map(w => `\`${w.name}\``).join(", "), model: "System" }); return; }
+        if (!isAdmin) { append({ role: "samantha", content: "Write operations are restricted to the admin account.", model: "System" }); return; }
         const wf = WORKFLOWS.find(w => w.name === arg || w.label.toLowerCase() === arg.toLowerCase());
         if (!wf) { append({ role: "samantha", content: `Workflow "${arg}" not found. Try \`/workflows\`.`, model: "System" }); return; }
         if (wf.tier === "write") {
@@ -948,6 +951,10 @@ export default function SamanthaAI() {
       const wf = route.workflow;
       if (wf.tier === "write") {
         setStage("idle");
+        if (!isAdmin) {
+          append({ role: "samantha", content: "Write operations are restricted to the admin account.", model: "System" });
+          return;
+        }
         setConfirmingWorkflow({ wf, arg: text });
         append({ role: "samantha", content: `I can run **${wf.label}** for that — it's a write action that triggers a real n8n workflow.\n\n${wf.description}\n\nConfirm or cancel below.`, model: "System" });
         return;
@@ -1200,12 +1207,14 @@ export default function SamanthaAI() {
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleConfirmWorkflow}
-                  className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] text-amber-400 hover:bg-amber-500/20 transition-colors font-medium"
-                >
-                  Confirm
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={handleConfirmWorkflow}
+                    className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] text-amber-400 hover:bg-amber-500/20 transition-colors font-medium"
+                  >
+                    Confirm
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>
