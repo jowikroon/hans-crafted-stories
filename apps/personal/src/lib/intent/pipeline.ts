@@ -99,20 +99,29 @@ export async function triggerWorkflow(
   try {
     const body = { source, timestamp: new Date().toISOString(), ...extraPayload };
 
-    // Direct Supabase Edge Function calls need apikey + auth headers
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (wf.direct) {
-      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
-      const token = sessionData?.session?.access_token || anonKey;
-      headers.apikey = anonKey;
-      headers.Authorization = `Bearer ${token}`;
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+    const token = sessionData?.session?.access_token || anonKey;
+    const authHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+      apikey: anonKey,
+      Authorization: `Bearer ${token}`,
+    };
+
+    let fetchUrl: string;
+    let fetchBody: string;
+
+    if (wf.tier === "write" && !wf.direct) {
+      // Write-tier: route through authenticated server-side proxy.
+      // Proxy enforces admin role + allowlist; owns the workflow_runs insert.
+      fetchUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`;
+      fetchBody = JSON.stringify({ workflow_name: wf.name, ...body });
+    } else {
+      // Read-tier direct (empire-health, google-agent): call edge function directly.
+      fetchUrl = wf.webhook;
+      fetchBody = JSON.stringify(body);
     }
 
-    const res = await fetch(wf.webhook, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-    });
+    const res = await fetch(fetchUrl, { method: "POST", headers: authHeaders, body: fetchBody });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
@@ -129,8 +138,9 @@ export async function triggerWorkflow(
       source,
     });
 
-    // Write truthful run record — status "triggered" (n8n will writeback completion)
-    if (userId) {
+    // Write run record for read-tier direct workflows (empire-health, google-agent).
+    // Write-tier run records are owned by trigger-webhook proxy — skip to avoid duplicates.
+    if (userId && !(wf.tier === "write" && !wf.direct)) {
       try {
         await supabase.from("workflow_runs").insert({
           user_id: userId,
