@@ -80,6 +80,10 @@ export async function logUnhandledIntent(
 /**
  * Trigger an n8n workflow (or google-agent) by direct webhook POST.
  * Optional extraPayload is merged into the body (e.g. { message } for google-agent).
+ *
+ * Writes a workflow_runs row on every call:
+ *   status "triggered" — webhook accepted (HTTP 2xx); n8n will UPDATE to completed/error
+ *   status "failed"    — webhook rejected or network error (terminal immediately)
  */
 export async function triggerWorkflow(
   wf: WorkflowDef,
@@ -87,6 +91,11 @@ export async function triggerWorkflow(
   extraPayload?: Record<string, unknown>,
 ): Promise<{ ok: boolean; data: unknown; error?: string }> {
   const startTime = Date.now();
+
+  // Resolve user_id once — needed for workflow_runs insert (column is text NOT NULL)
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData?.session?.user?.id ?? null;
+
   try {
     const body = { source, timestamp: new Date().toISOString(), ...extraPayload };
 
@@ -94,7 +103,6 @@ export async function triggerWorkflow(
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (wf.direct) {
       const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
-      const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token || anonKey;
       headers.apikey = anonKey;
       headers.Authorization = `Bearer ${token}`;
@@ -112,23 +120,57 @@ export async function triggerWorkflow(
     let data: unknown;
     try { data = JSON.parse(text); } catch { data = text; }
 
+    const duration_ms = Date.now() - startTime;
+
     await writeMemory("workflow.success", "workflow", {
       workflow: wf.name,
       label: wf.label,
-      duration_ms: Date.now() - startTime,
+      duration_ms,
       source,
     });
 
+    // Write truthful run record — status "triggered" (n8n will writeback completion)
+    if (userId) {
+      try {
+        await supabase.from("workflow_runs").insert({
+          user_id: userId,
+          workflow_name: wf.name,
+          workflow_label: wf.label,
+          status: "triggered",
+          result_data: { source, duration_ms, response: typeof data === "string" ? data.slice(0, 500) : data },
+        });
+      } catch { /* run record failure must never block the workflow result */ }
+    }
+
     return { ok: true, data };
   } catch (err) {
+    const duration_ms = Date.now() - startTime;
+    const errorMsg = err instanceof Error ? err.message : "Unknown";
+
     await writeMemory("workflow.error", "workflow", {
       workflow: wf.name,
       label: wf.label,
-      error: err instanceof Error ? err.message : "Unknown",
-      duration_ms: Date.now() - startTime,
+      error: errorMsg,
+      duration_ms,
       source,
     });
-    return { ok: false, data: null, error: err instanceof Error ? err.message : "Unknown error" };
+
+    // Write failed run record — terminal status, no n8n writeback expected
+    if (userId) {
+      try {
+        await supabase.from("workflow_runs").insert({
+          user_id: userId,
+          workflow_name: wf.name,
+          workflow_label: wf.label,
+          status: "failed",
+          error_message: errorMsg,
+          result_data: { source, duration_ms },
+          completed_at: new Date().toISOString(),
+        });
+      } catch { /* run record failure must never block the workflow result */ }
+    }
+
+    return { ok: false, data: null, error: errorMsg };
   }
 }
 
