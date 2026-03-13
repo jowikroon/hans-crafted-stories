@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Globe, Loader2 } from "lucide-react";
+import { X, Globe, Loader2, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { portalApi, KeywordResult } from "@/lib/api/portal";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface KeywordResearchModalProps {
@@ -31,6 +32,7 @@ const KeywordResearchModal = ({ open, onClose }: KeywordResearchModalProps) => {
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<KeywordResult | null>(null);
+  const [saved, setSaved] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,10 +40,24 @@ const KeywordResearchModal = ({ open, onClose }: KeywordResearchModalProps) => {
     if (!keyword.trim()) return;
     setLoading(true);
     setResult(null);
+    setSaved(false);
     try {
       const res = await portalApi.keywordResearch(keyword);
       if (res.success && res.data) {
         setResult(res.data);
+        // Auto-save to keyword_research table
+        try {
+          await supabase.from("keyword_research" as any).insert({
+            seed_keyword: res.data.seed_keyword || keyword,
+            search_intent: res.data.search_intent || "",
+            difficulty: res.data.difficulty || "",
+            related_keywords: res.data.related_keywords || [],
+            content_suggestions: res.data.content_suggestions || [],
+            summary: res.data.summary || "",
+            researched_by: "portal",
+          } as any);
+          setSaved(true);
+        } catch (saveErr) { console.error("Failed to save keyword research:", saveErr); }
       } else {
         toast({ title: "Research failed", description: res.error || "Unknown error", variant: "destructive" });
       }
@@ -101,6 +117,14 @@ const KeywordResearchModal = ({ open, onClose }: KeywordResearchModalProps) => {
 
             {result && (
               <div className="space-y-6">
+                {/* Saved indicator */}
+                {saved && (
+                  <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs">
+                    <CheckCircle size={13} className="text-emerald-500" />
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">Research saved</span>
+                  </div>
+                )}
+
                 {/* Overview */}
                 <div className="grid grid-cols-3 gap-3">
                   <div className="rounded-lg border border-border p-3 text-center">
