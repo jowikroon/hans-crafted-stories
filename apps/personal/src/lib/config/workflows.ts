@@ -91,6 +91,16 @@ export const WORKFLOWS: WorkflowDef[] = [
     tier: "write",
   },
   {
+    name: "site-audit",
+    label: "Live SEO Audit",
+    webhook: `${N8N_BASE}/webhook/site-audit`,
+    description: "Full multi-signal SEO audit: fetch HTML, extract signals, PageSpeed, 3 AI auditors, scorecard report",
+    keywords: ["seo", "audit", "site", "page", "analyze", "analyze", "score", "technical", "content", "check", "lighthouse"],
+    examples: ["audit this page", "run seo audit on hansvanleeuwen.com", "analyze my landing page", "check seo of url", "seo report"],
+    category: "seo",
+    tier: "write",
+  },
+  {
     name: "google",
     label: "Google (Gmail, Sheets, Drive)",
     webhook: `${SUPABASE_URL}/functions/v1/google-agent`,
