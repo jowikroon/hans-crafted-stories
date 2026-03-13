@@ -18,7 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { triggerWorkflow } from "@/lib/intent/pipeline";
 import { fastRoute } from "@/lib/intent/router";
-import { WORKFLOWS } from "@/lib/config/workflows";
+import { WORKFLOWS, type WorkflowDef } from "@/lib/config/workflows";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -608,6 +608,7 @@ export default function SamanthaAI() {
   const [tasks, setTasks] = useState<TaskRecord[]>(() => { try { const s = localStorage.getItem(TASKS_KEY); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [healthCache, setHealthCache] = useState<ServiceHealthEntry[] | null>(null);
   const [operations, setOperations] = useState<Operation[]>([]);
+  const [confirmingWorkflow, setConfirmingWorkflow] = useState<{ wf: WorkflowDef; arg: string } | null>(null);
 
   // ─── Operation tracking helpers ────────────────────
   const startOp = useCallback((label: string, type: Operation["type"]): string => {
@@ -652,10 +653,10 @@ export default function SamanthaAI() {
   const persistTask = useCallback(async (t: TaskRecord) => {
     try {
       await supabase.from("samantha_memory").upsert({
-        key: `task_${t.id}`, value: JSON.stringify(t), category: t.type, source: "samantha", user_id: "00000000-0000-0000-0000-000000000001",
+        key: `task_${t.id}`, value: JSON.stringify(t), category: t.type, source: "samantha", user_id: user?.id || "00000000-0000-0000-0000-000000000001",
       }, { onConflict: "key" });
     } catch {}
-  }, []);
+  }, [user?.id]);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -712,7 +713,7 @@ export default function SamanthaAI() {
             messages: JSON.stringify(saveable.slice(-40)),
             model: selectedModel,
             updated_at: new Date().toISOString(),
-            user_id: "00000000-0000-0000-0000-000000000001",
+            user_id: user?.id || "00000000-0000-0000-0000-000000000001",
           }, { onConflict: "id" });
         } catch {} // Silent fail — localStorage is the primary store
       }, 3000); // 3-second debounce
@@ -808,6 +809,11 @@ export default function SamanthaAI() {
         if (!arg) { append({ role: "samantha", content: "Usage: `/run <workflow-name>`\n\nAvailable: " + WORKFLOWS.map(w => `\`${w.name}\``).join(", "), model: "System" }); return; }
         const wf = WORKFLOWS.find(w => w.name === arg || w.label.toLowerCase() === arg.toLowerCase());
         if (!wf) { append({ role: "samantha", content: `Workflow "${arg}" not found. Try \`/workflows\`.`, model: "System" }); return; }
+        if (wf.tier === "write") {
+          setConfirmingWorkflow({ wf, arg });
+          append({ role: "samantha", content: `**${wf.label}** is a write action — it will trigger a real n8n workflow.\n\n${wf.description}\n\nConfirm or cancel below.`, model: "System" });
+          return;
+        }
         setStage("executing");
         const opId = startOp(wf.label, "workflow");
         const toolMsg = append({ role: "tool", content: "", toolName: wf.label, toolStatus: "running" });
@@ -863,6 +869,29 @@ export default function SamanthaAI() {
     }
   };
 
+  const handleConfirmWorkflow = useCallback(async () => {
+    if (!confirmingWorkflow) return;
+    const { wf, arg } = confirmingWorkflow;
+    setConfirmingWorkflow(null);
+    setStage("executing");
+    const opId = startOp(wf.label, "workflow");
+    const toolMsg = append({ role: "tool", content: "", toolName: wf.label, toolStatus: "running" });
+    try {
+      const res = await triggerWorkflow(wf, "samantha", { message: arg });
+      updateMessage(toolMsg.id, { toolStatus: res.ok ? "success" : "error", toolResult: { type: "workflow", workflowName: wf.label, status: res.ok ? "success" : "error", message: res.ok ? "Completed" : (res.error || "Failed") } });
+      append({ role: "samantha", content: res.ok ? `✅ **${wf.label}** triggered.` : `❌ **${wf.label}** failed: ${res.error}`, model: wf.label });
+      endOp(opId, res.ok ? "success" : "error");
+    } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); endOp(opId, "error"); }
+    setStage("idle");
+  }, [confirmingWorkflow, startOp, endOp]);
+
+  const handleCancelWorkflow = useCallback(() => {
+    if (!confirmingWorkflow) return;
+    const label = confirmingWorkflow.wf.label;
+    setConfirmingWorkflow(null);
+    append({ role: "samantha", content: `Cancelled — **${label}** was not triggered.`, model: "System" });
+  }, [confirmingWorkflow]);
+
   const handleAbort = () => {
     if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
     if (streamingId) { updateMessage(streamingId, { streaming: false, content: messages.find(m => m.id === streamingId)?.content + "\n\n*(cancelled)*" }); setStreamingId(null); }
@@ -916,9 +945,15 @@ export default function SamanthaAI() {
     const route = fastRoute(text);
 
     if (route.confidence >= 0.85 && route.workflow) {
-      // High-confidence workflow match
-      setStage("executing");
       const wf = route.workflow;
+      if (wf.tier === "write") {
+        setStage("idle");
+        setConfirmingWorkflow({ wf, arg: text });
+        append({ role: "samantha", content: `I can run **${wf.label}** for that — it's a write action that triggers a real n8n workflow.\n\n${wf.description}\n\nConfirm or cancel below.`, model: "System" });
+        return;
+      }
+      // Read-tier: execute immediately
+      setStage("executing");
       const opId = startOp(wf.label, "workflow");
       const toolMsg = append({ role: "tool", content: "", toolName: wf.label, toolStatus: "running" });
       try {
@@ -1145,8 +1180,40 @@ export default function SamanthaAI() {
         <ActionQueue ops={operations} onRetry={handleRetryOp} />
       </AnimatePresence>
 
+      {/* Confirmation bar — replaces quick actions when a write workflow is pending */}
+      <AnimatePresence>
+        {confirmingWorkflow && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            className="shrink-0 px-4 sm:px-6 py-2 border-t border-amber-500/20 bg-amber-500/[0.04]"
+          >
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+              <span className="text-[11px] text-amber-400/70 truncate">
+                Trigger <strong className="text-amber-400">{confirmingWorkflow.wf.label}</strong>?
+              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleCancelWorkflow}
+                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-white/50 hover:text-white/70 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmWorkflow}
+                  className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] text-amber-400 hover:bg-amber-500/20 transition-colors font-medium"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Quick command buttons — visible when idle and input empty */}
-      <QuickActionBar onAction={handleQuickAction} hasInput={input.length > 0} isIdle={stage === "idle"} />
+      {!confirmingWorkflow && <QuickActionBar onAction={handleQuickAction} hasInput={input.length > 0} isIdle={stage === "idle"} />}
 
       {/* Input */}
       <div className="shrink-0 border-t border-white/10 bg-black/40 backdrop-blur-xl py-2">
@@ -1160,8 +1227,8 @@ export default function SamanthaAI() {
             value={input}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } if (e.key === "Escape") { setSlashOpen(false); } }}
-            placeholder={stage !== "idle" ? "Thinking..." : "Message Samantha... (/ for commands)"}
-            disabled={stage !== "idle"}
+            placeholder={confirmingWorkflow ? "Confirm or cancel above…" : stage !== "idle" ? "Thinking..." : "Message Samantha... (/ for commands)"}
+            disabled={stage !== "idle" || !!confirmingWorkflow}
             rows={1}
             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white/80 placeholder:text-white/25 outline-none focus:border-white/20 focus:bg-white/[0.07] transition-all disabled:opacity-40 resize-none max-h-32 min-h-[38px]"
             style={{ height: input.split("\n").length > 1 ? `${Math.min(input.split("\n").length * 24 + 14, 128)}px` : "38px" }}

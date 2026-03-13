@@ -80,8 +80,6 @@ serve(async (req) => {
       "n8n Cloud": n8nCloud,
       "n8n Hostinger VPS": n8nVps,
       "Supabase Database": database,
-      "Claude Code CLI": { ok: true, latency: 0 },
-      "MCP Gateway": { ok: true, latency: 0 },
     };
 
     const timestamp = new Date().toISOString();

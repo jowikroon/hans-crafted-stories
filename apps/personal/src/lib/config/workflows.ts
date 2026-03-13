@@ -6,6 +6,8 @@ export interface WorkflowDef {
   keywords: string[];
   examples: string[];
   category: "seo" | "data" | "infra" | "ai" | "marketing";
+  /** read = safe, no side-effects. write = triggers external action, requires confirmation. */
+  tier: "read" | "write";
   /** When true, call the webhook URL directly (Supabase edge function) instead of routing through trigger-webhook → n8n. */
   direct?: boolean;
 }
@@ -25,6 +27,7 @@ export const WORKFLOWS: WorkflowDef[] = [
     keywords: ["seo", "title", "optimize", "product", "autoseo", "channable", "ranking", "search"],
     examples: ["optimize my product titles", "run autoseo", "improve SEO", "boost rankings"],
     category: "seo",
+    tier: "write",
   },
   {
     name: "product-titles",
@@ -34,6 +37,7 @@ export const WORKFLOWS: WorkflowDef[] = [
     keywords: ["product", "title", "rewrite", "optimize", "titles", "naming", "product-titles"],
     examples: ["rewrite product titles", "optimize titles", "fix product names", "title optimizer"],
     category: "seo",
+    tier: "write",
   },
   {
     name: "health-check",
@@ -43,6 +47,7 @@ export const WORKFLOWS: WorkflowDef[] = [
     keywords: ["health", "check", "status", "ping", "uptime", "monitor", "alive"],
     examples: ["check health", "run health check", "are services up", "system status"],
     category: "infra",
+    tier: "read",
     direct: true,
   },
   {
@@ -53,6 +58,7 @@ export const WORKFLOWS: WorkflowDef[] = [
     keywords: ["feed", "product-feed", "channable", "google shopping", "sync", "export", "catalog"],
     examples: ["optimize product feed", "sync feeds", "update channable", "export products"],
     category: "data",
+    tier: "write",
   },
   {
     name: "campaign",
@@ -62,6 +68,7 @@ export const WORKFLOWS: WorkflowDef[] = [
     keywords: ["campaign", "ads", "google ads", "marketing", "launch", "advertise", "promote"],
     examples: ["create a campaign", "launch ads", "generate campaign", "start marketing"],
     category: "marketing",
+    tier: "write",
   },
   {
     name: "scraper",
@@ -71,6 +78,7 @@ export const WORKFLOWS: WorkflowDef[] = [
     keywords: ["scrape", "scraper", "crawl", "extract", "competitor", "pricing", "spy"],
     examples: ["scrape a website", "get competitor prices", "crawl competitor", "extract data"],
     category: "data",
+    tier: "write",
   },
   {
     name: "monday-orchestrator",
@@ -80,6 +88,7 @@ export const WORKFLOWS: WorkflowDef[] = [
     keywords: ["monday", "orchestrator", "board", "item", "task", "project"],
     examples: ["monday orchestrator", "process monday items", "monday automation"],
     category: "ai",
+    tier: "write",
   },
   {
     name: "google",
@@ -89,6 +98,7 @@ export const WORKFLOWS: WorkflowDef[] = [
     keywords: ["google", "gmail", "sheets", "drive", "email", "inbox", "spreadsheet", "documents"],
     examples: ["check my gmail", "summarize my emails", "add row to my sheet", "list drive files", "google"],
     category: "ai",
+    tier: "read",
   },
 ];
 
