@@ -183,7 +183,10 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
   const [ogImage, setOgImage] = useState("");
+  const [ogTitle, setOgTitle] = useState("");
+  const [ogDescription, setOgDescription] = useState("");
   const [canonicalUrl, setCanonicalUrl] = useState("");
+  const [primaryKeyword, setPrimaryKeyword] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -207,17 +210,21 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
       setMetaTitle(post.meta_title || "");
       setMetaDescription(post.meta_description || "");
       setOgImage(post.og_image || "");
+      setOgTitle(post.og_title || "");
+      setOgDescription(post.og_description || "");
       setCanonicalUrl(post.canonical_url || "");
+      setPrimaryKeyword(post.primary_keyword || "");
       setScheduledAt(post.scheduled_at || "");
       // Auto-expand NL if any translations exist
       setNlExpanded(!!(post.title_nl || post.excerpt_nl || post.content_nl));
-      setSeoExpanded(!!(post.meta_title || post.meta_description));
+      setSeoExpanded(!!(post.meta_title || post.meta_description || post.primary_keyword));
     } else {
       setTitle(""); setSlug(""); setExcerpt(""); setContent("");
       setTitleNl(""); setExcerptNl(""); setContentNl("");
       setCategory("professional"); setTags(""); setReadTime("5 min read");
       setPublished(false); setImageUrl("");
-      setMetaTitle(""); setMetaDescription(""); setOgImage(""); setCanonicalUrl(""); setScheduledAt("");
+      setMetaTitle(""); setMetaDescription(""); setOgImage(""); setOgTitle(""); setOgDescription("");
+      setCanonicalUrl(""); setPrimaryKeyword(""); setScheduledAt("");
       setNlExpanded(false); setSeoExpanded(false);
     }
     setTagInput("");
@@ -300,7 +307,10 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
         meta_title: metaTitle,
         meta_description: metaDescription,
         og_image: ogImage,
+        og_title: ogTitle,
+        og_description: ogDescription,
         canonical_url: canonicalUrl,
+        primary_keyword: primaryKeyword,
         scheduled_at: scheduledAt || null,
       });
       onOpenChange(false);
@@ -576,7 +586,7 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
               title="SEO Settings"
               subtitle="Meta tags for search engines and social sharing"
               badge={
-                (metaTitle || metaDescription) ? (
+                (metaTitle || metaDescription || primaryKeyword) ? (
                   <span className="text-[10px] font-mono tabular-nums rounded-full px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500/70">
                     configured
                   </span>
@@ -586,6 +596,16 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
               onToggle={() => setSeoExpanded(!seoExpanded)}
             >
               <div className="space-y-3 pb-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground/60">Primary Keyword</Label>
+                  <Input
+                    value={primaryKeyword}
+                    onChange={(e) => setPrimaryKeyword(e.target.value)}
+                    placeholder="e.g. amazon nl specialist"
+                    className="text-sm"
+                  />
+                  <p className="text-[10px] text-muted-foreground/40">Target keyword for this article — used to measure SEO focus</p>
+                </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-muted-foreground/60">Meta Title</Label>
                   <Input
@@ -605,6 +625,24 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
                     onChange={setMetaDescription}
                     placeholder={excerpt || "Defaults to excerpt"}
                     maxLength={160}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground/60">OG Title</Label>
+                  <Input
+                    value={ogTitle}
+                    onChange={(e) => setOgTitle(e.target.value)}
+                    placeholder={metaTitle || title || "Defaults to meta title"}
+                    className="text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground/60">OG Description</Label>
+                  <ExcerptField
+                    value={ogDescription}
+                    onChange={setOgDescription}
+                    placeholder={metaDescription || excerpt || "Defaults to meta description"}
+                    maxLength={200}
                   />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">

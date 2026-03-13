@@ -17,7 +17,10 @@ export interface BlogPostRow {
   meta_title: string;
   meta_description: string;
   og_image: string;
+  og_title: string;
+  og_description: string;
   canonical_url: string;
+  primary_keyword: string;
   scheduled_at: string | null;
   created_at: string;
   updated_at: string;
