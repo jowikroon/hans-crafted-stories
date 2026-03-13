@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
-import { triggerWorkflow } from "@/lib/intent/pipeline";
+import { triggerWorkflow, runIntentPipeline } from "@/lib/intent/pipeline";
 import { fastRoute } from "@/lib/intent/router";
 import { WORKFLOWS, type WorkflowDef } from "@/lib/config/workflows";
 import { cn } from "@/lib/utils";
@@ -941,9 +941,8 @@ export default function SamanthaAI() {
     }
 
     // ─── Smart routing: fast keyword match → workflow, otherwise → chat ────
-    // Skip the slow LLM intent classifier. The fastRoute handles all keyword
-    // matches. Conversational messages go straight to chat without the 1-3s
-    // round-trip to the intent-router edge function.
+    // fastRoute: instant keyword match. >= 0.85 executes, 0.5-0.85 shows alternatives.
+    // < 0.5: LLM intent classifier (intent-router edge fn) before falling back to chat.
     setStage("routing");
     const route = fastRoute(text);
 
@@ -978,7 +977,44 @@ export default function SamanthaAI() {
       setStage("idle"); return;
     }
 
-    // Chat — go directly to the AI model (skip LLM intent classification)
+    // Low-confidence: try LLM intent classifier before falling back to chat.
+    // Only runs when fastRoute score < 0.5. Gracefully degrades to chat on failure.
+    if (route.confidence < 0.5) {
+      try {
+        const { outcome } = await runIntentPipeline(text, "samantha");
+        if (outcome.type === "workflow_match") {
+          const wf = outcome.workflow;
+          if (wf.tier === "write") {
+            if (!isAdmin) {
+              append({ role: "samantha", content: "Write operations are restricted to the admin account.", model: "System" });
+              setStage("idle"); return;
+            }
+            setConfirmingWorkflow({ wf, arg: text });
+            append({ role: "samantha", content: `I can run **${wf.label}** for that — it's a write action that triggers a real n8n workflow.\n\n${wf.description}\n\nConfirm or cancel below.`, model: "System" });
+            setStage("idle"); return;
+          }
+          // Read-tier: execute immediately
+          setStage("executing");
+          const wfOpId = startOp(wf.label, "workflow");
+          const wfToolMsg = append({ role: "tool", content: "", toolName: wf.label, toolStatus: "running" });
+          try {
+            const res = await triggerWorkflow(wf, "samantha", { message: text });
+            updateMessage(wfToolMsg.id, { toolStatus: res.ok ? "success" : "error", toolResult: { type: "workflow", workflowName: wf.label, status: res.ok ? "success" : "error", message: res.ok ? "Done" : (res.error || "Failed") } });
+            append({ role: "samantha", content: res.ok ? `Done — ${typeof res.data === "string" ? res.data : JSON.stringify(res.data).slice(0, 300)}` : `${wf.label} failed: ${res.error}`, model: wf.label });
+            endOp(wfOpId, res.ok ? "success" : "error");
+          } catch { updateMessage(wfToolMsg.id, { toolStatus: "error" }); endOp(wfOpId, "error"); }
+          setStage("idle"); return;
+        }
+        if (outcome.type === "clarify" && outcome.workflows.length > 0) {
+          const msg = outcome.message ? `${outcome.message}\n\n` : "";
+          append({ role: "samantha", content: `${msg}${outcome.workflows.map(w => `• **${w.label}** — ${w.description}`).join("\n")}\n\nWhich one?`, model: "System" });
+          setStage("idle"); return;
+        }
+        // unhandled or chat_fallback: fall through to chat
+      } catch { /* intent-router unavailable — fall through to chat */ }
+    }
+
+    // Chat — go directly to the AI model
     setStage("thinking");
     const opId = startOp("Chat", "chat");
     const streamMsg = append({ role: "samantha", content: "", streaming: true, model: cur.label });
