@@ -1,8 +1,18 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /portal
+Disallow: /samantha
+Disallow: /god-structure
+Disallow: /empire
+Disallow: /extensions/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /portal
+Disallow: /samantha
+Disallow: /god-structure
+Disallow: /empire
+Disallow: /extensions/
 
 User-agent: Twitterbot
 Allow: /
@@ -10,7 +20,21 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
 User-agent: *
 Allow: /
+Disallow: /portal
+Disallow: /samantha
+Disallow: /god-structure
+Disallow: /empire
+Disallow: /extensions/
 
 Sitemap: https://hansvanleeuwen.com/sitemap.xml
