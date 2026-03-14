@@ -24,10 +24,6 @@ const STATIC_META = {
   },
 };
 
-function esc(s) {
-  return (s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 async function getBlogMeta(slug) {
   try {
     const res = await fetch(
@@ -48,7 +44,6 @@ export async function onRequest(context) {
   if (!ct.includes("text/html")) return res;
 
   const path = new URL(context.request.url).pathname;
-  const year = new Date().getFullYear();
   let meta = null;
 
   const blogMatch = path.match(/^\/writing\/([a-z0-9-]+)\/?$/);
@@ -56,7 +51,7 @@ export async function onRequest(context) {
     const post = await getBlogMeta(blogMatch[1]);
     if (post) {
       meta = {
-        title: (post.meta_title || post.title) + " | Hans van Leeuwen",
+        title: post.meta_title || (post.title + " | Hans van Leeuwen"),
         description: post.meta_description || post.excerpt || "",
         og_title: post.og_title || post.title,
         og_description: post.og_description || post.excerpt || "",
@@ -65,27 +60,37 @@ export async function onRequest(context) {
   }
 
   if (!meta) meta = STATIC_META[path];
-  if (!meta) {
-    return new HTMLRewriter()
-      .on("body", { element(el) { /* fix year */ } })
-      .transform(res);
-  }
+  if (!meta) return res;
 
-  const canonical = `https://hansvanleeuwen.com${path}`;
-  const t = esc(meta.title);
-  const d = esc(meta.description);
-  const ogT = esc(meta.og_title || meta.title);
-  const ogD = esc(meta.og_description || meta.description);
+  const canonical = "https://hansvanleeuwen.com" + path;
 
   return new HTMLRewriter()
-    .on("title", { element(el) { el.setInnerContent(t); } })
-    .on('meta[name="description"]', { element(el) { el.setAttribute("content", d); } })
-    .on('link[rel="canonical"]', { element(el) { el.setAttribute("href", canonical); } })
-    .on('meta[property="og:title"]', { element(el) { el.setAttribute("content", ogT); } })
-    .on('meta[property="og:description"]', { element(el) { el.setAttribute("content", ogD); } })
-    .on('meta[property="og:url"]', { element(el) { el.setAttribute("content", canonical); } })
-    .on('meta[name="twitter:title"]', { element(el) { el.setAttribute("content", ogT); } })
-    .on('meta[name="twitter:description"]', { element(el) { el.setAttribute("content", ogD); } })
-    .on('meta[name="twitter:url"]', { element(el) { el.setAttribute("content", canonical); } })
+    .on("title", {
+      element(el) { el.setInnerContent(meta.title, { html: true }); }
+    })
+    .on('meta[name="description"]', {
+      element(el) { el.setAttribute("content", meta.description); }
+    })
+    .on('link[rel="canonical"]', {
+      element(el) { el.setAttribute("href", canonical); }
+    })
+    .on('meta[property="og:title"]', {
+      element(el) { el.setAttribute("content", meta.og_title || meta.title); }
+    })
+    .on('meta[property="og:description"]', {
+      element(el) { el.setAttribute("content", meta.og_description || meta.description); }
+    })
+    .on('meta[property="og:url"]', {
+      element(el) { el.setAttribute("content", canonical); }
+    })
+    .on('meta[name="twitter:title"]', {
+      element(el) { el.setAttribute("content", meta.og_title || meta.title); }
+    })
+    .on('meta[name="twitter:description"]', {
+      element(el) { el.setAttribute("content", meta.og_description || meta.description); }
+    })
+    .on('meta[name="twitter:url"]', {
+      element(el) { el.setAttribute("content", canonical); }
+    })
     .transform(res);
 }
