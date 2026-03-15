@@ -23,7 +23,7 @@ const getLinks = (lang: Lang) => {
 };
 
 const searchablePages = [
-  { to: "/samantha", label: "Samantha AI", keywords: ["samantha", "ai", "companion", "chat", "voice", "assistant", "start"] },
+  { to: "/samantha", label: "Samantha AI", keywords: ["samantha", "ai", "companion", "chat", "voice", "assistant", "start", "llm", "claude", "gemini", "gpt"] },
   { to: "/", label: "Home", keywords: ["home", "start", "landing"] },
   { to: "/work", label: "Work", keywords: ["work", "cases", "projects", "portfolio"] },
   { to: "/writing", label: "Writing", keywords: ["blog", "writing", "articles", "posts"] },
@@ -32,9 +32,7 @@ const searchablePages = [
   { to: "/bol-com-consultant", label: "Bol.com Consultant", keywords: ["bol", "bol.com", "consultant", "ads", "marketplace"] },
   { to: "/interim-ecommerce-manager", label: "Interim E-commerce Manager", keywords: ["interim", "manager", "freelance", "ecommerce", "lead"] },
   { to: "/portal", label: "Portal", keywords: ["portal", "dashboard", "login", "tools"] },
-  { to: "/empire", label: "Empire", keywords: ["empire", "admin", "terminal", "system"] },
-  { to: "/god-structure", label: "God Structure", keywords: ["god", "structure", "infrastructure", "architecture", "layers", "dashboard", "agents"] },
-  { to: "/samantha", label: "Samantha AI", keywords: ["ai", "chat", "llm", "claude", "gemini", "gpt", "samantha"] },
+  { to: "/god-structure", label: "God Structure", keywords: ["god", "structure", "infrastructure", "architecture", "layers", "dashboard", "agents", "empire", "admin", "terminal", "system"] },
 ];
 
 interface NavbarProps {
