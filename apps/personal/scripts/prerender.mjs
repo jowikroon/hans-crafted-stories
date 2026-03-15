@@ -94,7 +94,7 @@ const ABOUT_JSONLD = {
         "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
       image: {
         "@type": "ImageObject",
-        url: `${BASE}/og-image.png`,
+        url: `${BASE}/hans-profile.jpg`,
         width: 1200,
         height: 630,
         caption: "Hans van Leeuwen – Freelance E-commerce Manager",
@@ -311,6 +311,49 @@ for (const slug of HERO_SLUGS) {
     (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(WRITING_HEAD.canonical)}"`)
   );
   const outDir = path.join(distDir, "writing");
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, "index.html"), page, "utf8");
+  console.log(`[prerender] ${route} -> ${path.join(outDir, "index.html")}`);
+}
+
+// Prerender SEO landing pages
+const SEO_PAGES = [
+  {
+    route: "/amazon-nl-specialist",
+    head: {
+      title: "Amazon NL Specialist — Freelance Amazon Netherlands Account Manager | Hans van Leeuwen",
+      description: "Freelance Amazon NL specialist with 10+ years managing Amazon Netherlands accounts. Listing optimization, Amazon Ads, A+ content & marketplace growth. Based in Amersfoort.",
+      canonical: `${BASE}/amazon-nl-specialist`,
+    },
+  },
+  {
+    route: "/bol-com-consultant",
+    head: {
+      title: "Bol.com Consultant — Freelance Bol.com Specialist & Ads Manager | Hans van Leeuwen",
+      description: "Freelance Bol.com consultant specializing in product content optimization, Bol Ads management, and marketplace growth strategy. Based in Amersfoort, Netherlands.",
+      canonical: `${BASE}/bol-com-consultant`,
+    },
+  },
+  {
+    route: "/interim-ecommerce-manager",
+    head: {
+      title: "Interim E-commerce Manager — Freelance Marketplace Lead (NL/EU) | Hans van Leeuwen",
+      description: "Interim e-commerce manager available for freelance marketplace leadership roles. Strategy, operations & hands-on execution for Amazon, Bol.com & more. NL/EU.",
+      canonical: `${BASE}/interim-ecommerce-manager`,
+    },
+  },
+];
+
+for (const { route, head } of SEO_PAGES) {
+  const { html } = render(route, null, { initialLang: "en" });
+  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+  page = setHead(page, head);
+  page = page.replace(
+    /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
+    (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(head.canonical)}"`)
+  );
+  const slug = route.slice(1); // remove leading /
+  const outDir = path.join(distDir, slug);
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, "index.html"), page, "utf8");
   console.log(`[prerender] ${route} -> ${path.join(outDir, "index.html")}`);
