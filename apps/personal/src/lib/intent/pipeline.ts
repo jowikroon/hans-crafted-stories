@@ -123,11 +123,15 @@ export async function triggerWorkflow(
 
     const res = await fetch(fetchUrl, { method: "POST", headers: authHeaders, body: fetchBody });
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
     const text = await res.text();
     let data: unknown;
     try { data = JSON.parse(text); } catch { data = text; }
+
+    if (!res.ok) {
+      // Extract the detailed error from the response body (trigger-webhook returns { success, error })
+      const detail = typeof data === "object" && data !== null ? (data as Record<string, unknown>).error : undefined;
+      throw new Error(typeof detail === "string" ? detail : `HTTP ${res.status}`);
+    }
 
     const duration_ms = Date.now() - startTime;
 
