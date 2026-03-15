@@ -838,7 +838,7 @@ export default function SamanthaAI() {
           updateMessage(toolMsg.id, { toolStatus: res.ok ? "success" : "error", toolResult: { type: "workflow", workflowName: wf.label, status: res.ok ? "success" : "error", message: res.ok ? "Completed" : (res.error || "Failed") } });
           append({ role: "samantha", content: res.ok ? `✅ **${wf.label}** completed.` : `❌ **${wf.label}** failed: ${res.error}`, model: wf.label });
           endOp(opId, res.ok ? "success" : "error");
-        } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); endOp(opId, "error"); }
+        } catch (e: any) { const errMsg = e?.message || "Network error"; updateMessage(toolMsg.id, { toolStatus: "error", toolResult: { type: "workflow", workflowName: wf.label, status: "error", message: errMsg } }); append({ role: "samantha", content: `❌ **${wf.label}** failed: ${errMsg}`, model: wf.label }); endOp(opId, "error"); }
         setStage("idle"); return;
       }
       case "task": {
@@ -945,7 +945,7 @@ export default function SamanthaAI() {
           endOp(opId, "success");
         }
       }
-    } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); endOp(opId, "error"); }
+    } catch (e: any) { const errMsg = e?.message || "Network error"; updateMessage(toolMsg.id, { toolStatus: "error", toolResult: { type: "workflow", workflowName: wf.label, status: "error", message: errMsg } }); append({ role: "samantha", content: `❌ **${wf.label}** failed: ${errMsg}`, model: wf.label }); endOp(opId, "error"); }
     setStage("idle");
   }, [confirmingWorkflow, startOp, endOp]);
 
