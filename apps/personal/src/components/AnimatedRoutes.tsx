@@ -40,6 +40,7 @@ const AnimatedRoutes = () => {
         {/* Deprecated pages → redirect to Samantha */}
         <Route path="/empire" element={<Navigate to="/samantha" replace />} />
         <Route path="/hansai" element={<Navigate to="/samantha" replace />} />
+        <Route path="/hans-ai" element={<Navigate to="/samantha" replace />} />
         <Route path="/command" element={<Navigate to="/samantha" replace />} />
         <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
         <Route path="/auth/callback" element={<AuthCallback />} />
