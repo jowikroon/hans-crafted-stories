@@ -11,6 +11,7 @@ import PortalUsersManager from "@/components/portal/PortalUsersManager";
 import PortalPagesTab from "@/components/portal/PortalPagesTab";
 import PortalFloatingDock from "@/components/portal/PortalFloatingDock";
 import PortalCommandPalette from "@/components/portal/PortalCommandPalette";
+import { MediaPickerProvider } from "@/components/portal/MediaPickerContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -159,6 +160,7 @@ const Portal = () => {
   }
 
   return (
+    <MediaPickerProvider>
     <section className="section-container pt-20 pb-28 sm:pb-20 sm:pt-28 px-5 sm:px-8 lg:px-12">
       <PageBreadcrumb items={[{ label: "Portal" }]} />
       <motion.div
@@ -268,6 +270,7 @@ const Portal = () => {
       )}
       <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => {}} onN8nOpen={() => {}} onSignOut={signOut} />
     </section>
+    </MediaPickerProvider>
   );
 };
 

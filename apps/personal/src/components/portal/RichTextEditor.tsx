@@ -8,6 +8,7 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import { useEffect, useCallback, useState, useRef } from "react";
 import TurndownService from "turndown";
+import { useMediaPicker } from "./MediaPickerContext";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   List, ListOrdered, Quote, Code, Minus, Link as LinkIcon,
@@ -137,15 +138,17 @@ function useLinkPrompt(editor: ReturnType<typeof useEditor>) {
   }, [editor]);
 }
 
-// ─── Image prompt ────────────────────────────────────────
+// ─── Image from Media Library ────────────────────────────
 
-function useImagePrompt(editor: ReturnType<typeof useEditor>) {
-  return useCallback(() => {
+function useImageFromLibrary(editor: ReturnType<typeof useEditor>) {
+  const { pickImage } = useMediaPicker();
+  return useCallback(async () => {
     if (!editor) return;
-    const url = window.prompt("Image URL", "https://");
-    if (!url) return;
-    editor.chain().focus().setImage({ src: url }).run();
-  }, [editor]);
+    const url = await pickImage();
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  }, [editor, pickImage]);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -194,7 +197,7 @@ const RichTextEditor = ({
   });
 
   const setLink = useLinkPrompt(editor);
-  const setImage = useImagePrompt(editor);
+  const setImage = useImageFromLibrary(editor);
 
   // Sync external value changes into editor (e.g. AI suggestions, copy-from-english)
   useEffect(() => {

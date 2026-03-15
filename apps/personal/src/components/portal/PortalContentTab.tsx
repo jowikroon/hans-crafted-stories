@@ -14,7 +14,7 @@ import { getAllPageContent, PageContentRow } from "@/lib/api/pageContent";
 import BlogPostFormModal from "./BlogPostFormModal";
 import CaseStudyFormModal from "./CaseStudyFormModal";
 import PageContentEditorModal from "./PageContentEditorModal";
-import MediaLibraryModal from "./MediaLibraryModal";
+import { useMediaPicker } from "./MediaPickerContext";
 import InfoTooltip from "./InfoTooltip";
 import PortalLangToggle from "./PortalLangToggle";
 
@@ -45,7 +45,7 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title">("newest");
   const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
   const [selectedStudies, setSelectedStudies] = useState<Set<string>>(new Set());
-  const [mediaOpen, setMediaOpen] = useState(false);
+  const { openLibrary } = useMediaPicker();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -219,7 +219,7 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
           {sortBy === "newest" ? "Newest" : sortBy === "oldest" ? "Oldest" : "A–Z"}
         </button>
         <button
-          onClick={() => setMediaOpen(true)}
+          onClick={() => openLibrary()}
           className="flex items-center gap-1.5 rounded-lg border border-border bg-card/50 px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
           title="Media Library"
         >
@@ -453,10 +453,6 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
         />
       )}
 
-      <MediaLibraryModal
-        open={mediaOpen}
-        onOpenChange={setMediaOpen}
-      />
     </div>
   );
 };

@@ -13,6 +13,7 @@ import { Save, Loader2, ExternalLink, RotateCcw, Sparkles, Home, Briefcase, PenL
 import VersionHistoryPanel from "./VersionHistoryPanel";
 import PortalLangToggle from "./PortalLangToggle";
 import RichTextEditor from "./RichTextEditor";
+import ImageUrlField from "./ImageUrlField";
 
 interface Props {
   open: boolean;
@@ -144,8 +145,12 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
     }
   };
 
-  const getFieldType = (item: PageContentRow): "short" | "medium" | "long" => {
+  const getFieldType = (item: PageContentRow): "short" | "medium" | "long" | "image" => {
     const val = values[item.id] ?? item.content_value;
+    // Detect image URL fields by key or label
+    const lk = item.content_key.toLowerCase();
+    const ll = item.content_label.toLowerCase();
+    if (lk.includes("image") || lk.includes("_img") || ll.includes("image") || item.content_type === "image") return "image";
     if (val.length > 150 || item.content_type === "body") return "long";
     if (val.length > 60) return "medium";
     return "short";
@@ -245,7 +250,14 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
                               </button>
                             )}
                           </div>
-                          {fieldType === "long" ? (
+                          {fieldType === "image" ? (
+                            <ImageUrlField
+                              value={val}
+                              onChange={(url) => setValues((v) => ({ ...v, [item.id]: url }))}
+                              placeholder="Select from library or paste URL…"
+                              className={isChanged ? "ring-1 ring-primary/20 rounded-lg p-0.5" : ""}
+                            />
+                          ) : fieldType === "long" ? (
                             <RichTextEditor
                               value={val}
                               onChange={(md) => setValues((v) => ({ ...v, [item.id]: md }))}

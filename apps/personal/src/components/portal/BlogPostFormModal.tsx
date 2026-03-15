@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { BlogPostRow } from "@/lib/api/content";
 import ImageCropUploader from "./ImageCropUploader";
+import ImageUrlField from "./ImageUrlField";
 import RichTextEditor from "./RichTextEditor";
 import BlogPostVersionHistory from "./BlogPostVersionHistory";
 import { BlogPostVersion } from "@/lib/api/blogPostVersions";
@@ -366,6 +367,13 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
             label="Cover Image"
             hint="Recommended: 1200×900px (4:3). Crop after selecting."
           />
+          <ImageUrlField
+            value={imageUrl}
+            onChange={setImageUrl}
+            placeholder="Or pick from Media Library…"
+            showPreview={false}
+            hint="Use the Library button to select an existing image, or upload + crop above."
+          />
 
           {/* ═══ 2. TITLE & SLUG ═══ */}
           <div className="space-y-3">
@@ -646,15 +654,13 @@ const BlogPostFormModal = ({ open, onOpenChange, post, onSave }: Props) => {
                   />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-muted-foreground/60">OG Image URL</Label>
-                    <Input
-                      value={ogImage}
-                      onChange={(e) => setOgImage(e.target.value)}
-                      placeholder={imageUrl ? "Defaults to cover image" : "https://..."}
-                      className="text-xs font-mono"
-                    />
-                  </div>
+                  <ImageUrlField
+                    label="OG Image"
+                    value={ogImage}
+                    onChange={setOgImage}
+                    placeholder={imageUrl ? "Defaults to cover image" : "Select or paste URL…"}
+                    hint="Social sharing thumbnail. Defaults to cover image if empty."
+                  />
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium text-muted-foreground/60">Canonical URL</Label>
                     <Input

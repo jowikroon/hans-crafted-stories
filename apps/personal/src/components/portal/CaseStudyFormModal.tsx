@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { FolderOpen } from "lucide-react";
 import { CaseStudyRow } from "@/lib/api/content";
 import ImageCropUploader from "./ImageCropUploader";
+import ImageUrlField from "./ImageUrlField";
 import RichTextEditor from "./RichTextEditor";
 
 interface Props {
@@ -87,6 +88,12 @@ const CaseStudyFormModal = ({ open, onOpenChange, study, onSave }: Props) => {
             aspectRatio={16 / 9}
             label="Cover Image"
             hint="Recommended: 1600×900px (16:9 ratio). You'll be able to crop after selecting."
+          />
+          <ImageUrlField
+            value={image}
+            onChange={setImage}
+            placeholder="Or pick from Media Library…"
+            showPreview={false}
           />
 
           <div className="grid gap-4 sm:grid-cols-2">

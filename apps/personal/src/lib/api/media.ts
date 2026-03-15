@@ -20,7 +20,12 @@ export async function getMediaItems(folder?: string): Promise<MediaItem[]> {
     .order("created_at", { ascending: false });
   if (folder && folder !== "all") query = query.eq("folder", folder);
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) {
+    if (error.message?.includes("row-level security") || error.message?.includes("policy")) {
+      throw new Error("Cannot load media — check that your account has the right permissions.");
+    }
+    throw new Error(`Failed to load media: ${error.message}`);
+  }
   return (data ?? []) as unknown as MediaItem[];
 }
 
@@ -30,18 +35,30 @@ export async function uploadMedia(
   folder: string = "general",
   altText: string = ""
 ): Promise<MediaItem> {
-  const path = `${folder}/${fileName}-${Date.now()}.${file.type.split("/")[1] || "jpg"}`;
+  // Verify session before attempting upload
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("You must be logged in to upload files.");
 
+  const ext = file.type.split("/")[1] || "jpg";
+  const path = `${folder}/${fileName}-${Date.now()}.${ext}`;
+
+  // Step 1: Upload to storage
   const { error: uploadError } = await supabase.storage.from("bucket").upload(path, file, {
     cacheControl: "3600",
     upsert: false,
     contentType: file.type,
   });
-  if (uploadError) throw uploadError;
+  if (uploadError) {
+    if (uploadError.message?.includes("row-level security") || uploadError.message?.includes("policy")) {
+      throw new Error("Upload denied — your account doesn't have admin permissions.");
+    }
+    throw new Error(`Storage upload failed: ${uploadError.message}`);
+  }
 
   const { data: urlData } = supabase.storage.from("bucket").getPublicUrl(path);
   const publicUrl = urlData?.publicUrl || "";
 
+  // Step 2: Save metadata row
   const item = {
     file_name: fileName,
     storage_path: path,
@@ -50,6 +67,7 @@ export async function uploadMedia(
     file_size: file instanceof File ? file.size : 0,
     alt_text: altText,
     folder,
+    uploaded_by: user.id,
   };
 
   const { data, error } = await supabase
@@ -57,14 +75,30 @@ export async function uploadMedia(
     .insert(item as any)
     .select()
     .single();
-  if (error) throw error;
+
+  if (error) {
+    // Clean up orphaned storage file if DB insert failed
+    await supabase.storage.from("bucket").remove([path]).catch(() => {});
+    if (error.message?.includes("row-level security") || error.message?.includes("policy")) {
+      throw new Error("Metadata save denied — your account doesn't have admin permissions.");
+    }
+    throw new Error(`Failed to save file metadata: ${error.message}`);
+  }
+
   return data as unknown as MediaItem;
 }
 
 export async function deleteMedia(id: string, storagePath: string): Promise<void> {
-  await supabase.storage.from("bucket").remove([storagePath]);
+  const { error: storageError } = await supabase.storage.from("bucket").remove([storagePath]);
+  if (storageError) console.warn("Storage delete warning:", storageError.message);
+
   const { error } = await supabase.from("media_library" as any).delete().eq("id", id);
-  if (error) throw error;
+  if (error) {
+    if (error.message?.includes("row-level security") || error.message?.includes("policy")) {
+      throw new Error("Delete denied — admin permissions required.");
+    }
+    throw new Error(`Failed to delete: ${error.message}`);
+  }
 }
 
 export async function updateMediaAlt(id: string, altText: string): Promise<void> {
@@ -72,5 +106,10 @@ export async function updateMediaAlt(id: string, altText: string): Promise<void>
     .from("media_library" as any)
     .update({ alt_text: altText } as any)
     .eq("id", id);
-  if (error) throw error;
+  if (error) {
+    if (error.message?.includes("row-level security") || error.message?.includes("policy")) {
+      throw new Error("Update denied — admin permissions required.");
+    }
+    throw new Error(`Failed to update: ${error.message}`);
+  }
 }
