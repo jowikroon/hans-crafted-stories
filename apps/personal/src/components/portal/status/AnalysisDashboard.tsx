@@ -437,7 +437,7 @@ const ArchitecturePanel = () => (
             <div><strong className="text-foreground">Frontend:</strong> Vite, React 18, TypeScript, shadcn/ui, Framer Motion, Tailwind</div>
             <div><strong className="text-foreground">Backend:</strong> Supabase (Postgres, Auth, {EDGE_FUNCTION_COUNT} Edge Functions), n8n (Hostinger VPS)</div>
             <div><strong className="text-foreground">Deploy:</strong> Cloudflare Pages, GitHub Actions, Cloudflare Functions</div>
-            <div><strong className="text-foreground">AI:</strong> Lovable AI Gateway (Gemini 2.5 Flash), planned Ollama/Qwen local</div>
+            <div><strong className="text-foreground">AI:</strong> Claude Opus 4.5, Gemini 2.5 Flash, Ollama/Qwen (local)</div>
             <div><strong className="text-foreground">Infra:</strong> 2× Hostinger VPS, Docker, Traefik, Cloudflare DNS</div>
             <div><strong className="text-foreground">Languages:</strong> EN + NL (bilingual), all pages translatable</div>
           </div>

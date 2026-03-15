@@ -51,7 +51,7 @@ export const INFRA_LAYERS: InfraLayer[] = [
     icon: "Database",
     services: [
       "PostgreSQL — ~30 tables, 7+ migrations",
-      "Auth — Email + Google OAuth (via Lovable SDK)",
+      "Auth — Email + Google OAuth (direct Supabase)",
       "Edge Functions (7 deployed)",
       "Row Level Security on SaaS tables",
       "pgvector extension for embeddings",
@@ -259,7 +259,7 @@ export const ROADMAP: RoadmapItem[] = [
   // P1 — Core
   { task: "Fix RLS auth.uid() → (select auth.uid()) — 30 policies", status: "done", priority: "P1", category: "performance" },
   { task: "Add missing FK indexes (6 tables)", status: "done", priority: "P1", category: "performance" },
-  { task: "Replace Lovable OAuth → direct Supabase Google OAuth", status: "todo", priority: "P1", category: "auth", effort: "1 hr", description: "Google OAuth currently routes through @lovable.dev/cloud-auth-js — a third-party proxy. Replace with direct Supabase provider." },
+  { task: "Replace Lovable OAuth → direct Supabase Google OAuth", status: "done", priority: "P1", category: "auth", effort: "1 hr", description: "Replaced with direct Supabase Google OAuth. @lovable.dev/cloud-auth-js removed." },
   { task: "Verify Supabase Site URL = marketplacegrowth.nl", status: "todo", priority: "P1", category: "auth", effort: "2 min" },
   { task: "Fix n8n reverse proxy 502", status: "blocked", priority: "P1", category: "infra", effort: "1 hr", description: "n8n.hansvanleeuwen.com returns 502. Traefik routing misconfiguration." },
   // P2 — Polish
@@ -313,7 +313,7 @@ export const SECURITY_ISSUES: SecurityIssue[] = [
   { id: "sec-2", severity: "critical", area: "Database", issue: "6 infrastructure tables have no RLS policies", impact: "Anyone with anon key can query infra topology, AI sessions, system state", fix: "Enable RLS with admin-only policies or move to infra schema", effort: "30 min" },
   { id: "sec-3", severity: "critical", area: "Edge Functions", issue: "No LLM API key set in Supabase secrets", impact: "All AI content generation silently fails", fix: "Add GEMINI_API_KEY or ANTHROPIC_API_KEY to Edge Function secrets", effort: "2 min" },
   { id: "sec-4", severity: "high", area: "Auth", issue: "Leaked password protection disabled", impact: "Users can register with passwords from known breaches", fix: "Enable HaveIBeenPwned check in Supabase Auth → Security", effort: "2 min" },
-  { id: "sec-5", severity: "medium", area: "Auth", issue: "Google OAuth via third-party @lovable.dev proxy", impact: "Dependency on external service for auth flow", fix: "Replace with direct Supabase Google OAuth provider", effort: "1 hr" },
+  { id: "sec-5", severity: "medium", area: "Auth", issue: "Google OAuth via third-party @lovable.dev proxy (FIXED)", impact: "Resolved — using direct Supabase Google OAuth", fix: "Done — @lovable.dev dependency removed", effort: "Done" },
 ];
 
 // ─── Performance Issues ──────────────────────────────────

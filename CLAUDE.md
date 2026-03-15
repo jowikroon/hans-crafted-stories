@@ -130,9 +130,10 @@ N8N Architect:     https://n8n.srv1402218.hstgr.cloud/webhook/n8n-architect
 
 ## Supabase
 
-- **Project:** `oejeojzaakfhculcoqdh`
-- **URL:** `https://oejeojzaakfhculcoqdh.supabase.co`
-- **Key tables:** `empire_events`, `portal_tools`, `blog_posts`, `case_studies`
+- **Cloud Project:** `pesfakewujjwkyybwaom` (shared: hansvanleeuwen.com + marketplacegrowth.nl)
+- **Cloud URL:** `https://pesfakewujjwkyybwaom.supabase.co`
+- **Self-hosted:** `https://supabase.srv1402218.hstgr.cloud` (data tables for hansvanleeuwen.com)
+- **Key tables:** `empire_events`, `portal_tools`, `blog_posts`, `case_studies`, `workflow_runs`
 - **Edge Functions:** `empire-health`, `portal-api`, `trigger-webhook`, `n8n-agent`
 
 ## Environment Files
