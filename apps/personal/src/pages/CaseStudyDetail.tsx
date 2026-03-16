@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Home, ChevronRight, ArrowRight, X, ChevronLeft } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
+import { useSEO } from "@/hooks/useSEO";
 
 const images = [
   { src: "/cases/connect-car-parts/ccp-10.png", alt: "Connect Car Parts — full campaign overview" },
@@ -83,6 +84,25 @@ const CaseStudyDetail = () => {
     ctaText: "This project was built with the same technology now available as SaaS on marketplacegrowth.nl.",
     ctaButton: "Try the Content Builder",
   };
+
+  useSEO({
+    title: lang === "nl"
+      ? "Connect Car Parts — Marketplace Content Optimalisatie | Hans van Leeuwen"
+      : "Connect Car Parts — Marketplace Content Optimization | Hans van Leeuwen",
+    description: lang === "nl"
+      ? "Case study: AI-gestuurde Amazon content optimalisatie voor 2.400+ automotive onderdelen. Kwaliteitsscore 94/100, 93% tijdsbesparing per SKU."
+      : "Case study: AI-powered Amazon content optimization for 2,400+ automotive parts. Quality score 94/100, 93% time reduction per SKU.",
+    url: "https://hansvanleeuwen.com/work/connect-car-parts",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: content.title,
+      description: content.subtitle,
+      author: { "@type": "Person", name: "Hans van Leeuwen", url: "https://hansvanleeuwen.com/about" },
+      publisher: { "@id": "https://hansvanleeuwen.com/#organization" },
+      url: "https://hansvanleeuwen.com/work/connect-car-parts",
+    },
+  });
 
   return (
     <section className="section-container pt-28 pb-20">
