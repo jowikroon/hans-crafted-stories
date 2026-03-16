@@ -4,7 +4,6 @@ import { translations } from "@/data/translations";
 
 const socialLinks = [
   { label: "LinkedIn", href: "https://www.linkedin.com/in/hansvl3" },
-  { label: "BeHans.nl", href: "https://www.behans.nl" },
 ];
 
 const internalLinks = [
