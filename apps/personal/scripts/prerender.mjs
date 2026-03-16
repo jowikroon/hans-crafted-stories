@@ -116,7 +116,7 @@ const ABOUT_JSONLD = {
         addressLocality: "Amersfoort",
         addressCountry: "NL",
       },
-      sameAs: ["https://www.linkedin.com/in/hansvl3", "https://www.behans.nl"],
+      sameAs: ["https://www.linkedin.com/in/hansvl3"],
     },
     {
       "@type": "BreadcrumbList",
