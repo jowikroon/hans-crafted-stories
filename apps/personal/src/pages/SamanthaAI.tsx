@@ -838,7 +838,7 @@ export default function SamanthaAI() {
           updateMessage(toolMsg.id, { toolStatus: res.ok ? "success" : "error", toolResult: { type: "workflow", workflowName: wf.label, status: res.ok ? "success" : "error", message: res.ok ? "Completed" : (res.error || "Failed") } });
           append({ role: "samantha", content: res.ok ? `✅ **${wf.label}** completed.` : `❌ **${wf.label}** failed: ${res.error}`, model: wf.label });
           endOp(opId, res.ok ? "success" : "error");
-        } catch (e: any) { const errMsg = e?.message || "Network error"; updateMessage(toolMsg.id, { toolStatus: "error", toolResult: { type: "workflow", workflowName: wf.label, status: "error", message: errMsg } }); append({ role: "samantha", content: `❌ **${wf.label}** failed: ${errMsg}`, model: wf.label }); endOp(opId, "error"); }
+        } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); endOp(opId, "error"); }
         setStage("idle"); return;
       }
       case "task": {
@@ -945,7 +945,7 @@ export default function SamanthaAI() {
           endOp(opId, "success");
         }
       }
-    } catch (e: any) { const errMsg = e?.message || "Network error"; updateMessage(toolMsg.id, { toolStatus: "error", toolResult: { type: "workflow", workflowName: wf.label, status: "error", message: errMsg } }); append({ role: "samantha", content: `❌ **${wf.label}** failed: ${errMsg}`, model: wf.label }); endOp(opId, "error"); }
+    } catch (e: any) { updateMessage(toolMsg.id, { toolStatus: "error" }); endOp(opId, "error"); }
     setStage("idle");
   }, [confirmingWorkflow, startOp, endOp]);
 
@@ -1151,7 +1151,7 @@ export default function SamanthaAI() {
         <div className="flex items-center gap-2">
           {/* Model selector — relative container for dropdown anchor */}
           <div className="relative" ref={pickerRef}>
-            <button onClick={() => setPickerOpen(!pickerOpen)} className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[10px] font-medium text-white/50 hover:text-white/70 hover:border-white/15 transition-all">
+            <button onClick={() => setPickerOpen(!pickerOpen)} aria-label="Select AI model" className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[10px] font-medium text-white/50 hover:text-white/70 hover:border-white/15 transition-all">
               <span className="truncate max-w-[100px]">{cur.label}</span>
               <ChevronDown size={10} />
             </button>
@@ -1180,7 +1180,7 @@ export default function SamanthaAI() {
           </div>
           <Link to="/god-structure" className="hidden sm:flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-white/30 hover:text-white/50 transition-colors"><Network size={10} /> Dashboard</Link>
           <Link to="/wiki" className="hidden sm:flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] text-white/30 hover:text-white/50 transition-colors"><BookOpen size={10} /> Wiki</Link>
-          <button onClick={() => { if (isMobile) { setPanelOpen(!panelOpen); if (!panel) setSearchParams({ panel: "health" }); } else setSearchParams(panel ? {} : { panel: "health" }); }} className="flex items-center justify-center rounded-md p-1.5 text-white/30 hover:text-white/50 hover:bg-white/5 transition-all">
+          <button onClick={() => { if (isMobile) { setPanelOpen(!panelOpen); if (!panel) setSearchParams({ panel: "health" }); } else setSearchParams(panel ? {} : { panel: "health" }); }} aria-label={panel || panelOpen ? "Close side panel" : "Open side panel"} className="flex items-center justify-center rounded-md p-1.5 text-white/30 hover:text-white/50 hover:bg-white/5 transition-all">
             {panel || panelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
           </button>
         </div>
@@ -1197,7 +1197,7 @@ export default function SamanthaAI() {
       <InlineHealthBar cache={healthCache} onExpand={() => setPanel("health")} />
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto py-3 min-h-0">
+      <div className="flex-1 overflow-y-auto py-3 min-h-0" role="log" aria-live="polite" aria-label="Chat messages">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-3">
         {!hasMessages && (
           <div className="flex flex-col items-center justify-center h-full gap-5 py-8">
@@ -1337,16 +1337,17 @@ export default function SamanthaAI() {
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } if (e.key === "Escape") { setSlashOpen(false); } }}
             placeholder={confirmingWorkflow ? "Confirm or cancel above…" : stage !== "idle" ? "Thinking..." : "Message Samantha... (/ for commands)"}
             disabled={stage !== "idle" || !!confirmingWorkflow}
+            aria-label="Message Samantha"
             rows={1}
             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white/80 placeholder:text-white/25 outline-none focus:border-white/20 focus:bg-white/[0.07] transition-all disabled:opacity-40 resize-none max-h-32 min-h-[38px]"
             style={{ height: input.split("\n").length > 1 ? `${Math.min(input.split("\n").length * 24 + 14, 128)}px` : "38px" }}
           />
           {stage !== "idle" ? (
-            <button onClick={handleAbort} className="flex items-center justify-center h-[38px] w-[38px] rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all shrink-0">
+            <button onClick={handleAbort} aria-label="Stop generation" className="flex items-center justify-center h-[38px] w-[38px] rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all shrink-0">
               <StopCircle size={15} />
             </button>
           ) : (
-            <button onClick={() => handleSend()} disabled={!input.trim()} className="flex items-center justify-center h-[38px] w-[38px] rounded-xl bg-white/10 text-white/60 hover:bg-white/15 hover:text-white/80 transition-all disabled:opacity-30 shrink-0">
+            <button onClick={() => handleSend()} disabled={!input.trim()} aria-label="Send message" className="flex items-center justify-center h-[38px] w-[38px] rounded-xl bg-white/10 text-white/60 hover:bg-white/15 hover:text-white/80 transition-all disabled:opacity-30 shrink-0">
               <Send size={15} />
             </button>
           )}
