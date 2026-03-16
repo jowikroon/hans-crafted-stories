@@ -70,7 +70,6 @@ const About = () => {
           },
           sameAs: [
             "https://www.linkedin.com/in/hansvl3",
-            "https://www.behans.nl",
           ],
         },
         {
