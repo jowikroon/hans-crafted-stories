@@ -257,43 +257,68 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: -4, scale: 0.95 }}
                           transition={{ duration: 0.15 }}
-                          className={`absolute right-0 top-full mt-2 z-50 w-56 rounded-xl border shadow-xl overflow-hidden ${
+                          className={`absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border shadow-xl overflow-hidden ${
                             isDark ? "border-emerald-500/20 bg-[hsl(220,20%,8%)]" : "border-border bg-card"
                           }`}
                         >
-                          {/* User info header */}
+                          {/* ─── User info header ─── */}
                           <div className={`px-4 py-3 border-b ${isDark ? "border-emerald-500/10" : "border-border"}`}>
                             <p className={`text-sm font-medium truncate ${isDark ? "text-emerald-300" : "text-foreground"}`}>{user.user_metadata?.full_name || "User"}</p>
                             <p className={`text-xs truncate ${isDark ? "text-emerald-400/40" : "text-muted-foreground"}`}>{user.email}</p>
                           </div>
 
-                          {/* Menu items — grouped by function */}
+                          {/* ─── Samantha AI ─── */}
                           <div className="py-1">
-                            {/* AI Cockpit */}
-                            <Link to="/samantha" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10" : "text-rose-500/70 hover:text-rose-600 hover:bg-rose-50"}`}>
-                              <Sparkles size={15} /> Samantha
-                              <span className={`ml-auto text-[9px] ${isDark ? "text-rose-500/40" : "text-muted-foreground/50"}`}>⌘J</span>
+                            <p className={`px-4 pt-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.1em] ${isDark ? "text-rose-400/30" : "text-muted-foreground/40"}`}>Samantha AI</p>
+                            <Link to="/samantha" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors ${isDark ? "text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10" : "text-rose-500/70 hover:text-rose-600 hover:bg-rose-50"}`}>
+                              <Sparkles size={15} /> Workspace
+                              <span className={`ml-auto text-[9px] ${isDark ? "text-rose-500/30" : "text-muted-foreground/40"}`}>\u2318J</span>
                             </Link>
+                            {/* Quick capability shortcuts */}
+                            <div className="mx-3 mt-0.5 mb-1 grid grid-cols-2 gap-1">
+                              {[
+                                { label: "SEO Audit", path: "/samantha?panel=health" },
+                                { label: "Pricing", path: "/samantha" },
+                                { label: "Competitors", path: "/samantha" },
+                                { label: "Dashboards", path: "/god-structure" },
+                              ].map((a) => (
+                                <Link
+                                  key={a.label}
+                                  to={a.path}
+                                  onClick={() => setProfileOpen(false)}
+                                  className={`rounded-md px-2 py-1.5 text-[11px] text-center transition-colors ${
+                                    isDark
+                                      ? "text-rose-400/40 hover:text-rose-300 hover:bg-rose-500/5 border border-rose-500/10 hover:border-rose-500/20"
+                                      : "text-muted-foreground/60 hover:text-foreground hover:bg-accent border border-border/50 hover:border-border"
+                                  }`}
+                                >
+                                  {a.label}
+                                </Link>
+                              ))}
+                            </div>
                           </div>
+
                           <div className={`border-t ${isDark ? "border-emerald-500/10" : "border-border"}`} />
+
+                          {/* ─── Manage ─── */}
                           <div className="py-1">
-                            {/* Monitor + Manage */}
+                            <p className={`px-4 pt-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.1em] ${isDark ? "text-emerald-400/25" : "text-muted-foreground/40"}`}>Manage</p>
                             {isAdmin && (
-                              <Link to="/god-structure" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-purple-400/70 hover:text-purple-300 hover:bg-purple-500/10" : "text-purple-600/70 hover:text-purple-600 hover:bg-purple-50"}`}>
+                              <Link to="/god-structure" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? "text-purple-400/70 hover:text-purple-300 hover:bg-purple-500/10" : "text-purple-600/70 hover:text-purple-600 hover:bg-purple-50"}`}>
                                 <Network size={15} /> Dashboard
                               </Link>
                             )}
-                            <Link to="/portal" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-emerald-400/70 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}>
+                            <Link to="/portal" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? "text-emerald-400/70 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}>
                               <LayoutDashboard size={15} /> Portal
                             </Link>
-                            <Link to="/wiki" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-emerald-400/50 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground/70 hover:text-foreground hover:bg-accent"}`}>
-                              <BookOpen size={15} /> Docs
+                            <Link to="/wiki" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? "text-emerald-400/50 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground/70 hover:text-foreground hover:bg-accent"}`}>
+                              <BookOpen size={15} /> Knowledge Base
                             </Link>
                           </div>
 
-                          {/* Sign out */}
+                          {/* ─── Sign out ─── */}
                           <div className={`border-t py-1 ${isDark ? "border-emerald-500/10" : "border-border"}`}>
-                            <button onClick={() => { signOut(); setProfileOpen(false); }} className={`flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-red-400/70 hover:text-red-300 hover:bg-red-500/10" : "text-red-500/70 hover:text-red-600 hover:bg-red-50"}`}>
+                            <button onClick={() => { signOut(); setProfileOpen(false); }} className={`flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? "text-red-400/70 hover:text-red-300 hover:bg-red-500/10" : "text-red-500/70 hover:text-red-600 hover:bg-red-50"}`}>
                               <LogOut size={15} /> Sign out
                             </button>
                           </div>
@@ -301,6 +326,7 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
                       </>
                     )}
                   </AnimatePresence>
+
                 </div>
               ) : (
                 <Link
