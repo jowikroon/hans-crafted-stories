@@ -34,6 +34,7 @@ const WRITE_WEBHOOKS: Record<string, { url: string; label: string }> = {
   "campaign":            { url: `${N8N_BASE}/webhook/campaign`,            label: "Campaign Generator" },
   "scraper":             { url: `${N8N_BASE}/webhook/scraper`,             label: "Web Scraper" },
   "monday-orchestrator": { url: `${N8N_BASE}/webhook/monday-orchestrator`, label: "Monday.com Orchestrator" },
+  "site-audit":          { url: `${N8N_BASE}/webhook/site-audit`,          label: "Live SEO Audit" },
 };
 
 serve(async (req) => {

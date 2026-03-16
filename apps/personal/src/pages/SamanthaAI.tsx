@@ -935,7 +935,12 @@ export default function SamanthaAI() {
             if (channelsRef.current.has(channel)) {
               supabase.removeChannel(channel);
               channelsRef.current.delete(channel);
-              endOp(opId, "success");
+              updateMessage(toolMsg.id, {
+                toolStatus: "error",
+                toolResult: { type: "workflow", workflowName: wf.label, status: "error", message: "No response within 5 minutes — the workflow may still be running in n8n." },
+              });
+              append({ role: "samantha", content: `⚠️ **${wf.label}** didn't report back within 5 minutes. It may still be running in n8n — check the [Operations panel] or try \`/health\` to verify.`, model: wf.label });
+              endOp(opId, "error");
             }
           }, 300_000);
         } else {

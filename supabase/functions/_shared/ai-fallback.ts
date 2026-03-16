@@ -176,12 +176,16 @@ async function tryAnthropic(req: CompletionRequest): Promise<ProviderResult> {
 // ─── Public API ──────────────────────────────────────
 
 /**
- * Try providers in order: Gemini → Lovable → Anthropic.
+ * Try providers in order: Gemini → Anthropic.
  * Returns the first successful result.
  * For streaming, the caller must handle the raw Response.
+ *
+ * Note: Lovable Gateway removed from chain (2026-03-16) — dependency was
+ * fully removed from the project and the API key is no longer valid.
+ * Keeping tryLovable() defined but unused in case it's re-enabled later.
  */
 export async function completionWithFallback(req: CompletionRequest): Promise<ProviderResult> {
-  const chain = [tryGemini, tryLovable, tryAnthropic];
+  const chain = [tryGemini, tryAnthropic];
   const errors: string[] = [];
 
   for (const tryProvider of chain) {
