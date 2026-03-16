@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Search, Command, Sun, Moon, LogOut, Bot, BookOpen, LayoutDashboard, ChevronDown, Shield, Network, Sparkles } from "lucide-react";
+import { Menu, X, LogIn, Search, Command, Sun, Moon, LogOut, BookOpen, LayoutDashboard, ChevronDown, Network, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
-import HansAIOverlay from "@/components/overlays/HansAIOverlay";
 import { translations } from "@/data/translations";
 import type { Lang } from "@/hooks/useLang";
 import logoImg from "@/assets/logo.png";
@@ -46,7 +45,6 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { lang, setLang } = useLang();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -387,9 +385,6 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
           )}
         </AnimatePresence>
       </nav>
-
-      {/* AI Overlay — unified via HansAIOverlay for now */}
-      <HansAIOverlay open={commandCenterOpen} onClose={() => setCommandCenterOpen(false)} />
     </>
   );
 };
