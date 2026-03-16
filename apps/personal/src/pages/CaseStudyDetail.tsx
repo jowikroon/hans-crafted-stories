@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Home, ChevronRight, ArrowRight, X, ChevronLeft } from "lucide-react";
@@ -103,6 +103,18 @@ const CaseStudyDetail = () => {
       url: "https://hansvanleeuwen.com/work/connect-car-parts",
     },
   });
+
+  // Lightbox keyboard navigation
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowLeft" && lightboxIndex > 0) setLightboxIndex(lightboxIndex - 1);
+      if (e.key === "ArrowRight" && lightboxIndex < images.length - 1) setLightboxIndex(lightboxIndex + 1);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [lightboxIndex]);
 
   return (
     <section className="section-container pt-28 pb-20">
@@ -296,11 +308,15 @@ const CaseStudyDetail = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Image lightbox"
             className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm"
             onClick={() => setLightboxIndex(null)}
           >
             <button
               onClick={() => setLightboxIndex(null)}
+              aria-label="Close lightbox"
               className="absolute right-4 top-4 rounded-full bg-card p-2 text-foreground transition-colors hover:bg-muted"
             >
               <X size={20} />
@@ -308,6 +324,7 @@ const CaseStudyDetail = () => {
             {lightboxIndex > 0 && (
               <button
                 onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }}
+                aria-label="Previous image"
                 className="absolute left-4 rounded-full bg-card p-2 text-foreground transition-colors hover:bg-muted"
               >
                 <ChevronLeft size={20} />
@@ -316,6 +333,7 @@ const CaseStudyDetail = () => {
             {lightboxIndex < images.length - 1 && (
               <button
                 onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }}
+                aria-label="Next image"
                 className="absolute right-4 rounded-full bg-card p-2 text-foreground transition-colors hover:bg-muted"
               >
                 <ChevronRight size={20} />
