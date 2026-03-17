@@ -268,7 +268,9 @@ export async function sendToModel(
 
 // ─── System prompt builder ───────────────────────────
 
-export function buildSystemPrompt(healthContext?: string, taskContext?: string): string {
+import { SAMANTHA_MODES, type SamanthaMode } from "../types";
+
+export function buildSystemPrompt(healthContext?: string, taskContext?: string, mode?: SamanthaMode): string {
   const sections: string[] = [
     `You are Samantha — Hans van Leeuwen's AI command interface. You help him manage e-commerce infrastructure, trigger automations, track tasks, and think through decisions.`,
 
@@ -296,6 +298,12 @@ export function buildSystemPrompt(healthContext?: string, taskContext?: string):
 - If a service is down, say so plainly.
 - Don't guess at system state — suggest /health if uncertain.`,
   ];
+
+  // Inject mode-specific system boost
+  const modeConfig = mode && mode !== "default" ? SAMANTHA_MODES[mode] : null;
+  if (modeConfig?.systemBoost) {
+    sections.push(`ACTIVE MODE: ${modeConfig.label.toUpperCase()}\n${modeConfig.systemBoost}`);
+  }
 
   if (healthContext) {
     sections.push(`Current infrastructure status:\n${healthContext}`);
