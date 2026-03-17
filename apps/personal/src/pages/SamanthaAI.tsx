@@ -12,7 +12,9 @@ import {
   HeartPulse, ScrollText, Lightbulb, ListChecks, GitBranch,
   Wifi, WifiOff, PanelRightOpen, PanelRightClose,
   RefreshCw, StopCircle, Zap, Brain, CheckCircle2, XCircle,
-  Clock, Activity,
+  Clock, Activity, Search, Target, Table, ClipboardCheck,
+  Type, Database, Megaphone, FileText, ListOrdered, BarChart3,
+  Settings, Briefcase, FlaskConical, LayoutDashboard, Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -26,17 +28,21 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
 import type { Message, Stage, Emotion, ToolResult, TaskRecord, PanelId, ServiceHealthEntry } from "@/features/samantha/types";
-import { SLASH_COMMANDS } from "@/features/samantha/types";
+import { SLASH_COMMANDS, SAMANTHA_MODES, type SamanthaMode } from "@/features/samantha/types";
 import { AI_MODELS, MODEL_KEY, HISTORY_KEY, TASKS_KEY } from "@/features/samantha/lib/models";
 import { sendToModel, callAgent, fetchHealthStatus, buildSystemPrompt } from "@/features/samantha/lib/providers";
 import { writeMemory } from "@/lib/samantha/memory";
 import MarkdownContent from "@/features/samantha/components/chat/MarkdownContent";
 import ToolResultRenderer from "@/features/samantha/components/tools/ToolResultRenderer";
-import { translateError, ErrorCard } from "@/features/samantha/components/safety/ErrorTranslator";
-import { inferResponseMeta, ResponseFooter } from "@/features/samantha/components/meta/ResponseMeta";
-import { getNextActions, NextActionsBar } from "@/features/samantha/components/meta/NextActions";
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
+
+// ═══ Icon lookup for mode config strings ═══
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  HeartPulse, Zap, ListChecks, ScrollText, Search, Target, Table, ClipboardCheck,
+  Type, Database, Megaphone, FileText, ListOrdered, BarChart3, Settings, Briefcase,
+  FlaskConical, LayoutDashboard, Sparkles, GitBranch,
+};
 
 // ═══ Types for the operating layer ═══
 
@@ -603,6 +609,14 @@ export default function SamanthaAI() {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // ─── Mode from URL ─────────────────────────────────
+  const activeMode: SamanthaMode = useMemo(() => {
+    const raw = searchParams.get("mode");
+    if (raw && raw in SAMANTHA_MODES) return raw as SamanthaMode;
+    return "default";
+  }, [searchParams]);
+  const modeConfig = SAMANTHA_MODES[activeMode];
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [stage, setStage] = useState<Stage>("idle");
@@ -702,8 +716,8 @@ export default function SamanthaAI() {
     const taskCtx = tasks.filter(t => !t.done).length > 0
       ? tasks.filter(t => !t.done).map((t, i) => `${i + 1}. [${t.type}] ${t.text}`).join("\n")
       : undefined;
-    return buildSystemPrompt(healthContext, taskCtx);
-  }, [healthContext, tasks]);
+    return buildSystemPrompt(healthContext, taskCtx, activeMode);
+  }, [healthContext, tasks, activeMode]);
 
   // ─── Persistence ───────────────────────────────────
   const conversationId = useRef<string>(() => {
@@ -1088,7 +1102,6 @@ export default function SamanthaAI() {
     // Chat — go directly to the AI model
     setStage("thinking");
     const opId = startOp("Chat", "chat");
-    const chatStartTime = Date.now();
     const streamMsg = append({ role: "samantha", content: "", streaming: true, model: cur.label });
     setStreamingId(streamMsg.id);
     abortRef.current = new AbortController();
@@ -1096,16 +1109,13 @@ export default function SamanthaAI() {
       const history = messages.filter(m => m.role === "user" || m.role === "samantha").slice(-20).map(m => ({ role: m.role === "samantha" ? "assistant" : "user", content: m.content }));
       history.push({ role: "user", content: text });
       const reply = await sendToModel(cur.id, history, systemPrompt, (chunk) => { updateMessage(streamMsg.id, { content: chunk }); }, abortRef.current?.signal);
-      const meta = inferResponseMeta({ modelId: cur.id, modelLabel: cur.label, provider: cur.provider, latency: Date.now() - chatStartTime });
-      updateMessage(streamMsg.id, { content: reply, streaming: false, responseMeta: meta });
+      updateMessage(streamMsg.id, { content: reply, streaming: false });
       endOp(opId, "success");
     } catch (e: any) {
       if (e?.name !== "AbortError") {
-        const translated = translateError(e?.message || "Unknown error", { statusCode: e?.status, source: "hansai-chat" });
-        updateMessage(streamMsg.id, { content: "", streaming: false, translatedError: translated });
+        updateMessage(streamMsg.id, { content: `⚠️ ${e?.message || "Unknown error"}`, streaming: false });
         endOp(opId, "error");
       } else {
-        updateMessage(streamMsg.id, { content: "Cancelled.", streaming: false });
         endOp(opId, "error");
       }
     }
@@ -1213,12 +1223,14 @@ export default function SamanthaAI() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-3">
         {!hasMessages && (
           <div className="flex flex-col items-center justify-center h-full gap-5 py-8">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-rose-400/15 to-amber-400/15 flex items-center justify-center">
+            <div className={cn("h-12 w-12 rounded-full flex items-center justify-center", activeMode === "default" ? "bg-gradient-to-br from-rose-400/15 to-amber-400/15" : activeMode === "research" ? "bg-gradient-to-br from-cyan-400/15 to-blue-400/15" : activeMode === "builder" ? "bg-gradient-to-br from-violet-400/15 to-indigo-400/15" : activeMode === "operator" ? "bg-gradient-to-br from-amber-400/15 to-orange-400/15" : "bg-gradient-to-br from-emerald-400/15 to-teal-400/15")}>
               <SamanthaDot emotion={emotion} size={10} />
             </div>
             <div className="text-center max-w-sm">
-              <h2 className="text-base font-semibold text-white/80 mb-1">Samantha</h2>
-              <p className="text-[11px] text-white/35 leading-relaxed">AI operating layer. Talk naturally or use commands.</p>
+              <h2 className="text-base font-semibold text-white/80 mb-1">
+                {modeConfig.label === "Samantha" ? "Samantha" : `Samantha · ${modeConfig.label}`}
+              </h2>
+              <p className="text-[11px] text-white/35 leading-relaxed">{modeConfig.tagline}</p>
               {healthCache && (
                 <p className="text-[10px] text-white/25 mt-1 font-mono">
                   {healthCache.filter(s => s.ok).length}/{healthCache.length} systems online · {cur.label}
@@ -1227,19 +1239,24 @@ export default function SamanthaAI() {
               {pendingTaskCount > 0 && (
                 <p className="text-[10px] text-amber-400/40 mt-0.5">{pendingTaskCount} pending task{pendingTaskCount > 1 ? "s" : ""}</p>
               )}
+              {/* Mode switcher pills */}
+              {activeMode !== "default" && (
+                <div className="flex items-center justify-center gap-1 mt-2">
+                  <Link to="/samantha" className="rounded-full border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[9px] text-white/30 hover:text-white/50 hover:bg-white/5 transition-all">
+                    All modes
+                  </Link>
+                </div>
+              )}
             </div>
 
-            {/* Command examples — grouped */}
+            {/* Quick commands — driven by mode config */}
             <div className="w-full max-w-md space-y-2">
-              <p className="text-[9px] uppercase tracking-wider text-white/20 text-center">Try these</p>
+              <p className="text-[9px] uppercase tracking-wider text-white/20 text-center">
+                {activeMode === "default" ? "Try these" : `${modeConfig.label} actions`}
+              </p>
               <div className="grid grid-cols-2 gap-1.5">
-                {[
-                  { cmd: "/health", desc: "Check all services", icon: HeartPulse, color: "text-emerald-400/50" },
-                  { cmd: "/run autoseo", desc: "Trigger AutoSEO Brain", icon: Zap, color: "text-purple-400/50" },
-                  { cmd: "/task Review Q1 feeds", desc: "Save a task", icon: ListChecks, color: "text-blue-400/50" },
-                  { cmd: "/audit", desc: "View recent activity", icon: ScrollText, color: "text-amber-400/50" },
-                ].map(ex => {
-                  const Icon = ex.icon;
+                {modeConfig.quickCommands.map(ex => {
+                  const Icon = ICON_MAP[ex.icon] || Zap;
                   return (
                     <button
                       key={ex.cmd}
@@ -1248,19 +1265,42 @@ export default function SamanthaAI() {
                     >
                       <Icon size={12} className={cn("mt-0.5 shrink-0 group-hover:opacity-100 transition-opacity", ex.color)} />
                       <div className="min-w-0">
-                        <p className="text-[11px] font-mono text-white/50 group-hover:text-white/70 transition-colors">{ex.cmd}</p>
+                        <p className="text-[11px] font-mono text-white/50 group-hover:text-white/70 transition-colors truncate">{ex.cmd}</p>
                         <p className="text-[9px] text-white/25 truncate">{ex.desc}</p>
                       </div>
                     </button>
                   );
                 })}
               </div>
-              {/* Chat suggestions */}
+              {/* Chat suggestions — mode-aware */}
               <div className="flex flex-wrap justify-center gap-1.5 pt-1">
-                {cur.suggestions.slice(0, 3).map((s, i) => (
+                {modeConfig.suggestions.slice(0, 3).map((s, i) => (
                   <button key={i} onClick={() => handleSend(s)} className="rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-1 text-[10px] text-white/35 hover:text-white/60 hover:bg-white/5 hover:border-white/10 transition-all">{s}</button>
                 ))}
               </div>
+
+              {/* Mode grid — only in default mode, shows available modes */}
+              {activeMode === "default" && (
+                <div className="pt-3">
+                  <p className="text-[9px] uppercase tracking-wider text-white/15 text-center mb-1.5">Specialized modes</p>
+                  <div className="grid grid-cols-4 gap-1">
+                    {(["research", "builder", "operator", "executive"] as SamanthaMode[]).map(mId => {
+                      const m = SAMANTHA_MODES[mId];
+                      const MIcon = ICON_MAP[m.icon] || Sparkles;
+                      return (
+                        <Link
+                          key={mId}
+                          to={`/samantha?mode=${mId}`}
+                          className="flex flex-col items-center gap-1 rounded-lg border border-white/[0.04] bg-white/[0.015] px-2 py-2 hover:bg-white/[0.04] hover:border-white/[0.08] transition-all group"
+                        >
+                          <MIcon size={14} className={cn("transition-opacity group-hover:opacity-100", m.color, "opacity-40")} />
+                          <span className="text-[9px] text-white/30 group-hover:text-white/50 transition-colors">{m.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1278,31 +1318,11 @@ export default function SamanthaAI() {
             ) : msg.role === "samantha" ? (
               <div className="max-w-[85%] sm:max-w-[70%] space-y-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <SamanthaDot emotion={msg.streaming ? "thinking" : msg.translatedError ? "error" : "calm"} />
+                  <SamanthaDot emotion={msg.streaming ? "thinking" : "calm"} />
                   <span className="text-[10px] text-white/30">{msg.model || cur.label}</span>
                 </div>
-                {msg.translatedError ? (
-                  <ErrorCard error={msg.translatedError} onAction={(handler) => {
-                    if (handler === "health") handleSendRef.current("/health");
-                    else if (handler === "switch-model") setPickerOpen(true);
-                    else if (handler === "workflows") handleSendRef.current("/workflows");
-                  }} />
-                ) : (
-                  <MarkdownContent content={msg.content || (msg.streaming ? "…" : "")} className="text-white/70" />
-                )}
+                <MarkdownContent content={msg.content || (msg.streaming ? "…" : "")} className="text-white/70" />
                 {msg.streaming && <span className="inline-block w-1.5 h-4 bg-white/40 animate-pulse rounded-sm" />}
-                {!msg.streaming && msg.responseMeta && <ResponseFooter meta={msg.responseMeta} />}
-                {!msg.streaming && !msg.translatedError && msg.content && msg.content.length > 30 && (
-                  <NextActionsBar
-                    actions={getNextActions({ responseContent: msg.content, isError: !!msg.translatedError })}
-                    onCommand={(cmd) => handleSendRef.current(cmd)}
-                    onHandler={(handler) => {
-                      if (handler === "copy-response") navigator.clipboard.writeText(msg.content);
-                      else if (handler === "retry") { const lu = [...messages].reverse().find(m => m.role === "user"); if (lu) handleSendRef.current(lu.content); }
-                      else if (handler === "create-task") handleSendRef.current(`/task Follow up: ${msg.content.slice(0, 80)}`);
-                    }}
-                  />
-                )}
               </div>
             ) : (
               <div className="text-[11px] text-white/30 italic">{msg.content}</div>
