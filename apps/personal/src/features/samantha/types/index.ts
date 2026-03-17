@@ -19,10 +19,6 @@ export interface Message {
   toolStatus?: ToolExecStatus;
   toolName?: string;
   toolResult?: ToolResult;
-  /** Phase 1: Structured error replacing raw error text */
-  translatedError?: import("../components/safety/ErrorTranslator").TranslatedError;
-  /** Phase 2: Response metadata for confidence labeling */
-  responseMeta?: import("../components/meta/ResponseMeta").ResponseMeta;
 }
 
 export interface AIModel {
@@ -77,6 +73,142 @@ export interface WorkflowInfo {
   category: string;
   description: string;
 }
+
+// ─── Samantha Modes ─────────────────────────────────
+
+export type SamanthaMode = "default" | "research" | "builder" | "operator" | "executive";
+
+export interface ModeConfig {
+  id: SamanthaMode;
+  label: string;
+  tagline: string;
+  icon: string; // lucide icon name
+  color: string; // tailwind color class for accents
+  suggestions: string[];
+  quickCommands: { cmd: string; desc: string; icon: string; color: string }[];
+  systemBoost: string; // extra system prompt context for this mode
+}
+
+export const SAMANTHA_MODES: Record<SamanthaMode, ModeConfig> = {
+  default: {
+    id: "default",
+    label: "Samantha",
+    tagline: "AI operating layer. Talk naturally or use commands.",
+    icon: "Sparkles",
+    color: "text-rose-400",
+    suggestions: ["Summarize this for me", "Help me write an email", "Explain how SEO works"],
+    quickCommands: [
+      { cmd: "/health", desc: "Check all services", icon: "HeartPulse", color: "text-emerald-400/50" },
+      { cmd: "/run autoseo", desc: "Trigger AutoSEO Brain", icon: "Zap", color: "text-purple-400/50" },
+      { cmd: "/task Review Q1 feeds", desc: "Save a task", icon: "ListChecks", color: "text-blue-400/50" },
+      { cmd: "/audit", desc: "View recent activity", icon: "ScrollText", color: "text-amber-400/50" },
+    ],
+    systemBoost: "",
+  },
+  research: {
+    id: "research",
+    label: "Research",
+    tagline: "SEO research, competitor analysis, and market intelligence.",
+    icon: "Search",
+    color: "text-cyan-400",
+    suggestions: [
+      "Audit my SEO for hansvanleeuwen.com",
+      "Compare my Amazon listings to competitor X",
+      "What keywords should I target for Bol.com?",
+    ],
+    quickCommands: [
+      { cmd: "/run autoseo", desc: "Trigger AutoSEO Brain", icon: "Zap", color: "text-purple-400/50" },
+      { cmd: "/health", desc: "Check infrastructure", icon: "HeartPulse", color: "text-emerald-400/50" },
+      { cmd: "Audit hansvanleeuwen.com SEO", desc: "Full SEO audit", icon: "Search", color: "text-cyan-400/50" },
+      { cmd: "Find competitor gaps", desc: "Gap analysis", icon: "Target", color: "text-amber-400/50" },
+    ],
+    systemBoost: `You are in RESEARCH MODE. Prioritize structured, data-driven outputs:
+- SEO research briefs with keyword tables (volume, difficulty, intent)
+- Competitor gap maps with actionable recommendations
+- Market intelligence summaries with clear sections
+- Always present findings in tables or structured lists, not prose.
+- Include priority scores (High/Medium/Low) for recommendations.
+- If the user asks broadly, suggest a specific research angle to start with.`,
+  },
+  builder: {
+    id: "builder",
+    label: "Builder",
+    tagline: "Dashboards, trackers, templates, and structured outputs.",
+    icon: "LayoutDashboard",
+    color: "text-violet-400",
+    suggestions: [
+      "Build me a pricing comparison matrix",
+      "Design a KPI tracker for Amazon campaigns",
+      "Create a product feed quality scorecard",
+    ],
+    quickCommands: [
+      { cmd: "Build a KPI dashboard", desc: "Start a dashboard", icon: "LayoutDashboard", color: "text-violet-400/50" },
+      { cmd: "Design a tracker template", desc: "New tracker", icon: "Table", color: "text-blue-400/50" },
+      { cmd: "Create a scorecard", desc: "Quality scorecard", icon: "ClipboardCheck", color: "text-emerald-400/50" },
+      { cmd: "/task Build new tracker", desc: "Save for later", icon: "ListChecks", color: "text-amber-400/50" },
+    ],
+    systemBoost: `You are in BUILDER MODE. Generate structured, actionable outputs:
+- Dashboard blueprints with specific KPIs, data sources, and layout
+- Tracker templates in markdown tables with column definitions
+- Pricing comparison matrices with clear axes
+- Scorecards with weighted criteria and scoring scales
+- Always provide the full structure, not just a description.
+- Use markdown tables extensively. Include example data rows.
+- For dashboards, specify: metric name, source, update frequency, threshold values.`,
+  },
+  operator: {
+    id: "operator",
+    label: "Operator",
+    tagline: "Feed optimization, pricing, campaign operations.",
+    icon: "Settings",
+    color: "text-amber-400",
+    suggestions: [
+      "Review my product feed quality",
+      "Optimize these product titles for Amazon NL",
+      "Compare pricing across my catalog",
+    ],
+    quickCommands: [
+      { cmd: "/run product-title-optimizer", desc: "Optimize titles", icon: "Type", color: "text-amber-400/50" },
+      { cmd: "/run product-feed-optimizer", desc: "Optimize feed", icon: "Database", color: "text-orange-400/50" },
+      { cmd: "/run campaign-generator", desc: "Generate campaigns", icon: "Megaphone", color: "text-pink-400/50" },
+      { cmd: "/workflows", desc: "All workflows", icon: "GitBranch", color: "text-purple-400/50" },
+    ],
+    systemBoost: `You are in OPERATOR MODE. Focus on execution and optimization:
+- Feed quality audits with specific field-level recommendations
+- Title optimization with before/after comparisons
+- Pricing analysis with competitive positioning
+- Campaign structures with targeting and budget allocations
+- Always be specific and actionable. No vague advice.
+- Include checklists for operational tasks.
+- Reference specific Amazon/Bol.com requirements when relevant.`,
+  },
+  executive: {
+    id: "executive",
+    label: "Executive",
+    tagline: "Summaries, action plans, scorecards, and strategic briefs.",
+    icon: "Briefcase",
+    color: "text-emerald-400",
+    suggestions: [
+      "Give me an executive summary of system health",
+      "Create a weekly action plan for marketplace growth",
+      "Score my current e-commerce operations",
+    ],
+    quickCommands: [
+      { cmd: "Weekly executive summary", desc: "Status overview", icon: "FileText", color: "text-emerald-400/50" },
+      { cmd: "Create an action plan", desc: "Prioritized plan", icon: "ListOrdered", color: "text-blue-400/50" },
+      { cmd: "/health", desc: "System status", icon: "HeartPulse", color: "text-green-400/50" },
+      { cmd: "Score my operations", desc: "Operations scorecard", icon: "BarChart3", color: "text-violet-400/50" },
+    ],
+    systemBoost: `You are in EXECUTIVE MODE. Deliver high-signal, decision-ready outputs:
+- Executive summaries: 3-5 bullet key findings, then detail if needed
+- Action plans: numbered, with owner/deadline/priority columns
+- Scorecards: weighted criteria, color-coded status (green/amber/red)
+- Strategic briefs: situation → analysis → recommendation → next steps
+- Always lead with the bottom line. Details go below.
+- Use bold for key metrics and decisions.
+- Keep language crisp and authoritative. No filler.`,
+  },
+};
 
 // ─── Slash Commands ──────────────────────────────────
 
