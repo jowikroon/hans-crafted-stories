@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Search, Command, Sun, Moon, LogOut, BookOpen, LayoutDashboard, ChevronDown, Network, Sparkles } from "lucide-react";
+import { Menu, X, LogIn, Search, Command, Sun, Moon, LogOut, BookOpen, LayoutDashboard, ChevronDown, Network, Sparkles, Briefcase, Settings, FlaskConical } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
@@ -257,68 +257,62 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: -4, scale: 0.95 }}
                           transition={{ duration: 0.15 }}
-                          className={`absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border shadow-xl overflow-hidden ${
+                          className={`absolute right-0 top-full mt-2 z-50 w-56 rounded-xl border shadow-xl overflow-hidden ${
                             isDark ? "border-emerald-500/20 bg-[hsl(220,20%,8%)]" : "border-border bg-card"
                           }`}
                         >
-                          {/* ─── User info header ─── */}
+                          {/* User info header */}
                           <div className={`px-4 py-3 border-b ${isDark ? "border-emerald-500/10" : "border-border"}`}>
                             <p className={`text-sm font-medium truncate ${isDark ? "text-emerald-300" : "text-foreground"}`}>{user.user_metadata?.full_name || "User"}</p>
                             <p className={`text-xs truncate ${isDark ? "text-emerald-400/40" : "text-muted-foreground"}`}>{user.email}</p>
                           </div>
 
-                          {/* ─── Samantha AI ─── */}
+                          {/* Menu items — grouped by function */}
                           <div className="py-1">
-                            <p className={`px-4 pt-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.1em] ${isDark ? "text-rose-400/30" : "text-muted-foreground/40"}`}>Samantha AI</p>
-                            <Link to="/samantha" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors ${isDark ? "text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10" : "text-rose-500/70 hover:text-rose-600 hover:bg-rose-50"}`}>
-                              <Sparkles size={15} /> Workspace
-                              <span className={`ml-auto text-[9px] ${isDark ? "text-rose-500/30" : "text-muted-foreground/40"}`}>\u2318J</span>
+                            {/* Samantha AI — primary CTA */}
+                            <Link to="/samantha" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10" : "text-rose-500/70 hover:text-rose-600 hover:bg-rose-50"}`}>
+                              <Sparkles size={15} /> Samantha AI
+                              <span className={`ml-auto text-[9px] ${isDark ? "text-rose-500/40" : "text-muted-foreground/50"}`}>⌘J</span>
                             </Link>
-                            {/* Quick capability shortcuts */}
-                            <div className="mx-3 mt-0.5 mb-1 grid grid-cols-2 gap-1">
+                          </div>
+
+                          {/* Mode shortcuts */}
+                          <div className={`border-t ${isDark ? "border-white/[0.06]" : "border-border"}`} />
+                          <div className="py-1 px-2">
+                            <p className={`px-2 pt-1.5 pb-1 text-[9px] uppercase tracking-wider font-semibold ${isDark ? "text-white/20" : "text-muted-foreground/50"}`}>Modes</p>
+                            <div className="grid grid-cols-2 gap-0.5">
                               {[
-                                { label: "SEO Audit", path: "/samantha?panel=health" },
-                                { label: "Pricing", path: "/samantha" },
-                                { label: "Competitors", path: "/samantha" },
-                                { label: "Dashboards", path: "/god-structure" },
-                              ].map((a) => (
-                                <Link
-                                  key={a.label}
-                                  to={a.path}
-                                  onClick={() => setProfileOpen(false)}
-                                  className={`rounded-md px-2 py-1.5 text-[11px] text-center transition-colors ${
-                                    isDark
-                                      ? "text-rose-400/40 hover:text-rose-300 hover:bg-rose-500/5 border border-rose-500/10 hover:border-rose-500/20"
-                                      : "text-muted-foreground/60 hover:text-foreground hover:bg-accent border border-border/50 hover:border-border"
-                                  }`}
-                                >
-                                  {a.label}
+                                { to: "/samantha?mode=research", label: "Research", Icon: FlaskConical, color: isDark ? "text-cyan-400/60 hover:text-cyan-300 hover:bg-cyan-500/10" : "text-cyan-600/60 hover:text-cyan-700 hover:bg-cyan-50" },
+                                { to: "/samantha?mode=builder", label: "Builder", Icon: LayoutDashboard, color: isDark ? "text-violet-400/60 hover:text-violet-300 hover:bg-violet-500/10" : "text-violet-600/60 hover:text-violet-700 hover:bg-violet-50" },
+                                { to: "/samantha?mode=operator", label: "Operator", Icon: Settings, color: isDark ? "text-amber-400/60 hover:text-amber-300 hover:bg-amber-500/10" : "text-amber-600/60 hover:text-amber-700 hover:bg-amber-50" },
+                                { to: "/samantha?mode=executive", label: "Executive", Icon: Briefcase, color: isDark ? "text-emerald-400/60 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-emerald-600/60 hover:text-emerald-700 hover:bg-emerald-50" },
+                              ].map(m => (
+                                <Link key={m.to} to={m.to} onClick={() => setProfileOpen(false)} className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-[12px] font-medium transition-colors ${m.color}`}>
+                                  <m.Icon size={12} /> {m.label}
                                 </Link>
                               ))}
                             </div>
                           </div>
 
-                          <div className={`border-t ${isDark ? "border-emerald-500/10" : "border-border"}`} />
-
-                          {/* ─── Manage ─── */}
+                          {/* Manage section */}
+                          <div className={`border-t ${isDark ? "border-white/[0.06]" : "border-border"}`} />
                           <div className="py-1">
-                            <p className={`px-4 pt-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.1em] ${isDark ? "text-emerald-400/25" : "text-muted-foreground/40"}`}>Manage</p>
                             {isAdmin && (
-                              <Link to="/god-structure" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? "text-purple-400/70 hover:text-purple-300 hover:bg-purple-500/10" : "text-purple-600/70 hover:text-purple-600 hover:bg-purple-50"}`}>
+                              <Link to="/god-structure" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-purple-400/70 hover:text-purple-300 hover:bg-purple-500/10" : "text-purple-600/70 hover:text-purple-600 hover:bg-purple-50"}`}>
                                 <Network size={15} /> Dashboard
                               </Link>
                             )}
-                            <Link to="/portal" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? "text-emerald-400/70 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}>
+                            <Link to="/portal" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-white/40 hover:text-white/70 hover:bg-white/5" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}>
                               <LayoutDashboard size={15} /> Portal
                             </Link>
-                            <Link to="/wiki" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? "text-emerald-400/50 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-muted-foreground/70 hover:text-foreground hover:bg-accent"}`}>
-                              <BookOpen size={15} /> Knowledge Base
+                            <Link to="/wiki" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-white/30 hover:text-white/60 hover:bg-white/5" : "text-muted-foreground/70 hover:text-foreground hover:bg-accent"}`}>
+                              <BookOpen size={15} /> Docs
                             </Link>
                           </div>
 
-                          {/* ─── Sign out ─── */}
-                          <div className={`border-t py-1 ${isDark ? "border-emerald-500/10" : "border-border"}`}>
-                            <button onClick={() => { signOut(); setProfileOpen(false); }} className={`flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors ${isDark ? "text-red-400/70 hover:text-red-300 hover:bg-red-500/10" : "text-red-500/70 hover:text-red-600 hover:bg-red-50"}`}>
+                          {/* Sign out */}
+                          <div className={`border-t py-1 ${isDark ? "border-white/[0.06]" : "border-border"}`}>
+                            <button onClick={() => { signOut(); setProfileOpen(false); }} className={`flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-red-400/70 hover:text-red-300 hover:bg-red-500/10" : "text-red-500/70 hover:text-red-600 hover:bg-red-50"}`}>
                               <LogOut size={15} /> Sign out
                             </button>
                           </div>
@@ -326,7 +320,6 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
                       </>
                     )}
                   </AnimatePresence>
-
                 </div>
               ) : (
                 <Link
