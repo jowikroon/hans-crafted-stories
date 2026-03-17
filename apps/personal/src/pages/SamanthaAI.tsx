@@ -32,6 +32,9 @@ import { sendToModel, callAgent, fetchHealthStatus, buildSystemPrompt } from "@/
 import { writeMemory } from "@/lib/samantha/memory";
 import MarkdownContent from "@/features/samantha/components/chat/MarkdownContent";
 import ToolResultRenderer from "@/features/samantha/components/tools/ToolResultRenderer";
+import { translateError, ErrorCard } from "@/features/samantha/components/safety/ErrorTranslator";
+import { inferResponseMeta, ResponseFooter } from "@/features/samantha/components/meta/ResponseMeta";
+import { getNextActions, NextActionsBar } from "@/features/samantha/components/meta/NextActions";
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
@@ -1085,6 +1088,7 @@ export default function SamanthaAI() {
     // Chat — go directly to the AI model
     setStage("thinking");
     const opId = startOp("Chat", "chat");
+    const chatStartTime = Date.now();
     const streamMsg = append({ role: "samantha", content: "", streaming: true, model: cur.label });
     setStreamingId(streamMsg.id);
     abortRef.current = new AbortController();
@@ -1092,13 +1096,16 @@ export default function SamanthaAI() {
       const history = messages.filter(m => m.role === "user" || m.role === "samantha").slice(-20).map(m => ({ role: m.role === "samantha" ? "assistant" : "user", content: m.content }));
       history.push({ role: "user", content: text });
       const reply = await sendToModel(cur.id, history, systemPrompt, (chunk) => { updateMessage(streamMsg.id, { content: chunk }); }, abortRef.current?.signal);
-      updateMessage(streamMsg.id, { content: reply, streaming: false });
+      const meta = inferResponseMeta({ modelId: cur.id, modelLabel: cur.label, provider: cur.provider, latency: Date.now() - chatStartTime });
+      updateMessage(streamMsg.id, { content: reply, streaming: false, responseMeta: meta });
       endOp(opId, "success");
     } catch (e: any) {
       if (e?.name !== "AbortError") {
-        updateMessage(streamMsg.id, { content: `⚠️ ${e?.message || "Unknown error"}`, streaming: false });
+        const translated = translateError(e?.message || "Unknown error", { statusCode: e?.status, source: "hansai-chat" });
+        updateMessage(streamMsg.id, { content: "", streaming: false, translatedError: translated });
         endOp(opId, "error");
       } else {
+        updateMessage(streamMsg.id, { content: "Cancelled.", streaming: false });
         endOp(opId, "error");
       }
     }
@@ -1271,11 +1278,31 @@ export default function SamanthaAI() {
             ) : msg.role === "samantha" ? (
               <div className="max-w-[85%] sm:max-w-[70%] space-y-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <SamanthaDot emotion={msg.streaming ? "thinking" : "calm"} />
+                  <SamanthaDot emotion={msg.streaming ? "thinking" : msg.translatedError ? "error" : "calm"} />
                   <span className="text-[10px] text-white/30">{msg.model || cur.label}</span>
                 </div>
-                <MarkdownContent content={msg.content || (msg.streaming ? "…" : "")} className="text-white/70" />
+                {msg.translatedError ? (
+                  <ErrorCard error={msg.translatedError} onAction={(handler) => {
+                    if (handler === "health") handleSendRef.current("/health");
+                    else if (handler === "switch-model") setPickerOpen(true);
+                    else if (handler === "workflows") handleSendRef.current("/workflows");
+                  }} />
+                ) : (
+                  <MarkdownContent content={msg.content || (msg.streaming ? "…" : "")} className="text-white/70" />
+                )}
                 {msg.streaming && <span className="inline-block w-1.5 h-4 bg-white/40 animate-pulse rounded-sm" />}
+                {!msg.streaming && msg.responseMeta && <ResponseFooter meta={msg.responseMeta} />}
+                {!msg.streaming && !msg.translatedError && msg.content && msg.content.length > 30 && (
+                  <NextActionsBar
+                    actions={getNextActions({ responseContent: msg.content, isError: !!msg.translatedError })}
+                    onCommand={(cmd) => handleSendRef.current(cmd)}
+                    onHandler={(handler) => {
+                      if (handler === "copy-response") navigator.clipboard.writeText(msg.content);
+                      else if (handler === "retry") { const lu = [...messages].reverse().find(m => m.role === "user"); if (lu) handleSendRef.current(lu.content); }
+                      else if (handler === "create-task") handleSendRef.current(`/task Follow up: ${msg.content.slice(0, 80)}`);
+                    }}
+                  />
+                )}
               </div>
             ) : (
               <div className="text-[11px] text-white/30 italic">{msg.content}</div>

@@ -19,6 +19,10 @@ export interface Message {
   toolStatus?: ToolExecStatus;
   toolName?: string;
   toolResult?: ToolResult;
+  /** Phase 1: Structured error replacing raw error text */
+  translatedError?: import("../components/safety/ErrorTranslator").TranslatedError;
+  /** Phase 2: Response metadata for confidence labeling */
+  responseMeta?: import("../components/meta/ResponseMeta").ResponseMeta;
 }
 
 export interface AIModel {
