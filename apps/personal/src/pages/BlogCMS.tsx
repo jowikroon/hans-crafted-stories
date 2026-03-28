@@ -11,7 +11,7 @@ import {
   Languages, Target, Shield, BookCheck, Crown, ChevronRight, ChevronDown,
   ChevronLeft, X, Save, Eye, Trash2, Clock, Menu, BarChart3, Sparkles,
   ExternalLink, ArrowUpDown, Filter, Grid3X3, List, RefreshCw, Copy, Calendar,
-  Pen, MoreHorizontal,
+  Pen, MoreHorizontal, DollarSign, Info,
 } from "lucide-react";
 
 // ── Types ──
@@ -40,6 +40,11 @@ interface MediaItem {
 interface AgentReview {
   agent_id: string; agent_name: string; icon: string; score: number | null;
   verdict: string; feedback: string; suggestions: string[]; loading: boolean;
+}
+interface SeoSuggestion {
+  id: string; title: string; slug: string; primary_keyword: string;
+  cluster: string; intent: string; difficulty: string; priority: number;
+  related_post_slug: string | null; status: string;
 }
 type NavSection = "dashboard" | "posts" | "new-post" | "media" | "seo" | "voice" | "settings";
 type SortField = "created_at" | "title" | "status" | "updated_at";
@@ -75,6 +80,37 @@ const STAT_BORDERS: Record<string, string> = {
   Drafts: "from-zinc-500 to-zinc-500/0", Scheduled: "from-blue-500 to-blue-500/0",
 };
 const getGreeting = () => { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; };
+
+const CLUSTER_BORDER: Record<string, string> = {
+  "marketplace-strategie": "border-blue-500/40 hover:border-blue-400/60",
+  "conversie-optimalisatie": "border-emerald-500/40 hover:border-emerald-400/60",
+  "autoriteit": "border-purple-500/40 hover:border-purple-400/60",
+  "tech-innovatie": "border-amber-500/40 hover:border-amber-400/60",
+  "regelgeving": "border-zinc-400/40 hover:border-zinc-300/60",
+};
+const CLUSTER_BADGE_BG: Record<string, string> = {
+  "marketplace-strategie": "bg-blue-500/10 text-blue-400",
+  "conversie-optimalisatie": "bg-emerald-500/10 text-emerald-400",
+  "autoriteit": "bg-purple-500/10 text-purple-400",
+  "tech-innovatie": "bg-amber-500/10 text-amber-400",
+  "regelgeving": "bg-zinc-500/10 text-zinc-400",
+};
+const DIFFICULTY_DOT: Record<string, string> = {
+  low: "bg-emerald-400", medium: "bg-amber-400", high: "bg-red-400",
+};
+const clusterBorder = (cluster: string) => CLUSTER_BORDER[cluster] ?? "border-white/10 hover:border-white/20";
+const clusterBadgeBg = (cluster: string) => CLUSTER_BADGE_BG[cluster] ?? "bg-white/[0.06] text-white/50";
+const difficultyDot = (difficulty: string) => DIFFICULTY_DOT[difficulty] ?? "bg-zinc-400";
+const clusterToCategory = (cluster: string): string => {
+  const map: Record<string, string> = {
+    "marketplace-strategie": "e-commerce",
+    "conversie-optimalisatie": "conversion",
+    "autoriteit": "authority",
+    "tech-innovatie": "technology",
+    "regelgeving": "regulation",
+  };
+  return map[cluster] ?? "e-commerce";
+};
 
 const NAV_GROUPS = [
   { label: "Content", items: [
@@ -216,6 +252,7 @@ const BlogCMS = () => {
   const [loadingMedia, setLoadingMedia] = useState(false);
   const [loadingVoice, setLoadingVoice] = useState(false);
   const [reviewsRunning, setReviewsRunning] = useState(false);
+  const [suggestions, setSuggestions] = useState<SeoSuggestion[]>([]);
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
   // ── Data fetching ──
@@ -256,7 +293,31 @@ const BlogCMS = () => {
     } catch { /* empty */ } finally { setLoadingMedia(false); }
   }, []);
 
+  const fetchSuggestions = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("blog_seo_suggestions")
+        .select("*")
+        .neq("status", "dismissed")
+        .order("priority", { ascending: false });
+      if (error) throw error;
+      setSuggestions((data as unknown as SeoSuggestion[]) ?? []);
+    } catch { /* empty */ }
+  }, []);
+
+  const dismissSuggestion = useCallback(async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("blog_seo_suggestions")
+        .update({ status: "dismissed" })
+        .eq("id", id);
+      if (error) throw error;
+      setSuggestions((prev) => prev.filter((s) => s.id !== id));
+    } catch { /* empty */ }
+  }, []);
+
   useEffect(() => { fetchPosts(); }, [fetchPosts]);
+  useEffect(() => { fetchSuggestions(); }, [fetchSuggestions]);
   useEffect(() => {
     if (activeNav === "voice") { fetchVoice(); fetchMemory(); }
     if (activeNav === "media") fetchMedia();
@@ -342,6 +403,20 @@ const BlogCMS = () => {
   };
 
   const startNewPost = () => { setEditingPost(null); setDraftPost(EMPTY_POST()); setIsNewPost(true); setSlugManual(false); setActiveNav("new-post"); };
+
+  const startPostFromSuggestion = (suggestion: SeoSuggestion) => {
+    setEditingPost(null);
+    setDraftPost({
+      ...EMPTY_POST(),
+      title: suggestion.title,
+      slug: suggestion.slug,
+      primary_keyword: suggestion.primary_keyword,
+      category: clusterToCategory(suggestion.cluster),
+    });
+    setIsNewPost(true);
+    setSlugManual(true);
+    setActiveNav("new-post");
+  };
 
   const updateDraft = (field: string, value: unknown) => {
     setDraftPost((prev) => ({ ...prev, [field]: value }));
@@ -498,6 +573,57 @@ const BlogCMS = () => {
           <Button onClick={startNewPost} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10"><PlusCircle className="w-4 h-4 mr-2" /> New Post</Button>
         </motion.div>
       </div>
+      {/* SEO Content Ideas Pills */}
+      {suggestions.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-3 h-3 text-blue-400/60" />
+            <span className="text-white/20 text-[10px] uppercase tracking-[0.15em] font-semibold">Powered by SEO Cluster Analysis</span>
+          </div>
+          <h2 className="text-lg font-semibold tracking-tight text-white/80">Content Ideas</h2>
+          <div className="relative">
+            {/* Left fade */}
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 z-10" style={{ background: `linear-gradient(to right, ${CMS_BG_0}, transparent)` }} />
+            {/* Right fade */}
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 z-10" style={{ background: `linear-gradient(to left, ${CMS_BG_0}, transparent)` }} />
+            <div className="flex gap-2 overflow-x-auto pb-2 px-1 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+              {suggestions.map((s, i) => (
+                <motion.div
+                  key={s.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.3 }}
+                  className="flex-shrink-0"
+                >
+                  <div className={`group relative flex items-center gap-2 px-4 py-2 rounded-full border ${clusterBorder(s.cluster)} bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200 cursor-pointer`}>
+                    <button
+                      onClick={() => startPostFromSuggestion(s)}
+                      className="flex items-center gap-2 text-sm text-white/70 hover:text-white/90 transition-colors"
+                    >
+                      {s.intent === "commercial" ? (
+                        <DollarSign className="w-3 h-3 text-emerald-400/70 flex-shrink-0" />
+                      ) : (
+                        <Info className="w-3 h-3 text-blue-400/70 flex-shrink-0" />
+                      )}
+                      <span className="whitespace-nowrap font-medium">{s.title}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${clusterBadgeBg(s.cluster)} whitespace-nowrap`}>
+                        {s.cluster}
+                      </span>
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${difficultyDot(s.difficulty)}`} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); dismissSuggestion(s.id); }}
+                      className="text-white/0 group-hover:text-white/30 hover:!text-white/60 transition-all ml-1 flex-shrink-0"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {([["Total", stats.total, "text-white/90"], ["Published", stats.published, "text-emerald-400"], ["Drafts", stats.draft, "text-zinc-400"], ["Scheduled", stats.scheduled, "text-blue-400"]] as const).map(([l, v, c]) => (
           <div key={l} className="rounded-xl border border-white/[0.05] hover:border-white/[0.08] transition-all duration-200 overflow-hidden" style={{ background: CMS_BG_2 }}>
@@ -705,6 +831,44 @@ const BlogCMS = () => {
           <input type="text" value={draftPost.slug} onChange={(e) => { setSlugManual(true); updateDraft("slug", e.target.value); }} className="flex-1 bg-transparent border-b border-white/[0.05] text-white/50 text-sm outline-none focus:border-blue-500/30 py-1 transition-colors" />
           <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => { setSlugManual(false); updateDraft("slug", slugify(draftPost.title)); }} className="text-white/25 hover:text-white/50 transition-colors" title="Regenerate"><RefreshCw className="w-3 h-3" /></motion.button>
         </div>
+        {/* Related SEO suggestions bar */}
+        {suggestions.length > 0 && (() => {
+          const currentSlug = draftPost.slug;
+          const currentCluster = suggestions.find((s) => s.slug === currentSlug)?.cluster;
+          const related = suggestions
+            .filter((s) =>
+              s.slug !== currentSlug &&
+              (s.related_post_slug === currentSlug ||
+                (currentCluster && s.cluster === currentCluster))
+            )
+            .slice(0, 3);
+          if (related.length === 0) return null;
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/[0.04] bg-white/[0.02]"
+            >
+              <span className="text-white/20 text-[10px] uppercase tracking-widest flex-shrink-0">Related</span>
+              <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+                {related.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => startPostFromSuggestion(s)}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs text-white/50 hover:text-white/80 bg-white/[0.02] hover:bg-white/[0.05] transition-all whitespace-nowrap ${clusterBorder(s.cluster)}`}
+                  >
+                    {s.intent === "commercial" ? (
+                      <DollarSign className="w-2.5 h-2.5 text-emerald-400/60" />
+                    ) : (
+                      <Info className="w-2.5 h-2.5 text-blue-400/60" />
+                    )}
+                    {s.title}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })()}
         <div className="relative">
           <textarea ref={contentRef} placeholder="Write your content in markdown..." value={curContent} onChange={(e) => updateDraft(editorLang === "nl" ? "content_nl" : "content", e.target.value)} className="w-full min-h-[400px] lg:min-h-[500px] rounded-xl border border-white/[0.05] p-6 text-white/90 text-sm leading-relaxed placeholder:text-white/15 focus:outline-none focus:border-white/[0.1] focus:ring-1 focus:ring-blue-500/10 font-mono resize-y transition-all" style={{ background: "hsl(225, 20%, 6%)", lineHeight: "1.8" }} />
         </div>
