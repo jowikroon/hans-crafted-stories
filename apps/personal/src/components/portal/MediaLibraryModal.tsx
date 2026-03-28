@@ -46,7 +46,7 @@ const MediaLibraryModal = ({ open, onOpenChange, onSelect }: Props) => {
     try {
       const data = await getMediaItems(folder === "all" ? undefined : folder);
       setItems(data);
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Error loading media", description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -68,7 +68,7 @@ const MediaLibraryModal = ({ open, onOpenChange, onSelect }: Props) => {
       }
       toast({ title: `${files.length} file(s) uploaded` });
       load();
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Upload failed", description: e.message, variant: "destructive" });
     } finally {
       setUploading(false);
@@ -82,7 +82,7 @@ const MediaLibraryModal = ({ open, onOpenChange, onSelect }: Props) => {
       await deleteMedia(item.id, item.storage_path);
       toast({ title: "File deleted" });
       load();
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Delete failed", description: e.message, variant: "destructive" });
     }
   };
@@ -99,7 +99,7 @@ const MediaLibraryModal = ({ open, onOpenChange, onSelect }: Props) => {
       await updateMediaAlt(item.id, altValue);
       setEditingAlt(null);
       load();
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Error saving alt text", description: e.message, variant: "destructive" });
     }
   };
