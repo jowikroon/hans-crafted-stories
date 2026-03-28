@@ -50,7 +50,7 @@ describe("hierarchy types", () => {
 
   it("parseHierarchyFromStorage returns null for invalid JSON", () => {
     expect(parseHierarchyFromStorage("not json")).toBeNull();
-    expect(parseHierarchyFromStorage("{}")).toBeNull();
+    expect(parseHierarchyFromStorage("{ /* empty */ }")).toBeNull();
   });
 
   it("parseHierarchyFromStorage returns null for invalid primaryGoal", () => {
