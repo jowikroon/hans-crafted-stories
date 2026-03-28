@@ -38,7 +38,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
   if (!tool) return null;
 
   const Icon = getIcon(tool.icon || "Wrench");
-  const config = (tool.config || {}) as Record<string, unknown>;
+  const config = (tool.config || { /* empty */ }) as Record<string, unknown>;
   const webhookUrl = (config.webhook_url as string) || "";
   const isWebhook = tool.tool_type === "webhook";
   const isChromeExt = tool.tool_type === "chrome-extension";
@@ -72,7 +72,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
     if (!webhookUrl) return;
     setTriggering(true);
     try {
-      const res = await portalApi.triggerWebhook(webhookUrl, {});
+      const res = await portalApi.triggerWebhook(webhookUrl, { /* empty */ });
       if (res.success) {
         toast({ title: "Triggered", description: `Status: ${res.data?.status ?? "OK"}` });
       } else {
