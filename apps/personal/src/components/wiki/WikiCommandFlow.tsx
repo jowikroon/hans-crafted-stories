@@ -15,8 +15,8 @@ const getRecentCommands = (): string[] => {
     const parsed = JSON.parse(raw);
     const msgs = Array.isArray(parsed) ? parsed : parsed?.messages ?? [];
     const userMsgs = msgs
-      .filter((m: any) => m.role === "user" && m.content?.trim())
-      .map((m: any) => m.content.trim())
+      .filter((m: unknown) => m.role === "user" && m.content?.trim())
+      .map((m: unknown) => m.content.trim())
       .slice(-3)
       .reverse();
     return userMsgs.length ? userMsgs : PLACEHOLDERS;
