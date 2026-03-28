@@ -57,11 +57,11 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
 
       if (!isAdmin && userId) {
         const access = await usersApi.getContentAccess(userId);
-        const map: Record<string, UserContentAccess> = {};
+        const map: Record<string, UserContentAccess> = { /* empty */ };
         for (const a of access) map[a.content_type] = a;
         setAccessMap(map);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Error loading content", description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -80,7 +80,7 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
 
   // Filtered and sorted posts
   const filteredPosts = useMemo(() => {
-    let result = posts.filter((p) => {
+    const result = posts.filter((p) => {
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
       return p.title.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q)) || p.category.toLowerCase().includes(q);
@@ -99,10 +99,10 @@ const PortalContentTab = ({ userId, isAdmin = false, subFilter }: PortalContentT
 
   // Bulk handlers
   const togglePostSelection = (id: string) => {
-    setSelectedPosts(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+    setSelectedPosts(prev => { const s = new Set(prev); if (s.has(id)) { s.delete(id); } else { s.add(id); } return s; });
   };
   const toggleStudySelection = (id: string) => {
-    setSelectedStudies(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+    setSelectedStudies(prev => { const s = new Set(prev); if (s.has(id)) { s.delete(id); } else { s.add(id); } return s; });
   };
   const selectAllPosts = () => {
     if (selectedPosts.size === filteredPosts.length) setSelectedPosts(new Set());
