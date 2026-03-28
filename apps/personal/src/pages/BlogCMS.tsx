@@ -315,14 +315,17 @@ const BlogCMS = () => {
 
   const openEditor = (post: BlogPost) => {
     setEditingPost(post);
-    setDraftPost({ title: post.title, slug: post.slug, content: post.content, excerpt: post.excerpt,
+    setDraftPost({ title: post.title || post.title_nl || "", slug: post.slug,
+      content: post.content || post.content_nl || "", excerpt: post.excerpt || post.excerpt_nl || "",
       category: post.category, tags: post.tags ?? [], cover_image_url: post.cover_image_url,
-      published: post.published, scheduled_at: post.scheduled_at, meta_title: post.meta_title,
-      meta_description: post.meta_description, og_image: post.og_image, og_title: post.og_title,
-      og_description: post.og_description, canonical_url: post.canonical_url,
-      primary_keyword: post.primary_keyword, content_nl: post.content_nl, title_nl: post.title_nl,
-      excerpt_nl: post.excerpt_nl, meta_title_nl: post.meta_title_nl,
-      meta_description_nl: post.meta_description_nl, status: post.status, author_id: post.author_id });
+      published: post.published, scheduled_at: post.scheduled_at,
+      meta_title: post.meta_title || post.meta_title_nl, meta_description: post.meta_description || post.meta_description_nl,
+      og_image: post.og_image, og_title: post.og_title, og_description: post.og_description,
+      canonical_url: post.canonical_url, primary_keyword: post.primary_keyword,
+      content_nl: post.content_nl || post.content || "", title_nl: post.title_nl || post.title || "",
+      excerpt_nl: post.excerpt_nl || post.excerpt || "",
+      meta_title_nl: post.meta_title_nl || post.meta_title, meta_description_nl: post.meta_description_nl || post.meta_description,
+      status: post.status, author_id: post.author_id });
     setIsNewPost(false); setSlugManual(true); setActiveView("write");
   };
 
@@ -330,7 +333,7 @@ const BlogCMS = () => {
 
   const startPostFromSuggestion = (suggestion: SeoSuggestion) => {
     setEditingPost(null);
-    setDraftPost({ ...EMPTY_POST(), title: suggestion.title, slug: suggestion.slug, primary_keyword: suggestion.primary_keyword, category: clusterToCategory(suggestion.cluster) });
+    setDraftPost({ ...EMPTY_POST(), title: suggestion.title, title_nl: suggestion.title, slug: suggestion.slug, primary_keyword: suggestion.primary_keyword, category: clusterToCategory(suggestion.cluster) });
     setIsNewPost(true); setSlugManual(true); setActiveView("write");
   };
 
@@ -381,11 +384,17 @@ const BlogCMS = () => {
       const data = (await res.json()) as Record<string, unknown>;
       const content = typeof data.draft_content === "string" ? data.draft_content : (typeof data.content === "string" ? data.content : "");
       const gaps = parseGaps(content);
-      setDraftPost({ ...EMPTY_POST(), title: typeof data.title === "string" ? data.title : suggestion.title,
-        slug: typeof data.slug === "string" ? data.slug : suggestion.slug, content,
-        excerpt: typeof data.excerpt === "string" ? data.excerpt : "",
-        meta_title: typeof data.meta_title === "string" ? data.meta_title : null,
-        meta_description: typeof data.meta_description === "string" ? data.meta_description : null,
+      const ghostTitle = typeof data.title === "string" ? data.title : suggestion.title;
+      const ghostExcerpt = typeof data.excerpt === "string" ? data.excerpt : "";
+      const ghostMeta = typeof data.meta_title === "string" ? data.meta_title : null;
+      const ghostMetaDesc = typeof data.meta_description === "string" ? data.meta_description : null;
+      setDraftPost({ ...EMPTY_POST(),
+        title: ghostTitle, title_nl: ghostTitle,
+        slug: typeof data.slug === "string" ? data.slug : suggestion.slug,
+        content, content_nl: content,
+        excerpt: ghostExcerpt, excerpt_nl: ghostExcerpt,
+        meta_title: ghostMeta, meta_title_nl: ghostMeta,
+        meta_description: ghostMetaDesc, meta_description_nl: ghostMetaDesc,
         primary_keyword: typeof data.primary_keyword === "string" ? data.primary_keyword : suggestion.primary_keyword,
         category: clusterToCategory(suggestion.cluster) });
       setGhostGaps(gaps); setGhostPhase("done");
@@ -501,7 +510,7 @@ const BlogCMS = () => {
           <div><h1 className="text-2xl font-semibold tracking-tight text-white/90">Waar wil je over schrijven?</h1><p className="text-white/35 text-sm mt-2">Kies een onderwerp of begin met een leeg canvas</p></div>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
-            <input type="text" placeholder="Type een onderwerp, keyword, of plak een YouTube URL..." className="w-full pl-12 pr-4 py-4 rounded-2xl border border-white/[0.08] bg-white/[0.04] text-white/90 text-lg placeholder:text-white/20 focus:outline-none focus:border-blue-500/30 focus:ring-2 focus:ring-blue-500/10 transition-all" onKeyDown={(e) => { if (e.key === "Enter") { const val = (e.target as HTMLInputElement).value.trim(); if (!val) return; const isYT = /youtube\.com\/watch|youtu\.be\//.test(val); if (isYT) { const mockSuggestion: SeoSuggestion = { id: "yt-" + Date.now(), title: val, slug: "", primary_keyword: "", cluster: "tech-innovatie", intent: "informational", difficulty: "medium", priority: 90, related_post_slug: null, status: "suggested" }; setGhostModal(mockSuggestion); } else { setDraftPost({ ...EMPTY_POST(), title: val }); setIsNewPost(true); } } }} />
+            <input type="text" placeholder="Type een onderwerp, keyword, of plak een YouTube URL..." className="w-full pl-12 pr-4 py-4 rounded-2xl border border-white/[0.08] bg-white/[0.04] text-white/90 text-lg placeholder:text-white/20 focus:outline-none focus:border-blue-500/30 focus:ring-2 focus:ring-blue-500/10 transition-all" onKeyDown={(e) => { if (e.key === "Enter") { const val = (e.target as HTMLInputElement).value.trim(); if (!val) return; const isYT = /youtube\.com\/watch|youtu\.be\//.test(val); if (isYT) { const mockSuggestion: SeoSuggestion = { id: "yt-" + Date.now(), title: val, slug: "", primary_keyword: "", cluster: "tech-innovatie", intent: "informational", difficulty: "medium", priority: 90, related_post_slug: null, status: "suggested" }; setGhostModal(mockSuggestion); } else { setDraftPost({ ...EMPTY_POST(), title: val, title_nl: val }); setIsNewPost(true); } } }} />
           </div>
           {suggestions.length > 0 && (
             <div className="space-y-3">
