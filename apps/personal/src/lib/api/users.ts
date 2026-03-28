@@ -113,16 +113,16 @@ export const usersApi = {
   // AI model access
   async getAiAccess(userId: string): Promise<{ ai_model: string; can_access: boolean }[]> {
     const { data, error } = await supabase
-      .from("user_ai_access" as any)
+      .from("user_ai_access" as unknown)
       .select("ai_model, can_access")
       .eq("user_id", userId);
     if (error) throw error;
-    return (data as any) || [];
+    return (data as unknown) || [];
   },
 
   async setAiAccess(userId: string, aiModel: string, canAccess: boolean, grantedBy: string): Promise<void> {
     const { error } = await supabase
-      .from("user_ai_access" as any)
+      .from("user_ai_access" as unknown)
       .upsert({ user_id: userId, ai_model: aiModel, can_access: canAccess, granted_by: grantedBy } as never, { onConflict: "user_id,ai_model" });
     if (error) throw error;
   },
@@ -130,18 +130,18 @@ export const usersApi = {
   // Activity log
   async getActivityLog(userId: string): Promise<{ id: string; user_id: string; action: string; description: string; metadata: Record<string, unknown>; created_at: string }[]> {
     const { data, error } = await supabase
-      .from("user_activity_log" as any)
+      .from("user_activity_log" as unknown)
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) throw error;
-    return (data as any) || [];
+    return (data as unknown) || [];
   },
 
-  async logActivity(userId: string, action: string, description: string, metadata: Record<string, unknown> = {}): Promise<void> {
+  async logActivity(userId: string, action: string, description: string, metadata: Record<string, unknown> = { /* empty */ }): Promise<void> {
     const { error } = await supabase
-      .from("user_activity_log" as any)
+      .from("user_activity_log" as unknown)
       .insert({ user_id: userId, action, description, metadata } as never);
     if (error) console.error("Failed to log activity:", error);
   },
