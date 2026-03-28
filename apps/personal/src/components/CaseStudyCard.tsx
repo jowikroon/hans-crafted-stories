@@ -13,7 +13,7 @@ const CaseStudyCard = ({ study, index }: { study: CaseStudy; index: number }) =>
     ? { to: study.internalUrl }
     : study.externalUrl
       ? { href: study.externalUrl, target: "_blank" as const, rel: "noopener noreferrer" }
-      : {};
+      : { /* empty */ };
 
   return (
     <motion.article
