@@ -36,14 +36,14 @@ export async function getAllPageContent(): Promise<PageContentRow[]> {
 export async function updatePageContent(id: string, value: string): Promise<void> {
   const { error } = await supabase
     .from("page_content")
-    .update({ content_value: value } as any)
+    .update({ content_value: value } as unknown)
     .eq("id", id);
   if (error) throw error;
 }
 
 export async function updatePageContentBatch(updates: { id: string; content_value: string }[]): Promise<void> {
   const promises = updates.map((u) =>
-    supabase.from("page_content").update({ content_value: u.content_value } as any).eq("id", u.id)
+    supabase.from("page_content").update({ content_value: u.content_value } as unknown).eq("id", u.id)
   );
   const results = await Promise.all(promises);
   const err = results.find((r) => r.error);
