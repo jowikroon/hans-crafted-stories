@@ -161,7 +161,7 @@ const UnifiedChatPanel = () => {
       setGoogleConnected(true);
       params.delete("google_connected");
       const newUrl = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname;
-      window.history.replaceState({}, "", newUrl);
+      window.history.replaceState({ /* empty */ }, "", newUrl);
       return;
     }
     if (params.get("google_oauth_error")) {
@@ -176,7 +176,7 @@ const UnifiedChatPanel = () => {
           if (!cancelled) setGoogleConnected(false);
           return;
         }
-        const { data } = await (supabase as any).from("user_google_tokens").select("user_id").eq("user_id", session.user.id).maybeSingle();
+        const { data } = await (supabase as unknown).from("user_google_tokens").select("user_id").eq("user_id", session.user.id).maybeSingle();
         if (!cancelled) setGoogleConnected(!!data);
       } catch {
         if (!cancelled) setGoogleConnected(false);
@@ -239,7 +239,7 @@ const UnifiedChatPanel = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user?.id) return;
-        const { data } = await (supabase as any).from("user_preferences").select("n8n_filter_presets").eq("user_id", session.user.id).maybeSingle();
+        const { data } = await (supabase as unknown).from("user_preferences").select("n8n_filter_presets").eq("user_id", session.user.id).maybeSingle();
         if (cancelled || !data) return;
         const presets = (data as { n8n_filter_presets?: Record<string, unknown> })?.n8n_filter_presets;
         if (presets && typeof presets === "object" && "show_n8n_workflows" in presets) {
@@ -289,7 +289,7 @@ const UnifiedChatPanel = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.id) return;
-      await (supabase as any).from("user_preferences").update({
+      await (supabase as unknown).from("user_preferences").update({
         n8n_filter_presets: { show_n8n_workflows: n8nFilterActive },
       }).eq("user_id", session.user.id);
     } catch { /* ignore */ }
@@ -372,13 +372,13 @@ const UnifiedChatPanel = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : { /* empty */ }),
         },
         body: JSON.stringify({
           message: userMessage ?? "",
           source: "command_center",
           timestamp: new Date().toISOString(),
-          ...(runId ? { workflow_run_id: runId } : {}),
+          ...(runId ? { workflow_run_id: runId } : { /* empty */ }),
         }),
       });
       const text = await res.text();
@@ -457,7 +457,7 @@ const UnifiedChatPanel = () => {
       const text = await res.text();
       let data: { reply?: string; error?: string; needs_choice?: boolean; llm_job_id?: string };
       try {
-        data = text ? JSON.parse(text) : {};
+        data = text ? JSON.parse(text) : { /* empty */ };
       } catch {
         data = { error: text || `HTTP ${res.status}` };
       }
@@ -595,7 +595,7 @@ const UnifiedChatPanel = () => {
       content: isErrorReply ? reply : (reply || "No response."),
       timestamp: Date.now(),
     };
-    let finalMessages: Message[] = [...messages, replyMsg];
+    const finalMessages: Message[] = [...messages, replyMsg];
 
     const workflowJson = extractWorkflowJsonFromMarkdown(reply || "");
     const { data: sessionData } = await supabase.auth.getSession();
