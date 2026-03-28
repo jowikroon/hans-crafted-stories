@@ -35,7 +35,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
         <header>
           <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
         </header>
-        <main id="main-content" className="min-h-screen">
+        <main id="main-content" className="min-h-screen pt-16">
           <AnimatedRoutes />
         </main>
         {!isDarkPage && <Footer />}
@@ -61,7 +61,7 @@ export interface AppProps {
 
 const App = ({ preloadedData, serverContext }: AppProps) => {
   const Router = serverContext ? StaticRouter : BrowserRouter;
-  const routerProps = serverContext ? { location: serverContext.location } : {};
+  const routerProps = serverContext ? { location: serverContext.location } : { /* empty */ };
   const preloaded: PreloadedData = serverContext
     ? { blogPost: serverContext.preloadedBlogPost ?? null }
     : (preloadedData ?? { blogPost: null });
