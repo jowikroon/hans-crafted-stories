@@ -98,7 +98,7 @@ const BlogPostPage = () => {
       image: post.image_url || "https://hansvanleeuwen.com/og-image.png",
       articleSection: post.category,
       keywords: post.tags.join(", "),
-      ...(wordCount > 0 ? { wordCount } : {}),
+      ...(wordCount > 0 ? { wordCount } : { /* empty */ }),
       inLanguage: "en",
     } : undefined,
   });
