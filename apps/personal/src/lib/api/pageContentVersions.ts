@@ -14,7 +14,7 @@ export interface PageContentVersion {
 
 export async function getVersionsForField(contentId: string): Promise<PageContentVersion[]> {
   const { data, error } = await supabase
-    .from("page_content_versions" as any)
+    .from("page_content_versions" as unknown)
     .select("*")
     .eq("content_id", contentId)
     .order("created_at", { ascending: false })
@@ -25,7 +25,7 @@ export async function getVersionsForField(contentId: string): Promise<PageConten
 
 export async function getVersionsForPage(page: string): Promise<PageContentVersion[]> {
   const { data, error } = await supabase
-    .from("page_content_versions" as any)
+    .from("page_content_versions" as unknown)
     .select("*")
     .eq("page", page)
     .order("created_at", { ascending: false })
