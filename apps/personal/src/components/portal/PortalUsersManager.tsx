@@ -55,9 +55,9 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
   const [deleting, setDeleting] = useState(false);
 
   // Per-user access state
-  const [toolAccess, setToolAccess] = useState<Record<string, { can_view: boolean; can_use: boolean }>>({});
-  const [contentAccess, setContentAccess] = useState<Record<string, { can_view: boolean; can_edit: boolean }>>({});
-  const [aiAccess, setAiAccess] = useState<Record<string, boolean>>({});
+  const [toolAccess, setToolAccess] = useState<Record<string, { can_view: boolean; can_use: boolean }>>({ /* empty */ });
+  const [contentAccess, setContentAccess] = useState<Record<string, { can_view: boolean; can_edit: boolean }>>({ /* empty */ });
+  const [aiAccess, setAiAccess] = useState<Record<string, boolean>>({ /* empty */ });
   const [activityLog, setActivityLog] = useState<{ id: string; action: string; description: string; metadata: Record<string, unknown>; created_at: string }[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
 
@@ -65,10 +65,10 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkAssign, setShowBulkAssign] = useState(false);
   const [bulkSection, setBulkSection] = useState<AccessSection>("tabs");
-  const [bulkTabs, setBulkTabs] = useState<Record<string, boolean>>({});
-  const [bulkTools, setBulkTools] = useState<Record<string, { can_view: boolean; can_use: boolean }>>({});
-  const [bulkContent, setBulkContent] = useState<Record<string, { can_view: boolean; can_edit: boolean }>>({});
-  const [bulkAi, setBulkAi] = useState<Record<string, boolean>>({});
+  const [bulkTabs, setBulkTabs] = useState<Record<string, boolean>>({ /* empty */ });
+  const [bulkTools, setBulkTools] = useState<Record<string, { can_view: boolean; can_use: boolean }>>({ /* empty */ });
+  const [bulkContent, setBulkContent] = useState<Record<string, { can_view: boolean; can_edit: boolean }>>({ /* empty */ });
+  const [bulkAi, setBulkAi] = useState<Record<string, boolean>>({ /* empty */ });
   const [bulkSaving, setBulkSaving] = useState(false);
 
   const loadData = async () => {
@@ -110,24 +110,24 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
   // ── Bulk assign dialog ────────────────────────────
   const openBulkAssign = () => {
     setBulkSection("tabs");
-    setBulkTabs({});
-    setBulkTools({});
-    setBulkContent({});
-    setBulkAi({});
+    setBulkTabs({ /* empty */ });
+    setBulkTools({ /* empty */ });
+    setBulkContent({ /* empty */ });
+    setBulkAi({ /* empty */ });
     setShowBulkAssign(true);
   };
 
   const applyBulkPermissions = async () => {
     setBulkSaving(true);
     try {
-      const promises: Promise<any>[] = [];
+      const promises: Promise<unknown>[] = [];
 
       for (const profile of selectedProfiles) {
         // Tab access
         const activeTabs = Object.entries(bulkTabs).filter(([, v]) => v).map(([k]) => k);
         if (activeTabs.length > 0) {
           const merged = [...new Set([...(profile.tab_access || []), ...activeTabs])];
-          promises.push(usersApi.updateProfile(profile.id, { tab_access: merged } as any));
+          promises.push(usersApi.updateProfile(profile.id, { tab_access: merged } as unknown));
         }
 
         // Tool access
@@ -212,15 +212,15 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
         usersApi.getContentAccess(profile.user_id),
         usersApi.getAiAccess(profile.user_id),
       ]);
-      const toolMap: Record<string, { can_view: boolean; can_use: boolean }> = {};
+      const toolMap: Record<string, { can_view: boolean; can_use: boolean }> = { /* empty */ };
       for (const a of ta) toolMap[a.tool_id] = { can_view: a.can_view, can_use: a.can_use };
       setToolAccess(toolMap);
 
-      const contentMap: Record<string, { can_view: boolean; can_edit: boolean }> = {};
+      const contentMap: Record<string, { can_view: boolean; can_edit: boolean }> = { /* empty */ };
       for (const a of ca) contentMap[a.content_type] = { can_view: a.can_view, can_edit: a.can_edit };
       setContentAccess(contentMap);
 
-      const aiMap: Record<string, boolean> = {};
+      const aiMap: Record<string, boolean> = { /* empty */ };
       for (const a of aa) aiMap[a.ai_model] = a.can_access;
       setAiAccess(aiMap);
     } catch {
@@ -232,7 +232,7 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
     const current = profile.tab_access || ["tools", "content", "status"];
     const updated = current.includes(tab) ? current.filter(t => t !== tab) : [...current, tab];
     try {
-      await usersApi.updateProfile(profile.id, { tab_access: updated } as any);
+      await usersApi.updateProfile(profile.id, { tab_access: updated } as unknown);
       setProfiles(prev => prev.map(p => p.id === profile.id ? { ...p, tab_access: updated } : p));
       const added = updated.filter(t => !current.includes(t));
       const removed = current.filter(t => !updated.includes(t));
