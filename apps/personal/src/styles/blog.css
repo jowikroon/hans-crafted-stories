@@ -1,0 +1,351 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   blog.css — Magazine-Style Article Stylesheet
+   For: hansvanleeuwen.com/writing/{slug}
+   Stack: React + Tailwind CSS + Playfair Display / Inter
+   Theme: Dark mode primary
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Reading Progress Bar ─────────────────────────────────────────────── */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: hsl(var(--primary));
+  z-index: 9999;
+  transition: width 100ms ease-out;
+  border-radius: 0 2px 2px 0;
+}
+
+/* ── Article Container — Two-tier width system ────────────────────────── */
+.article-body {
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 1.125rem;        /* 18px */
+  line-height: 1.75;
+  color: hsl(var(--foreground));
+}
+
+.article-body-breakout {
+  max-width: 896px;           /* 56rem — for images, pull quotes, code */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Drop Cap ─────────────────────────────────────────────────────────── */
+.article-body > p:first-of-type::first-letter {
+  font-family: "Playfair Display", Georgia, serif;
+  float: left;
+  font-size: 3.75em;
+  line-height: 0.8;
+  padding-right: 0.5rem;
+  padding-top: 0.15em;
+  color: hsl(var(--primary));
+  font-weight: 700;
+}
+
+.article-body > p:first-of-type {
+  font-size: 1.25rem;         /* Lead paragraph — slightly larger */
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ── Headings ─────────────────────────────────────────────────────────── */
+.article-body h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  color: hsl(var(--foreground));
+}
+
+.article-body h3 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--foreground));
+}
+
+/* ── Paragraphs ───────────────────────────────────────────────────────── */
+.article-body p {
+  margin-bottom: 1.5rem;
+}
+
+.article-body p + p {
+  margin-top: 0;
+}
+
+/* ── Pull Quotes / Blockquotes ────────────────────────────────────────── */
+.article-body blockquote,
+.pull-quote {
+  position: relative;
+  max-width: 896px;
+  margin: 3rem auto;
+  padding: 1.5rem 0 1.5rem 2rem;
+  border-left: 4px solid hsl(var(--primary));
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.375rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: hsl(var(--foreground) / 0.8);
+}
+
+.article-body blockquote::before {
+  content: none; /* Override any prose plugin quote marks */
+}
+
+.article-body blockquote p {
+  margin-bottom: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.pull-quote-attribution {
+  display: block;
+  margin-top: 0.75rem;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-style: normal;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ── Author Byline with Avatar ────────────────────────────────────────── */
+.article-byline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.article-byline-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  ring: 2px solid hsl(var(--border));
+}
+
+.article-byline-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.article-byline-role {
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ── Article Metadata Strip ───────────────────────────────────────────── */
+.article-meta-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.article-meta-strip .meta-divider {
+  width: 1px;
+  height: 1rem;
+  background: hsl(var(--border));
+}
+
+.article-meta-strip .meta-category {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: hsl(var(--primary) / 0.15);
+  color: hsl(var(--primary));
+}
+
+.article-meta-strip .meta-date,
+.article-meta-strip .meta-read-time {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* ── Images with Captions ─────────────────────────────────────────────── */
+.article-body figure,
+.article-figure {
+  max-width: 896px;
+  margin: 2.5rem auto;
+}
+
+.article-body figure img,
+.article-figure img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  object-fit: cover;
+}
+
+.article-body figcaption,
+.article-figure-caption {
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+  font-style: italic;
+}
+
+/* ── Section Dividers ─────────────────────────────────────────────────── */
+.article-body hr {
+  border: none;
+  height: 1px;
+  margin: 3rem auto;
+  max-width: 120px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    hsl(var(--border)),
+    transparent
+  );
+}
+
+/* ── Lists ────────────────────────────────────────────────────────────── */
+.article-body ul,
+.article-body ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.article-body li {
+  margin-bottom: 0.5rem;
+  line-height: 1.75;
+}
+
+.article-body li::marker {
+  color: hsl(var(--primary));
+}
+
+/* ── Inline Code & Code Blocks ────────────────────────────────────────── */
+.article-body code {
+  font-size: 0.875em;
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+}
+
+.article-body pre {
+  max-width: 896px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  background: hsl(var(--secondary));
+  overflow-x: auto;
+}
+
+.article-body pre code {
+  padding: 0;
+  background: none;
+}
+
+/* ── Links ────────────────────────────────────────────────────────────── */
+.article-body a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: hsl(var(--primary) / 0.4);
+  transition: text-decoration-color 200ms ease;
+}
+
+.article-body a:hover {
+  text-decoration-color: hsl(var(--primary));
+}
+
+/* ── Strong / Bold ────────────────────────────────────────────────────── */
+.article-body strong {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+/* ── Table of Contents ────────────────────────────────────────────────── */
+.article-toc {
+  max-width: 680px;
+  margin: 0 auto 2.5rem;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  background: hsl(var(--secondary) / 0.5);
+  border: 1px solid hsl(var(--border));
+}
+
+.article-toc-title {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.75rem;
+}
+
+.article-toc ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.article-toc li {
+  margin-bottom: 0.375rem;
+}
+
+.article-toc a {
+  font-size: 0.9375rem;
+  color: hsl(var(--foreground) / 0.7);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.article-toc a:hover {
+  color: hsl(var(--primary));
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .article-body {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .article-body > p:first-of-type::first-letter {
+    font-size: 3em;
+  }
+
+  .article-body h2 {
+    font-size: 1.5rem;
+    margin-top: 2.5rem;
+  }
+
+  .article-body blockquote,
+  .pull-quote {
+    font-size: 1.125rem;
+    margin: 2rem 0;
+    padding-left: 1.25rem;
+  }
+
+  .article-figure,
+  .article-body figure {
+    margin: 2rem -1rem;  /* Bleed outside container on mobile */
+    max-width: calc(100% + 2rem);
+  }
+
+  .article-figure img,
+  .article-body figure img {
+    border-radius: 0;
+  }
+}
