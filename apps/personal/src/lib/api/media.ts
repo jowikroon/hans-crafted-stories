@@ -15,7 +15,7 @@ export interface MediaItem {
 
 export async function getMediaItems(folder?: string): Promise<MediaItem[]> {
   let query = supabase
-    .from("media_library" as any)
+    .from("media_library" as unknown)
     .select("*")
     .order("created_at", { ascending: false });
   if (folder && folder !== "all") query = query.eq("folder", folder);
@@ -71,14 +71,14 @@ export async function uploadMedia(
   };
 
   const { data, error } = await supabase
-    .from("media_library" as any)
-    .insert(item as any)
+    .from("media_library" as unknown)
+    .insert(item as unknown)
     .select()
     .single();
 
   if (error) {
     // Clean up orphaned storage file if DB insert failed
-    await supabase.storage.from("bucket").remove([path]).catch(() => {});
+    await supabase.storage.from("bucket").remove([path]).catch(() => { /* empty */ });
     if (error.message?.includes("row-level security") || error.message?.includes("policy")) {
       throw new Error("Metadata save denied — your account doesn't have admin permissions.");
     }
@@ -92,7 +92,7 @@ export async function deleteMedia(id: string, storagePath: string): Promise<void
   const { error: storageError } = await supabase.storage.from("bucket").remove([storagePath]);
   if (storageError) console.warn("Storage delete warning:", storageError.message);
 
-  const { error } = await supabase.from("media_library" as any).delete().eq("id", id);
+  const { error } = await supabase.from("media_library" as unknown).delete().eq("id", id);
   if (error) {
     if (error.message?.includes("row-level security") || error.message?.includes("policy")) {
       throw new Error("Delete denied — admin permissions required.");
@@ -103,8 +103,8 @@ export async function deleteMedia(id: string, storagePath: string): Promise<void
 
 export async function updateMediaAlt(id: string, altText: string): Promise<void> {
   const { error } = await supabase
-    .from("media_library" as any)
-    .update({ alt_text: altText } as any)
+    .from("media_library" as unknown)
+    .update({ alt_text: altText } as unknown)
     .eq("id", id);
   if (error) {
     if (error.message?.includes("row-level security") || error.message?.includes("policy")) {
