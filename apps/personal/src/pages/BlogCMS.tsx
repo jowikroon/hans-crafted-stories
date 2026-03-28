@@ -11,7 +11,8 @@ import {
   Languages, Target, Shield, BookCheck, Crown, ChevronRight, ChevronDown,
   ChevronLeft, X, Save, Eye, Trash2, Clock, Menu, BarChart3, Sparkles,
   ExternalLink, ArrowUpDown, Filter, Grid3X3, List, RefreshCw, Copy, Calendar,
-  Pen, MoreHorizontal, DollarSign, Info,
+  Pen, MoreHorizontal, DollarSign, Info, Lock, Unlock, CheckCircle2, Circle,
+  AlertTriangle, Code2, Link, Heading, ImageIcon, Type,
 } from "lucide-react";
 
 // ── Types ──
@@ -46,6 +47,14 @@ interface SeoSuggestion {
   cluster: string; intent: string; difficulty: string; priority: number;
   related_post_slug: string | null; status: string;
 }
+interface GhostDraft {
+  content: string; title: string; excerpt: string; meta_title: string;
+  meta_description: string; primary_keyword: string;
+  gaps: { id: string; label: string; placeholder: string; filled: boolean }[];
+}
+interface SeoCheckItem { label: string; passed: boolean; detail: string }
+interface SeoReport { score: number; checks: SeoCheckItem[]; jsonLd: string }
+type GhostPhase = "idle" | "researching" | "drafting" | "seo" | "done";
 type NavSection = "dashboard" | "posts" | "new-post" | "media" | "seo" | "voice" | "settings";
 type SortField = "created_at" | "title" | "status" | "updated_at";
 type PostLanguage = "en" | "nl";
@@ -152,6 +161,37 @@ const EMPTY_POST = (): Omit<BlogPost, "id" | "created_at" | "updated_at"> => ({
   excerpt_nl: null, meta_title_nl: null, meta_description_nl: null, status: "draft", author_id: null,
 });
 
+const GHOST_PHASES: { key: GhostPhase; label: string }[] = [
+  { key: "researching", label: "Researching context..." }, { key: "drafting", label: "Drafting in your voice..." }, { key: "seo", label: "Generating SEO metadata..." },
+];
+const parseGaps = (content: string): GhostDraft["gaps"] => {
+  const gaps: GhostDraft["gaps"] = []; const labels = ["Hook", "Case Study", "Conclusion"];
+  let m: RegExpExecArray | null; let i = 0;
+  const re = /\[HANS:\s*([^\]]+)\]/g;
+  while ((m = re.exec(content)) !== null) { gaps.push({ id: `gap-${i}`, label: labels[i] ?? `Gap ${i + 1}`, placeholder: m[0], filled: false }); i++; }
+  return gaps;
+};
+const computeSeoChecks = (title: string, metaDesc: string, keyword: string, content: string, wordCount: number): SeoCheckItem[] => {
+  const kw = keyword.toLowerCase();
+  const contentLower = content.toLowerCase();
+  const firstPara = contentLower.split(/\n\n/)[0] ?? "";
+  const kwCount = kw ? (contentLower.match(new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) ?? []).length : 0;
+  const density = wordCount > 0 ? (kwCount / wordCount) * 100 : 0;
+  const hasH2BeforeH3 = (() => { const h2i = content.indexOf("## "); const h3i = content.indexOf("### "); return h2i >= 0 && (h3i < 0 || h2i < h3i); })();
+  return [
+    { label: "Title length (50-60 chars)", passed: title.length >= 50 && title.length <= 60, detail: `${title.length} chars` },
+    { label: "Meta description (140-155 chars)", passed: metaDesc.length >= 140 && metaDesc.length <= 155, detail: `${metaDesc.length} chars` },
+    { label: "Primary keyword in title", passed: kw.length > 0 && title.toLowerCase().includes(kw), detail: kw || "No keyword" },
+    { label: "Keyword in first paragraph", passed: kw.length > 0 && firstPara.includes(kw), detail: kw ? (firstPara.includes(kw) ? "Found" : "Missing") : "No keyword" },
+    { label: "Keyword density (1-3%)", passed: density >= 1 && density <= 3, detail: `${density.toFixed(1)}%` },
+    { label: "At least one internal link", passed: content.includes("hansvanleeuwen.com") || content.includes("/writing/"), detail: content.includes("/writing/") ? "Found" : "Missing" },
+    { label: "Heading hierarchy (h2 before h3)", passed: hasH2BeforeH3, detail: hasH2BeforeH3 ? "Correct" : "Fix order" },
+    { label: "Image with alt text", passed: /!\[[^\]]+\]\(/.test(content), detail: /!\[[^\]]+\]\(/.test(content) ? "Found" : "Missing" },
+    { label: "Word count > 800", passed: wordCount > 800, detail: `${wordCount} words` },
+    { label: "Reading time displayed", passed: wordCount > 0, detail: `${Math.ceil(wordCount / 230)} min` },
+  ];
+};
+
 // ── Score Ring Component ──
 const ScoreRing = ({ score, size = 48 }: { score: number; size?: number }) => {
   const r = (size - 6) / 2;
@@ -253,6 +293,14 @@ const BlogCMS = () => {
   const [loadingVoice, setLoadingVoice] = useState(false);
   const [reviewsRunning, setReviewsRunning] = useState(false);
   const [suggestions, setSuggestions] = useState<SeoSuggestion[]>([]);
+  const [ghostModal, setGhostModal] = useState<SeoSuggestion | null>(null);
+  const [ghostPhase, setGhostPhase] = useState<GhostPhase>("idle");
+  const [ghostGaps, setGhostGaps] = useState<GhostDraft["gaps"]>([]);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [seoReport, setSeoReport] = useState<SeoReport | null>(null);
+  const [seoReportLoading, setSeoReportLoading] = useState(false);
+  const [jsonLdExpanded, setJsonLdExpanded] = useState(false);
+  const [draftsFilter, setDraftsFilter] = useState(false);
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
   // ── Data fetching ──
@@ -421,6 +469,7 @@ const BlogCMS = () => {
   const updateDraft = (field: string, value: unknown) => {
     setDraftPost((prev) => ({ ...prev, [field]: value }));
     if (field === "title" && !slugManual) setDraftPost((prev) => ({ ...prev, slug: slugify(value as string) }));
+    if ((field === "content" || field === "content_nl") && typeof value === "string" && hasGaps) updateGapStatus(value);
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     const timer = setTimeout(() => { if (editingPost) savePost(); }, 3000);
     setAutoSaveTimer(timer);
@@ -451,9 +500,72 @@ const BlogCMS = () => {
     setTimeout(() => setReviewsRunning(false), 8000);
   }, [runAgentReview]);
 
+  // ── Ghost Writer ──
+  const generateGhostDraft = useCallback(async (suggestion: SeoSuggestion) => {
+    setGhostModal(null);
+    setGhostPhase("researching");
+    setActiveNav("new-post");
+    setEditingPost(null);
+    setIsNewPost(true);
+    setSlugManual(true);
+    const phases: GhostPhase[] = ["researching", "drafting", "seo"];
+    let pi = 0;
+    const interval = setInterval(() => { pi++; if (pi < phases.length) setGhostPhase(phases[pi]); }, 3000);
+    try {
+      const res = await fetch("https://n8n.srv1402218.hstgr.cloud/webhook/blog-ghost-write", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: suggestion.title, slug: suggestion.slug, primary_keyword: suggestion.primary_keyword, cluster: suggestion.cluster, intent: suggestion.intent }),
+      });
+      const data = (await res.json()) as Record<string, unknown>;
+      const content = typeof data.content === "string" ? data.content : "";
+      const gaps = parseGaps(content);
+      setDraftPost({
+        ...EMPTY_POST(), title: typeof data.title === "string" ? data.title : suggestion.title,
+        slug: typeof data.slug === "string" ? data.slug : suggestion.slug,
+        content, excerpt: typeof data.excerpt === "string" ? data.excerpt : "",
+        meta_title: typeof data.meta_title === "string" ? data.meta_title : null,
+        meta_description: typeof data.meta_description === "string" ? data.meta_description : null,
+        primary_keyword: typeof data.primary_keyword === "string" ? data.primary_keyword : suggestion.primary_keyword,
+        category: clusterToCategory(suggestion.cluster),
+      });
+      setGhostGaps(gaps);
+      setGhostPhase("done");
+    } catch (err: unknown) {
+      toast({ title: "Ghost Writer Failed", description: err instanceof Error ? err.message : "Draft generation failed", variant: "destructive" });
+      setGhostPhase("idle");
+    } finally { clearInterval(interval); }
+  }, [toast]);
+
+  const generateSeoReport = useCallback(async () => {
+    setSeoReportLoading(true);
+    try {
+      const res = await fetch("https://n8n.srv1402218.hstgr.cloud/webhook/blog-auto-seo", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: draftPost.title, slug: draftPost.slug, content: draftPost.content, meta_title: draftPost.meta_title, meta_description: draftPost.meta_description, primary_keyword: draftPost.primary_keyword }),
+      });
+      const data = (await res.json()) as Record<string, unknown>;
+      const score = typeof data.score === "number" ? data.score : 0;
+      const checks = Array.isArray(data.checks) ? (data.checks as SeoCheckItem[]) : computeSeoChecks(draftPost.title, draftPost.meta_description ?? "", draftPost.primary_keyword ?? "", draftPost.content, wc(draftPost.content));
+      const jsonLd = typeof data.json_ld === "string" ? data.json_ld : JSON.stringify({ "@context": "https://schema.org", "@type": "BlogPosting", headline: draftPost.title, author: { "@type": "Person", name: "Hans van Leeuwen" } }, null, 2);
+      setSeoReport({ score, checks, jsonLd });
+    } catch {
+      const checks = computeSeoChecks(draftPost.title, draftPost.meta_description ?? "", draftPost.primary_keyword ?? "", draftPost.content, wc(draftPost.content));
+      const passed = checks.filter((c) => c.passed).length;
+      setSeoReport({ score: Math.round((passed / checks.length) * 100), checks, jsonLd: JSON.stringify({ "@context": "https://schema.org", "@type": "BlogPosting", headline: draftPost.title }, null, 2) });
+    } finally { setSeoReportLoading(false); }
+  }, [draftPost]);
+
+  // ── Gap tracking ──
+  const updateGapStatus = useCallback((content: string) => {
+    setGhostGaps((prev) => prev.map((g) => ({ ...g, filled: !content.includes(g.placeholder) })));
+  }, []);
+  const gapsFilled = ghostGaps.filter((g) => g.filled).length;
+  const allGapsFilled = ghostGaps.length > 0 && gapsFilled === ghostGaps.length;
+  const hasGaps = ghostGaps.length > 0;
+
   // ── Derived ──
   const filtered = posts
-    .filter((p) => (statusFilter === "all" || p.status === statusFilter) && (categoryFilter === "all" || p.category === categoryFilter) && (!searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase())))
+    .filter((p) => (draftsFilter ? p.status === "draft" : true) && (statusFilter === "all" || p.status === statusFilter) && (categoryFilter === "all" || p.category === categoryFilter) && (!searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase())))
     .sort((a, b) => { const av = a[sortField] ?? ""; const bv = b[sortField] ?? ""; return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av)); });
   const categories = [...new Set(posts.map((p) => p.category).filter(Boolean))];
   const stats = { draft: posts.filter((p) => p.status === "draft").length, published: posts.filter((p) => p.status === "published").length, scheduled: posts.filter((p) => p.status === "scheduled" || p.scheduled_at).length, total: posts.length };
@@ -544,6 +656,9 @@ const BlogCMS = () => {
                 <div className="text-white/50 text-xs line-clamp-2 mt-1">{curMetaDesc || curExcerpt || "Description..."}</div>
               </div>
               <div><label className="text-white/30 text-xs mb-1 block">Canonical URL</label><Inp value={draftPost.canonical_url ?? ""} onChange={(v) => updateDraft("canonical_url", v || null)} /></div>
+              <div className="h-px bg-white/[0.05] my-3" />
+              <div className="text-white/30 text-xs uppercase tracking-widest mb-3 font-medium">SEO Analysis</div>
+              {renderSeoDashboard()}
             </div>
           </motion.div>
         )}</AnimatePresence>
@@ -597,7 +712,7 @@ const BlogCMS = () => {
                 >
                   <div className={`group relative flex items-center gap-2 px-4 py-2 rounded-full border ${clusterBorder(s.cluster)} bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200 cursor-pointer`}>
                     <button
-                      onClick={() => startPostFromSuggestion(s)}
+                      onClick={() => setGhostModal(s)}
                       className="flex items-center gap-2 text-sm text-white/70 hover:text-white/90 transition-colors"
                     >
                       {s.intent === "commercial" ? (
@@ -688,7 +803,13 @@ const BlogCMS = () => {
   const renderPostsList = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight text-white/90">Posts</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-white/90">Posts</h1>
+          <div className="flex rounded-xl border border-white/[0.05] p-0.5" style={{ background: CMS_BG_2 }}>
+            <button onClick={() => setDraftsFilter(false)} className={`px-3 py-1 text-xs rounded-lg transition-all ${!draftsFilter ? "bg-white/[0.08] text-white shadow-sm" : "text-white/30 hover:text-white/60"}`}>All</button>
+            <button onClick={() => setDraftsFilter(true)} className={`px-3 py-1 text-xs rounded-lg transition-all ${draftsFilter ? "bg-white/[0.08] text-white shadow-sm" : "text-white/30 hover:text-white/60"}`}>Drafts</button>
+          </div>
+        </div>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
           <Button onClick={startNewPost} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10"><PlusCircle className="w-4 h-4 mr-2" /> New Post</Button>
         </motion.div>
@@ -810,13 +931,19 @@ const BlogCMS = () => {
             <h1 className="text-xl font-semibold tracking-tight text-white/90">{isNewPost ? "New Post" : "Edit Post"}</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className={`hover:bg-white/[0.04] ${previewMode ? "text-blue-400 bg-blue-500/10" : "text-white/50 hover:text-white/80"}`} onClick={() => setPreviewMode(!previewMode)}><Eye className="w-4 h-4 mr-1" /> Preview</Button>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
               <Button variant="ghost" size="sm" className="text-white/50 hover:text-white/80 hover:bg-white/[0.04]" onClick={() => setReviewDrawerOpen(true)}><Sparkles className="w-4 h-4 mr-1 text-blue-400" /> AI Review</Button>
             </motion.div>
             <Button variant="ghost" size="sm" className="text-white/50 hover:text-white/80 hover:bg-white/[0.04] hidden lg:flex" onClick={() => setMetaSidebarOpen(!metaSidebarOpen)}><Settings className="w-4 h-4" /></Button>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-              <Button onClick={savePost} disabled={saving} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10" size="sm"><Save className="w-4 h-4 mr-1" /> {saving ? "Saving..." : "Save"}</Button>
+              {hasGaps && !allGapsFilled ? (
+                <Button disabled className="bg-white/[0.04] text-white/25 border border-white/[0.06] cursor-not-allowed" size="sm"><Lock className="w-4 h-4 mr-1" /> Publish Locked</Button>
+              ) : (
+                <Button onClick={savePost} disabled={saving} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10" size="sm"><Save className="w-4 h-4 mr-1" /> {saving ? "Saving..." : "Save"}</Button>
+              )}
             </motion.div>
+            {allGapsFilled && <Button variant="ghost" size="sm" className="text-emerald-400 hover:bg-emerald-500/10" onClick={runAllReviews}><Sparkles className="w-4 h-4 mr-1" /> Run AI Review</Button>}
           </div>
         </div>
         <Tabs value={editorLang} onValueChange={(v) => setEditorLang(v as PostLanguage)}>
@@ -831,6 +958,7 @@ const BlogCMS = () => {
           <input type="text" value={draftPost.slug} onChange={(e) => { setSlugManual(true); updateDraft("slug", e.target.value); }} className="flex-1 bg-transparent border-b border-white/[0.05] text-white/50 text-sm outline-none focus:border-blue-500/30 py-1 transition-colors" />
           <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => { setSlugManual(false); updateDraft("slug", slugify(draftPost.title)); }} className="text-white/25 hover:text-white/50 transition-colors" title="Regenerate"><RefreshCw className="w-3 h-3" /></motion.button>
         </div>
+        {renderHumanGatesBar()}
         {/* Related SEO suggestions bar */}
         {suggestions.length > 0 && (() => {
           const currentSlug = draftPost.slug;
@@ -869,9 +997,17 @@ const BlogCMS = () => {
             </motion.div>
           );
         })()}
-        <div className="relative">
-          <textarea ref={contentRef} placeholder="Write your content in markdown..." value={curContent} onChange={(e) => updateDraft(editorLang === "nl" ? "content_nl" : "content", e.target.value)} className="w-full min-h-[400px] lg:min-h-[500px] rounded-xl border border-white/[0.05] p-6 text-white/90 text-sm leading-relaxed placeholder:text-white/15 focus:outline-none focus:border-white/[0.1] focus:ring-1 focus:ring-blue-500/10 font-mono resize-y transition-all" style={{ background: "hsl(225, 20%, 6%)", lineHeight: "1.8" }} />
-        </div>
+        <AnimatePresence mode="wait">
+          {previewMode ? (
+            <motion.div key="preview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {renderPreview()}
+            </motion.div>
+          ) : (
+            <motion.div key="editor" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative">
+              <textarea ref={contentRef} placeholder="Write your content in markdown..." value={curContent} onChange={(e) => updateDraft(editorLang === "nl" ? "content_nl" : "content", e.target.value)} className="w-full min-h-[400px] lg:min-h-[500px] rounded-xl border border-white/[0.05] p-6 text-white/90 text-sm leading-relaxed placeholder:text-white/15 focus:outline-none focus:border-white/[0.1] focus:ring-1 focus:ring-blue-500/10 font-mono resize-y transition-all" style={{ background: "hsl(225, 20%, 6%)", lineHeight: "1.8" }} />
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* Floating bottom bar */}
         <div className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-white/[0.05] text-xs" style={{ background: CMS_BG_2 }}>
           <div className="flex items-center gap-4 text-white/30">
@@ -1091,6 +1227,169 @@ const BlogCMS = () => {
     </div>
   );
 
+  // ── Ghost Writer Modal ──
+  const renderGhostModal = () => (
+    <AnimatePresence>{ghostModal && (
+      <>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" onClick={() => setGhostModal(null)} />
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.08] p-6 space-y-5" style={{ background: CMS_BG_1 }}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-white/90 font-semibold text-lg flex items-center gap-2"><Sparkles className="w-5 h-5 text-blue-400" /> Generate draft with AI?</h3>
+              <button onClick={() => setGhostModal(null)} className="text-white/30 hover:text-white/60"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="rounded-xl border border-white/[0.06] p-4 space-y-2" style={{ background: CMS_BG_2 }}>
+              <div className="text-white/90 font-medium">{ghostModal.title}</div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <Badge className={`${clusterBadgeBg(ghostModal.cluster)} rounded-full`}>{ghostModal.cluster}</Badge>
+                <Badge className="bg-white/[0.06] text-white/50 rounded-full">{ghostModal.primary_keyword}</Badge>
+              </div>
+            </div>
+            <div className="space-y-1.5 text-sm text-white/50">
+              <div className="flex items-center gap-2"><Pen className="w-3.5 h-3.5 text-blue-400" /> Hans&apos;s voice &bull; 1200-1500 words &bull; 3 human gaps</div>
+              <div className="flex items-center gap-2"><Shield className="w-3.5 h-3.5 text-amber-400" /> AI-written content requires human gate approval</div>
+            </div>
+            <div className="flex gap-3">
+              <Button onClick={() => setGhostModal(null)} variant="ghost" className="flex-1 text-white/50 hover:text-white/80 hover:bg-white/[0.04]">Write manually</Button>
+              <Button onClick={() => generateGhostDraft(ghostModal)} className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10">
+                <Sparkles className="w-4 h-4 mr-1" /> Generate
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </>
+    )}</AnimatePresence>
+  );
+
+  // ── Ghost Writer Loading Overlay ──
+  const renderGhostLoading = () => (
+    <AnimatePresence>{ghostPhase !== "idle" && ghostPhase !== "done" && (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="rounded-2xl border border-white/[0.08] p-8 text-center space-y-6 max-w-sm" style={{ background: CMS_BG_1 }}>
+          <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mx-auto">
+            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}><Sparkles className="w-7 h-7 text-blue-400" /></motion.div>
+          </div>
+          <div className="space-y-3">
+            {GHOST_PHASES.map((p) => (
+              <motion.div key={p.key} animate={{ opacity: ghostPhase === p.key ? 1 : 0.3 }} className="flex items-center gap-3 text-sm">
+                {ghostPhase === p.key ? <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="w-2 h-2 rounded-full bg-blue-400" /> : <div className="w-2 h-2 rounded-full bg-white/20" />}
+                <span className={ghostPhase === p.key ? "text-white/90 font-medium" : "text-white/30"}>{p.label}</span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </motion.div>
+    )}</AnimatePresence>
+  );
+
+  // ── Human Gates Status Bar ──
+  const renderHumanGatesBar = () => {
+    if (!hasGaps) return null;
+    const labels = ["Hook", "Case Study", "Conclusion"];
+    return (
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between px-4 py-2 rounded-xl border transition-all duration-300" style={{ background: allGapsFilled ? "rgba(16, 185, 129, 0.05)" : CMS_BG_2, borderColor: allGapsFilled ? "rgba(16, 185, 129, 0.2)" : "rgba(255,255,255,0.05)" }}>
+        <div className="flex items-center gap-3">
+          {ghostGaps.map((g, i) => (
+            <div key={g.id} className="flex items-center gap-1.5 text-xs">
+              {g.filled ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Circle className="w-3.5 h-3.5 text-white/25" />}
+              <span className={g.filled ? "text-emerald-400 font-medium" : "text-white/40"}>{labels[i] ?? g.label}</span>
+              {i < ghostGaps.length - 1 && <span className="text-white/10 ml-1">|</span>}
+            </div>
+          ))}
+        </div>
+        <div className="text-xs">
+          {allGapsFilled ? (
+            <motion.span initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="text-emerald-400 font-medium flex items-center gap-1"><Unlock className="w-3 h-3" /> All gates passed</motion.span>
+          ) : (
+            <span className="text-white/30">{gapsFilled} of {ghostGaps.length} human gates filled</span>
+          )}
+        </div>
+      </motion.div>
+    );
+  };
+
+  // ── Preview Renderer ──
+  const renderPreview = () => {
+    const md = curContent;
+    const rendered = md
+      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-white/90 mt-6 mb-2">$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-white/90 mt-8 mb-3">$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-white mt-8 mb-4">$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white/90 font-semibold">$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em class="text-white/70 italic">$1</em>')
+      .replace(/\[HANS:\s*([^\]]+)\]/g, '<span class="inline-block px-2 py-0.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-300 text-sm animate-pulse">[$1 - needs your input]</span>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-400 underline underline-offset-2">$1</a>')
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="rounded-xl max-w-full my-4" />')
+      .replace(/^(?!<[h123a]|<img|<strong|<em|<span|<ul|<li)(.+)$/gm, '<p class="text-white/70 leading-relaxed mb-3">$1</p>')
+      .replace(/\n{2,}/g, "");
+    return (
+      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="rounded-2xl border border-white/[0.06] p-8 overflow-y-auto" style={{ background: CMS_BG_1, maxHeight: "70vh" }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white tracking-tight mb-3">{curTitle || "Untitled"}</h1>
+            <div className="flex items-center gap-3 text-white/35 text-sm">
+              <span>Hans van Leeuwen</span><span className="w-1 h-1 rounded-full bg-white/20" /><span>{rt(words)}</span><span className="w-1 h-1 rounded-full bg-white/20" /><span>{fmtDate(new Date().toISOString())}</span>
+            </div>
+          </div>
+          <div className="prose-dark" dangerouslySetInnerHTML={{ __html: rendered }} />
+          {draftPost.tags?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-white/[0.06]">
+              {draftPost.tags.map((t) => <Badge key={t} className="bg-white/[0.06] text-white/50 rounded-full">{t}</Badge>)}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  };
+
+  // ── SEO Dashboard Panel (in meta sidebar) ──
+  const renderSeoDashboard = () => {
+    const localChecks = computeSeoChecks(curTitle, curMetaDesc, draftPost.primary_keyword ?? "", curContent, words);
+    const localPassed = localChecks.filter((c) => c.passed).length;
+    const localScore = Math.round((localPassed / localChecks.length) * 100);
+    const checks = seoReport?.checks ?? localChecks;
+    const score = seoReport?.score ?? localScore;
+    const iconMap: Record<string, React.ReactNode> = {
+      "Title length": <Type className="w-3.5 h-3.5" />, "Meta description": <FileText className="w-3.5 h-3.5" />,
+      "keyword in title": <Target className="w-3.5 h-3.5" />, "first paragraph": <AlertTriangle className="w-3.5 h-3.5" />,
+      "density": <BarChart3 className="w-3.5 h-3.5" />, "internal link": <Link className="w-3.5 h-3.5" />,
+      "Heading": <Heading className="w-3.5 h-3.5" />, "Image": <ImageIcon className="w-3.5 h-3.5" />,
+      "Word count": <FileText className="w-3.5 h-3.5" />, "Reading": <Clock className="w-3.5 h-3.5" />,
+    };
+    const getIcon = (label: string) => { for (const k of Object.keys(iconMap)) { if (label.includes(k)) return iconMap[k]; } return <Target className="w-3.5 h-3.5" />; };
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-center py-3"><ScoreRing score={score} size={72} /></div>
+        <div className="space-y-1.5">
+          {checks.map((c, i) => (
+            <div key={i} className="flex items-center gap-2 text-xs py-1">
+              <span className={c.passed ? "text-emerald-400" : "text-red-400"}>{c.passed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}</span>
+              <span className="text-white/30">{getIcon(c.label)}</span>
+              <span className={c.passed ? "text-white/60" : "text-white/40"}>{c.label}</span>
+              <span className="ml-auto text-white/25">{c.detail}</span>
+            </div>
+          ))}
+        </div>
+        <Button onClick={generateSeoReport} disabled={seoReportLoading} className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white border-0 shadow-lg shadow-emerald-500/10" size="sm">
+          {seoReportLoading ? <><RefreshCw className="w-3.5 h-3.5 mr-1 animate-spin" /> Analyzing...</> : <><Target className="w-3.5 h-3.5 mr-1" /> Generate Full SEO Report</>}
+        </Button>
+        {seoReport?.jsonLd && (
+          <div className="rounded-xl border border-white/[0.05] overflow-hidden" style={{ background: CMS_BG_3 }}>
+            <button onClick={() => setJsonLdExpanded(!jsonLdExpanded)} className="w-full flex items-center justify-between px-3 py-2 text-white/40 text-xs hover:bg-white/[0.02]">
+              <span className="flex items-center gap-1.5"><Code2 className="w-3.5 h-3.5" /> JSON-LD Preview</span>
+              <motion.span animate={{ rotate: jsonLdExpanded ? 180 : 0 }}><ChevronDown className="w-3 h-3" /></motion.span>
+            </button>
+            <AnimatePresence>{jsonLdExpanded && (
+              <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
+                <pre className="px-3 pb-3 text-[10px] text-white/40 font-mono overflow-x-auto leading-relaxed">{seoReport.jsonLd}</pre>
+              </motion.div>
+            )}</AnimatePresence>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderContent = () => {
     switch (activeNav) {
       case "dashboard": return renderDashboard();
@@ -1164,6 +1463,8 @@ const BlogCMS = () => {
         </motion.aside>
       </>)}</AnimatePresence>
       {renderReviewDrawer()}
+      {renderGhostModal()}
+      {renderGhostLoading()}
       {/* Mobile header */}
       <div className="lg:hidden fixed top-16 left-0 right-0 z-20 border-b border-white/[0.05] px-4 py-2.5 flex items-center gap-3 backdrop-blur-xl" style={{ background: "hsla(225, 20%, 4%, 0.8)" }}>
         <button onClick={() => setMobileSidebarOpen(true)} className="text-white/50 hover:text-white/80 transition-colors"><Menu className="w-5 h-5" /></button>
