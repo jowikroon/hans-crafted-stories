@@ -65,7 +65,7 @@ export async function logUnhandledIntent(
   llmConfidence?: number,
 ): Promise<void> {
   try {
-    await (supabase.from("unhandled_intents" as any) as any).insert({
+    await (supabase.from("unhandled_intents" as unknown) as unknown).insert({
       user_input: userInput,
       source,
       fast_route_score: fastRouteScore,
