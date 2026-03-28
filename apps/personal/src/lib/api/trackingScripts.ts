@@ -18,7 +18,7 @@ export interface TrackingScript {
 
 export async function getTrackingScripts(activeOnly = false): Promise<TrackingScript[]> {
   let query = supabase
-    .from("tracking_scripts" as any)
+    .from("tracking_scripts" as unknown)
     .select("*")
     .order("sort_order");
   if (activeOnly) query = query.eq("is_active", true);
@@ -29,22 +29,22 @@ export async function getTrackingScripts(activeOnly = false): Promise<TrackingSc
 
 export async function createTrackingScript(script: Partial<TrackingScript>): Promise<void> {
   const { error } = await supabase
-    .from("tracking_scripts" as any)
-    .insert(script as any);
+    .from("tracking_scripts" as unknown)
+    .insert(script as unknown);
   if (error) throw error;
 }
 
 export async function updateTrackingScript(id: string, updates: Partial<TrackingScript>): Promise<void> {
   const { error } = await supabase
-    .from("tracking_scripts" as any)
-    .update(updates as any)
+    .from("tracking_scripts" as unknown)
+    .update(updates as unknown)
     .eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteTrackingScript(id: string): Promise<void> {
   const { error } = await supabase
-    .from("tracking_scripts" as any)
+    .from("tracking_scripts" as unknown)
     .delete()
     .eq("id", id);
   if (error) throw error;
