@@ -122,7 +122,7 @@ const Writing = () => {
 
   // Map each tag to its dominant category for color coding
   const tagCategoryMap = useMemo(() => {
-    const map: Record<string, string> = {};
+    const map: Record<string, string> = { /* empty */ };
     for (const post of mappedPosts) {
       for (const tag of post.tags) {
         if (!map[tag]) map[tag] = post.category;
