@@ -377,7 +377,7 @@ const HansAI = () => {
         };
       }
       // #region agent log
-      fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:handleAI_before_fetch",message:"body_built",data:{hasVoice:!!body.voice,hasPersona:!!body.persona,activeVoiceId:activeVoice?.id ?? null},timestamp:Date.now(),hypothesisId:"H3_H4"})}).catch(()=>{});
+      fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:handleAI_before_fetch",message:"body_built",data:{hasVoice:!!body.voice,hasPersona:!!body.persona,activeVoiceId:activeVoice?.id ?? null},timestamp:Date.now(),hypothesisId:"H3_H4"})}).catch(()=>{ /* empty */ });
       // #endregion
 
       const resp = await fetch(CHAT_URL, {
@@ -434,7 +434,7 @@ const HansAI = () => {
 
       // Final flush
       if (buffer.trim()) {
-        for (let raw of buffer.split("\n")) {
+        for (const raw of buffer.split("\n")) {
           if (!raw || !raw.startsWith("data: ")) continue;
           const jsonStr = raw.slice(6).trim();
           if (jsonStr === "[DONE]") continue;
@@ -552,7 +552,7 @@ const HansAI = () => {
           const existing = getVoicePersonaByName(nameSlug);
           const displayName = existing?.name ?? nameSlug.charAt(0).toUpperCase() + nameSlug.slice(1).replace(/-/g, " ");
           // #region agent log
-          fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:standard_edit_branch",message:"standard_edit_matched",data:{nameSlug,displayName},timestamp:Date.now(),hypothesisId:"H1"})}).catch(()=>{});
+          fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:standard_edit_branch",message:"standard_edit_matched",data:{nameSlug,displayName},timestamp:Date.now(),hypothesisId:"H1"})}).catch(()=>{ /* empty */ });
           // #endregion
           setVoiceStandardEditName(displayName);
           setShowForm("voice_standard_edit");
@@ -621,7 +621,7 @@ const HansAI = () => {
         case "/help": handleHelp(); break;
         case "/jarvis":
           // #region agent log
-          fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:jarvis_case",message:"jarvis_invoked",data:{argLength:arg.length,trimmedLength:arg.trim().length},timestamp:Date.now(),hypothesisId:"H2"})}).catch(()=>{});
+          fetch("http://127.0.0.1:7398/ingest/2ef60cb6-c2eb-4367-82fc-59990da34de1",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"29b2c0"},body:JSON.stringify({sessionId:"29b2c0",location:"HansAI.tsx:jarvis_case",message:"jarvis_invoked",data:{argLength:arg.length,trimmedLength:arg.trim().length},timestamp:Date.now(),hypothesisId:"H2"})}).catch(()=>{ /* empty */ });
           // #endregion
           if (arg.trim()) {
             await handleAI(arg.trim(), undefined, { persona: "jarvis" });
