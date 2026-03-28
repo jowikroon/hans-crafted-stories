@@ -116,7 +116,7 @@ const ToolSettingsModal = ({ open, onClose, tool, totalTools, onUpdated }: ToolS
       setIcon(tool.icon || "Wrench");
       setColor(tool.color || "text-primary");
       setSortOrder(tool.sort_order ?? 0);
-      const config = (tool.config || {}) as Record<string, unknown>;
+      const config = (tool.config || { /* empty */ }) as Record<string, unknown>;
       setWebhookUrl((config.webhook_url as string) || "");
       setEnabled(config.enabled !== false);
       setAttributes((tool.attributes || []).map((a) => ({ id: a.id, key: a.key, value: a.value })));
@@ -127,7 +127,7 @@ const ToolSettingsModal = ({ open, onClose, tool, totalTools, onUpdated }: ToolS
     if (!tool) return;
     setSaving(true);
     try {
-      const config: Record<string, unknown> = { ...(tool.config as Record<string, unknown> || {}), enabled };
+      const config: Record<string, unknown> = { ...(tool.config as Record<string, unknown> || { /* empty */ }), enabled };
       if (tool.tool_type === "webhook") {
         config.webhook_url = webhookUrl;
       }
