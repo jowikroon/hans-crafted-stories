@@ -13,7 +13,7 @@ export interface BlogPostVersion {
 
 export async function getVersionsForPost(postId: string): Promise<BlogPostVersion[]> {
   const { data, error } = await supabase
-    .from("blog_post_versions" as any)
+    .from("blog_post_versions" as unknown)
     .select("*")
     .eq("post_id", postId)
     .order("created_at", { ascending: false })
