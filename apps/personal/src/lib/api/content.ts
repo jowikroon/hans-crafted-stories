@@ -73,7 +73,7 @@ export async function getBlogPost(slug: string, publishedOnly = true): Promise<B
 export async function createBlogPost(post: Partial<BlogPostRow>): Promise<BlogPostRow> {
   const { data, error } = await supabase
     .from("blog_posts")
-    .insert(post as any)
+    .insert(post as unknown)
     .select()
     .single();
   if (error) throw error;
@@ -83,7 +83,7 @@ export async function createBlogPost(post: Partial<BlogPostRow>): Promise<BlogPo
 export async function updateBlogPost(id: string, updates: Partial<BlogPostRow>): Promise<BlogPostRow> {
   const { data, error } = await supabase
     .from("blog_posts")
-    .update(updates as any)
+    .update(updates as unknown)
     .eq("id", id)
     .select()
     .single();
@@ -112,7 +112,7 @@ export async function getCaseStudies(publishedOnly = true): Promise<CaseStudyRow
 export async function createCaseStudy(study: Partial<CaseStudyRow>): Promise<CaseStudyRow> {
   const { data, error } = await supabase
     .from("case_studies")
-    .insert(study as any)
+    .insert(study as unknown)
     .select()
     .single();
   if (error) throw error;
@@ -122,7 +122,7 @@ export async function createCaseStudy(study: Partial<CaseStudyRow>): Promise<Cas
 export async function updateCaseStudy(id: string, updates: Partial<CaseStudyRow>): Promise<CaseStudyRow> {
   const { data, error } = await supabase
     .from("case_studies")
-    .update(updates as any)
+    .update(updates as unknown)
     .eq("id", id)
     .select()
     .single();
