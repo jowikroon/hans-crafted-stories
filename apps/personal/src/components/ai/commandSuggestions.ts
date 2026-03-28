@@ -549,9 +549,9 @@ const STORAGE_KEY_UNIFIED = "cmd_usage_unified";
 export function getUsageCounts(context: "empire" | "hansai" | "unified"): Record<string, number> {
   const key = context === "empire" ? STORAGE_KEY_EMPIRE : context === "hansai" ? STORAGE_KEY_HANSAI : STORAGE_KEY_UNIFIED;
   try {
-    return JSON.parse(localStorage.getItem(key) || "{}");
+    return JSON.parse(localStorage.getItem(key) || "{ /* empty */ }");
   } catch {
-    return {};
+    return { /* empty */ };
   }
 }
 
