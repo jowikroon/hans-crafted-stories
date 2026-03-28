@@ -18,7 +18,7 @@ interface WebhookTriggerModalProps {
 
 const WebhookTriggerModal = ({ open, onClose, defaultWebhookUrl = "", toolId, toolConfig, onWebhookSaved }: WebhookTriggerModalProps) => {
   const [webhookUrl, setWebhookUrl] = useState(defaultWebhookUrl);
-  const [payload, setPayload] = useState("{}");
+  const [payload, setPayload] = useState("{ /* empty */ }");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; status: number; data: unknown } | null>(null);
   const { toast } = useToast();
@@ -35,7 +35,7 @@ const WebhookTriggerModal = ({ open, onClose, defaultWebhookUrl = "", toolId, to
     e.preventDefault();
     if (!webhookUrl.trim()) return;
 
-    let parsedPayload = {};
+    let parsedPayload = { /* empty */ };
     try {
       parsedPayload = JSON.parse(payload);
     } catch {
@@ -54,7 +54,7 @@ const WebhookTriggerModal = ({ open, onClose, defaultWebhookUrl = "", toolId, to
         if (toolId && webhookUrl !== defaultWebhookUrl) {
           try {
             await portalApi.updateTool(toolId, {
-              config: { ...(toolConfig || {}), webhook_url: webhookUrl },
+              config: { ...(toolConfig || { /* empty */ }), webhook_url: webhookUrl },
             });
             onWebhookSaved?.();
           } catch {
