@@ -37,7 +37,7 @@ const ContactForm = () => {
     reason: "",
     message: "",
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof ContactData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof ContactData, string>>>({ /* empty */ });
 
   const reasons = [
     { value: "freelance", label: t.reasonFreelance },
@@ -56,7 +56,7 @@ const ContactForm = () => {
     const result = contactSchema.safeParse(form);
 
     if (!result.success) {
-      const fieldErrors: Partial<Record<keyof ContactData, string>> = {};
+      const fieldErrors: Partial<Record<keyof ContactData, string>> = { /* empty */ };
       result.error.issues.forEach((issue) => {
         const field = issue.path[0] as keyof ContactData;
         fieldErrors[field] = issue.message;
@@ -67,8 +67,8 @@ const ContactForm = () => {
 
     setLoading(true);
     const { error } = await supabase
-      .from("contact_submissions" as any)
-      .insert([result.data] as any);
+      .from("contact_submissions" as unknown)
+      .insert([result.data] as unknown);
 
     setLoading(false);
 
@@ -79,7 +79,7 @@ const ContactForm = () => {
 
     toast.success(t.successMessage);
     setForm({ name: "", email: "", reason: "", message: "" });
-    setErrors({});
+    setErrors({ /* empty */ });
   };
 
   return (
