@@ -127,7 +127,7 @@ const ImageCropUploader = ({
       setCropDialogOpen(false);
       setRawImage(null);
       toast.success("Image cropped & uploaded");
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error("Upload failed: " + (err.message || "Unknown error"));
     } finally {
       setUploading(false);
@@ -153,7 +153,7 @@ const ImageCropUploader = ({
       setCropDialogOpen(false);
       setRawImage(null);
       toast.success("Image uploaded");
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error("Upload failed: " + (err.message || "Unknown error"));
     } finally {
       setUploading(false);
