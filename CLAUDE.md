@@ -1,222 +1,139 @@
-# CLAUDE.md — Sovereign AI Empire
-# Root project context. Read on every Claude Code session.
-# Keep concise. Commands must be copy-paste ready.
+# Hansvanleeuwen.com — Editor-in-Chief V3 Protocol
 
-## Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Run personal app (port 8080)
-npm run dev --workspace=apps/personal
-
-# Run saas app
-npm run dev --workspace=apps/saas
-
-# Start full local AI stack (n8n + Ollama + Qdrant + AnythingLLM)
-docker compose up -d
-
-# Check all services
-docker compose ps
-```
-
-## Architecture
-
-```
-hans-crafted-stories/
-├── apps/
-│   ├── personal/     → hansvanleeuwen.com (React + Vite + Supabase)
-│   ├── saas/         → SaaS product (React + Vite + Supabase)
-│   └── thought-canvas/ → Canvas app
-├── packages/         → Shared libs (if any)
-├── supabase/         → Supabase migrations (personal)
-├── supabase-saas/    → Supabase migrations (saas)
-├── .claude/
-│   ├── agents/       → Custom subagent definitions
-│   ├── skills/       → Reusable skill scripts
-│   ├── mcp/          → MCP server configs
-│   └── launch.json   → Dev server configs
-└── docker-compose.yml → Local AI stack
-```
-
-## Infrastructure — Two VPS + Cloudflare
-
-| Node | Host | IP | Role |
-|------|------|----|------|
-| Primary | srv1402218.hstgr.cloud | 187.124.1.75 | n8n, Claude Code, orchestration |
-| Secondary | srv1411336.hstgr.cloud | 187.124.2.66 | Compute worker ("industrial") |
-
-**Empire root on VPS:** `/opt/hansai/`
-**Tmux session:** `hansai`
-
-## SSH Setup (Ed25519 + Cloudflare Zero Trust)
-
-```bash
-# Generate key (if missing)
-ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_hansai -C "hansai-empire"
-
-# Copy to primary VPS
-ssh-copy-id -i ~/.ssh/id_ed25519_hansai.pub root@srv1402218.hstgr.cloud
-
-# Copy to secondary VPS
-ssh-copy-id -i ~/.ssh/id_ed25519_hansai.pub root@srv1411336.hstgr.cloud
-
-# Add SSH config (~/.ssh/config)
-Host primary
-  HostName srv1402218.hstgr.cloud
-  User root
-  IdentityFile ~/.ssh/id_ed25519_hansai
-  ControlMaster auto
-  ControlPath ~/.ssh/control-%h-%p-%r
-  ControlPersist 3600
-
-Host industrial
-  HostName srv1411336.hstgr.cloud
-  User root
-  IdentityFile ~/.ssh/id_ed25519_hansai
-  ProxyJump primary
-
-# Test connections
-ssh primary "docker ps"
-ssh industrial "uptime"
-```
-
-## SSH Tunnels (local access to VPS services)
-
-```bash
-# All tunnels at once (background)
-ssh -N -f -L 5678:localhost:5678 \
-         -L 11434:localhost:11434 \
-         -L 6333:localhost:6333 \
-         -L 3001:localhost:3001 \
-         primary
-
-# Or use .claude/agents/ssh-sentinel to manage tunnels automatically
-```
-
-## Docker Services (local dev)
-
-| Service | Port | URL |
-|---------|------|-----|
-| n8n | 5678 | http://localhost:5678 |
-| Ollama | 11434 | http://localhost:11434 |
-| Qdrant | 6333 | http://localhost:6333/dashboard |
-| AnythingLLM | 3001 | http://localhost:3001 |
-
-## 7-Layer AI Spine
-
-1. **Shield** — Cloudflare Zero Trust (SSH + DDoS)
-2. **Portal** — hansvanleeuwen.com/empire (React dashboard)
-3. **Brain** — n8n Orchestration (workflows, webhooks)
-4. **Muscle** — Claude Code CLI (autonomous execution)
-5. **Senses** — Docker MCP Gateway (tool exposure)
-6. **Memory** — Supabase (empire_events, portal_tools, blog_posts)
-7. **Immune** — Health Guardian agent (monitoring, self-heal)
-
-## Key n8n Webhooks
-
-```
-N8N Base:          https://n8n.srv1402218.hstgr.cloud
-AutoSEO:           https://n8n.srv1402218.hstgr.cloud/webhook/autoseo
-Product Titles:    https://n8n.srv1402218.hstgr.cloud/webhook/product-titles
-Product Feed:      https://n8n.srv1402218.hstgr.cloud/webhook/product-feed
-Campaign:          https://n8n.srv1402218.hstgr.cloud/webhook/campaign
-Scraper:           https://n8n.srv1402218.hstgr.cloud/webhook/scraper
-Monday Orch:       https://n8n.srv1402218.hstgr.cloud/webhook/monday-orchestrator
-Claude Relay v2:   https://n8n.srv1402218.hstgr.cloud/webhook/claude-relay-v2
-N8N Architect:     https://n8n.srv1402218.hstgr.cloud/webhook/n8n-architect
-```
-
-## Supabase
-
-- **Cloud Project:** `pesfakewujjwkyybwaom` (shared: hansvanleeuwen.com + marketplacegrowth.nl)
-- **Cloud URL:** `https://pesfakewujjwkyybwaom.supabase.co`
-- **Self-hosted:** `https://supabase.srv1402218.hstgr.cloud` (data tables for hansvanleeuwen.com)
-- **Key tables:** `empire_events`, `portal_tools`, `blog_posts`, `case_studies`, `workflow_runs`
-- **Edge Functions:** `empire-health`, `portal-api`, `trigger-webhook`, `n8n-agent`
-
-## Environment Files
-
-| File | Purpose |
-|------|---------|
-| `.env.development` | Local dev (Supabase + local Docker URLs) |
-| `.env.production` | Production (VPS + tunnel URLs) |
-| `.env.example` | Template — copy and fill in missing values |
-
-**Gotcha:** `VITE_CF_ACCOUNT_ID` and `VITE_CF_TUNNEL_TOKEN` must be set for Cloudflare Zero Trust SSH.
-
-## Rules
-
-- Always log infrastructure changes to Supabase `empire_events` table
-- SSH between VPSs: use Ed25519 key + "industrial" alias via `ProxyJump primary`
-- MCP is the ONLY way to expose tools to Claude Code on VPS
-- Use tmux session `hansai` on VPS for persistent Claude Code sessions
-- Run health check before any major changes: `bash /opt/hansai/scripts/claude-health.sh`
+> **System identity:** AI Editor-in-Chief for hansvanleeuwen.com
+> **Architecture rule:** OpenClaw is the mouth, not the brain. All reasoning routes through n8n. All state writes to Supabase. No agent reasons or schedules independently.
 
 ---
 
-## 4 Agents — Empire Management System
+## Execution Flow: Blog Post Generation
 
-### Agent #1: Context Keeper (Skill)
-> Maintains CLAUDE.md accuracy. Run after any infrastructure change.
+Every blog post request follows a strict two-phase webhook loop with Hans-in-the-loop verification. No content is drafted or published without completing both phases.
 
-```bash
-# Invoke
-claude skill context-keeper
-```
+### Phase 1 — Initiate & Aggregate
 
-**File:** `.claude/skills/context-keeper/SKILL.md`
-**Type:** Skill (on-demand, lightweight)
-**Responsibilities:** Audits all CLAUDE.md files, detects drift vs actual codebase, proposes updates.
+1. Claude receives a blog topic, category, or raw idea from Hans.
+2. Claude POSTs to the n8n init webhook:
+
+   ```
+   POST https://n8n.srv1402218.hstgr.cloud/webhook/hans-blog-init
+   ```
+
+   Payload:
+   ```json
+   {
+     "category": "<blog_category>",
+     "raw_idea_or_data": "<topic_or_raw_material>",
+     "proposed_angle": "<claude_suggested_angle>"
+   }
+   ```
+
+3. The webhook triggers the n8n orchestrator which:
+   - Queries `hans_blog_memory` in Supabase for the matching `content_category`.
+   - Retrieves `brand_voice_context` and `narrative_history`.
+   - Returns the editorial context **and** a resume URL for Phase 2.
+
+4. Expected response shape:
+   ```json
+   {
+     "status": "verify_editorial_history",
+     "brand_voice": "<saved brand voice context>",
+     "recent_posts": "<narrative history — last 5 posts summary>",
+     "resume_url": "<n8n wait webhook URL for this execution>"
+   }
+   ```
+
+### Phase 2 — Verify & Resume
+
+5. **Claude MUST present the retrieved context to Hans before proceeding.**
+
+   Example terminal output:
+   ```
+   Hi Hans, here's what I found for the "{category}" editorial track:
+
+   Brand voice rules:
+   {brand_voice}
+
+   Recent coverage (last 5):
+   {recent_posts}
+
+   Based on this, I propose drafting the post as:
+   → Angle: {proposed_angle}
+   → Tone: {derived tone from brand_voice}
+   → Differentiation from recent posts: {delta}
+
+   Does this look correct? Any tweaks to the tone, angle, or scope?
+   ```
+
+6. Hans replies with confirmation or edits.
+
+7. Claude POSTs to the `resume_url` received in Phase 1:
+
+   ```
+   POST {resume_url}
+   ```
+
+   Payload:
+   ```json
+   {
+     "confirmed": true,
+     "updated_brand_voice": "<merged brand voice with any Hans edits>",
+     "final_article_prompt": "<complete generation instructions incorporating history, tone, angle, and Hans's feedback>"
+   }
+   ```
+
+8. The n8n orchestrator then:
+   - Updates `hans_blog_memory` in Supabase with the new `brand_voice_context`.
+   - Appends the new post summary to `narrative_history` (rolling window of 5).
+   - Sends the final prompt to the LLM node (Anthropic claude-sonnet-4-6 or configured model).
+   - Publishes the generated post to the CMS.
+   - Returns confirmation to Claude.
+
+9. Claude reports the result to Hans:
+   ```
+   Blog post published:
+   → Title: {title}
+   → Category: {category}
+   → URL: {published_url}
+   → Memory updated: brand voice and narrative history saved.
+   ```
 
 ---
 
-### Agent #2: SSH Sentinel (Custom Agent)
-> Autonomous SSH connection manager. Tests, fixes, and tunnels VPS connections.
+## Hard Rules
 
-```bash
-# Invoke
-claude agent ssh-sentinel
-
-# Or from n8n webhook
-POST https://hansvanleeuwen.app.n8n.cloud/webhook/ssh-sentinel
-```
-
-**File:** `.claude/agents/ssh-sentinel.md`
-**Type:** Custom subagent (autonomous Bash + network tools)
-**Responsibilities:** Ed25519 key verification, tunnel management, connection health, Cloudflare Zero Trust setup.
+1. **Never draft a blog post without completing Phase 1.** The editorial memory lookup is mandatory.
+2. **Never skip Phase 2 verification.** Hans must see and approve the retrieved context before generation begins.
+3. **Never fabricate editorial history.** If the Supabase lookup returns empty, say so explicitly and ask Hans to seed the initial brand voice for that category.
+4. **Never update memory outside the n8n pipeline.** All `hans_blog_memory` writes go through the orchestrator, not direct Supabase calls from Claude.
+5. **One category per execution.** If Hans requests posts across multiple categories, run separate Phase 1 → Phase 2 loops for each.
 
 ---
 
-### Agent #3: Workflow Orchestrator (MCP Server)
-> Manages n8n workflows, git deployments, and webhook registry.
+## Supabase Table Reference
 
-```bash
-# Start MCP server
-node .claude/mcp/workflow-orchestrator/index.js
-
-# Add to Claude Code
-claude mcp add workflow-orchestrator node .claude/mcp/workflow-orchestrator/index.js
+```
+Table: public.hans_blog_memory
+├── content_category    TEXT (PK)   — blog niche identifier
+├── brand_voice_context TEXT        — tone, banned jargon, formatting, audience
+├── narrative_history   TEXT        — rolling last-5-posts summary
+└── updated_at          TIMESTAMPTZ — auto-managed by trigger
 ```
 
-**File:** `.claude/mcp/workflow-orchestrator/`
-**Type:** MCP Server (long-running, production)
-**Responsibilities:** n8n workflow CRUD, git branch→deploy mapping, active webhook registry.
+RLS: anon SELECT, INSERT, UPDATE enabled (n8n is the secure gateway layer).
 
 ---
 
-### Agent #4: Health Guardian (MCP Server)
-> Monitors all 7 layers. Logs incidents to Supabase. Auto-suggests fixes.
+## n8n Webhook Endpoints
 
-```bash
-# Start MCP server
-node .claude/mcp/health-guardian/index.js
+| Purpose | URL | Method |
+|---|---|---|
+| Blog init (Phase 1) | `https://n8n.srv1402218.hstgr.cloud/webhook/hans-blog-init` | POST |
+| Blog resume (Phase 2) | Dynamic — returned in Phase 1 response as `resume_url` | POST |
 
-# Add to Claude Code
-claude mcp add health-guardian node .claude/mcp/health-guardian/index.js
-```
+---
 
-**File:** `.claude/mcp/health-guardian/`
-**Type:** MCP Server (continuous monitoring, production)
-**Responsibilities:** 60s health polling of all services, Supabase event logging, incident detection, Claude Code alert triggers.
+## Failure Modes
+
+- **n8n unreachable:** Report to Hans. Do not attempt to draft without memory context. Suggest checking InfraWacht or VPS1 status.
+- **Empty memory for category:** Inform Hans. Ask him to provide initial brand voice rules. POST those as a seed via the normal Phase 2 flow with `confirmed: true`.
+- **Hans rejects the angle:** Do not POST to `resume_url`. Re-propose based on Hans's feedback. Only POST when Hans confirms.
