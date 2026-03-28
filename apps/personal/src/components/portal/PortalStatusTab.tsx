@@ -44,11 +44,11 @@ const PortalStatusTab = ({ subFilter }: { subFilter?: string }) => {
   const checkAll = async () => {
     setResources((prev) => prev.map((r) => ({ ...r, status: "checking" as Status, lastError: undefined })));
     const results = await Promise.all([
-      (async () => { const start = Date.now(); try { const { error } = await supabase.from("portal_tools").select("id").limit(1); return { status: error ? "offline" : "online", latency: Date.now() - start, lastError: error?.message } as const; } catch (e: any) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
-      (async () => { const start = Date.now(); try { const { error } = await supabase.auth.getSession(); return { status: error ? "offline" : "online", latency: Date.now() - start, lastError: error?.message } as const; } catch (e: any) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
-      (async () => { const start = Date.now(); try { const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/site-audit`, { method: "OPTIONS" }); return { status: res.ok || res.status === 204 ? "online" : "offline", latency: Date.now() - start, lastError: res.ok ? undefined : `HTTP ${res.status}` } as const; } catch (e: any) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
-      (async () => { const start = Date.now(); try { const { error } = await supabase.storage.from("bucket").list("", { limit: 1 }); return { status: error ? "offline" : "online", latency: Date.now() - start, lastError: error?.message } as const; } catch (e: any) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
-      (async () => { const start = Date.now(); try { const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/`, { headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }); return { status: res.ok ? "online" : "offline", latency: Date.now() - start, lastError: res.ok ? undefined : `HTTP ${res.status}` } as const; } catch (e: any) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
+      (async () => { const start = Date.now(); try { const { error } = await supabase.from("portal_tools").select("id").limit(1); return { status: error ? "offline" : "online", latency: Date.now() - start, lastError: error?.message } as const; } catch (e: unknown) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
+      (async () => { const start = Date.now(); try { const { error } = await supabase.auth.getSession(); return { status: error ? "offline" : "online", latency: Date.now() - start, lastError: error?.message } as const; } catch (e: unknown) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
+      (async () => { const start = Date.now(); try { const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/site-audit`, { method: "OPTIONS" }); return { status: res.ok || res.status === 204 ? "online" : "offline", latency: Date.now() - start, lastError: res.ok ? undefined : `HTTP ${res.status}` } as const; } catch (e: unknown) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
+      (async () => { const start = Date.now(); try { const { error } = await supabase.storage.from("bucket").list("", { limit: 1 }); return { status: error ? "offline" : "online", latency: Date.now() - start, lastError: error?.message } as const; } catch (e: unknown) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
+      (async () => { const start = Date.now(); try { const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/`, { headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }); return { status: res.ok ? "online" : "offline", latency: Date.now() - start, lastError: res.ok ? undefined : `HTTP ${res.status}` } as const; } catch (e: unknown) { return { status: "offline" as const, latency: 0, lastError: e?.message }; } })(),
     ]);
     setResources((prev) => prev.map((r, i) => ({ ...r, status: results[i].status, latency: results[i].latency, lastError: results[i].lastError })));
     setLastChecked(new Date());
@@ -56,27 +56,27 @@ const PortalStatusTab = ({ subFilter }: { subFilter?: string }) => {
 
   const checkConnectors = async () => {
     setConnectorsLoading(true);
-    try { const { data, error } = await supabase.functions.invoke("connector-status"); if (!error && data?.data) setConnectors(data.data); } catch {} finally { setConnectorsLoading(false); }
+    try { const { data, error } = await supabase.functions.invoke("connector-status"); if (!error && data?.data) setConnectors(data.data); } catch { /* empty */ } finally { setConnectorsLoading(false); }
   };
 
   const fetchUnhandledIntents = async () => {
     setIntentsLoading(true);
-    try { const { data, error } = await (supabase.from("unhandled_intents" as any).select("*").eq("resolved", false).order("created_at", { ascending: false }).limit(25) as any); if (!error && data) setUnhandledIntents(data as UnhandledIntent[]); } catch {} finally { setIntentsLoading(false); }
+    try { const { data, error } = await (supabase.from("unhandled_intents" as unknown).select("*").eq("resolved", false).order("created_at", { ascending: false }).limit(25) as unknown); if (!error && data) setUnhandledIntents(data as UnhandledIntent[]); } catch { /* empty */ } finally { setIntentsLoading(false); }
   };
 
   const resolveIntent = async (intentId: string, workflowName: string) => {
     setResolvingId(intentId);
-    try { await (supabase.from("unhandled_intents" as any).update({ resolved: true, resolved_workflow: workflowName }) as any).eq("id", intentId); setUnhandledIntents((prev) => prev.filter((i) => i.id !== intentId)); } catch {} finally { setResolvingId(null); }
+    try { await (supabase.from("unhandled_intents" as unknown).update({ resolved: true, resolved_workflow: workflowName }) as unknown).eq("id", intentId); setUnhandledIntents((prev) => prev.filter((i) => i.id !== intentId)); } catch { /* empty */ } finally { setResolvingId(null); }
   };
 
   const dismissIntent = async (intentId: string) => {
     setResolvingId(intentId);
-    try { await (supabase.from("unhandled_intents" as any).update({ resolved: true, resolved_workflow: "dismissed" }) as any).eq("id", intentId); setUnhandledIntents((prev) => prev.filter((i) => i.id !== intentId)); } catch {} finally { setResolvingId(null); }
+    try { await (supabase.from("unhandled_intents" as unknown).update({ resolved: true, resolved_workflow: "dismissed" }) as unknown).eq("id", intentId); setUnhandledIntents((prev) => prev.filter((i) => i.id !== intentId)); } catch { /* empty */ } finally { setResolvingId(null); }
   };
 
   const fetchMondayEvents = async () => {
     setMondayLoading(true);
-    try { const { data, error } = await (supabase.from("empire_events").select("id, event_type, message, metadata, monday_item_id, created_at").in("source", ["monday", "monday-trigger-agent"]).order("created_at", { ascending: false }).limit(15) as any); if (!error && data) setMondayEvents(data as MondayEvent[]); } catch {} finally { setMondayLoading(false); }
+    try { const { data, error } = await (supabase.from("empire_events").select("id, event_type, message, metadata, monday_item_id, created_at").in("source", ["monday", "monday-trigger-agent"]).order("created_at", { ascending: false }).limit(15) as unknown); if (!error && data) setMondayEvents(data as MondayEvent[]); } catch { /* empty */ } finally { setMondayLoading(false); }
   };
 
   const approveMondayItem = async (eventId: string, workflowName: string, itemId: string, itemName: string, boardId: string) => {
@@ -89,10 +89,10 @@ const PortalStatusTab = ({ subFilter }: { subFilter?: string }) => {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-webhook`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionData?.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` }, body: JSON.stringify({ webhook_url: wf.webhook, payload }) });
       if (!res.ok) throw new Error("Webhook failed");
       const evt = mondayEvents.find((e) => e.id === eventId);
-      const newMetadata = { ...(evt?.metadata || {}), resolved_workflow: workflowName };
+      const newMetadata = { ...(evt?.metadata || { /* empty */ }), resolved_workflow: workflowName };
       await supabase.from("empire_events").update({ event_type: "monday_approved", metadata: newMetadata }).eq("id", eventId);
       setMondayEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, event_type: "monday_approved", metadata: newMetadata } : e)));
-    } catch {} finally { setMondayApprovingId(null); }
+    } catch { /* empty */ } finally { setMondayApprovingId(null); }
   };
 
   useEffect(() => { checkAll(); checkConnectors(); fetchUnhandledIntents(); fetchMondayEvents(); }, []);
@@ -108,7 +108,7 @@ const PortalStatusTab = ({ subFilter }: { subFilter?: string }) => {
   const mondayLevel: StatusLevel = mondayLoading ? "checking" : mondayTodo.length === 0 ? "ok" : "warning";
   const intentsLevel: StatusLevel = intentsLoading ? "checking" : unhandledIntents.length === 0 ? "ok" : "warning";
 
-  const cards: { key: DrawerType; icon: any; title: string; summary: string; level: StatusLevel }[] = [
+  const cards: { key: DrawerType; icon: unknown; title: string; summary: string; level: StatusLevel }[] = [
     { key: "health", icon: Activity, title: "System Health", summary: checking ? "Checking…" : `${onlineCount}/${resources.length} online`, level: healthLevel },
     { key: "connectors", icon: Plug, title: "Connectors", summary: connectorsLoading ? "Checking…" : `${connectedCount}/${connectors.length} linked`, level: connectorLevel },
     { key: "monday", icon: CalendarCheck2, title: "Monday.com", summary: mondayLoading ? "Loading…" : `${mondayTodo.length} pending`, level: mondayLevel },
