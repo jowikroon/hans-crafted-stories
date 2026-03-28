@@ -531,9 +531,9 @@ const BlogCMS = () => {
 
   // ── SEO metrics for active post ────────────────────────────────────────
   const seoMetrics = useMemo(() => {
-    const content = editLang === "nl" ? (contentNl || content) : content;
+    const seoContent = editLang === "nl" ? (contentNl || content) : content;
     const postTitle = editLang === "nl" ? (titleNl || title) : title;
-    return calculateSEOScore(postTitle, content, metaTitle, metaDescription, primaryKeyword);
+    return calculateSEOScore(postTitle, seoContent, metaTitle, metaDescription, primaryKeyword);
   }, [title, titleNl, content, contentNl, metaTitle, metaDescription, primaryKeyword, editLang]);
 
   // ── Open post for editing ──────────────────────────────────────────────
