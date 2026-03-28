@@ -10,7 +10,7 @@ export function usePageContent(page: string) {
   useEffect(() => {
     getPageContent(page)
       .then(setRows)
-      .catch(() => {})
+      .catch(() => { /* empty */ })
       .finally(() => setLoading(false));
   }, [page]);
 
