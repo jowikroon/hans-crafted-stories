@@ -67,7 +67,7 @@ export async function createWorkflowInN8n(
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json().catch(() => ({}));
+    const data = await res.json().catch(() => ({ /* empty */ }));
 
     if (!res.ok) {
       return {
