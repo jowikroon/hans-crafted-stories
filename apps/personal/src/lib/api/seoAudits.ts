@@ -50,7 +50,7 @@ export function extractPath(url: string): string {
 /** Get all audits grouped by domain, newest first */
 export async function getAuditsByDomain(domain?: string): Promise<SeoAudit[]> {
   let query = supabase
-    .from("seo_audits" as any)
+    .from("seo_audits" as unknown)
     .select("*")
     .order("created_at", { ascending: false });
   if (domain) query = query.eq("domain", domain);
@@ -62,7 +62,7 @@ export async function getAuditsByDomain(domain?: string): Promise<SeoAudit[]> {
 /** Get the latest audit for a specific page */
 export async function getLatestAudit(domain: string, path: string): Promise<SeoAudit | null> {
   const { data, error } = await supabase
-    .from("seo_audits" as any)
+    .from("seo_audits" as unknown)
     .select("*")
     .eq("domain", domain)
     .eq("path", path)
@@ -76,7 +76,7 @@ export async function getLatestAudit(domain: string, path: string): Promise<SeoA
 /** Get audit history for a specific page */
 export async function getAuditHistory(domain: string, path: string): Promise<SeoAudit[]> {
   const { data, error } = await supabase
-    .from("seo_audits" as any)
+    .from("seo_audits" as unknown)
     .select("*")
     .eq("domain", domain)
     .eq("path", path)
@@ -89,7 +89,7 @@ export async function getAuditHistory(domain: string, path: string): Promise<Seo
 /** Get all unique domains */
 export async function getAuditDomains(): Promise<{ domain: string; count: number; latest: string }[]> {
   const { data, error } = await supabase
-    .from("seo_audits" as any)
+    .from("seo_audits" as unknown)
     .select("domain, created_at")
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -110,8 +110,8 @@ export async function getAuditDomains(): Promise<{ domain: string; count: number
 /** Save an audit result */
 export async function saveAudit(audit: Omit<SeoAudit, "id" | "created_at">): Promise<SeoAudit> {
   const { data, error } = await supabase
-    .from("seo_audits" as any)
-    .insert(audit as any)
+    .from("seo_audits" as unknown)
+    .insert(audit as unknown)
     .select()
     .single();
   if (error) throw error;
@@ -120,7 +120,7 @@ export async function saveAudit(audit: Omit<SeoAudit, "id" | "created_at">): Pro
 
 /** Delete an audit */
 export async function deleteAudit(id: string): Promise<void> {
-  const { error } = await supabase.from("seo_audits" as any).delete().eq("id", id);
+  const { error } = await supabase.from("seo_audits" as unknown).delete().eq("id", id);
   if (error) throw error;
 }
 
