@@ -15,7 +15,7 @@ export default function ServicesGrid() {
   const groupedByLayer = INFRA_LAYERS.reduce((acc, layer) => {
     acc[layer.id] = CONNECTED_SERVICES.filter(s => s.layer === layer.id);
     return acc;
-  }, {} as Record<string, typeof CONNECTED_SERVICES>);
+  }, { /* empty */ } as Record<string, typeof CONNECTED_SERVICES>);
 
   return (
     <div className="space-y-6">
