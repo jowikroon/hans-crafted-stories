@@ -87,7 +87,7 @@ function TaskCard({ result }: { result: Extract<ToolResult, { type: "task" | "id
       <Icon size={14} className={isIdea ? "text-amber-400" : "text-blue-400"} />
       <div className="flex-1">
         <p className="text-xs font-medium text-white/80">{isIdea ? "Idea saved" : "Task created"}</p>
-        <p className="text-[10px] text-white/50">{(result as any).task?.text || (result as any).idea?.text}</p>
+        <p className="text-[10px] text-white/50">{(result as unknown).task?.text || (result as unknown).idea?.text}</p>
       </div>
     </div>
   );
@@ -125,7 +125,7 @@ function GenericCard({ result }: { result: Extract<ToolResult, { type: "generic"
 
 // ─── Registry (Open-Closed pattern) ──────────────────
 
-const RENDERERS: Record<string, React.ComponentType<{ result: any }>> = {
+const RENDERERS: Record<string, React.ComponentType<{ result: unknown }>> = {
   health: HealthCard,
   workflow: WorkflowCard,
   audit: AuditCard,
