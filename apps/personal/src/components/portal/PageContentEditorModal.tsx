@@ -27,7 +27,7 @@ const PAGE_ICONS: Record<string, typeof Home> = { home: Home, work: Briefcase, w
 const PAGE_ROUTES: Record<string, string> = { home: "/", work: "/work", writing: "/writing", about: "/about" };
 
 const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Props) => {
-  const [values, setValues] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, string>>({ /* empty */ });
   const [saving, setSaving] = useState(false);
   const [generatingGroup, setGeneratingGroup] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -53,8 +53,8 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
       if (error) throw new Error(String(error.message || error));
       if (data?.error) throw new Error(data.error);
 
-      const suggestions: Record<string, string> = data?.suggestions || {};
-      const keyToId: Record<string, string> = {};
+      const suggestions: Record<string, string> = data?.suggestions || { /* empty */ };
+      const keyToId: Record<string, string> = { /* empty */ };
       items.forEach((i) => (keyToId[i.content_key] = i.id));
 
       let applied = 0;
@@ -74,7 +74,7 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
         title: `AI suggestions applied`,
         description: `${applied} field${applied !== 1 ? "s" : ""} updated in "${group}". Review and save when ready.`,
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("AI suggest error:", e);
       toast({ title: "AI generation failed", description: String(e?.message || e), variant: "destructive" });
     } finally {
@@ -84,7 +84,7 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
 
   // Original values for change tracking
   const originals = useMemo(() => {
-    const map: Record<string, string> = {};
+    const map: Record<string, string> = { /* empty */ };
     rows.forEach((r) => (map[r.id] = r.content_value));
     return map;
   }, [rows]);
@@ -94,7 +94,7 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
   }, [originals]);
 
   const grouped = useMemo(() => {
-    const groups: Record<string, PageContentRow[]> = {};
+    const groups: Record<string, PageContentRow[]> = { /* empty */ };
     rows.forEach((r) => {
       const g = r.content_group || "General";
       if (!groups[g]) groups[g] = [];
@@ -138,7 +138,7 @@ const PageContentEditorModal = ({ open, onOpenChange, page, rows, onSaved }: Pro
       } else {
         onOpenChange(false);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Error saving", description: e.message, variant: "destructive" });
     } finally {
       setSaving(false);
