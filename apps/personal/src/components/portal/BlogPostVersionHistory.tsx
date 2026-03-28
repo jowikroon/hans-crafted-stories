@@ -29,7 +29,7 @@ const BlogPostVersionHistory = ({ postId, open, onRestore }: Props) => {
   }, [postId, open]);
 
   const grouped = useMemo(() => {
-    const byDate: Record<string, BlogPostVersion[]> = {};
+    const byDate: Record<string, BlogPostVersion[]> = { /* empty */ };
     for (const v of versions) {
       const dateKey = new Date(v.created_at).toLocaleDateString("en-US", {
         month: "short", day: "numeric", year: "numeric",
@@ -43,7 +43,7 @@ const BlogPostVersionHistory = ({ postId, open, onRestore }: Props) => {
   const toggleGroup = (key: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) { next.delete(key); } else { next.add(key); }
       return next;
     });
   };
