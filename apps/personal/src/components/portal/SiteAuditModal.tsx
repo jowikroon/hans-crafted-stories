@@ -64,7 +64,7 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
     setSelectedDomain(domain);
     setLoadingHistory(true);
     try { setDomainAudits(await getAuditsByDomain(domain)); }
-    catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }); }
+    catch (e: unknown) { toast({ title: "Error", description: e.message, variant: "destructive" }); }
     finally { setLoadingHistory(false); }
   };
 
@@ -75,7 +75,7 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
       toast({ title: "Audit deleted" });
       if (selectedDomain) loadDomainAudits(selectedDomain);
       loadDomains();
-    } catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }); }
+    } catch (e: unknown) { toast({ title: "Error", description: e.message, variant: "destructive" }); }
   };
 
   const viewSavedAudit = (audit: SeoAudit) => {
@@ -117,7 +117,7 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
           setSavedAudit(saved);
           loadDomains();
           toast({ title: "Audit saved", description: `Stored under ${domain}` });
-        } catch (saveErr: any) { console.error("Failed to save audit:", saveErr); }
+        } catch (saveErr: unknown) { console.error("Failed to save audit:", saveErr); }
       } else {
         toast({ title: "Audit failed", description: res.error || "Unknown error", variant: "destructive" });
       }
