@@ -19,7 +19,7 @@ function IssueRow({ severity, area, issue, impact, fix, effort }: {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-3 space-y-2 hover:border-zinc-700 transition-colors">
       <div className="flex items-start gap-2 flex-wrap">
-        <span className={cn("shrink-0 rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase", getSeverityColor(severity as any))}>{severity}</span>
+        <span className={cn("shrink-0 rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase", getSeverityColor(severity as unknown))}>{severity}</span>
         <span className="rounded bg-zinc-800/60 px-1.5 py-0.5 text-[9px] text-zinc-500">{area}</span>
         {effort && <span className="ml-auto text-[9px] text-zinc-600 font-mono">{effort}</span>}
       </div>
