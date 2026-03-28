@@ -121,7 +121,7 @@ const Work = () => {
       dateCreated: s.year,
       genre: s.category,
       author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
-      ...(s.externalUrl ? { url: s.externalUrl } : {}),
+      ...(s.externalUrl ? { url: s.externalUrl } : { /* empty */ }),
     }));
     el.textContent = JSON.stringify({
       "@context": "https://schema.org",
