@@ -100,13 +100,13 @@ function useSystemIssues() {
   const [loading, setLoading] = useState(true);
   const fetch_ = useCallback(async () => {
     try {
-      const { data, error } = await (supabase.from("system_issues" as any).select("*").order("sort_order", { ascending: true }) as any);
+      const { data, error } = await (supabase.from("system_issues" as unknown).select("*").order("sort_order", { ascending: true }) as unknown);
       if (!error && data) setIssues(data as SystemIssue[]);
-    } catch {} finally { setLoading(false); }
+    } catch { /* empty */ } finally { setLoading(false); }
   }, []);
   useEffect(() => { fetch_(); }, [fetch_]);
   const toggle = async (id: string, cur: boolean) => {
-    await (supabase.from("system_issues" as any).update({ is_resolved: !cur } as any).eq("id", id) as any);
+    await (supabase.from("system_issues" as unknown).update({ is_resolved: !cur } as unknown).eq("id", id) as unknown);
     setIssues(p => p.map(i => i.id === id ? { ...i, is_resolved: !cur } : i));
   };
   return { issues, loading, toggle, refetch: fetch_ };
@@ -203,7 +203,7 @@ export default function GodStructure() {
   const tabParam = searchParams.get("tab") as Tab | null;
   const tab: Tab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : "overview";
 
-  const setTab = (t: Tab) => { setSearchParams(t === "overview" ? {} : { tab: t }, { replace: true }); };
+  const setTab = (t: Tab) => { setSearchParams(t === "overview" ? { /* empty */ } : { tab: t }, { replace: true }); };
 
   const { checks, lastChecked, checking: hC, run: runH } = useSupabaseHealth();
   const { layers: spine, checking: sC, run: runS } = useEmpireSpine();
