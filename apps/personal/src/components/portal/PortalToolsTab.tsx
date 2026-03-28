@@ -51,7 +51,7 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
     }
   }, [subFilter]);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [cardSizes, setCardSizes] = useState<Record<string, CardSize>>({});
+  const [cardSizes, setCardSizes] = useState<Record<string, CardSize>>({ /* empty */ });
   const seedingRef = useRef(false);
 
   const sensors = useSensors(
@@ -69,9 +69,9 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
         setTools(dbTools);
 
         // Load saved card sizes from config
-        const sizes: Record<string, CardSize> = {};
+        const sizes: Record<string, CardSize> = { /* empty */ };
         for (const t of dbTools) {
-          const cfg = (t.config || {}) as Record<string, unknown>;
+          const cfg = (t.config || { /* empty */ }) as Record<string, unknown>;
           if (cfg.grid_size && sizeCycle.includes(cfg.grid_size as CardSize)) {
             sizes[t.id] = cfg.grid_size as CardSize;
           }
@@ -80,7 +80,7 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
 
         if (!isAdmin) {
           const access = await usersApi.getToolAccess(userId);
-          const map: Record<string, UserToolAccess> = {};
+          const map: Record<string, UserToolAccess> = { /* empty */ };
           for (const a of access) map[a.tool_id] = a;
           setAccessMap(map);
         }
@@ -101,7 +101,7 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
   };
 
   const visibleTools = tools.filter((t) => {
-    const config = (t.config || {}) as Record<string, unknown>;
+    const config = (t.config || { /* empty */ }) as Record<string, unknown>;
     if (config.enabled === false) return false;
     if (!isAdmin && accessMap !== null) {
       const access = accessMap[t.id];
@@ -115,11 +115,11 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
 
   const toolCounts = useMemo(() => {
     const counts: Record<string, number> = { all: tools.filter(t => {
-      const config = (t.config || {}) as Record<string, unknown>;
+      const config = (t.config || { /* empty */ }) as Record<string, unknown>;
       return config.enabled !== false;
     }).length };
     tools.forEach(t => {
-      const config = (t.config || {}) as Record<string, unknown>;
+      const config = (t.config || { /* empty */ }) as Record<string, unknown>;
       if (config.enabled === false) return;
       const cat = t.category || "general";
       counts[cat] = (counts[cat] || 0) + 1;
@@ -198,7 +198,7 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
       // Persist to tool config
       const tool = tools.find((t) => t.id === toolId);
       if (tool) {
-        const cfg = { ...((tool.config || {}) as Record<string, unknown>), grid_size: next };
+        const cfg = { ...((tool.config || { /* empty */ }) as Record<string, unknown>), grid_size: next };
         portalApi.updateTool(toolId, { config: cfg }).catch(console.error);
       }
 
@@ -406,7 +406,7 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
 
       <ToolPreviewModal tool={previewTool} onClose={() => setPreviewTool(null)} onEdit={handleEditFromPreview} onOpen={handleOpenTool} onToolUpdated={reloadTools} />
       <SiteAuditModal open={activeModal === "site-audit"} onClose={() => setActiveModal(null)} />
-      <WebhookTriggerModal open={activeModal === "webhook"} onClose={() => setActiveModal(null)} defaultWebhookUrl={webhookUrl} toolId={tools.find(t => t.tool_type === "webhook")?.id} toolConfig={(tools.find(t => t.tool_type === "webhook")?.config || {}) as Record<string, unknown>} onWebhookSaved={reloadTools} />
+      <WebhookTriggerModal open={activeModal === "webhook"} onClose={() => setActiveModal(null)} defaultWebhookUrl={webhookUrl} toolId={tools.find(t => t.tool_type === "webhook")?.id} toolConfig={(tools.find(t => t.tool_type === "webhook")?.config || { /* empty */ }) as Record<string, unknown>} onWebhookSaved={reloadTools} />
       <KeywordResearchModal open={activeModal === "keyword"} onClose={() => setActiveModal(null)} />
       <ToolSettingsModal open={!!settingsTool} onClose={() => setSettingsTool(null)} tool={settingsTool} totalTools={tools.length} onUpdated={reloadTools} />
       <AddToolModal open={showAddTool} onClose={() => setShowAddTool(false)} userId={userId} nextSortOrder={tools.length} onAdded={reloadTools} />
