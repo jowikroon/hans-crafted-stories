@@ -193,7 +193,7 @@ export async function callAgent(agentId: string, userMessage: string): Promise<{
   const endpoint = routes[agentId];
   if (!endpoint) throw new Error(`Unknown agent: ${agentId}`);
 
-  const body = agentId === "agent/health" ? {}
+  const body = agentId === "agent/health" ? { /* empty */ }
     : agentId === "agent/seo-audit" ? { url: userMessage.trim().startsWith("http") ? userMessage.trim() : "https://hansvanleeuwen.com" }
     : { message: userMessage };
 
@@ -208,7 +208,7 @@ export async function callAgent(agentId: string, userMessage: string): Promise<{
 
   // Health agent returns structured data
   if (agentId === "agent/health" && data.services) {
-    const entries = Object.entries(data.services) as [string, any][];
+    const entries = Object.entries(data.services) as [string, unknown][];
     const healthData: ServiceHealthEntry[] = entries.map(([name, v]) => ({
       name,
       ok: v.ok,
@@ -236,7 +236,7 @@ export async function fetchHealthStatus(): Promise<ServiceHealthEntry[]> {
     const data = await res.json();
     if (!data.services) return [];
 
-    return Object.entries(data.services).map(([name, v]: [string, any]) => ({
+    return Object.entries(data.services).map(([name, v]: [string, unknown]) => ({
       name, ok: v.ok, latency: v.latency, error: v.error,
     }));
   } catch {
