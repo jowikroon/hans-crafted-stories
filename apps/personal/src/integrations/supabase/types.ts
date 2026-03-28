@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       blog_posts: {
         Row: {
+          canonical_url: string | null
           category: string
           content: string
           content_nl: string
@@ -24,15 +25,24 @@ export type Database = {
           excerpt_nl: string
           id: string
           image_url: string
+          meta_description: string | null
+          meta_title: string | null
+          og_description: string
+          og_image: string | null
+          og_title: string
+          primary_keyword: string
           published: boolean
           read_time: string
+          scheduled_at: string | null
           slug: string
+          status: string
           tags: string[]
           title: string
           title_nl: string
           updated_at: string
         }
         Insert: {
+          canonical_url?: string | null
           category?: string
           content?: string
           content_nl?: string
@@ -41,15 +51,24 @@ export type Database = {
           excerpt_nl?: string
           id?: string
           image_url?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string
+          og_image?: string | null
+          og_title?: string
+          primary_keyword?: string
           published?: boolean
           read_time?: string
+          scheduled_at?: string | null
           slug: string
+          status?: string
           tags?: string[]
           title: string
           title_nl?: string
           updated_at?: string
         }
         Update: {
+          canonical_url?: string | null
           category?: string
           content?: string
           content_nl?: string
@@ -58,13 +77,87 @@ export type Database = {
           excerpt_nl?: string
           id?: string
           image_url?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string
+          og_image?: string | null
+          og_title?: string
+          primary_keyword?: string
           published?: boolean
           read_time?: string
+          scheduled_at?: string | null
           slug?: string
+          status?: string
           tags?: string[]
           title?: string
           title_nl?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      blog_design_reviews: {
+        Row: {
+          created_at: string | null
+          findings: string
+          id: string
+          priority: string | null
+          recommendations: string
+          review_category: string
+          review_title: string
+          score: number
+        }
+        Insert: {
+          created_at?: string | null
+          findings: string
+          id?: string
+          priority?: string | null
+          recommendations: string
+          review_category: string
+          review_title: string
+          score: number
+        }
+        Update: {
+          created_at?: string | null
+          findings?: string
+          id?: string
+          priority?: string | null
+          recommendations?: string
+          review_category?: string
+          review_title?: string
+          score?: number
+        }
+        Relationships: []
+      }
+      blog_post_versions: {
+        Row: {
+          change_summary: string | null
+          changed_by: string | null
+          content: string
+          created_at: string | null
+          excerpt: string
+          id: string
+          post_id: string
+          title: string
+        }
+        Insert: {
+          change_summary?: string | null
+          changed_by?: string | null
+          content?: string
+          created_at?: string | null
+          excerpt?: string
+          id?: string
+          post_id: string
+          title?: string
+        }
+        Update: {
+          change_summary?: string | null
+          changed_by?: string | null
+          content?: string
+          created_at?: string | null
+          excerpt?: string
+          id?: string
+          post_id?: string
+          title?: string
         }
         Relationships: []
       }
@@ -236,6 +329,129 @@ export type Database = {
           metadata?: Json | null
           monday_item_id?: string | null
           source?: string
+        }
+        Relationships: []
+      }
+      hans_blog_memory: {
+        Row: {
+          brand_voice_context: string
+          content_category: string
+          narrative_history: string
+          updated_at: string
+        }
+        Insert: {
+          brand_voice_context?: string
+          content_category: string
+          narrative_history?: string
+          updated_at?: string
+        }
+        Update: {
+          brand_voice_context?: string
+          content_category?: string
+          narrative_history?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hvl_voice_templates: {
+        Row: {
+          banned_words: string[] | null
+          category: string
+          closing_examples: string[] | null
+          content_rules: string
+          created_at: string
+          id: string
+          is_default: boolean
+          max_paragraph_sentences: number | null
+          name: string
+          opening_examples: string[] | null
+          perspective: string
+          required_elements: string[] | null
+          seo_guidelines: string | null
+          target_audience: string
+          tone: string
+          transition_examples: string[] | null
+          updated_at: string
+          writing_style: string
+        }
+        Insert: {
+          banned_words?: string[] | null
+          category: string
+          closing_examples?: string[] | null
+          content_rules?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          max_paragraph_sentences?: number | null
+          name: string
+          opening_examples?: string[] | null
+          perspective?: string
+          required_elements?: string[] | null
+          seo_guidelines?: string | null
+          target_audience: string
+          tone: string
+          transition_examples?: string[] | null
+          updated_at?: string
+          writing_style: string
+        }
+        Update: {
+          banned_words?: string[] | null
+          category?: string
+          closing_examples?: string[] | null
+          content_rules?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          max_paragraph_sentences?: number | null
+          name?: string
+          opening_examples?: string[] | null
+          perspective?: string
+          required_elements?: string[] | null
+          seo_guidelines?: string | null
+          target_audience?: string
+          tone?: string
+          transition_examples?: string[] | null
+          updated_at?: string
+          writing_style?: string
+        }
+        Relationships: []
+      }
+      media_library: {
+        Row: {
+          alt_text: string | null
+          created_at: string | null
+          file_name: string
+          file_size: number | null
+          folder: string | null
+          id: string
+          mime_type: string | null
+          public_url: string
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string | null
+          file_name: string
+          file_size?: number | null
+          folder?: string | null
+          id?: string
+          mime_type?: string | null
+          public_url: string
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string | null
+          file_name?: string
+          file_size?: number | null
+          folder?: string | null
+          id?: string
+          mime_type?: string | null
+          public_url?: string
+          storage_path?: string
+          uploaded_by?: string | null
         }
         Relationships: []
       }
