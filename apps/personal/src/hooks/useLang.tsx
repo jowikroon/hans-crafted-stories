@@ -7,7 +7,7 @@ interface LangContextValue {
   setLang: (l: Lang) => void;
 }
 
-const LangContext = createContext<LangContextValue>({ lang: "nl", setLang: () => {} });
+const LangContext = createContext<LangContextValue>({ lang: "nl", setLang: () => { /* empty */ } });
 
 export const useLang = () => useContext(LangContext);
 
