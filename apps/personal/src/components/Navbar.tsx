@@ -185,7 +185,7 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
       </AnimatePresence>
 
       {/* ═══ NAVBAR ═══ */}
-      <nav aria-label="Primary navigation" className={`fixed top-0 z-50 w-full backdrop-blur-md transition-colors ${isDark ? "bg-[hsl(220,20%,6%)]/90" : "bg-background/80"}`}>
+      <nav aria-label="Primary navigation" className={`fixed top-0 z-50 w-full backdrop-blur-lg backdrop-saturate-150 transition-colors border-b ${isDark ? "bg-[hsl(220,20%,6%)]/85 border-white/[0.06]" : "bg-background/75 border-border/40"}`}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Brand */}
