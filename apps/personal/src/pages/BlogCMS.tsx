@@ -187,7 +187,7 @@ interface AgentReview {
   status: "idle" | "running" | "done" | "error";
   score?: number;
   summary?: string;
-  details?: any;
+  details?: Record<string, unknown>;
   error?: string;
 }
 
@@ -200,7 +200,7 @@ async function runAgentReview(
   postTitle: string,
   postCategory: string,
   postKeyword: string,
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   const res = await fetch(N8N_BLOG_AGENT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -371,8 +371,8 @@ const BlogCMS = () => {
     try {
       const p = await getBlogPosts(false);
       setPosts(p);
-    } catch (e: any) {
-      toast({ title: "Error loading posts", description: e.message, variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Error loading posts", description: (e as Error).message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -397,7 +397,7 @@ const BlogCMS = () => {
         setBrandVoice("");
         setNarrativeHistory("");
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Error loading editorial memory:", e);
     }
   }, []);
@@ -421,7 +421,7 @@ const BlogCMS = () => {
           .from("hans_blog_memory")
           .insert({ content_category: cat, brand_voice_context: voice, narrative_history: history });
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Error saving editorial memory:", e);
     }
   }, []);
@@ -640,8 +640,8 @@ const BlogCMS = () => {
         toast({ title: "Post created" });
       }
       loadPosts();
-    } catch (e: any) {
-      toast({ title: "Save failed", description: e.message, variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Save failed", description: (e as Error).message, variant: "destructive" });
     }
   };
 
@@ -653,8 +653,8 @@ const BlogCMS = () => {
       toast({ title: "Post deleted" });
       setEditorMode("posts");
       loadPosts();
-    } catch (e: any) {
-      toast({ title: "Delete failed", description: e.message, variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Delete failed", description: (e as Error).message, variant: "destructive" });
     }
   };
 
@@ -697,7 +697,7 @@ const BlogCMS = () => {
             details: result,
           },
         }));
-      } catch (e: any) {
+      } catch (e: unknown) {
         setReviews((prev) => ({
           ...prev,
           [agent.id]: { agentId: agent.id, status: "error", error: e.message },
@@ -717,7 +717,7 @@ const BlogCMS = () => {
           details: result,
         },
       }));
-    } catch (e: any) {
+    } catch (e: unknown) {
       setReviews((prev) => ({
         ...prev,
         [chiefEditor.id]: { agentId: chiefEditor.id, status: "error", error: e.message },
@@ -1128,7 +1128,7 @@ function PostsListTab({
       <div className="flex flex-wrap gap-2">
         <select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as any)}
+          onChange={(e) => setFilterStatus(e.target.value)}
           className="bg-[hsl(220,18%,8%)] border border-white/[0.06] rounded px-3 py-1 text-sm outline-none"
         >
           <option value="all">All Status</option>
@@ -1139,7 +1139,7 @@ function PostsListTab({
 
         <select
           value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value as any)}
+          onChange={(e) => setFilterCategory(e.target.value)}
           className="bg-[hsl(220,18%,8%)] border border-white/[0.06] rounded px-3 py-1 text-sm outline-none"
         >
           <option value="all">All Categories</option>
@@ -1152,7 +1152,7 @@ function PostsListTab({
 
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as any)}
+          onChange={(e) => setSortBy(e.target.value)}
           className="bg-[hsl(220,18%,8%)] border border-white/[0.06] rounded px-3 py-1 text-sm outline-none"
         >
           <option value="newest">Newest First</option>
@@ -1255,7 +1255,7 @@ function PostsListTab({
    EDITOR VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
 
-function EditorView(props: any) {
+function EditorView(props: Record<string, unknown>) {
   const {
     activePost,
     title,
@@ -1713,7 +1713,7 @@ function AIAgentPanel({
    METADATA CARD
    ═══════════════════════════════════════════════════════════════════════════ */
 
-function MetadataCard(props: any) {
+function MetadataCard(props: Record<string, unknown>) {
   const {
     slug,
     setSlug,
@@ -1934,7 +1934,7 @@ function ReviewView({
                     {review.details?.issues && review.details.issues.length > 0 && (
                       <div className="space-y-2 bg-white/5 rounded p-3">
                         <p className="text-xs font-semibold text-white/70 uppercase">Issues</p>
-                        {review.details.issues.slice(0, 3).map((issue: any, idx: number) => (
+                        {review.details.issues.slice(0, 3).map((issue: string, idx: number) => (
                           <div key={idx} className="text-xs text-white/60 border-l-2 border-white/20 pl-2">
                             <p className="font-medium">{issue.type}</p>
                             <p className="text-white/50">{issue.text}</p>
