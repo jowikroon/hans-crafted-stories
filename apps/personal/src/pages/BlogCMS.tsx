@@ -353,7 +353,7 @@ const BlogCMS = () => {
   const [scheduledAt, setScheduledAt] = useState("");
 
   // ── Agent review state ─────────────────────────────────────────────────
-  const [reviews, setReviews] = useState<Record<string, AgentReview>>({});
+  const [reviews, setReviews] = useState<Record<string, AgentReview>>({ /* empty */ });
   const [reviewRunning, setReviewRunning] = useState(false);
 
   // ── Brand voice from editorial memory ──────────────────────────────────
@@ -510,7 +510,7 @@ const BlogCMS = () => {
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
 
-    const postsByDate: Record<number, number> = {};
+    const postsByDate: Record<number, number> = { /* empty */ };
     posts.forEach((p) => {
       const date = new Date(p.created_at);
       if (date.getFullYear() === year && date.getMonth() === month) {
@@ -556,7 +556,7 @@ const BlogCMS = () => {
     setOgDescription(post.og_description || "");
     setPublished(post.published || false);
     setScheduledAt(post.scheduled_at || "");
-    setReviews({});
+    setReviews({ /* empty */ });
     setEditLang("nl");
     setShowMarkdownPreview(false);
     setEditorMode("edit");
@@ -583,7 +583,7 @@ const BlogCMS = () => {
     setOgDescription("");
     setPublished(false);
     setScheduledAt("");
-    setReviews({});
+    setReviews({ /* empty */ });
     setEditLang("nl");
     setShowMarkdownPreview(false);
     setEditorMode("edit");
@@ -675,7 +675,7 @@ const BlogCMS = () => {
     setReviewRunning(true);
     setEditorMode("review");
 
-    const initial: Record<string, AgentReview> = {};
+    const initial: Record<string, AgentReview> = { /* empty */ };
     for (const a of AGENTS) {
       initial[a.id] = { agentId: a.id, status: "running" };
     }
