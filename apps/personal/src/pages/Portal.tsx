@@ -268,7 +268,7 @@ const Portal = () => {
       {isVisible("terminal_button") && (
         <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
       )}
-      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => {}} onN8nOpen={() => {}} onSignOut={signOut} />
+      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => { /* empty */ }} onN8nOpen={() => { /* empty */ }} onSignOut={signOut} />
     </section>
     </MediaPickerProvider>
   );
