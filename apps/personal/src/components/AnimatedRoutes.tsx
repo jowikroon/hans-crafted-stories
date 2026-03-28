@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { lazy, Suspense } from "react";
 import PageTransition from "./PageTransition";
 import Index from "@/pages/Index";
 import Work from "@/pages/Work";
@@ -17,7 +18,8 @@ import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
 import CaseStudyDetail from "@/pages/CaseStudyDetail";
 import GodStructure from "@/pages/GodStructure";
 import SamanthaAI from "@/pages/SamanthaAI";
-import BlogCMS from "@/pages/BlogCMS";
+
+const BlogCMS = lazy(() => import("@/pages/BlogCMS"));
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -35,7 +37,7 @@ const AnimatedRoutes = () => {
         <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
-        <Route path="/blog-cms" element={<BlogCMS />} />
+        <Route path="/blog-cms" element={<Suspense fallback={<div className="min-h-screen bg-[hsl(220,18%,5%)]" />}><BlogCMS /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
         <Route path="/god-structure" element={<GodStructure />} />
         <Route path="/samantha" element={<SamanthaAI />} />
