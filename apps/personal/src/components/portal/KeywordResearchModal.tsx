@@ -47,7 +47,7 @@ const KeywordResearchModal = ({ open, onClose }: KeywordResearchModalProps) => {
         setResult(res.data);
         // Auto-save to keyword_research table
         try {
-          await supabase.from("keyword_research" as any).insert({
+          await supabase.from("keyword_research" as unknown).insert({
             seed_keyword: res.data.seed_keyword || keyword,
             search_intent: res.data.search_intent || "",
             difficulty: res.data.difficulty || "",
@@ -55,7 +55,7 @@ const KeywordResearchModal = ({ open, onClose }: KeywordResearchModalProps) => {
             content_suggestions: res.data.content_suggestions || [],
             summary: res.data.summary || "",
             researched_by: "portal",
-          } as any);
+          } as unknown);
           setSaved(true);
         } catch (saveErr) { console.error("Failed to save keyword research:", saveErr); }
       } else {
