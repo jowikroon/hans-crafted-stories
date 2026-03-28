@@ -376,10 +376,10 @@ const BlogCMS = () => {
     try {
       const res = await fetch("https://n8n.srv1402218.hstgr.cloud/webhook/blog-ghost-write", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: suggestion.title, slug: suggestion.slug, primary_keyword: suggestion.primary_keyword, cluster: suggestion.cluster, intent: suggestion.intent }),
+        body: JSON.stringify({ title: suggestion.title, slug: suggestion.slug, primary_keyword: suggestion.primary_keyword, cluster: suggestion.cluster, intent: suggestion.intent, language: editorLang, category: clusterToCategory(suggestion.cluster) }),
       });
       const data = (await res.json()) as Record<string, unknown>;
-      const content = typeof data.content === "string" ? data.content : "";
+      const content = typeof data.draft_content === "string" ? data.draft_content : (typeof data.content === "string" ? data.content : "");
       const gaps = parseGaps(content);
       setDraftPost({ ...EMPTY_POST(), title: typeof data.title === "string" ? data.title : suggestion.title,
         slug: typeof data.slug === "string" ? data.slug : suggestion.slug, content,
@@ -501,7 +501,7 @@ const BlogCMS = () => {
           <div><h1 className="text-2xl font-semibold tracking-tight text-white/90">Waar wil je over schrijven?</h1><p className="text-white/35 text-sm mt-2">Kies een onderwerp of begin met een leeg canvas</p></div>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
-            <input type="text" placeholder="Type een onderwerp of keyword..." className="w-full pl-12 pr-4 py-4 rounded-2xl border border-white/[0.08] bg-white/[0.04] text-white/90 text-lg placeholder:text-white/20 focus:outline-none focus:border-blue-500/30 focus:ring-2 focus:ring-blue-500/10 transition-all" onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLInputElement).value) { setDraftPost({ ...EMPTY_POST(), title: (e.target as HTMLInputElement).value }); setIsNewPost(true); } }} />
+            <input type="text" placeholder="Type een onderwerp, keyword, of plak een YouTube URL..." className="w-full pl-12 pr-4 py-4 rounded-2xl border border-white/[0.08] bg-white/[0.04] text-white/90 text-lg placeholder:text-white/20 focus:outline-none focus:border-blue-500/30 focus:ring-2 focus:ring-blue-500/10 transition-all" onKeyDown={(e) => { if (e.key === "Enter") { const val = (e.target as HTMLInputElement).value.trim(); if (!val) return; const isYT = /youtube\.com\/watch|youtu\.be\//.test(val); if (isYT) { const mockSuggestion: SeoSuggestion = { id: "yt-" + Date.now(), title: val, slug: "", primary_keyword: "", cluster: "tech-innovatie", intent: "informational", difficulty: "medium", priority: 90, related_post_slug: null, status: "suggested" }; setGhostModal(mockSuggestion); } else { setDraftPost({ ...EMPTY_POST(), title: val }); setIsNewPost(true); } } }} />
           </div>
           {suggestions.length > 0 && (
             <div className="space-y-3">
@@ -819,15 +819,18 @@ const BlogCMS = () => {
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md rounded-2xl border border-white/[0.08] p-6 space-y-5" style={{ background: BG1 }}>
           <div className="flex items-center justify-between"><h3 className="text-white/90 font-semibold text-lg flex items-center gap-2"><Sparkles className="w-5 h-5 text-blue-400" /> Ghost Writer</h3><button onClick={() => setGhostModal(null)} className="text-white/30 hover:text-white/60"><X className="w-5 h-5" /></button></div>
-          <div className="rounded-xl border border-white/[0.06] p-4 space-y-2" style={{ background: BG2 }}><div className="text-white/90 font-medium">{ghostModal.title}</div><div className="flex flex-wrap gap-2 text-xs"><Badge className={`${clusterBadgeBg(ghostModal.cluster)} rounded-full`}>{ghostModal.cluster}</Badge><Badge className="bg-white/[0.06] text-white/50 rounded-full">{ghostModal.primary_keyword}</Badge></div></div>
+          <div className="rounded-xl border border-white/[0.06] p-4 space-y-2" style={{ background: BG2 }}><div className="text-white/90 font-medium">{/youtube\.com|youtu\.be/.test(ghostModal.title) ? "YouTube Video → Blog Post" : ghostModal.title}</div>{/youtube\.com|youtu\.be/.test(ghostModal.title) && <div className="text-white/40 text-xs mt-1 truncate">{ghostModal.title}</div>}<div className="flex flex-wrap gap-2 text-xs"><Badge className={`${clusterBadgeBg(ghostModal.cluster)} rounded-full`}>{ghostModal.cluster}</Badge><Badge className="bg-white/[0.06] text-white/50 rounded-full">{ghostModal.primary_keyword}</Badge></div></div>
           <div className="space-y-1.5 text-sm text-white/50">
             <div className="flex items-center gap-2"><Pen className="w-3.5 h-3.5 text-blue-400" /> Hans&apos;s voice &bull; 1200-1500 words &bull; 3 human gaps</div>
             <div className="flex items-center gap-2"><Shield className="w-3.5 h-3.5 text-amber-400" /> AI content requires human gate approval</div>
             <div className="flex items-center gap-2"><Clock className="w-3.5 h-3.5 text-white/30" /> ~30 seconds</div>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={() => { startPostFromSuggestion(ghostModal); setGhostModal(null); }} variant="ghost" className="flex-1 text-white/50 hover:text-white/80 hover:bg-white/[0.04]">Write manually</Button>
-            <Button onClick={() => generateGhostDraft(ghostModal)} className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10"><Sparkles className="w-4 h-4 mr-1" /> Generate</Button>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3"><span className="text-white/40 text-xs uppercase tracking-widest">Taal</span><div className="flex gap-1 flex-1">{(["nl", "en"] as const).map((l) => (<button key={l} onClick={() => setEditorLang(l)} className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${editorLang === l ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : "text-white/40 hover:text-white/60 border border-transparent"}`}>{l === "nl" ? "Nederlands" : "English"}</button>))}</div></div>
+            <div className="flex gap-3">
+              <Button onClick={() => { startPostFromSuggestion(ghostModal); setGhostModal(null); }} variant="ghost" className="flex-1 text-white/50 hover:text-white/80 hover:bg-white/[0.04]">Write manually</Button>
+              <Button onClick={() => generateGhostDraft(ghostModal)} className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10"><Sparkles className="w-4 h-4 mr-1" /> Generate</Button>
+            </div>
           </div>
         </div>
       </motion.div>
