@@ -13,6 +13,7 @@ import AnimatedRoutes from "./components/AnimatedRoutes";
 import SamanthaGlobalButton from "@/features/samantha/components/global/SamanthaGlobalButton";
 import CookieConsent from "./components/CookieConsent";
 import TrackingScriptInjector from "./components/TrackingScriptInjector";
+import './styles/blog.css';
 
 const queryClient = new QueryClient();
 
