@@ -54,7 +54,7 @@ const TrackingScriptsManager = () => {
     setLoading(true);
     try {
       setScripts(await getTrackingScripts());
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Error loading scripts", description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -118,7 +118,7 @@ const TrackingScriptsManager = () => {
       }
       setModalOpen(false);
       load();
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Error saving", description: e.message, variant: "destructive" });
     } finally {
       setSaving(false);
@@ -131,7 +131,7 @@ const TrackingScriptsManager = () => {
       await deleteTrackingScript(id);
       toast({ title: "Script deleted" });
       load();
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Error deleting", description: e.message, variant: "destructive" });
     }
   };
@@ -141,7 +141,7 @@ const TrackingScriptsManager = () => {
       await updateTrackingScript(script.id, { is_active: !script.is_active });
       setScripts((prev) => prev.map((s) => s.id === script.id ? { ...s, is_active: !s.is_active } : s));
       toast({ title: script.is_active ? "Script deactivated" : "Script activated" });
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Error toggling", description: e.message, variant: "destructive" });
     }
   };
@@ -209,7 +209,7 @@ const TrackingScriptsManager = () => {
           variant: "destructive",
         });
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({ title: "Verification failed", description: e.message, variant: "destructive" });
     } finally {
       setVerifyingId(null);
