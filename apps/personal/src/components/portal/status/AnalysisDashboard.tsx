@@ -42,9 +42,9 @@ function useSystemIssues() {
   const fetchIssues = async () => {
     try {
       const { data, error } = await (supabase
-        .from("system_issues" as any)
+        .from("system_issues" as unknown)
         .select("*")
-        .order("sort_order", { ascending: true }) as any);
+        .order("sort_order", { ascending: true }) as unknown);
       if (!error && data) setIssues(data as SystemIssue[]);
     } catch {
       // silent
@@ -56,12 +56,12 @@ function useSystemIssues() {
   useEffect(() => { fetchIssues(); }, []);
 
   const toggleResolved = async (id: string, current: boolean) => {
-    await (supabase.from("system_issues" as any).update({ is_resolved: !current } as any).eq("id", id) as any);
+    await (supabase.from("system_issues" as unknown).update({ is_resolved: !current } as unknown).eq("id", id) as unknown);
     setIssues(prev => prev.map(i => i.id === id ? { ...i, is_resolved: !current } : i));
   };
 
   const deleteIssue = async (id: string) => {
-    await (supabase.from("system_issues" as any).delete().eq("id", id) as any);
+    await (supabase.from("system_issues" as unknown).delete().eq("id", id) as unknown);
     setIssues(prev => prev.filter(i => i.id !== id));
   };
 
@@ -117,10 +117,10 @@ function useIntentData() {
       try {
         // Fetch last 50 intents (both resolved and unresolved) for analysis
         const { data, error } = await (supabase
-          .from("unhandled_intents" as any)
+          .from("unhandled_intents" as unknown)
           .select("*")
           .order("created_at", { ascending: false })
-          .limit(50) as any);
+          .limit(50) as unknown);
         if (!error && data) setRows(data as IntentRow[]);
       } catch {
         // silent
@@ -139,7 +139,7 @@ function computeIssueDistribution(issues: SystemIssue[]) {
   return issues.reduce<Record<string, number>>((acc, i) => {
     acc[i.severity] = (acc[i.severity] || 0) + 1;
     return acc;
-  }, {});
+  }, { /* empty */ });
 }
 
 /* ─── Sub-panels ─── */
