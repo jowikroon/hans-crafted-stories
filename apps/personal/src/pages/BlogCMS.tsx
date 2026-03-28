@@ -348,7 +348,7 @@ const BlogCMS = () => {
     try {
       const res = await fetch("https://n8n.srv1402218.hstgr.cloud/webhook/blog-agent-review", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agent_id: agent.id, agent_system_prompt: agent.prompt, post_title: draftPost.title, post_content: draftPost.content, post_category: draftPost.category, post_keyword: draftPost.primary_keyword ?? "", post_language: editorLang }),
+        body: JSON.stringify({ agent_id: agent.id, agent_system_prompt: agent.prompt, post_title: editorLang === "nl" ? (draftPost.title_nl || draftPost.title) : draftPost.title, post_content: editorLang === "nl" ? (draftPost.content_nl || draftPost.content) : (draftPost.content || draftPost.content_nl), post_category: draftPost.category, post_keyword: draftPost.primary_keyword ?? "", post_language: editorLang }),
       });
       const data = (await res.json()) as Record<string, unknown>;
       setAgentReviews((prev) => prev.map((r) => r.agent_id === agent.id ? { ...r,
