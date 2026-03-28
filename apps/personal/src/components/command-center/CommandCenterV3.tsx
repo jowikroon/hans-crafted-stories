@@ -148,7 +148,7 @@ const A = {
     hero: [
       {
         id: "a-status", label: "Status of my automations",
-        sub: "Active workflows, last run times, success rates, any errors right now",
+        sub: "Active workflows, last run times, success rates, unknown errors right now",
         cmd: "/automate show status of all running workflows",
         tools: ["Hostinger n8n", "n8n Cloud"],
         deliveryType: "report",
