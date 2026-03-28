@@ -30,7 +30,7 @@ const VersionHistoryPanel = ({ page, open, onRestore }: VersionHistoryPanelProps
 
   // Group versions by date then by field
   const grouped = useMemo(() => {
-    const byDate: Record<string, PageContentVersion[]> = {};
+    const byDate: Record<string, PageContentVersion[]> = { /* empty */ };
     for (const v of versions) {
       const dateKey = new Date(v.created_at).toLocaleDateString("en-US", {
         month: "short", day: "numeric", year: "numeric",
