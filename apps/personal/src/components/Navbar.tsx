@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, Search, Command, Sun, Moon, LogOut, BookOpen, LayoutDashboard, ChevronDown, Network, Sparkles, Briefcase, Settings, FlaskConical } from "lucide-react";
+import { Menu, X, LogIn, Search, Command, Sun, Moon, LogOut, BookOpen, LayoutDashboard, ChevronDown, Network, Sparkles, Briefcase, Settings, FlaskConical, PenLine } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
@@ -23,6 +23,7 @@ const getLinks = (lang: Lang) => {
 
 const searchablePages = [
   { to: "/samantha", label: "Samantha AI", keywords: ["samantha", "ai", "companion", "chat", "voice", "assistant", "start", "llm", "claude", "gemini", "gpt"] },
+  { to: "/blog-cms", label: "Blog CMS", keywords: ["blog", "cms", "editor", "write", "publish", "article", "chief", "editorial"] },
   { to: "/", label: "Home", keywords: ["home", "start", "landing"] },
   { to: "/work", label: "Work", keywords: ["work", "cases", "projects", "portfolio"] },
   { to: "/writing", label: "Writing", keywords: ["blog", "writing", "articles", "posts"] },
@@ -269,6 +270,10 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
 
                           {/* Menu items — grouped by function */}
                           <div className="py-1">
+                            {/* Blog CMS — above Samantha */}
+                            <Link to="/blog-cms" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-orange-400/80 hover:text-orange-300 hover:bg-orange-500/10" : "text-orange-500/70 hover:text-orange-600 hover:bg-orange-50"}`}>
+                              <PenLine size={15} /> Blogs
+                            </Link>
                             {/* Samantha AI — primary CTA */}
                             <Link to="/samantha" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10" : "text-rose-500/70 hover:text-rose-600 hover:bg-rose-50"}`}>
                               <Sparkles size={15} /> Samantha AI
@@ -394,10 +399,16 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
                   {user ? t.portal : t.login}
                 </Link>
                 {user && (
-                  <button onClick={() => { setMobileOpen(false); navigate("/samantha"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
-                    <Command size={14} />
-                    Command Center
-                  </button>
+                  <>
+                    <Link to="/blog-cms" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-colors ${isDark ? "text-orange-400/40 hover:text-orange-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                      <PenLine size={14} />
+                      Blogs
+                    </Link>
+                    <button onClick={() => { setMobileOpen(false); navigate("/samantha"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
+                      <Command size={14} />
+                      Command Center
+                    </button>
+                  </>
                 )}
               </div>
             </motion.div>
