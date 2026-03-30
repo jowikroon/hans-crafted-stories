@@ -197,6 +197,7 @@ const BlogCMS = () => {
   const [suggestions, setSuggestions] = useState<SeoSuggestion[]>([]);
   const [ghostModal, setGhostModal] = useState<SeoSuggestion | null>(null);
   const [ghostPhase, setGhostPhase] = useState<GhostPhase>("idle");
+  const [selectedVoice, setSelectedVoice] = useState("professional");
   const [ghostGaps, setGhostGaps] = useState<GhostDraft["gaps"]>([]);
   const [seoReport, setSeoReport] = useState<SeoReport | null>(null);
   const [seoReportLoading, setSeoReportLoading] = useState(false);
@@ -387,7 +388,7 @@ const BlogCMS = () => {
     try {
       const res = await fetch("https://n8n.srv1402218.hstgr.cloud/webhook/blog-ghost-write", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: suggestion.title, slug: suggestion.slug, primary_keyword: suggestion.primary_keyword, cluster: suggestion.cluster, intent: suggestion.intent, language: editorLang, category: clusterToCategory(suggestion.cluster) }),
+        body: JSON.stringify({ title: suggestion.title, slug: suggestion.slug, primary_keyword: suggestion.primary_keyword, cluster: suggestion.cluster, intent: suggestion.intent, language: editorLang, category: selectedVoice }),
       });
       const data = (await res.json()) as Record<string, unknown>;
       const content = typeof data.draft_content === "string" ? data.draft_content : (typeof data.content === "string" ? data.content : "");
@@ -410,7 +411,7 @@ const BlogCMS = () => {
       toast({ title: "Ghost Writer Failed", description: err instanceof Error ? err.message : "Draft generation failed", variant: "destructive" });
       setGhostPhase("idle");
     } finally { clearInterval(interval); }
-  }, [toast, editorLang]);
+  }, [toast, editorLang, selectedVoice]);
 
   const generateSeoReport = useCallback(async () => {
     setSeoReportLoading(true);
@@ -1061,6 +1062,22 @@ const BlogCMS = () => {
             <div className="flex items-center gap-2"><Clock className="w-3.5 h-3.5 text-white/30" /> ~30 seconds</div>
           </div>
           <div className="space-y-3">
+            <div className="space-y-2">
+              <span className="text-white/40 text-xs uppercase tracking-widest">Voice</span>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { value: "professional", label: "Professional", desc: "Hans — Professional" },
+                  { value: "personal-brand", label: "Personal Brand", desc: "Hans — Personal Brand" },
+                  { value: "ai-infrastructure", label: "Technical", desc: "Hans — Technical" },
+                  { value: "e-commerce-strategy", label: "E-commerce", desc: "Hans — E-commerce" },
+                ] as const).map((v) => (
+                  <button key={v.value} onClick={() => setSelectedVoice(v.value)} className={`px-3 py-2.5 rounded-lg text-left text-sm transition-all min-h-[44px] ${selectedVoice === v.value ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : "text-white/40 active:text-white/60 border border-white/[0.06]"}`}>
+                    <div className="font-medium">{v.label}</div>
+                    <div className="text-[10px] opacity-60 mt-0.5">{v.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex items-center gap-3"><span className="text-white/40 text-xs uppercase tracking-widest">Taal</span><div className="flex gap-1 flex-1">{(["nl", "en"] as const).map((l) => (<button key={l} onClick={() => setEditorLang(l)} className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all min-h-[44px] flex-1 ${editorLang === l ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : "text-white/40 active:text-white/60 border border-transparent"}`}>{l === "nl" ? "Nederlands" : "English"}</button>))}</div></div>
             <div className="flex gap-3">
               <Button onClick={() => { startPostFromSuggestion(ghostModal); setGhostModal(null); }} variant="ghost" className="flex-1 text-white/50 active:text-white/80 active:bg-white/[0.04] min-h-[48px]">Write manually</Button>
