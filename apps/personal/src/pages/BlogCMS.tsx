@@ -799,27 +799,99 @@ const BlogCMS = () => {
   return (
     <div className="pt-20 min-h-screen pb-24 md:pb-0" style={{ background: BG0 }}>
       {/* Desktop: Left floating sidebar */}
-      <aside className="hidden md:flex fixed left-4 flex-col border border-white/[0.06] rounded-2xl shadow-xl shadow-black/20 z-30 transition-all duration-300" style={{ top: "5rem", width: sidebarW, height: "calc(100vh - 80px)", background: "hsla(225, 20%, 6%, 0.95)", backdropFilter: "blur(24px)" }}>
-        <div className={`flex items-center gap-3 px-4 py-5 ${sidebarExpanded ? "" : "justify-center"}`}>
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0"><Pen className="w-4 h-4 text-white" /></div>
-          {sidebarExpanded && <span className="text-white/70 font-semibold text-sm tracking-wide">HVL</span>}
+      <aside
+        className="hidden md:flex fixed flex-col z-30"
+        style={{
+          top: "calc(64px + 24px)",
+          left: 20,
+          width: sidebarW,
+          height: "calc(100vh - 88px - 24px)",
+          background: "hsla(225, 18%, 7%, 0.85)",
+          backdropFilter: "blur(40px) saturate(180%)",
+          WebkitBackdropFilter: "blur(40px) saturate(180%)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: 16,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04)",
+          transition: "width 300ms ease",
+        }}
+      >
+        {/* Brand mark */}
+        <div className={`flex items-center gap-3 px-5 pt-5 pb-4 ${sidebarExpanded ? "" : "justify-center px-0"}`}>
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+            <Pen className="w-4 h-4 text-white" />
+          </div>
+          {sidebarExpanded && (
+            <span className="text-sm font-semibold text-white/60 tracking-wider">HVL Editorial</span>
+          )}
         </div>
-        <div className="mx-3 h-px bg-white/[0.05]" />
-        <nav className="flex-1 flex flex-col py-3 px-2 gap-1">
-          {NAV_TABS.map((tab) => { const isActive = activeView === tab.key; return (
-            <button key={tab.key} onClick={() => setActiveView(tab.key)} title={sidebarExpanded ? undefined : tab.label} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive ? "bg-gradient-to-r from-blue-500/15 to-indigo-500/15 text-white border-l-2 border-blue-500" : "text-white/35 hover:text-white/60 hover:bg-white/[0.04] border-l-2 border-transparent"} ${sidebarExpanded ? "" : "justify-center px-0"}`}>
-              <span className="flex-shrink-0">{tab.icon}</span>{sidebarExpanded && <span className="text-sm font-medium">{tab.label}</span>}
-            </button>
-          ); })}
+
+        {/* Divider */}
+        <div className="mx-4 h-px bg-white/[0.04] my-2" />
+
+        {/* Nav items */}
+        <nav className="flex-1 flex flex-col px-3 py-2 gap-0.5 overflow-hidden">
+          {NAV_TABS.map((tab) => {
+            const isActive = activeView === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveView(tab.key)}
+                title={sidebarExpanded ? undefined : tab.label}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                  isActive
+                    ? "bg-white/[0.08] text-white"
+                    : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                } ${sidebarExpanded ? "" : "justify-center px-0"}`}
+                style={{ transform: "scale(1)", transition: "all 200ms ease" }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.01)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              >
+                <span className={`flex-shrink-0 ${isActive ? "text-blue-400" : ""}`} style={{ width: 18, height: 18 }}>
+                  {tab.icon}
+                </span>
+                {sidebarExpanded && (
+                  <span className="text-[13px] font-medium tracking-tight">{tab.label}</span>
+                )}
+              </button>
+            );
+          })}
+
+          {/* Spacer */}
           <div className="flex-1" />
+
+          {/* SEO Score badge */}
           {hasEditorContent && words > 0 && (
-            <div className={`flex items-center ${sidebarExpanded ? "px-4 py-2" : "justify-center py-2"}`}>
-              <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setActiveView("analyze")} className={`rounded-full border flex items-center justify-center transition-all ${scoreBadgeBg(seoScore)} ${sidebarExpanded ? "w-10 h-10" : "w-9 h-9"}`} title={`SEO Score: ${seoScore}`}><span className={`text-xs font-bold ${scoreClr(seoScore)}`}>{seoScore}</span></motion.button>
-              {sidebarExpanded && <span className="text-white/30 text-xs ml-3">SEO Score</span>}
+            <div className={`flex items-center ${sidebarExpanded ? "px-3 py-2" : "justify-center py-2"}`}>
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                onClick={() => setActiveView("analyze")}
+                className={`rounded-full border flex items-center justify-center transition-all ${scoreBadgeBg(seoScore)} ${sidebarExpanded ? "w-10 h-10" : "w-9 h-9"}`}
+                title={`SEO Score: ${seoScore}`}
+              >
+                <span className={`text-xs font-bold ${scoreClr(seoScore)}`}>{seoScore}</span>
+              </motion.button>
+              {sidebarExpanded && (
+                <span className="text-white/30 text-xs ml-3">SEO Score</span>
+              )}
             </div>
           )}
-          <button title={sidebarExpanded ? undefined : "Settings"} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-white/35 hover:text-white/60 hover:bg-white/[0.04] transition-all ${sidebarExpanded ? "" : "justify-center px-0"}`}><Settings className="w-5 h-5 flex-shrink-0" />{sidebarExpanded && <span className="text-sm font-medium">Settings</span>}</button>
-          <button onClick={() => setSidebarExpanded(!sidebarExpanded)} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-white/25 hover:text-white/50 hover:bg-white/[0.04] transition-all ${sidebarExpanded ? "" : "justify-center px-0"}`} title={sidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}>{sidebarExpanded ? <ChevronLeft className="w-5 h-5 flex-shrink-0" /> : <ChevronRight className="w-5 h-5 flex-shrink-0" />}{sidebarExpanded && <span className="text-sm">Collapse</span>}</button>
+
+          {/* Bottom divider */}
+          <div className="mx-1 h-px bg-white/[0.04] my-1" />
+
+          {/* Collapse toggle */}
+          <button
+            onClick={() => setSidebarExpanded(!sidebarExpanded)}
+            className="flex items-center justify-center py-3 text-white/20 hover:text-white/40 transition-all duration-200"
+            title={sidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            {sidebarExpanded ? (
+              <ChevronLeft className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+          </button>
         </nav>
       </aside>
 
@@ -836,8 +908,8 @@ const BlogCMS = () => {
       {renderMobileMetaSheet()}
 
       {/* Main content area: offset by sidebar on desktop */}
-      <main className="transition-all duration-300">
-        <div className="p-4 md:py-6 md:px-8 max-w-7xl" style={{ marginLeft: isDesktop ? sidebarW + 24 : 0 }}>
+      <main className="transition-all duration-300 pt-24" style={{ marginLeft: isDesktop ? sidebarW + 40 : 0 }}>
+        <div className="px-4 md:px-8 lg:px-12 py-6">
           <AnimatePresence mode="wait">
             <motion.div key={activeView} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
               {activeView === "write" && renderWrite()}
