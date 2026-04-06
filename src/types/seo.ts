@@ -34,7 +34,7 @@ export interface SeoAudit {
   report_html: string | null;
   report_summary: string | null;
   score_breakdown: ScoreBreakdown | null;
-  critical_issues: string[];
+  issues: string[];
   quick_wins: string[];
   technical_scores: TechnicalScores | null;
   content_analysis: ContentAnalysis | null;
@@ -54,7 +54,7 @@ export interface SeoActionItem {
   severity: string;
   impact: string;
   status: "open" | "in_progress" | "done" | "dismissed";
-  priority_order: number;
+  priority_rank: number;
   completed_at: string | null;
   created_at: string;
 }
