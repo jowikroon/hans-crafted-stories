@@ -69,7 +69,7 @@ const SeoCMS = () => {
       .from("seo_action_items")
       .select("*")
       .in("status", ["open", "in_progress"])
-      .order("priority_order", { ascending: true })
+      .order("priority_rank", { ascending: true })
       .limit(100);
     if (data) setActions(data as unknown as SeoActionItem[]);
   }, []);
@@ -505,7 +505,7 @@ const SeoCMS = () => {
                   <div className="space-y-2">
                     {completedAudits
                       .flatMap((a) =>
-                        (a.critical_issues || []).slice(0, 3).map((issue) => ({
+                        (a.issues || []).slice(0, 3).map((issue) => ({
                           issue,
                           domain: domainFrom(a.url),
                           date: a.created_at,
@@ -518,7 +518,7 @@ const SeoCMS = () => {
                           <span className="text-sm text-white/60">{item.issue}</span>
                         </div>
                       ))}
-                    {completedAudits.every((a) => !a.critical_issues?.length) && (
+                    {completedAudits.every((a) => !a.issues?.length) && (
                       <p className="text-sm text-white/30">No critical issues found.</p>
                     )}
                   </div>
