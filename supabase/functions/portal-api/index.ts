@@ -15,8 +15,53 @@ const json = (data: unknown, status = 200) =>
 
 const err = (msg: string, status = 400) => json({ error: msg }, status);
 
+// ── Auth guard ──────────────────────────────────────────────────────────────
+// Validates the caller's JWT against the Supabase project and returns the
+// authenticated user.  Returns null and sends a 401 if the token is missing,
+// malformed, or belongs to a non-admin user.
+async function requireAdmin(req: Request): Promise<{ userId: string } | null> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+  const token = authHeader.slice(7);
+
+  // Use the anon key so we validate via RLS, not as service_role
+  const caller = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  );
+
+  const { data: { user }, error } = await caller.auth.getUser();
+  if (error || !user) return null;
+
+  // Check the caller has the 'admin' role in portal
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+  const { data: roleRow } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  if (!roleRow) return null;
+  return { userId: user.id };
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // ── Guard: every non-OPTIONS request must be authenticated as admin ──────
+  const caller = await requireAdmin(req);
+  if (!caller) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   try {
     const supabase = createClient(
