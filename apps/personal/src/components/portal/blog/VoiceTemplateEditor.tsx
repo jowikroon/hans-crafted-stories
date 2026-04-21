@@ -1,0 +1,730 @@
+// apps/personal/src/components/portal/blog/VoiceTemplateEditor.tsx
+// Full 9-section voice template editor matching the design.
+// Reads and writes hvl_voice_templates.
+//
+// Wire into routing: <Route path="/portal/blog/voice/:id" element={<VoiceTemplateEditor />} />
+// or use as a modal/drawer.
+
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Save, Sparkles, Check, X, Wand2 } from "lucide-react";
+import {
+  Radar, Spectrum, SecLabel, Chip, Eyebrow,
+} from "./primitives";
+import { type VoiceTemplate as VT } from "@/lib/blog/voice-analysis";
+
+interface VTFull extends VT {
+  is_default: boolean;
+  category: string;
+  description: string;
+  short_code: string;
+  language: string;
+  inclusivity_rules: string;
+  content_rules: string;
+  seo_guidelines: string;
+  required_elements: string[];
+}
+
+const WRITING_STYLE_RULES: { key: string; label: string }[] = [
+  { key: "open_with_claim", label: "Open with a claim, not a hook" },
+  { key: "one_sentence_paragraphs", label: "One-sentence paragraphs OK" },
+  { key: "em_dashes", label: "Em-dashes — yes, liberally" },
+  { key: "oxford_comma", label: "Oxford comma" },
+  { key: "rhetorical_questions", label: "Rhetorical questions" },
+  { key: "hedging", label: 'Hedging ("perhaps", "maybe")' },
+  { key: "first_person_plural", label: "First-person plural" },
+  { key: "numbered_lists", label: "Numbered lists for sequences" },
+  { key: "block_quotes_for_stats", label: "Block quotes for stats" },
+  { key: "subheads_every_250_words", label: "Subheads every ~250 words" },
+];
+
+const CONTENT_RULE_CHECKS = [
+  { name: "Claim density", rule: "At least 1 defensible claim per 150 words" },
+  { name: "Source citations", rule: "Every statistic must link to source (gov/industry > blog)" },
+  { name: "Brand name mentions", rule: "Bol.com, Amazon.nl ≤ 8× combined per piece" },
+  { name: "Self-references", rule: '"I", "my", "me" ≤ 4× per 1000 words' },
+  { name: "AI disclosure", rule: "If >30% AI-assisted, disclose in footer" },
+];
+
+// ─── Root ─────────────────────────────────────────────────────────────────
+export default function VoiceTemplateEditor() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const [templates, setTemplates] = useState<VTFull[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(id ?? null);
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("hvl_voice_templates")
+      .select("*")
+      .order("is_default", { ascending: false })
+      .order("created_at");
+    if (error) {
+      toast({ title: "Load failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    const rows = (data ?? []) as unknown as VTFull[];
+    setTemplates(rows);
+    if (!activeId && rows.length) setActiveId(rows[0].id);
+  }, [toast, activeId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const active = templates.find((t) => t.id === activeId) ?? null;
+
+  const patch = (updates: Partial<VTFull>) => {
+    if (!active) return;
+    setTemplates((ts) => ts.map((t) => (t.id === active.id ? { ...t, ...updates } : t)));
+  };
+
+  const save = async () => {
+    if (!active) return;
+    setSaving(true);
+    const { id: _id, ...rest } = active;
+    const { error } = await supabase.from("hvl_voice_templates").update(rest).eq("id", active.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Template saved", description: active.name });
+    await load();
+  };
+
+  if (!active) {
+    return <div className="p-12 text-muted-foreground">Loading voice templates…</div>;
+  }
+
+  return (
+    <div className="dark bg-background text-foreground font-sans flex" style={{ minHeight: "100vh" }}>
+      {/* LEFT RAIL — template list */}
+      <aside
+        className="w-[280px] border-r border-border/60 flex flex-col gap-5"
+        style={{ padding: "28px 24px" }}
+      >
+        <div className="flex items-center justify-between">
+          <Eyebrow>Voice templates</Eyebrow>
+          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+            +
+          </Button>
+        </div>
+        {templates.map((t) => {
+          const isActive = t.id === activeId;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setActiveId(t.id)}
+              className="rounded p-3.5 text-left relative border transition-colors"
+              style={{
+                borderColor: isActive ? "hsl(var(--primary) / 0.4)" : "hsl(var(--border) / 0.6)",
+                background: isActive ? "hsl(var(--primary) / 0.05)" : "hsl(var(--card))",
+              }}
+            >
+              {isActive && (
+                <div
+                  className="absolute top-3.5 bottom-3.5 w-0.5 rounded"
+                  style={{ left: 0, background: "hsl(var(--primary))" }}
+                />
+              )}
+              <div className="flex justify-between items-center mb-2.5">
+                <div className="font-display text-[15px] font-medium">{t.name}</div>
+              </div>
+              <div className="font-mono text-[9.5px] tracking-wider text-muted-foreground mb-2">
+                {t.is_default ? "DEFAULT · " : ""}GRADE {t.target_reading_level}
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <Radar
+                  values={[t.formality, t.humor, t.respectfulness, t.enthusiasm]}
+                  size={80}
+                  rings={3}
+                  showLabels={false}
+                  fillOpacity={isActive ? 0.25 : 0.15}
+                  stroke={isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"}
+                />
+                <div className="flex flex-col gap-1 font-mono text-[10px] text-muted-foreground">
+                  <div>
+                    FORM <span className="text-foreground">{t.formality}</span>
+                  </div>
+                  <div>
+                    HUMR <span className="text-foreground">{t.humor}</span>
+                  </div>
+                  <div>
+                    RESP <span className="text-foreground">{t.respectfulness}</span>
+                  </div>
+                  <div>
+                    ENTH <span className="text-foreground">{t.enthusiasm}</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </aside>
+
+      {/* CENTER — form */}
+      <main className="flex-1 min-w-0 flex flex-col">
+        {/* header */}
+        <div
+          className="flex justify-between items-center"
+          style={{ padding: "24px 32px", borderBottom: "1px solid hsl(var(--border) / 0.6)" }}
+        >
+          <div className="flex flex-col gap-1.5">
+            <Eyebrow>Editing voice template · last modified today</Eyebrow>
+            <div className="flex items-center gap-3">
+              <h1 className="font-display text-[28px] font-medium tracking-tight">
+                {active.name}
+              </h1>
+              {active.is_default && (
+                <Chip tone="primary" dot>
+                  DEFAULT
+                </Chip>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/portal/blog")}>
+              Back to CMS
+            </Button>
+            <Button size="sm" onClick={save} disabled={saving}>
+              <Save size={12} className="mr-1" />
+              {saving ? "Saving..." : "Save template"}
+            </Button>
+          </div>
+        </div>
+
+        {/* form body */}
+        <div className="flex flex-col gap-10" style={{ padding: "32px 32px 64px", maxWidth: 960 }}>
+          {/* 01 IDENTITY */}
+          <FormSection idx={1} title="Identity" subtitle="How this template introduces itself">
+            <div className="flex gap-6">
+              <Field label="Template name" className="flex-1">
+                <input
+                  className="input-base"
+                  value={active.name}
+                  onChange={(e) => patch({ name: e.target.value })}
+                />
+              </Field>
+              <Field label="Short code">
+                <input
+                  className="input-base font-mono w-36"
+                  value={active.short_code ?? ""}
+                  onChange={(e) => patch({ short_code: e.target.value })}
+                />
+              </Field>
+              <Field label="Language">
+                <input
+                  className="input-base w-32"
+                  value={active.language ?? "English (UK)"}
+                  onChange={(e) => patch({ language: e.target.value })}
+                />
+              </Field>
+            </div>
+            <Field label="Description">
+              <textarea
+                className="input-base resize-none"
+                rows={2}
+                value={active.description ?? ""}
+                onChange={(e) => patch({ description: e.target.value })}
+              />
+            </Field>
+          </FormSection>
+
+          {/* 03 CORE VOICE */}
+          <FormSection
+            idx={3}
+            title="Core voice"
+            subtitle="Nielsen Norman Group 4-axis tone model"
+          >
+            <div className="flex gap-8">
+              <div className="flex-1 flex flex-col gap-6">
+                <Spectrum
+                  leftLabel="Casual"
+                  rightLabel="Formal"
+                  value={active.formality}
+                  target={active.formality}
+                  onChange={(v) => patch({ formality: v })}
+                />
+                <Spectrum
+                  leftLabel="Serious"
+                  rightLabel="Playful"
+                  value={active.humor}
+                  target={active.humor}
+                  onChange={(v) => patch({ humor: v })}
+                />
+                <Spectrum
+                  leftLabel="Irreverent"
+                  rightLabel="Respectful"
+                  value={active.respectfulness}
+                  target={active.respectfulness}
+                  onChange={(v) => patch({ respectfulness: v })}
+                />
+                <Spectrum
+                  leftLabel="Matter-of-fact"
+                  rightLabel="Enthusiastic"
+                  value={active.enthusiasm}
+                  target={active.enthusiasm}
+                  onChange={(v) => patch({ enthusiasm: v })}
+                />
+              </div>
+              <div
+                className="rounded border flex flex-col items-center gap-3"
+                style={{
+                  width: 280,
+                  padding: 20,
+                  background: "hsl(var(--card))",
+                  borderColor: "hsl(var(--border) / 0.6)",
+                }}
+              >
+                <Eyebrow>Live fingerprint</Eyebrow>
+                <Radar
+                  values={[
+                    active.formality,
+                    active.humor,
+                    active.respectfulness,
+                    active.enthusiasm,
+                  ]}
+                  size={220}
+                  rings={5}
+                />
+                <div className="font-mono text-[10px] text-muted-foreground tracking-wider text-center">
+                  SHAPE SIGNATURE · F{active.formality}·H{active.humor}·R{active.respectfulness}·E
+                  {active.enthusiasm}
+                </div>
+              </div>
+            </div>
+          </FormSection>
+
+          {/* 04 READABILITY */}
+          <FormSection
+            idx={4}
+            title="Readability target"
+            subtitle="Flesch–Kincaid grade level & sentence pacing"
+          >
+            <Field label="Target grade level">
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min={4}
+                  max={16}
+                  value={active.target_reading_level}
+                  onChange={(e) => patch({ target_reading_level: parseInt(e.target.value) })}
+                  className="flex-1 accent-primary"
+                />
+                <span className="font-mono text-[20px] text-primary font-medium w-10 text-right">
+                  {active.target_reading_level}
+                </span>
+              </div>
+              <div className="flex justify-between font-mono text-[9.5px] text-muted-foreground tracking-wider mt-1">
+                <span>GRADE 4 · EASY</span>
+                <span>GRADE 9 · GENERAL</span>
+                <span>GRADE 16 · ACADEMIC</span>
+              </div>
+            </Field>
+            <div className="flex gap-4">
+              <Field label="Max sentence length" className="flex-1">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    className="input-base font-mono w-20"
+                    value={active.max_sentence_words}
+                    onChange={(e) =>
+                      patch({ max_sentence_words: parseInt(e.target.value) || 28 })
+                    }
+                  />
+                  <span className="text-muted-foreground text-xs">words</span>
+                </div>
+              </Field>
+              <Field label="Avg paragraph" className="flex-1">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    className="input-base font-mono w-20"
+                    value={active.avg_paragraph_sentences}
+                    onChange={(e) =>
+                      patch({ avg_paragraph_sentences: parseInt(e.target.value) || 3 })
+                    }
+                  />
+                  <span className="text-muted-foreground text-xs">sentences</span>
+                </div>
+              </Field>
+              <Field label="Passive voice max" className="flex-1">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    className="input-base font-mono w-20"
+                    value={active.passive_voice_max_pct}
+                    onChange={(e) =>
+                      patch({ passive_voice_max_pct: parseInt(e.target.value) || 8 })
+                    }
+                  />
+                  <span className="text-muted-foreground text-xs">%</span>
+                </div>
+              </Field>
+            </div>
+          </FormSection>
+
+          {/* 05 WRITING STYLE */}
+          <FormSection idx={5} title="Writing style" subtitle="Structural and rhythmic preferences">
+            <div className="flex gap-4 flex-wrap">
+              {WRITING_STYLE_RULES.map((rule) => {
+                const on = !!active.writing_style_rules?.[rule.key];
+                return (
+                  <button
+                    key={rule.key}
+                    onClick={() =>
+                      patch({
+                        writing_style_rules: {
+                          ...active.writing_style_rules,
+                          [rule.key]: !on,
+                        },
+                      })
+                    }
+                    className="flex items-center gap-2 px-3 py-2 rounded text-[12.5px] border transition-colors"
+                    style={{
+                      borderColor: on ? "hsl(var(--primary) / 0.35)" : "hsl(var(--border))",
+                      background: on ? "hsl(var(--primary) / 0.06)" : "transparent",
+                      color: on ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+                    }}
+                  >
+                    <div
+                      className="w-3.5 h-3.5 rounded-sm flex items-center justify-center"
+                      style={{
+                        border: `1.5px solid ${
+                          on ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
+                        }`,
+                        background: on ? "hsl(var(--primary))" : "transparent",
+                        color: "hsl(var(--primary-foreground))",
+                      }}
+                    >
+                      {on && <Check size={9} strokeWidth={3} />}
+                    </div>
+                    <span>{rule.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </FormSection>
+
+          {/* 06 TERMINOLOGY */}
+          <FormSection
+            idx={6}
+            title="Terminology"
+            subtitle="Three-tier lexicon: preferred · pending · banned"
+          >
+            <div className="flex gap-4 items-stretch">
+              <TermTier
+                tone="green"
+                title="Preferred"
+                desc="Use these. Auto-suggest in editor."
+                items={active.preferred_terms ?? []}
+                onChange={(terms) => patch({ preferred_terms: terms })}
+              />
+              <TermTier
+                tone="amber"
+                title="Pending review"
+                desc="I used these. Approve or ban."
+                items={active.pending_terms ?? []}
+                onChange={(terms) => patch({ pending_terms: terms })}
+                actions
+                onApprove={(term) =>
+                  patch({
+                    preferred_terms: [...(active.preferred_terms ?? []), term],
+                    pending_terms: (active.pending_terms ?? []).filter((x) => x !== term),
+                  })
+                }
+                onBan={(term) =>
+                  patch({
+                    banned_words: [...(active.banned_words ?? []), term],
+                    pending_terms: (active.pending_terms ?? []).filter((x) => x !== term),
+                  })
+                }
+              />
+              <TermTier
+                tone="red"
+                title="Banned"
+                desc="Flag in editor. Replace on export."
+                items={active.banned_words ?? []}
+                onChange={(terms) => patch({ banned_words: terms })}
+                strike
+              />
+            </div>
+          </FormSection>
+
+          {/* 07 REQUIRED ELEMENTS */}
+          <FormSection
+            idx={7}
+            title="Required elements"
+            subtitle="Must appear in every published article"
+          >
+            <div className="flex gap-2.5 flex-wrap">
+              {(active.required_elements ?? []).map((r, i) => (
+                <div
+                  key={r + i}
+                  className="flex items-center gap-2 px-3.5 py-2.5 rounded border border-border/60 text-[12.5px]"
+                  style={{ background: "hsl(var(--card) / 0.4)" }}
+                >
+                  <Check size={13} className="text-primary" strokeWidth={2.5} />
+                  <span>{r}</span>
+                  <button
+                    onClick={() =>
+                      patch({
+                        required_elements: (active.required_elements ?? []).filter(
+                          (x) => x !== r
+                        ),
+                      })
+                    }
+                    className="text-muted-foreground hover:text-foreground ml-1"
+                  >
+                    <X size={11} />
+                  </button>
+                </div>
+              ))}
+              <AddTermInput
+                placeholder="+ required element"
+                onAdd={(v) =>
+                  patch({ required_elements: [...(active.required_elements ?? []), v] })
+                }
+              />
+            </div>
+          </FormSection>
+
+          {/* 08 CONTENT RULES */}
+          <FormSection
+            idx={8}
+            title="Content rules"
+            subtitle="Hard constraints checked before publish"
+          >
+            <div className="flex flex-col">
+              {CONTENT_RULE_CHECKS.map((c, i) => (
+                <div
+                  key={c.name}
+                  className="flex justify-between items-center py-3.5"
+                  style={{
+                    borderBottom:
+                      i < CONTENT_RULE_CHECKS.length - 1 ? "1px solid hsl(var(--border) / 0.6)" : "none",
+                  }}
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <Chip tone="green" className="w-[58px] justify-center">
+                      PASS
+                    </Chip>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="text-[13px] font-medium">{c.name}</div>
+                      <div className="text-[11.5px] text-muted-foreground">{c.rule}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </FormSection>
+
+          {/* 09 SEO */}
+          <FormSection
+            idx={9}
+            title="SEO guidelines"
+            subtitle="Applied per-post before publish"
+          >
+            <Field label="SEO notes">
+              <textarea
+                className="input-base"
+                rows={4}
+                value={active.seo_guidelines ?? ""}
+                onChange={(e) => patch({ seo_guidelines: e.target.value })}
+                placeholder="e.g. Title length 55–65 chars. Meta description 140–155. Primary keyword in first paragraph. One internal link minimum."
+              />
+            </Field>
+          </FormSection>
+        </div>
+      </main>
+
+      {/* Global input styles — scoped to this component */}
+      <style>{`
+        .input-base {
+          width: 100%;
+          background: hsl(var(--card) / 0.6);
+          border: 1px solid hsl(var(--border));
+          color: hsl(var(--foreground));
+          padding: 8px 12px;
+          border-radius: 4px;
+          font-family: var(--font-sans, Inter, system-ui);
+          font-size: 13px;
+          outline: none;
+          transition: border-color .15s;
+        }
+        .input-base:focus { border-color: hsl(var(--primary) / 0.6); }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── FormSection ──────────────────────────────────────────────────────────
+function FormSection({
+  idx,
+  title,
+  subtitle,
+  accessory,
+  children,
+}: {
+  idx: number;
+  title: string;
+  subtitle?: string;
+  accessory?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="flex flex-col gap-5">
+      <div className="flex items-center justify-between">
+        <SecLabel idx={idx}>{title}</SecLabel>
+        {accessory}
+      </div>
+      {subtitle && (
+        <div className="text-[12.5px] text-muted-foreground -mt-3 font-sans">{subtitle}</div>
+      )}
+      <div className="flex flex-col gap-4">{children}</div>
+    </section>
+  );
+}
+
+function Field({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`flex flex-col gap-1.5 ${className ?? ""}`}>
+      <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ─── TermTier ─────────────────────────────────────────────────────────────
+function TermTier({
+  tone,
+  title,
+  desc,
+  items,
+  onChange,
+  actions,
+  onApprove,
+  onBan,
+  strike,
+}: {
+  tone: "green" | "amber" | "red";
+  title: string;
+  desc: string;
+  items: string[];
+  onChange: (items: string[]) => void;
+  actions?: boolean;
+  onApprove?: (term: string) => void;
+  onBan?: (term: string) => void;
+  strike?: boolean;
+}) {
+  return (
+    <div
+      className="flex-1 rounded border p-4 flex flex-col gap-3"
+      style={{ borderColor: "hsl(var(--border) / 0.6)", background: "hsl(var(--card) / 0.4)" }}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="font-display text-[14px] font-medium">{title}</div>
+          <div className="text-[11px] text-muted-foreground leading-tight">{desc}</div>
+        </div>
+        <Chip tone={tone}>{items.length}</Chip>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((t) => (
+          <div key={t} className="flex items-center gap-1">
+            <Chip tone={tone} strike={strike}>
+              {t}
+            </Chip>
+            {actions ? (
+              <>
+                <button
+                  onClick={() => onApprove?.(t)}
+                  title="Approve"
+                  className="w-[18px] h-[18px] flex items-center justify-center rounded text-[hsl(140_35%_55%)] hover:bg-muted/40"
+                >
+                  <Check size={10} />
+                </button>
+                <button
+                  onClick={() => onBan?.(t)}
+                  title="Ban"
+                  className="w-[18px] h-[18px] flex items-center justify-center rounded text-[hsl(0_55%_58%)] hover:bg-muted/40"
+                >
+                  <X size={10} />
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => onChange(items.filter((x) => x !== t))}
+                className="w-[18px] h-[18px] flex items-center justify-center rounded text-muted-foreground hover:text-foreground"
+              >
+                <X size={10} />
+              </button>
+            )}
+          </div>
+        ))}
+        <AddTermInput placeholder="+ add" onAdd={(v) => onChange([...items, v])} />
+      </div>
+    </div>
+  );
+}
+
+function AddTermInput({
+  placeholder,
+  onAdd,
+}: {
+  placeholder: string;
+  onAdd: (v: string) => void;
+}) {
+  const [val, setVal] = useState("");
+  const [open, setOpen] = useState(false);
+  if (!open)
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-1 h-[22px] px-2 rounded border border-border font-mono text-[10.5px] text-muted-foreground hover:text-foreground"
+      >
+        {placeholder}
+      </button>
+    );
+  return (
+    <input
+      autoFocus
+      value={val}
+      onChange={(e) => setVal(e.target.value)}
+      onBlur={() => {
+        if (val.trim()) onAdd(val.trim());
+        setVal("");
+        setOpen(false);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && val.trim()) {
+          onAdd(val.trim());
+          setVal("");
+          setOpen(false);
+        } else if (e.key === "Escape") {
+          setVal("");
+          setOpen(false);
+        }
+      }}
+      className="h-[22px] px-2 rounded border border-border bg-transparent font-mono text-[10.5px] w-28 outline-none focus:border-primary/60"
+      placeholder="term"
+    />
+  );
+}
