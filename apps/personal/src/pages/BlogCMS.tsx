@@ -1,926 +1,1617 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+// apps/personal/src/pages/BlogCMS.tsx
+// Warm editorial CMS — matches /mnt/user-data/uploads/hansvanleeuwen_com.zip design.
+// Reuses existing .dark palette from index.css (terracotta primary, warm bg).
+// No hardcoded cool-grey constants. All color comes from HSL tokens.
+
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FileText, PlusCircle, Search, Target, Shield, BookCheck, Crown,
-  ChevronRight, ChevronDown, ChevronLeft, X, Save, Eye, Trash2, Clock, BarChart3, Sparkles,
-  ArrowUpDown, Filter, RefreshCw, Pen, Lock, Unlock, CheckCircle2, Circle,
-  AlertTriangle, Code2, Link, Heading, ImageIcon, Type, Languages, Mic,
-  Brain, GripVertical, DollarSign, Info, MoreVertical, Settings,
+  Search, Plus, Save, Eye, Edit3, Columns, Trash2, ChevronRight,
+  Sparkles, Youtube, Brain, Bold, Italic, Heading, Quote, List, Link2,
+  Code, Image as ImageIcon, Filter, ArrowUpDown, MoreHorizontal, Play,
 } from "lucide-react";
+import {
+  Radar, Meter, Stat, SecLabel, Chip, Kbd, Eyebrow,
+} from "@/components/portal/blog/primitives";
+import {
+  analyzeVoice, computeCompleteness, extractOutline,
+  type VoiceTemplate as VT, type VoiceAnalysis,
+} from "@/lib/blog/voice-analysis";
 
-// ── Types ──
+// ─── Types ────────────────────────────────────────────────────────────────
 interface BlogPost {
-  id: string; title: string; slug: string; content: string; excerpt: string;
-  category: string; tags: string[]; cover_image_url: string | null;
-  published: boolean; scheduled_at: string | null; meta_title: string | null;
-  meta_description: string | null; og_image: string | null; og_title: string | null;
-  og_description: string | null; canonical_url: string | null; primary_keyword: string | null;
-  content_nl: string | null; title_nl: string | null; excerpt_nl: string | null;
-  meta_title_nl: string | null; meta_description_nl: string | null;
-  status: string; author_id: string | null; created_at: string; updated_at: string;
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  category: string;
+  tags: string[];
+  cover_image_url: string | null;
+  published: boolean;
+  scheduled_at: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  og_image: string | null;
+  og_title: string | null;
+  og_description: string | null;
+  primary_keyword: string | null;
+  content_nl: string | null;
+  title_nl: string | null;
+  excerpt_nl: string | null;
+  status: string;
+  author_id: string | null;
+  voice_template_id: string | null;
+  voice_match_score: number;
+  completeness_score: number;
+  word_count: number;
+  created_at: string;
+  updated_at: string;
 }
-interface VoiceTemplate {
-  id: string; name: string; category: string; tone: string; perspective: string;
-  target_audience: string; banned_words: string[]; required_elements: string[];
-  opening_examples: string[]; transition_examples: string[]; closing_examples: string[];
-  content_rules: string; seo_guidelines: string; created_at: string;
-}
-interface BlogMemory { content_category: string; brand_voice_context: string; narrative_history: string; updated_at: string; }
-interface AgentReview {
-  agent_id: string; agent_name: string; icon: string; score: number | null;
-  verdict: string; feedback: string; suggestions: string[]; loading: boolean;
-}
-interface SeoSuggestion {
-  id: string; title: string; slug: string; primary_keyword: string;
-  cluster: string; intent: string; difficulty: string; priority: number;
-  related_post_slug: string | null; status: string;
-}
-interface GhostDraft {
-  content: string; title: string; excerpt: string; meta_title: string;
-  meta_description: string; primary_keyword: string;
-  gaps: { id: string; label: string; placeholder: string; filled: boolean }[];
-}
-interface SeoCheckItem { label: string; passed: boolean; detail: string }
-interface SeoReport { score: number; checks: SeoCheckItem[]; jsonLd: string }
-type GhostPhase = "idle" | "researching" | "drafting" | "seo" | "done";
-type CmsView = "write" | "manage" | "analyze";
-type SortField = "created_at" | "title" | "status" | "updated_at";
-type PostLanguage = "en" | "nl";
 
-// ── Design Tokens ──
-const BG0 = "hsl(225, 20%, 4%)";
-const BG1 = "hsl(225, 18%, 8%)";
-const BG2 = "hsl(225, 16%, 10%)";
-const BG3 = "hsl(225, 14%, 13%)";
-const SIDEBAR_EXPANDED_W = 224;
-const SIDEBAR_COLLAPSED_W = 64;
+type CmsView = "articles" | "editor" | "voice" | "wiki" | "youtube" | "reviews";
+type EditorMode = "write" | "split" | "preview";
 
-// ── Helpers ──
-const slugify = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-const wc = (t: string) => (t.trim() ? t.trim().split(/\s+/).length : 0);
-const rt = (w: number) => `${Math.ceil(w / 230)} min read`;
-const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-const scoreClr = (s: number) => s >= 80 ? "text-emerald-400" : s >= 50 ? "text-amber-400" : "text-red-400";
-const scoreRingColor = (s: number) => s >= 80 ? "stroke-emerald-500" : s >= 50 ? "stroke-amber-500" : "stroke-red-500";
-const scoreBadgeBg = (s: number) => s >= 80 ? "bg-emerald-500/15 border-emerald-500/30" : s >= 50 ? "bg-amber-500/15 border-amber-500/30" : "bg-red-500/15 border-red-500/30";
-const scoreBg = (s: number) => s >= 80 ? "bg-emerald-500/10 border-emerald-500/20" : s >= 50 ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
-const STATUS_COLORS: Record<string, string> = { draft: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20", published: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", scheduled: "bg-blue-500/10 text-blue-400 border-blue-500/20" };
-const STATUS_DOT: Record<string, string> = { draft: "bg-zinc-400", published: "bg-emerald-400", scheduled: "bg-blue-400" };
-const CLUSTER_BORDER: Record<string, string> = { "marketplace-strategie": "border-blue-500/40", "conversie-optimalisatie": "border-emerald-500/40", "autoriteit": "border-purple-500/40", "tech-innovatie": "border-amber-500/40", "regelgeving": "border-zinc-400/40" };
-const CLUSTER_BADGE_BG: Record<string, string> = { "marketplace-strategie": "bg-blue-500/10 text-blue-400", "conversie-optimalisatie": "bg-emerald-500/10 text-emerald-400", "autoriteit": "bg-purple-500/10 text-purple-400", "tech-innovatie": "bg-amber-500/10 text-amber-400", "regelgeving": "bg-zinc-500/10 text-zinc-400" };
-const DIFFICULTY_DOT: Record<string, string> = { low: "bg-emerald-400", medium: "bg-amber-400", high: "bg-red-400" };
-const clusterBorder = (c: string) => CLUSTER_BORDER[c] ?? "border-white/10";
-const clusterBadgeBg = (c: string) => CLUSTER_BADGE_BG[c] ?? "bg-white/[0.06] text-white/50";
-const difficultyDot = (d: string) => DIFFICULTY_DOT[d] ?? "bg-zinc-400";
-const clusterToCategory = (cluster: string): string => {
-  const map: Record<string, string> = { "marketplace-strategie": "e-commerce", "conversie-optimalisatie": "conversion", "autoriteit": "authority", "tech-innovatie": "technology", "regelgeving": "regulation" };
-  return map[cluster] ?? "e-commerce";
-};
-
-const AGENTS = [
-  { id: "taal", name: "Taalagent", icon: "languages", prompt: "You are a language quality agent. Review grammar, spelling, readability, and natural flow." },
-  { id: "structuur", name: "Structuuragent", icon: "filetext", prompt: "You are a structure agent. Evaluate heading hierarchy, paragraph flow, and content organization." },
-  { id: "seo", name: "SEO-agent", icon: "target", prompt: "You are an SEO agent. Evaluate keyword usage, meta data quality, and search intent alignment." },
-  { id: "ai-detect", name: "AI-detectieagent", icon: "shield", prompt: "You are an AI detection agent. Assess how human-like the writing sounds." },
-  { id: "reviewer", name: "Reviewer", icon: "bookcheck", prompt: "You are a content reviewer. Evaluate factual accuracy, depth of insight, and value." },
-  { id: "hoofdredacteur", name: "Hoofdredacteur", icon: "crown", prompt: "You are the chief editor. Give a final holistic assessment." },
+const TABS: { id: CmsView; label: string; inScope: boolean }[] = [
+  { id: "articles", label: "Articles", inScope: true },
+  { id: "editor", label: "Editor", inScope: true },
+  { id: "wiki", label: "Wiki", inScope: false },
+  { id: "youtube", label: "YouTube", inScope: false },
+  { id: "voice", label: "Voice Templates", inScope: true },
+  { id: "reviews", label: "Agent Reviews", inScope: false },
 ];
-const AGENT_ICONS: Record<string, React.ReactNode> = {
-  languages: <Languages className="w-5 h-5" />, filetext: <FileText className="w-5 h-5" />,
-  target: <Target className="w-5 h-5" />, shield: <Shield className="w-5 h-5" />,
-  bookcheck: <BookCheck className="w-5 h-5" />, crown: <Crown className="w-5 h-5" />,
-};
 
 const EMPTY_POST = (): Omit<BlogPost, "id" | "created_at" | "updated_at"> => ({
-  title: "", slug: "", content: "", excerpt: "", category: "e-commerce", tags: [],
-  cover_image_url: null, published: false, scheduled_at: null, meta_title: null,
-  meta_description: null, og_image: null, og_title: null, og_description: null,
-  canonical_url: null, primary_keyword: null, content_nl: null, title_nl: null,
-  excerpt_nl: null, meta_title_nl: null, meta_description_nl: null, status: "draft", author_id: null,
+  title: "",
+  slug: "",
+  content: "",
+  excerpt: "",
+  category: "e-commerce",
+  tags: [],
+  cover_image_url: null,
+  published: false,
+  scheduled_at: null,
+  meta_title: null,
+  meta_description: null,
+  og_image: null,
+  og_title: null,
+  og_description: null,
+  primary_keyword: null,
+  content_nl: null,
+  title_nl: null,
+  excerpt_nl: null,
+  status: "draft",
+  author_id: null,
+  voice_template_id: null,
+  voice_match_score: 0,
+  completeness_score: 0,
+  word_count: 0,
 });
 
-const GHOST_PHASES: { key: GhostPhase; label: string; icon: React.ReactNode }[] = [
-  { key: "researching", label: "Researching context", icon: <Brain className="w-5 h-5" /> },
-  { key: "drafting", label: "Writing in your voice", icon: <Pen className="w-5 h-5" /> },
-  { key: "seo", label: "Optimizing SEO", icon: <Target className="w-5 h-5" /> },
-];
+const slugify = (t: string) =>
+  t
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 
-const parseGaps = (content: string): GhostDraft["gaps"] => {
-  const gaps: GhostDraft["gaps"] = []; const labels = ["Hook", "Case Study", "Conclusion"];
-  let m: RegExpExecArray | null; let i = 0;
-  const re = /\[HANS:\s*([^\]]+)\]/g;
-  while ((m = re.exec(content)) !== null) { gaps.push({ id: `gap-${i}`, label: labels[i] ?? `Gap ${i + 1}`, placeholder: m[0], filled: false }); i++; }
-  return gaps;
-};
+// ─── Root ─────────────────────────────────────────────────────────────────
+export default function BlogCMS() {
+  const [tab, setTab] = useState<CmsView>(() => {
+    const saved = localStorage.getItem("cms_tab") as CmsView | null;
+    return saved && TABS.some((t) => t.id === saved) ? saved : "editor";
+  });
+  useEffect(() => {
+    localStorage.setItem("cms_tab", tab);
+  }, [tab]);
 
-const computeSeoChecks = (title: string, metaDesc: string, keyword: string, content: string, wordCount: number): SeoCheckItem[] => {
-  const kw = keyword.toLowerCase(); const contentLower = content.toLowerCase(); const firstPara = contentLower.split(/\n\n/)[0] ?? "";
-  const kwCount = kw ? (contentLower.match(new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) ?? []).length : 0;
-  const density = wordCount > 0 ? (kwCount / wordCount) * 100 : 0;
-  const hasH2BeforeH3 = (() => { const h2i = content.indexOf("## "); const h3i = content.indexOf("### "); return h2i >= 0 && (h3i < 0 || h2i < h3i); })();
-  return [
-    { label: "Title length (50-60 chars)", passed: title.length >= 50 && title.length <= 60, detail: `${title.length} chars` },
-    { label: "Meta description (140-155 chars)", passed: metaDesc.length >= 140 && metaDesc.length <= 155, detail: `${metaDesc.length} chars` },
-    { label: "Primary keyword in title", passed: kw.length > 0 && title.toLowerCase().includes(kw), detail: kw || "No keyword" },
-    { label: "Keyword in first paragraph", passed: kw.length > 0 && firstPara.includes(kw), detail: kw ? (firstPara.includes(kw) ? "Found" : "Missing") : "No keyword" },
-    { label: "Keyword density (1-3%)", passed: density >= 1 && density <= 3, detail: `${density.toFixed(1)}%` },
-    { label: "At least one internal link", passed: content.includes("hansvanleeuwen.com") || content.includes("/writing/"), detail: content.includes("/writing/") ? "Found" : "Missing" },
-    { label: "Heading hierarchy (h2 before h3)", passed: hasH2BeforeH3, detail: hasH2BeforeH3 ? "Correct" : "Fix order" },
-    { label: "Image with alt text", passed: /!\[[^\]]+\]\(/.test(content), detail: /!\[[^\]]+\]\(/.test(content) ? "Found" : "Missing" },
-    { label: "Word count > 800", passed: wordCount > 800, detail: `${wordCount} words` },
-    { label: "Reading time displayed", passed: wordCount > 0, detail: `${Math.ceil(wordCount / 230)} min` },
-  ];
-};
-
-const ScoreRing = ({ score, size = 48 }: { score: number; size?: number }) => {
-  const r = (size - 6) / 2; const circ = 2 * Math.PI * r; const offset = circ - (score / 100) * circ;
   return (
-    <div className="relative rounded-full flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="absolute -rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={3} className="text-white/[0.06]" />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={3} strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" className={`${scoreRingColor(score)} transition-all duration-700`} />
-      </svg>
-      <span className={`text-sm font-bold ${scoreClr(score)} relative z-10`}>{score}</span>
+    <div className="dark min-h-screen bg-background text-foreground font-sans antialiased">
+      <Topbar tab={tab} />
+      <TabBar tab={tab} setTab={setTab} />
+      {tab === "articles" && <ArticlesScreen onEdit={() => setTab("editor")} />}
+      {tab === "editor" && <EditorScreen />}
+      {tab === "voice" && <VoiceTemplatesScreen />}
+      {(tab === "wiki" || tab === "youtube" || tab === "reviews") && (
+        <OutOfScopeStub tab={tab} setTab={setTab} />
+      )}
     </div>
   );
-};
+}
 
-const Skeleton = ({ className = "" }: { className?: string }) => (<div className={`animate-pulse rounded-lg bg-white/[0.06] ${className}`} />);
+// ─── Chrome: Topbar ───────────────────────────────────────────────────────
+function Topbar({ tab }: { tab: CmsView }) {
+  const today = new Date().toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+  }).toUpperCase();
+  const label = TABS.find((t) => t.id === tab)?.label ?? "";
+  return (
+    <header className="h-14 border-b border-border/60 flex items-center px-6 gap-6 bg-background">
+      <div className="flex items-baseline gap-2.5">
+        <span className="font-display italic text-xl text-foreground">h.</span>
+        <span className="text-[11px] tracking-[0.3em] uppercase text-muted-foreground">
+          PORTAL
+        </span>
+        <span className="font-mono text-xs text-muted-foreground">/portal/blog</span>
+      </div>
+      <div className="font-mono text-[11px] text-muted-foreground tracking-wide">
+        <span>library</span> <span className="opacity-50">›</span>{" "}
+        <span className="text-foreground">{label}</span>
+      </div>
+      <div className="flex-1" />
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border font-mono text-[10.5px] text-muted-foreground tracking-wide">
+        <span
+          className="inline-block w-1.5 h-1.5 rounded-full"
+          style={{
+            background: "hsl(140 35% 55%)",
+            boxShadow: "0 0 0 3px hsl(140 35% 55% / 0.15)",
+          }}
+        />
+        Supabase synced · 2m
+      </div>
+      <Kbd>⌘K</Kbd>
+      <div
+        className="w-7 h-7 rounded-full flex items-center justify-center font-display font-semibold text-[13px]"
+        style={{
+          background: "hsl(var(--primary) / 0.2)",
+          border: "1px solid hsl(var(--primary) / 0.35)",
+          color: "hsl(var(--primary))",
+        }}
+      >
+        H
+      </div>
+      <span className="sr-only">{today}</span>
+    </header>
+  );
+}
 
-// ── Main Component ──
-const BlogCMS = () => {
-  const { user, loading: authLoading } = useAuth();
+// ─── Chrome: Tabs ─────────────────────────────────────────────────────────
+function TabBar({ tab, setTab }: { tab: CmsView; setTab: (t: CmsView) => void }) {
+  const today = new Date()
+    .toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
+    .toUpperCase();
+  return (
+    <nav className="h-12 border-b border-border/60 px-6 flex items-end gap-0.5 bg-background">
+      {TABS.map((t) => {
+        const active = tab === t.id;
+        return (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-4 pb-2.5 pt-2 text-[13px] font-medium flex items-center gap-2 border-b-2 -mb-px transition-colors ${
+              active
+                ? "text-foreground border-primary"
+                : "text-muted-foreground border-transparent hover:text-foreground"
+            }`}
+          >
+            <span>{t.label}</span>
+          </button>
+        );
+      })}
+      <div className="flex-1" />
+      <div className="px-4 pb-2.5 pt-2">
+        <span className="font-mono text-[10.5px] tracking-[0.1em] text-muted-foreground">
+          {today}
+        </span>
+      </div>
+    </nav>
+  );
+}
+
+// ─── OUT OF SCOPE STUB ────────────────────────────────────────────────────
+function OutOfScopeStub({
+  tab,
+  setTab,
+}: {
+  tab: CmsView;
+  setTab: (t: CmsView) => void;
+}) {
+  const label = TABS.find((t) => t.id === tab)?.label ?? "";
+  return (
+    <div className="flex flex-col items-center justify-center text-muted-foreground py-32 gap-3">
+      <Eyebrow className="mb-3">Not yet built</Eyebrow>
+      <div className="font-display italic text-[28px] text-foreground/60">
+        The {label} tab
+      </div>
+      <div className="text-[13px] flex items-center gap-2">
+        Switch to
+        <Button size="sm" variant="ghost" onClick={() => setTab("editor")}>
+          Editor
+        </Button>
+        ·
+        <Button size="sm" variant="ghost" onClick={() => setTab("articles")}>
+          Articles
+        </Button>
+        ·
+        <Button size="sm" variant="ghost" onClick={() => setTab("voice")}>
+          Voice Templates
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EDITOR SCREEN
+// ═══════════════════════════════════════════════════════════════════════════
+
+function EditorScreen() {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [activeView, setActiveView] = useState<CmsView>("write");
+
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loadingPosts, setLoadingPosts] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortField, setSortField] = useState<SortField>("updated_at");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
+  const [voiceTemplates, setVoiceTemplates] = useState<VT[]>([]);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
-  const [draftPost, setDraftPost] = useState(EMPTY_POST());
-  const [isNewPost, setIsNewPost] = useState(false);
-  const [editorLang, setEditorLang] = useState<PostLanguage>("en");
+  const [draft, setDraft] = useState(EMPTY_POST());
+  const [mode, setMode] = useState<EditorMode>("split");
   const [saving, setSaving] = useState(false);
-  const [autoSaveTimer, setAutoSaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [lastSaved, setLastSaved] = useState<string | null>(null);
-  const [slugManual, setSlugManual] = useState(false);
-  const [splitRatio, setSplitRatio] = useState(60);
-  const [isDragging, setIsDragging] = useState(false);
-  const splitRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLTextAreaElement>(null);
-  const [reviewDrawerOpen, setReviewDrawerOpen] = useState(false);
-  const [agentReviews, setAgentReviews] = useState<AgentReview[]>([]);
-  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
-  const [reviewsRunning, setReviewsRunning] = useState(false);
-  const [voiceTemplates, setVoiceTemplates] = useState<VoiceTemplate[]>([]);
-  const [blogMemory, setBlogMemory] = useState<BlogMemory[]>([]);
-  const [loadingVoice, setLoadingVoice] = useState(false);
-  const [suggestions, setSuggestions] = useState<SeoSuggestion[]>([]);
-  const [ghostModal, setGhostModal] = useState<SeoSuggestion | null>(null);
-  const [ghostPhase, setGhostPhase] = useState<GhostPhase>("idle");
-  const [selectedVoice, setSelectedVoice] = useState("professional");
-  const [ghostGaps, setGhostGaps] = useState<GhostDraft["gaps"]>([]);
-  const [seoReport, setSeoReport] = useState<SeoReport | null>(null);
-  const [seoReportLoading, setSeoReportLoading] = useState(false);
-  const [seoExpanded, setSeoExpanded] = useState(false);
-  const [jsonLdExpanded, setJsonLdExpanded] = useState(false);
-  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
-  const [mobileFabOpen, setMobileFabOpen] = useState(false);
-  const [mobileMetaOpen, setMobileMetaOpen] = useState(false);
-  const [mobilePostMenu, setMobilePostMenu] = useState<string | null>(null);
-  const [seoSectionOpen, setSeoSectionOpen] = useState(true);
-  const [voiceSectionOpen, setVoiceSectionOpen] = useState(false);
-  const [memorySectionOpen, setMemorySectionOpen] = useState(false);
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [autosaveTimer, setAutosaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Fetch posts + templates
+  const fetchData = useCallback(async () => {
+    const [postsRes, tplRes] = await Promise.all([
+      supabase.from("blog_posts").select("*").order("updated_at", { ascending: false }),
+      supabase.from("hvl_voice_templates").select("*").order("is_default", { ascending: false }),
+    ]);
+    if (postsRes.error) {
+      toast({ title: "Error", description: postsRes.error.message, variant: "destructive" });
+    } else {
+      const rows = (postsRes.data ?? []) as unknown as BlogPost[];
+      setPosts(rows);
+      // Load the most-recently-updated draft into the editor on first load
+      if (!editingPost && rows.length > 0) {
+        const target = rows.find((r) => r.status === "draft") ?? rows[0];
+        hydrateDraft(target);
+      }
+    }
+    if (!tplRes.error) setVoiceTemplates((tplRes.data ?? []) as unknown as VT[]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toast]);
 
   useEffect(() => {
-    const onResize = () => {
-      const w = window.innerWidth;
-      setIsDesktop(w >= 768);
-      if (w >= 1280) setSidebarExpanded(true);
-      else if (w >= 768) setSidebarExpanded(false);
-    };
-    onResize();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+    fetchData();
+  }, [fetchData]);
 
-  const sidebarW = sidebarExpanded ? SIDEBAR_EXPANDED_W : SIDEBAR_COLLAPSED_W;
+  const hydrateDraft = (post: BlogPost) => {
+    setEditingPost(post);
+    setDraft({
+      title: post.title,
+      slug: post.slug,
+      content: post.content,
+      excerpt: post.excerpt,
+      category: post.category,
+      tags: post.tags ?? [],
+      cover_image_url: post.cover_image_url,
+      published: post.published,
+      scheduled_at: post.scheduled_at,
+      meta_title: post.meta_title,
+      meta_description: post.meta_description,
+      og_image: post.og_image,
+      og_title: post.og_title,
+      og_description: post.og_description,
+      primary_keyword: post.primary_keyword,
+      content_nl: post.content_nl,
+      title_nl: post.title_nl,
+      excerpt_nl: post.excerpt_nl,
+      status: post.status,
+      author_id: post.author_id,
+      voice_template_id: post.voice_template_id,
+      voice_match_score: post.voice_match_score,
+      completeness_score: post.completeness_score,
+      word_count: post.word_count,
+    });
+  };
 
-  const fetchPosts = useCallback(async () => {
-    setLoadingPosts(true);
-    try {
-      const { data, error } = await supabase.from("blog_posts").select("*").order(sortField, { ascending: sortDir === "asc" });
-      if (error) throw error;
-      setPosts((data as unknown as BlogPost[]) ?? []);
-    } catch (err: unknown) {
-      toast({ title: "Error", description: err instanceof Error ? err.message : "Failed to load posts", variant: "destructive" });
-    } finally { setLoadingPosts(false); }
-  }, [sortField, sortDir, toast]);
+  // ── Active voice template
+  const activeTemplate: VT | null = useMemo(() => {
+    if (!voiceTemplates.length) return null;
+    const byId = voiceTemplates.find((t) => t.id === draft.voice_template_id);
+    if (byId) return byId;
+    return voiceTemplates[0]; // Default is first (is_default=true ordered first)
+  }, [voiceTemplates, draft.voice_template_id]);
 
-  const fetchVoice = useCallback(async () => {
-    setLoadingVoice(true);
-    try {
-      const { data, error } = await supabase.from("hvl_voice_templates").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      setVoiceTemplates((data as unknown as VoiceTemplate[]) ?? []);
-    } catch { /* empty */ } finally { setLoadingVoice(false); }
-  }, []);
+  // ── Live analysis (recomputed on content change, debounced naturally by React)
+  const analysis: VoiceAnalysis | null = useMemo(() => {
+    if (!activeTemplate) return null;
+    if (!draft.content || draft.content.length < 50) return null;
+    return analyzeVoice(draft.content, activeTemplate);
+  }, [draft.content, activeTemplate]);
 
-  const fetchMemory = useCallback(async () => {
-    try {
-      const { data, error } = await supabase.from("hans_blog_memory").select("*");
-      if (error) throw error;
-      setBlogMemory((data as unknown as BlogMemory[]) ?? []);
-    } catch { /* empty */ }
-  }, []);
+  const outline = useMemo(() => extractOutline(draft.content), [draft.content]);
+  const completeness = useMemo(() => computeCompleteness(draft), [draft]);
 
-  const fetchSuggestions = useCallback(async () => {
-    try {
-      const { data, error } = await supabase.from("blog_seo_suggestions").select("*").neq("status", "dismissed").order("priority", { ascending: false });
-      if (error) throw error;
-      setSuggestions((data as unknown as SeoSuggestion[]) ?? []);
-    } catch { /* empty */ }
-  }, []);
-
-  const dismissSuggestion = useCallback(async (id: string) => {
-    try {
-      const { error } = await supabase.from("blog_seo_suggestions").update({ status: "dismissed" }).eq("id", id);
-      if (error) throw error;
-      setSuggestions((prev) => prev.filter((s) => s.id !== id));
-    } catch { /* empty */ }
-  }, []);
-
-  useEffect(() => { fetchPosts(); }, [fetchPosts]);
-  useEffect(() => { fetchSuggestions(); }, [fetchSuggestions]);
-  useEffect(() => { if (activeView === "analyze") { fetchVoice(); fetchMemory(); } }, [activeView, fetchVoice, fetchMemory]);
-
-  const savePost = useCallback(async () => {
+  // ── Save
+  const save = useCallback(async () => {
+    if (!draft.title.trim()) {
+      toast({ title: "Title required", description: "Add a title before saving." });
+      return;
+    }
     setSaving(true);
     try {
-      const payload = {
-        title: draftPost.title, slug: draftPost.slug, content: draftPost.content, excerpt: draftPost.excerpt,
-        category: draftPost.category, tags: draftPost.tags, cover_image_url: draftPost.cover_image_url,
-        published: draftPost.status === "published", scheduled_at: draftPost.scheduled_at,
-        meta_title: draftPost.meta_title, meta_description: draftPost.meta_description,
-        og_image: draftPost.og_image, og_title: draftPost.og_title, og_description: draftPost.og_description,
-        canonical_url: draftPost.canonical_url, primary_keyword: draftPost.primary_keyword,
-        content_nl: draftPost.content_nl, title_nl: draftPost.title_nl, excerpt_nl: draftPost.excerpt_nl,
-        meta_title_nl: draftPost.meta_title_nl, meta_description_nl: draftPost.meta_description_nl,
-        status: draftPost.status, author_id: user?.id ?? null,
+      const payload: Partial<BlogPost> = {
+        ...draft,
+        published: draft.status === "published",
+        voice_match_score: analysis?.match_score ?? 0,
+        completeness_score: completeness,
+        word_count: analysis?.readability.words ?? 0,
+        author_id: user?.id ?? null,
       };
       if (editingPost) {
         const { error } = await supabase.from("blog_posts").update(payload).eq("id", editingPost.id);
         if (error) throw error;
-        toast({ title: "Saved", description: "Post updated." });
       } else {
-        const { error } = await supabase.from("blog_posts").insert(payload);
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .insert(payload)
+          .select()
+          .single();
         if (error) throw error;
-        toast({ title: "Created", description: "New post created." });
-        setIsNewPost(false);
+        if (data) setEditingPost(data as unknown as BlogPost);
       }
-      setLastSaved(new Date().toISOString());
-      await fetchPosts();
-    } catch (err: unknown) {
-      toast({ title: "Error", description: err instanceof Error ? err.message : "Save failed", variant: "destructive" });
-    } finally { setSaving(false); }
-  }, [draftPost, editingPost, user, toast, fetchPosts]);
-
-  const deletePost = useCallback(async (id: string) => {
-    try {
-      const { error } = await supabase.from("blog_posts").delete().eq("id", id);
-      if (error) throw error;
-      toast({ title: "Deleted", description: "Post removed." });
-      if (editingPost?.id === id) { setEditingPost(null); }
-      await fetchPosts();
-    } catch (err: unknown) {
-      toast({ title: "Error", description: err instanceof Error ? err.message : "Delete failed", variant: "destructive" });
+      setLastSaved(new Date());
+      await fetchData();
+    } catch (err) {
+      toast({
+        title: "Save failed",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
     }
-  }, [editingPost, toast, fetchPosts]);
+  }, [draft, editingPost, user, analysis, completeness, toast, fetchData]);
 
-  const bulkAction = useCallback(async (action: "publish" | "unpublish" | "delete") => {
-    const ids = Array.from(selectedPosts);
-    if (!ids.length) return;
-    try {
-      if (action === "delete") {
-        const { error } = await supabase.from("blog_posts").delete().in("id", ids);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("blog_posts").update({ status: action === "publish" ? "published" : "draft", published: action === "publish" }).in("id", ids);
-        if (error) throw error;
-      }
-      setSelectedPosts(new Set());
-      toast({ title: "Done", description: `${action} applied to ${ids.length} posts.` });
-      await fetchPosts();
-    } catch (err: unknown) {
-      toast({ title: "Error", description: err instanceof Error ? err.message : "Bulk action failed", variant: "destructive" });
-    }
-  }, [selectedPosts, toast, fetchPosts]);
+  // ── Autosave 3s after last change
+  useEffect(() => {
+    if (autosaveTimer) clearTimeout(autosaveTimer);
+    if (!editingPost || !draft.title) return;
+    const t = setTimeout(() => save(), 3000);
+    setAutosaveTimer(t);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.content, draft.title, draft.slug, draft.excerpt]);
 
-  const openEditor = (post: BlogPost) => {
-    setEditingPost(post);
-    setDraftPost({ title: post.title || post.title_nl || "", slug: post.slug,
-      content: post.content || post.content_nl || "", excerpt: post.excerpt || post.excerpt_nl || "",
-      category: post.category, tags: post.tags ?? [], cover_image_url: post.cover_image_url,
-      published: post.published, scheduled_at: post.scheduled_at,
-      meta_title: post.meta_title || post.meta_title_nl, meta_description: post.meta_description || post.meta_description_nl,
-      og_image: post.og_image, og_title: post.og_title, og_description: post.og_description,
-      canonical_url: post.canonical_url, primary_keyword: post.primary_keyword,
-      content_nl: post.content_nl || post.content || "", title_nl: post.title_nl || post.title || "",
-      excerpt_nl: post.excerpt_nl || post.excerpt || "",
-      meta_title_nl: post.meta_title_nl || post.meta_title, meta_description_nl: post.meta_description_nl || post.meta_description,
-      status: post.status, author_id: post.author_id });
-    setIsNewPost(false); setSlugManual(true); setActiveView("write");
-  };
-
-  const startNewPost = () => { setEditingPost(null); setDraftPost(EMPTY_POST()); setIsNewPost(true); setSlugManual(false); setActiveView("write"); };
-
-  const startPostFromSuggestion = (suggestion: SeoSuggestion) => {
+  // ── New post
+  const newPost = () => {
     setEditingPost(null);
-    setDraftPost({ ...EMPTY_POST(), title: suggestion.title, title_nl: suggestion.title, slug: suggestion.slug, primary_keyword: suggestion.primary_keyword, category: clusterToCategory(suggestion.cluster) });
-    setIsNewPost(true); setSlugManual(true); setActiveView("write");
+    const defaultTpl = voiceTemplates.find((t) => (t as VT & { is_default?: boolean }).is_default);
+    setDraft({
+      ...EMPTY_POST(),
+      voice_template_id: defaultTpl?.id ?? null,
+    });
   };
 
-  const updateDraft = (field: string, value: unknown) => {
-    setDraftPost((prev) => ({ ...prev, [field]: value }));
-    if (field === "title" && !slugManual) setDraftPost((prev) => ({ ...prev, slug: slugify(value as string) }));
-    if ((field === "content" || field === "content_nl") && typeof value === "string" && hasGaps) updateGapStatus(value);
-    if (autoSaveTimer) clearTimeout(autoSaveTimer);
-    const timer = setTimeout(() => { if (editingPost) savePost(); }, 3000);
-    setAutoSaveTimer(timer);
-  };
+  return (
+    <div className="flex" style={{ minHeight: "calc(100vh - 104px)" }}>
+      {/* LEFT RAIL */}
+      <EditorLeftRail
+        draft={draft}
+        editingPost={editingPost}
+        completeness={completeness}
+        activeTemplate={activeTemplate}
+        voiceTemplates={voiceTemplates}
+        outline={outline}
+        lastSaved={lastSaved}
+        onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))}
+        onSelectTemplate={(id) => setDraft((d) => ({ ...d, voice_template_id: id }))}
+        onNew={newPost}
+        posts={posts}
+        onOpenPost={hydrateDraft}
+      />
 
-  const runAgentReview = useCallback(async (agent: (typeof AGENTS)[number]) => {
-    setAgentReviews((prev) => prev.map((r) => r.agent_id === agent.id ? { ...r, loading: true } : r));
-    try {
-      const res = await fetch("https://n8n.srv1402218.hstgr.cloud/webhook/blog-agent-review", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agent_id: agent.id, agent_system_prompt: agent.prompt, post_title: editorLang === "nl" ? (draftPost.title_nl || draftPost.title) : draftPost.title, post_content: editorLang === "nl" ? (draftPost.content_nl || draftPost.content) : (draftPost.content || draftPost.content_nl), post_category: draftPost.category, post_keyword: draftPost.primary_keyword ?? "", post_language: editorLang }),
-      });
-      const data = (await res.json()) as Record<string, unknown>;
-      setAgentReviews((prev) => prev.map((r) => r.agent_id === agent.id ? { ...r,
-        score: typeof data.score === "number" ? data.score : null,
-        verdict: typeof data.verdict === "string" ? data.verdict : "",
-        feedback: typeof data.feedback === "string" ? data.feedback : "",
-        suggestions: Array.isArray(data.suggestions) ? (data.suggestions as string[]) : [], loading: false,
-      } : r));
-    } catch { setAgentReviews((prev) => prev.map((r) => r.agent_id === agent.id ? { ...r, loading: false, feedback: "Review failed." } : r)); }
-  }, [draftPost, editorLang]);
-
-  const runAllReviews = useCallback(() => {
-    const init: AgentReview[] = AGENTS.map((a) => ({ agent_id: a.id, agent_name: a.name, icon: a.icon, score: null, verdict: "", feedback: "", suggestions: [], loading: true }));
-    setAgentReviews(init); setReviewDrawerOpen(true); setReviewsRunning(true);
-    AGENTS.forEach((a) => runAgentReview(a));
-    setTimeout(() => setReviewsRunning(false), 8000);
-  }, [runAgentReview]);
-
-  const generateGhostDraft = useCallback(async (suggestion: SeoSuggestion) => {
-    setGhostModal(null); setGhostPhase("researching"); setActiveView("write");
-    setEditingPost(null); setIsNewPost(true); setSlugManual(true);
-    const phases: GhostPhase[] = ["researching", "drafting", "seo"];
-    let pi = 0;
-    const interval = setInterval(() => { pi++; if (pi < phases.length) setGhostPhase(phases[pi]); }, 3000);
-    try {
-      const res = await fetch("https://n8n.srv1402218.hstgr.cloud/webhook/blog-ghost-write", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: suggestion.title, slug: suggestion.slug, primary_keyword: suggestion.primary_keyword, cluster: suggestion.cluster, intent: suggestion.intent, language: editorLang, category: selectedVoice }),
-      });
-      const data = (await res.json()) as Record<string, unknown>;
-      const content = typeof data.draft_content === "string" ? data.draft_content : (typeof data.content === "string" ? data.content : "");
-      const gaps = parseGaps(content);
-      const ghostTitle = typeof data.title === "string" ? data.title : suggestion.title;
-      const ghostExcerpt = typeof data.excerpt === "string" ? data.excerpt : "";
-      const ghostMeta = typeof data.meta_title === "string" ? data.meta_title : null;
-      const ghostMetaDesc = typeof data.meta_description === "string" ? data.meta_description : null;
-      setDraftPost({ ...EMPTY_POST(), title: ghostTitle, title_nl: ghostTitle,
-        slug: typeof data.slug === "string" ? data.slug : suggestion.slug, content, content_nl: content,
-        excerpt: ghostExcerpt, excerpt_nl: ghostExcerpt, meta_title: ghostMeta, meta_title_nl: ghostMeta,
-        meta_description: ghostMetaDesc, meta_description_nl: ghostMetaDesc,
-        primary_keyword: typeof data.primary_keyword === "string" ? data.primary_keyword : suggestion.primary_keyword,
-        category: clusterToCategory(suggestion.cluster) });
-      setGhostGaps(gaps); setGhostPhase("done");
-    } catch (err: unknown) {
-      toast({ title: "Ghost Writer Failed", description: err instanceof Error ? err.message : "Draft generation failed", variant: "destructive" });
-      setGhostPhase("idle");
-    } finally { clearInterval(interval); }
-  }, [toast, editorLang, selectedVoice]);
-
-  const generateSeoReport = useCallback(async () => {
-    setSeoReportLoading(true);
-    try {
-      const res = await fetch("https://n8n.srv1402218.hstgr.cloud/webhook/blog-auto-seo", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: draftPost.title, slug: draftPost.slug, content: draftPost.content, meta_title: draftPost.meta_title, meta_description: draftPost.meta_description, primary_keyword: draftPost.primary_keyword }),
-      });
-      const data = (await res.json()) as Record<string, unknown>;
-      const score = typeof data.score === "number" ? data.score : 0;
-      const checks = Array.isArray(data.checks) ? (data.checks as SeoCheckItem[]) : computeSeoChecks(draftPost.title, draftPost.meta_description ?? "", draftPost.primary_keyword ?? "", draftPost.content, wc(draftPost.content));
-      const jsonLd = typeof data.json_ld === "string" ? data.json_ld : JSON.stringify({ "@context": "https://schema.org", "@type": "BlogPosting", headline: draftPost.title, author: { "@type": "Person", name: "Hans van Leeuwen" } }, null, 2);
-      setSeoReport({ score, checks, jsonLd });
-    } catch {
-      const checks = computeSeoChecks(draftPost.title, draftPost.meta_description ?? "", draftPost.primary_keyword ?? "", draftPost.content, wc(draftPost.content));
-      const passed = checks.filter((c) => c.passed).length;
-      setSeoReport({ score: Math.round((passed / checks.length) * 100), checks, jsonLd: JSON.stringify({ "@context": "https://schema.org", "@type": "BlogPosting", headline: draftPost.title }, null, 2) });
-    } finally { setSeoReportLoading(false); }
-  }, [draftPost]);
-
-  const updateGapStatus = useCallback((content: string) => {
-    setGhostGaps((prev) => prev.map((g) => ({ ...g, filled: !content.includes(g.placeholder) })));
-  }, []);
-  const gapsFilled = ghostGaps.filter((g) => g.filled).length;
-  const allGapsFilled = ghostGaps.length > 0 && gapsFilled === ghostGaps.length;
-  const hasGaps = ghostGaps.length > 0;
-
-  const filtered = posts
-    .filter((p) => (statusFilter === "all" || p.status === statusFilter) && (!searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase())))
-    .sort((a, b) => { const av = a[sortField] ?? ""; const bv = b[sortField] ?? ""; return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av)); });
-  const stats = { draft: posts.filter((p) => p.status === "draft").length, published: posts.filter((p) => p.status === "published").length, scheduled: posts.filter((p) => p.status === "scheduled" || p.scheduled_at).length, total: posts.length };
-  const curTitle = editorLang === "nl" ? draftPost.title_nl ?? "" : draftPost.title;
-  const curContent = editorLang === "nl" ? draftPost.content_nl ?? "" : draftPost.content;
-  const curExcerpt = editorLang === "nl" ? draftPost.excerpt_nl ?? "" : draftPost.excerpt;
-  const curMetaTitle = editorLang === "nl" ? draftPost.meta_title_nl ?? "" : draftPost.meta_title ?? "";
-  const curMetaDesc = editorLang === "nl" ? draftPost.meta_description_nl ?? "" : draftPost.meta_description ?? "";
-  const words = wc(curContent);
-  const hasEditorContent = editingPost !== null || isNewPost;
-  const localChecks = computeSeoChecks(curTitle, curMetaDesc, draftPost.primary_keyword ?? "", curContent, words);
-  const localPassed = localChecks.filter((c) => c.passed).length;
-  const localScore = localChecks.length > 0 ? Math.round((localPassed / localChecks.length) * 100) : 0;
-  const seoScore = seoReport?.score ?? localScore;
-
-  const handleSplitDrag = useCallback((e: MouseEvent) => {
-    if (!splitRef.current) return;
-    const rect = splitRef.current.getBoundingClientRect();
-    const pct = ((e.clientX - rect.left) / rect.width) * 100;
-    setSplitRatio(Math.max(30, Math.min(80, pct)));
-  }, []);
-  const stopDrag = useCallback(() => { setIsDragging(false); document.removeEventListener("mousemove", handleSplitDrag); document.removeEventListener("mouseup", stopDrag); }, [handleSplitDrag]);
-  const startDrag = useCallback(() => { setIsDragging(true); document.addEventListener("mousemove", handleSplitDrag); document.addEventListener("mouseup", stopDrag); }, [handleSplitDrag, stopDrag]);
-
-  if (authLoading) return (<div className="pt-20 min-h-screen flex items-center justify-center" style={{ background: BG0 }}><div className="space-y-4 w-64"><Skeleton className="h-8 w-48 mx-auto" /><Skeleton className="h-4 w-32 mx-auto" /></div></div>);
-  if (!user) return (<div className="pt-20 min-h-screen flex items-center justify-center" style={{ background: BG0 }}><div className="text-center space-y-3"><div className="w-12 h-12 rounded-full bg-white/[0.06] flex items-center justify-center mx-auto"><Pen className="w-5 h-5 text-white/30" /></div><div className="text-white/60 text-lg font-medium">Please sign in to access the CMS.</div></div></div>);
-
-  const renderPreview = () => {
-    const rendered = curContent
-      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-white/90 mt-6 mb-2">$1</h3>')
-      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-white/90 mt-8 mb-3">$1</h2>')
-      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-white mt-8 mb-4">$1</h1>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white/90 font-semibold">$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em class="text-white/70 italic">$1</em>')
-      .replace(/\[HANS:\s*([^\]]+)\]/g, '<span class="inline-block px-3 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 text-sm my-2">$1 - needs your input</span>')
-      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="rounded-xl max-w-full my-4" />')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-400 underline underline-offset-2">$1</a>')
-      .replace(/^(?!<[h123a]|<img|<strong|<em|<span|<ul|<li)(.+)$/gm, '<p class="text-white/70 leading-relaxed mb-3">$1</p>')
-      .replace(/\n{2,}/g, "");
-    return (
-      <div className="p-6 md:p-8 overflow-y-auto h-full" style={{ background: BG1 }}>
-        <div className="max-w-[680px] mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-3" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{curTitle || "Untitled"}</h1>
-          <div className="flex items-center gap-3 text-white/35 text-sm mb-8">
-            <span>Hans van Leeuwen</span><span className="w-1 h-1 rounded-full bg-white/20" /><span>{rt(words)}</span><span className="w-1 h-1 rounded-full bg-white/20" /><span>{fmtDate(new Date().toISOString())}</span>
-          </div>
-          <div className="prose-dark" dangerouslySetInnerHTML={{ __html: rendered }} />
-          {draftPost.tags?.length > 0 && (<div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-white/[0.06]">{draftPost.tags.map((t) => <Badge key={t} className="bg-white/[0.06] text-white/50 rounded-full">{t}</Badge>)}</div>)}
-          <div className="mt-12 pt-6 border-t border-white/[0.06] text-white/25 text-sm italic">- Hans van Leeuwen, Amersfoort</div>
-        </div>
-      </div>
-    );
-  };
-
-  const seoIcon = (label: string) => {
-    if (label.includes("Title length")) return <Type className="w-3.5 h-3.5" />;
-    if (label.includes("Meta")) return <FileText className="w-3.5 h-3.5" />;
-    if (label.includes("keyword in title")) return <Target className="w-3.5 h-3.5" />;
-    if (label.includes("first paragraph")) return <AlertTriangle className="w-3.5 h-3.5" />;
-    if (label.includes("density")) return <BarChart3 className="w-3.5 h-3.5" />;
-    if (label.includes("internal link")) return <Link className="w-3.5 h-3.5" />;
-    if (label.includes("Heading")) return <Heading className="w-3.5 h-3.5" />;
-    if (label.includes("Image")) return <ImageIcon className="w-3.5 h-3.5" />;
-    if (label.includes("Word count")) return <FileText className="w-3.5 h-3.5" />;
-    if (label.includes("Reading")) return <Clock className="w-3.5 h-3.5" />;
-    return <Target className="w-3.5 h-3.5" />;
-  };
-
-  const renderMobilePreview = () => (
-    <AnimatePresence>{mobilePreviewOpen && (
-      <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="md:hidden fixed inset-0 z-50 overflow-y-auto" style={{ background: BG0 }}>
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-white/[0.06]" style={{ background: "hsla(225, 20%, 4%, 0.95)", backdropFilter: "blur(20px)" }}>
-          <h3 className="text-white/80 font-medium text-sm">Preview</h3>
-          <button onClick={() => setMobilePreviewOpen(false)} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/40 active:text-white/80"><X className="w-5 h-5" /></button>
-        </div>
-        {renderPreview()}
-      </motion.div>
-    )}</AnimatePresence>
-  );
-
-  const renderMobileFab = () => {
-    if (!hasEditorContent || activeView !== "write") return null;
-    return (
-      <div className="md:hidden fixed bottom-20 right-4 z-40" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-        <AnimatePresence>{mobileFabOpen && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} className="absolute bottom-16 right-0 flex flex-col gap-2 items-end mb-2">
-            <button onClick={() => { savePost(); setMobileFabOpen(false); }} className="flex items-center gap-2 px-4 py-3 rounded-full bg-blue-600 text-white text-sm font-medium shadow-lg shadow-blue-500/20 min-h-[44px]"><Save className="w-4 h-4" /> {saving ? "Saving..." : "Save"}</button>
-            <button onClick={() => { runAllReviews(); setMobileFabOpen(false); }} disabled={hasGaps && !allGapsFilled} className="flex items-center gap-2 px-4 py-3 rounded-full bg-indigo-600 text-white text-sm font-medium shadow-lg shadow-indigo-500/20 min-h-[44px] disabled:opacity-40"><Sparkles className="w-4 h-4" /> AI Review</button>
-            <button onClick={() => { setEditorLang(editorLang === "en" ? "nl" : "en"); setMobileFabOpen(false); }} className="flex items-center gap-2 px-4 py-3 rounded-full bg-purple-600 text-white text-sm font-medium shadow-lg shadow-purple-500/20 min-h-[44px]"><Languages className="w-4 h-4" /> {editorLang === "en" ? "NL" : "EN"}</button>
-          </motion.div>
-        )}</AnimatePresence>
-        <motion.button whileTap={{ scale: 0.9 }} onClick={() => setMobileFabOpen(!mobileFabOpen)} className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-500/30 flex items-center justify-center">
-          <motion.div animate={{ rotate: mobileFabOpen ? 45 : 0 }}><PlusCircle className="w-6 h-6" /></motion.div>
-        </motion.button>
-      </div>
-    );
-  };
-
-  const renderMobileMetaSheet = () => (
-    <AnimatePresence>{mobileMetaOpen && (<>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setMobileMetaOpen(false)} />
-      <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-white/[0.08]" style={{ background: BG1, paddingBottom: "env(safe-area-inset-bottom, 16px)" }}>
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-white/[0.06]" style={{ background: BG1 }}>
-          <div className="w-10 h-1 rounded-full bg-white/20 absolute top-2 left-1/2 -translate-x-1/2" />
-          <span className="text-white/60 font-medium text-sm mt-2">Post Settings and SEO</span>
-          <button onClick={() => setMobileMetaOpen(false)} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/40 mt-2"><X className="w-5 h-5" /></button>
-        </div>
-        <div className="p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Status</label><select value={draftPost.status} onChange={(e) => updateDraft("status", e.target.value)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2.5 focus:outline-none transition-colors min-h-[44px]"><option value="draft">Draft</option><option value="published">Published</option><option value="scheduled">Scheduled</option></select></div>
-            <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Category</label><input type="text" value={draftPost.category} onChange={(e) => updateDraft("category", e.target.value)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2.5 focus:outline-none transition-colors min-h-[44px]" /></div>
-          </div>
-          {draftPost.status === "scheduled" && (<div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Schedule</label><input type="datetime-local" value={draftPost.scheduled_at ?? ""} onChange={(e) => updateDraft("scheduled_at", e.target.value || null)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2.5 focus:outline-none transition-colors min-h-[44px]" /></div>)}
-          <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Tags</label><input type="text" value={draftPost.tags?.join(", ") ?? ""} onChange={(e) => updateDraft("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} placeholder="seo, marketing" className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2.5 focus:outline-none transition-colors placeholder:text-white/20 min-h-[44px]" /></div>
-          <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Primary Keyword</label><input type="text" value={draftPost.primary_keyword ?? ""} onChange={(e) => updateDraft("primary_keyword", e.target.value || null)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2.5 focus:outline-none transition-colors min-h-[44px]" /></div>
-          <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Meta Title</label><input type="text" value={curMetaTitle} onChange={(e) => updateDraft(editorLang === "nl" ? "meta_title_nl" : "meta_title", e.target.value || null)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2.5 focus:outline-none transition-colors min-h-[44px]" /></div>
-          <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Meta Description</label><textarea value={curMetaDesc} onChange={(e) => updateDraft(editorLang === "nl" ? "meta_description_nl" : "meta_description", e.target.value || null)} rows={3} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2.5 focus:outline-none resize-none transition-colors" /></div>
-          <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Excerpt</label><textarea placeholder="Korte samenvatting..." value={curExcerpt} onChange={(e) => updateDraft(editorLang === "nl" ? "excerpt_nl" : "excerpt", e.target.value)} rows={3} className="w-full rounded-lg border border-white/[0.04] p-3 text-white/70 text-sm placeholder:text-white/15 focus:outline-none resize-none leading-relaxed transition-all bg-transparent" /></div>
-          <div className="rounded-lg p-3 bg-white/[0.02] border border-white/[0.04]">
-            <div className="text-[10px] text-white/20 mb-2 uppercase tracking-widest">Google Preview</div>
-            <div className="text-blue-400 text-sm truncate font-medium">{curMetaTitle || curTitle || "Page title"}</div>
-            <div className="text-emerald-500 text-xs truncate">hansvanleeuwen.com/{draftPost.slug || "post-slug"}</div>
-            <div className="text-white/40 text-xs line-clamp-2 mt-1">{curMetaDesc || curExcerpt || "Description..."}</div>
-          </div>
-          <div className="flex gap-2 pt-2">
-            <Button onClick={() => { savePost(); setMobileMetaOpen(false); }} disabled={saving} className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10 min-h-[44px]" size="sm"><Save className="w-3.5 h-3.5 mr-1" /> {saving ? "Saving..." : "Save"}</Button>
-            {editingPost && <Button variant="ghost" size="sm" className="text-red-400 active:text-red-300 active:bg-red-500/10 min-h-[44px] min-w-[44px]" onClick={() => { deletePost(editingPost.id); setMobileMetaOpen(false); }}><Trash2 className="w-4 h-4" /></Button>}
-          </div>
-        </div>
-      </motion.div>
-    </>)}</AnimatePresence>
-  );
-
-  // ── WRITE VIEW ──
-  const renderWrite = () => {
-    if (!hasEditorContent) return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] px-2">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-lg w-full space-y-6 md:space-y-8">
-          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto shadow-2xl shadow-blue-500/20"><span className="text-white text-xl md:text-2xl font-bold tracking-tight">HVL</span></div>
-          <div><h1 className="text-xl md:text-2xl font-semibold tracking-tight text-white/90">Waar wil je over schrijven?</h1><p className="text-white/35 text-sm mt-2">Kies een onderwerp of begin met een leeg canvas</p></div>
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
-            <input type="text" placeholder="Onderwerp, keyword, of YouTube URL..." className="w-full pl-12 pr-4 py-4 rounded-2xl border border-white/[0.08] bg-white/[0.04] text-white/90 text-base md:text-lg placeholder:text-white/20 focus:outline-none focus:border-blue-500/30 focus:ring-2 focus:ring-blue-500/10 transition-all min-h-[52px]" onPaste={(e) => { setTimeout(() => { const val = (e.target as HTMLInputElement).value.trim(); if (/youtube\.com\/watch|youtu\.be\//.test(val)) { const mockSuggestion: SeoSuggestion = { id: "yt-" + Date.now(), title: val, slug: "", primary_keyword: "", cluster: "tech-innovatie", intent: "informational", difficulty: "medium", priority: 90, related_post_slug: null, status: "suggested" }; setGhostModal(mockSuggestion); } }, 100); }} onKeyDown={(e) => { if (e.key === "Enter") { const val = (e.target as HTMLInputElement).value.trim(); if (!val) return; if (/youtube\.com\/watch|youtu\.be\//.test(val)) { setGhostModal({ id: "yt-" + Date.now(), title: val, slug: "", primary_keyword: "", cluster: "tech-innovatie", intent: "informational", difficulty: "medium", priority: 90, related_post_slug: null, status: "suggested" }); } else { setGhostModal({ id: "topic-" + Date.now(), title: val, slug: "", primary_keyword: val.split(" ").slice(0, 3).join(" "), cluster: "autoriteit", intent: "informational", difficulty: "medium", priority: 80, related_post_slug: null, status: "suggested" }); } } }} />
-          </div>
-          {suggestions.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-center gap-2"><Sparkles className="w-3 h-3 text-blue-400/60" /><span className="text-white/20 text-[10px] uppercase tracking-[0.15em] font-semibold">SEO Content Ideas</span></div>
-              <div className="flex gap-2 overflow-x-auto pb-2 md:flex-wrap md:justify-center md:overflow-visible" style={{ scrollbarWidth: "none" }}>
-                {suggestions.slice(0, 8).map((s, i) => (
-                  <motion.button key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                    onClick={() => setGhostModal(s)} className={`group flex items-center gap-2 px-4 py-2.5 rounded-full border ${clusterBorder(s.cluster)} bg-white/[0.03] active:bg-white/[0.08] md:hover:bg-white/[0.06] transition-all text-sm text-white/60 active:text-white/90 md:hover:text-white/90 whitespace-nowrap flex-shrink-0 min-h-[44px]`}>
-                    {s.intent === "commercial" ? <DollarSign className="w-3 h-3 text-emerald-400/70" /> : <Info className="w-3 h-3 text-blue-400/70" />}
-                    <span>{s.title}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${clusterBadgeBg(s.cluster)}`}>{s.cluster}</span>
-                    <span className={`w-1.5 h-1.5 rounded-full ${difficultyDot(s.difficulty)}`} />
-                  </motion.button>
-                ))}
+      {/* CENTER */}
+      <main className="flex-1 min-w-0 flex flex-col">
+        <EditorToolbar
+          mode={mode}
+          setMode={setMode}
+          onSave={save}
+          saving={saving}
+          draft={draft}
+          setDraft={setDraft}
+        />
+        <div className="flex flex-1">
+          {(mode === "write" || mode === "split") && (
+            <div className="flex-1 min-w-0 relative" style={{ padding: "40px 64px 40px 80px" }}>
+              <div className="absolute top-5 left-5 flex items-center gap-2">
+                <span className="font-mono text-[9.5px] tracking-[0.2em] text-muted-foreground">
+                  MARKDOWN
+                </span>
               </div>
+              <MarkdownEditor
+                value={draft.content}
+                onChange={(content) => setDraft((d) => ({ ...d, content }))}
+                title={draft.title}
+                onTitleChange={(title) => {
+                  setDraft((d) => ({
+                    ...d,
+                    title,
+                    slug: d.slug || slugify(title),
+                  }));
+                }}
+              />
             </div>
           )}
-          <Button onClick={startNewPost} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/20 px-8 min-h-[48px]"><PlusCircle className="w-4 h-4 mr-2" /> Start met leeg canvas</Button>
-        </motion.div>
-      </div>
-    );
-
-    return (
-      <div className="space-y-0">
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setEditingPost(null); setIsNewPost(false); }} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/40 active:text-white/80 rounded-lg active:bg-white/[0.04] transition-all"><X className="w-5 h-5" /></motion.button>
-            <h2 className="text-lg font-semibold tracking-tight text-white/90">{isNewPost ? "Nieuw artikel" : "Bewerken"}</h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="hidden md:block"><Tabs value={editorLang} onValueChange={(v) => setEditorLang(v as PostLanguage)}><TabsList className="bg-white/[0.04] border border-white/[0.05] rounded-lg h-8"><TabsTrigger value="en" className="text-xs rounded-md px-3 data-[state=active]:bg-white/[0.1] data-[state=active]:text-white">EN</TabsTrigger><TabsTrigger value="nl" className="text-xs rounded-md px-3 data-[state=active]:bg-white/[0.1] data-[state=active]:text-white">NL</TabsTrigger></TabsList></Tabs></div>
-            <button onClick={() => setMobilePreviewOpen(true)} className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-white/[0.04] text-white/50 active:text-white/80 active:bg-white/[0.08]"><Eye className="w-5 h-5" /></button>
-            <button onClick={() => setMobileMetaOpen(true)} className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-white/[0.04] text-white/50 active:text-white/80 active:bg-white/[0.08]"><Target className="w-5 h-5" /></button>
-            {draftPost.primary_keyword && <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 rounded-full text-xs hidden md:flex">{draftPost.primary_keyword}</Badge>}
-          </div>
-        </div>
-        <div className="md:hidden space-y-3">
-          <input type="text" placeholder="Waar wil je over schrijven?" value={curTitle} onChange={(e) => updateDraft(editorLang === "nl" ? "title_nl" : "title", e.target.value)} className="w-full text-2xl font-bold tracking-tight bg-transparent border-none outline-none text-white/90 placeholder:text-white/15 px-1" />
-          <div className="flex items-center gap-2 text-sm px-1"><span className="text-white/20 text-[10px] uppercase tracking-widest">slug</span><input type="text" value={draftPost.slug} onChange={(e) => { setSlugManual(true); updateDraft("slug", e.target.value); }} className="flex-1 bg-transparent border-b border-white/[0.05] text-white/40 text-xs outline-none focus:border-blue-500/30 py-1 transition-colors font-mono" /><button onClick={() => { setSlugManual(false); updateDraft("slug", slugify(draftPost.title)); }} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/20 active:text-white/50 transition-colors"><RefreshCw className="w-3 h-3" /></button></div>
-          {hasGaps && (<div className="flex items-center gap-2 flex-wrap px-1">{ghostGaps.map((g) => (<motion.div key={g.id} animate={g.filled ? { scale: [1, 1.05, 1] } : {}} transition={{ duration: 0.3 }} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs transition-all duration-300 ${g.filled ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5"}`}>{g.filled ? <Unlock className="w-3 h-3 text-emerald-400" /> : <Lock className="w-3 h-3 text-amber-400" />}<span className={g.filled ? "text-emerald-400" : "text-amber-400"}>{g.label}</span></motion.div>))}</div>)}
-          <textarea ref={contentRef} placeholder="Begin met schrijven in markdown..." value={curContent} onChange={(e) => updateDraft(editorLang === "nl" ? "content_nl" : "content", e.target.value)} className="w-full rounded-xl border border-white/[0.04] p-4 text-white/85 text-sm placeholder:text-white/15 focus:outline-none focus:border-white/[0.08] font-mono resize-none transition-all" style={{ background: "hsl(225, 22%, 5%)", lineHeight: "1.8", height: "calc(100vh - 280px)", minHeight: "300px" }} />
-          <div className="flex items-center justify-between px-2 py-2 text-xs text-white/25"><div className="flex items-center gap-2"><span className="tabular-nums">{words}w</span><span className="w-px h-3 bg-white/[0.06]" /><span>{rt(words)}</span><span className="w-px h-3 bg-white/[0.06]" /><span className="flex items-center gap-1"><Languages className="w-3 h-3" /> {editorLang.toUpperCase()}</span></div>{saving && <span className="text-blue-400 flex items-center gap-1"><RefreshCw className="w-3 h-3 animate-spin" /> Saving</span>}</div>
-        </div>
-        <div ref={splitRef} className="hidden md:flex rounded-2xl border border-white/[0.05] overflow-hidden relative" style={{ background: BG1, height: "calc(100vh - 260px)", minHeight: 500, userSelect: isDragging ? "none" : "auto" }}>
-          <div className="flex flex-col overflow-hidden" style={{ width: `${splitRatio}%` }}>
-            <div className="p-6 pb-0 space-y-3 flex-shrink-0">
-              <input type="text" placeholder="Waar wil je over schrijven?" value={curTitle} onChange={(e) => updateDraft(editorLang === "nl" ? "title_nl" : "title", e.target.value)} className="w-full text-3xl font-bold tracking-tight bg-transparent border-none outline-none text-white/90 placeholder:text-white/15" />
-              <div className="flex items-center gap-2 text-sm"><span className="text-white/20 text-[10px] uppercase tracking-widest">slug</span><input type="text" value={draftPost.slug} onChange={(e) => { setSlugManual(true); updateDraft("slug", e.target.value); }} className="flex-1 bg-transparent border-b border-white/[0.05] text-white/40 text-xs outline-none focus:border-blue-500/30 py-1 transition-colors font-mono" /><button onClick={() => { setSlugManual(false); updateDraft("slug", slugify(draftPost.title)); }} className="text-white/20 hover:text-white/50 transition-colors"><RefreshCw className="w-3 h-3" /></button></div>
+          {mode === "split" && <div className="w-px bg-border/60" />}
+          {(mode === "preview" || mode === "split") && (
+            <div
+              className="flex-1 min-w-0 relative"
+              style={{ padding: "40px 80px 40px 64px", background: "hsl(var(--card) / 0.25)" }}
+            >
+              <div className="absolute top-5 right-5 flex items-center gap-2">
+                <span className="font-mono text-[9.5px] tracking-[0.2em] text-muted-foreground">
+                  RENDERED PREVIEW
+                </span>
+              </div>
+              <RenderedPreview title={draft.title} content={draft.content} />
             </div>
-            {hasGaps && (<div className="px-6 pt-3 flex-shrink-0"><div className="flex items-center gap-2 flex-wrap">{ghostGaps.map((g) => (<motion.div key={g.id} animate={g.filled ? { scale: [1, 1.05, 1] } : {}} transition={{ duration: 0.3 }} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs transition-all duration-300 ${g.filled ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5"}`}>{g.filled ? <Unlock className="w-3 h-3 text-emerald-400" /> : <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 2 }}><Lock className="w-3 h-3 text-amber-400" /></motion.div>}<span className={g.filled ? "text-emerald-400" : "text-amber-400"}>{g.label}</span></motion.div>))}</div></div>)}
-            <div className="flex-1 p-6 overflow-hidden"><textarea ref={contentRef} placeholder="Begin met schrijven in markdown..." value={curContent} onChange={(e) => updateDraft(editorLang === "nl" ? "content_nl" : "content", e.target.value)} className="w-full h-full rounded-xl border border-white/[0.04] p-5 text-white/85 text-sm placeholder:text-white/15 focus:outline-none focus:border-white/[0.08] font-mono resize-none transition-all" style={{ background: "hsl(225, 22%, 5%)", lineHeight: "1.8" }} /></div>
-          </div>
-          <div className="hidden lg:flex w-0 relative z-10 items-center justify-center cursor-col-resize group" onMouseDown={startDrag}><div className={`absolute inset-y-0 w-[3px] transition-colors ${isDragging ? "bg-blue-500/60" : "bg-white/[0.05] group-hover:bg-blue-500/30"}`} /><div className={`relative z-10 w-5 h-10 rounded-full border flex items-center justify-center transition-all ${isDragging ? "bg-blue-500/20 border-blue-500/40" : "bg-white/[0.04] border-white/[0.06] group-hover:border-blue-500/30"}`}><GripVertical className="w-3 h-3 text-white/30" /></div></div>
-          <div className="hidden lg:block overflow-y-auto border-l border-white/[0.05]" style={{ width: `${100 - splitRatio}%` }}>{renderPreview()}</div>
+          )}
         </div>
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`hidden md:flex mt-3 items-center justify-between px-5 py-3 rounded-xl border transition-all duration-300 ${allGapsFilled ? "border-emerald-500/20" : "border-white/[0.05]"}`} style={{ background: allGapsFilled ? "rgba(16, 185, 129, 0.03)" : BG2 }}>
-          <div className="flex items-center gap-4">
-            {hasGaps && (<div className="flex items-center gap-2">{ghostGaps.map((g) => (<div key={g.id} title={g.label}>{g.filled ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Circle className="w-4 h-4 text-white/20" />}</div>))}<span className="text-xs text-white/30 ml-1">{allGapsFilled ? <motion.span initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="text-emerald-400 font-medium">Ready to publish</motion.span> : `${gapsFilled} of ${ghostGaps.length} gates`}</span></div>)}
-            <div className="flex items-center gap-3 text-xs text-white/25"><span className="tabular-nums">{words} words</span><span className="w-px h-3 bg-white/[0.06]" /><span>{rt(words)}</span><span className="w-px h-3 bg-white/[0.06]" /><span className="flex items-center gap-1"><Languages className="w-3 h-3" /> {editorLang.toUpperCase()}</span>{lastSaved && <><span className="w-px h-3 bg-white/[0.06]" /><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(lastSaved).toLocaleTimeString()}</span></>}{saving && <span className="text-blue-400 flex items-center gap-1"><RefreshCw className="w-3 h-3 animate-spin" /> Saving</span>}</div>
+
+        {/* VOICE ANALYSIS BAR */}
+        {activeTemplate && (
+          <VoiceAnalysisBar
+            analysis={analysis}
+            template={activeTemplate}
+          />
+        )}
+      </main>
+
+      {/* RIGHT RAIL */}
+      <EditorRightRail draftId={editingPost?.id ?? null} />
+    </div>
+  );
+}
+
+// ─── LEFT RAIL ────────────────────────────────────────────────────────────
+function EditorLeftRail({
+  draft,
+  editingPost,
+  completeness,
+  activeTemplate,
+  voiceTemplates,
+  outline,
+  lastSaved,
+  onChange,
+  onSelectTemplate,
+  onNew,
+  posts,
+  onOpenPost,
+}: {
+  draft: ReturnType<typeof EMPTY_POST>;
+  editingPost: BlogPost | null;
+  completeness: number;
+  activeTemplate: VT | null;
+  voiceTemplates: VT[];
+  outline: ReturnType<typeof extractOutline>;
+  lastSaved: Date | null;
+  onChange: (patch: Partial<ReturnType<typeof EMPTY_POST>>) => void;
+  onSelectTemplate: (id: string) => void;
+  onNew: () => void;
+  posts: BlogPost[];
+  onOpenPost: (p: BlogPost) => void;
+}) {
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [showPostPicker, setShowPostPicker] = useState(false);
+
+  return (
+    <aside
+      className="w-[280px] border-r border-border/60 flex flex-col gap-7 overflow-y-auto"
+      style={{ padding: "28px 24px", maxHeight: "calc(100vh - 104px)" }}
+    >
+      {/* Active draft header */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <Eyebrow>
+            {editingPost ? "Now editing · " + draft.status : "New draft"}
+          </Eyebrow>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 text-[11px]"
+              onClick={() => setShowPostPicker((s) => !s)}
+            >
+              Open
+            </Button>
+            <Button size="sm" variant="ghost" className="h-6 text-[11px]" onClick={onNew}>
+              <Plus size={12} className="mr-0.5" />
+              New
+            </Button>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-white/40 hover:text-white/80 hover:bg-white/[0.04] text-xs" onClick={() => setReviewDrawerOpen(true)} disabled={hasGaps && !allGapsFilled}><Sparkles className="w-3.5 h-3.5 mr-1 text-blue-400" /> AI Review</Button>
-            {hasGaps && !allGapsFilled ? (<Button disabled size="sm" className="bg-white/[0.04] text-white/20 border border-white/[0.06] cursor-not-allowed text-xs"><Lock className="w-3.5 h-3.5 mr-1" /> Publish Locked</Button>) : (
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}><Button onClick={savePost} disabled={saving} size="sm" className={`border-0 shadow-lg text-xs ${draftPost.status === "published" ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/10" : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-blue-500/10"} text-white`}>{draftPost.status === "published" ? <><Eye className="w-3.5 h-3.5 mr-1" /> Publish</> : <><Save className="w-3.5 h-3.5 mr-1" /> {saving ? "Saving..." : "Save Draft"}</>}</Button></motion.div>
-            )}
-          </div>
-        </motion.div>
-        <div className="hidden md:grid mt-3 grid-cols-1 lg:grid-cols-2 gap-3">
-          <div className="rounded-xl border border-white/[0.05] p-4" style={{ background: BG2 }}><label className="text-white/25 text-[10px] uppercase tracking-widest mb-2 block font-medium">Excerpt</label><textarea placeholder="Korte samenvatting..." value={curExcerpt} onChange={(e) => updateDraft(editorLang === "nl" ? "excerpt_nl" : "excerpt", e.target.value)} rows={3} className="w-full rounded-lg border border-white/[0.04] p-3 text-white/70 text-sm placeholder:text-white/15 focus:outline-none focus:border-white/[0.08] resize-none leading-relaxed transition-all bg-transparent" /></div>
-          <div className="rounded-xl border border-white/[0.05] overflow-hidden" style={{ background: BG2 }}>
-            <button onClick={() => setSeoExpanded(!seoExpanded)} className="w-full flex items-center justify-between px-4 py-3 text-white/40 text-sm hover:bg-white/[0.02] transition-colors"><span className="flex items-center gap-2"><Target className="w-4 h-4 text-blue-400" /> <span className="font-medium text-white/60">Post Settings and SEO</span></span><div className="flex items-center gap-2"><Badge className="bg-white/[0.06] text-white/40 rounded-full text-[10px]">{draftPost.status}</Badge><motion.span animate={{ rotate: seoExpanded ? 180 : 0 }}><ChevronDown className="w-4 h-4" /></motion.span></div></button>
-            <AnimatePresence>{seoExpanded && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                <div className="px-4 pb-4 space-y-3 border-t border-white/[0.05] pt-3">
-                  <div className="grid grid-cols-2 gap-3"><div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Status</label><select value={draftPost.status} onChange={(e) => updateDraft("status", e.target.value)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors"><option value="draft">Draft</option><option value="published">Published</option><option value="scheduled">Scheduled</option></select></div><div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Category</label><input type="text" value={draftPost.category} onChange={(e) => updateDraft("category", e.target.value)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors" /></div></div>
-                  {draftPost.status === "scheduled" && (<div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Schedule</label><input type="datetime-local" value={draftPost.scheduled_at ?? ""} onChange={(e) => updateDraft("scheduled_at", e.target.value || null)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors" /></div>)}
-                  <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Tags</label><input type="text" value={draftPost.tags?.join(", ") ?? ""} onChange={(e) => updateDraft("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} placeholder="seo, marketing" className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors placeholder:text-white/20" /></div>
-                  <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Cover Image</label><input type="text" value={draftPost.cover_image_url ?? ""} onChange={(e) => updateDraft("cover_image_url", e.target.value || null)} placeholder="https://..." className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors placeholder:text-white/20" /></div>
-                  <div className="h-px bg-white/[0.05]" />
-                  <div className="grid grid-cols-2 gap-3"><div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Primary Keyword</label><input type="text" value={draftPost.primary_keyword ?? ""} onChange={(e) => updateDraft("primary_keyword", e.target.value || null)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors" /></div><div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Canonical URL</label><input type="text" value={draftPost.canonical_url ?? ""} onChange={(e) => updateDraft("canonical_url", e.target.value || null)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors" /></div></div>
-                  <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Meta Title</label><input type="text" value={curMetaTitle} onChange={(e) => updateDraft(editorLang === "nl" ? "meta_title_nl" : "meta_title", e.target.value || null)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors" /></div>
-                  <div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">Meta Description</label><textarea value={curMetaDesc} onChange={(e) => updateDraft(editorLang === "nl" ? "meta_description_nl" : "meta_description", e.target.value || null)} rows={2} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none resize-none transition-colors" /></div>
-                  <div className="grid grid-cols-2 gap-3"><div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">OG Title</label><input type="text" value={draftPost.og_title ?? ""} onChange={(e) => updateDraft("og_title", e.target.value || null)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors" /></div><div><label className="text-white/25 text-[10px] uppercase tracking-widest mb-1 block">OG Description</label><input type="text" value={draftPost.og_description ?? ""} onChange={(e) => updateDraft("og_description", e.target.value || null)} className="w-full rounded-lg border border-white/[0.05] bg-white/[0.04] text-white/80 text-sm px-3 py-2 focus:outline-none transition-colors" /></div></div>
-                  <div className="rounded-lg p-3 bg-white/[0.02] border border-white/[0.04]"><div className="text-[10px] text-white/20 mb-2 uppercase tracking-widest">Google Preview</div><div className="text-blue-400 text-sm truncate font-medium">{curMetaTitle || curTitle || "Page title"}</div><div className="text-emerald-500 text-xs truncate">hansvanleeuwen.com/{draftPost.slug || "post-slug"}</div><div className="text-white/40 text-xs line-clamp-2 mt-1">{curMetaDesc || curExcerpt || "Description..."}</div></div>
-                  <div className="flex gap-2"><Button onClick={savePost} disabled={saving} className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10" size="sm"><Save className="w-3.5 h-3.5 mr-1" /> {saving ? "Saving..." : "Save"}</Button>{editingPost && <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => deletePost(editingPost.id)}><Trash2 className="w-4 h-4" /></Button>}</div>
+        </div>
+        <input
+          value={draft.title}
+          onChange={(e) => onChange({ title: e.target.value })}
+          placeholder="Untitled draft"
+          className="font-display text-[22px] font-medium leading-tight tracking-tight bg-transparent border-none outline-none focus:ring-0 p-0 text-foreground placeholder:text-foreground/30"
+        />
+        <div className="flex items-center gap-2 flex-wrap mt-1">
+          <Chip
+            tone={
+              draft.status === "published"
+                ? "green"
+                : draft.status === "review"
+                ? "primary"
+                : draft.status === "scheduled"
+                ? "amber"
+                : "amber"
+            }
+            dot
+          >
+            {(draft.status || "draft").toUpperCase()}
+          </Chip>
+          <Chip>
+            <span className="font-mono">{completeness}%</span> COMPLETE
+          </Chip>
+        </div>
+      </div>
+
+      {/* Post picker popover */}
+      {showPostPicker && (
+        <div className="flex flex-col gap-1 rounded border border-border bg-card p-2 max-h-[260px] overflow-y-auto">
+          {posts.slice(0, 25).map((p) => (
+            <button
+              key={p.id}
+              onClick={() => {
+                onOpenPost(p);
+                setShowPostPicker(false);
+              }}
+              className="text-left text-[12px] p-2 rounded hover:bg-muted/40 flex items-center gap-2"
+            >
+              <span
+                className="w-1 h-1 rounded-full"
+                style={{
+                  background:
+                    p.status === "published"
+                      ? "hsl(140 35% 55%)"
+                      : p.status === "scheduled"
+                      ? "hsl(38 70% 58%)"
+                      : "hsl(var(--muted-foreground))",
+                }}
+              />
+              <span className="flex-1 truncate">{p.title || "Untitled"}</span>
+              <span className="font-mono text-[9.5px] text-muted-foreground">
+                {p.status}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Slug */}
+      <div className="flex flex-col gap-3">
+        <SecLabel>Slug</SecLabel>
+        <input
+          value={draft.slug}
+          onChange={(e) => onChange({ slug: e.target.value })}
+          placeholder="/auto-generated"
+          className="font-mono text-xs text-muted-foreground bg-transparent border-none outline-none focus:ring-0 p-0"
+        />
+      </div>
+
+      {/* Voice template */}
+      <div className="flex flex-col gap-3">
+        <SecLabel>Voice template</SecLabel>
+        {activeTemplate && (
+          <div
+            className="rounded border border-border/60 p-3"
+            style={{ background: "hsl(var(--card))" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-0.5">
+                <div className="font-display text-sm font-medium">{activeTemplate.name}</div>
+                <div className="font-mono text-[10px] text-muted-foreground tracking-wider">
+                  {(activeTemplate as VT & { is_default?: boolean }).is_default
+                    ? "DEFAULT"
+                    : "TEMPLATE"}{" "}
+                  · GRADE {activeTemplate.target_reading_level}
                 </div>
-              </motion.div>
-            )}</AnimatePresence>
+              </div>
+              <Radar
+                values={[
+                  activeTemplate.formality,
+                  activeTemplate.humor,
+                  activeTemplate.respectfulness,
+                  activeTemplate.enthusiasm,
+                ]}
+                size={44}
+                rings={3}
+                showLabels={false}
+                fillOpacity={0.22}
+              />
+            </div>
           </div>
-        </div>
-        {words > 0 && (<button onClick={() => setMobileMetaOpen(true)} className="md:hidden fixed bottom-24 left-4 z-30 min-w-[44px] min-h-[44px] rounded-full border flex items-center justify-center text-xs font-bold shadow-lg" style={{ background: BG1, ...(seoScore >= 80 ? { borderColor: "rgba(16, 185, 129, 0.3)" } : seoScore >= 50 ? { borderColor: "rgba(245, 158, 11, 0.3)" } : { borderColor: "rgba(239, 68, 68, 0.3)" }) }}><span className={scoreClr(seoScore)}>{seoScore}</span></button>)}
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 self-start text-muted-foreground hover:text-foreground text-[11.5px]"
+          onClick={() => setShowTemplatePicker((s) => !s)}
+        >
+          Change template
+          <ChevronRight size={12} className="ml-1" />
+        </Button>
+        {showTemplatePicker && (
+          <div className="flex flex-col gap-1">
+            {voiceTemplates.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  onSelectTemplate(t.id);
+                  setShowTemplatePicker(false);
+                }}
+                className={`text-left text-[12px] p-2 rounded border transition-colors ${
+                  t.id === activeTemplate?.id
+                    ? "border-primary/40 bg-primary/5"
+                    : "border-border/40 hover:border-border"
+                }`}
+              >
+                <div className="font-display">{t.name}</div>
+                <div className="font-mono text-[10px] text-muted-foreground mt-0.5">
+                  F{t.formality} · H{t.humor} · R{t.respectfulness} · E{t.enthusiasm}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-    );
-  };
 
-  // ── MANAGE VIEW ──
-  const renderManage = () => (
-    <div className="space-y-4 md:space-y-5">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div><h1 className="text-xl md:text-2xl font-semibold tracking-tight text-white/90">Welkom terug, Hans</h1><p className="text-white/30 text-sm mt-0.5">{stats.total} articles &middot; {stats.published} published &middot; {stats.draft} drafts</p></div>
-        <Button onClick={startNewPost} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10 min-h-[44px]"><PlusCircle className="w-4 h-4 mr-2" /> New Post</Button>
-      </div>
-      <div className="sticky top-0 z-20 py-2 -mx-4 px-4 md:mx-0 md:px-0 md:static" style={{ background: BG0 }}>
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex rounded-xl border border-white/[0.05] p-0.5 overflow-x-auto" style={{ background: BG2, scrollbarWidth: "none" }}>{(["all", "draft", "published", "scheduled"] as const).map((s) => (<button key={s} onClick={() => setStatusFilter(s)} className={`px-4 py-2 text-xs rounded-lg transition-all capitalize whitespace-nowrap min-h-[40px] ${statusFilter === s ? "bg-white/[0.08] text-white shadow-sm" : "text-white/30 active:text-white/60"}`}>{s === "all" ? "All" : s}</button>))}</div>
-          <div className="relative flex-1 min-w-[160px]"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" /><input type="text" placeholder="Search posts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/[0.05] bg-white/[0.04] text-white/90 text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.12] transition-all min-h-[44px]" /></div>
-          <button className="flex items-center gap-1 text-white/30 text-xs active:text-white/60 transition-colors min-w-[44px] min-h-[44px] justify-center" onClick={() => { setSortField("updated_at"); setSortDir(sortDir === "desc" ? "asc" : "desc"); }}><Filter className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Sort</span></button>
+      {/* Outline */}
+      <div className="flex flex-col gap-3">
+        <SecLabel>Outline</SecLabel>
+        <div className="flex flex-col gap-0.5">
+          {outline.length === 0 && (
+            <div className="font-mono text-[11px] text-muted-foreground/60">
+              Add headings (##, ###) to see outline
+            </div>
+          )}
+          {outline.slice(0, 12).map((item, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2 px-2 py-1 rounded"
+              style={{
+                borderLeft: `2px solid ${i === 0 ? "hsl(var(--primary))" : "transparent"}`,
+                background: i === 0 ? "hsl(var(--primary) / 0.08)" : "transparent",
+                paddingLeft: item.level === "H3" ? 20 : 8,
+              }}
+            >
+              <span className="font-mono text-[9.5px] text-muted-foreground w-5">{item.level}</span>
+              <span
+                className="text-[12.5px] truncate"
+                style={{
+                  color: i === 0 ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+                  fontWeight: i === 0 ? 500 : 400,
+                }}
+              >
+                {item.title}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
-      {selectedPosts.size > 0 && (<motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 flex-wrap"><span className="text-blue-400 text-sm font-medium">{selectedPosts.size} selected</span><Button size="sm" variant="ghost" className="text-emerald-400 text-xs active:bg-emerald-500/10 min-h-[40px]" onClick={() => bulkAction("publish")}>Publish</Button><Button size="sm" variant="ghost" className="text-zinc-400 text-xs active:bg-zinc-500/10 min-h-[40px]" onClick={() => bulkAction("unpublish")}>Unpublish</Button><Button size="sm" variant="ghost" className="text-red-400 text-xs active:bg-red-500/10 min-h-[40px]" onClick={() => bulkAction("delete")}>Delete</Button><Button size="sm" variant="ghost" className="text-white/40 text-xs ml-auto min-h-[40px]" onClick={() => setSelectedPosts(new Set())}>Clear</Button></motion.div>)}
-      {loadingPosts ? (<div className="space-y-3">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-20 md:h-14 w-full" />)}</div>) : (<>
-        <div className="md:hidden space-y-3">{filtered.map((p) => (<motion.div key={p.id} layout className="rounded-xl border border-white/[0.05] p-4 active:bg-white/[0.02] transition-all" style={{ background: BG2 }} onClick={() => openEditor(p)}><div className="flex items-start justify-between gap-3"><div className="flex-1 min-w-0"><h3 className="text-white/90 font-medium text-sm truncate">{p.title || "Untitled"}</h3><div className="flex items-center gap-2 mt-2 flex-wrap"><Badge className={`${STATUS_COLORS[p.status] ?? STATUS_COLORS.draft} rounded-full px-2 flex items-center gap-1 w-fit text-[10px]`}><span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[p.status] ?? "bg-zinc-400"}`} />{p.status}</Badge><span className="text-white/25 text-xs">{p.category}</span><span className="text-white/20 text-xs tabular-nums">{wc(p.content)}w</span></div><div className="text-white/20 text-xs mt-1.5">{fmtDate(p.updated_at)}</div></div><button onClick={(e) => { e.stopPropagation(); setMobilePostMenu(mobilePostMenu === p.id ? null : p.id); }} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/20 active:text-white/60 rounded-lg -mr-2 -mt-1"><MoreVertical className="w-4 h-4" /></button></div><AnimatePresence>{mobilePostMenu === p.id && (<motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden"><div className="flex gap-2 pt-3 mt-3 border-t border-white/[0.05]"><Button size="sm" variant="ghost" className="text-white/50 text-xs flex-1 min-h-[44px] active:bg-white/[0.04]" onClick={(e) => { e.stopPropagation(); openEditor(p); }}><Pen className="w-3.5 h-3.5 mr-1" /> Edit</Button><Button size="sm" variant="ghost" className="text-red-400 text-xs flex-1 min-h-[44px] active:bg-red-500/10" onClick={(e) => { e.stopPropagation(); deletePost(p.id); setMobilePostMenu(null); }}><Trash2 className="w-3.5 h-3.5 mr-1" /> Delete</Button></div></motion.div>)}</AnimatePresence></motion.div>))}{filtered.length === 0 && (<div className="flex flex-col items-center justify-center py-16"><Search className="w-7 h-7 text-white/10 mb-3" /><div className="text-white/25 text-sm">No posts found.</div></div>)}</div>
-        <div className="hidden md:block rounded-xl border border-white/[0.05] overflow-hidden" style={{ background: BG2 }}>
-          <table className="w-full text-sm"><thead><tr className="border-b border-white/[0.06]"><th className="px-4 py-3 text-left w-8"><input type="checkbox" checked={selectedPosts.size === filtered.length && filtered.length > 0} onChange={(e) => setSelectedPosts(e.target.checked ? new Set(filtered.map((p) => p.id)) : new Set())} className="accent-blue-500 rounded" /></th><th className="px-4 py-3 text-left text-white/30 font-medium text-xs uppercase tracking-widest"><button className="flex items-center gap-1 hover:text-white/60 transition-colors" onClick={() => { setSortField("title"); setSortDir(sortField === "title" && sortDir === "asc" ? "desc" : "asc"); }}>Title <ArrowUpDown className="w-3 h-3" /></button></th><th className="px-4 py-3 text-left text-white/30 font-medium text-xs uppercase tracking-widest">Status</th><th className="px-4 py-3 text-left text-white/30 font-medium text-xs uppercase tracking-widest hidden lg:table-cell">Category</th><th className="px-4 py-3 text-left text-white/30 font-medium text-xs uppercase tracking-widest hidden lg:table-cell">Words</th><th className="px-4 py-3 text-left text-white/30 font-medium text-xs uppercase tracking-widest"><button className="flex items-center gap-1 hover:text-white/60 transition-colors" onClick={() => { setSortField("updated_at"); setSortDir(sortField === "updated_at" && sortDir === "desc" ? "asc" : "desc"); }}>Date <ArrowUpDown className="w-3 h-3" /></button></th><th className="px-4 py-3 w-10"></th></tr></thead>
-          <tbody>{filtered.map((p) => (<tr key={p.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-all cursor-pointer group" onClick={() => openEditor(p)}><td className="px-4 py-3" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedPosts.has(p.id)} onChange={(e) => { const n = new Set(selectedPosts); if (e.target.checked) n.add(p.id); else n.delete(p.id); setSelectedPosts(n); }} className="accent-blue-500 rounded" /></td><td className="px-4 py-3 text-white/90 font-medium">{p.title || "Untitled"}</td><td className="px-4 py-3"><Badge className={`${STATUS_COLORS[p.status] ?? STATUS_COLORS.draft} rounded-full px-2.5 flex items-center gap-1.5 w-fit`}><span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[p.status] ?? "bg-zinc-400"}`} />{p.status}</Badge></td><td className="px-4 py-3 text-white/35 hidden lg:table-cell">{p.category}</td><td className="px-4 py-3 text-white/30 tabular-nums hidden lg:table-cell">{wc(p.content)}</td><td className="px-4 py-3 text-white/30">{fmtDate(p.updated_at)}</td><td className="px-4 py-3" onClick={(e) => e.stopPropagation()}><button onClick={() => deletePost(p.id)} className="text-white/10 hover:text-red-400 transition-colors"><Trash2 className="w-4 h-4" /></button></td></tr>))}</tbody></table>
-          {filtered.length === 0 && (<div className="flex flex-col items-center justify-center py-16"><Search className="w-7 h-7 text-white/10 mb-3" /><div className="text-white/25 text-sm">No posts found.</div></div>)}
+
+      {/* Tags */}
+      <div className="flex flex-col gap-3">
+        <SecLabel>Tags</SecLabel>
+        <div className="flex flex-wrap gap-2">
+          {draft.tags.map((t, i) => (
+            <Chip
+              key={t + i}
+              onClick={() => onChange({ tags: draft.tags.filter((x) => x !== t) })}
+            >
+              {t}
+            </Chip>
+          ))}
+          <AddTagInput onAdd={(t) => onChange({ tags: [...draft.tags, t] })} />
         </div>
-      </>)}
-      {suggestions.length > 0 && (<div className="space-y-2 pt-2"><span className="text-white/20 text-[10px] uppercase tracking-widest font-medium">Next topics to write</span><div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0" style={{ scrollbarWidth: "none" }}>{suggestions.slice(0, 6).map((s) => (<button key={s.id} onClick={() => setGhostModal(s)} className={`group flex items-center gap-2 px-3 py-2.5 rounded-full border ${clusterBorder(s.cluster)} bg-white/[0.02] active:bg-white/[0.06] md:hover:bg-white/[0.05] transition-all text-xs text-white/50 active:text-white/80 md:hover:text-white/80 whitespace-nowrap flex-shrink-0 min-h-[44px]`}><Sparkles className="w-3 h-3 text-blue-400/50" />{s.title}<button onClick={(e) => { e.stopPropagation(); dismissSuggestion(s.id); }} className="text-white/0 group-hover:text-white/30 active:!text-white/60 transition-all min-w-[24px] min-h-[24px] flex items-center justify-center"><X className="w-3 h-3" /></button></button>))}</div></div>)}
-    </div>
+      </div>
+
+      {/* Last saved */}
+      <div className="flex flex-col gap-3">
+        <SecLabel>Last saved</SecLabel>
+        <div className="font-mono text-[11px] text-muted-foreground leading-relaxed">
+          {lastSaved ? `${timeAgo(lastSaved)} · autosaved` : "Unsaved"}
+          <br />
+          <span style={{ color: "hsl(140 35% 55%)" }}>●</span> synced to Supabase
+        </div>
+      </div>
+    </aside>
   );
+}
 
-  // ── ANALYZE VIEW ──
-  const renderAnalyze = () => {
-    const checks = seoReport?.checks ?? localChecks; const score = seoReport?.score ?? localScore;
-    const weakPosts = posts.filter((p) => p.status === "published").sort((a, b) => wc(a.content) - wc(b.content)).slice(0, 5);
-    const CollapsibleSection = ({ title, icon, isOpen, onToggle, children }: { title: string; icon: React.ReactNode; isOpen: boolean; onToggle: () => void; children: React.ReactNode }) => (
-      <div className="rounded-xl border border-white/[0.05] overflow-hidden" style={{ background: BG2 }}>
-        <button onClick={onToggle} className="md:hidden w-full flex items-center justify-between px-4 py-4 min-h-[52px]"><span className="flex items-center gap-2 text-white/80 font-medium">{icon} {title}</span><motion.span animate={{ rotate: isOpen ? 180 : 0 }}><ChevronDown className="w-4 h-4 text-white/30" /></motion.span></button>
-        <div className={`md:block ${isOpen ? "block" : "hidden"}`}><div className="p-4 md:p-5 md:pt-0"><h3 className="hidden md:flex text-white/80 font-medium mb-4 items-center gap-2">{icon} {title}</h3>{children}</div></div>
-      </div>
-    );
+function AddTagInput({ onAdd }: { onAdd: (tag: string) => void }) {
+  const [val, setVal] = useState("");
+  const [open, setOpen] = useState(false);
+  if (!open)
     return (
-      <div className="space-y-4 md:space-y-6">
-        <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-white/90">Analyze</h1>
-        <div className="flex flex-col gap-4 md:grid md:grid-cols-3">
-          <CollapsibleSection title="SEO Overview" icon={<Target className="w-4 h-4 text-blue-400" />} isOpen={seoSectionOpen} onToggle={() => setSeoSectionOpen(!seoSectionOpen)}>
-            {hasEditorContent ? (<div className="space-y-4"><div className="flex justify-center"><ScoreRing score={score} size={72} /></div><div className="space-y-1">{checks.map((c, i) => (<div key={i} className="flex items-center gap-2 text-xs py-1 md:py-0.5"><span className={c.passed ? "text-emerald-400" : "text-red-400"}>{c.passed ? <CheckCircle2 className="w-3 h-3" /> : <X className="w-3 h-3" />}</span><span className="text-white/25">{seoIcon(c.label)}</span><span className={c.passed ? "text-white/50" : "text-white/35"}>{c.label}</span><span className="ml-auto text-white/20 text-[10px]">{c.detail}</span></div>))}</div><Button onClick={generateSeoReport} disabled={seoReportLoading} className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white border-0 min-h-[44px]" size="sm">{seoReportLoading ? <><RefreshCw className="w-3 h-3 mr-1 animate-spin" /> Analyzing</> : <><Target className="w-3 h-3 mr-1" /> Full SEO Report</>}</Button>{seoReport?.jsonLd && (<div className="rounded-lg border border-white/[0.05] overflow-hidden" style={{ background: BG3 }}><button onClick={() => setJsonLdExpanded(!jsonLdExpanded)} className="w-full flex items-center justify-between px-3 py-2 text-white/30 text-xs active:bg-white/[0.02] min-h-[44px]"><span className="flex items-center gap-1.5"><Code2 className="w-3 h-3" /> JSON-LD</span><motion.span animate={{ rotate: jsonLdExpanded ? 180 : 0 }}><ChevronDown className="w-3 h-3" /></motion.span></button><AnimatePresence>{jsonLdExpanded && (<motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden"><pre className="px-3 pb-3 text-[10px] text-white/30 font-mono overflow-x-auto leading-relaxed">{seoReport.jsonLd}</pre></motion.div>)}</AnimatePresence></div>)}</div>) : (<div className="space-y-3"><p className="text-white/30 text-sm">Open a post to see detailed SEO analysis.</p><div className="text-white/20 text-xs">Weakest posts by word count:</div>{weakPosts.map((p) => (<button key={p.id} onClick={() => openEditor(p)} className="w-full text-left flex items-center justify-between py-2 md:py-1.5 text-xs active:bg-white/[0.02] rounded-lg px-2 transition-colors min-h-[40px]"><span className="text-white/50 truncate">{p.title}</span><span className="text-white/20 tabular-nums flex-shrink-0 ml-2">{wc(p.content)}w</span></button>))}</div>)}
-          </CollapsibleSection>
-          <CollapsibleSection title="Voice Templates" icon={<Mic className="w-4 h-4 text-purple-400" />} isOpen={voiceSectionOpen} onToggle={() => setVoiceSectionOpen(!voiceSectionOpen)}>
-            {loadingVoice ? <div className="space-y-3"><Skeleton className="h-20" /><Skeleton className="h-20" /></div> : voiceTemplates.length === 0 ? (<div className="text-white/30 text-sm py-8 text-center">No voice templates found.</div>) : (<div className="space-y-3 max-h-[400px] overflow-y-auto pr-1" style={{ scrollbarWidth: "thin" }}>{voiceTemplates.map((v) => (<div key={v.id} className="rounded-lg border border-white/[0.05] p-3 active:border-white/[0.08] md:hover:border-white/[0.08] transition-all" style={{ background: BG3 }}><div className="flex items-center justify-between mb-2"><span className="text-white/80 font-medium text-sm">{v.name}</span><Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 rounded-full text-[10px]">{v.category}</Badge></div><div className="space-y-1 text-xs"><div className="text-white/35">Tone: <span className="text-white/60">{v.tone}</span></div><div className="text-white/35">Audience: <span className="text-white/60">{v.target_audience}</span></div></div>{v.banned_words?.length > 0 && <div className="flex flex-wrap gap-1 mt-2">{v.banned_words.slice(0, 5).map((w) => <Badge key={w} className="bg-red-500/10 text-red-400 text-[10px] rounded-full">{w}</Badge>)}{v.banned_words.length > 5 && <Badge className="bg-white/[0.04] text-white/30 text-[10px] rounded-full">+{v.banned_words.length - 5}</Badge>}</div>}{v.content_rules && <div className="mt-2 text-white/30 text-[11px] line-clamp-2 leading-relaxed">{v.content_rules}</div>}</div>))}</div>)}
-          </CollapsibleSection>
-          <CollapsibleSection title="Editorial Memory" icon={<Brain className="w-4 h-4 text-amber-400" />} isOpen={memorySectionOpen} onToggle={() => setMemorySectionOpen(!memorySectionOpen)}>
-            {blogMemory.length === 0 ? (<div className="text-white/30 text-sm py-8 text-center">No editorial memory entries.</div>) : (<div className="space-y-3 max-h-[400px] overflow-y-auto pr-1" style={{ scrollbarWidth: "thin" }}>{blogMemory.map((m) => (<div key={m.content_category} className="rounded-lg border border-white/[0.05] p-3 active:border-white/[0.08] md:hover:border-white/[0.08] transition-all" style={{ background: BG3 }}><div className="flex items-center justify-between mb-2"><span className="text-white/80 font-medium text-sm capitalize">{m.content_category}</span><span className="text-white/20 text-[10px]">{fmtDate(m.updated_at)}</span></div>{m.brand_voice_context && <div className="mb-2"><div className="text-white/20 text-[10px] uppercase tracking-widest mb-1">Brand Voice</div><div className="text-white/40 text-xs whitespace-pre-wrap leading-relaxed line-clamp-3">{m.brand_voice_context}</div></div>}{m.narrative_history && <div><div className="text-white/20 text-[10px] uppercase tracking-widest mb-1">History</div><div className="text-white/30 text-xs whitespace-pre-wrap line-clamp-3 leading-relaxed">{m.narrative_history}</div></div>}</div>))}</div>)}
-          </CollapsibleSection>
-        </div>
-      </div>
+      <button
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-1 h-[22px] px-2 rounded border border-border font-mono text-[10.5px] text-muted-foreground hover:text-foreground"
+      >
+        + add
+      </button>
     );
-  };
-
-  // ── Review Drawer ──
-  const renderReviewDrawer = () => (
-    <AnimatePresence>{reviewDrawerOpen && (<>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setReviewDrawerOpen(false)} />
-      <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 28, stiffness: 300 }} className="md:hidden fixed inset-x-0 bottom-0 top-8 z-50 rounded-t-2xl border-t border-white/[0.06] overflow-y-auto" style={{ background: BG1, paddingBottom: "env(safe-area-inset-bottom, 16px)" }}><div className="sticky top-0 z-10 px-4 py-3 border-b border-white/[0.06]" style={{ background: BG1 }}><div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-2" /><div className="flex items-center justify-between"><h2 className="text-lg font-semibold tracking-tight text-white/90 flex items-center gap-2"><Sparkles className="w-5 h-5 text-blue-400" /> AI Review</h2><button onClick={() => setReviewDrawerOpen(false)} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/30 active:text-white/70 rounded-lg active:bg-white/[0.04]"><X className="w-5 h-5" /></button></div></div><div className="p-4">{renderReviewContent()}</div></motion.div>
-      <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 28, stiffness: 300 }} className="hidden md:block fixed top-16 right-0 z-50 w-full max-w-md h-[calc(100vh-64px)] border-l border-white/[0.06] overflow-y-auto" style={{ background: BG1 }}><div className="p-6"><div className="flex items-center justify-between mb-6"><h2 className="text-lg font-semibold tracking-tight text-white/90 flex items-center gap-2"><Sparkles className="w-5 h-5 text-blue-400" /> AI Review Panel</h2><button onClick={() => setReviewDrawerOpen(false)} className="text-white/30 hover:text-white/70 p-1 rounded-lg hover:bg-white/[0.04] transition-all"><X className="w-5 h-5" /></button></div>{renderReviewContent()}</div></motion.div>
-    </>)}</AnimatePresence>
+  return (
+    <input
+      autoFocus
+      value={val}
+      onChange={(e) => setVal(e.target.value)}
+      onBlur={() => setOpen(false)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && val.trim()) {
+          onAdd(val.trim());
+          setVal("");
+          setOpen(false);
+        }
+      }}
+      className="h-[22px] px-2 rounded border border-border bg-transparent font-mono text-[10.5px] w-24 outline-none focus:border-primary/60"
+      placeholder="tag"
+    />
   );
+}
 
-  const renderReviewContent = () => (<>
-    <Button onClick={runAllReviews} className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10 mb-6 min-h-[48px] ${reviewsRunning ? "animate-pulse" : ""}`}><RefreshCw className={`w-4 h-4 mr-2 ${reviewsRunning ? "animate-spin" : ""}`} /> Run All Reviews</Button>
-    {agentReviews.length > 0 && agentReviews.every((r) => r.score !== null && !r.loading) && (() => { const avg = Math.round(agentReviews.reduce((s, r) => s + (r.score ?? 0), 0) / agentReviews.length); return (<motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center justify-center mb-6"><div className={`px-6 py-3 rounded-2xl border ${scoreBadgeBg(avg)} flex items-center gap-3`}><ScoreRing score={avg} size={56} /><div><div className={`text-lg font-bold ${scoreClr(avg)}`}>Overall: {avg}/100</div><div className="text-white/30 text-xs">{avg >= 80 ? "Excellent quality" : avg >= 50 ? "Needs improvement" : "Major revisions needed"}</div></div>{avg >= 80 && <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: 2, duration: 0.3 }}><CheckCircle2 className="w-6 h-6 text-emerald-400" /></motion.div>}</div></motion.div>); })()}
-    <div className="space-y-3">
-      {(agentReviews.length > 0 ? agentReviews : AGENTS.map((a) => ({ agent_id: a.id, agent_name: a.name, icon: a.icon, score: null, verdict: "", feedback: "", suggestions: [], loading: false }))).map((r) => (
-        <motion.div key={r.agent_id} layout transition={{ duration: 0.2 }} className={`rounded-xl border ${r.score !== null ? scoreBg(r.score) : "border-white/[0.05]"} overflow-hidden`} style={r.score === null ? { background: BG2 } : undefined}>
-          <button onClick={() => setExpandedAgent(expandedAgent === r.agent_id ? null : r.agent_id)} className="w-full flex items-center gap-3 p-4 text-left min-h-[56px]"><div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.04]"><span className="text-white/50">{AGENT_ICONS[r.icon]}</span></div><div className="flex-1 min-w-0"><div className="text-white/90 font-medium text-sm">{r.agent_name}</div>{r.loading && <div className="text-white/30 text-xs flex items-center gap-1"><RefreshCw className="w-3 h-3 animate-spin" /> Analyzing...</div>}{!r.loading && r.verdict && <div className="text-white/40 text-xs truncate">{r.verdict}</div>}</div>{r.score !== null && <ScoreRing score={r.score} />}<motion.span animate={{ rotate: expandedAgent === r.agent_id ? 90 : 0 }}><ChevronRight className="w-4 h-4 text-white/20" /></motion.span></button>
-          <AnimatePresence>{expandedAgent === r.agent_id && r.feedback && (<motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}><div className="px-4 pb-4 border-t border-white/[0.05] pt-3"><p className="text-white/55 text-sm whitespace-pre-wrap leading-relaxed">{r.feedback}</p>{r.suggestions.length > 0 && <div className="mt-3"><div className="text-white/25 text-[10px] uppercase tracking-widest mb-2">Suggestions</div><ul className="space-y-1.5">{r.suggestions.map((s, i) => <li key={i} className="text-white/45 text-sm flex items-start gap-2 leading-relaxed"><span className="text-blue-400 mt-0.5 shrink-0">-</span> {s}</li>)}</ul></div>}</div></motion.div>)}</AnimatePresence>
-        </motion.div>
-      ))}
-    </div>
-  </>);
-
-  const renderGhostModal = () => (
-    <AnimatePresence>{ghostModal && (<>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" onClick={() => setGhostModal(null)} />
-      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
-        <div className="w-full md:max-w-md rounded-t-2xl md:rounded-2xl border border-white/[0.08] p-5 md:p-6 space-y-5" style={{ background: BG1, paddingBottom: "max(env(safe-area-inset-bottom, 16px), 16px)" }}>
-          <div className="w-10 h-1 rounded-full bg-white/20 mx-auto md:hidden" />
-          <div className="flex items-center justify-between"><h3 className="text-white/90 font-semibold text-lg flex items-center gap-2"><Sparkles className="w-5 h-5 text-blue-400" /> Ghost Writer</h3><button onClick={() => setGhostModal(null)} className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/30 active:text-white/60"><X className="w-5 h-5" /></button></div>
-          <div className="rounded-xl border border-white/[0.06] p-4 space-y-2" style={{ background: BG2 }}><div className="text-white/90 font-medium">{/youtube\.com|youtu\.be/.test(ghostModal.title) ? "YouTube Video to Blog Post" : ghostModal.title}</div>{/youtube\.com|youtu\.be/.test(ghostModal.title) && <div className="text-white/40 text-xs mt-1 truncate">{ghostModal.title}</div>}<div className="flex flex-wrap gap-2 text-xs"><Badge className={`${clusterBadgeBg(ghostModal.cluster)} rounded-full`}>{ghostModal.cluster}</Badge><Badge className="bg-white/[0.06] text-white/50 rounded-full">{ghostModal.primary_keyword}</Badge></div></div>
-          <div className="space-y-2 text-sm text-white/50"><div className="flex items-center gap-2"><Pen className="w-3.5 h-3.5 text-blue-400" /> Hans&apos;s voice, 1200-1500 words, 3 human gaps</div><div className="flex items-center gap-2"><Shield className="w-3.5 h-3.5 text-amber-400" /> AI content requires human gate approval</div><div className="flex items-center gap-2"><Clock className="w-3.5 h-3.5 text-white/30" /> ~30 seconds</div></div>
-          <div className="space-y-3">
-            <div className="space-y-2"><span className="text-white/40 text-xs uppercase tracking-widest">Voice</span><div className="grid grid-cols-2 gap-2">{([{ value: "professional", label: "Professional", desc: "Hans - Professional" }, { value: "personal-brand", label: "Personal Brand", desc: "Hans - Personal Brand" }, { value: "ai-infrastructure", label: "Technical", desc: "Hans - Technical" }, { value: "e-commerce-strategy", label: "E-commerce", desc: "Hans - E-commerce" }] as const).map((v) => (<button key={v.value} onClick={() => setSelectedVoice(v.value)} className={`px-3 py-2.5 rounded-lg text-left text-sm transition-all min-h-[44px] ${selectedVoice === v.value ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : "text-white/40 active:text-white/60 border border-white/[0.06]"}`}><div className="font-medium">{v.label}</div><div className="text-[10px] opacity-60 mt-0.5">{v.desc}</div></button>))}</div></div>
-            <div className="flex items-center gap-3"><span className="text-white/40 text-xs uppercase tracking-widest">Taal</span><div className="flex gap-1 flex-1">{(["nl", "en"] as const).map((l) => (<button key={l} onClick={() => setEditorLang(l)} className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all min-h-[44px] flex-1 ${editorLang === l ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : "text-white/40 active:text-white/60 border border-transparent"}`}>{l === "nl" ? "Nederlands" : "English"}</button>))}</div></div>
-            <div className="flex gap-3"><Button onClick={() => { startPostFromSuggestion(ghostModal); setGhostModal(null); }} variant="ghost" className="flex-1 text-white/50 active:text-white/80 active:bg-white/[0.04] min-h-[48px]">Write manually</Button><Button onClick={() => generateGhostDraft(ghostModal)} className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/10 min-h-[48px]"><Sparkles className="w-4 h-4 mr-1" /> Generate</Button></div>
-          </div>
-        </div>
-      </motion.div>
-    </>)}</AnimatePresence>
-  );
-
-  const renderGhostLoading = () => (
-    <AnimatePresence>{ghostPhase !== "idle" && ghostPhase !== "done" && (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(225, 25%, 4%) 0%, hsl(240, 20%, 8%) 100%)" }}>
-        <div className="text-center space-y-8 max-w-sm px-6">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center mx-auto border border-blue-500/20"><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 3, ease: "linear" }}><Sparkles className="w-8 h-8 text-blue-400" /></motion.div></div>
-          <div className="space-y-6">{GHOST_PHASES.map((p, i) => { const phaseIdx = GHOST_PHASES.findIndex((ph) => ph.key === ghostPhase); const isActive = i === phaseIdx; const isDone = i < phaseIdx; return (<div key={p.key} className="flex items-center gap-4"><div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-500 ${isDone ? "bg-emerald-500/20 border-emerald-500/30" : isActive ? "bg-blue-500/20 border-blue-500/30" : "bg-white/[0.04] border-white/[0.06]"}`}>{isDone ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : isActive ? <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}><span className="text-blue-400">{p.icon}</span></motion.div> : <span className="text-white/20">{p.icon}</span>}</div><span className={`text-sm font-medium transition-colors duration-500 ${isDone ? "text-emerald-400" : isActive ? "text-white/90" : "text-white/20"}`}>{p.label}</span>{i < GHOST_PHASES.length - 1 && <div className={`flex-1 h-px transition-colors duration-500 ${isDone ? "bg-emerald-500/30" : "bg-white/[0.05]"}`} />}</div>); })}</div>
-          <p className="text-white/20 text-xs">Estimated: ~30 seconds</p>
-        </div>
-      </motion.div>
-    )}</AnimatePresence>
-  );
-
-  const NAV_TABS: { key: CmsView; label: string; icon: React.ReactNode }[] = [
-    { key: "write", label: "Write", icon: <Pen className="w-5 h-5" /> },
-    { key: "manage", label: "Manage", icon: <FileText className="w-5 h-5" /> },
-    { key: "analyze", label: "Analyze", icon: <BarChart3 className="w-5 h-5" /> },
+// ─── EDITOR TOOLBAR ───────────────────────────────────────────────────────
+function EditorToolbar({
+  mode,
+  setMode,
+  onSave,
+  saving,
+  draft,
+  setDraft,
+}: {
+  mode: EditorMode;
+  setMode: (m: EditorMode) => void;
+  onSave: () => void;
+  saving: boolean;
+  draft: ReturnType<typeof EMPTY_POST>;
+  setDraft: (fn: (d: ReturnType<typeof EMPTY_POST>) => ReturnType<typeof EMPTY_POST>) => void;
+}) {
+  const tools = [
+    { icon: <Bold size={14} />, label: "Bold" },
+    { icon: <Italic size={14} />, label: "Italic" },
+    { icon: <Heading size={14} />, label: "Heading" },
+    { icon: <Quote size={14} />, label: "Quote" },
+    { icon: <List size={14} />, label: "List" },
+    { icon: <Link2 size={14} />, label: "Link" },
+    { icon: <Code size={14} />, label: "Code" },
+    { icon: <ImageIcon size={14} />, label: "Image" },
   ];
 
   return (
-    <div className="pt-20 min-h-screen pb-24 md:pb-0" style={{ background: BG0 }}>
-      {/* Desktop: Left floating sidebar */}
-      <aside
-        className="hidden md:flex fixed flex-col z-30"
-        style={{
-          top: "calc(64px + 24px)",
-          left: 20,
-          width: sidebarW,
-          height: "calc(100vh - 88px - 24px)",
-          background: "hsla(225, 18%, 7%, 0.85)",
-          backdropFilter: "blur(40px) saturate(180%)",
-          WebkitBackdropFilter: "blur(40px) saturate(180%)",
-          border: "1px solid rgba(255,255,255,0.06)",
-          borderRadius: 16,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04)",
-          transition: "width 300ms ease",
-        }}
-      >
-        {/* Brand mark */}
-        <div className={`flex items-center gap-3 px-5 pt-5 pb-4 ${sidebarExpanded ? "" : "justify-center px-0"}`}>
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-            <Pen className="w-4 h-4 text-white" />
-          </div>
-          {sidebarExpanded && (
-            <span className="text-sm font-semibold text-white/60 tracking-wider">HVL Editorial</span>
-          )}
-        </div>
-
-        {/* Divider */}
-        <div className="mx-4 h-px bg-white/[0.04] my-2" />
-
-        {/* Nav items */}
-        <nav className="flex-1 flex flex-col px-3 py-2 gap-0.5 overflow-hidden">
-          {NAV_TABS.map((tab) => {
-            const isActive = activeView === tab.key;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveView(tab.key)}
-                title={sidebarExpanded ? undefined : tab.label}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
-                  isActive
-                    ? "bg-white/[0.08] text-white"
-                    : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
-                } ${sidebarExpanded ? "" : "justify-center px-0"}`}
-                style={{ transform: "scale(1)", transition: "all 200ms ease" }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.01)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-              >
-                <span className={`flex-shrink-0 ${isActive ? "text-blue-400" : ""}`} style={{ width: 18, height: 18 }}>
-                  {tab.icon}
-                </span>
-                {sidebarExpanded && (
-                  <span className="text-[13px] font-medium tracking-tight">{tab.label}</span>
-                )}
-              </button>
-            );
-          })}
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* SEO Score badge */}
-          {hasEditorContent && words > 0 && (
-            <div className={`flex items-center ${sidebarExpanded ? "px-3 py-2" : "justify-center py-2"}`}>
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                onClick={() => setActiveView("analyze")}
-                className={`rounded-full border flex items-center justify-center transition-all ${scoreBadgeBg(seoScore)} ${sidebarExpanded ? "w-10 h-10" : "w-9 h-9"}`}
-                title={`SEO Score: ${seoScore}`}
-              >
-                <span className={`text-xs font-bold ${scoreClr(seoScore)}`}>{seoScore}</span>
-              </motion.button>
-              {sidebarExpanded && (
-                <span className="text-white/30 text-xs ml-3">SEO Score</span>
-              )}
-            </div>
-          )}
-
-          {/* Bottom divider */}
-          <div className="mx-1 h-px bg-white/[0.04] my-1" />
-
-          {/* Collapse toggle */}
+    <div className="h-11 px-5 border-b border-border/60 flex items-center justify-between">
+      <div className="flex items-center gap-1.5">
+        {tools.map((t) => (
           <button
-            onClick={() => setSidebarExpanded(!sidebarExpanded)}
-            className="flex items-center justify-center py-3 text-white/20 hover:text-white/40 transition-all duration-200"
-            title={sidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
+            key={t.label}
+            title={t.label}
+            className="w-7 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted/40"
           >
-            {sidebarExpanded ? (
-              <ChevronLeft className="w-4 h-4" />
-            ) : (
-              <ChevronRight className="w-4 h-4" />
-            )}
+            {t.icon}
           </button>
-        </nav>
-      </aside>
-
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-white/[0.06] flex items-center justify-around backdrop-blur-xl" style={{ background: "hsla(225, 20%, 4%, 0.92)", paddingBottom: "env(safe-area-inset-bottom, 8px)", paddingTop: "10px" }}>
-        {NAV_TABS.map((tab) => (<button key={tab.key} onClick={() => setActiveView(tab.key)} className={`flex flex-col items-center gap-1 min-w-[64px] min-h-[44px] px-4 py-1 rounded-xl transition-all ${activeView === tab.key ? "text-blue-400" : "text-white/30"}`}>{tab.icon}<span className="text-[10px] font-medium">{tab.label}</span>{activeView === tab.key && <motion.div layoutId="mobileNavDot" className="w-1 h-1 rounded-full bg-blue-400" />}</button>))}
-      </nav>
-
-      {renderReviewDrawer()}
-      {renderGhostModal()}
-      {renderGhostLoading()}
-      {renderMobilePreview()}
-      {renderMobileFab()}
-      {renderMobileMetaSheet()}
-
-      {/* Main content area: offset by sidebar on desktop */}
-      <main className="transition-all duration-300 pt-24" style={{ marginLeft: isDesktop ? sidebarW + 40 : 0 }}>
-        <div className="px-4 md:px-8 lg:px-12 py-6">
-          <AnimatePresence mode="wait">
-            <motion.div key={activeView} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
-              {activeView === "write" && renderWrite()}
-              {activeView === "manage" && renderManage()}
-              {activeView === "analyze" && renderAnalyze()}
-            </motion.div>
-          </AnimatePresence>
+        ))}
+        <div className="w-px h-5 bg-border/60 mx-1.5" />
+        <Button variant="ghost" size="sm" className="h-6 text-[11px] text-muted-foreground">
+          <Brain size={12} className="mr-1" />
+          Insert concept
+        </Button>
+        <Button variant="ghost" size="sm" className="h-6 text-[11px] text-muted-foreground">
+          <Youtube size={12} className="mr-1" />
+          Embed video
+        </Button>
+        <Button variant="ghost" size="sm" className="h-6 text-[11px] text-muted-foreground">
+          <Sparkles size={12} className="mr-1" />
+          AI rewrite
+        </Button>
+      </div>
+      <div className="flex items-center gap-2">
+        <select
+          value={draft.status}
+          onChange={(e) => setDraft((d) => ({ ...d, status: e.target.value }))}
+          className="h-6 px-2 rounded border border-border bg-transparent font-mono text-[10.5px] text-muted-foreground outline-none focus:border-primary/60"
+        >
+          <option value="draft">DRAFT</option>
+          <option value="review">IN REVIEW</option>
+          <option value="scheduled">SCHEDULED</option>
+          <option value="published">LIVE</option>
+        </select>
+        <div className="flex items-center gap-0 p-0.5 rounded border border-border">
+          <ModeButton active={mode === "write"} onClick={() => setMode("write")}>
+            <Edit3 size={11} className="mr-1" />
+            Write
+          </ModeButton>
+          <ModeButton active={mode === "split"} onClick={() => setMode("split")}>
+            <Columns size={11} className="mr-1" />
+            Split
+          </ModeButton>
+          <ModeButton active={mode === "preview"} onClick={() => setMode("preview")}>
+            <Eye size={11} className="mr-1" />
+            Preview
+          </ModeButton>
         </div>
-      </main>
+        <Button size="sm" className="h-7 text-[12px]" onClick={onSave} disabled={saving}>
+          <Save size={12} className="mr-1" />
+          {saving ? "Saving..." : "Save"}
+        </Button>
+        <Kbd>⌘S</Kbd>
+      </div>
     </div>
   );
-};
+}
 
-export default BlogCMS;
+function ModeButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`h-5 px-2 rounded text-[10.5px] font-medium flex items-center transition-colors ${
+        active
+          ? "bg-muted text-foreground"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─── MARKDOWN EDITOR ──────────────────────────────────────────────────────
+function MarkdownEditor({
+  value,
+  onChange,
+  title,
+  onTitleChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  title: string;
+  onTitleChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-4 h-full">
+      <input
+        value={title}
+        onChange={(e) => onTitleChange(e.target.value)}
+        placeholder="# Your title here"
+        className="font-mono text-[18px] leading-relaxed bg-transparent border-none outline-none focus:ring-0 p-0 placeholder:text-foreground/20"
+      />
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Write in markdown. Use [[Concept Links]] for wiki entries. ## for H2, ### for H3."
+        className="flex-1 min-h-[400px] bg-transparent border-none outline-none focus:ring-0 resize-none p-0 font-mono text-[13.5px] leading-[1.75] placeholder:text-foreground/20"
+        spellCheck={true}
+      />
+    </div>
+  );
+}
+
+// ─── RENDERED PREVIEW ─────────────────────────────────────────────────────
+function RenderedPreview({ title, content }: { title: string; content: string }) {
+  const html = useMemo(() => renderMarkdownToHTML(content), [content]);
+  return (
+    <article className="font-sans leading-[1.7]">
+      <h1 className="font-display text-[34px] font-medium leading-tight tracking-tight mb-5">
+        {title || "Untitled"}
+      </h1>
+      <div
+        className="prose-custom"
+        dangerouslySetInnerHTML={{ __html: html }}
+        style={{ fontSize: 15.5, color: "hsl(var(--foreground) / 0.88)" }}
+      />
+    </article>
+  );
+}
+
+// Tiny, safe markdown renderer — headers, lists, paragraphs, bold, italic,
+// inline code, links, blockquotes, [[wiki links]]. No HTML pass-through.
+function renderMarkdownToHTML(md: string): string {
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const lines = md.split("\n");
+  const out: string[] = [];
+  let inList: "ul" | "ol" | null = null;
+  let inQuote = false;
+  let inCode = false;
+  let codeBuf: string[] = [];
+  let paraBuf: string[] = [];
+
+  const flushPara = () => {
+    if (paraBuf.length) {
+      out.push(
+        `<p style="font-size:15.5px;margin-bottom:16px">${inlineFmt(paraBuf.join(" "))}</p>`
+      );
+      paraBuf = [];
+    }
+  };
+  const flushList = () => {
+    if (inList) {
+      out.push(`</${inList}>`);
+      inList = null;
+    }
+  };
+  const flushQuote = () => {
+    if (inQuote) {
+      out.push("</blockquote>");
+      inQuote = false;
+    }
+  };
+
+  const inlineFmt = (s: string): string => {
+    let t = escape(s);
+    t = t.replace(/\[\[([^\]]+)\]\]/g, '<a style="color:hsl(var(--primary));border-bottom:1px dotted hsl(var(--primary) / 0.5);text-decoration:none">$1</a>');
+    t = t.replace(/`([^`]+)`/g, '<code style="font-family:\'JetBrains Mono\',monospace;font-size:0.9em;background:hsl(var(--card));padding:1px 5px;border-radius:3px">$1</code>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    t = t.replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" style="color:hsl(var(--primary));text-decoration:none;border-bottom:1px dotted hsl(var(--primary) / 0.5)">$1</a>'
+    );
+    return t;
+  };
+
+  for (const raw of lines) {
+    const line = raw.replace(/\r$/, "");
+    if (line.trim().startsWith("```")) {
+      flushPara();
+      flushList();
+      flushQuote();
+      if (inCode) {
+        out.push(
+          `<pre style="font-family:'JetBrains Mono',monospace;background:hsl(var(--card));padding:12px;border-radius:4px;overflow-x:auto;font-size:13px;margin:16px 0">${escape(codeBuf.join("\n"))}</pre>`
+        );
+        codeBuf = [];
+        inCode = false;
+      } else {
+        inCode = true;
+      }
+      continue;
+    }
+    if (inCode) {
+      codeBuf.push(line);
+      continue;
+    }
+    const h = line.match(/^(#{1,3})\s+(.+)$/);
+    if (h) {
+      flushPara();
+      flushList();
+      flushQuote();
+      const level = h[1].length;
+      const size = level === 1 ? 34 : level === 2 ? 22 : 17;
+      const top = level === 1 ? 0 : 28;
+      out.push(
+        `<h${level} style="font-family:'Playfair Display',Georgia,serif;font-weight:500;font-size:${size}px;margin-top:${top}px;margin-bottom:14px;letter-spacing:-0.01em">${inlineFmt(h[2])}</h${level}>`
+      );
+      continue;
+    }
+    if (/^>\s+/.test(line)) {
+      flushPara();
+      flushList();
+      if (!inQuote) {
+        out.push(
+          '<blockquote style="border-left:2px solid hsl(var(--primary));padding:8px 18px;margin:20px 0;font-style:italic;font-family:\'Playfair Display\',Georgia,serif;font-size:17px;color:hsl(var(--foreground) / 0.9)">'
+        );
+        inQuote = true;
+      }
+      out.push(inlineFmt(line.replace(/^>\s+/, "")));
+      continue;
+    } else {
+      flushQuote();
+    }
+    if (/^[-*]\s+/.test(line)) {
+      flushPara();
+      if (inList !== "ul") {
+        flushList();
+        out.push('<ul style="padding-left:22px;font-size:15px;margin-bottom:12px">');
+        inList = "ul";
+      }
+      out.push(`<li style="margin-bottom:4px">${inlineFmt(line.replace(/^[-*]\s+/, ""))}</li>`);
+      continue;
+    }
+    if (/^\d+\.\s+/.test(line)) {
+      flushPara();
+      if (inList !== "ol") {
+        flushList();
+        out.push('<ol style="padding-left:22px;font-size:15px;margin-bottom:12px">');
+        inList = "ol";
+      }
+      out.push(`<li style="margin-bottom:4px">${inlineFmt(line.replace(/^\d+\.\s+/, ""))}</li>`);
+      continue;
+    }
+    if (line.trim() === "") {
+      flushPara();
+      flushList();
+      continue;
+    }
+    paraBuf.push(line);
+  }
+  flushPara();
+  flushList();
+  flushQuote();
+  return out.join("\n");
+}
+
+// ─── VOICE ANALYSIS BAR ───────────────────────────────────────────────────
+function VoiceAnalysisBar({
+  analysis,
+  template,
+}: {
+  analysis: VoiceAnalysis | null;
+  template: VT;
+}) {
+  const target: [number, number, number, number] = [
+    template.formality,
+    template.humor,
+    template.respectfulness,
+    template.enthusiasm,
+  ];
+  const actual: [number, number, number, number] = analysis
+    ? [analysis.formality, analysis.humor, analysis.respectfulness, analysis.enthusiasm]
+    : target;
+  const score = analysis?.match_score ?? 0;
+  const scoreTone: "green" | "amber" | "red" =
+    score >= 85 ? "green" : score >= 65 ? "amber" : "red";
+
+  return (
+    <div
+      className="border-t border-border/60 px-6 py-[18px]"
+      style={{ background: "hsl(var(--card) / 0.6)" }}
+    >
+      <div className="flex justify-between items-center gap-8">
+        {/* Radar + score */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <Radar values={actual} target={target} size={108} rings={4} />
+          <div className="flex flex-col gap-1">
+            <Eyebrow>Realtime voice match</Eyebrow>
+            <div className="flex items-center gap-2">
+              <span
+                className="font-mono text-[28px] font-medium tracking-tight"
+                style={{ color: "hsl(var(--primary))" }}
+              >
+                {score}
+                <span className="text-[14px] text-muted-foreground">%</span>
+              </span>
+              <Chip tone={scoreTone} dot>
+                {score >= 85 ? "ON TEMPLATE" : score >= 65 ? "CLOSE" : "DRIFT"}
+              </Chip>
+            </div>
+            <div className="font-mono text-[10.5px] text-muted-foreground tracking-wider uppercase">
+              vs. {template.name}
+            </div>
+          </div>
+        </div>
+
+        {/* 4-axis bars */}
+        <div className="flex-1 min-w-0 flex flex-col gap-3 max-w-[520px] px-6">
+          {(
+            [
+              ["Formality", actual[0], target[0], "Casual", "Formal"],
+              ["Humor", actual[1], target[1], "Serious", "Playful"],
+              ["Respectfulness", actual[2], target[2], "Irreverent", "Respectful"],
+              ["Enthusiasm", actual[3], target[3], "Matter-of-fact", "Enthusiastic"],
+            ] as const
+          ).map(([name, v, t, l, r]) => (
+            <div key={name} className="flex items-center gap-3">
+              <div className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase w-24 text-right">
+                {name}
+              </div>
+              <div className="flex-1">
+                <div className="flex justify-between font-mono text-[9px] tracking-wider text-muted-foreground uppercase mb-1">
+                  <span>{l}</span>
+                  <span
+                    style={{
+                      color:
+                        Math.abs(v - t) < 1
+                          ? "hsl(140 35% 55%)"
+                          : "hsl(38 70% 58%)",
+                    }}
+                  >
+                    {v.toFixed(1)} / target {t}
+                  </span>
+                  <span>{r}</span>
+                </div>
+                <Meter value={v} target={t} max={10} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Readability readout */}
+        <div
+          className="flex gap-6 flex-shrink-0 pl-6"
+          style={{ borderLeft: "1px solid hsl(var(--border) / 0.6)" }}
+        >
+          <Stat
+            label="Grade"
+            value={analysis?.readability.grade.toFixed(1) ?? "—"}
+            unit={`/ ${template.target_reading_level}`}
+            tone="primary"
+          />
+          <Stat
+            label="Words"
+            value={(analysis?.readability.words ?? 0).toLocaleString()}
+          />
+          <Stat label="Read" value={analysis?.readability.read_minutes ?? 0} unit="min" />
+          <Stat
+            label="Avg len"
+            value={analysis?.readability.avg_sentence_length.toFixed(1) ?? "—"}
+            unit="words"
+            tone={
+              analysis && analysis.readability.avg_sentence_length > template.max_sentence_words
+                ? "warn"
+                : "default"
+            }
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── RIGHT RAIL ───────────────────────────────────────────────────────────
+function EditorRightRail({ draftId: _draftId }: { draftId: string | null }) {
+  // Placeholder data — hooks will wire these up later:
+  //   - Knowledge: query wiki_entries table w/ content similarity
+  //   - YouTube: query youtube_sources attached to draft
+  //   - Agent reviews: query agent_review_logs for this draft
+  const knowledge = [
+    { c: "FIFO Cost Tracking", d: "First-in-first-out inventory accounting", tag: "FINANCE", used: true },
+    { c: "BJ Fogg Behavior Model", d: "Motivation × Ability × Prompt", tag: "PSYCH", used: false },
+    { c: "Bol.com Buy Box Algorithm", d: "Ranking inputs & seller heuristics", tag: "MARKETPLACE", used: false },
+    { c: "NNg 4-Axis Tone Model", d: "Formal/Humor/Respect/Enthusiasm", tag: "VOICE", used: false },
+  ];
+
+  const agentReviews = [
+    { name: "Editor · Samantha", status: "ok" as const, msg: "2 sentences over 30 words in §3.", time: "3m" },
+    { name: "Fact-checker", status: "ok" as const, msg: "Cross-checked marketplace claims.", time: "3m" },
+    { name: "SEO · Claude Haiku", status: "warn" as const, msg: "Primary keyword density 0.4% — raise to 0.8–1.2%.", time: "3m" },
+  ];
+
+  return (
+    <aside
+      className="w-[300px] border-l border-border/60 flex flex-col gap-7 overflow-y-auto"
+      style={{ padding: "28px 24px", maxHeight: "calc(100vh - 104px)" }}
+    >
+      {/* Knowledge */}
+      <div className="flex flex-col gap-3">
+        <SecLabel idx={1}>Knowledge</SecLabel>
+        <div
+          className="rounded border border-border/60 p-2.5 flex items-center gap-2"
+          style={{ background: "hsl(var(--card))" }}
+        >
+          <Search size={13} className="text-muted-foreground flex-shrink-0" />
+          <input
+            placeholder="Search concepts…"
+            className="flex-1 bg-transparent border-none outline-none text-[12.5px]"
+          />
+          <Kbd>⌘K</Kbd>
+        </div>
+        <div className="flex flex-col">
+          {knowledge.map((k, i) => (
+            <div
+              key={i}
+              className={`flex justify-between gap-3 py-2.5 ${
+                i < knowledge.length - 1 ? "border-b border-border/40" : ""
+              }`}
+            >
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <div
+                  className="text-[13px] font-medium"
+                  style={{ color: k.used ? "hsl(var(--primary))" : "hsl(var(--foreground))" }}
+                >
+                  [[{k.c}]]
+                </div>
+                <div className="text-[11px] text-muted-foreground leading-tight">{k.d}</div>
+                <div className="font-mono text-[9px] tracking-wider text-muted-foreground mt-0.5">
+                  {k.tag}
+                  {k.used && " · IN USE"}
+                </div>
+              </div>
+              <button className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted/40">
+                <Plus size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Agent reviews */}
+      <div className="flex flex-col gap-3">
+        <SecLabel idx={3}>Agent reviews</SecLabel>
+        <div className="flex flex-col gap-2.5">
+          {agentReviews.map((a, i) => (
+            <div
+              key={i}
+              className={`flex flex-col gap-1 py-2 ${
+                i < agentReviews.length - 1 ? "border-b border-border/40" : ""
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Chip tone={a.status === "ok" ? "green" : "amber"}>
+                    {a.status === "ok" ? "PASS" : "NOTE"}
+                  </Chip>
+                  <span className="text-[12px] font-medium">{a.name}</span>
+                </div>
+                <span className="font-mono text-[10px] text-muted-foreground">{a.time}</span>
+              </div>
+              <div className="text-[11.5px] text-muted-foreground leading-snug">{a.msg}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ARTICLES SCREEN
+// ═══════════════════════════════════════════════════════════════════════════
+function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
+  const { toast } = useToast();
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [templates, setTemplates] = useState<VT[]>([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  useEffect(() => {
+    (async () => {
+      const [p, t] = await Promise.all([
+        supabase.from("blog_posts").select("*").order("updated_at", { ascending: false }),
+        supabase.from("hvl_voice_templates").select("*"),
+      ]);
+      if (p.error) {
+        toast({ title: "Error", description: p.error.message, variant: "destructive" });
+      } else {
+        setPosts((p.data ?? []) as unknown as BlogPost[]);
+      }
+      if (!t.error) setTemplates((t.data ?? []) as unknown as VT[]);
+    })();
+  }, [toast]);
+
+  const filtered = useMemo(() => {
+    return posts.filter((p) => {
+      if (statusFilter !== "all" && p.status !== statusFilter) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        return (
+          p.title.toLowerCase().includes(q) ||
+          p.slug.toLowerCase().includes(q) ||
+          p.tags.some((t) => t.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    });
+  }, [posts, search, statusFilter]);
+
+  const counts = useMemo(() => {
+    const c = { draft: 0, review: 0, scheduled: 0, published: 0, words: 0 };
+    for (const p of posts) {
+      if (p.status === "published" || p.published) c.published++;
+      else if (p.status === "review") c.review++;
+      else if (p.status === "scheduled") c.scheduled++;
+      else c.draft++;
+      c.words += p.word_count ?? 0;
+    }
+    return c;
+  }, [posts]);
+
+  const avgMatch = useMemo(() => {
+    const scored = posts.filter((p) => p.voice_match_score > 0);
+    if (!scored.length) return 0;
+    return Math.round(scored.reduce((a, p) => a + p.voice_match_score, 0) / scored.length);
+  }, [posts]);
+
+  const statusTone = (s: string): "amber" | "primary" | "green" => {
+    if (s === "published") return "green";
+    if (s === "review") return "primary";
+    return "amber";
+  };
+  const statusLabel = (s: string) =>
+    s === "published" ? "LIVE" : (s || "DRAFT").toUpperCase();
+
+  const templateName = (id: string | null): string => {
+    if (!id) return "Untemplated";
+    const t = templates.find((x) => x.id === id);
+    return t?.name.replace("Hans — ", "") ?? "Untemplated";
+  };
+
+  return (
+    <div className="flex flex-col">
+      {/* Toolbar */}
+      <div className="flex flex-col gap-4" style={{ padding: "32px 32px 20px" }}>
+        <div className="flex justify-between items-end">
+          <div className="flex flex-col gap-2">
+            <Eyebrow>
+              Library · {posts.length} total, {counts.draft + counts.review + counts.scheduled} in
+              flight
+            </Eyebrow>
+            <h1 className="font-display text-[32px] font-medium tracking-tight">Articles</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              <Filter size={12} className="mr-1" />
+              Filters
+            </Button>
+            <Button variant="outline" size="sm">
+              <ArrowUpDown size={12} className="mr-1" />
+              Updated
+            </Button>
+            <Button size="sm" onClick={onEdit}>
+              <Plus size={12} className="mr-1" />
+              New article
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div
+          className="flex gap-8 py-4"
+          style={{
+            borderTop: "1px solid hsl(var(--border) / 0.6)",
+            borderBottom: "1px solid hsl(var(--border) / 0.6)",
+          }}
+        >
+          <Stat label="Drafts" value={counts.draft} />
+          <div className="w-px h-9 bg-border/60" />
+          <Stat label="In review" value={counts.review} tone="primary" />
+          <div className="w-px h-9 bg-border/60" />
+          <Stat label="Scheduled" value={counts.scheduled} tone="warn" />
+          <div className="w-px h-9 bg-border/60" />
+          <Stat label="Live" value={counts.published} tone="ok" />
+          <div className="w-px h-9 bg-border/60" />
+          <Stat label="Words" value={counts.words.toLocaleString()} unit="words" />
+          <div className="w-px h-9 bg-border/60" />
+          <Stat label="Avg voice match" value={avgMatch} unit="%" tone="primary" />
+        </div>
+
+        {/* Search + filter pills */}
+        <div className="flex gap-3 items-center">
+          <div
+            className="flex items-center flex-1 h-10 px-3.5 rounded border border-border"
+            style={{ background: "hsl(var(--card))" }}
+          >
+            <Search size={14} className="text-muted-foreground mr-2.5" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={`Search ${posts.length} articles by title, slug, or tag…`}
+              className="flex-1 bg-transparent border-none outline-none text-[13px]"
+            />
+            <Kbd>/</Kbd>
+          </div>
+          <div className="flex items-center gap-1 p-1 rounded border border-border">
+            {[
+              { id: "all", label: "All" },
+              { id: "draft", label: `Draft · ${counts.draft}` },
+              { id: "review", label: `In review · ${counts.review}` },
+              { id: "scheduled", label: `Scheduled · ${counts.scheduled}` },
+              { id: "published", label: `Live · ${counts.published}` },
+            ].map((f) => {
+              const active = statusFilter === f.id;
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => setStatusFilter(f.id)}
+                  className={`h-[22px] px-2 rounded text-[10.5px] font-medium transition-colors ${
+                    active
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Column headers */}
+      <div
+        className="grid items-center gap-4 text-[9.5px]"
+        style={{
+          padding: "10px 32px",
+          borderBottom: "1px solid hsl(var(--border))",
+          gridTemplateColumns: "56px 1fr 140px 110px 90px 80px",
+        }}
+      >
+        <Eyebrow>№</Eyebrow>
+        <Eyebrow>Title · Excerpt</Eyebrow>
+        <Eyebrow>Voice template</Eyebrow>
+        <Eyebrow>Status</Eyebrow>
+        <Eyebrow>Completeness</Eyebrow>
+        <Eyebrow style={{ textAlign: "right" }}>Updated</Eyebrow>
+      </div>
+
+      {/* Rows */}
+      <div className="flex flex-col">
+        {filtered.map((p, i) => (
+          <div
+            key={p.id}
+            className="grid items-center gap-4 transition-colors hover:bg-card/40"
+            style={{
+              padding: "18px 32px",
+              borderBottom: "1px solid hsl(var(--border) / 0.6)",
+              gridTemplateColumns: "56px 1fr 140px 110px 90px 80px",
+            }}
+          >
+            <span className="font-mono text-[11px] text-muted-foreground">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <div className="font-display text-[17px] font-medium tracking-tight">
+                {p.title || <span className="text-muted-foreground italic">Untitled</span>}
+              </div>
+              <div className="text-[12.5px] text-muted-foreground leading-snug max-w-[640px] line-clamp-2">
+                {p.excerpt || "—"}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap mt-1">
+                {p.tags.slice(0, 4).map((t) => (
+                  <Chip key={t}>{t}</Chip>
+                ))}
+                <span className="font-mono text-[10.5px] text-muted-foreground ml-1">
+                  {(p.word_count ?? 0).toLocaleString()} words
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <div className="font-display text-[13px] italic">
+                Hans — {templateName(p.voice_template_id)}
+              </div>
+              <div className="font-mono text-[9.5px] text-muted-foreground tracking-wider">
+                {p.voice_template_id ? "ASSIGNED" : "NONE"}
+              </div>
+            </div>
+            <div>
+              <Chip tone={statusTone(p.status)} dot>
+                {statusLabel(p.status)}
+              </Chip>
+            </div>
+            <div className="flex flex-col gap-1.5 w-20">
+              <span
+                className="font-mono text-[10.5px]"
+                style={{
+                  color:
+                    p.completeness_score === 100
+                      ? "hsl(140 35% 55%)"
+                      : p.completeness_score >= 80
+                      ? "hsl(var(--foreground))"
+                      : "hsl(var(--muted-foreground))",
+                }}
+              >
+                {p.completeness_score ?? 0}%
+              </span>
+              <Meter
+                value={p.completeness_score ?? 0}
+                color={
+                  p.completeness_score === 100
+                    ? "hsl(140 35% 55%)"
+                    : p.completeness_score >= 80
+                    ? "hsl(var(--primary))"
+                    : "hsl(38 70% 58%)"
+                }
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <span className="font-mono text-[11px] text-muted-foreground">
+                {timeAgo(new Date(p.updated_at))}
+              </span>
+              <button className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground">
+                <MoreHorizontal size={14} />
+              </button>
+            </div>
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <div className="py-20 text-center text-muted-foreground text-sm">No articles match.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  VOICE TEMPLATES SCREEN (minimal list — full editor in a separate file)
+// ═══════════════════════════════════════════════════════════════════════════
+function VoiceTemplatesScreen() {
+  const [templates, setTemplates] = useState<VT[]>([]);
+  useEffect(() => {
+    supabase
+      .from("hvl_voice_templates")
+      .select("*")
+      .order("is_default", { ascending: false })
+      .then(({ data }) => setTemplates((data ?? []) as unknown as VT[]));
+  }, []);
+
+  return (
+    <div style={{ padding: "32px" }}>
+      <div className="flex flex-col gap-2 mb-6">
+        <Eyebrow>Voice library · {templates.length} templates</Eyebrow>
+        <h1 className="font-display text-[32px] font-medium tracking-tight">Voice Templates</h1>
+      </div>
+      <div className="grid grid-cols-3 gap-5">
+        {templates.map((t) => {
+          const isDefault = (t as VT & { is_default?: boolean }).is_default;
+          return (
+            <div
+              key={t.id}
+              className="rounded border p-5 relative"
+              style={{
+                background: isDefault ? "hsl(var(--primary) / 0.05)" : "hsl(var(--card))",
+                borderColor: isDefault ? "hsl(var(--primary) / 0.4)" : "hsl(var(--border) / 0.6)",
+              }}
+            >
+              {isDefault && (
+                <div
+                  className="absolute top-3.5 bottom-3.5 w-0.5 rounded"
+                  style={{ left: 0, background: "hsl(var(--primary))" }}
+                />
+              )}
+              <div className="font-display text-[15px] font-medium mb-2">{t.name}</div>
+              <div className="font-mono text-[9.5px] tracking-wider text-muted-foreground mb-3">
+                {isDefault ? "DEFAULT · " : ""}GRADE {t.target_reading_level}
+              </div>
+              <div className="flex items-center justify-between">
+                <Radar
+                  values={[t.formality, t.humor, t.respectfulness, t.enthusiasm]}
+                  size={80}
+                  rings={3}
+                  showLabels={false}
+                  fillOpacity={isDefault ? 0.25 : 0.15}
+                  stroke={
+                    isDefault ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
+                  }
+                />
+                <div className="flex flex-col gap-1 font-mono text-[10px] text-muted-foreground">
+                  <div>
+                    FORM <span className="text-foreground">{t.formality}</span>
+                  </div>
+                  <div>
+                    HUMR <span className="text-foreground">{t.humor}</span>
+                  </div>
+                  <div>
+                    RESP <span className="text-foreground">{t.respectfulness}</span>
+                  </div>
+                  <div>
+                    ENTH <span className="text-foreground">{t.enthusiasm}</span>
+                  </div>
+                </div>
+              </div>
+              {t.description && (
+                <p className="text-[12px] text-muted-foreground mt-4 leading-relaxed">
+                  {t.description}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-6 text-[12px] text-muted-foreground">
+        Full 9-section template editor — see{" "}
+        <code className="font-mono text-[11px]">VoiceTemplateEditor.tsx</code>.
+      </div>
+    </div>
+  );
+}
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────
+function timeAgo(d: Date): string {
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return `${Math.floor(diff)}s`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
+  return `${Math.floor(diff / 604800)}w`;
+}
