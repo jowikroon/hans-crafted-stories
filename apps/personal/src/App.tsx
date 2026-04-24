@@ -11,7 +11,6 @@ import type { BlogPostRow } from "@/lib/api/content";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
-import SamanthaGlobalButton from "@/features/samantha/components/global/SamanthaGlobalButton";
 import CookieConsent from "./components/CookieConsent";
 import TrackingScriptInjector from "./components/TrackingScriptInjector";
 import './styles/blog.css';
@@ -40,7 +39,6 @@ const AppShell = ({ initialLang }: AppShellProps) => {
           <AnimatedRoutes />
         </main>
         {!isDarkPage && <Footer />}
-        <SamanthaGlobalButton />
         <CookieConsent />
         <TrackingScriptInjector />
       </LangProvider>
