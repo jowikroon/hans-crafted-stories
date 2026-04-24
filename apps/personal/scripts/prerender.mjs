@@ -46,7 +46,7 @@ if (!entryPath) {
   process.exit(1);
 }
 
-const { render, getHeroPost, getHeroPostHead, HERO_SLUGS } = await import(
+const { render, getHeroPost, getHeroPostHead, HERO_SLUGS, getBlogPosts } = await import(
   pathToFileURL(entryPath).href
 );
 
@@ -299,7 +299,13 @@ for (const slug of HERO_SLUGS) {
 // Prerender /writing for indexable content and correct meta/schema
 {
   const route = "/writing";
-  const { html } = render(route, null, { initialLang: "en" });
+  let writingPosts = [];
+  try {
+    writingPosts = await getBlogPosts(true);
+  } catch (err) {
+    console.warn("[prerender] Could not pre-fetch blog posts for /writing:", err.message);
+  }
+  const { html } = render(route, null, { initialLang: "en", preloadedBlogPosts: writingPosts });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, WRITING_HEAD);
   page = page.replace(
@@ -310,6 +316,9 @@ for (const slug of HERO_SLUGS) {
     /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
     (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(WRITING_HEAD.canonical)}"`)
   );
+  // Inject preloaded blog posts for client-side hydration (avoids loading flash)
+  const writingPreloadScript = `<script id="__PRELOADED__" type="application/json">${JSON.stringify({ blogPosts: writingPosts })}</script>`;
+  page = page.replace("</body>", `${writingPreloadScript}\n  </body>`);
   const outDir = path.join(distDir, "writing");
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, "index.html"), page, "utf8");
@@ -360,3 +369,4 @@ for (const { route, head } of SEO_PAGES) {
 }
 
 console.log("[prerender] Done.");
+process.exit(0);

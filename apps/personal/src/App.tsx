@@ -7,6 +7,7 @@ import { StaticRouter } from "react-router-dom/server";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LangProvider } from "@/hooks/useLang";
 import { PreloadedDataProvider, type PreloadedData } from "@/contexts/PreloadedDataContext";
+import type { BlogPostRow } from "@/lib/api/content";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
@@ -53,7 +54,9 @@ export interface AppProps {
   /** Set only during SSR/prerender; uses StaticRouter and preloaded blog post. */
   serverContext?: {
     location: string;
-    preloadedBlogPost?: import("@/lib/api/content").BlogPostRow | null;
+    preloadedBlogPost?: BlogPostRow | null;
+    /** Pre-fetched blog posts for /writing prerender. */
+    preloadedBlogPosts?: BlogPostRow[] | null;
     /** Initial language for SSR (e.g. "en" for /about prerender). */
     initialLang?: "en" | "nl";
   };
@@ -63,8 +66,14 @@ const App = ({ preloadedData, serverContext }: AppProps) => {
   const Router = serverContext ? StaticRouter : BrowserRouter;
   const routerProps = serverContext ? { location: serverContext.location } : { /* empty */ };
   const preloaded: PreloadedData = serverContext
-    ? { blogPost: serverContext.preloadedBlogPost ?? null }
-    : (preloadedData ?? { blogPost: null });
+    ? {
+        blogPost: serverContext.preloadedBlogPost ?? null,
+        blogPosts: serverContext.preloadedBlogPosts ?? null,
+      }
+    : {
+        blogPost: (preloadedData as { blogPost?: BlogPostRow } | null | undefined)?.blogPost ?? null,
+        blogPosts: (preloadedData as { blogPosts?: BlogPostRow[] } | null | undefined)?.blogPosts ?? null,
+      };
 
   return (
     <QueryClientProvider client={queryClient}>

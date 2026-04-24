@@ -6,11 +6,14 @@ import React from "react";
 import { renderToString } from "react-dom/server";
 import App from "./App";
 import type { BlogPostRow } from "@/lib/api/content";
+import { getBlogPosts } from "@/lib/api/content";
 import { getHeroPost, getHeroPostHead, HERO_SLUGS } from "@/data/heroPosts";
 
 export interface RenderOptions {
   /** Initial language for SSR (e.g. "en" for /about prerender). */
   initialLang?: "en" | "nl";
+  /** Pre-fetched blog posts for /writing prerender. */
+  preloadedBlogPosts?: BlogPostRow[] | null;
 }
 
 export function render(
@@ -24,10 +27,11 @@ export function render(
         location: url,
         preloadedBlogPost: preloadedBlogPost ?? null,
         initialLang: options?.initialLang,
+        preloadedBlogPosts: options?.preloadedBlogPosts ?? null,
       },
     })
   );
   return { html };
 }
 
-export { getHeroPost, getHeroPostHead, HERO_SLUGS };
+export { getHeroPost, getHeroPostHead, HERO_SLUGS, getBlogPosts };

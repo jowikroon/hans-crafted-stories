@@ -11,6 +11,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageContent } from "@/hooks/usePageContent";
+import { usePreloadedBlogPosts } from "@/contexts/PreloadedDataContext";
 
 type Filter = string;
 type TagFilter = string | null;
@@ -28,8 +29,9 @@ const TAG_CATEGORY_COLORS: Record<string, { bg: string; active: string }> = {
 };
 
 const Writing = () => {
-  const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const preloadedPosts = usePreloadedBlogPosts();
+  const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>(() => preloadedPosts ?? []);
+  const [loading, setLoading] = useState(preloadedPosts === null);
   const [filter, setFilter] = useState<Filter>("all");
   const [tagFilter, setTagFilter] = useState<TagFilter>(null);
   const [search, setSearch] = useState("");
@@ -74,8 +76,9 @@ const Writing = () => {
   });
 
   useEffect(() => {
+    if (preloadedPosts !== null) return;
     getBlogPosts(true).then((p) => { setBlogPosts(p); setLoading(false); });
-  }, []);
+  }, [preloadedPosts]);
 
   const mappedPosts = useMemo(() =>
     blogPosts.map((p) => ({

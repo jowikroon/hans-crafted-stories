@@ -3,9 +3,10 @@ import type { BlogPostRow } from "@/lib/api/content";
 
 export interface PreloadedData {
   blogPost: BlogPostRow | null;
+  blogPosts?: BlogPostRow[] | null;
 }
 
-const PreloadedDataContext = createContext<PreloadedData>({ blogPost: null });
+const PreloadedDataContext = createContext<PreloadedData>({ blogPost: null, blogPosts: null });
 
 export function PreloadedDataProvider({
   value,
@@ -30,4 +31,10 @@ export function usePreloadedBlogPost(slug: string | undefined): BlogPostRow | nu
   const { blogPost } = useContext(PreloadedDataContext);
   if (!slug || !blogPost) return null;
   return blogPost.slug === slug ? blogPost : null;
+}
+
+/** Returns preloaded blog posts list if available (for /writing SSR/hydration). */
+export function usePreloadedBlogPosts(): BlogPostRow[] | null {
+  const { blogPosts } = useContext(PreloadedDataContext);
+  return blogPosts ?? null;
 }
