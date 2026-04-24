@@ -16,15 +16,26 @@ export type Database = {
     Tables: {
       blog_posts: {
         Row: {
+          ai_detection_score: number | null
+          article_type: string | null
+          brief_json: Json | null
           canonical_url: string | null
           category: string
+          completeness_score: number | null
           content: string
           content_nl: string
           created_at: string
+          draft_version: number | null
+          editorial_stage: string | null
           excerpt: string
           excerpt_nl: string
+          human_gaps_filled: boolean | null
           id: string
           image_url: string
+          internal_links: string[] | null
+          json_ld: Json | null
+          linkedin_post: string | null
+          linkedin_post_nl: string | null
           meta_description: string | null
           meta_title: string | null
           og_description: string
@@ -32,25 +43,44 @@ export type Database = {
           og_title: string
           primary_keyword: string
           published: boolean
+          quality_score: Json | null
           read_time: string
+          readability_score: number | null
+          reading_time: string | null
+          rewrite_count: number | null
           scheduled_at: string | null
+          seo_score: number | null
           slug: string
           status: string
           tags: string[]
           title: string
           title_nl: string
           updated_at: string
+          voice_match_score: number | null
+          voice_template_id: string | null
+          word_count: number | null
         }
         Insert: {
+          ai_detection_score?: number | null
+          article_type?: string | null
+          brief_json?: Json | null
           canonical_url?: string | null
           category?: string
+          completeness_score?: number | null
           content?: string
           content_nl?: string
           created_at?: string
+          draft_version?: number | null
+          editorial_stage?: string | null
           excerpt?: string
           excerpt_nl?: string
+          human_gaps_filled?: boolean | null
           id?: string
           image_url?: string
+          internal_links?: string[] | null
+          json_ld?: Json | null
+          linkedin_post?: string | null
+          linkedin_post_nl?: string | null
           meta_description?: string | null
           meta_title?: string | null
           og_description?: string
@@ -58,25 +88,44 @@ export type Database = {
           og_title?: string
           primary_keyword?: string
           published?: boolean
+          quality_score?: Json | null
           read_time?: string
+          readability_score?: number | null
+          reading_time?: string | null
+          rewrite_count?: number | null
           scheduled_at?: string | null
+          seo_score?: number | null
           slug: string
           status?: string
           tags?: string[]
           title: string
           title_nl?: string
           updated_at?: string
+          voice_match_score?: number | null
+          voice_template_id?: string | null
+          word_count?: number | null
         }
         Update: {
+          ai_detection_score?: number | null
+          article_type?: string | null
+          brief_json?: Json | null
           canonical_url?: string | null
           category?: string
+          completeness_score?: number | null
           content?: string
           content_nl?: string
           created_at?: string
+          draft_version?: number | null
+          editorial_stage?: string | null
           excerpt?: string
           excerpt_nl?: string
+          human_gaps_filled?: boolean | null
           id?: string
           image_url?: string
+          internal_links?: string[] | null
+          json_ld?: Json | null
+          linkedin_post?: string | null
+          linkedin_post_nl?: string | null
           meta_description?: string | null
           meta_title?: string | null
           og_description?: string
@@ -84,16 +133,32 @@ export type Database = {
           og_title?: string
           primary_keyword?: string
           published?: boolean
+          quality_score?: Json | null
           read_time?: string
+          readability_score?: number | null
+          reading_time?: string | null
+          rewrite_count?: number | null
           scheduled_at?: string | null
+          seo_score?: number | null
           slug?: string
           status?: string
           tags?: string[]
           title?: string
           title_nl?: string
           updated_at?: string
+          voice_match_score?: number | null
+          voice_template_id?: string | null
+          word_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_voice_template_id_fkey"
+            columns: ["voice_template_id"]
+            isOneToOne: false
+            referencedRelation: "hvl_voice_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       blog_design_reviews: {
         Row: {
@@ -355,64 +420,112 @@ export type Database = {
       }
       hvl_voice_templates: {
         Row: {
+          archived_at: string | null
+          avg_paragraph_sentences: number | null
           banned_words: string[] | null
           category: string
           closing_examples: string[] | null
           content_rules: string
           created_at: string
+          description: string | null
+          enthusiasm: number
+          formality: number
+          humor: number
           id: string
+          inclusivity_rules: string
           is_default: boolean
+          language: string | null
           max_paragraph_sentences: number | null
+          max_sentence_words: number | null
           name: string
           opening_examples: string[] | null
+          passive_voice_max_pct: number | null
+          pending_terms: string[]
           perspective: string
+          preferred_terms: string[]
           required_elements: string[] | null
+          respectfulness: number
           seo_guidelines: string | null
+          short_code: string | null
           target_audience: string
+          target_reading_level: number
           tone: string
           transition_examples: string[] | null
           updated_at: string
           writing_style: string
+          writing_style_rules: Json | null
         }
         Insert: {
+          archived_at?: string | null
+          avg_paragraph_sentences?: number | null
           banned_words?: string[] | null
           category: string
           closing_examples?: string[] | null
           content_rules?: string
           created_at?: string
+          description?: string | null
+          enthusiasm?: number
+          formality?: number
+          humor?: number
           id?: string
+          inclusivity_rules?: string
           is_default?: boolean
+          language?: string | null
           max_paragraph_sentences?: number | null
+          max_sentence_words?: number | null
           name: string
           opening_examples?: string[] | null
+          passive_voice_max_pct?: number | null
+          pending_terms?: string[]
           perspective?: string
+          preferred_terms?: string[]
           required_elements?: string[] | null
+          respectfulness?: number
           seo_guidelines?: string | null
+          short_code?: string | null
           target_audience: string
+          target_reading_level?: number
           tone: string
           transition_examples?: string[] | null
           updated_at?: string
           writing_style: string
+          writing_style_rules?: Json | null
         }
         Update: {
+          archived_at?: string | null
+          avg_paragraph_sentences?: number | null
           banned_words?: string[] | null
           category?: string
           closing_examples?: string[] | null
           content_rules?: string
           created_at?: string
+          description?: string | null
+          enthusiasm?: number
+          formality?: number
+          humor?: number
           id?: string
+          inclusivity_rules?: string
           is_default?: boolean
+          language?: string | null
           max_paragraph_sentences?: number | null
+          max_sentence_words?: number | null
           name?: string
           opening_examples?: string[] | null
+          passive_voice_max_pct?: number | null
+          pending_terms?: string[]
           perspective?: string
+          preferred_terms?: string[]
           required_elements?: string[] | null
+          respectfulness?: number
           seo_guidelines?: string | null
+          short_code?: string | null
           target_audience?: string
+          target_reading_level?: number
           tone?: string
           transition_examples?: string[] | null
           updated_at?: string
           writing_style?: string
+          writing_style_rules?: Json | null
         }
         Relationships: []
       }
