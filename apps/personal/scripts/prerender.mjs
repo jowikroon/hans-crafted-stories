@@ -21,6 +21,11 @@ const noopStorage = {
 const dom = new JSDOM("<!DOCTYPE html><html><head></head><body><div id=\"root\"></div></body></html>");
 globalThis.window = dom.window;
 globalThis.document = dom.window.document;
+// Node 20 has no global `navigator`; react-dom reads navigator.userAgent at module load time.
+// Node 21+ provides one natively, so guard the assignment.
+if (typeof globalThis.navigator === "undefined") {
+  globalThis.navigator = dom.window.navigator;
+}
 globalThis.localStorage = noopStorage;
 globalThis.sessionStorage = noopStorage;
 
