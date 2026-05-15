@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -47,6 +47,14 @@
 
     --font-display: 'Playfair Display', Georgia, serif;
     --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    /* Blog CMS instrument tokens (light fallback) */
+    --ok: 140 45% 40%;
+    --warn: 35 85% 50%;
+    --bad: 0 70% 50%;
+    --info: 210 70% 50%;
+    --border-soft: 35 12% 92%;
   }
 
   .dark {
@@ -77,6 +85,13 @@
     --sidebar-accent-foreground: 220 10% 90%;
     --sidebar-border: 220 15% 12%;
     --sidebar-ring: 45 90% 55%;
+
+    /* Blog CMS instrument tokens (dark) */
+    --ok: 140 40% 55%;
+    --warn: 35 80% 60%;
+    --bad: 0 65% 60%;
+    --info: 200 65% 60%;
+    --border-soft: 30 8% 15%;
   }
 }
 

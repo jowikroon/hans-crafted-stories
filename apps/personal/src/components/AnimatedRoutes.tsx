@@ -22,6 +22,7 @@ import SamanthaAI from "@/pages/SamanthaAI";
 /* BlogCMS is lazy-loaded and excluded from the SSR bundle.
    During prerender (typeof window === "undefined"), the fallback renders instead. */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
+const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-template-editor" */ "@/components/portal/blog/VoiceTemplateEditor"));
 
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
 
@@ -42,6 +43,7 @@ const AnimatedRoutes = () => {
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
         <Route path="/blog-cms" element={<Suspense fallback={<BlogCMSFallback />}><BlogCMS /></Suspense>} />
+        <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
         <Route path="/god-structure" element={<GodStructure />} />
         <Route path="/samantha" element={<SamanthaAI />} />

@@ -18,13 +18,19 @@ export default {
       fontFamily: {
         display: ["var(--font-display)"],
         body: ["var(--font-body)"],
+        mono: ["var(--font-mono)"],
       },
       colors: {
         border: "hsl(var(--border))",
+        "border-soft": "hsl(var(--border-soft))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        ok: "hsl(var(--ok))",
+        warn: "hsl(var(--warn))",
+        bad: "hsl(var(--bad))",
+        info: "hsl(var(--info))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

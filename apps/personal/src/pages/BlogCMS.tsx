@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +29,7 @@ interface BlogPost {
   excerpt: string;
   category: string;
   tags: string[];
-  cover_image_url: string | null;
+  image_url: string;
   published: boolean;
   scheduled_at: string | null;
   meta_title: string | null;
@@ -43,7 +42,6 @@ interface BlogPost {
   title_nl: string | null;
   excerpt_nl: string | null;
   status: string;
-  author_id: string | null;
   voice_template_id: string | null;
   voice_match_score: number;
   completeness_score: number;
@@ -52,17 +50,35 @@ interface BlogPost {
   updated_at: string;
 }
 
-type CmsView = "articles" | "editor" | "voice" | "wiki" | "youtube" | "reviews";
+type CmsView = "articles" | "editor" | "voice";
 type EditorMode = "write" | "split" | "preview";
 
-const TABS: { id: CmsView; label: string; inScope: boolean }[] = [
-  { id: "articles", label: "Articles", inScope: true },
-  { id: "editor", label: "Editor", inScope: true },
-  { id: "wiki", label: "Wiki", inScope: false },
-  { id: "youtube", label: "YouTube", inScope: false },
-  { id: "voice", label: "Voice Templates", inScope: true },
-  { id: "reviews", label: "Agent Reviews", inScope: false },
+const TABS: { id: CmsView; label: string }[] = [
+  { id: "articles", label: "Articles" },
+  { id: "editor", label: "Editor" },
+  { id: "voice", label: "Voice Templates" },
 ];
+
+const PAGE_META: Record<CmsView, { eyebrow: string; titleA: string; titleEm: string; subtitle: string }> = {
+  editor: {
+    eyebrow: "Editorial Desk",
+    titleA: "Draft",
+    titleEm: "in progress",
+    subtitle: "Write, analyze voice, and get editorial feedback before publishing to hansvanleeuwen.com/writing.",
+  },
+  voice: {
+    eyebrow: "Voice Studio",
+    titleA: "Voice",
+    titleEm: "templates",
+    subtitle: "Define how each article should sound — tone axes, readability targets, terminology, and rules.",
+  },
+  articles: {
+    eyebrow: "Library",
+    titleA: "All",
+    titleEm: "articles",
+    subtitle: "Drafts, scheduled and published posts across NL and EN.",
+  },
+};
 
 const EMPTY_POST = (): Omit<BlogPost, "id" | "created_at" | "updated_at"> => ({
   title: "",
@@ -71,7 +87,7 @@ const EMPTY_POST = (): Omit<BlogPost, "id" | "created_at" | "updated_at"> => ({
   excerpt: "",
   category: "e-commerce",
   tags: [],
-  cover_image_url: null,
+  image_url: "",
   published: false,
   scheduled_at: null,
   meta_title: null,
@@ -84,7 +100,6 @@ const EMPTY_POST = (): Omit<BlogPost, "id" | "created_at" | "updated_at"> => ({
   title_nl: null,
   excerpt_nl: null,
   status: "draft",
-  author_id: null,
   voice_template_id: null,
   voice_match_score: 0,
   completeness_score: 0,
@@ -109,72 +124,105 @@ export default function BlogCMS() {
 
   return (
     <div className="dark min-h-screen bg-background text-foreground font-sans antialiased">
-      <Topbar tab={tab} />
+      <PortalHeader tab={tab} setTab={setTab} />
+      <StatusRibbon />
       <TabBar tab={tab} setTab={setTab} />
       {tab === "articles" && <ArticlesScreen onEdit={() => setTab("editor")} />}
       {tab === "editor" && <EditorScreen />}
       {tab === "voice" && <VoiceTemplatesScreen />}
-      {(tab === "wiki" || tab === "youtube" || tab === "reviews") && (
-        <OutOfScopeStub tab={tab} setTab={setTab} />
-      )}
     </div>
   );
 }
 
-// ─── Chrome: Topbar ───────────────────────────────────────────────────────
-function Topbar({ tab }: { tab: CmsView }) {
-  const today = new Date().toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-  }).toUpperCase();
-  const label = TABS.find((t) => t.id === tab)?.label ?? "";
+// ─── Portal header (breadcrumb + eyebrow + title + subtitle + actions) ───
+function PortalHeader({ tab, setTab }: { tab: CmsView; setTab: (t: CmsView) => void }) {
+  const meta = PAGE_META[tab];
+  const actions: Record<CmsView, React.ReactNode> = {
+    editor: (
+      <>
+        <Button variant="ghost" size="sm">Preview</Button>
+        <Button variant="outline" size="sm">Save draft</Button>
+        <Button size="sm">Publish</Button>
+      </>
+    ),
+    voice: (
+      <>
+        <Button variant="ghost" size="sm" onClick={() => setTab("editor")}>Test on draft</Button>
+        <Button size="sm" asChild><a href="/blog-cms/voice/new">+ New template</a></Button>
+      </>
+    ),
+    articles: (
+      <>
+        <Button variant="ghost" size="sm">Import CSV</Button>
+        <Button size="sm" onClick={() => setTab("editor")}>+ New article</Button>
+      </>
+    ),
+  };
   return (
-    <header className="h-14 border-b border-border/60 flex items-center px-6 gap-6 bg-background">
-      <div className="flex items-baseline gap-2.5">
-        <span className="font-display italic text-xl text-foreground">h.</span>
-        <span className="text-[11px] tracking-[0.3em] uppercase text-muted-foreground">
-          PORTAL
-        </span>
-        <span className="font-mono text-xs text-muted-foreground">/portal/blog</span>
+    <header className="px-8 pt-7 pb-4 border-b border-border/40 bg-background">
+      <nav className="flex items-center gap-2 font-mono text-[10.5px] tracking-[0.12em] text-muted-foreground mb-4">
+        <span className="hover:text-foreground cursor-pointer">PORTAL</span>
+        <span className="opacity-50">›</span>
+        <span className="hover:text-foreground cursor-pointer">CONTENT</span>
+        <span className="opacity-50">›</span>
+        <span className="text-foreground">BLOG CMS</span>
+      </nav>
+      <div className="flex items-end justify-between gap-6">
+        <div className="min-w-0 flex-1">
+          <Eyebrow className="mb-2">{meta.eyebrow}</Eyebrow>
+          <h1 className="font-display text-[40px] leading-[1.05] font-medium tracking-tight text-foreground">
+            {meta.titleA} <em className="italic text-primary font-normal">{meta.titleEm}</em>
+          </h1>
+          <p className="mt-2 max-w-2xl text-[13px] text-muted-foreground leading-relaxed">
+            {meta.subtitle}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0 pb-1">{actions[tab]}</div>
       </div>
-      <div className="font-mono text-[11px] text-muted-foreground tracking-wide">
-        <span>library</span> <span className="opacity-50">›</span>{" "}
-        <span className="text-foreground">{label}</span>
-      </div>
-      <div className="flex-1" />
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border font-mono text-[10.5px] text-muted-foreground tracking-wide">
-        <span
-          className="inline-block w-1.5 h-1.5 rounded-full"
-          style={{
-            background: "hsl(140 35% 55%)",
-            boxShadow: "0 0 0 3px hsl(140 35% 55% / 0.15)",
-          }}
-        />
-        Supabase synced · 2m
-      </div>
-      <Kbd>⌘K</Kbd>
-      <div
-        className="w-7 h-7 rounded-full flex items-center justify-center font-display font-semibold text-[13px]"
-        style={{
-          background: "hsl(var(--primary) / 0.2)",
-          border: "1px solid hsl(var(--primary) / 0.35)",
-          color: "hsl(var(--primary))",
-        }}
-      >
-        H
-      </div>
-      <span className="sr-only">{today}</span>
     </header>
   );
 }
 
-// ─── Chrome: Tabs ─────────────────────────────────────────────────────────
-function TabBar({ tab, setTab }: { tab: CmsView; setTab: (t: CmsView) => void }) {
-  const today = new Date()
-    .toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
-    .toUpperCase();
+// ─── Status ribbon (instrument-style context bar) ────────────────────────
+function StatusRibbon() {
   return (
-    <nav className="h-12 border-b border-border/60 px-6 flex items-end gap-0.5 bg-background">
+    <div className="px-8 py-2.5 flex items-center gap-2.5 border-b border-border/40 bg-background">
+      <RibbonPill tone="ok">Supabase synced · 2m ago</RibbonPill>
+      <RibbonPill tone="warn">1 agent note on draft</RibbonPill>
+      <RibbonPill tone="info">Samantha standing by</RibbonPill>
+      <span className="flex-1" />
+      <Kbd>⌘K</Kbd>
+      <span className="font-mono text-[10.5px] tracking-[0.05em] text-muted-foreground">
+        search · navigate · trigger
+      </span>
+    </div>
+  );
+}
+
+function RibbonPill({ tone, children }: { tone: "ok" | "warn" | "info"; children: React.ReactNode }) {
+  const colorVar = tone === "ok" ? "--ok" : tone === "warn" ? "--warn" : "--info";
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 h-[22px] px-2.5 rounded-full border font-mono text-[10px] tracking-[0.04em]"
+      style={{
+        color: `hsl(var(${colorVar}))`,
+        borderColor: `hsl(var(${colorVar}) / 0.35)`,
+        background: `hsl(var(${colorVar}) / 0.08)`,
+      }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full" style={{
+        background: `hsl(var(${colorVar}))`,
+        boxShadow: `0 0 0 3px hsl(var(${colorVar}) / 0.18)`,
+      }} />
+      {children}
+    </span>
+  );
+}
+
+// ─── Section tabs ────────────────────────────────────────────────────────
+function TabBar({ tab, setTab }: { tab: CmsView; setTab: (t: CmsView) => void }) {
+  return (
+    <nav className="h-11 border-b border-border/60 px-8 flex items-end gap-0.5 bg-background">
       {TABS.map((t) => {
         const active = tab === t.id;
         return (
@@ -191,46 +239,7 @@ function TabBar({ tab, setTab }: { tab: CmsView; setTab: (t: CmsView) => void })
           </button>
         );
       })}
-      <div className="flex-1" />
-      <div className="px-4 pb-2.5 pt-2">
-        <span className="font-mono text-[10.5px] tracking-[0.1em] text-muted-foreground">
-          {today}
-        </span>
-      </div>
     </nav>
-  );
-}
-
-// ─── OUT OF SCOPE STUB ────────────────────────────────────────────────────
-function OutOfScopeStub({
-  tab,
-  setTab,
-}: {
-  tab: CmsView;
-  setTab: (t: CmsView) => void;
-}) {
-  const label = TABS.find((t) => t.id === tab)?.label ?? "";
-  return (
-    <div className="flex flex-col items-center justify-center text-muted-foreground py-32 gap-3">
-      <Eyebrow className="mb-3">Not yet built</Eyebrow>
-      <div className="font-display italic text-[28px] text-foreground/60">
-        The {label} tab
-      </div>
-      <div className="text-[13px] flex items-center gap-2">
-        Switch to
-        <Button size="sm" variant="ghost" onClick={() => setTab("editor")}>
-          Editor
-        </Button>
-        ·
-        <Button size="sm" variant="ghost" onClick={() => setTab("articles")}>
-          Articles
-        </Button>
-        ·
-        <Button size="sm" variant="ghost" onClick={() => setTab("voice")}>
-          Voice Templates
-        </Button>
-      </div>
-    </div>
   );
 }
 
@@ -239,7 +248,6 @@ function OutOfScopeStub({
 // ═══════════════════════════════════════════════════════════════════════════
 
 function EditorScreen() {
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -285,7 +293,7 @@ function EditorScreen() {
       excerpt: post.excerpt,
       category: post.category,
       tags: post.tags ?? [],
-      cover_image_url: post.cover_image_url,
+      image_url: post.image_url,
       published: post.published,
       scheduled_at: post.scheduled_at,
       meta_title: post.meta_title,
@@ -298,7 +306,6 @@ function EditorScreen() {
       title_nl: post.title_nl,
       excerpt_nl: post.excerpt_nl,
       status: post.status,
-      author_id: post.author_id,
       voice_template_id: post.voice_template_id,
       voice_match_score: post.voice_match_score,
       completeness_score: post.completeness_score,
@@ -338,7 +345,6 @@ function EditorScreen() {
         voice_match_score: analysis?.match_score ?? 0,
         completeness_score: completeness,
         word_count: analysis?.readability.words ?? 0,
-        author_id: user?.id ?? null,
       };
       if (editingPost) {
         const { error } = await supabase.from("blog_posts").update(payload).eq("id", editingPost.id);
@@ -363,7 +369,7 @@ function EditorScreen() {
     } finally {
       setSaving(false);
     }
-  }, [draft, editingPost, user, analysis, completeness, toast, fetchData]);
+  }, [draft, editingPost, analysis, completeness, toast, fetchData]);
 
   // ── Autosave 3s after last change
   useEffect(() => {
@@ -405,6 +411,10 @@ function EditorScreen() {
 
       {/* CENTER */}
       <main className="flex-1 min-w-0 flex flex-col">
+        <SourceBar
+          category={draft.category}
+          onApplyDraft={(patch) => setDraft((d) => ({ ...d, ...patch }))}
+        />
         <EditorToolbar
           mode={mode}
           setMode={setMode}
@@ -751,6 +761,199 @@ function AddTagInput({ onAdd }: { onAdd: (tag: string) => void }) {
       className="h-[22px] px-2 rounded border border-border bg-transparent font-mono text-[10.5px] w-24 outline-none focus:border-primary/60"
       placeholder="tag"
     />
+  );
+}
+
+// ─── SOURCE BAR — Ghost Writer engine entry point ─────────────────────────
+// Wires to the two-phase hans-blog-init pipeline defined in repo CLAUDE.md.
+// Phase 1: POST to hans-blog-init → returns brand_voice, recent_posts, resume_url.
+// Phase 2: Hans confirms the angle, we POST to resume_url with the final prompt.
+// The n8n orchestrator then writes the generated post into blog_posts directly.
+const BLOG_INIT_URL = "https://n8n.srv1402218.hstgr.cloud/webhook/hans-blog-init";
+
+interface InitResponse {
+  status: string;
+  brand_voice: string;
+  recent_posts: string;
+  resume_url: string;
+}
+
+function SourceBar({
+  category,
+  onApplyDraft,
+}: {
+  category: string;
+  onApplyDraft: (patch: Partial<ReturnType<typeof EMPTY_POST>>) => void;
+}) {
+  const { toast } = useToast();
+  const [topic, setTopic] = useState("");
+  const [youtube, setYoutube] = useState("");
+  const [angle, setAngle] = useState("");
+  const [phase, setPhase] = useState<"idle" | "verifying" | "resuming">("idle");
+  const [init, setInit] = useState<InitResponse | null>(null);
+
+  async function startPhase1() {
+    if (!topic.trim() && !youtube.trim()) {
+      toast({ title: "Need a topic or YouTube URL to start." });
+      return;
+    }
+    setPhase("verifying");
+    try {
+      const res = await fetch(BLOG_INIT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: category || "general",
+          raw_idea_or_data: youtube.trim() || topic.trim(),
+          proposed_angle: angle.trim() || topic.trim(),
+        }),
+      });
+      if (!res.ok) throw new Error(`Phase 1 failed: ${res.status}`);
+      const data = (await res.json()) as InitResponse;
+      setInit(data);
+    } catch (err) {
+      toast({
+        title: "Ghost Writer offline",
+        description: err instanceof Error ? err.message : "Could not reach hans-blog-init",
+        variant: "destructive",
+      });
+      setPhase("idle");
+    }
+  }
+
+  async function confirmPhase2(updatedBrandVoice: string) {
+    if (!init) return;
+    setPhase("resuming");
+    try {
+      const finalPrompt = [
+        `Category: ${category || "general"}`,
+        `Angle: ${angle.trim() || topic.trim()}`,
+        `Source: ${youtube.trim() || "topic only"}`,
+        "",
+        "Brand voice:",
+        updatedBrandVoice,
+        "",
+        "Recent coverage (avoid repetition):",
+        init.recent_posts,
+      ].join("\n");
+      const res = await fetch(init.resume_url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          confirmed: true,
+          updated_brand_voice: updatedBrandVoice,
+          final_article_prompt: finalPrompt,
+        }),
+      });
+      if (!res.ok) throw new Error(`Phase 2 failed: ${res.status}`);
+      toast({
+        title: "Ghost Writer dispatched",
+        description: "n8n is drafting — the post will appear in Articles when ready.",
+      });
+      onApplyDraft({ category: category || "general" });
+      setInit(null);
+      setTopic("");
+      setYoutube("");
+      setAngle("");
+    } catch (err) {
+      toast({
+        title: "Phase 2 failed",
+        description: err instanceof Error ? err.message : "Could not resume orchestrator",
+        variant: "destructive",
+      });
+    } finally {
+      setPhase("idle");
+    }
+  }
+
+  return (
+    <div className="border-b border-border/60 px-5 py-2.5 flex flex-col gap-2 bg-background">
+      <div className="flex items-center gap-2">
+        <span className="font-mono text-[9.5px] tracking-[0.2em] text-muted-foreground w-16">SOURCE</span>
+        <div className="flex items-center flex-1 gap-2 rounded border border-border px-2.5 h-8" style={{ background: "hsl(var(--card))" }}>
+          <Youtube size={12} className="text-muted-foreground" />
+          <input
+            value={youtube}
+            onChange={(e) => setYoutube(e.target.value)}
+            placeholder="YouTube URL (optional)"
+            className="flex-1 bg-transparent border-none outline-none text-[12px] font-mono"
+          />
+        </div>
+        <div className="flex items-center flex-1 gap-2 rounded border border-border px-2.5 h-8" style={{ background: "hsl(var(--card))" }}>
+          <Sparkles size={12} className="text-muted-foreground" />
+          <input
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            placeholder="Topic or raw idea"
+            className="flex-1 bg-transparent border-none outline-none text-[12px]"
+          />
+        </div>
+        <div className="flex items-center flex-1 gap-2 rounded border border-border px-2.5 h-8" style={{ background: "hsl(var(--card))" }}>
+          <input
+            value={angle}
+            onChange={(e) => setAngle(e.target.value)}
+            placeholder="Proposed angle (optional)"
+            className="flex-1 bg-transparent border-none outline-none text-[12px]"
+          />
+        </div>
+        <Button
+          size="sm"
+          className="h-8 text-[12px]"
+          onClick={startPhase1}
+          disabled={phase !== "idle"}
+        >
+          <Play size={11} className="mr-1" />
+          {phase === "verifying" ? "Consulting memory…" : phase === "resuming" ? "Dispatching…" : "Ghost-write"}
+        </Button>
+      </div>
+      {init && <PhaseTwoConfirm init={init} onCancel={() => { setInit(null); setPhase("idle"); }} onConfirm={confirmPhase2} />}
+    </div>
+  );
+}
+
+function PhaseTwoConfirm({
+  init,
+  onCancel,
+  onConfirm,
+}: {
+  init: InitResponse;
+  onCancel: () => void;
+  onConfirm: (updatedBrandVoice: string) => void;
+}) {
+  const [voice, setVoice] = useState(init.brand_voice);
+  return (
+    <div
+      className="rounded border border-primary/40 p-3 flex flex-col gap-2"
+      style={{ background: "hsl(var(--primary) / 0.05)" }}
+    >
+      <div className="flex items-center gap-2">
+        <Chip tone="primary" dot>PHASE 2 · VERIFY</Chip>
+        <span className="font-mono text-[10.5px] text-muted-foreground">Edit brand voice if needed, then confirm to dispatch the ghost writer.</span>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1">
+          <Eyebrow>Brand voice</Eyebrow>
+          <textarea
+            value={voice}
+            onChange={(e) => setVoice(e.target.value)}
+            className="min-h-[80px] text-[12px] font-mono bg-card border border-border rounded p-2 outline-none focus:border-primary/60 resize-none"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Eyebrow>Recent coverage (last 5)</Eyebrow>
+          <div className="min-h-[80px] text-[12px] bg-card border border-border/60 rounded p-2 text-muted-foreground whitespace-pre-wrap overflow-y-auto">
+            {init.recent_posts || "— no prior posts in this category —"}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+        <Button size="sm" onClick={() => onConfirm(voice)}>
+          <Sparkles size={11} className="mr-1" />
+          Confirm & dispatch
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -1523,84 +1726,190 @@ function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  VOICE TEMPLATES SCREEN (minimal list — full editor in a separate file)
+//  VOICE TEMPLATES SCREEN
+//  Cards open the 9-section editor at /blog-cms/voice/:id.
+//  Archive sets archived_at (soft-delete per product rule — no hard deletes).
+//  Archived templates are hidden by default; toggle to review them.
 // ═══════════════════════════════════════════════════════════════════════════
+type VTRow = VT & { is_default?: boolean; archived_at?: string | null };
+
 function VoiceTemplatesScreen() {
-  const [templates, setTemplates] = useState<VT[]>([]);
-  useEffect(() => {
-    supabase
+  const { toast } = useToast();
+  const [templates, setTemplates] = useState<VTRow[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
+
+  const load = useCallback(async () => {
+    const { data, error } = await supabase
       .from("hvl_voice_templates")
       .select("*")
       .order("is_default", { ascending: false })
-      .then(({ data }) => setTemplates((data ?? []) as unknown as VT[]));
-  }, []);
+      .order("name");
+    if (error) {
+      toast({ title: "Load failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setTemplates((data ?? []) as unknown as VTRow[]);
+  }, [toast]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const archive = async (id: string) => {
+    const { error } = await supabase
+      .from("hvl_voice_templates")
+      .update({ archived_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Archive failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Template archived", description: "Hidden from pickers, history preserved." });
+    await load();
+  };
+
+  const unarchive = async (id: string) => {
+    const { error } = await supabase
+      .from("hvl_voice_templates")
+      .update({ archived_at: null })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Restore failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    await load();
+  };
+
+  const active = templates.filter((t) => !t.archived_at);
+  const archived = templates.filter((t) => !!t.archived_at);
+  const visible = showArchived ? archived : active;
 
   return (
     <div style={{ padding: "32px" }}>
-      <div className="flex flex-col gap-2 mb-6">
-        <Eyebrow>Voice library · {templates.length} templates</Eyebrow>
-        <h1 className="font-display text-[32px] font-medium tracking-tight">Voice Templates</h1>
-      </div>
-      <div className="grid grid-cols-3 gap-5">
-        {templates.map((t) => {
-          const isDefault = (t as VT & { is_default?: boolean }).is_default;
-          return (
-            <div
-              key={t.id}
-              className="rounded border p-5 relative"
-              style={{
-                background: isDefault ? "hsl(var(--primary) / 0.05)" : "hsl(var(--card))",
-                borderColor: isDefault ? "hsl(var(--primary) / 0.4)" : "hsl(var(--border) / 0.6)",
-              }}
+      <div className="flex items-end justify-between mb-6">
+        <Eyebrow>
+          Voice library · {active.length} active
+          {archived.length > 0 && ` · ${archived.length} archived`}
+        </Eyebrow>
+        <div className="flex items-center gap-2">
+          {archived.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[11.5px]"
+              onClick={() => setShowArchived((s) => !s)}
             >
-              {isDefault && (
-                <div
-                  className="absolute top-3.5 bottom-3.5 w-0.5 rounded"
-                  style={{ left: 0, background: "hsl(var(--primary))" }}
-                />
-              )}
-              <div className="font-display text-[15px] font-medium mb-2">{t.name}</div>
-              <div className="font-mono text-[9.5px] tracking-wider text-muted-foreground mb-3">
-                {isDefault ? "DEFAULT · " : ""}GRADE {t.target_reading_level}
-              </div>
-              <div className="flex items-center justify-between">
-                <Radar
-                  values={[t.formality, t.humor, t.respectfulness, t.enthusiasm]}
-                  size={80}
-                  rings={3}
-                  showLabels={false}
-                  fillOpacity={isDefault ? 0.25 : 0.15}
-                  stroke={
-                    isDefault ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
-                  }
-                />
-                <div className="flex flex-col gap-1 font-mono text-[10px] text-muted-foreground">
-                  <div>
-                    FORM <span className="text-foreground">{t.formality}</span>
-                  </div>
-                  <div>
-                    HUMR <span className="text-foreground">{t.humor}</span>
-                  </div>
-                  <div>
-                    RESP <span className="text-foreground">{t.respectfulness}</span>
-                  </div>
-                  <div>
-                    ENTH <span className="text-foreground">{t.enthusiasm}</span>
-                  </div>
-                </div>
-              </div>
-              {t.description && (
-                <p className="text-[12px] text-muted-foreground mt-4 leading-relaxed">
-                  {t.description}
-                </p>
-              )}
-            </div>
-          );
-        })}
+              {showArchived ? `Show active (${active.length})` : `Show archived (${archived.length})`}
+            </Button>
+          )}
+          <Button size="sm" asChild>
+            <a href="/blog-cms/voice/new">
+              <Plus size={12} className="mr-1" />
+              New template
+            </a>
+          </Button>
+        </div>
       </div>
-      <div className="mt-6 text-[12px] text-muted-foreground">
-        Full 9-section template editor — see{" "}
-        <code className="font-mono text-[11px]">VoiceTemplateEditor.tsx</code>.
+
+      {visible.length === 0 ? (
+        <div className="py-20 text-center text-muted-foreground text-sm">
+          {showArchived ? "No archived templates." : "No active templates. Create one to get started."}
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-5">
+          {visible.map((t) => (
+            <VoiceTemplateCard
+              key={t.id}
+              template={t}
+              onArchive={showArchived ? undefined : () => archive(t.id)}
+              onRestore={showArchived ? () => unarchive(t.id) : undefined}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function VoiceTemplateCard({
+  template,
+  onArchive,
+  onRestore,
+}: {
+  template: VTRow;
+  onArchive?: () => void;
+  onRestore?: () => void;
+}) {
+  const isDefault = template.is_default;
+  const dimmed = !!template.archived_at;
+  return (
+    <div
+      className="rounded border p-5 relative group transition-all"
+      style={{
+        background: isDefault ? "hsl(var(--primary) / 0.05)" : "hsl(var(--card))",
+        borderColor: isDefault ? "hsl(var(--primary) / 0.4)" : "hsl(var(--border) / 0.6)",
+        opacity: dimmed ? 0.6 : 1,
+      }}
+    >
+      {isDefault && (
+        <div
+          className="absolute top-3.5 bottom-3.5 w-0.5 rounded"
+          style={{ left: 0, background: "hsl(var(--primary))" }}
+        />
+      )}
+      <a href={`/blog-cms/voice/${template.id}`} className="block hover:underline">
+        <div className="font-display text-[15px] font-medium mb-2">{template.name}</div>
+      </a>
+      <div className="font-mono text-[9.5px] tracking-wider text-muted-foreground mb-3">
+        {isDefault ? "DEFAULT · " : ""}GRADE {template.target_reading_level}
+        {dimmed && " · ARCHIVED"}
+      </div>
+      <div className="flex items-center justify-between">
+        <Radar
+          values={[template.formality, template.humor, template.respectfulness, template.enthusiasm]}
+          size={80}
+          rings={3}
+          showLabels={false}
+          fillOpacity={isDefault ? 0.25 : 0.15}
+          stroke={isDefault ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"}
+        />
+        <div className="flex flex-col gap-1 font-mono text-[10px] text-muted-foreground">
+          <div>FORM <span className="text-foreground">{template.formality}</span></div>
+          <div>HUMR <span className="text-foreground">{template.humor}</span></div>
+          <div>RESP <span className="text-foreground">{template.respectfulness}</span></div>
+          <div>ENTH <span className="text-foreground">{template.enthusiasm}</span></div>
+        </div>
+      </div>
+      {template.description && (
+        <p className="text-[12px] text-muted-foreground mt-4 leading-relaxed line-clamp-3">
+          {template.description}
+        </p>
+      )}
+      <div className="flex items-center gap-1 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button variant="ghost" size="sm" className="h-7 text-[11px]" asChild>
+          <a href={`/blog-cms/voice/${template.id}`}>Edit</a>
+        </Button>
+        {onArchive && !isDefault && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-[11px] text-muted-foreground hover:text-foreground"
+            onClick={onArchive}
+          >
+            <Trash2 size={11} className="mr-1" />
+            Archive
+          </Button>
+        )}
+        {onRestore && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-[11px]"
+            onClick={onRestore}
+          >
+            Restore
+          </Button>
+        )}
       </div>
     </div>
   );
