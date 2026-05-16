@@ -146,6 +146,27 @@ A phase gate = the feature works end-to-end and doesn't break anything that work
 Ghost-write button → POSTs to `hans-blog-init` ✅. PhaseTwoConfirm renders when `resume_url`
 returned ✅. Dispatch POSTs to `resume_url` ✅. Posts table refreshes on completion ✅.
 
+**Verification (2026-05-16):**
+- TSC: PASS (no errors)
+- Production build: PASS (WriteCMS 15.91 kB JS / 29.82 kB CSS)
+- All routes confirmed: `/write` → WriteCMS shell, `/blog-cms` → redirect to `/write`,
+  `/blog-cms/voice/:id` → VoiceTemplateEditor (lazy, untouched)
+- All CSS verified scoped under `.write-cms` — no unscoped rules
+- Imports verified: ManageMode → ManageSourceBar → useBlogInitWorkflow (correct chain)
+- Endpoint match: `useBlogInitWorkflow.ts` line 3 = `BlogCMS.tsx` line 1013 ✅
+
+**Runtime blocker — n8n workflow inactive:**
+  `POST https://n8n.srv1402218.hstgr.cloud/webhook/hans-blog-init` returns HTTP 404:
+  `"The workflow must be active for a production URL to run successfully."`
+  Frontend code is correct. Blocker is n8n side — the `hans-blog-init` workflow needs to be
+  activated in n8n UI (toggle in top-right of workflow editor). Error state in SourceBar will
+  display the 404 message correctly when triggered.
+
+**TODO (security — do not refactor now):**
+  `BLOG_INIT_URL` is hardcoded in `useBlogInitWorkflow.ts`. No auth token required by n8n
+  currently (webhook is public). If auth is added later, move to `VITE_N8N_BLOG_INIT_URL`
+  env var or proxy via Supabase Edge Function to avoid exposing credentials client-side.
+
 ---
 
 ### Phase 4 — YouTube → bilingual article workflow
