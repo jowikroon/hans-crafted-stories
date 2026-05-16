@@ -56,6 +56,7 @@ const AnimatedRoutes = () => {
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
         <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
+        <Route path="/write/:id" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />

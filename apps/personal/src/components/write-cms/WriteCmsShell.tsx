@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./write-cms.css";
 import WriteMode from "./modes/WriteMode";
 import ManageMode from "./modes/ManageMode";
@@ -42,8 +42,13 @@ const MODES: { id: CmsMode; label: string; count: string; icon: React.ReactNode 
   },
 ];
 
-export default function WriteCmsShell() {
-  const [mode, setMode] = useState<CmsMode>("write");
+export default function WriteCmsShell({ postId }: { postId?: string }) {
+  const [mode, setMode] = useState<CmsMode>(postId ? "write" : "write");
+
+  // When navigating to /write/:id, auto-switch to write mode
+  useEffect(() => {
+    if (postId) setMode("write");
+  }, [postId]);
 
   return (
     <div className="write-cms" data-theme="light">
@@ -91,7 +96,7 @@ export default function WriteCmsShell() {
         </aside>
 
         {/* Active mode — renders its own .main (and optionally .rail) */}
-        {mode === "write" && <WriteMode />}
+        {mode === "write" && <WriteMode postId={postId} />}
         {mode === "manage" && <ManageMode />}
         {mode === "analytics" && <AnalyticsMode />}
       </div>

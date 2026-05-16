@@ -99,6 +99,17 @@ A phase gate = the feature works end-to-end and doesn't break anything that work
 
 ### Phase 2 — Write mode: editor + autosave
 
+**Pre-req B.1 — COMPLETE (2026-05-16):**
+- `/write/:id` route added in `AnimatedRoutes.tsx` — loads WriteCMS with postId param
+- `WriteCMS.tsx` reads `useParams` and passes `postId` to `WriteCmsShell`
+- `WriteCmsShell.tsx` accepts `postId` prop, auto-switches to write mode when id present
+- `ManageMode.tsx` post rows are clickable — `useNavigate` to `/write/:id`
+- `useBlogPost.ts` hook: queries `blog_posts` by id, returns loading/loaded/not-found/error states
+- `WriteMode.tsx` displays real post data: title (EN+NL), content (EN+NL rendered HTML),
+  status pill, category, word count, voice match score, completeness score, SEO card
+- Empty state (no id): shows "Select a post from Manage or start a new draft"
+- TSC: PASS. Production build: PASS.
+
 **Goal:** Writing an article in the EN/NL split editor saves to `blog_posts` in real-time.
 
 **Files:**

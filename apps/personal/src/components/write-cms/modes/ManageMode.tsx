@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ManageSourceBar from "../manage/ManageSourceBar";
 import { useBlogInitWorkflow } from "../manage/useBlogInitWorkflow";
@@ -45,6 +46,8 @@ export default function ManageMode() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterTab>("all");
   const [search, setSearch] = useState("");
+
+  const navigate = useNavigate();
 
   const fetchPosts = useCallback(async () => {
     const { data } = await supabase
@@ -170,7 +173,7 @@ export default function ManageMode() {
               </tr>
             )}
             {filtered.map((p) => (
-              <tr key={p.id}>
+              <tr key={p.id} onClick={() => navigate(`/write/${p.id}`)} style={{ cursor: "pointer" }}>
                 <td className="title">
                   {p.title || "(Untitled)"}
                   <small>/{p.slug}</small>
