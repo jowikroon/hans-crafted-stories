@@ -118,17 +118,28 @@ A phase gate = the feature works end-to-end and doesn't break anything that work
 
 ### Phase 3 — Manage mode: article list + SourceBar + Phase 1→2 flow
 
-**Goal:** Manage mode shows real articles from `blog_posts`. SourceBar triggers the n8n Ghost Writer.
+**Status: PARTIALLY COMPLETE** (posts table done; SourceBar/PhaseTwoConfirm deferred to Phase 4)
 
-**Files:**
-- Expand: `apps/personal/src/components/write-cms/modes/ManageMode.tsx`
-  - Port `ArticlesScreen` from `BlogCMS.tsx` (Supabase query, search, filter, status pills)
-  - Port `SourceBar` from `BlogCMS.tsx` (YouTube URL + topic + angle → `hans-blog-init`)
-  - Port `PhaseTwoConfirm` from `BlogCMS.tsx` (brand voice edit → `resume_url`)
-  - Port `VoiceTemplatesScreen` from `BlogCMS.tsx` (links to `/blog-cms/voice/:id`)
-- Keep YouTube embedder visible in Manage mode (same position as old BlogCMS ArticlesScreen)
+**Completed (2026-05-16):**
+- `ManageMode.tsx` replaced: real Supabase `blog_posts` query, filter tabs (All/Draft/Live/Scheduled)
+  with live counts, search input, `posts-table` with `posts-pill` status badges
+- Status mapping: `published`/`published=true` → live, `draft` → draft, `scheduled` → scheduled,
+  `review` → in review — matches prototype CSS classes exactly
+- Date formatting: recent hours as "2h", older as "28 Mar"
+- Structure ported verbatim from `write-src.html` lines 3036–3083 (`manage-h`, `manage-stats`,
+  `posts-wrap`, `posts-toolbar`, `filter-tabs`, `search-mini`, `posts-table`)
+- TypeCheck clean, production build passes
 
-**Gate:** Articles list loads from Supabase. Entering a YouTube URL + topic → Phase 1 returns brand voice → Phase 2 confirm → n8n dispatches Ghost Writer → draft appears in list.
+**Note:** `write-src.html` manage section does NOT contain a SourceBar or YouTube embedder —
+those are part of the Write view. SourceBar/PhaseTwoConfirm remain in `BlogCMS.tsx` and will
+be ported when the Write mode pipeline is wired (Phase 4).
+
+**Remaining in this phase:**
+- Port `SourceBar` from `BlogCMS.tsx` (YouTube URL + topic + angle → `hans-blog-init`)
+- Port `PhaseTwoConfirm` from `BlogCMS.tsx` (brand voice edit → `resume_url`)
+- Port `VoiceTemplatesScreen` from `BlogCMS.tsx` (links to `/blog-cms/voice/:id`)
+
+**Gate:** Articles list loads from Supabase ✅. Entering a YouTube URL + topic → Phase 1 returns brand voice → Phase 2 confirm → n8n dispatches Ghost Writer → draft appears in list (pending).
 
 ---
 
