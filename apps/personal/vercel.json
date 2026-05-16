@@ -4,6 +4,11 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/blog-cms",
+      "destination": "/write",
+      "permanent": false
+    },
+    {
       "source": "/:path+/",
       "destination": "/:path+",
       "permanent": true
