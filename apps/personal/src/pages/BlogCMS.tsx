@@ -3,7 +3,7 @@
 // Reuses existing .dark palette from index.css (terracotta primary, warm bg).
 // No hardcoded cool-grey constants. All color comes from HSL tokens.
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -59,27 +59,6 @@ const TABS: { id: CmsView; label: string }[] = [
   { id: "voice", label: "Voice Templates" },
 ];
 
-const PAGE_META: Record<CmsView, { eyebrow: string; titleA: string; titleEm: string; subtitle: string }> = {
-  editor: {
-    eyebrow: "Editorial Desk",
-    titleA: "Draft",
-    titleEm: "in progress",
-    subtitle: "Write, analyze voice, and get editorial feedback before publishing to hansvanleeuwen.com/writing.",
-  },
-  voice: {
-    eyebrow: "Voice Studio",
-    titleA: "Voice",
-    titleEm: "templates",
-    subtitle: "Define how each article should sound — tone axes, readability targets, terminology, and rules.",
-  },
-  articles: {
-    eyebrow: "Library",
-    titleA: "All",
-    titleEm: "articles",
-    subtitle: "Drafts, scheduled and published posts across NL and EN.",
-  },
-};
-
 const EMPTY_POST = (): Omit<BlogPost, "id" | "created_at" | "updated_at"> => ({
   title: "",
   slug: "",
@@ -112,6 +91,48 @@ const slugify = (t: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
+// ─── CMS Actions Context ─────────────────────────────────────────────────
+// Lifted action surface. Screens register their handlers; TabBar invokes them.
+// Solves C1 (dead buttons), C2 (cross-screen new-draft intent),
+// H1 (ribbon bound to real state).
+
+interface EditorActions {
+  save?: () => void | Promise<void>;
+  publish?: () => void | Promise<void>;
+  preview?: () => void;
+  saving: boolean;
+  lastSaved: Date | null;
+  hasDraft: boolean;
+}
+interface ArticlesActions {
+  importCsv?: () => void;
+}
+
+interface CmsActionsContextValue {
+  editor: EditorActions;
+  articles: ArticlesActions;
+  setEditor: (next: EditorActions) => void;
+  setArticles: (next: ArticlesActions) => void;
+  // Cross-screen "create new draft" intent.
+  // TabBar bumps the token; EditorScreen watches and clears its draft.
+  newDraftToken: number;
+  requestNewDraft: () => void;
+  // Cross-screen "open this article" intent. ArticlesScreen rows call
+  // requestOpenPost(id) → tab flips to editor → EditorScreen hydrates from supabase.
+  pendingOpenPostId: string | null;
+  openPostToken: number;
+  requestOpenPost: (id: string) => void;
+  clearPendingOpenPost: () => void;
+}
+
+const CmsActionsContext = createContext<CmsActionsContextValue | null>(null);
+
+function useCmsActions(): CmsActionsContextValue {
+  const ctx = useContext(CmsActionsContext);
+  if (!ctx) throw new Error("useCmsActions: must be used inside <BlogCMS>");
+  return ctx;
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────
 export default function BlogCMS() {
   const [tab, setTab] = useState<CmsView>(() => {
@@ -122,79 +143,108 @@ export default function BlogCMS() {
     localStorage.setItem("cms_tab", tab);
   }, [tab]);
 
+  const [editor, setEditor] = useState<EditorActions>({
+    saving: false,
+    lastSaved: null,
+    hasDraft: false,
+  });
+  const [articles, setArticles] = useState<ArticlesActions>({});
+  const [newDraftToken, setNewDraftToken] = useState(0);
+  const [pendingOpenPostId, setPendingOpenPostId] = useState<string | null>(null);
+  const [openPostToken, setOpenPostToken] = useState(0);
+
+  const requestNewDraft = useCallback(() => {
+    setTab("editor");
+    setNewDraftToken((n) => n + 1);
+  }, []);
+
+  const requestOpenPost = useCallback((id: string) => {
+    setPendingOpenPostId(id);
+    setOpenPostToken((n) => n + 1);
+    setTab("editor");
+  }, []);
+
+  const clearPendingOpenPost = useCallback(() => {
+    setPendingOpenPostId(null);
+  }, []);
+
+  const ctxValue = useMemo<CmsActionsContextValue>(
+    () => ({
+      editor,
+      articles,
+      setEditor,
+      setArticles,
+      newDraftToken,
+      requestNewDraft,
+      pendingOpenPostId,
+      openPostToken,
+      requestOpenPost,
+      clearPendingOpenPost,
+    }),
+    [
+      editor,
+      articles,
+      newDraftToken,
+      requestNewDraft,
+      pendingOpenPostId,
+      openPostToken,
+      requestOpenPost,
+      clearPendingOpenPost,
+    ],
+  );
+
   return (
-    <div className="dark min-h-screen bg-background text-foreground font-sans antialiased">
-      <PortalHeader tab={tab} setTab={setTab} />
-      <StatusRibbon />
-      <TabBar tab={tab} setTab={setTab} />
-      {tab === "articles" && <ArticlesScreen onEdit={() => setTab("editor")} />}
-      {tab === "editor" && <EditorScreen />}
-      {tab === "voice" && <VoiceTemplatesScreen />}
+    <CmsActionsContext.Provider value={ctxValue}>
+      <div className="dark min-h-screen bg-background text-foreground font-sans antialiased">
+        <ContextStrip tab={tab} />
+        <StatusRibbon />
+        <TabBar tab={tab} setTab={setTab} />
+        {tab === "articles" && <ArticlesScreen onEdit={() => setTab("editor")} />}
+        {tab === "editor" && <EditorScreen />}
+        {tab === "voice" && <VoiceTemplatesScreen />}
+      </div>
+    </CmsActionsContext.Provider>
+  );
+}
+
+// ─── Context strip (H3): minimal "you are here" label ───────────────────
+function ContextStrip({ tab }: { tab: CmsView }) {
+  const label = TABS.find((t) => t.id === tab)?.label ?? tab;
+  return (
+    <div className="px-4 sm:px-8 pt-3 pb-1 hidden sm:block">
+      <span className="font-mono text-[10px] tracking-[0.18em] uppercase text-muted-foreground/70">
+        Blog CMS · {label}
+      </span>
     </div>
   );
 }
 
-// ─── Portal header (breadcrumb + eyebrow + title + subtitle + actions) ───
-function PortalHeader({ tab, setTab }: { tab: CmsView; setTab: (t: CmsView) => void }) {
-  const meta = PAGE_META[tab];
-  const actions: Record<CmsView, React.ReactNode> = {
-    editor: (
-      <>
-        <Button variant="ghost" size="sm">Preview</Button>
-        <Button variant="outline" size="sm">Save draft</Button>
-        <Button size="sm">Publish</Button>
-      </>
-    ),
-    voice: (
-      <>
-        <Button variant="ghost" size="sm" onClick={() => setTab("editor")}>Test on draft</Button>
-        <Button size="sm" asChild><a href="/blog-cms/voice/new">+ New template</a></Button>
-      </>
-    ),
-    articles: (
-      <>
-        <Button variant="ghost" size="sm">Import CSV</Button>
-        <Button size="sm" onClick={() => setTab("editor")}>+ New article</Button>
-      </>
-    ),
-  };
-  return (
-    <header className="px-8 pt-7 pb-4 border-b border-border/40 bg-background">
-      <nav className="flex items-center gap-2 font-mono text-[10.5px] tracking-[0.12em] text-muted-foreground mb-4">
-        <span className="hover:text-foreground cursor-pointer">PORTAL</span>
-        <span className="opacity-50">›</span>
-        <span className="hover:text-foreground cursor-pointer">CONTENT</span>
-        <span className="opacity-50">›</span>
-        <span className="text-foreground">BLOG CMS</span>
-      </nav>
-      <div className="flex items-end justify-between gap-6">
-        <div className="min-w-0 flex-1">
-          <Eyebrow className="mb-2">{meta.eyebrow}</Eyebrow>
-          <h1 className="font-display text-[40px] leading-[1.05] font-medium tracking-tight text-foreground">
-            {meta.titleA} <em className="italic text-primary font-normal">{meta.titleEm}</em>
-          </h1>
-          <p className="mt-2 max-w-2xl text-[13px] text-muted-foreground leading-relaxed">
-            {meta.subtitle}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0 pb-1">{actions[tab]}</div>
-      </div>
-    </header>
-  );
-}
-
-// ─── Status ribbon (instrument-style context bar) ────────────────────────
+// ─── Status ribbon (H1: bound to real state; H2: ⌘K hint removed) ───────
 function StatusRibbon() {
+  const { editor } = useCmsActions();
+  const [, forceTick] = useState(0);
+  // Tick every 15s so "Saved Xs ago" stays fresh without re-rendering the world.
+  useEffect(() => {
+    if (!editor.lastSaved) return;
+    const id = setInterval(() => forceTick((n) => n + 1), 15000);
+    return () => clearInterval(id);
+  }, [editor.lastSaved]);
+
+  let pill: React.ReactNode;
+  if (editor.saving) {
+    pill = <RibbonPill tone="info">Saving…</RibbonPill>;
+  } else if (editor.lastSaved) {
+    pill = <RibbonPill tone="ok">Saved {timeAgoShort(editor.lastSaved)}</RibbonPill>;
+  } else if (editor.hasDraft) {
+    pill = <RibbonPill tone="warn">Unsaved</RibbonPill>;
+  } else {
+    pill = <RibbonPill tone="info">Ready</RibbonPill>;
+  }
+
   return (
-    <div className="px-8 py-2.5 flex items-center gap-2.5 border-b border-border/40 bg-background">
-      <RibbonPill tone="ok">Supabase synced · 2m ago</RibbonPill>
-      <RibbonPill tone="warn">1 agent note on draft</RibbonPill>
-      <RibbonPill tone="info">Samantha standing by</RibbonPill>
+    <div className="px-3 sm:px-8 py-1.5 sm:py-2 flex items-center gap-2.5 border-b border-border/40 bg-background">
+      {pill}
       <span className="flex-1" />
-      <Kbd>⌘K</Kbd>
-      <span className="font-mono text-[10.5px] tracking-[0.05em] text-muted-foreground">
-        search · navigate · trigger
-      </span>
     </div>
   );
 }
@@ -219,26 +269,107 @@ function RibbonPill({ tone, children }: { tone: "ok" | "warn" | "info"; children
   );
 }
 
-// ─── Section tabs ────────────────────────────────────────────────────────
+function timeAgoShort(d: Date): string {
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 5) return "just now";
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  return `${h}h ago`;
+}
+
+// ─── Section tabs (C1 wired, C3 mobile-collapsing) ──────────────────────
 function TabBar({ tab, setTab }: { tab: CmsView; setTab: (t: CmsView) => void }) {
+  const { editor, articles, requestNewDraft } = useCmsActions();
+
+  const actions: Record<CmsView, React.ReactNode> = {
+    editor: (
+      <>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={editor.preview}
+          disabled={!editor.preview}
+          className="hidden sm:inline-flex"
+        >
+          Preview
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={editor.save}
+          disabled={!editor.save || editor.saving}
+          title="Save (⌘S)"
+        >
+          {editor.saving ? "Saving…" : "Save"}
+        </Button>
+        <Button
+          size="sm"
+          onClick={editor.publish}
+          disabled={!editor.publish || editor.saving}
+          title="Publish (⌘↩)"
+        >
+          Publish
+        </Button>
+      </>
+    ),
+    voice: (
+      <>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setTab("editor")}
+          className="hidden sm:inline-flex"
+        >
+          Test on draft
+        </Button>
+        <Button size="sm" asChild>
+          <a href="/blog-cms/voice/new">+ New template</a>
+        </Button>
+      </>
+    ),
+    articles: (
+      <>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={articles.importCsv}
+          disabled={!articles.importCsv}
+          className="hidden sm:inline-flex"
+        >
+          Import CSV
+        </Button>
+        <Button size="sm" onClick={requestNewDraft}>
+          + New article
+        </Button>
+      </>
+    ),
+  };
+
   return (
-    <nav className="h-11 border-b border-border/60 px-8 flex items-end gap-0.5 bg-background">
-      {TABS.map((t) => {
-        const active = tab === t.id;
-        return (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-4 pb-2.5 pt-2 text-[13px] font-medium flex items-center gap-2 border-b-2 -mb-px transition-colors ${
-              active
-                ? "text-foreground border-primary"
-                : "text-muted-foreground border-transparent hover:text-foreground"
-            }`}
-          >
-            <span>{t.label}</span>
-          </button>
-        );
-      })}
+    <nav className="h-11 border-b border-border/60 px-3 sm:px-8 flex items-end justify-between gap-0.5 bg-background">
+      <div className="flex items-end gap-0.5 overflow-x-auto min-w-0">
+        {TABS.map((t) => {
+          const active = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-3 sm:px-4 pb-2.5 pt-2 text-[13px] font-medium flex items-center gap-2 border-b-2 -mb-px transition-colors whitespace-nowrap ${
+                active
+                  ? "text-foreground border-primary"
+                  : "text-muted-foreground border-transparent hover:text-foreground"
+              }`}
+            >
+              <span>{t.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-1.5 sm:gap-2 pb-1 flex-shrink-0">
+        {actions[tab]}
+      </div>
     </nav>
   );
 }
@@ -249,6 +380,13 @@ function TabBar({ tab, setTab }: { tab: CmsView; setTab: (t: CmsView) => void })
 
 function EditorScreen() {
   const { toast } = useToast();
+  const {
+    setEditor,
+    newDraftToken,
+    pendingOpenPostId,
+    openPostToken,
+    clearPendingOpenPost,
+  } = useCmsActions();
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [voiceTemplates, setVoiceTemplates] = useState<VT[]>([]);
@@ -258,6 +396,9 @@ function EditorScreen() {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [autosaveTimer, setAutosaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  // C2: suppress auto-hydrate when user just clicked "+ New article".
+  // Set true on every newDraftToken bump; cleared once user opens an existing post or saves.
+  const [pristineNew, setPristineNew] = useState(false);
 
   // ── Fetch posts + templates
   const fetchData = useCallback(async () => {
@@ -270,15 +411,16 @@ function EditorScreen() {
     } else {
       const rows = (postsRes.data ?? []) as unknown as BlogPost[];
       setPosts(rows);
-      // Load the most-recently-updated draft into the editor on first load
-      if (!editingPost && rows.length > 0) {
+      // Load the most-recently-updated draft into the editor on first load,
+      // but NOT if the user explicitly requested a new blank draft.
+      if (!editingPost && !pristineNew && rows.length > 0) {
         const target = rows.find((r) => r.status === "draft") ?? rows[0];
         hydrateDraft(target);
       }
     }
     if (!tplRes.error) setVoiceTemplates((tplRes.data ?? []) as unknown as VT[]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast]);
+  }, [toast, pristineNew]);
 
   useEffect(() => {
     fetchData();
@@ -331,45 +473,61 @@ function EditorScreen() {
   const outline = useMemo(() => extractOutline(draft.content), [draft.content]);
   const completeness = useMemo(() => computeCompleteness(draft), [draft]);
 
-  // ── Save
-  const save = useCallback(async () => {
-    if (!draft.title.trim()) {
-      toast({ title: "Title required", description: "Add a title before saving." });
-      return;
-    }
-    setSaving(true);
-    try {
-      const payload: Partial<BlogPost> = {
-        ...draft,
-        published: draft.status === "published",
-        voice_match_score: analysis?.match_score ?? 0,
-        completeness_score: completeness,
-        word_count: analysis?.readability.words ?? 0,
-      };
-      if (editingPost) {
-        const { error } = await supabase.from("blog_posts").update(payload).eq("id", editingPost.id);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from("blog_posts")
-          .insert(payload)
-          .select()
-          .single();
-        if (error) throw error;
-        if (data) setEditingPost(data as unknown as BlogPost);
+  // ── Persist (single source of truth for save AND publish).
+  // Overrides let `publish` flip status without racing setDraft.
+  const persist = useCallback(
+    async (overrides: Partial<typeof draft> = {}) => {
+      const merged = { ...draft, ...overrides };
+      if (!merged.title.trim()) {
+        toast({ title: "Title required", description: "Add a title before saving." });
+        return;
       }
-      setLastSaved(new Date());
-      await fetchData();
-    } catch (err) {
-      toast({
-        title: "Save failed",
-        description: err instanceof Error ? err.message : "Unknown error",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  }, [draft, editingPost, analysis, completeness, toast, fetchData]);
+      setSaving(true);
+      try {
+        const payload: Partial<BlogPost> = {
+          ...merged,
+          published: merged.status === "published",
+          voice_match_score: analysis?.match_score ?? 0,
+          completeness_score: completeness,
+          word_count: analysis?.readability.words ?? 0,
+        };
+        if (editingPost) {
+          const { error } = await supabase.from("blog_posts").update(payload).eq("id", editingPost.id);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase
+            .from("blog_posts")
+            .insert(payload)
+            .select()
+            .single();
+          if (error) throw error;
+          if (data) setEditingPost(data as unknown as BlogPost);
+        }
+        // Reflect overrides into local draft so the UI doesn't snap back after publish.
+        if (Object.keys(overrides).length) setDraft((d) => ({ ...d, ...overrides }));
+        setLastSaved(new Date());
+        // Once we've saved, the draft is no longer "pristine new".
+        setPristineNew(false);
+        await fetchData();
+      } catch (err) {
+        toast({
+          title: "Save failed",
+          description: err instanceof Error ? err.message : "Unknown error",
+          variant: "destructive",
+        });
+      } finally {
+        setSaving(false);
+      }
+    },
+    [draft, editingPost, analysis, completeness, toast, fetchData],
+  );
+
+  const save = useCallback(() => persist(), [persist]);
+  const publish = useCallback(async () => {
+    await persist({ status: "published" });
+    toast({ title: "Published", description: "Article is now live." });
+  }, [persist, toast]);
+  const preview = useCallback(() => setMode("preview"), []);
 
   // ── Autosave 3s after last change
   useEffect(() => {
@@ -381,18 +539,101 @@ function EditorScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.content, draft.title, draft.slug, draft.excerpt]);
 
-  // ── New post
-  const newPost = () => {
+  // ── New post (also fired by TabBar via newDraftToken)
+  const newPost = useCallback(() => {
     setEditingPost(null);
     const defaultTpl = voiceTemplates.find((t) => (t as VT & { is_default?: boolean }).is_default);
     setDraft({
       ...EMPTY_POST(),
       voice_template_id: defaultTpl?.id ?? null,
     });
-  };
+    setLastSaved(null);
+    setPristineNew(true);
+  }, [voiceTemplates]);
+
+  // C2: When TabBar requests a new draft, clear local state.
+  // The first bump from initial render (token starts at 0) is ignored by the guard.
+  const lastSeenNewDraftToken = useRef(0);
+  useEffect(() => {
+    if (newDraftToken === 0) return;
+    if (lastSeenNewDraftToken.current === newDraftToken) return;
+    lastSeenNewDraftToken.current = newDraftToken;
+    newPost();
+  }, [newDraftToken, newPost]);
+
+  // ArticlesScreen → EditorScreen: open the requested post.
+  // We watch openPostToken so re-opening the same id still re-hydrates.
+  const lastSeenOpenPostToken = useRef(0);
+  useEffect(() => {
+    if (openPostToken === 0) return;
+    if (lastSeenOpenPostToken.current === openPostToken) return;
+    lastSeenOpenPostToken.current = openPostToken;
+    if (!pendingOpenPostId) return;
+    // Try the cached post list first; fall back to a fresh fetch if missing.
+    const cached = posts.find((p) => p.id === pendingOpenPostId);
+    if (cached) {
+      hydrateDraft(cached);
+      clearPendingOpenPost();
+      return;
+    }
+    (async () => {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("id", pendingOpenPostId)
+        .single();
+      if (error || !data) {
+        toast({
+          title: "Could not open article",
+          description: error?.message ?? "Not found",
+          variant: "destructive",
+        });
+      } else {
+        hydrateDraft(data as unknown as BlogPost);
+      }
+      clearPendingOpenPost();
+    })();
+  }, [openPostToken, pendingOpenPostId, posts, clearPendingOpenPost, toast]);
+
+  // C1: Register actions + state into the lifted context for TabBar/StatusRibbon.
+  useEffect(() => {
+    setEditor({
+      save,
+      publish,
+      preview,
+      saving,
+      lastSaved,
+      hasDraft: !!draft.title.trim() || !!draft.content.trim(),
+    });
+  }, [setEditor, save, publish, preview, saving, lastSaved, draft.title, draft.content]);
+
+  // Keyboard shortcuts: ⌘/Ctrl+S save, ⌘/Ctrl+Enter publish.
+  // Scoped to the editor tab only because this effect lives inside EditorScreen.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      if (e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        save();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        publish();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [save, publish]);
+
+  // Clear registration on unmount so other tabs don't see stale handlers.
+  useEffect(() => {
+    return () => {
+      setEditor({ saving: false, lastSaved: null, hasDraft: false });
+    };
+  }, [setEditor]);
 
   return (
-    <div className="flex" style={{ minHeight: "calc(100vh - 104px)" }}>
+    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-10rem)]">
       {/* LEFT RAIL */}
       <EditorLeftRail
         draft={draft}
@@ -423,10 +664,10 @@ function EditorScreen() {
           draft={draft}
           setDraft={setDraft}
         />
-        <div className="flex flex-1">
+        <div className="flex flex-col md:flex-row flex-1">
           {(mode === "write" || mode === "split") && (
-            <div className="flex-1 min-w-0 relative" style={{ padding: "40px 64px 40px 80px" }}>
-              <div className="absolute top-5 left-5 flex items-center gap-2">
+            <div className="flex-1 min-w-0 relative px-4 py-6 sm:px-12 sm:py-10 lg:pl-20 lg:pr-16">
+              <div className="absolute top-3 left-3 sm:top-5 sm:left-5 flex items-center gap-2">
                 <span className="font-mono text-[9.5px] tracking-[0.2em] text-muted-foreground">
                   MARKDOWN
                 </span>
@@ -445,13 +686,13 @@ function EditorScreen() {
               />
             </div>
           )}
-          {mode === "split" && <div className="w-px bg-border/60" />}
+          {mode === "split" && <div className="h-px md:h-auto md:w-px bg-border/60" />}
           {(mode === "preview" || mode === "split") && (
             <div
-              className="flex-1 min-w-0 relative"
-              style={{ padding: "40px 80px 40px 64px", background: "hsl(var(--card) / 0.25)" }}
+              className="flex-1 min-w-0 relative px-4 py-6 sm:px-12 sm:py-10 lg:pl-16 lg:pr-20"
+              style={{ background: "hsl(var(--card) / 0.25)" }}
             >
-              <div className="absolute top-5 right-5 flex items-center gap-2">
+              <div className="absolute top-3 right-3 sm:top-5 sm:right-5 flex items-center gap-2">
                 <span className="font-mono text-[9.5px] tracking-[0.2em] text-muted-foreground">
                   RENDERED PREVIEW
                 </span>
@@ -509,8 +750,8 @@ function EditorLeftRail({
 
   return (
     <aside
-      className="w-[280px] border-r border-border/60 flex flex-col gap-7 overflow-y-auto"
-      style={{ padding: "28px 24px", maxHeight: "calc(100vh - 104px)" }}
+      className="hidden lg:flex w-[280px] border-r border-border/60 flex-col gap-7 overflow-y-auto"
+      style={{ padding: "28px 24px", maxHeight: "calc(100vh - 10rem)" }}
     >
       {/* Active draft header */}
       <div className="flex flex-col gap-2">
@@ -1383,8 +1624,8 @@ function EditorRightRail({ draftId: _draftId }: { draftId: string | null }) {
 
   return (
     <aside
-      className="w-[300px] border-l border-border/60 flex flex-col gap-7 overflow-y-auto"
-      style={{ padding: "28px 24px", maxHeight: "calc(100vh - 104px)" }}
+      className="hidden xl:flex w-[300px] border-l border-border/60 flex-col gap-7 overflow-y-auto"
+      style={{ padding: "28px 24px", maxHeight: "calc(100vh - 10rem)" }}
     >
       {/* Knowledge */}
       <div className="flex flex-col gap-3">
@@ -1461,12 +1702,21 @@ function EditorRightRail({ draftId: _draftId }: { draftId: string | null }) {
 // ═══════════════════════════════════════════════════════════════════════════
 //  ARTICLES SCREEN
 // ═══════════════════════════════════════════════════════════════════════════
-function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
+function ArticlesScreen({ onEdit: _onEdit }: { onEdit: () => void }) {
   const { toast } = useToast();
+  const { requestNewDraft, setArticles, requestOpenPost } = useCmsActions();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [templates, setTemplates] = useState<VT[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  // Register screen-level actions. Import CSV is not implemented yet,
+  // so we leave the handler undefined — TabBar shows the button disabled,
+  // which is honest and beats wiring a no-op.
+  useEffect(() => {
+    setArticles({ importCsv: undefined });
+    return () => setArticles({});
+  }, [setArticles]);
 
   useEffect(() => {
     (async () => {
@@ -1533,34 +1783,34 @@ function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
   return (
     <div className="flex flex-col">
       {/* Toolbar */}
-      <div className="flex flex-col gap-4" style={{ padding: "32px 32px 20px" }}>
-        <div className="flex justify-between items-end">
+      <div className="flex flex-col gap-4 px-4 md:px-8 pt-6 md:pt-8 pb-5">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
           <div className="flex flex-col gap-2">
             <Eyebrow>
               Library · {posts.length} total, {counts.draft + counts.review + counts.scheduled} in
               flight
             </Eyebrow>
-            <h1 className="font-display text-[32px] font-medium tracking-tight">Articles</h1>
+            <h1 className="font-display text-[26px] md:text-[32px] font-medium tracking-tight">Articles</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" size="sm" className="hidden sm:inline-flex">
               <Filter size={12} className="mr-1" />
               Filters
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="hidden sm:inline-flex">
               <ArrowUpDown size={12} className="mr-1" />
               Updated
             </Button>
-            <Button size="sm" onClick={onEdit}>
+            <Button size="sm" onClick={requestNewDraft}>
               <Plus size={12} className="mr-1" />
               New article
             </Button>
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats — scrollable horizontally on mobile so all metrics stay accessible */}
         <div
-          className="flex gap-8 py-4"
+          className="flex gap-6 md:gap-8 py-4 overflow-x-auto"
           style={{
             borderTop: "1px solid hsl(var(--border) / 0.6)",
             borderBottom: "1px solid hsl(var(--border) / 0.6)",
@@ -1580,7 +1830,7 @@ function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
         </div>
 
         {/* Search + filter pills */}
-        <div className="flex gap-3 items-center">
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           <div
             className="flex items-center flex-1 h-10 px-3.5 rounded border border-border"
             style={{ background: "hsl(var(--card))" }}
@@ -1594,7 +1844,7 @@ function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
             />
             <Kbd>/</Kbd>
           </div>
-          <div className="flex items-center gap-1 p-1 rounded border border-border">
+          <div className="flex items-center gap-1 p-1 rounded border border-border overflow-x-auto">
             {[
               { id: "all", label: "All" },
               { id: "draft", label: `Draft · ${counts.draft}` },
@@ -1621,11 +1871,10 @@ function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
         </div>
       </div>
 
-      {/* Column headers */}
+      {/* Column headers — hidden on mobile (rows render in card layout instead) */}
       <div
-        className="grid items-center gap-4 text-[9.5px]"
+        className="hidden md:grid items-center gap-4 text-[9.5px] px-8 py-2.5"
         style={{
-          padding: "10px 32px",
           borderBottom: "1px solid hsl(var(--border))",
           gridTemplateColumns: "56px 1fr 140px 110px 90px 80px",
         }}
@@ -1643,14 +1892,22 @@ function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
         {filtered.map((p, i) => (
           <div
             key={p.id}
-            className="grid items-center gap-4 transition-colors hover:bg-card/40"
+            role="button"
+            tabIndex={0}
+            onClick={() => requestOpenPost(p.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                requestOpenPost(p.id);
+              }
+            }}
+            className="flex flex-col gap-3 md:grid md:items-center md:gap-4 px-4 md:px-8 py-4 md:py-[18px] transition-colors hover:bg-card/40 cursor-pointer focus:outline-none focus:bg-card/60"
             style={{
-              padding: "18px 32px",
               borderBottom: "1px solid hsl(var(--border) / 0.6)",
               gridTemplateColumns: "56px 1fr 140px 110px 90px 80px",
             }}
           >
-            <span className="font-mono text-[11px] text-muted-foreground">
+            <span className="hidden md:inline font-mono text-[11px] text-muted-foreground">
               {String(i + 1).padStart(2, "0")}
             </span>
             <div className="flex flex-col gap-1.5 min-w-0">
@@ -1669,7 +1926,7 @@ function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
                 </span>
               </div>
             </div>
-            <div className="flex flex-col gap-0.5">
+            <div className="hidden md:flex flex-col gap-0.5">
               <div className="font-display text-[13px] italic">
                 Hans — {templateName(p.voice_template_id)}
               </div>
@@ -1677,12 +1934,15 @@ function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
                 {p.voice_template_id ? "ASSIGNED" : "NONE"}
               </div>
             </div>
-            <div>
+            <div className="flex items-center gap-2 md:block">
               <Chip tone={statusTone(p.status)} dot>
                 {statusLabel(p.status)}
               </Chip>
+              <span className="md:hidden font-mono text-[10.5px] text-muted-foreground">
+                · {p.completeness_score ?? 0}% complete · {timeAgo(new Date(p.updated_at))}
+              </span>
             </div>
-            <div className="flex flex-col gap-1.5 w-20">
+            <div className="hidden md:flex flex-col gap-1.5 w-20">
               <span
                 className="font-mono text-[10.5px]"
                 style={{
@@ -1707,11 +1967,14 @@ function ArticlesScreen({ onEdit }: { onEdit: () => void }) {
                 }
               />
             </div>
-            <div className="flex items-center justify-end gap-2">
+            <div className="hidden md:flex items-center justify-end gap-2">
               <span className="font-mono text-[11px] text-muted-foreground">
                 {timeAgo(new Date(p.updated_at))}
               </span>
-              <button className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground">
+              <button
+                className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <MoreHorizontal size={14} />
               </button>
             </div>
