@@ -2,5 +2,11 @@
 # Redirect www to non-www (301)
 https://www.hansvanleeuwen.com/* https://hansvanleeuwen.com/:splat 301
 
+# Overwrite /blog-cms with Write.html shell (Write/Manage/Analytics modes).
+# Voice editor stays React-routed for now.
+/blog-cms/voice/*  /index.html  200
+/blog-cms          /write       302
+/blog-cms/*        /write       302
+
 # SPA fallback: serve index.html for all routes
 /*  /index.html  200
