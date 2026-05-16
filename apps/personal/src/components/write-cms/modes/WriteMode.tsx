@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useBlogPost } from "../hooks/useBlogPost";
 import { usePostAutosave, type SaveStatus } from "../hooks/usePostAutosave";
 import { usePublish } from "../hooks/usePublish";
+import { useReviews } from "../hooks/useReviews";
 
 function StatusPill({ status, published }: { status: string; published: boolean }) {
   const cls = status === "published" || published ? "live" : status === "scheduled" ? "scheduled" : status === "review" ? "review" : "draft";
@@ -33,6 +34,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const post = state.status === "loaded" ? state.post : null;
   const autosave = usePostAutosave(post);
   const pub = usePublish(() => state.refetch());
+  const reviewsHook = useReviews(postId);
   const [showSchedule, setShowSchedule] = useState(false);
   const [scheduleDate, setScheduleDate] = useState("");
 
@@ -315,6 +317,52 @@ export default function WriteMode({ postId }: { postId?: string }) {
             )}
           </div>
         )}
+
+        {/* Agent reviews */}
+        <h2 className="rail-h" style={{ marginTop: "var(--s-4)" }}>Reviews<em>.</em></h2>
+        <div className="card">
+          <div style={{ display: "flex", gap: "var(--s-2)", marginBottom: "var(--s-3)" }}>
+            <button
+              className="stamp-btn stamp-btn--sm"
+              disabled={reviewsHook.status === "running"}
+              onClick={() => reviewsHook.runAgents(post!.id)}
+            >
+              {reviewsHook.status === "running" ? "Running..." : "Run agents"}
+            </button>
+            <button
+              className="stamp-btn stamp-btn--ghost stamp-btn--sm"
+              disabled={reviewsHook.imageStatus === "generating"}
+              onClick={() => reviewsHook.generateImage(post!.id)}
+            >
+              {reviewsHook.imageStatus === "generating" ? "Generating..." : reviewsHook.imageStatus === "done" ? "Image done" : "Header image"}
+            </button>
+          </div>
+          {reviewsHook.errorMessage && (
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--accent, #c00)", margin: "0 0 var(--s-2)" }}>
+              {reviewsHook.errorMessage}
+            </p>
+          )}
+          {reviewsHook.reviews.length === 0 && reviewsHook.status !== "running" && (
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>
+              No reviews yet
+            </p>
+          )}
+          {reviewsHook.reviews.map((r) => (
+            <div key={r.id} style={{ borderTop: "1px solid var(--ink-2)", padding: "var(--s-2) 0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600 }}>{r.agent_label}</span>
+                {r.score != null && (
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: r.score >= 70 ? "var(--ink-1)" : "var(--accent, #c00)" }}>
+                    {r.score}/100
+                  </span>
+                )}
+              </div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-2)", marginTop: 2 }}>
+                {r.status} · {new Date(r.created_at).toLocaleDateString()}
+              </div>
+            </div>
+          ))}
+        </div>
       </aside>
     </>
   );
