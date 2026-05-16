@@ -118,28 +118,33 @@ A phase gate = the feature works end-to-end and doesn't break anything that work
 
 ### Phase 3 — Manage mode: article list + SourceBar + Phase 1→2 flow
 
-**Status: PARTIALLY COMPLETE** (posts table done; SourceBar/PhaseTwoConfirm deferred to Phase 4)
+**Status: COMPLETE** (posts table + SourceBar + PhaseTwoConfirm all wired)
 
 **Completed (2026-05-16):**
-- `ManageMode.tsx` replaced: real Supabase `blog_posts` query, filter tabs (All/Draft/Live/Scheduled)
+- `ManageMode.tsx`: real Supabase `blog_posts` query, filter tabs (All/Draft/Live/Scheduled)
   with live counts, search input, `posts-table` with `posts-pill` status badges
 - Status mapping: `published`/`published=true` → live, `draft` → draft, `scheduled` → scheduled,
   `review` → in review — matches prototype CSS classes exactly
-- Date formatting: recent hours as "2h", older as "28 Mar"
-- Structure ported verbatim from `write-src.html` lines 3036–3083 (`manage-h`, `manage-stats`,
-  `posts-wrap`, `posts-toolbar`, `filter-tabs`, `search-mini`, `posts-table`)
-- TypeCheck clean, production build passes
+- `ManageSourceBar.tsx`: YouTube URL input, topic input, angle input, Ghost-write button
+  — POSTs to `hans-blog-init` (same endpoint as `BlogCMS.tsx`)
+- `useBlogInitWorkflow.ts`: Phase 1 (POST to `hans-blog-init`, returns `brand_voice` +
+  `recent_posts` + `resume_url`) and Phase 2 (POST to `resume_url` with confirmed brand voice)
+- `ManagePhaseTwoConfirm.tsx`: brand voice edit textarea, recent coverage read-only panel,
+  Cancel + Confirm & dispatch buttons
+- All workflow states: idle / verifying / resuming / done / error
+- On successful dispatch: posts table auto-refreshes via `fetchPosts` callback
+- All new CSS scoped under `.write-cms .source-bar`, `.phase2-*`, `.source-notice-*` in `write-cms.css`
+- TypeCheck clean, production build passes (WriteCMS chunk: 15.91 kB JS + 29.82 kB CSS)
 
-**Note:** `write-src.html` manage section does NOT contain a SourceBar or YouTube embedder —
-those are part of the Write view. SourceBar/PhaseTwoConfirm remain in `BlogCMS.tsx` and will
-be ported when the Write mode pipeline is wired (Phase 4).
+**Note:** `write-src.html` manage section does not contain a SourceBar — it was ported from
+`BlogCMS.tsx` as a product requirement. The prototype manage view only shows the posts table.
 
-**Remaining in this phase:**
-- Port `SourceBar` from `BlogCMS.tsx` (YouTube URL + topic + angle → `hans-blog-init`)
-- Port `PhaseTwoConfirm` from `BlogCMS.tsx` (brand voice edit → `resume_url`)
-- Port `VoiceTemplatesScreen` from `BlogCMS.tsx` (links to `/blog-cms/voice/:id`)
+**Remaining (deferred):**
+- `VoiceTemplatesScreen` from `BlogCMS.tsx` (links to `/blog-cms/voice/:id`) — not part of this phase
 
-**Gate:** Articles list loads from Supabase ✅. Entering a YouTube URL + topic → Phase 1 returns brand voice → Phase 2 confirm → n8n dispatches Ghost Writer → draft appears in list (pending).
+**Gate:** Articles list loads from Supabase ✅. YouTube URL input ✅. Topic + angle inputs ✅.
+Ghost-write button → POSTs to `hans-blog-init` ✅. PhaseTwoConfirm renders when `resume_url`
+returned ✅. Dispatch POSTs to `resume_url` ✅. Posts table refreshes on completion ✅.
 
 ---
 

@@ -1,5 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import ManageSourceBar from "../manage/ManageSourceBar";
+import { useBlogInitWorkflow } from "../manage/useBlogInitWorkflow";
 
 interface BlogPost {
   id: string;
@@ -44,16 +46,18 @@ export default function ManageMode() {
   const [filter, setFilter] = useState<FilterTab>("all");
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("blog_posts")
-        .select("id, title, slug, category, word_count, status, published, updated_at")
-        .order("updated_at", { ascending: false });
-      if (data) setPosts(data as BlogPost[]);
-      setLoading(false);
-    })();
+  const fetchPosts = useCallback(async () => {
+    const { data } = await supabase
+      .from("blog_posts")
+      .select("id, title, slug, category, word_count, status, published, updated_at")
+      .order("updated_at", { ascending: false });
+    if (data) setPosts(data as BlogPost[]);
+    setLoading(false);
   }, []);
+
+  useEffect(() => { fetchPosts(); }, [fetchPosts]);
+
+  const workflow = useBlogInitWorkflow(fetchPosts);
 
   const counts = useMemo(() => {
     const c = { all: posts.length, draft: 0, live: 0, scheduled: 0, review: 0 };
@@ -102,7 +106,11 @@ export default function ManageMode() {
         )}
       </div>
 
-      <div className="posts-wrap">
+      {/* ── SourceBar — YouTube → n8n Ghost Writer pipeline ── */}
+      <ManageSourceBar workflow={workflow} category="general" />
+
+      {/* ── Posts table ── */}
+      <div className="posts-wrap" style={{ marginTop: "var(--s-5)" }}>
         <div className="posts-toolbar">
           <div className="filter-tabs">
             <button className={filter === "all" ? "on" : ""} onClick={() => setFilter("all")}>
