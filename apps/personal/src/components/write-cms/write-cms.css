@@ -281,6 +281,21 @@
   overflow: hidden;
 }
 .write-cms[data-theme="dark"] .paper { box-shadow: 4px 4px 0 var(--ink-1); border-color: var(--ink-1); }
+.write-cms .write-editor {
+  width: 100%;
+  min-height: 200px;
+  padding: var(--s-4);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-0);
+  background: transparent;
+  border: 0;
+  outline: 0;
+  resize: vertical;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
 .write-cms .paper-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: var(--s-3) var(--s-5);

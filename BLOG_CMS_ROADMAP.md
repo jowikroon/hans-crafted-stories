@@ -110,20 +110,41 @@ A phase gate = the feature works end-to-end and doesn't break anything that work
 - Empty state (no id): shows "Select a post from Manage or start a new draft"
 - TSC: PASS. Production build: PASS.
 
-**Goal:** Writing an article in the EN/NL split editor saves to `blog_posts` in real-time.
+**B.2 — Editable WriteMode with autosave — COMPLETE (2026-05-16):**
+- `usePostAutosave.ts` hook created:
+  - Hydrates local `EditableFields` from loaded `BlogPostData`
+  - `setField(key, value)` marks state as dirty
+  - Debounced autosave (1500ms after last keystroke) to `blog_posts`
+  - Duplicate-content guard: skips save if serialized fields unchanged
+  - `word_count` recalculated on each save (EN + NL combined, HTML stripped)
+  - `updated_at` set on each save
+  - Save status machine: idle → dirty → saving → saved / error
+  - `saveNow()` for manual save (skips debounce timer)
+- Version snapshots to `blog_post_versions`:
+  - On manual save: always creates a version row
+  - On autosave: throttled to max 1 version per 60 seconds per post
+  - Fields saved: `post_id`, `title`, `content`, `excerpt` (first 200 chars stripped),
+    `changed_by` ("manual" or "autosave"), `change_summary`
+  - NL fields not in version table schema — only EN content versioned
+- `WriteMode.tsx` updated:
+  - Title EN + NL: controlled `<input>` fields (no longer readOnly)
+  - Content EN + NL: `<textarea>` with `.write-editor` class (replaced `dangerouslySetInnerHTML`)
+  - Save button wired in hero actions (disabled when idle/saving)
+  - `SaveIndicator` component shows: Saving... / Saved Xs ago / Unsaved / Save failed
+  - Empty state, loading, not-found, error states unchanged
+  - Right rail (scores, SEO) unchanged
+- CSS: `.write-editor` added to `write-cms.css` — full-width textarea with body font, 1.7 line-height
+- TSC: PASS. Production build: PASS.
 
-**Files:**
-- Expand: `apps/personal/src/components/write-cms/modes/WriteMode.tsx`
-  - EN/NL split paper, title input, hero input
-  - TipTap editor (reuse existing TipTap setup from BlogCMS.tsx EditorScreen)
-  - Right rail: voice analysis (reuse `analyzeVoice` from `lib/blog/voice-analysis.ts`)
-- Create: `apps/personal/src/components/write-cms/hooks/usePostAutosave.ts`
-  - Debounced upsert to `blog_posts`
-  - Tracks `is_dirty` state for save indicator
-- Possibly: add migration for `content_nl` column if not present on `blog_posts`
-  (verify via `supabase gen types` output)
+**Known limitations:**
+- Content is edited as raw text/HTML in a textarea (no TipTap rich editor yet)
+- Voice match score does not update live during editing (reads from DB, not recomputed)
+- No new-post creation from `/write` (must use Manage → SourceBar)
+- Version table has no `content_nl`/`title_nl` columns — only EN is versioned
 
-**Gate:** Open a new or existing post. Type in EN editor, wait 2s, row is updated in `blog_posts`. Type in NL editor, same. Voice match score updates live in right rail.
+**Goal (remaining):** TipTap editor, live voice analysis in right rail.
+
+**Gate (B.2):** Open `/write/:id`, edit title/content, wait for autosave, reload — edits persisted. Manual Save creates version row.
 
 ---
 
