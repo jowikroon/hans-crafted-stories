@@ -291,9 +291,23 @@ returned ✅. Dispatch POSTs to `resume_url` ✅. Posts table refreshes on compl
 
 ### Phase 7 — Analytics mode (real data)
 
-**Gate:** Analytics mode shows real GSC data (via Ahrefs MCP or n8n GSC connector) and real `blog_posts` metrics.
+**Status: PARTIALLY COMPLETE (2026-05-16)**
 
-Do not build until Phase 6 is complete.
+**Completed:**
+- `AnalyticsMode.tsx` rewritten with real `blog_posts` data:
+  - Aggregate metrics: total articles, live/draft/scheduled counts, total words, avg words
+  - Average scores: voice match, completeness, SEO (computed from posts with non-zero scores)
+  - Category breakdown: horizontal bars showing post count per category
+  - Recent activity: posts updated in last 7 days
+  - All data from real Supabase queries
+- TSC: PASS. Production build: PASS.
+
+**Deferred:**
+- GSC / Ahrefs integration (requires n8n connector or direct MCP wiring — placeholder shown)
+- `blog_post_metrics_daily` table has 0 rows and is not in generated types
+- AI token usage tracking (no data source available yet)
+
+**Gate (partial):** Analytics shows real blog_posts aggregate metrics. GSC integration deferred.
 
 ---
 
