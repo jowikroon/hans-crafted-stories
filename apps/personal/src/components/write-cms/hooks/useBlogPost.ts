@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface BlogPostData {
@@ -20,7 +20,6 @@ export interface BlogPostData {
   og_image: string | null;
   scheduled_at: string | null;
   updated_at: string;
-  published_at: string | null;
 }
 
 export type BlogPostState =
@@ -30,12 +29,15 @@ export type BlogPostState =
   | { status: "not-found" }
   | { status: "error"; message: string };
 
-export function useBlogPost(postId?: string): BlogPostState {
+const COLUMNS =
+  "id, title, title_nl, content, content_nl, slug, category, status, published, word_count, voice_match_score, completeness_score, seo_score, meta_title, meta_description, og_image, scheduled_at, updated_at";
+
+export function useBlogPost(postId?: string): BlogPostState & { refetch: () => void } {
   const [state, setState] = useState<BlogPostState>(
     postId ? { status: "loading" } : { status: "idle" },
   );
 
-  useEffect(() => {
+  const fetchPost = useCallback(() => {
     if (!postId) {
       setState({ status: "idle" });
       return;
@@ -45,9 +47,7 @@ export function useBlogPost(postId?: string): BlogPostState {
 
     supabase
       .from("blog_posts")
-      .select(
-        "id, title, title_nl, content, content_nl, slug, category, status, published, word_count, voice_match_score, completeness_score, seo_score, meta_title, meta_description, og_image, scheduled_at, updated_at, published_at",
-      )
+      .select(COLUMNS)
       .eq("id", postId)
       .single()
       .then(({ data, error }) => {
@@ -63,5 +63,9 @@ export function useBlogPost(postId?: string): BlogPostState {
       });
   }, [postId]);
 
-  return state;
+  useEffect(() => {
+    fetchPost();
+  }, [fetchPost]);
+
+  return { ...state, refetch: fetchPost };
 }

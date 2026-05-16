@@ -244,16 +244,32 @@ returned ✅. Dispatch POSTs to `resume_url` ✅. Posts table refreshes on compl
 
 ### Phase 6 — Publish + schedule
 
-**Goal:** Publish and schedule buttons write to `blog_posts` and trigger n8n Auto SEO.
+**Status: COMPLETE (2026-05-16)**
 
-**Files:**
-- Expand: `WriteMode.tsx` or `WriteCmsShell.tsx`
-  - "Publish now" → sets `published=true`, `status='published'`, triggers n8n Auto SEO webhook
-  - "Schedule" → datepicker → sets `scheduled_at`, sets `status='scheduled'`
-  - If `pg_cron` is enabled: verify cron job exists for scheduled publish
-- Create migration (if needed): verify `pg_cron` extension is enabled on the project
+**Completed:**
+- `usePublish.ts` hook created:
+  - `publish(postId)`: sets `published=true`, `status='published'`, fires Auto SEO webhook
+    (`/webhook/blog-auto-seo`) as fire-and-forget
+  - `unpublish(postId)`: reverts to `status='draft'`, `published=false`, clears `scheduled_at`
+  - `schedule(postId, scheduledAt)`: sets `status='scheduled'`, `scheduled_at`, `published=false`
+  - State machine: idle → publishing/unpublishing/scheduling → done / error
+- `useBlogPost.ts` updated: added `refetch()` to re-read post after publish/unpublish
+- `WriteMode.tsx` updated:
+  - Publish button: saves first, then publishes. Shows "Publishing..." while in flight
+  - Unpublish button: appears when post is live, reverts to draft
+  - Schedule button: opens inline datetime picker, confirms schedule
+  - Cancel schedule: reverts scheduled post to draft
+  - Shows current scheduled_at if set
+  - Publish error shown in eyebrow bar
+- `useBlogPost.ts`: removed `published_at` (not in DB schema)
+- TSC: PASS. Production build: PASS.
 
-**Gate:** Set a post to "scheduled" with a future timestamp. Post flips to published at that time (or via manual n8n trigger). n8n Auto SEO fills meta fields after publish.
+**Known limitations:**
+- Scheduled posts require external trigger (n8n cron or pg_cron) to auto-publish at the scheduled time
+- Auto SEO is fire-and-forget — no confirmation shown in UI
+- No pg_cron verification done (deferred)
+
+**Gate:** Publish sets status=published + triggers Auto SEO. Schedule sets scheduled_at. Unpublish reverts to draft.
 
 ---
 

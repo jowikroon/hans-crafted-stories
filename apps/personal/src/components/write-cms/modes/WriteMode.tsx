@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useBlogPost } from "../hooks/useBlogPost";
 import { usePostAutosave, type SaveStatus } from "../hooks/usePostAutosave";
+import { usePublish } from "../hooks/usePublish";
 
 function StatusPill({ status, published }: { status: string; published: boolean }) {
   const cls = status === "published" || published ? "live" : status === "scheduled" ? "scheduled" : status === "review" ? "review" : "draft";
@@ -30,6 +32,12 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const state = useBlogPost(postId);
   const post = state.status === "loaded" ? state.post : null;
   const autosave = usePostAutosave(post);
+  const pub = usePublish(() => state.refetch());
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState("");
+
+  const isLive = post?.status === "published" || post?.published;
+  const isScheduled = post?.status === "scheduled";
 
   // No post selected — empty state
   if (!postId || state.status === "idle") {
@@ -126,6 +134,12 @@ export default function WriteMode({ postId }: { postId?: string }) {
               )}
               <span className="sep">·</span>
               <SaveIndicator saveStatus={autosave.saveStatus} lastSaved={autosave.lastSaved} errorMessage={autosave.errorMessage} />
+              {pub.action === "error" && (
+                <>
+                  <span className="sep">·</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--accent, #c00)" }}>{pub.errorMessage}</span>
+                </>
+              )}
             </div>
             <h1 className="h-wordmark">Schrijven<em>.</em></h1>
             <input
@@ -153,9 +167,95 @@ export default function WriteMode({ postId }: { postId?: string }) {
             >
               {autosave.saveStatus === "saving" ? "Saving..." : "Save"}
             </button>
-            <button className="stamp-btn" disabled>Publish</button>
+
+            {/* Schedule toggle */}
+            {!isLive && (
+              <button
+                className="stamp-btn stamp-btn--ghost stamp-btn--sm"
+                onClick={() => setShowSchedule((s) => !s)}
+              >
+                {isScheduled ? "Scheduled" : "Schedule"}
+              </button>
+            )}
+
+            {/* Publish / Unpublish */}
+            {isLive ? (
+              <button
+                className="stamp-btn stamp-btn--ghost stamp-btn--sm"
+                onClick={async () => {
+                  await autosave.saveNow();
+                  await pub.unpublish(post!.id);
+                }}
+                disabled={pub.action === "unpublishing"}
+              >
+                {pub.action === "unpublishing" ? "Reverting..." : "Unpublish"}
+              </button>
+            ) : (
+              <button
+                className="stamp-btn"
+                onClick={async () => {
+                  await autosave.saveNow();
+                  await pub.publish(post!.id);
+                }}
+                disabled={pub.action === "publishing"}
+              >
+                {pub.action === "publishing" ? "Publishing..." : "Publish"}
+              </button>
+            )}
           </div>
         </section>
+
+        {/* Schedule picker */}
+        {showSchedule && !isLive && (
+          <div className="schedule-bar" style={{
+            display: "flex", alignItems: "center", gap: "var(--s-3)",
+            padding: "var(--s-3) var(--s-4)",
+            background: "var(--bg-1)", borderRadius: "var(--r-2)",
+            marginBottom: "var(--s-3)",
+            fontFamily: "var(--font-mono)", fontSize: 12,
+          }}>
+            <label style={{ color: "var(--ink-2)", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 10 }}>
+              Schedule for:
+            </label>
+            <input
+              type="datetime-local"
+              value={scheduleDate}
+              onChange={(e) => setScheduleDate(e.target.value)}
+              style={{
+                fontFamily: "var(--font-mono)", fontSize: 12,
+                background: "var(--paper)", border: "1px solid var(--ink-2)",
+                borderRadius: "var(--r-1)", padding: "4px 8px", color: "var(--ink-0)",
+              }}
+            />
+            <button
+              className="stamp-btn stamp-btn--sm"
+              disabled={!scheduleDate || pub.action === "scheduling"}
+              onClick={async () => {
+                await autosave.saveNow();
+                await pub.schedule(post!.id, new Date(scheduleDate).toISOString());
+                setShowSchedule(false);
+              }}
+            >
+              {pub.action === "scheduling" ? "Scheduling..." : "Confirm"}
+            </button>
+            {isScheduled && (
+              <button
+                className="stamp-btn stamp-btn--ghost stamp-btn--sm"
+                onClick={async () => {
+                  await pub.unpublish(post!.id);
+                  setShowSchedule(false);
+                }}
+              >
+                Cancel schedule
+              </button>
+            )}
+            {post!.scheduled_at && (
+              <span style={{ color: "var(--ink-3)", fontSize: 10 }}>
+                Currently: {new Date(post!.scheduled_at).toLocaleString()}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* EN content */}
         <div className="paper" style={{ minHeight: 200 }}>
