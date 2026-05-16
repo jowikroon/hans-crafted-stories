@@ -26,6 +26,16 @@ const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-templa
 
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
 
+/* /blog-cms is retired — Write.html shell at /write is canonical.
+   /write is served as a static file (public/write.html), so we must do a full
+   page navigation here, not a React Router <Navigate>. */
+const BlogCMSToWriteRedirect = () => {
+  if (typeof window !== "undefined") {
+    window.location.replace("/write");
+  }
+  return <BlogCMSFallback />;
+};
+
 const AnimatedRoutes = () => {
   const location = useLocation();
 
@@ -42,7 +52,7 @@ const AnimatedRoutes = () => {
         <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
-        <Route path="/blog-cms" element={<Suspense fallback={<BlogCMSFallback />}><BlogCMS /></Suspense>} />
+        <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
         <Route path="/god-structure" element={<GodStructure />} />

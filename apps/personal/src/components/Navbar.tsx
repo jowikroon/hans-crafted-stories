@@ -23,7 +23,7 @@ const getLinks = (lang: Lang) => {
 
 const searchablePages = [
   { to: "/samantha", label: "Samantha AI", keywords: ["samantha", "ai", "companion", "chat", "voice", "assistant", "start", "llm", "claude", "gemini", "gpt"] },
-  { to: "/blog-cms", label: "Blog CMS", keywords: ["blog", "cms", "editor", "write", "publish", "article", "chief", "editorial"] },
+  { to: "/write", label: "Blog CMS", keywords: ["blog", "cms", "editor", "write", "publish", "article", "chief", "editorial"] },
   { to: "/", label: "Home", keywords: ["home", "start", "landing"] },
   { to: "/work", label: "Work", keywords: ["work", "cases", "projects", "portfolio"] },
   { to: "/writing", label: "Writing", keywords: ["blog", "writing", "articles", "posts"] },
@@ -95,10 +95,21 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
 
   useEffect(() => { setSelectedIndex(0); }, [searchQuery]);
 
+  // /write is served as a static file (public/write.html), not a React route.
+  // Static targets must be reached with a full page navigation, not React Router.
+  const STATIC_PATHS = new Set(["/write"]);
+  const goToPage = (to: string) => {
+    if (STATIC_PATHS.has(to)) {
+      window.location.assign(to);
+    } else {
+      navigate(to);
+    }
+  };
+
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((i) => Math.min(i + 1, filteredPages.length - 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIndex((i) => Math.max(i - 1, 0)); }
-    else if (e.key === "Enter" && filteredPages[selectedIndex]) { navigate(filteredPages[selectedIndex].to); setSearchOpen(false); }
+    else if (e.key === "Enter" && filteredPages[selectedIndex]) { goToPage(filteredPages[selectedIndex].to); setSearchOpen(false); }
   };
 
   const isActive = (to: string) => location.pathname === to;
@@ -171,7 +182,7 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
                   <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t.noResults}</p>
                 ) : (
                   filteredPages.map((page, i) => (
-                    <button key={page.to} onClick={() => { navigate(page.to); setSearchOpen(false); }} onMouseEnter={() => setSelectedIndex(i)} className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${i === selectedIndex ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/50"}`}>
+                    <button key={page.to} onClick={() => { goToPage(page.to); setSearchOpen(false); }} onMouseEnter={() => setSelectedIndex(i)} className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${i === selectedIndex ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/50"}`}>
                       <span className="font-medium">{page.label}</span>
                       {location.pathname === page.to && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-primary" />}
                       <span className="ml-auto text-xs text-muted-foreground">{page.to}</span>
@@ -271,9 +282,9 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
                           {/* Menu items — grouped by function */}
                           <div className="py-1">
                             {/* Blog CMS — above Samantha */}
-                            <Link to="/blog-cms" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-orange-400/80 hover:text-orange-300 hover:bg-orange-500/10" : "text-orange-500/70 hover:text-orange-600 hover:bg-orange-50"}`}>
+                            <a href="/write" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-orange-400/80 hover:text-orange-300 hover:bg-orange-500/10" : "text-orange-500/70 hover:text-orange-600 hover:bg-orange-50"}`}>
                               <PenLine size={15} /> Blogs
-                            </Link>
+                            </a>
                             {/* Samantha AI — primary CTA */}
                             <Link to="/samantha" onClick={() => setProfileOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isDark ? "text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10" : "text-rose-500/70 hover:text-rose-600 hover:bg-rose-50"}`}>
                               <Sparkles size={15} /> Samantha AI
@@ -400,10 +411,10 @@ const Navbar = ({ variant = "default", compact = false }: NavbarProps) => {
                 </Link>
                 {user && (
                   <>
-                    <Link to="/blog-cms" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-colors ${isDark ? "text-orange-400/40 hover:text-orange-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                    <a href="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-colors ${isDark ? "text-orange-400/40 hover:text-orange-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
                       <PenLine size={14} />
                       Blogs
-                    </Link>
+                    </a>
                     <button onClick={() => { setMobileOpen(false); navigate("/samantha"); }} className={`rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 transition-all border w-full text-left ${isDark ? "border-orange-500/15 text-orange-400/40" : "border-border text-muted-foreground"} hover:border-orange-500/40 hover:text-orange-600`}>
                       <Command size={14} />
                       Command Center
