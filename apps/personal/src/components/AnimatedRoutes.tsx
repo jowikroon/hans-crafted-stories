@@ -19,6 +19,10 @@ import CaseStudyDetail from "@/pages/CaseStudyDetail";
 import GodStructure from "@/pages/GodStructure";
 import SamanthaAI from "@/pages/SamanthaAI";
 
+/* WriteCMS is lazy-loaded — full Blog CMS shell at /write (3-mode: Write/Manage/Analytics).
+   BlogCMS is kept for /blog-cms/voice/:id route only (VoiceTemplateEditor still uses it). */
+const WriteCMS = lazy(() => import(/* webpackChunkName: "write-cms" */ "@/pages/WriteCMS"));
+
 /* BlogCMS is lazy-loaded and excluded from the SSR bundle.
    During prerender (typeof window === "undefined"), the fallback renders instead. */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
@@ -26,9 +30,8 @@ const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-templa
 
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
 
-/* /blog-cms is retired — Write.html shell at /write is canonical.
-   /write is served as a static file (public/write.html), so we must do a full
-   page navigation here, not a React Router <Navigate>. */
+/* /blog-cms is retired — React CMS shell at /write is canonical.
+   /write is now a React route (write-src.html is the archived static prototype). */
 const BlogCMSToWriteRedirect = () => {
   if (typeof window !== "undefined") {
     window.location.replace("/write");
@@ -52,6 +55,7 @@ const AnimatedRoutes = () => {
         <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
+        <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />

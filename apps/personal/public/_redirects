@@ -2,8 +2,8 @@
 # Redirect www to non-www (301)
 https://www.hansvanleeuwen.com/* https://hansvanleeuwen.com/:splat 301
 
-# Overwrite /blog-cms with Write.html shell (Write/Manage/Analytics modes).
-# Voice editor stays React-routed for now.
+# /write is now a React route (WriteCMS component). write-src.html is the archived static prototype.
+# /blog-cms redirects to /write. Voice editor stays at /blog-cms/voice/:id (React).
 /blog-cms/voice/*  /index.html  200
 /blog-cms          /write       302
 /blog-cms/*        /write       302
