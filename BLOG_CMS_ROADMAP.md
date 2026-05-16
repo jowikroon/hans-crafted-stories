@@ -155,17 +155,25 @@ returned ✅. Dispatch POSTs to `resume_url` ✅. Posts table refreshes on compl
 - Imports verified: ManageMode → ManageSourceBar → useBlogInitWorkflow (correct chain)
 - Endpoint match: `useBlogInitWorkflow.ts` line 3 = `BlogCMS.tsx` line 1013 ✅
 
-**Runtime blocker — n8n workflow inactive:**
-  `POST https://n8n.srv1402218.hstgr.cloud/webhook/hans-blog-init` returns HTTP 404:
-  `"The workflow must be active for a production URL to run successfully."`
-  Frontend code is correct. Blocker is n8n side — the `hans-blog-init` workflow needs to be
-  activated in n8n UI (toggle in top-right of workflow editor). Error state in SourceBar will
-  display the 404 message correctly when triggered.
+**Runtime blocker — RESOLVED (2026-05-16):**
+  All 8 n8n blog workflows are now active. HTTP 404 blocker is gone.
+
+**A.1 fix — Blog Init + Ghost Writer wiring (2026-05-16):**
+  - Blog Init n8n response returns `brand_voice_context` + `narrative_history`, not the
+    `brand_voice` + `recent_posts` + `resume_url` assumed in Phase 3. Fixed:
+    `useBlogInitWorkflow.ts` now normalizes both field naming conventions.
+  - The assumed Phase 2 `resume_url` / Wait-node flow does not exist in Blog Init. Fixed:
+    after Phase 2 confirm, the hook POSTs directly to Blog Ghost Writer
+    (`/webhook/blog-ghost-write`) instead of a non-existent `resume_url`.
+  - Ghost Writer payload: `{ title, language, category, cluster, proposed_angle,
+    brand_voice_context, narrative_history, source, timestamp }`.
+  - Error handling improved: shows HTTP status + truncated response body on failure.
+  - TSC: PASS. Production build: PASS.
 
 **TODO (security — do not refactor now):**
-  `BLOG_INIT_URL` is hardcoded in `useBlogInitWorkflow.ts`. No auth token required by n8n
-  currently (webhook is public). If auth is added later, move to `VITE_N8N_BLOG_INIT_URL`
-  env var or proxy via Supabase Edge Function to avoid exposing credentials client-side.
+  `N8N_HOST`, `BLOG_INIT_URL`, and `GHOST_WRITER_URL` are hardcoded in
+  `useBlogInitWorkflow.ts`. No auth token required by n8n currently (webhooks are public).
+  If auth is added later, move to env vars or proxy via Supabase Edge Function.
 
 ---
 

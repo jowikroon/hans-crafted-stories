@@ -1,12 +1,15 @@
 import { useState } from "react";
 
-const BLOG_INIT_URL = "https://n8n.srv1402218.hstgr.cloud/webhook/hans-blog-init";
+const N8N_HOST = "https://n8n.srv1402218.hstgr.cloud";
+const BLOG_INIT_URL = `${N8N_HOST}/webhook/hans-blog-init`;
+const GHOST_WRITER_URL = `${N8N_HOST}/webhook/blog-ghost-write`;
 
+/** Normalized response after Phase 1 (Blog Init). */
 export interface InitResponse {
-  status: string;
   brand_voice: string;
   recent_posts: string;
-  resume_url: string;
+  category: string;
+  has_memory: boolean;
 }
 
 export type WorkflowPhase = "idle" | "verifying" | "resuming" | "done" | "error";
@@ -25,6 +28,13 @@ export interface BlogInitWorkflow {
   confirmPhase2: (updatedBrandVoice: string, category: string) => Promise<void>;
   cancel: () => void;
   onDispatched?: () => void;
+}
+
+/** Read HTTP error body (truncated) for display. */
+async function describeError(res: Response): Promise<string> {
+  let body = "";
+  try { body = (await res.text()).slice(0, 200); } catch { /* empty */ }
+  return `HTTP ${res.status}${body ? `: ${body}` : ""}`;
 }
 
 export function useBlogInitWorkflow(onDispatched?: () => void): BlogInitWorkflow {
@@ -52,9 +62,18 @@ export function useBlogInitWorkflow(onDispatched?: () => void): BlogInitWorkflow
           proposed_angle: angle.trim() || topic.trim(),
         }),
       });
-      if (!res.ok) throw new Error(`Phase 1 failed: ${res.status}`);
-      const data = (await res.json()) as InitResponse;
-      setInit(data);
+      if (!res.ok) throw new Error(await describeError(res));
+      const data = await res.json();
+
+      // Normalize: n8n returns brand_voice_context / narrative_history,
+      // but tolerate legacy aliases brand_voice / recent_posts.
+      const normalized: InitResponse = {
+        brand_voice: data.brand_voice_context ?? data.brand_voice ?? "",
+        recent_posts: data.narrative_history ?? data.recent_posts ?? "",
+        category: data.category ?? category ?? "general",
+        has_memory: data.has_memory ?? (data.brand_voice_context || data.brand_voice ? true : false),
+      };
+      setInit(normalized);
       setPhase("verifying"); // stays verifying — user must confirm
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not reach hans-blog-init");
@@ -67,27 +86,24 @@ export function useBlogInitWorkflow(onDispatched?: () => void): BlogInitWorkflow
     setPhase("resuming");
     setError(null);
     try {
-      const finalPrompt = [
-        `Category: ${category || "general"}`,
-        `Angle: ${angle.trim() || topic.trim()}`,
-        `Source: ${youtube.trim() || "topic only"}`,
-        "",
-        "Brand voice:",
-        updatedBrandVoice,
-        "",
-        "Recent coverage (avoid repetition):",
-        init.recent_posts,
-      ].join("\n");
-      const res = await fetch(init.resume_url, {
+      // POST directly to Ghost Writer — no resume_url needed.
+      // Ghost Writer Process Input accepts `title` as the topic/URL.
+      const res = await fetch(GHOST_WRITER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          confirmed: true,
-          updated_brand_voice: updatedBrandVoice,
-          final_article_prompt: finalPrompt,
+          title: youtube.trim() || topic.trim(),
+          language: "nl",
+          category: category || "general",
+          cluster: "autoriteit",
+          proposed_angle: angle.trim() || topic.trim(),
+          brand_voice_context: updatedBrandVoice,
+          narrative_history: init.recent_posts,
+          source: "blog-cms-manage",
+          timestamp: new Date().toISOString(),
         }),
       });
-      if (!res.ok) throw new Error(`Phase 2 failed: ${res.status}`);
+      if (!res.ok) throw new Error(await describeError(res));
       setPhase("done");
       setInit(null);
       setTopic("");
@@ -95,7 +111,7 @@ export function useBlogInitWorkflow(onDispatched?: () => void): BlogInitWorkflow
       setAngle("");
       onDispatched?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not resume orchestrator");
+      setError(err instanceof Error ? err.message : "Ghost Writer dispatch failed");
       setPhase("error");
     }
   }
