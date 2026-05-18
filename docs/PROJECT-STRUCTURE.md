@@ -120,7 +120,7 @@ hans-crafted-stories/
 | `npm run dev:personal` | Run personal app → http://localhost:8080 (hansvanleeuwen.com) |
 | `npm run dev:saas` | Run SaaS app → http://localhost:8081 (marketplacegrowth.nl) |
 | `npm run dev:thought-canvas` | Run thought-canvas app → http://localhost:8082 (hansvanleeuwen.com/blogs) |
-| `npm run build:personal` | Build personal app (output: apps/personal/dist) |
+| `npm run build:personal` | Build personal app with SEO prerender pipeline (output: apps/personal/dist) |
 | `npm run build:saas` | Build SaaS app (output: apps/saas/dist) |
 | `npm run build:thought-canvas` | Build thought-canvas app (output: apps/thought-canvas/dist) |
 | `npm run build` | Build all three apps |
@@ -133,7 +133,7 @@ hans-crafted-stories/
 
 ## Deployments
 
-- **Personal:** Point your host (e.g. Cloudflare Pages, Vercel) at this repo, build command `npm run build:personal`, output `apps/personal/dist` → domain hansvanleeuwen.com.
+- **Personal:** Cloudflare Pages project `hansvanleeuwen`, production branch `main`, build command `npm run build --workspace=@hans/personal`, output `apps/personal/dist` -> domain hansvanleeuwen.com. Keep this as the full workspace build, not `cd apps/personal && npx vite build`, because the full build runs static content injection, SSR bundling, and blog prerendering for SEO.
 - **Thought-canvas (blogs):** Separate project, build `npm run build:thought-canvas`, output `apps/thought-canvas/dist` → hansvanleeuwen.com/blogs (via rewrite or subdomain).
 - **SaaS:** Separate project on the same host, build `npm run build:saas`, output `apps/saas/dist` → domain marketplacegrowth.nl.
 
