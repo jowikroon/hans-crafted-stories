@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { getBlogPosts } from "@/lib/api/content";
 import BlogPostCard from "@/components/BlogPostCard";
 import { useParams, Link } from "react-router-dom";
@@ -8,6 +8,7 @@ import { getBlogPost, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
+import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
 
@@ -72,36 +73,18 @@ const BlogPostPage = () => {
   const displayContent = post ? ((lang === "nl" && post.content_nl) ? post.content_nl : post.content) : "";
 
   const fullContent = displayContent || "";
-  const wordCount = useMemo(
-    () => (fullContent ? fullContent.trim().split(/\s+/).length : 0),
-    [fullContent]
-  );
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+  const seoHead = post ? getBlogPostHead(post) : null;
+  const seoUrl = seoHead?.canonical || `https://hansvanleeuwen.com/writing/${slug}`;
 
   useSEO({
-    enabled: Boolean(post),
-    title: post ? `${displayTitle} | Hans van Leeuwen` : "Loading... | Hans van Leeuwen",
+    enabled: post !== undefined,
+    title: post ? seoHead?.title || `${displayTitle} | Hans van Leeuwen` : "Post not found | Hans van Leeuwen",
     description: displayExcerpt || "Read this article by Hans van Leeuwen on e-commerce, marketplace strategy, and digital commerce.",
-    url: `https://hansvanleeuwen.com/writing/${slug}`,
+    url: seoUrl,
     type: "article",
-    jsonLd: post ? {
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      headline: displayTitle,
-      description: displayExcerpt,
-      url: `https://hansvanleeuwen.com/writing/${slug}`,
-      mainEntityOfPage: { "@type": "WebPage", "@id": `https://hansvanleeuwen.com/writing/${slug}` },
-      datePublished: post.created_at,
-      dateModified: post.updated_at,
-      author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen", url: "https://hansvanleeuwen.com" },
-      publisher: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen", url: "https://hansvanleeuwen.com" },
-      image: post.image_url || "https://hansvanleeuwen.com/og-image.png",
-      articleSection: post.category,
-      keywords: post.tags.join(", "),
-      ...(wordCount > 0 ? { wordCount } : { /* empty */ }),
-      inLanguage: "en",
-    } : undefined,
+    jsonLd: post ? getBlogPostJsonLd(post) : undefined,
   });
 
   if (post === undefined) {

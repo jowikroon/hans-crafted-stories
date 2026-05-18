@@ -31,6 +31,10 @@ const setMeta = (name: string, content: string, attr = "name") => {
   el.content = content;
 };
 
+const removeMeta = (name: string, attr = "name") => {
+  document.querySelector(`meta[${attr}="${name}"]`)?.remove();
+};
+
 export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd }: SEOConfig) => {
   useEffect(() => {
     if (!enabled) return;
@@ -89,6 +93,26 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
       document.title = DEFAULT_TITLE;
       document.getElementById(ldId)?.remove();
       document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
+      document.querySelector('link[rel="canonical"]')?.remove();
+      [
+        "description",
+        "twitter:card",
+        "twitter:title",
+        "twitter:image",
+        "twitter:description",
+        "twitter:image:alt",
+      ].forEach((name) => removeMeta(name));
+      [
+        "og:title",
+        "og:description",
+        "og:url",
+        "og:type",
+        "og:image",
+        "og:image:type",
+        "og:image:width",
+        "og:image:height",
+        "og:image:alt",
+      ].forEach((name) => removeMeta(name, "property"));
     };
   }, [enabled, title, description, url, type, hreflang, jsonLd]);
 };

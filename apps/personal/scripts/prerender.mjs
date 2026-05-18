@@ -58,6 +58,7 @@ const {
   getBlogPostJsonLd,
   clearRootHtml,
   replaceSsrFallbackHtml,
+  serializeJsonForHtmlScript,
 } = await import(
   pathToFileURL(entryPath).href
 );
@@ -231,7 +232,7 @@ function setHead(html, { title, description, canonical }) {
 function setJsonLd(html, jsonLd) {
   return html.replace(
     /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-    `<script type="application/ld+json">\n${JSON.stringify(jsonLd)}\n    </script>`
+    `<script type="application/ld+json">\n${serializeJsonForHtmlScript(jsonLd)}\n    </script>`
   );
 }
 
@@ -304,9 +305,9 @@ for (const [slug, blogPost] of postBySlug) {
     (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(head.canonical)}"`)
   );
 
-  const preloadedScript = `<script id="__PRELOADED__" type="application/json">${JSON.stringify(
-    { blogPost }
-  )}</script>`;
+  const preloadedScript = `<script id="__PRELOADED__" type="application/json">${serializeJsonForHtmlScript({
+    blogPost,
+  })}</script>`;
   page = page.replace("</body>", `${preloadedScript}\n  </body>`);
 
   const outDir = path.join(distDir, "writing", slug);

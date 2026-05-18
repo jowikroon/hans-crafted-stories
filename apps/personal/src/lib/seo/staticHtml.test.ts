@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clearRootHtml, replaceSsrFallbackHtml } from "./staticHtml";
+import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "./staticHtml";
 
 describe("static HTML template helpers", () => {
   it("removes all nested homepage markup from the root before prerender injection", () => {
@@ -36,5 +36,19 @@ describe("static HTML template helpers", () => {
     expect(replaced).toContain("<noscript><main><h1>Article H1</h1></main></noscript>");
     expect(replaced).not.toContain("Homepage H1");
     expect(replaced).toContain("googletagmanager.com/ns.html");
+  });
+
+  it("serializes JSON safely for embedding in HTML script tags", () => {
+    const serialized = serializeJsonForHtmlScript({
+      content: '</script><script>alert("xss")</script>',
+      ampersand: "A & B",
+      separators: "\u2028\u2029",
+    });
+
+    expect(serialized).not.toContain("</script>");
+    expect(serialized).not.toContain("<script>");
+    expect(serialized).toContain("\\u003C/script\\u003E");
+    expect(serialized).toContain("\\u0026");
+    expect(serialized).toContain("\\u2028\\u2029");
   });
 });
