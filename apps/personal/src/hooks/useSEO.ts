@@ -6,6 +6,7 @@ interface HreflangEntry {
 }
 
 interface SEOConfig {
+  enabled?: boolean;
   title: string;
   description: string;
   url: string;
@@ -30,8 +31,10 @@ const setMeta = (name: string, content: string, attr = "name") => {
   el.content = content;
 };
 
-export const useSEO = ({ title, description, url, type = "website", hreflang, jsonLd }: SEOConfig) => {
+export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd }: SEOConfig) => {
   useEffect(() => {
+    if (!enabled) return;
+
     document.title = title;
     setMeta("description", description);
     setMeta("og:title", title, "property");
@@ -87,5 +90,5 @@ export const useSEO = ({ title, description, url, type = "website", hreflang, js
       document.getElementById(ldId)?.remove();
       document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
     };
-  }, [title, description, url, type, hreflang, jsonLd]);
+  }, [enabled, title, description, url, type, hreflang, jsonLd]);
 };
