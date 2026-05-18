@@ -9,7 +9,7 @@ import type { BlogPostRow } from "@/lib/api/content";
 import { getBlogPosts } from "@/lib/api/content";
 import { getHeroPost, getHeroPostHead, HERO_SLUGS } from "@/data/heroPosts";
 import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
-import { clearRootHtml, replaceSsrFallbackHtml } from "@/lib/seo/staticHtml";
+import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "@/lib/seo/staticHtml";
 
 export interface RenderOptions {
   /** Initial language for SSR (e.g. "en" for /about prerender). */
@@ -45,4 +45,5 @@ export {
   getBlogPostJsonLd,
   clearRootHtml,
   replaceSsrFallbackHtml,
+  serializeJsonForHtmlScript,
 };

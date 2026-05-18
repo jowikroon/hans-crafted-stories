@@ -20,4 +20,21 @@ describe("useSEO", () => {
 
     expect(document.title).toBe("Prerendered Article | Hans van Leeuwen");
   });
+
+  it("cleans up managed canonical and social URL tags when disabled after a route change", () => {
+    const { rerender } = render(<SeoProbe enabled={true} />);
+
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(
+      "https://hansvanleeuwen.com/writing/loading"
+    );
+    expect(document.querySelector('meta[property="og:url"]')?.getAttribute("content")).toBe(
+      "https://hansvanleeuwen.com/writing/loading"
+    );
+
+    rerender(<SeoProbe enabled={false} />);
+
+    expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+    expect(document.querySelector('meta[property="og:url"]')).toBeNull();
+    expect(document.querySelector('meta[name="twitter:url"]')).toBeNull();
+  });
 });
