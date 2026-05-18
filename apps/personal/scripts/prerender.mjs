@@ -1,8 +1,8 @@
 /**
- * Prerender hero blog posts into static HTML so /writing/<slug> ships with full content (no Supabase at build).
+ * Prerender published blog posts into static HTML so /writing/<slug> ships with full content and SEO metadata.
  * Run after: vite build && node scripts/inject-static-content.cjs && vite build --ssr src/entry-server.tsx
  *
- * Output: dist/writing/<slug>/index.html for each hero slug, with #root filled and __PRELOADED__ for hydration.
+ * Output: dist/writing/<slug>/index.html for each published slug, with #root filled and __PRELOADED__ for hydration.
  */
 import path from "path";
 import fs from "fs";
@@ -39,8 +39,6 @@ if (!fs.existsSync(templatePath)) {
 }
 
 let template = fs.readFileSync(templatePath, "utf8");
-// Empty #root so we can inject prerendered content (inject-static-content already ran for homepage)
-template = template.replace(/<div id="root">[\s\S]*?<\/div>/, '<div id="root"></div>');
 
 // Load server bundle (built with vite build --ssr src/entry-server.tsx)
 const entryJs = path.join(distDir, "entry-server.js");
@@ -51,9 +49,22 @@ if (!entryPath) {
   process.exit(1);
 }
 
-const { render, getHeroPost, getHeroPostHead, HERO_SLUGS, getBlogPosts } = await import(
+const {
+  render,
+  getHeroPost,
+  HERO_SLUGS,
+  getBlogPosts,
+  getBlogPostHead,
+  getBlogPostJsonLd,
+  clearRootHtml,
+  replaceSsrFallbackHtml,
+} = await import(
   pathToFileURL(entryPath).href
 );
+
+// Empty #root so we can inject prerendered content (inject-static-content already ran for homepage).
+// Use balanced div parsing so nested homepage markup cannot leak into prerendered article pages.
+template = clearRootHtml(template);
 
 const BASE = "https://hansvanleeuwen.com";
 
@@ -217,6 +228,13 @@ function setHead(html, { title, description, canonical }) {
   return out;
 }
 
+function setJsonLd(html, jsonLd) {
+  return html.replace(
+    /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
+    `<script type="application/ld+json">\n${JSON.stringify(jsonLd)}\n    </script>`
+  );
+}
+
 function escapeHtml(s) {
   return String(s)
     .replace(/&/g, "&amp;")
@@ -225,18 +243,61 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
-for (const slug of HERO_SLUGS) {
-  const route = `/writing/${slug}`;
-  const heroPost = getHeroPost(slug);
-  const head = getHeroPostHead(slug);
-  if (!heroPost || !head) {
-    console.warn(`[prerender] Skipping ${route}: no hero config or content`);
-    continue;
-  }
+function textToParagraphs(text) {
+  return String(text || "")
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .slice(0, 8)
+    .map((paragraph) => `<p>${escapeHtml(paragraph.replace(/\s+/g, " "))}</p>`)
+    .join("\n          ");
+}
 
-  const { html } = render(route, heroPost);
+function buildBlogPostFallback(post, head) {
+  const body = textToParagraphs(post.content);
+  return `
+      <header>
+        <nav aria-label="Primary navigation">
+          <a href="/">Home</a> |
+          <a href="/writing">Writing</a>
+        </nav>
+      </header>
+      <main>
+        <article>
+          <h1>${escapeHtml(post.title)}</h1>
+          <p>${escapeHtml(head.description)}</p>
+          ${body || "<p>Full article coming soon.</p>"}
+        </article>
+      </main>`;
+}
+
+let publishedPosts = [];
+try {
+  publishedPosts = await getBlogPosts(true);
+} catch (err) {
+  console.warn("[prerender] Could not pre-fetch published blog posts:", err.message);
+}
+
+const postBySlug = new Map();
+for (const post of publishedPosts) {
+  if (post?.slug) postBySlug.set(post.slug, post);
+}
+for (const slug of HERO_SLUGS) {
+  if (!postBySlug.has(slug)) {
+    const heroPost = getHeroPost(slug);
+    if (heroPost) postBySlug.set(slug, heroPost);
+  }
+}
+
+for (const [slug, blogPost] of postBySlug) {
+  const route = `/writing/${slug}`;
+  const head = getBlogPostHead(blogPost);
+
+  const { html } = render(route, blogPost);
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
+  page = setJsonLd(page, getBlogPostJsonLd(blogPost));
+  page = replaceSsrFallbackHtml(page, buildBlogPostFallback(blogPost, head));
 
   page = page.replace(
     /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
@@ -244,7 +305,7 @@ for (const slug of HERO_SLUGS) {
   );
 
   const preloadedScript = `<script id="__PRELOADED__" type="application/json">${JSON.stringify(
-    { blogPost: heroPost }
+    { blogPost }
   )}</script>`;
   page = page.replace("</body>", `${preloadedScript}\n  </body>`);
 

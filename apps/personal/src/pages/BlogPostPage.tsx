@@ -80,6 +80,7 @@ const BlogPostPage = () => {
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
 
   useSEO({
+    enabled: Boolean(post),
     title: post ? `${displayTitle} | Hans van Leeuwen` : "Loading... | Hans van Leeuwen",
     description: displayExcerpt || "Read this article by Hans van Leeuwen on e-commerce, marketplace strategy, and digital commerce.",
     url: `https://hansvanleeuwen.com/writing/${slug}`,
