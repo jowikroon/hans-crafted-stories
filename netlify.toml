@@ -1,0 +1,5 @@
+[build]
+# This repository is deployed to production by Cloudflare Pages.
+# Keep Netlify connected only as a non-production legacy integration, and skip
+# its builds so failed deploy previews do not create noisy PR checks.
+ignore = "true"
