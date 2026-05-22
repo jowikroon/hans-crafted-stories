@@ -1,0 +1,75 @@
+{
+  "name": "Blog - YouTube Analyze",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "blog-youtube-analyze",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [200, 300],
+      "typeVersion": 2,
+      "webhookId": "blog-youtube-analyze"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Required env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY, ANTHROPIC_API_KEY\n// Optional: YOUTUBE_API_KEY (enables richer metadata via Data API v3)\n\nconst body = $input.first().json;\nconst url = body.url || '';\nconst videoId = body.video_id || url.match(/(?:v=|youtu\\.be\\/|embed\\/)([a-zA-Z0-9_-]{11})/)?.[1];\n\nif (!videoId) {\n  throw new Error('Missing video_id — could not extract from URL: ' + url);\n}\n\n// 1. Fetch oEmbed metadata (no API key required)\nlet title = '', channelName = '', thumbnailUrl = '';\ntry {\n  const oEmbedRes = await fetch(\n    `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`\n  );\n  if (oEmbedRes.ok) {\n    const oe = await oEmbedRes.json();\n    title = oe.title || '';\n    channelName = oe.author_name || '';\n    thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;\n  }\n} catch (e) {\n  console.error('oEmbed fetch failed:', e.message);\n}\n\n// 2. Try to fetch transcript via YouTube timedtext API (works for many videos)\nlet transcript = '';\ntry {\n  const transcriptRes = await fetch(\n    `https://www.youtube.com/api/timedtext?lang=en&v=${videoId}`\n  );\n  if (transcriptRes.ok) {\n    const xml = await transcriptRes.text();\n    // Strip XML tags, decode entities\n    transcript = xml\n      .replace(/<[^>]+>/g, ' ')\n      .replace(/&amp;/g, '&')\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g, \"'\")\n      .replace(/&lt;/g, '<')\n      .replace(/&gt;/g, '>')\n      .replace(/\\s+/g, ' ')\n      .trim()\n      .slice(0, 12000); // Claude Haiku context limit\n  }\n} catch (e) {\n  console.error('Timedtext fetch failed:', e.message);\n}\n\n// 3. If YOUTUBE_API_KEY is set, enrich with Data API v3\nconst ytApiKey = process.env.YOUTUBE_API_KEY;\nlet durationSeconds = null;\nif (ytApiKey) {\n  try {\n    const apiRes = await fetch(\n      `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet,contentDetails&key=${ytApiKey}`\n    );\n    if (apiRes.ok) {\n      const apiData = await apiRes.json();\n      const item = apiData.items?.[0];\n      if (item) {\n        title = title || item.snippet?.title || '';\n        channelName = channelName || item.snippet?.channelTitle || '';\n        // Parse ISO 8601 duration (PT4M13S → 253 seconds)\n        const dur = item.contentDetails?.duration || '';\n        const m = dur.match(/PT(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?/);\n        if (m) {\n          durationSeconds = (parseInt(m[1]||'0')*3600) + (parseInt(m[2]||'0')*60) + parseInt(m[3]||'0');\n        }\n      }\n    }\n  } catch (e) {\n    console.error('YouTube Data API failed:', e.message);\n  }\n}\n\n// 4. Insert initial row into Supabase\nconst supabaseUrl = process.env.SUPABASE_URL;\nconst supabaseKey = process.env.SUPABASE_SERVICE_KEY;\n\nif (!supabaseUrl || !supabaseKey) {\n  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_KEY env vars');\n}\n\nconst insertRes = await fetch(`${supabaseUrl}/rest/v1/blog_cms_youtube_sources`, {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json',\n    'apikey': supabaseKey,\n    'Authorization': `Bearer ${supabaseKey}`,\n    'Prefer': 'return=representation'\n  },\n  body: JSON.stringify({\n    url,\n    video_id: videoId,\n    title,\n    channel_name: channelName,\n    thumbnail_url: thumbnailUrl,\n    duration_seconds: durationSeconds,\n    transcript: transcript || null,\n    transcript_language: transcript ? 'en' : null,\n    status: transcript ? 'transcribed' : 'imported',\n    key_topics: [],\n    suggested_wiki_terms: [],\n    article_opportunities: []\n  })\n});\n\nif (!insertRes.ok) {\n  const err = await insertRes.text();\n  throw new Error(`Supabase insert failed (${insertRes.status}): ${err.slice(0, 300)}`);\n}\n\nconst [insertedRow] = await insertRes.json();\nconst sourceId = insertedRow.id;\n\nreturn [{ json: { source_id: sourceId, video_id: videoId, title, channel_name: channelName, transcript_length: transcript.length, status: 'transcribed' } }];\n"
+      },
+      "id": "fetch-metadata",
+      "name": "Fetch Metadata + Transcript",
+      "type": "n8n-nodes-base.code",
+      "position": [480, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Analyze transcript with Claude Haiku → key_topics + article_opportunities\n// Required: ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY\n\nconst { source_id, video_id, title, channel_name, transcript_length } = $input.first().json;\n\nconst apiKey = process.env.ANTHROPIC_API_KEY;\nif (!apiKey) throw new Error('Missing ANTHROPIC_API_KEY env var');\n\n// Re-fetch transcript from Supabase\nconst supabaseUrl = process.env.SUPABASE_URL;\nconst supabaseKey = process.env.SUPABASE_SERVICE_KEY;\n\nconst rowRes = await fetch(\n  `${supabaseUrl}/rest/v1/blog_cms_youtube_sources?id=eq.${source_id}&select=transcript,title,channel_name`,\n  { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }\n);\nconst [row] = await rowRes.json();\nconst transcript = row?.transcript || '';\nconst videoTitle = row?.title || title || '(unknown)';\n\nlet keyTopics = [];\nlet articleOpportunities = [];\nlet contextSummary = '';\n\nif (transcript.length > 100) {\n  const prompt = `You are an editorial analyst. Analyze this YouTube transcript and extract structured insights for a blog content team.\n\nVideo: \"${videoTitle}\" by ${channel_name || 'Unknown channel'}\n\nTranscript (first 8000 chars):\n${transcript.slice(0, 8000)}\n\nReturn ONLY valid JSON with this exact structure:\n{\n  \"key_topics\": [\"topic1\", \"topic2\", \"topic3\", \"topic4\", \"topic5\"],\n  \"article_opportunities\": [\"angle1: description\", \"angle2: description\", \"angle3: description\"],\n  \"context_summary\": \"2-3 sentence summary of the main argument and key insights\"\n}\n\nkey_topics: 4-6 short phrases (max 5 words each) covering the main themes.\narticle_opportunities: 3 specific blog angles this content suggests, formatted as \"Angle title: brief description\".\ncontext_summary: What is the core argument and most actionable insight?`;\n\n  try {\n    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {\n      method: 'POST',\n      headers: {\n        'x-api-key': apiKey,\n        'anthropic-version': '2023-06-01',\n        'content-type': 'application/json'\n      },\n      body: JSON.stringify({\n        model: 'claude-haiku-4-5-20251001',\n        max_tokens: 800,\n        messages: [{ role: 'user', content: prompt }]\n      })\n    });\n\n    if (claudeRes.ok) {\n      const claudeData = await claudeRes.json();\n      const text = claudeData.content?.[0]?.text || '';\n      const jsonMatch = text.match(/\\{[\\s\\S]*\\}/);\n      if (jsonMatch) {\n        const parsed = JSON.parse(jsonMatch[0]);\n        keyTopics = parsed.key_topics || [];\n        articleOpportunities = parsed.article_opportunities || [];\n        contextSummary = parsed.context_summary || '';\n      }\n    }\n  } catch (e) {\n    console.error('Claude analysis failed:', e.message);\n    // Continue — will save with empty topics but mark as analyzed\n  }\n} else {\n  contextSummary = `No transcript available for \"${videoTitle}\". Topics extracted from title only.`;\n  // Extract basic topics from title\n  keyTopics = videoTitle\n    .split(/[\\s,\\-–:]+/)\n    .filter(w => w.length > 4)\n    .slice(0, 5);\n}\n\n// Update Supabase row with analysis results\nconst updateRes = await fetch(\n  `${supabaseUrl}/rest/v1/blog_cms_youtube_sources?id=eq.${source_id}`,\n  {\n    method: 'PATCH',\n    headers: {\n      'Content-Type': 'application/json',\n      'apikey': supabaseKey,\n      'Authorization': `Bearer ${supabaseKey}`,\n      'Prefer': 'return=minimal'\n    },\n    body: JSON.stringify({\n      key_topics: keyTopics,\n      article_opportunities: articleOpportunities,\n      context_summary: contextSummary,\n      status: 'analyzed',\n      updated_at: new Date().toISOString()\n    })\n  }\n);\n\nif (!updateRes.ok) {\n  const err = await updateRes.text();\n  console.error(`Supabase update failed (${updateRes.status}): ${err}`);\n}\n\nreturn [{ json: { source_id, key_topics: keyTopics, article_opportunities: articleOpportunities, context_summary: contextSummary, status: 'analyzed' } }];\n"
+      },
+      "id": "analyze-with-claude",
+      "name": "Analyze with Claude Haiku",
+      "type": "n8n-nodes-base.code",
+      "position": [760, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ source_id: $json.source_id, status: $json.status, key_topics: $json.key_topics, article_opportunities: $json.article_opportunities }) }}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1040, 300],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Fetch Metadata + Transcript", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Metadata + Transcript": {
+      "main": [
+        [{ "node": "Analyze with Claude Haiku", "type": "main", "index": 0 }]
+      ]
+    },
+    "Analyze with Claude Haiku": {
+      "main": [
+        [{ "node": "Respond to Webhook", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "notes": "Required n8n env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY, ANTHROPIC_API_KEY. Optional: YOUTUBE_API_KEY (enriches metadata via YouTube Data API v3). Activate after verifying env vars are set."
+  }
+}

@@ -928,3 +928,91 @@
   margin: 0 0 var(--s-4);
 }
 .write-cms .chart-svg { width: 100%; height: 220px; display: block; }
+
+/* ============================= YOUTUBE PREVIEW ============================= */
+.write-cms .yt-preview {
+  display: flex; gap: var(--s-3); align-items: flex-start;
+  padding: var(--s-3) var(--s-5);
+  border-top: 1px solid var(--line-faint);
+  background: var(--bg-inset);
+}
+.write-cms .yt-preview img {
+  width: 80px; height: 45px;
+  border-radius: var(--r-1);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+}
+.write-cms .yt-preview-meta { min-width: 0; flex: 1; }
+.write-cms .yt-preview-title {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 13px; letter-spacing: -0.005em;
+  color: var(--ink-0);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.write-cms .yt-preview-channel {
+  font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-2); margin-top: 3px;
+}
+
+/* ============================= TOPIC CHIPS ============================= */
+.write-cms .topic-chips {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2);
+  padding: var(--s-3) var(--s-5);
+  border-top: 1px solid var(--line-faint);
+}
+.write-cms .topic-chips-label {
+  font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+.write-cms .topic-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  background: var(--bg-0); border: 1px solid var(--line);
+  border-radius: 100px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--ink-1);
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.write-cms .topic-chip:hover { background: var(--accent); border-color: var(--ink-0); color: var(--accent-fg); }
+
+/* ============================= ANALYZE STATUS ============================= */
+.write-cms .analyze-status {
+  display: flex; align-items: center; gap: var(--s-2);
+  padding: var(--s-2) var(--s-5);
+  border-top: 1px solid var(--line-faint);
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--ink-2);
+}
+
+/* ============================= VOICE COACHING RAIL ============================= */
+.write-cms .banned-chips {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  margin-top: var(--s-2);
+}
+.write-cms .banned-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px;
+  background: var(--draft-soft); color: var(--draft);
+  border-radius: 100px;
+  font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.write-cms .banned-chip .count {
+  background: var(--draft); color: var(--bg-0);
+  border-radius: 100px; padding: 0 4px; font-size: 9px;
+}
+.write-cms .voice-tips-list {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-top: var(--s-2);
+}
+.write-cms .voice-tip {
+  display: flex; gap: var(--s-2); align-items: flex-start;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--ink-1); line-height: 1.4;
+}
+.write-cms .voice-tip-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); margin-top: 4px; flex-shrink: 0;
+}

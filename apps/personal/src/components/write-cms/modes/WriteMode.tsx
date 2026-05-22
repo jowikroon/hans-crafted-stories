@@ -3,6 +3,7 @@ import { useBlogPost } from "../hooks/useBlogPost";
 import { usePostAutosave, type SaveStatus } from "../hooks/usePostAutosave";
 import { usePublish } from "../hooks/usePublish";
 import { useReviews } from "../hooks/useReviews";
+import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/useVoiceTemplate";
 
 function StatusPill({ status, published }: { status: string; published: boolean }) {
   const cls = status === "published" || published ? "live" : status === "scheduled" ? "scheduled" : status === "review" ? "review" : "draft";
@@ -35,8 +36,13 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const autosave = usePostAutosave(post);
   const pub = usePublish(() => state.refetch());
   const reviewsHook = useReviews(postId);
+  const { template: voiceTemplate } = useVoiceTemplate(post?.category);
   const [showSchedule, setShowSchedule] = useState(false);
   const [scheduleDate, setScheduleDate] = useState("");
+
+  const allContent = (autosave.fields.content ?? "") + " " + (autosave.fields.content_nl ?? "");
+  const bannedHits = voiceTemplate ? countBannedWords(allContent, voiceTemplate.banned_words ?? []) : [];
+  const contentTips = parseContentTips(voiceTemplate?.content_rules ?? null);
 
   const isLive = post?.status === "published" || post?.published;
   const isScheduled = post?.status === "scheduled";
@@ -287,7 +293,85 @@ export default function WriteMode({ postId }: { postId?: string }) {
       </main>
 
       <aside className="rail">
-        <h2 className="rail-h">Score<em>.</em></h2>
+        {/* Voice coaching card */}
+        {voiceTemplate && (
+          <>
+            <h2 className="rail-h">Voice<em>.</em></h2>
+            <div className="card voice-card">
+              <div className="card-head">
+                Active template
+                <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 11, color: "var(--ink-0)", textTransform: "none" }}>
+                  {voiceTemplate.category}
+                </span>
+              </div>
+              <div className="name">{voiceTemplate.name} <em>/ {voiceTemplate.tone}</em></div>
+
+              {/* Banned words hits */}
+              {bannedHits.length > 0 && (
+                <>
+                  <div className="card-head" style={{ marginTop: "var(--s-3)" }}>
+                    Banned words
+                    <span style={{ color: "var(--draft)", fontWeight: 600 }}>{bannedHits.length} found</span>
+                  </div>
+                  <div className="banned-chips">
+                    {bannedHits.map(({ word, count }) => (
+                      <span key={word} className="banned-chip">
+                        {word}
+                        <span className="count">×{count}</span>
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+              {bannedHits.length === 0 && voiceTemplate.banned_words?.length > 0 && (
+                <div className="fit">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  No banned words
+                </div>
+              )}
+
+              {/* Readability targets */}
+              {(voiceTemplate.max_sentence_words || voiceTemplate.passive_voice_max_pct) && (
+                <div className="card-head" style={{ marginTop: "var(--s-3)" }}>Targets</div>
+              )}
+              {voiceTemplate.max_sentence_words && (
+                <div className="sub">
+                  <span>Max sentence</span>
+                  <strong style={{ color: "var(--ink-0)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+                    {voiceTemplate.max_sentence_words} words
+                  </strong>
+                </div>
+              )}
+              {voiceTemplate.passive_voice_max_pct != null && (
+                <div className="sub">
+                  <span>Passive voice</span>
+                  <strong style={{ color: "var(--ink-0)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+                    max {voiceTemplate.passive_voice_max_pct}%
+                  </strong>
+                </div>
+              )}
+            </div>
+
+            {/* Writing tips */}
+            {contentTips.length > 0 && (
+              <div className="card">
+                <div className="card-head">Tips<span>{contentTips.length}</span></div>
+                <div className="voice-tips-list">
+                  {contentTips.map((tip, i) => (
+                    <div key={i} className="voice-tip">
+                      <span className="voice-tip-dot" />
+                      <span>{tip}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        <h2 className="rail-h" style={voiceTemplate ? { marginTop: "var(--s-4)" } : {}}>Score<em>.</em></h2>
         <div className="card">
           <div className="card-head">Voice match<span>{voiceScore > 0 ? `${voiceScore}%` : "–"}</span></div>
           <div className="score-row">
