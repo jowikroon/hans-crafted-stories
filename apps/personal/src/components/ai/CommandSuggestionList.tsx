@@ -46,7 +46,7 @@ const colorStyles = {
 const CommandSuggestionList = ({ subId, context, onSelect, onDismiss, accentColor }: CommandSuggestionListProps) => {
   const listRef = useRef<HTMLDivElement>(null);
   const colors = colorStyles[accentColor];
-  const usageCounts = useMemo(() => getUsageCounts(context), [context, subId]);
+  const usageCounts = useMemo(() => getUsageCounts(context), [context]);
   const sorted = useMemo(
     () => getTop10Commands(subId, context, usageCounts),
     [subId, context, usageCounts]

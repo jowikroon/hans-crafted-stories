@@ -191,6 +191,20 @@ const WRITING_JSONLD = {
   ],
 };
 
+function renderQuietly(...args) {
+  const originalError = console.error;
+  console.error = (...messages) => {
+    const text = messages.join(" ");
+    if (text.includes("useLayoutEffect does nothing on the server")) return;
+    originalError(...messages);
+  };
+  try {
+    return render(...args);
+  } finally {
+    console.error = originalError;
+  }
+}
+
 function setHead(html, { title, description, canonical }) {
   let out = html;
   out = out.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(title)}</title>`);
@@ -294,7 +308,7 @@ for (const [slug, blogPost] of postBySlug) {
   const route = `/writing/${slug}`;
   const head = getBlogPostHead(blogPost);
 
-  const { html } = render(route, blogPost);
+  const { html } = renderQuietly(route, blogPost);
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
   page = setJsonLd(page, getBlogPostJsonLd(blogPost));
@@ -320,7 +334,7 @@ for (const [slug, blogPost] of postBySlug) {
 // Prerender /about for indexable content and correct meta/schema
 {
   const route = "/about";
-  const { html } = render(route, null, { initialLang: "en" });
+  const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, ABOUT_HEAD);
 
@@ -346,7 +360,7 @@ for (const [slug, blogPost] of postBySlug) {
 // Prerender /work for indexable content and correct meta/schema
 {
   const route = "/work";
-  const { html } = render(route, null, { initialLang: "en" });
+  const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, WORK_HEAD);
   page = page.replace(
@@ -372,7 +386,7 @@ for (const [slug, blogPost] of postBySlug) {
   } catch (err) {
     console.warn("[prerender] Could not pre-fetch blog posts for /writing:", err.message);
   }
-  const { html } = render(route, null, { initialLang: "en", preloadedBlogPosts: writingPosts });
+  const { html } = renderQuietly(route, null, { initialLang: "en", preloadedBlogPosts: writingPosts });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, WRITING_HEAD);
   page = page.replace(
@@ -421,7 +435,7 @@ const SEO_PAGES = [
 ];
 
 for (const { route, head } of SEO_PAGES) {
-  const { html } = render(route, null, { initialLang: "en" });
+  const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
   page = page.replace(
