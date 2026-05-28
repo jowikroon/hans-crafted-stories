@@ -93,7 +93,7 @@ const PortalToolsTab = ({ userId, isAdmin = false, subFilter }: PortalToolsTabPr
       }
     };
     loadTools();
-  }, [userId, isAdmin]);
+  }, [userId, isAdmin, toast]);
 
   const reloadTools = async () => {
     const dbTools = await portalApi.getTools();

@@ -25,6 +25,10 @@ const categoryGroupMap: Record<string, string> = {
   "Web Design": "web-ux",
 };
 
+const internalRoutes: Record<string, string> = {
+  "connect-car-parts": "/work/connect-car-parts",
+};
+
 const Work = () => {
   const [studies, setStudies] = useState<CaseStudyRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,10 +79,6 @@ const Work = () => {
       setLoading(false);
     });
   }, []);
-
-  const internalRoutes: Record<string, string> = {
-    "connect-car-parts": "/work/connect-car-parts",
-  };
 
   const mapped = useMemo(
     () =>

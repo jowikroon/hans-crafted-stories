@@ -746,7 +746,7 @@ export default function SamanthaAI() {
       }, 3000); // 3-second debounce
       return () => clearTimeout(timer);
     }
-  }, [messages, selectedModel]);
+  }, [messages, selectedModel, user?.id]);
   useEffect(() => { try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch { /* empty */ } }, [tasks]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, stage]);
   useEffect(() => { document.title = "Samantha — AI Cockpit"; }, []);

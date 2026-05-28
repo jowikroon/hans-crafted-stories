@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
@@ -12,7 +12,7 @@ const WikiErrorLog = () => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true);
     let q = supabase
       .from("empire_events")
@@ -24,11 +24,11 @@ const WikiErrorLog = () => {
     const { data } = await q;
     setEvents(data ?? []);
     setLoading(false);
-  };
+  }, [sourceFilter]);
 
   useEffect(() => {
     fetchEvents();
-  }, [sourceFilter]);
+  }, [fetchEvents]);
 
   // Realtime subscription
   useEffect(() => {

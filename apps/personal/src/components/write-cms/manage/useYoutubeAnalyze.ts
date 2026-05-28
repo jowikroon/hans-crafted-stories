@@ -72,6 +72,9 @@ export function useYoutubeAnalyze() {
       setError(err instanceof Error ? err.message : "YouTube analyze failed");
       setPhase("error");
     }
+  // pollForResult is a function declaration scoped to the hook and only uses stable React setters.
+  // Keeping analyze stable avoids restarting consumers that subscribe to it.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function pollForResult(sourceId: string, attempts = 0): Promise<void> {

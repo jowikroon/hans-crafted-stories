@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserPlus, Users, Shield, Eye, EyeOff, ChevronDown, ChevronRight, Wrench, FileText, Activity, Bot, Terminal, Zap, ShieldCheck, ShieldX, Lock, Unlock, Trash2, CheckSquare, Square, UserCheck, Loader2, RefreshCw, Clock } from "lucide-react";
 import { usersApi, PortalProfile } from "@/lib/api/users";
@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PortalUsersManagerProps {
   adminUserId: string;
@@ -71,7 +72,7 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
   const [bulkAi, setBulkAi] = useState<Record<string, boolean>>({ /* empty */ });
   const [bulkSaving, setBulkSaving] = useState(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [p, t] = await Promise.all([usersApi.getProfiles(), portalApi.getTools()]);
@@ -82,9 +83,9 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [loadData]);
 
   // ── Selection helpers ─────────────────────────────
   const toggleSelect = (id: string) => {
@@ -177,7 +178,7 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portal-api`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${(await (await import("@/integrations/supabase/client")).supabase.auth.getSession()).data.session?.access_token}` },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}` },
         body: JSON.stringify({ action: "create_user", email: newEmail.trim(), password: newPassword, display_name: newName.trim(), role: "user", tab_access: ["tools"] }),
       });
       const result = await res.json();
@@ -299,7 +300,6 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
   const handleDeleteUser = async (profile: PortalProfile) => {
     setDeleting(true);
     try {
-      const { supabase } = await import("@/integrations/supabase/client");
       const session = (await supabase.auth.getSession()).data.session;
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/portal-api`, {
         method: "POST",

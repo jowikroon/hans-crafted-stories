@@ -10,6 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
+    "smoke:site": "node scripts/smoke-site.mjs",
+    "test:staging-safety": "node scripts/verify-staging-safety.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "supabase:types": "supabase gen types typescript --project-id pesfakewujjwkyybwaom > src/integrations/supabase/types.ts"

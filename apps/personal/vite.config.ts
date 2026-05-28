@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     // SSR build must not clear dist so client build + inject-static-content stay
     emptyOutDir: !process.env.BUILD_SSR,
+    chunkSizeWarningLimit: 2500,
   },
   server: {
     host: "::",
