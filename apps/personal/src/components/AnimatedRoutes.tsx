@@ -19,24 +19,20 @@ import CaseStudyDetail from "@/pages/CaseStudyDetail";
 import GodStructure from "@/pages/GodStructure";
 import SamanthaAI from "@/pages/SamanthaAI";
 
-/* WriteCMS is lazy-loaded — full Blog CMS shell at /write (3-mode: Write/Manage/Analytics).
-   BlogCMS is kept for /blog-cms/voice/:id route only (VoiceTemplateEditor still uses it). */
+/* /write — the canonical Blog CMS shell (4-mode: Write / Manage / Analytics / Voice).
+   Lazy-loaded and excluded from the SSR bundle; during prerender the fallback renders. */
 const WriteCMS = lazy(() => import(/* webpackChunkName: "write-cms" */ "@/pages/WriteCMS"));
-
-/* BlogCMS is lazy-loaded and excluded from the SSR bundle.
-   During prerender (typeof window === "undefined"), the fallback renders instead. */
-const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
 const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-template-editor" */ "@/components/portal/blog/VoiceTemplateEditor"));
 
-const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
+const WriteCmsFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
 
-/* /blog-cms is retired — React CMS shell at /write is canonical.
-   /write is now a React route (write-src.html is the archived static prototype). */
-const BlogCMSToWriteRedirect = () => {
+/* /blog-cms is retired in favour of /write. Kept as a redirect for any old
+   inbound links (LinkedIn posts, email footers, etc.). */
+const BlogCmsRedirect = () => {
   if (typeof window !== "undefined") {
     window.location.replace("/write");
   }
-  return <BlogCMSFallback />;
+  return <WriteCmsFallback />;
 };
 
 const AnimatedRoutes = () => {
@@ -55,10 +51,10 @@ const AnimatedRoutes = () => {
         <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
-        <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
-        <Route path="/write/:id" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
-        <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
-        <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
+        <Route path="/write" element={<Suspense fallback={<WriteCmsFallback />}><WriteCMS /></Suspense>} />
+        <Route path="/write/:id" element={<Suspense fallback={<WriteCmsFallback />}><WriteCMS /></Suspense>} />
+        <Route path="/blog-cms" element={<BlogCmsRedirect />} />
+        <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<WriteCmsFallback />}><VoiceTemplateEditor /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
         <Route path="/god-structure" element={<GodStructure />} />
         <Route path="/samantha" element={<SamanthaAI />} />

@@ -3,8 +3,9 @@ import "./write-cms.css";
 import WriteMode from "./modes/WriteMode";
 import ManageMode from "./modes/ManageMode";
 import AnalyticsMode from "./modes/AnalyticsMode";
+import VoiceMode from "./modes/VoiceMode";
 
-type CmsMode = "write" | "manage" | "analytics";
+type CmsMode = "write" | "manage" | "analytics" | "voice";
 
 const MODES: { id: CmsMode; label: string; count: string; icon: React.ReactNode }[] = [
   {
@@ -37,6 +38,16 @@ const MODES: { id: CmsMode; label: string; count: string; icon: React.ReactNode 
     icon: (
       <svg viewBox="0 0 16 16" fill="none">
         <path d="M2 13V3M2 13h12M5 11V8M8 11V5M11 11V7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    id: "voice",
+    label: "Voice",
+    count: "tpl",
+    icon: (
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M8 2v12M5 5v6M11 5v6M2 8h2M12 8h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
       </svg>
     ),
   },
@@ -99,6 +110,7 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
         {mode === "write" && <WriteMode postId={postId} />}
         {mode === "manage" && <ManageMode />}
         {mode === "analytics" && <AnalyticsMode />}
+        {mode === "voice" && <VoiceMode />}
       </div>
     </div>
   );

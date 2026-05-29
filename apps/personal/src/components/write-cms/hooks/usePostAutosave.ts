@@ -9,6 +9,7 @@ export interface EditableFields {
   title_nl: string;
   content: string;
   content_nl: string;
+  image_url: string;
 }
 
 export interface UsePostAutosaveReturn {
@@ -37,6 +38,7 @@ export function usePostAutosave(
     title_nl: "",
     content: "",
     content_nl: "",
+    image_url: "",
   });
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -57,6 +59,7 @@ export function usePostAutosave(
       title_nl: post.title_nl || "",
       content: post.content || "",
       content_nl: post.content_nl || "",
+      image_url: post.image_url || "",
     };
     setFields(initial);
     setSaveStatus("idle");
@@ -92,6 +95,7 @@ export function usePostAutosave(
             title_nl: currentFields.title_nl,
             content: currentFields.content,
             content_nl: currentFields.content_nl,
+            image_url: currentFields.image_url,
             word_count: wordCount,
             updated_at: new Date().toISOString(),
           })

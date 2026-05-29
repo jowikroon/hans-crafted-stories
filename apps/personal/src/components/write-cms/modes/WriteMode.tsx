@@ -4,6 +4,10 @@ import { usePostAutosave, type SaveStatus } from "../hooks/usePostAutosave";
 import { usePublish } from "../hooks/usePublish";
 import { useReviews } from "../hooks/useReviews";
 import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/useVoiceTemplate";
+import BilingualEditor, { type LangFocus } from "../write/BilingualEditor";
+import HeroImageSlot from "../write/HeroImageSlot";
+import TipsCard from "../write/TipsCard";
+import IdeaBubble from "../write/IdeaBubble";
 
 function StatusPill({ status, published }: { status: string; published: boolean }) {
   const cls = status === "published" || published ? "live" : status === "scheduled" ? "scheduled" : status === "review" ? "review" : "draft";
@@ -30,6 +34,25 @@ function SaveIndicator({ saveStatus, lastSaved, errorMessage }: { saveStatus: Sa
   return null;
 }
 
+function LangTabs({ value, onChange }: { value: LangFocus; onChange: (v: LangFocus) => void }) {
+  const TABS: LangFocus[] = ["split", "en", "nl"];
+  return (
+    <div className="lang-tabs" role="tablist" aria-label="Language focus">
+      {TABS.map((t) => (
+        <button
+          key={t}
+          className={value === t ? "on" : ""}
+          onClick={() => onChange(t)}
+          role="tab"
+          aria-selected={value === t}
+        >
+          {t === "split" ? "SPLIT" : t.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function WriteMode({ postId }: { postId?: string }) {
   const state = useBlogPost(postId);
   const post = state.status === "loaded" ? state.post : null;
@@ -39,6 +62,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const { template: voiceTemplate } = useVoiceTemplate(post?.category);
   const [showSchedule, setShowSchedule] = useState(false);
   const [scheduleDate, setScheduleDate] = useState("");
+  const [langFocus, setLangFocus] = useState<LangFocus>("split");
 
   const allContent = (autosave.fields.content ?? "") + " " + (autosave.fields.content_nl ?? "");
   const bannedHits = voiceTemplate ? countBannedWords(allContent, voiceTemplate.banned_words ?? []) : [];
@@ -88,7 +112,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
     );
   }
 
-  // Loading
   if (state.status === "loading") {
     return (
       <main className="main" style={{ display: "grid", placeItems: "center", minHeight: 400 }}>
@@ -99,7 +122,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
     );
   }
 
-  // Not found
   if (state.status === "not-found") {
     return (
       <main className="main" style={{ display: "grid", placeItems: "center", minHeight: 400 }}>
@@ -110,7 +132,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
     );
   }
 
-  // Error
   if (state.status === "error") {
     return (
       <main className="main" style={{ display: "grid", placeItems: "center", minHeight: 400 }}>
@@ -121,13 +142,22 @@ export default function WriteMode({ postId }: { postId?: string }) {
     );
   }
 
-  // Loaded — editable
   const voiceScore = post!.voice_match_score ?? 0;
   const completenessScore = post!.completeness_score ?? 0;
+  const heroImageUrl = autosave.fields.image_url || post!.image_url || null;
 
   return (
     <>
       <main className="main">
+        {/* ──────────── HERO IMAGE SLOT (Phase C) ──────────── */}
+        <HeroImageSlot
+          imageUrl={heroImageUrl}
+          onChangeUrl={(url) => autosave.setField("image_url", url)}
+          onGenerate={() => reviewsHook.generateImage(post!.id)}
+          generating={reviewsHook.imageStatus === "generating"}
+          styleTag={post!.category}
+        />
+
         <section className="hero">
           <div className="hero-titleblock">
             <div className="eyebrow">
@@ -175,8 +205,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
             >
               {autosave.saveStatus === "saving" ? "Saving..." : "Save"}
             </button>
-
-            {/* Schedule toggle */}
             {!isLive && (
               <button
                 className="stamp-btn stamp-btn--ghost stamp-btn--sm"
@@ -185,8 +213,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
                 {isScheduled ? "Scheduled" : "Schedule"}
               </button>
             )}
-
-            {/* Publish / Unpublish */}
             {isLive ? (
               <button
                 className="stamp-btn stamp-btn--ghost stamp-btn--sm"
@@ -213,7 +239,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
           </div>
         </section>
 
-        {/* Schedule picker */}
         {showSchedule && !isLive && (
           <div className="schedule-bar" style={{
             display: "flex", alignItems: "center", gap: "var(--s-3)",
@@ -265,35 +290,23 @@ export default function WriteMode({ postId }: { postId?: string }) {
           </div>
         )}
 
-        {/* EN content */}
-        <div className="paper" style={{ minHeight: 200 }}>
-          <div className="eyebrow" style={{ padding: "var(--s-3) var(--s-4) 0" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-3)" }}>EN</span>
+        {/* ──────────── BILINGUAL TIPTAP EDITOR (Phase C) ──────────── */}
+        <div className="paper paper--editor">
+          <div className="paper-head">
+            <div className="l">
+              <LangTabs value={langFocus} onChange={setLangFocus} />
+            </div>
           </div>
-          <textarea
-            className="write-editor"
-            value={autosave.fields.content}
-            placeholder="Start writing EN content..."
-            onChange={(e) => autosave.setField("content", e.target.value)}
-          />
-        </div>
-
-        {/* NL content */}
-        <div className="paper" style={{ minHeight: 120, marginTop: "var(--s-3)" }}>
-          <div className="eyebrow" style={{ padding: "var(--s-3) var(--s-4) 0" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-3)" }}>NL</span>
-          </div>
-          <textarea
-            className="write-editor"
-            value={autosave.fields.content_nl}
-            placeholder="Start writing NL content..."
-            onChange={(e) => autosave.setField("content_nl", e.target.value)}
+          <BilingualEditor
+            contentEn={autosave.fields.content ?? ""}
+            contentNl={autosave.fields.content_nl ?? ""}
+            onContentChange={(key, html) => autosave.setField(key, html)}
+            langFocus={langFocus}
           />
         </div>
       </main>
 
       <aside className="rail">
-        {/* Voice coaching card */}
         {voiceTemplate && (
           <>
             <h2 className="rail-h">Voice<em>.</em></h2>
@@ -306,33 +319,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
               </div>
               <div className="name">{voiceTemplate.name} <em>/ {voiceTemplate.tone}</em></div>
 
-              {/* Banned words hits */}
-              {bannedHits.length > 0 && (
-                <>
-                  <div className="card-head" style={{ marginTop: "var(--s-3)" }}>
-                    Banned words
-                    <span style={{ color: "var(--draft)", fontWeight: 600 }}>{bannedHits.length} found</span>
-                  </div>
-                  <div className="banned-chips">
-                    {bannedHits.map(({ word, count }) => (
-                      <span key={word} className="banned-chip">
-                        {word}
-                        <span className="count">×{count}</span>
-                      </span>
-                    ))}
-                  </div>
-                </>
-              )}
-              {bannedHits.length === 0 && voiceTemplate.banned_words?.length > 0 && (
-                <div className="fit">
-                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-                    <path d="M2 8l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  No banned words
-                </div>
-              )}
-
-              {/* Readability targets */}
               {(voiceTemplate.max_sentence_words || voiceTemplate.passive_voice_max_pct) && (
                 <div className="card-head" style={{ marginTop: "var(--s-3)" }}>Targets</div>
               )}
@@ -354,20 +340,11 @@ export default function WriteMode({ postId }: { postId?: string }) {
               )}
             </div>
 
-            {/* Writing tips */}
-            {contentTips.length > 0 && (
-              <div className="card">
-                <div className="card-head">Tips<span>{contentTips.length}</span></div>
-                <div className="voice-tips-list">
-                  {contentTips.map((tip, i) => (
-                    <div key={i} className="voice-tip">
-                      <span className="voice-tip-dot" />
-                      <span>{tip}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* ──────────── TIPS CARD (Phase C) ──────────── */}
+            <TipsCard
+              tips={contentTips}
+              bannedHits={bannedHits}
+            />
           </>
         )}
 
@@ -402,7 +379,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
           </div>
         )}
 
-        {/* Agent reviews */}
         <h2 className="rail-h" style={{ marginTop: "var(--s-4)" }}>Reviews<em>.</em></h2>
         <div className="card">
           <div style={{ display: "flex", gap: "var(--s-2)", marginBottom: "var(--s-3)" }}>
@@ -448,6 +424,16 @@ export default function WriteMode({ postId }: { postId?: string }) {
           ))}
         </div>
       </aside>
+
+      {/* ──────────── FLOATING IDEA BUBBLE (Phase C) ──────────── */}
+      <IdeaBubble
+        onInsert={(snippet) => {
+          // Append the idea HTML to the current EN content.
+          const current = autosave.fields.content ?? "";
+          autosave.setField("content", current + snippet.html);
+        }}
+        paused={showSchedule}
+      />
     </>
   );
 }

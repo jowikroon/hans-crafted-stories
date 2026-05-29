@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ManagePhaseTwoConfirm from "./ManagePhaseTwoConfirm";
+import YouTubePreflightCard from "./YouTubePreflightCard";
 import type { BlogInitWorkflow } from "./useBlogInitWorkflow";
-import { useYoutubeAnalyze, extractVideoId } from "./useYoutubeAnalyze";
+import { extractVideoId, useYoutubeAnalyze } from "./useYoutubeAnalyze";
 
 interface YtPreview { title: string; channel: string; thumbnail: string }
 
@@ -63,8 +64,29 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
     if (!youtube.trim()) ytAnalyze.reset();
   }, [youtube]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const onPickTopic = (t: string) => {
+    setAngle(t);
+    autoFilledAngle.current = true;
+  };
+
   return (
     <div className="source-bar">
+      {/* ────────── Rich YouTube preflight (Phase B) — shown when there is a YouTube URL */}
+      <YouTubePreflightCard
+        category={category}
+        youtubeUrl={youtube}
+        oembed={ytPreview}
+        oembedLoading={ytPreviewLoading}
+        analyzePhase={ytAnalyze.phase}
+        analyzeResult={ytAnalyze.result}
+        analyzeError={ytAnalyze.error}
+        onAnalyze={() => ytAnalyze.analyze(youtube)}
+        onReset={ytAnalyze.reset}
+        onPickTopic={onPickTopic}
+        workflow={workflow}
+      />
+
+      {/* ────────── Plain input row (kept for non-YouTube starts and for editing the angle) */}
       <div className="source-bar-row">
         {/* YouTube URL */}
         <label className="source-field">
@@ -116,116 +138,27 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
           />
         </label>
 
-        {/* Analyze button — only when valid YouTube URL + not yet analyzed */}
-        {hasValidYtUrl && ytAnalyze.phase === "idle" && !busy && !init && (
+        {/* Ghost-write button — only when NOT going via the preflight (no YouTube URL).
+            When a YouTube URL is present, the Ghost-write CTA lives inside the preflight card. */}
+        {!hasValidYtUrl && (
           <button
-            className="stamp-btn stamp-btn--ghost stamp-btn--sm source-bar-cta"
-            onClick={() => ytAnalyze.analyze(youtube)}
-            title="Fetch transcript + extract topics before Ghost-writing"
+            className="stamp-btn stamp-btn--sm source-bar-cta"
+            onClick={() => startPhase1(category)}
+            disabled={busy || !!init}
           >
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M8 5v3l2 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            Analyze
+            {phase === "verifying" && !init ? (
+              <><SpinIcon /> Consulting memory…</>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <path d="M5.5 3.5l7 4.5-7 4.5V3.5z" fill="currentColor"/>
+                </svg>
+                Ghost-write
+              </>
+            )}
           </button>
         )}
-
-        {/* Ghost-write button */}
-        <button
-          className="stamp-btn stamp-btn--sm source-bar-cta"
-          onClick={() => startPhase1(category)}
-          disabled={busy || !!init || ytAnalyze.phase === "analyzing"}
-        >
-          {phase === "verifying" && !init ? (
-            <><SpinIcon /> Consulting memory…</>
-          ) : (
-            <>
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <path d="M5.5 3.5l7 4.5-7 4.5V3.5z" fill="currentColor"/>
-              </svg>
-              Ghost-write
-            </>
-          )}
-        </button>
       </div>
-
-      {/* oEmbed preview — shown when URL is valid + not yet analyzed */}
-      {ytPreview && ytAnalyze.phase === "idle" && !busy && !init && (
-        <div className="yt-preview">
-          <img src={ytPreview.thumbnail} alt="" />
-          <div className="yt-preview-meta">
-            <div className="yt-preview-title">{ytPreview.title}</div>
-            <div className="yt-preview-channel">{ytPreview.channel}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Analysis in progress */}
-      {ytAnalyze.phase === "analyzing" && (
-        <div className="analyze-status">
-          <SpinIcon />
-          <span style={{ color: "var(--scheduled)" }}>Analyzing transcript + extracting topics…</span>
-        </div>
-      )}
-
-      {/* Analysis error */}
-      {ytAnalyze.phase === "error" && ytAnalyze.error && (
-        <div className="source-notice source-notice--err">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-            <path d="M8 2v8M8 13v1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-          {ytAnalyze.error}
-          <button className="source-notice-retry" onClick={ytAnalyze.reset}>Dismiss</button>
-        </div>
-      )}
-
-      {/* Analyzed — thumbnail + clickable topic chips */}
-      {ytAnalyze.phase === "analyzed" && ytAnalyze.result && (
-        <>
-          <div className="yt-preview">
-            {ytAnalyze.result.thumbnailUrl && (
-              <img src={ytAnalyze.result.thumbnailUrl} alt="" />
-            )}
-            <div className="yt-preview-meta">
-              <div className="yt-preview-title">{ytAnalyze.result.title || ytPreview?.title}</div>
-              <div className="yt-preview-channel">{ytAnalyze.result.channelName || ytPreview?.channel}</div>
-              <div style={{ marginTop: 4, fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--live)", textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: 5 }}>
-                <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 8l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Analyzed — click a topic to use as angle
-              </div>
-            </div>
-            <button
-              className="source-notice-retry"
-              style={{ marginLeft: "auto", alignSelf: "flex-start" }}
-              onClick={ytAnalyze.reset}
-            >
-              Reset
-            </button>
-          </div>
-
-          {ytAnalyze.result.keyTopics.length > 0 && (
-            <div className="topic-chips">
-              <span className="topic-chips-label">Topics:</span>
-              {ytAnalyze.result.keyTopics.map((t) => (
-                <button
-                  key={t}
-                  className="topic-chip"
-                  onClick={() => { setAngle(t); autoFilledAngle.current = true; }}
-                  title="Use as angle"
-                >
-                  {t}
-                  <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
-                    <path d="M5.5 3.5l7 4.5-7 4.5V3.5z" fill="currentColor"/>
-                  </svg>
-                </button>
-              ))}
-            </div>
-          )}
-        </>
-      )}
 
       {/* Phase 2 — brand voice confirmation */}
       {init && (

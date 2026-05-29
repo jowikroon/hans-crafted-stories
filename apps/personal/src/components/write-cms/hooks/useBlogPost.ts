@@ -18,6 +18,7 @@ export interface BlogPostData {
   meta_title: string | null;
   meta_description: string | null;
   og_image: string | null;
+  image_url: string | null;
   scheduled_at: string | null;
   updated_at: string;
 }
@@ -30,7 +31,7 @@ export type BlogPostState =
   | { status: "error"; message: string };
 
 const COLUMNS =
-  "id, title, title_nl, content, content_nl, slug, category, status, published, word_count, voice_match_score, completeness_score, seo_score, meta_title, meta_description, og_image, scheduled_at, updated_at";
+  "id, title, title_nl, content, content_nl, slug, category, status, published, word_count, voice_match_score, completeness_score, seo_score, meta_title, meta_description, og_image, image_url, scheduled_at, updated_at";
 
 export function useBlogPost(postId?: string): BlogPostState & { refetch: () => void } {
   const [state, setState] = useState<BlogPostState>(
