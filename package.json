@@ -67,6 +67,6 @@
     "@tiptap/extensions": "3.20.2"
   },
   "dependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.59.0"
+    "@rollup/rollup-linux-x64-gnu": "^4.61.0"
   }
 }
