@@ -78,13 +78,17 @@ const BlogPostPage = () => {
   const seoHead = post ? getBlogPostHead(post) : null;
   const seoUrl = seoHead?.canonical || `https://hansvanleeuwen.com/writing/${slug}`;
 
+  // Draft = not published OR explicit status='draft'. Hidden from crawlers.
+  const isDraft = !!post && (post.published === false || (post as { status?: string }).status === "draft");
+
   useSEO({
     enabled: post !== undefined,
     title: post ? seoHead?.title || `${displayTitle} | Hans van Leeuwen` : "Post not found | Hans van Leeuwen",
     description: displayExcerpt || "Read this article by Hans van Leeuwen on e-commerce, marketplace strategy, and digital commerce.",
     url: seoUrl,
     type: "article",
-    jsonLd: post ? getBlogPostJsonLd(post) : undefined,
+    jsonLd: post && !isDraft ? getBlogPostJsonLd(post) : undefined,
+    noindex: isDraft,
   });
 
   if (post === undefined) {
@@ -114,6 +118,30 @@ const BlogPostPage = () => {
 
   return (
     <article>
+      {isDraft && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="border-b border-amber-300/60 bg-amber-50 text-amber-900"
+        >
+          <div className="section-container flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+            <div className="flex items-center gap-3">
+              <span className="rounded-full bg-amber-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                Concept
+              </span>
+              <p className="font-medium">
+                Deze versie is alleen voor jou zichtbaar. Niet vindbaar in Google. Niet gedeeld op /writing voor anonieme bezoekers.
+              </p>
+            </div>
+            <Link
+              to={`/write/${post.id}`}
+              className="rounded-md border border-amber-400 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 transition hover:bg-amber-100"
+            >
+              Bewerk in CMS →
+            </Link>
+          </div>
+        </div>
+      )}
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0 }}

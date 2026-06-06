@@ -13,6 +13,12 @@ interface SEOConfig {
   type?: string;
   hreflang?: HreflangEntry[];
   jsonLd?: Record<string, unknown>;
+  /**
+   * When true, emit <meta name="robots" content="noindex,nofollow"> so
+   * crawlers don't index this page. Used for draft blog posts visible
+   * to Hans only.
+   */
+  noindex?: boolean;
 }
 
 const DEFAULT_TITLE = "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen";
@@ -35,12 +41,17 @@ const removeMeta = (name: string, attr = "name") => {
   document.querySelector(`meta[${attr}="${name}"]`)?.remove();
 };
 
-export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd }: SEOConfig) => {
+export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd, noindex = false }: SEOConfig) => {
   useEffect(() => {
     if (!enabled) return;
 
     document.title = title;
     setMeta("description", description);
+    if (noindex) {
+      setMeta("robots", "noindex,nofollow");
+    } else {
+      removeMeta("robots");
+    }
     setMeta("og:title", title, "property");
     setMeta("og:description", description, "property");
     setMeta("og:url", url, "property");
@@ -94,6 +105,7 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
       document.getElementById(ldId)?.remove();
       document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
       document.querySelector('link[rel="canonical"]')?.remove();
+      removeMeta("robots");
       [
         "description",
         "twitter:card",
@@ -114,5 +126,5 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
         "og:image:alt",
       ].forEach((name) => removeMeta(name, "property"));
     };
-  }, [enabled, title, description, url, type, hreflang, jsonLd]);
+  }, [enabled, title, description, url, type, hreflang, jsonLd, noindex]);
 };

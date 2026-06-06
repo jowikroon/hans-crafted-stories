@@ -53,9 +53,19 @@ const BlogPostCard = ({ post, index }: { post: BlogPost; index: number }) => {
 
           {/* Top badges row */}
           <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${categoryColor}`}>
-              {post.category}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${categoryColor}`}>
+                {post.category}
+              </span>
+              {post.isDraft && (
+                <span
+                  className="rounded-full bg-amber-500/95 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm ring-1 ring-amber-400/60"
+                  aria-label="Concept-versie. Alleen voor jou zichtbaar."
+                >
+                  Concept
+                </span>
+              )}
+            </div>
             <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
               {dateStr}
             </span>
