@@ -93,6 +93,8 @@ const Writing = () => {
       readTime: p.read_time,
       slug: p.slug,
       imageUrl: p.image_url || undefined,
+      // Draft = not published. Surfaced to Hans only (RLS gates server-side).
+      isDraft: !p.published || (typeof p.status === "string" && p.status === "draft"),
     })),
   [blogPosts]);
 
