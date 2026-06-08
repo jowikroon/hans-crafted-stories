@@ -23,13 +23,13 @@ const THEME_KEY = "site_theme";
    ───────────────────────────────────────────────────────────── */
 
 interface NavbarProps {
-  /** Kept for App.tsx compatibility. The bar is a single light style;
-      `compact` (immersive pages like /samantha) hides centre nav + sub-bar. */
+  /** Kept for App.tsx compatibility only. The bar is a single light style
+      and renders identically on every page (variant/compact are ignored). */
   variant?: "default" | "dark";
   compact?: boolean;
 }
 
-const Navbar = ({ compact = false }: NavbarProps) => {
+const Navbar = (_props: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { lang, setLang } = useLang();
@@ -101,14 +101,14 @@ const Navbar = ({ compact = false }: NavbarProps) => {
       )
     : searchablePages;
 
-  /* ── Tier 2 contextual sub-bar (CMS modes), hidden on immersive/compact ── */
+  /* ── Tier 2 contextual sub-bar (CMS modes), only on /write* ── */
   const cmsModes = [
     { key: "write", to: "/write", label: t.cms.write, Icon: SquarePen },
     { key: "manage", to: "/write?mode=manage", label: t.cms.manage, Icon: LayoutGrid },
     { key: "analytics", to: "/write?mode=analytics", label: t.cms.analytics, Icon: BarChart3 },
   ];
   const onWriteSurface = location.pathname.startsWith("/write");
-  const showSubbar = !compact && onWriteSurface;
+  const showSubbar = onWriteSurface;
   const activeMode = new URLSearchParams(location.search).get("mode") ?? "write";
 
   /* ── Effects ── */
@@ -202,8 +202,7 @@ const Navbar = ({ compact = false }: NavbarProps) => {
             </Link>
 
             {/* Centre nav + Work dropdown */}
-            {!compact && (
-              <div className="hidden md:flex items-center gap-1 justify-self-center">
+            <div className="hidden md:flex items-center gap-1 justify-self-center">
                 {siteLinks.map((l) =>
                   l.hasDropdown ? (
                     <div key={l.to} className="relative" onMouseEnter={openWork} onMouseLeave={closeWorkSoon}>
@@ -237,7 +236,6 @@ const Navbar = ({ compact = false }: NavbarProps) => {
                   ),
                 )}
               </div>
-            )}
 
             {/* Right cluster */}
             <div className="flex items-center gap-1.5 sm:gap-2.5 justify-self-end">
