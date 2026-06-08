@@ -25,7 +25,6 @@ interface AppShellProps {
 const AppShell = ({ initialLang }: AppShellProps) => {
   const location = useLocation();
   const isCompact = location.pathname === "/samantha";
-  const isWriteSurface = location.pathname.startsWith("/write");
   const isDarkPage = isCompact || location.pathname === "/god-structure" || location.pathname.startsWith("/blog-cms");
 
   return (
@@ -37,7 +36,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
         <header>
           <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
         </header>
-        <main id="main-content" className={`min-h-screen ${isWriteSurface ? "pt-16 md:pt-[108px]" : "pt-16"}`}>
+        <main id="main-content" className="min-h-screen pt-16">
           <AnimatedRoutes />
         </main>
         {!isDarkPage && <Footer />}

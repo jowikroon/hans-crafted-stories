@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
-  ChevronDown, Network, Sparkles, PenLine, SquarePen, LayoutGrid, BarChart3,
+  ChevronDown, Network, Sparkles, PenLine,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -71,6 +71,7 @@ const Navbar = (_props: NavbarProps) => {
     { to: "/work", label: t.work, hasDropdown: true },
     { to: "/writing", label: t.writing },
     { to: "/about", label: t.about },
+    ...(user ? [{ to: "/write", label: "Command Center", cc: true }] : []),
   ];
 
   const searchablePages = [
@@ -101,15 +102,7 @@ const Navbar = (_props: NavbarProps) => {
       )
     : searchablePages;
 
-  /* ── Tier 2 contextual sub-bar (CMS modes), only on /write* ── */
-  const cmsModes = [
-    { key: "write", to: "/write", label: t.cms.write, Icon: SquarePen },
-    { key: "manage", to: "/write?mode=manage", label: t.cms.manage, Icon: LayoutGrid },
-    { key: "analytics", to: "/write?mode=analytics", label: t.cms.analytics, Icon: BarChart3 },
-  ];
-  const onWriteSurface = location.pathname.startsWith("/write");
-  const showSubbar = onWriteSurface;
-  const activeMode = new URLSearchParams(location.search).get("mode") ?? "write";
+  const isCommandCenter = location.pathname.startsWith("/write");
 
   /* ── Effects ── */
   useEffect(() => {
@@ -149,7 +142,7 @@ const Navbar = (_props: NavbarProps) => {
       }`}
     >
       {label}
-      {active && <span className="absolute left-3.5 right-3.5 bottom-0.5 h-[2px] rounded-full bg-[#C2410C]" />}
+      {active && <span className="absolute left-3.5 right-3.5 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
     </Link>
   );
 
@@ -212,7 +205,7 @@ const Navbar = (_props: NavbarProps) => {
                       >
                         {l.label}
                         <ChevronDown size={13} className={`transition-transform ${workOpen ? "rotate-180" : ""}`} />
-                        {isWorkActive && <span className="absolute left-3.5 right-7 bottom-0.5 h-[2px] rounded-full bg-[#C2410C]" />}
+                        {isWorkActive && <span className="absolute left-3.5 right-7 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
                       </button>
                       <AnimatePresence>
                         {workOpen && (
@@ -232,7 +225,7 @@ const Navbar = (_props: NavbarProps) => {
                       </AnimatePresence>
                     </div>
                   ) : (
-                    <SiteLink key={l.to} to={l.to} label={l.label} active={isActive(l.to)} />
+                    <SiteLink key={l.to} to={l.to} label={l.label} active={(l as { cc?: boolean }).cc ? isCommandCenter : isActive(l.to)} />
                   ),
                 )}
               </div>
@@ -254,7 +247,7 @@ const Navbar = (_props: NavbarProps) => {
               {/* Account chip (logged-in) or Login pill */}
               {user ? (
                 <div className="relative hidden sm:block">
-                  <button onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? "border-[#C2410C] bg-[#E5DFCE]" : "border-black/10 text-[#15140F] hover:bg-[#E5DFCE]"}`}>
+                  <button onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? "border-[#2D9255] bg-[#E5DFCE]" : "border-black/10 text-[#15140F] hover:bg-[#E5DFCE]"}`}>
                     <span className="grid h-6 w-6 place-items-center rounded-full bg-[#15140F] text-[11px] font-mono font-semibold text-[#F1ECDF]">{firstName.charAt(0).toLowerCase()}</span>
                     <span className="max-w-[90px] truncate">{firstName}</span>
                     <ChevronDown size={12} className={`transition-transform ${profileOpen ? "rotate-180" : ""}`} />
@@ -296,21 +289,6 @@ const Navbar = (_props: NavbarProps) => {
             </div>
           </div>
         </div>
-
-        {/* ─── TIER 2 — contextual CMS sub-bar (yellow active underline) ─── */}
-        {showSubbar && (
-          <nav aria-label="CMS" className="hidden md:flex h-11 items-center justify-center gap-1 border-t border-black/[0.06] bg-[#FBF8F0] px-6">
-            {cmsModes.map((m) => {
-              const active = m.key === activeMode;
-              return (
-                <Link key={m.key} to={m.to} className={`relative inline-flex h-full items-center gap-2 px-4 text-[13px] font-medium transition-colors ${active ? "text-[#15140F] font-semibold" : "text-[#7E7A6F] hover:text-[#15140F]"}`}>
-                  <m.Icon size={15} /> {m.label}
-                  {active && <span className="absolute left-4 right-4 bottom-0 h-[2px] rounded-full bg-[#F5C400]" />}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
 
         {/* ═══ MOBILE MENU ═══ */}
         <AnimatePresence>

@@ -17,7 +17,7 @@
   --bg-0:#F1ECDF; --bg-1:#FBF8F0; --bg-2:#E5DFCE; --bg-3:#DBD4BF; --bg-inset:#FAF6EB;
   --line:#0F0E0C26; --line-strong:#0F0E0C; --line-faint:#0F0E0C12;
   --ink-0:#15140F; --ink-1:#4B4842; --ink-2:#7E7A6F; --ink-3:#B2AC9C;
-  --accent:#F5C400; --accent-fg:#15140F; --accent-soft:#F5C40026; --accent-glow:#F5C4004D;
+  --accent:#2D9255; --accent-fg:#FFFFFF; --accent-soft:#2D925522; --accent-glow:#2D92554D;
   --live:#2D9255; --live-soft:#2D925522;
   --draft:#B84432; --draft-soft:#B8443222;
   --scheduled:#2A6EA8; --scheduled-soft:#2A6EA822;
@@ -1043,4 +1043,30 @@
 .write-cms .voice-tip-dot {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--accent); margin-top: 4px; flex-shrink: 0;
+}
+
+/* ===================== COMMAND-CENTER FRAME (left rail + stage) ===================== */
+/* Phase 1: the global Navbar is the header; this frame adds the persistent
+   left mode-rail (Write/Manage/Voice/Analytics) beside the active mode. */
+.write-cms .cc-frame {
+  display: flex; align-items: flex-start; gap: var(--s-5);
+  max-width: 1680px; margin: 0 auto; padding: var(--s-6) var(--s-5) 0;
+}
+.write-cms .cc-frame > .modes { flex: 0 0 188px; width: 188px; }
+.write-cms .cc-stage { flex: 1 1 auto; min-width: 0; }
+.write-cms .cc-stage .shell { padding-top: var(--s-3); }
+.write-cms .mode .mode-l { display: inline-flex; align-items: center; gap: 9px; }
+.write-cms .mode .mode-l svg { width: 15px; height: 15px; flex-shrink: 0; }
+.write-cms .mode .mode-c {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.04em; color: var(--ink-2);
+}
+.write-cms .mode[aria-current="page"] .mode-c { color: var(--accent-fg); opacity: 0.85; }
+@media (max-width: 920px) {
+  .write-cms .cc-frame { flex-direction: column; padding: var(--s-4) var(--s-4) 0; }
+  .write-cms .cc-frame > .modes {
+    width: 100%; flex: none; position: static;
+    flex-direction: row; flex-wrap: wrap; gap: var(--s-2);
+  }
+  .write-cms .cc-frame > .modes .mode { width: auto; flex: 1 1 auto; }
 }
