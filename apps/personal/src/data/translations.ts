@@ -34,6 +34,9 @@ type TranslationStrings = {
     noResults: string;
     login: string;
     portal: string;
+    workMenu: { allCases: string; services: string; amazon: string; bol: string; interim: string };
+    workspace: { label: string; blogCms: string; samantha: string; portal: string; docs: string; dashboard: string; signOut: string };
+    cms: { write: string; manage: string; analytics: string };
   };
 
   /* ── Hero / Home ── */
@@ -307,6 +310,9 @@ export const translations: Record<Lang, TranslationStrings> = {
       noResults: "No results found.",
       login: "Login",
       portal: "Portal",
+      workMenu: { allCases: "All case studies", services: "Services", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
+      workspace: { label: "Workspace", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Sign out" },
+      cms: { write: "Write", manage: "Manage", analytics: "Analytics" },
     },
 
     /* ── Hero ── */
@@ -644,6 +650,9 @@ export const translations: Record<Lang, TranslationStrings> = {
       noResults: "Geen resultaten gevonden.",
       login: "Inloggen",
       portal: "Portal",
+      workMenu: { allCases: "Alle cases", services: "Diensten", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
+      workspace: { label: "Werkruimte", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Uitloggen" },
+      cms: { write: "Schrijven", manage: "Beheren", analytics: "Analytics" },
     },
 
     /* ── Hero ── */
