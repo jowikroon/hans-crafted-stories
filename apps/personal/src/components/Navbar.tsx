@@ -299,11 +299,11 @@ const Navbar = (_props: NavbarProps) => {
 
         {/* ─── TIER 2 — contextual CMS sub-bar (yellow active underline) ─── */}
         {showSubbar && (
-          <nav aria-label="CMS" className="hidden md:flex justify-center gap-1 border-t border-black/[0.06] bg-[#FBF8F0] px-6">
+          <nav aria-label="CMS" className="hidden md:flex h-11 items-center justify-center gap-1 border-t border-black/[0.06] bg-[#FBF8F0] px-6">
             {cmsModes.map((m) => {
               const active = m.key === activeMode;
               return (
-                <Link key={m.key} to={m.to} className={`relative inline-flex items-center gap-2 px-4 py-3 text-[13px] font-medium transition-colors ${active ? "text-[#15140F] font-semibold" : "text-[#7E7A6F] hover:text-[#15140F]"}`}>
+                <Link key={m.key} to={m.to} className={`relative inline-flex h-full items-center gap-2 px-4 text-[13px] font-medium transition-colors ${active ? "text-[#15140F] font-semibold" : "text-[#7E7A6F] hover:text-[#15140F]"}`}>
                   <m.Icon size={15} /> {m.label}
                   {active && <span className="absolute left-4 right-4 bottom-0 h-[2px] rounded-full bg-[#F5C400]" />}
                 </Link>
