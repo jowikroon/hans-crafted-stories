@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
-  ChevronDown, Network, Sparkles, PenLine, SquarePen, LayoutGrid, BarChart3,
+  ChevronDown, Network, Sparkles, PenLine,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -23,13 +23,13 @@ const THEME_KEY = "site_theme";
    ───────────────────────────────────────────────────────────── */
 
 interface NavbarProps {
-  /** Kept for App.tsx compatibility. The bar is a single light style;
-      `compact` (immersive pages like /samantha) hides centre nav + sub-bar. */
+  /** Kept for App.tsx compatibility only. The bar is a single light style
+      and renders identically on every page (variant/compact are ignored). */
   variant?: "default" | "dark";
   compact?: boolean;
 }
 
-const Navbar = ({ compact = false }: NavbarProps) => {
+const Navbar = (_props: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { lang, setLang } = useLang();
@@ -71,6 +71,7 @@ const Navbar = ({ compact = false }: NavbarProps) => {
     { to: "/work", label: t.work, hasDropdown: true },
     { to: "/writing", label: t.writing },
     { to: "/about", label: t.about },
+    ...(user ? [{ to: "/write", label: t.commandCenter, cc: true }] : []),
   ];
 
   const searchablePages = [
@@ -101,15 +102,7 @@ const Navbar = ({ compact = false }: NavbarProps) => {
       )
     : searchablePages;
 
-  /* ── Tier 2 contextual sub-bar (CMS modes), hidden on immersive/compact ── */
-  const cmsModes = [
-    { key: "write", to: "/write", label: t.cms.write, Icon: SquarePen },
-    { key: "manage", to: "/write?mode=manage", label: t.cms.manage, Icon: LayoutGrid },
-    { key: "analytics", to: "/write?mode=analytics", label: t.cms.analytics, Icon: BarChart3 },
-  ];
-  const onWriteSurface = location.pathname.startsWith("/write");
-  const showSubbar = !compact && onWriteSurface;
-  const activeMode = new URLSearchParams(location.search).get("mode") ?? "write";
+  const isCommandCenter = location.pathname.startsWith("/write");
 
   /* ── Effects ── */
   useEffect(() => {
@@ -149,7 +142,7 @@ const Navbar = ({ compact = false }: NavbarProps) => {
       }`}
     >
       {label}
-      {active && <span className="absolute left-3.5 right-3.5 bottom-0.5 h-[2px] rounded-full bg-[#C2410C]" />}
+      {active && <span className="absolute left-3.5 right-3.5 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
     </Link>
   );
 
@@ -202,8 +195,7 @@ const Navbar = ({ compact = false }: NavbarProps) => {
             </Link>
 
             {/* Centre nav + Work dropdown */}
-            {!compact && (
-              <div className="hidden md:flex items-center gap-1 justify-self-center">
+            <div className="hidden md:flex items-center gap-1 justify-self-center">
                 {siteLinks.map((l) =>
                   l.hasDropdown ? (
                     <div key={l.to} className="relative" onMouseEnter={openWork} onMouseLeave={closeWorkSoon}>
@@ -213,7 +205,7 @@ const Navbar = ({ compact = false }: NavbarProps) => {
                       >
                         {l.label}
                         <ChevronDown size={13} className={`transition-transform ${workOpen ? "rotate-180" : ""}`} />
-                        {isWorkActive && <span className="absolute left-3.5 right-7 bottom-0.5 h-[2px] rounded-full bg-[#C2410C]" />}
+                        {isWorkActive && <span className="absolute left-3.5 right-7 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
                       </button>
                       <AnimatePresence>
                         {workOpen && (
@@ -233,11 +225,10 @@ const Navbar = ({ compact = false }: NavbarProps) => {
                       </AnimatePresence>
                     </div>
                   ) : (
-                    <SiteLink key={l.to} to={l.to} label={l.label} active={isActive(l.to)} />
+                    <SiteLink key={l.to} to={l.to} label={l.label} active={(l as { cc?: boolean }).cc ? isCommandCenter : isActive(l.to)} />
                   ),
                 )}
               </div>
-            )}
 
             {/* Right cluster */}
             <div className="flex items-center gap-1.5 sm:gap-2.5 justify-self-end">
@@ -256,7 +247,7 @@ const Navbar = ({ compact = false }: NavbarProps) => {
               {/* Account chip (logged-in) or Login pill */}
               {user ? (
                 <div className="relative hidden sm:block">
-                  <button onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? "border-[#C2410C] bg-[#E5DFCE]" : "border-black/10 text-[#15140F] hover:bg-[#E5DFCE]"}`}>
+                  <button onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? "border-[#2D9255] bg-[#E5DFCE]" : "border-black/10 text-[#15140F] hover:bg-[#E5DFCE]"}`}>
                     <span className="grid h-6 w-6 place-items-center rounded-full bg-[#15140F] text-[11px] font-mono font-semibold text-[#F1ECDF]">{firstName.charAt(0).toLowerCase()}</span>
                     <span className="max-w-[90px] truncate">{firstName}</span>
                     <ChevronDown size={12} className={`transition-transform ${profileOpen ? "rotate-180" : ""}`} />
@@ -299,21 +290,6 @@ const Navbar = ({ compact = false }: NavbarProps) => {
           </div>
         </div>
 
-        {/* ─── TIER 2 — contextual CMS sub-bar (yellow active underline) ─── */}
-        {showSubbar && (
-          <nav aria-label="CMS" className="hidden md:flex justify-center gap-1 border-t border-black/[0.06] bg-[#FBF8F0] px-6">
-            {cmsModes.map((m) => {
-              const active = m.key === activeMode;
-              return (
-                <Link key={m.key} to={m.to} className={`relative inline-flex items-center gap-2 px-4 py-3 text-[13px] font-medium transition-colors ${active ? "text-[#15140F] font-semibold" : "text-[#7E7A6F] hover:text-[#15140F]"}`}>
-                  <m.Icon size={15} /> {m.label}
-                  {active && <span className="absolute left-4 right-4 bottom-0 h-[2px] rounded-full bg-[#F5C400]" />}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
-
         {/* ═══ MOBILE MENU ═══ */}
         <AnimatePresence>
           {mobileOpen && (
@@ -327,6 +303,9 @@ const Navbar = ({ compact = false }: NavbarProps) => {
                   : <Link key={c.to} to={c.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-5 py-2 text-sm ${isActive(c.to) ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{c.label}</Link>)}
                 <Link to="/writing" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isActive("/writing") ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.writing}</Link>
                 <Link to="/about" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isActive("/about") ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.about}</Link>
+                {user && (
+                  <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isCommandCenter ? "bg-[#2D9255] text-white" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.commandCenter}</Link>
+                )}
 
                 <div className="my-1 h-px bg-black/10" />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
