@@ -71,7 +71,7 @@ const Navbar = (_props: NavbarProps) => {
     { to: "/work", label: t.work, hasDropdown: true },
     { to: "/writing", label: t.writing },
     { to: "/about", label: t.about },
-    ...(user ? [{ to: "/write", label: "Command Center", cc: true }] : []),
+    ...(user ? [{ to: "/write", label: t.commandCenter, cc: true }] : []),
   ];
 
   const searchablePages = [
@@ -303,6 +303,9 @@ const Navbar = (_props: NavbarProps) => {
                   : <Link key={c.to} to={c.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-5 py-2 text-sm ${isActive(c.to) ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{c.label}</Link>)}
                 <Link to="/writing" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isActive("/writing") ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.writing}</Link>
                 <Link to="/about" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isActive("/about") ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.about}</Link>
+                {user && (
+                  <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isCommandCenter ? "bg-[#2D9255] text-white" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.commandCenter}</Link>
+                )}
 
                 <div className="my-1 h-px bg-black/10" />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
