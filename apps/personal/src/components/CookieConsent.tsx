@@ -9,37 +9,36 @@ import { translations } from "@/data/translations";
 const CONSENT_KEY = "cookie_consent";
 type ConsentValue = "accepted" | "declined";
 
-const EEA_REGIONS = [
-  "BE","BG","CZ","DK","DE","EE","IE","EL","ES","FR",
-  "HR","IT","CY","LV","LT","LU","HU","MT","NL","AT",
-  "PL","PT","RO","SI","SK","FI","SE","IS","LI","NO",
-];
-
 declare global {
   interface Window {
     dataLayer: Record<string, unknown>[];
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
-const pushConsentDefault = () => {
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({
-    event: "consent_default",
-    consent: {
-      ad_storage: "denied",
-      ad_user_data: "denied",
-      ad_personalization: "denied",
-      analytics_storage: "denied",
-      functionality_storage: "denied",
-      personalization_storage: "denied",
-      security_storage: "granted",
-      wait_for_update: 500,
-      region: EEA_REGIONS,
-    },
+// NOTE: The Consent Mode v2 *default* (all denied for the EEA) is set
+// synchronously in index.html BEFORE GTM loads — that is the canonical signal
+// Google tags read on boot. Setting it here (after React mount) was too late and
+// caused analytics_storage to stay denied ("0% granted"), so GA4 collected nothing.
+// This component only handles the *update* when the visitor makes a choice.
+
+// Primary mechanism: real Consent Mode update via the gtag command queue.
+const gtagConsentUpdate = (granted: boolean) => {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  const value = granted ? "granted" : "denied";
+  window.gtag("consent", "update", {
+    ad_storage: value,
+    ad_user_data: value,
+    ad_personalization: value,
+    analytics_storage: value,
+    functionality_storage: value,
+    personalization_storage: value,
   });
 };
 
-const pushConsentUpdate = (granted: boolean) => {
+// Secondary signal: keep pushing a dataLayer event in case any GTM trigger
+// listens for it. Harmless alongside the gtag command above.
+const pushConsentUpdateEvent = (granted: boolean) => {
   window.dataLayer = window.dataLayer || [];
   const value = granted ? "granted" : "denied";
   window.dataLayer.push({
@@ -49,10 +48,15 @@ const pushConsentUpdate = (granted: boolean) => {
       ad_user_data: value,
       ad_personalization: value,
       analytics_storage: value,
-      functionality_storage: granted ? "granted" : "denied",
-      personalization_storage: granted ? "granted" : "denied",
+      functionality_storage: value,
+      personalization_storage: value,
     },
   });
+};
+
+const applyConsent = (granted: boolean) => {
+  gtagConsentUpdate(granted);
+  pushConsentUpdateEvent(granted);
 };
 
 const CookieConsent = () => {
@@ -62,12 +66,12 @@ const CookieConsent = () => {
 
   useEffect(() => {
     const stored = localStorage.getItem(CONSENT_KEY) as ConsentValue | null;
-    pushConsentDefault();
 
     if (stored === "accepted") {
-      pushConsentUpdate(true);
+      // index.html already granted synchronously; re-assert for robustness (idempotent).
+      applyConsent(true);
     } else if (stored === "declined") {
-      // defaults already denied
+      // Defaults already denied synchronously in index.html — nothing to do.
     } else {
       const timer = setTimeout(() => setVisible(true), 1500);
       return () => clearTimeout(timer);
@@ -77,13 +81,13 @@ const CookieConsent = () => {
   const handleAccept = useCallback(() => {
     localStorage.setItem(CONSENT_KEY, "accepted");
     setVisible(false);
-    pushConsentUpdate(true);
+    applyConsent(true);
   }, []);
 
   const handleDecline = useCallback(() => {
     localStorage.setItem(CONSENT_KEY, "declined");
     setVisible(false);
-    pushConsentUpdate(false);
+    applyConsent(false);
   }, []);
 
   return (
