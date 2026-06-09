@@ -14,6 +14,8 @@ import AnimatedRoutes from "./components/AnimatedRoutes";
 import SamanthaGlobalButton from "@/features/samantha/components/global/SamanthaGlobalButton";
 import CookieConsent from "./components/CookieConsent";
 import TrackingScriptInjector from "./components/TrackingScriptInjector";
+import { EditOverlayProvider } from "./components/edit-overlay/EditOverlayProvider";
+import EditLayer from "./components/edit-overlay/EditLayer";
 import './styles/blog.css';
 
 const queryClient = new QueryClient();
@@ -30,19 +32,22 @@ const AppShell = ({ initialLang }: AppShellProps) => {
   return (
     <AuthProvider>
       <LangProvider initialLang={initialLang}>
-        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground">
-          Skip to content
-        </a>
-        <header>
-          <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
-        </header>
-        <main id="main-content" className="min-h-screen pt-16">
-          <AnimatedRoutes />
-        </main>
-        {!isDarkPage && <Footer />}
-        <SamanthaGlobalButton />
-        <CookieConsent />
-        <TrackingScriptInjector />
+        <EditOverlayProvider>
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground">
+            Skip to content
+          </a>
+          <header>
+            <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
+          </header>
+          <main id="main-content" className="min-h-screen pt-16">
+            <AnimatedRoutes />
+          </main>
+          {!isDarkPage && <Footer />}
+          <SamanthaGlobalButton />
+          <CookieConsent />
+          <TrackingScriptInjector />
+          <EditLayer />
+        </EditOverlayProvider>
       </LangProvider>
     </AuthProvider>
   );
