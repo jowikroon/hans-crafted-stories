@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PostMetric {
@@ -14,10 +14,47 @@ interface PostMetric {
   updated_at: string;
 }
 
+interface SeriesPoint { date: string; value: number; }
+interface TopPage { path: string; title: string; sessions: number; }
+interface Query { query: string; clicks: number; impressions: number; ctr: number | null; position: number | null; }
+interface Dashboard {
+  configured?: boolean;
+  generated_at?: string;
+  fetched_at?: string;
+  ga4?: { sessions_30d: number; sessions_prev_30d: number; sessions_change_pct: number | null; series: SeriesPoint[]; top_pages: TopPage[] };
+  gsc?: { site: string; clicks: number; impressions: number; ctr: number | null; position: number | null; pages_with_traffic: number; queries: Query[] };
+  errors?: { ga4?: string; gsc?: string };
+}
+
+// Inline sparkline from a sessions series.
+function Sparkline({ series }: { series: SeriesPoint[] }) {
+  if (!series || series.length < 2) return null;
+  const w = 600, h = 120, pad = 6;
+  const vals = series.map((p) => p.value);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const span = max - min || 1;
+  const pts = series.map((p, i) => {
+    const x = pad + (i / (series.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((p.value - min) / span) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const area = `M${pts[0]} L${pts.join(" L")} L${(w - pad).toFixed(1)},${h - pad} L${pad},${h - pad} Z`;
+  return (
+    <svg className="chart-svg" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+      <path d={area} fill="var(--ink-0)" opacity="0.06" />
+      <polyline points={pts.join(" ")} fill="none" stroke="var(--ink-0)" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 export default function AnalyticsMode() {
   const [posts, setPosts] = useState<PostMetric[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dash, setDash] = useState<Dashboard | null>(null);
+  const [dashLoading, setDashLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
+  // Content metrics from blog_posts (always available; kept as the editorial layer).
   useEffect(() => {
     supabase
       .from("blog_posts")
@@ -29,6 +66,34 @@ export default function AnalyticsMode() {
       });
   }, []);
 
+  // Live traffic from the cache table (written by the analytics-ga4-gsc edge function).
+  const loadDash = useCallback(async () => {
+    setDashLoading(true);
+    const { data } = await supabase
+      .from("hvl_analytics_cache")
+      .select("data, fetched_at")
+      .eq("key", "dashboard")
+      .maybeSingle();
+    if (data?.data) setDash({ ...(data.data as Dashboard), fetched_at: data.fetched_at as string });
+    else setDash(null);
+    setDashLoading(false);
+  }, []);
+
+  useEffect(() => { loadDash(); }, [loadDash]);
+
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const { data } = await supabase.functions.invoke("analytics-ga4-gsc", { body: { force: true } });
+      if (data) setDash(data as Dashboard);
+      else await loadDash();
+    } catch {
+      // ignore — keep last good data
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadDash]);
+
   const stats = useMemo(() => {
     const total = posts.length;
     const live = posts.filter((p) => p.status === "published" || p.published).length;
@@ -36,53 +101,116 @@ export default function AnalyticsMode() {
     const scheduled = posts.filter((p) => p.status === "scheduled").length;
     const totalWords = posts.reduce((sum, p) => sum + (p.word_count ?? 0), 0);
     const avgWords = total > 0 ? Math.round(totalWords / total) : 0;
-
-    const withVoice = posts.filter((p) => p.voice_match_score != null && p.voice_match_score > 0);
-    const avgVoice = withVoice.length > 0
-      ? Math.round(withVoice.reduce((s, p) => s + (p.voice_match_score ?? 0), 0) / withVoice.length)
-      : 0;
-
-    const withCompleteness = posts.filter((p) => p.completeness_score != null && p.completeness_score > 0);
-    const avgCompleteness = withCompleteness.length > 0
-      ? Math.round(withCompleteness.reduce((s, p) => s + (p.completeness_score ?? 0), 0) / withCompleteness.length)
-      : 0;
-
-    const withSeo = posts.filter((p) => p.seo_score != null && p.seo_score > 0);
-    const avgSeo = withSeo.length > 0
-      ? Math.round(withSeo.reduce((s, p) => s + (p.seo_score ?? 0), 0) / withSeo.length)
-      : 0;
-
-    // Category breakdown
+    const avg = (key: keyof PostMetric) => {
+      const w = posts.filter((p) => (p[key] as number) != null && (p[key] as number) > 0);
+      return w.length > 0 ? Math.round(w.reduce((s, p) => s + (p[key] as number), 0) / w.length) : 0;
+    };
     const categories: Record<string, number> = {};
-    for (const p of posts) {
-      categories[p.category] = (categories[p.category] ?? 0) + 1;
-    }
-    const topCategories = Object.entries(categories)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6);
-
-    // Recent activity (last 7 days)
+    for (const p of posts) categories[p.category] = (categories[p.category] ?? 0) + 1;
+    const topCategories = Object.entries(categories).sort((a, b) => b[1] - a[1]).slice(0, 6);
     const weekAgo = Date.now() - 7 * 86400000;
     const recentPosts = posts.filter((p) => new Date(p.updated_at).getTime() > weekAgo);
-
-    return { total, live, drafts, scheduled, totalWords, avgWords, avgVoice, avgCompleteness, avgSeo, topCategories, recentPosts };
+    return { total, live, drafts, scheduled, totalWords, avgWords, avgVoice: avg("voice_match_score"), avgCompleteness: avg("completeness_score"), avgSeo: avg("seo_score"), topCategories, recentPosts };
   }, [posts]);
+
+  const ga4 = dash?.ga4;
+  const gsc = dash?.gsc;
+  const connected = !!(dash && dash.configured !== false && (ga4 || gsc));
+  const num = (n: number | null | undefined) => (n == null ? "–" : n.toLocaleString());
 
   return (
     <main className="main manage-main">
       <h1 className="manage-h">Analytics<em>.</em></h1>
       <div className="manage-stats">
-        <strong>{stats.total}</strong> articles
-        <span className="sep">·</span>
-        <strong>{stats.totalWords.toLocaleString()}</strong> total words
-        {loading && (
+        {connected ? (
           <>
+            <span style={{ color: "var(--accent, #2f7d4f)" }}>● GA4</span>
             <span className="sep">·</span>
-            <span style={{ color: "var(--ink-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>loading...</span>
+            <span style={{ color: "var(--accent, #2f7d4f)" }}>● Search Console</span>
+            {dash?.fetched_at && (<><span className="sep">·</span><span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)" }}>synced {new Date(dash.fetched_at).toLocaleString()}</span></>)}
           </>
+        ) : (
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)" }}>
+            live data not connected — set GOOGLE_SA_KEY secret, then refresh
+          </span>
         )}
+        <span className="sep">·</span>
+        <button onClick={refresh} disabled={refreshing} style={{ fontFamily: "var(--font-mono)", fontSize: 11, cursor: "pointer", background: "none", border: "1px solid var(--bg-1)", borderRadius: 4, padding: "2px 8px" }}>
+          {refreshing ? "refreshing…" : "↻ refresh"}
+        </button>
+        {(dashLoading || loading) && (<><span className="sep">·</span><span style={{ color: "var(--ink-3)", fontFamily: "var(--font-mono)", fontSize: 11 }}>loading…</span></>)}
       </div>
 
+      {/* Live traffic hero */}
+      <div className="analytics-grid">
+        {[
+          { k: "Sessions · 30d", v: num(ga4?.sessions_30d), sub: ga4?.sessions_change_pct != null ? `${ga4.sessions_change_pct > 0 ? "+" : ""}${ga4.sessions_change_pct}% vs prev` : undefined },
+          { k: "Avg. position", v: gsc?.position != null ? gsc.position.toFixed(1) : "–", sub: "Search Console" },
+          { k: "Avg. CTR", v: gsc?.ctr != null ? `${gsc.ctr}%` : "–", sub: "Search Console" },
+          { k: "Clicks · 28d", v: num(gsc?.clicks), sub: gsc?.impressions != null ? `${num(gsc.impressions)} impr.` : undefined },
+        ].map((m) => (
+          <div key={m.k} className="metric-cell">
+            <div className="k">{m.k}</div>
+            <div className="v">{m.v}</div>
+            {m.sub && <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>{m.sub}</div>}
+          </div>
+        ))}
+      </div>
+
+      {/* Sessions trend */}
+      {ga4?.series && ga4.series.length > 1 && (
+        <div className="chart-card">
+          <h3>Sessions · last 30 days <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>from Google Analytics 4</span></h3>
+          <Sparkline series={ga4.series} />
+        </div>
+      )}
+
+      {/* Top pages by sessions */}
+      {ga4?.top_pages && ga4.top_pages.length > 0 && (
+        <div className="chart-card">
+          <h3>Top pages · sessions</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "var(--s-3) 0" }}>
+            {ga4.top_pages.map((p) => (
+              <div key={p.path} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--bg-1)" }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "72%" }} title={p.path}>{p.title || p.path}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-2)" }}>{p.sessions.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Search terms */}
+      {gsc?.queries && gsc.queries.length > 0 && (
+        <div className="chart-card">
+          <h3>Search terms <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>from Search Console · last 28 days</span></h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "var(--s-3) 0" }}>
+            {gsc.queries.map((q) => (
+              <div key={q.query} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "4px 0", borderBottom: "1px solid var(--bg-1)" }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>{q.query}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>
+                  {q.ctr != null ? `${q.ctr}%` : "–"} · #{q.position != null ? Math.round(q.position) : "–"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {dash?.errors && (dash.errors.ga4 || dash.errors.gsc) && (
+        <div className="chart-card" style={{ borderColor: "var(--bg-1)" }}>
+          <h3>Connection notes</h3>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)", whiteSpace: "pre-wrap" }}>
+            {dash.errors.ga4 && <div>GA4: {dash.errors.ga4}</div>}
+            {dash.errors.gsc && <div>GSC: {dash.errors.gsc}</div>}
+          </div>
+        </div>
+      )}
+
+      {/* Editorial layer (always available) */}
+      <div className="manage-stats" style={{ marginTop: "var(--s-5, 24px)" }}>
+        <strong>{stats.total}</strong> articles<span className="sep">·</span><strong>{stats.totalWords.toLocaleString()}</strong> total words
+      </div>
       <div className="analytics-grid">
         {[
           { k: "Total articles", v: String(stats.total) },
@@ -103,62 +231,22 @@ export default function AnalyticsMode() {
         ))}
       </div>
 
-      {/* Category breakdown */}
       {stats.topCategories.length > 0 && (
         <div className="chart-card">
           <h3>Categories</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "var(--s-3) 0" }}>
             {stats.topCategories.map(([cat, count]) => (
               <div key={cat} style={{ display: "flex", alignItems: "center", gap: "var(--s-3)" }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, width: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {cat}
-                </span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, width: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cat}</span>
                 <div style={{ flex: 1, height: 6, background: "var(--bg-1)", borderRadius: 3, overflow: "hidden" }}>
-                  <div style={{
-                    width: `${Math.round((count / stats.total) * 100)}%`,
-                    height: "100%",
-                    background: "var(--ink-0)",
-                    borderRadius: 3,
-                    minWidth: 4,
-                  }} />
+                  <div style={{ width: `${Math.round((count / stats.total) * 100)}%`, height: "100%", background: "var(--ink-0)", borderRadius: 3, minWidth: 4 }} />
                 </div>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-2)", minWidth: 24, textAlign: "right" }}>
-                  {count}
-                </span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-2)", minWidth: 24, textAlign: "right" }}>{count}</span>
               </div>
             ))}
           </div>
         </div>
       )}
-
-      {/* Recent activity */}
-      {stats.recentPosts.length > 0 && (
-        <div className="chart-card">
-          <h3>Updated this week</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "var(--s-3) 0" }}>
-            {stats.recentPosts.slice(0, 10).map((p) => (
-              <div key={p.id} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--bg-1)" }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "70%" }}>
-                  {p.title || "(Untitled)"}
-                </span>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>
-                  {p.word_count?.toLocaleString() ?? "–"} words
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* GSC placeholder */}
-      <div className="chart-card">
-        <h3>Search Console</h3>
-        <svg className="chart-svg" viewBox="0 0 600 120" preserveAspectRatio="none">
-          <text x="300" y="65" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fill="var(--ink-3)">
-            GSC / Ahrefs integration — connect via n8n or MCP
-          </text>
-        </svg>
-      </div>
     </main>
   );
 }
