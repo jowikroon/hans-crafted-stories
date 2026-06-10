@@ -5,6 +5,8 @@ Disallow: /samantha
 Disallow: /god-structure
 Disallow: /empire
 Disallow: /extensions/
+Disallow: /write
+Disallow: /blog-cms
 
 User-agent: Bingbot
 Allow: /
@@ -13,6 +15,8 @@ Disallow: /samantha
 Disallow: /god-structure
 Disallow: /empire
 Disallow: /extensions/
+Disallow: /write
+Disallow: /blog-cms
 
 User-agent: Twitterbot
 Allow: /
@@ -20,14 +24,54 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# AI crawlers — explicitly allowed for GEO / AI visibility
 User-agent: GPTBot
-Disallow: /
+Allow: /
+Disallow: /portal
+Disallow: /samantha
+Disallow: /god-structure
+Disallow: /empire
+Disallow: /extensions/
+Disallow: /write
+Disallow: /blog-cms
 
 User-agent: CCBot
-Disallow: /
+Allow: /
+Disallow: /portal
+Disallow: /samantha
+Disallow: /god-structure
+Disallow: /empire
+Disallow: /extensions/
+Disallow: /write
+Disallow: /blog-cms
 
 User-agent: ClaudeBot
-Disallow: /
+Allow: /
+Disallow: /portal
+Disallow: /samantha
+Disallow: /god-structure
+Disallow: /empire
+Disallow: /extensions/
+Disallow: /write
+Disallow: /blog-cms
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
 
 User-agent: *
 Allow: /
@@ -36,5 +80,7 @@ Disallow: /samantha
 Disallow: /god-structure
 Disallow: /empire
 Disallow: /extensions/
+Disallow: /write
+Disallow: /blog-cms
 
 Sitemap: https://hansvanleeuwen.com/sitemap.xml

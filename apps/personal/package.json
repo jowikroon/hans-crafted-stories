@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/check-og-image.cjs && vite build && node scripts/inject-static-content.cjs && node scripts/build-ssr.cjs && node scripts/prerender.mjs",
+    "build": "node scripts/check-og-image.cjs && vite build && node scripts/inject-static-content.cjs && node scripts/build-ssr.cjs && node scripts/prerender.mjs && node scripts/generate-sitemap.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
