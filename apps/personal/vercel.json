@@ -77,6 +77,21 @@
       "source": "/writing/sourdough-products",
       "destination": "/writing",
       "permanent": true
+    },
+    {
+      "source": "/writing/untitled-3",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/writing/untitled-2",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/writing/untitled",
+      "destination": "/writing",
+      "permanent": true
     }
   ],
   "trailingSlash": false,
