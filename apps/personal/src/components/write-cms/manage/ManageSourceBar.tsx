@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import ManagePhaseTwoConfirm from "./ManagePhaseTwoConfirm";
 import type { BlogInitWorkflow } from "./useBlogInitWorkflow";
 import { useYoutubeAnalyze, extractVideoId } from "./useYoutubeAnalyze";
+import YouTubeStageModal from "./YouTubeStageModal";
 
 interface YtPreview { title: string; channel: string; thumbnail: string }
 
@@ -21,6 +22,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
   const ytAnalyze = useYoutubeAnalyze();
 
   const [ytPreview, setYtPreview] = useState<YtPreview | null>(null);
+  const [showStageModal, setShowStageModal] = useState(false);
   const [ytPreviewLoading, setYtPreviewLoading] = useState(false);
   const autoFilledAngle = useRef(false);
 
@@ -131,10 +133,13 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
           </button>
         )}
 
-        {/* Ghost-write button */}
+        {/* Ghost-write button — opens the 4-stage modal (design contract #14) */}
         <button
           className="stamp-btn stamp-btn--sm source-bar-cta"
-          onClick={() => startPhase1(category)}
+          onClick={() => {
+            if (!topic.trim() && !youtube.trim()) { startPhase1(category); return; }
+            setShowStageModal(true);
+          }}
           disabled={busy || !!init || ytAnalyze.phase === "analyzing"}
         >
           {phase === "verifying" && !init ? (
@@ -270,6 +275,18 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
           </svg>
           Ghost writer dispatched — the draft will appear in the posts table when n8n completes.
         </div>
+      )}
+
+      {/* 4-stage YouTube → Article modal */}
+      {showStageModal && (
+        <YouTubeStageModal
+          youtube={youtube}
+          topic={topic}
+          angle={angle}
+          category={category}
+          onClose={() => setShowStageModal(false)}
+          onDone={() => workflow.onDispatched?.()}
+        />
       )}
 
       {/* Workflow error */}
