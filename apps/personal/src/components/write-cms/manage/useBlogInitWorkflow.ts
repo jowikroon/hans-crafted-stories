@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const N8N_HOST = "https://n8n.srv1402218.hstgr.cloud";
 const BLOG_INIT_URL = `${N8N_HOST}/webhook/hans-blog-init`;
@@ -81,11 +82,42 @@ export function useBlogInitWorkflow(onDispatched?: () => void): BlogInitWorkflow
     }
   }
 
+  /** Append the active voice template's Voice DNA to the brand-voice context so the
+   *  ghost-writer actually writes in Hans's fingerprint (the n8n workflow fetches the
+   *  template but never uses it — this is the working path). */
+  async function buildDnaSuffix(category: string): Promise<string> {
+    try {
+      const { data } = await supabase
+        .from("hvl_voice_templates")
+        .select("calibration_sentence,signature_phrases,strengths,watch_outs,unique_markers,banned_words,tone")
+        .eq("category", category)
+        .is("archived_at", null)
+        .limit(1)
+        .maybeSingle();
+      if (!data) return "";
+      const d = data as {
+        calibration_sentence?: string; signature_phrases?: string[]; strengths?: string[];
+        watch_outs?: string[]; unique_markers?: string[]; banned_words?: string[]; tone?: string;
+      };
+      const parts: string[] = [];
+      if (d.calibration_sentence?.trim()) parts.push(`Calibration sentence (match this voice exactly): "${d.calibration_sentence.trim()}"`);
+      if (d.signature_phrases?.length) parts.push(`Signature phrases to weave in naturally: ${d.signature_phrases.join("; ")}`);
+      if (d.strengths?.length) parts.push(`Voice strengths to lean into: ${d.strengths.join("; ")}`);
+      if (d.watch_outs?.length) parts.push(`Watch-outs — avoid these habits: ${d.watch_outs.join("; ")}`);
+      if (d.unique_markers?.length) parts.push(`Unique markers that distinguish this voice from generic AI prose: ${d.unique_markers.join("; ")}`);
+      if (d.banned_words?.length) parts.push(`Banned words (never use): ${d.banned_words.join(", ")}`);
+      return parts.length ? `\n\n--- VOICE DNA (${d.tone ?? category}) ---\n${parts.join("\n")}` : "";
+    } catch {
+      return "";
+    }
+  }
+
   async function confirmPhase2(updatedBrandVoice: string, category: string) {
     if (!init) return;
     setPhase("resuming");
     setError(null);
     try {
+      const dnaSuffix = await buildDnaSuffix(category);
       // POST directly to Ghost Writer — no resume_url needed.
       // Ghost Writer Process Input accepts `title` as the topic/URL.
       const res = await fetch(GHOST_WRITER_URL, {
@@ -97,7 +129,7 @@ export function useBlogInitWorkflow(onDispatched?: () => void): BlogInitWorkflow
           category: category || "general",
           cluster: "autoriteit",
           proposed_angle: angle.trim() || topic.trim(),
-          brand_voice_context: updatedBrandVoice,
+          brand_voice_context: updatedBrandVoice + dnaSuffix,
           narrative_history: init.recent_posts,
           source: "blog-cms-manage",
           timestamp: new Date().toISOString(),
