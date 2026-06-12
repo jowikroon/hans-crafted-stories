@@ -95,6 +95,20 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
   const isYoutube = !!youtube.trim();
   const source = youtube.trim() || topic.trim();
 
+  // Watchdog: if the analyze call hangs (VPN/extension/network), unlock the skip path
+  useEffect(() => {
+    if (analysisDone) return;
+    const t = setTimeout(() => {
+      setAnalysisLines((prev) => prev.length ? prev : [
+        "> analyse duurt te lang (netwerk?) — je kunt zonder analyse door",
+        "> de ghost-writer haalt het transcript zelf op ✓",
+      ]);
+      setAnalysisDone(true);
+    }, 25000);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [analysisDone]);
+
   // ── Stage 1: analyze ──
   useEffect(() => {
     let cancelled = false;
@@ -130,7 +144,11 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
         ]);
         setAnalysisDone(true);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Analyse mislukt");
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Analyse mislukt");
+          setAnalysisLines(["> analyse mislukt — je kunt zonder analyse door; de ghost-writer haalt het transcript zelf op ✓"]);
+          setAnalysisDone(true);
+        }
       }
     })();
     return () => { cancelled = true; };
