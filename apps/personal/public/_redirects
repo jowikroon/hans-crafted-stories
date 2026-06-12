@@ -18,6 +18,7 @@ https://www.hansvanleeuwen.com/* https://hansvanleeuwen.com/:splat 301
 /writing/bookshelf-2024              /writing   301
 /writing/ux-unit-economics           /writing   301
 /writing/sourdough-products          /writing   301
+/writing/untitled-3                  /writing   301
 
 # /write is now a React route (WriteCMS component). write-src.html is the archived static prototype.
 # /blog-cms redirects to /write. Voice editor stays at /blog-cms/voice/:id (React).
