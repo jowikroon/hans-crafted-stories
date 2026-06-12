@@ -6,6 +6,7 @@ import { useReviews } from "../hooks/useReviews";
 import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/useVoiceTemplate";
 import RichEditor from "../write/RichEditor";
 import OutlinePanel from "../write/OutlinePanel";
+import IdeaBubble from "../write/IdeaBubble";
 
 function StatusPill({ status, published }: { status: string; published: boolean }) {
   const cls = status === "published" || published ? "live" : status === "scheduled" ? "scheduled" : status === "review" ? "review" : "draft";
@@ -296,6 +297,11 @@ export default function WriteMode({ postId }: { postId?: string }) {
             lang="nl"
           />
         </div>
+
+        {/* Draggable idea bubble — page-session only */}
+        <IdeaBubble
+          onInsert={(md) => autosave.setField("content", `${autosave.fields.content.trimEnd()}\n\n${md}\n`)}
+        />
       </main>
 
       <aside className="rail">
