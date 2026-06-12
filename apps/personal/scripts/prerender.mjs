@@ -133,7 +133,11 @@ const ABOUT_JSONLD = {
         addressLocality: "Amersfoort",
         addressCountry: "NL",
       },
-      sameAs: ["https://www.linkedin.com/in/hansvl3"],
+      sameAs: [
+        "https://www.linkedin.com/in/hansvl3",
+        "https://twitter.com/hansvl3",
+        "https://github.com/jowikroon",
+      ],
     },
     {
       "@type": "BreadcrumbList",
@@ -286,6 +290,26 @@ function buildBlogPostFallback(post, head) {
       </main>`;
 }
 
+
+function buildStaticPageFallback(head) {
+  return `
+      <header>
+        <nav aria-label="Primary navigation">
+          <a href="/">Home</a> |
+          <a href="/work">Case Studies</a> |
+          <a href="/writing">Articles</a> |
+          <a href="/about">About</a>
+        </nav>
+      </header>
+      <main>
+        <article>
+          <h1>${escapeHtml(head.title)}</h1>
+          <p>${escapeHtml(head.description)}</p>
+          <p><a href="${escapeHtml(head.canonical)}">${escapeHtml(head.canonical)}</a></p>
+        </article>
+      </main>`;
+}
+
 let publishedPosts = [];
 try {
   publishedPosts = await getBlogPosts(true);
@@ -337,6 +361,7 @@ for (const [slug, blogPost] of postBySlug) {
   const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, ABOUT_HEAD);
+  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(ABOUT_HEAD));
 
   // Replace homepage structured data with About-specific schema
   page = page.replace(
@@ -363,6 +388,7 @@ for (const [slug, blogPost] of postBySlug) {
   const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, WORK_HEAD);
+  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(WORK_HEAD));
   page = page.replace(
     /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(WORK_JSONLD)}\n    </script>`
@@ -389,6 +415,7 @@ for (const [slug, blogPost] of postBySlug) {
   const { html } = renderQuietly(route, null, { initialLang: "en", preloadedBlogPosts: writingPosts });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, WRITING_HEAD);
+  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(WRITING_HEAD));
   page = page.replace(
     /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(WRITING_JSONLD)}\n    </script>`
@@ -425,6 +452,14 @@ const SEO_PAGES = [
     },
   },
   {
+    route: "/privacy",
+    head: {
+      title: "Privacy Policy | Hans van Leeuwen",
+      description: "Privacy policy for hansvanleeuwen.com — what data is collected, how analytics cookies are used, and your rights under the GDPR.",
+      canonical: `${BASE}/privacy`,
+    },
+  },
+  {
     route: "/interim-ecommerce-manager",
     head: {
       title: "Interim E-commerce Manager — Freelance Marketplace Lead (NL/EU) | Hans van Leeuwen",
@@ -438,6 +473,29 @@ for (const { route, head } of SEO_PAGES) {
   const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
+  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head));
+  page = setJsonLd(page, {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${head.canonical}#webpage`,
+        url: head.canonical,
+        name: head.title,
+        description: head.description,
+        isPartOf: { "@id": `${BASE}/#website` },
+        about: { "@id": `${BASE}/#person` },
+        inLanguage: "en",
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${BASE}/` },
+          { "@type": "ListItem", position: 2, name: head.title.split("\u2014")[0].split("|")[0].trim(), item: head.canonical },
+        ],
+      },
+    ],
+  });
   page = page.replace(
     /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
     (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(head.canonical)}"`)

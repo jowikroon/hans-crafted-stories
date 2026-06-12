@@ -2,6 +2,23 @@
 # Redirect www to non-www (301)
 https://www.hansvanleeuwen.com/* https://hansvanleeuwen.com/:splat 301
 
+# Blog aliases: /blog and /artikelen never existed as routes; canonical is /writing (301)
+/blog              /writing            301
+/blog/*            /writing/:splat     301
+/artikelen         /writing            301
+/artikelen/*       /writing/:splat     301
+/articles          /writing            301
+/articles/*        /writing/:splat     301
+
+# Legacy article slugs removed from the catalog — permanent redirect to the writing index
+/writing/hidden-cost-dark-patterns   /writing   301
+/writing/cycling-dutch-countryside   /writing   301
+/writing/cro-design-problem          /writing   301
+/writing/ai-search-ux-lessons        /writing   301
+/writing/bookshelf-2024              /writing   301
+/writing/ux-unit-economics           /writing   301
+/writing/sourdough-products          /writing   301
+
 # /write is now a React route (WriteCMS component). write-src.html is the archived static prototype.
 # /blog-cms redirects to /write. Voice editor stays at /blog-cms/voice/:id (React).
 /blog-cms/voice/*  /index.html  200
