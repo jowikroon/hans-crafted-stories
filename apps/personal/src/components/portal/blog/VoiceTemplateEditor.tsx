@@ -26,6 +26,12 @@ interface VTFull extends VT {
   content_rules: string;
   seo_guidelines: string;
   required_elements: string[];
+  // Voice DNA (design contract #16)
+  calibration_sentence: string;
+  signature_phrases: string[];
+  strengths: string[];
+  watch_outs: string[];
+  unique_markers: string[];
 }
 
 const WRITING_STYLE_RULES: { key: string; label: string }[] = [
@@ -542,7 +548,55 @@ export default function VoiceTemplateEditor() {
               />
             </Field>
           </FormSection>
+
+          {/* 10 VOICE DNA */}
+          <FormSection
+            idx={10}
+            title="Voice DNA"
+            subtitle="The fingerprint: one calibration sentence + the phrases and habits that make it unmistakably Hans"
+          >
+            <Field label="Calibration sentence — one sentence that IS this voice. Sharpest anti-AI-detection lever; every draft is calibrated against it.">
+              <textarea
+                className="input-base"
+                rows={2}
+                value={active.calibration_sentence ?? ""}
+                onChange={(e) => patch({ calibration_sentence: e.target.value })}
+                placeholder='e.g. "Bol is geen vijand van Amazon — het is je oefenterrein, en wie dat snapt wint op allebei."'
+              />
+            </Field>
+            <DnaChipField
+              label="Signature phrases"
+              desc="Recurring phrases readers recognize"
+              items={active.signature_phrases ?? []}
+              onChange={(v) => patch({ signature_phrases: v })}
+              placeholder="+ signature phrase"
+            />
+            <DnaChipField
+              label="Strengths"
+              desc="What this voice does well — lean into these"
+              items={active.strengths ?? []}
+              onChange={(v) => patch({ strengths: v })}
+              placeholder="+ strength"
+            />
+            <DnaChipField
+              label="Watch-outs"
+              desc="Habits to avoid — the editor flags drift toward these"
+              items={active.watch_outs ?? []}
+              onChange={(v) => patch({ watch_outs: v })}
+              placeholder="+ watch-out"
+            />
+            <DnaChipField
+              label="Unique markers"
+              desc="Quirks that distinguish Hans from generic AI prose"
+              items={active.unique_markers ?? []}
+              onChange={(v) => patch({ unique_markers: v })}
+              placeholder="+ unique marker"
+            />
+          </FormSection>
         </div>
+
+        {/* Completion wizard — fixed right panel */}
+        <CompletionWizard template={active} />
       </main>
 
       {/* Global input styles — scoped to this component */}
@@ -580,7 +634,7 @@ function FormSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-5">
+    <section id={`vt-sec-${idx}`} className="flex flex-col gap-5 scroll-mt-24">
       <div className="flex items-center justify-between">
         <SecLabel idx={idx}>{title}</SecLabel>
         {accessory}
@@ -726,5 +780,129 @@ function AddTermInput({
       className="h-[22px] px-2 rounded border border-border bg-transparent font-mono text-[10.5px] w-28 outline-none focus:border-primary/60"
       placeholder="term"
     />
+  );
+}
+
+
+// ─── Voice DNA chip field ─────────────────────────────────────────────────
+function DnaChipField({
+  label, desc, items, onChange, placeholder,
+}: {
+  label: string;
+  desc: string;
+  items: string[];
+  onChange: (items: string[]) => void;
+  placeholder: string;
+}) {
+  return (
+    <Field label={`${label} — ${desc}`}>
+      <div className="flex gap-2 flex-wrap">
+        {items.map((it, i) => (
+          <div
+            key={it + i}
+            className="flex items-center gap-2 px-3 py-2 rounded border border-border/60 text-[12.5px]"
+            style={{ background: "hsl(var(--card) / 0.4)" }}
+          >
+            <span>{it}</span>
+            <button
+              onClick={() => onChange(items.filter((x) => x !== it))}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X size={11} />
+            </button>
+          </div>
+        ))}
+        <AddTermInput placeholder={placeholder} onAdd={(v) => onChange([...items, v])} />
+      </div>
+    </Field>
+  );
+}
+
+// ─── Completion wizard (design contract #19) ──────────────────────────────
+interface WizardCheck {
+  label: string;
+  done: boolean;
+  sectionIdx: number;
+}
+
+function buildWizardChecks(t: VTFull): WizardCheck[] {
+  return [
+    { label: "Name + description", done: !!t.name?.trim() && !!(t.description ?? "").trim(), sectionIdx: 1 },
+    { label: "Tone + perspective", done: !!(t.tone ?? "").trim() && !!(t.perspective ?? "").trim(), sectionIdx: 2 },
+    { label: "Target audience", done: !!(t.target_audience ?? "").trim(), sectionIdx: 3 },
+    { label: "Writing style", done: !!(t.writing_style ?? "").trim(), sectionIdx: 5 },
+    { label: "≥ 3 banned words", done: (t.banned_words ?? []).length >= 3, sectionIdx: 6 },
+    { label: "≥ 2 opening examples", done: (t.opening_examples ?? []).length >= 2, sectionIdx: 4 },
+    { label: "Content rules", done: !!(t.content_rules ?? "").trim(), sectionIdx: 8 },
+    { label: "SEO guidelines", done: !!(t.seo_guidelines ?? "").trim(), sectionIdx: 9 },
+    { label: "Calibration sentence ≥ 30 chars", done: (t.calibration_sentence ?? "").trim().length >= 30, sectionIdx: 10 },
+    { label: "≥ 2 signature phrases", done: (t.signature_phrases ?? []).length >= 2, sectionIdx: 10 },
+    { label: "≥ 1 watch-out", done: (t.watch_outs ?? []).length >= 1, sectionIdx: 10 },
+  ];
+}
+
+function CompletionWizard({ template }: { template: VTFull | null }) {
+  if (!template) return null;
+  const checks = buildWizardChecks(template);
+  const done = checks.filter((c) => c.done).length;
+  const pct = Math.round((done / checks.length) * 100);
+  const nextGap = checks.find((c) => !c.done);
+
+  const jump = (idx: number) => {
+    document.getElementById(`vt-sec-${idx}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <aside
+      className="hidden xl:flex flex-col gap-3 fixed right-6 top-28 w-[230px] p-4 rounded-lg border border-border/60 z-40"
+      style={{ background: "hsl(var(--card) / 0.92)", backdropFilter: "blur(6px)" }}
+    >
+      <div className="flex items-baseline justify-between">
+        <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Completeness</span>
+        <span className={`text-[18px] font-semibold ${pct >= 70 ? "text-primary" : "text-amber-500"}`}>{pct}%</span>
+      </div>
+      <div className="h-1.5 rounded-full bg-border/50 overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${pct >= 70 ? "bg-primary" : "bg-amber-500"}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <ul className="flex flex-col gap-1 mt-1">
+        {checks.map((c) => (
+          <li key={c.label}>
+            <button
+              onClick={() => jump(c.sectionIdx)}
+              className={`flex items-center gap-2 w-full text-left text-[11.5px] py-0.5 rounded hover:bg-border/30 ${
+                c.done ? "text-muted-foreground line-through decoration-border" : "text-foreground"
+              }`}
+            >
+              {c.done ? (
+                <Check size={11} className="text-primary shrink-0" strokeWidth={2.5} />
+              ) : (
+                <span className="w-[11px] h-[11px] rounded-full border border-amber-500 shrink-0" />
+              )}
+              {c.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+      {nextGap ? (
+        <button
+          onClick={() => jump(nextGap.sectionIdx)}
+          className="mt-1 text-[11.5px] font-medium px-3 py-2 rounded border border-amber-500/60 text-amber-600 hover:bg-amber-500/10 text-left"
+        >
+          Next gap → {nextGap.label}
+        </button>
+      ) : (
+        <div className="mt-1 text-[11.5px] font-medium px-3 py-2 rounded border border-primary/50 text-primary">
+          Voice DNA compleet ✓
+        </div>
+      )}
+      {pct < 70 && (
+        <p className="text-[10.5px] text-muted-foreground leading-snug">
+          Onder 70% schrijft de ghost-writer met een onvolledige stem — vul eerst de gaten.
+        </p>
+      )}
+    </aside>
   );
 }
