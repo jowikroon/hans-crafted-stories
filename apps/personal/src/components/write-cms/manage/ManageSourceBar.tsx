@@ -206,6 +206,12 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
             </button>
           </div>
 
+          {ytAnalyze.result.contextSummary && (
+            <div className="yt-context-summary">
+              {ytAnalyze.result.contextSummary}
+            </div>
+          )}
+
           {ytAnalyze.result.keyTopics.length > 0 && (
             <div className="topic-chips">
               <span className="topic-chips-label">Topics:</span>
@@ -217,6 +223,25 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
                   title="Use as angle"
                 >
                   {t}
+                  <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
+                    <path d="M5.5 3.5l7 4.5-7 4.5V3.5z" fill="currentColor"/>
+                  </svg>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {ytAnalyze.result.articleOpportunities.length > 0 && (
+            <div className="topic-chips topic-chips--opps">
+              <span className="topic-chips-label">Article ideas:</span>
+              {ytAnalyze.result.articleOpportunities.map((o) => (
+                <button
+                  key={o}
+                  className="topic-chip topic-chip--opp"
+                  onClick={() => { setAngle(o); autoFilledAngle.current = true; }}
+                  title="Use as angle"
+                >
+                  {o}
                   <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
                     <path d="M5.5 3.5l7 4.5-7 4.5V3.5z" fill="currentColor"/>
                   </svg>

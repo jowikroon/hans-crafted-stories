@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const N8N_HOST = "https://n8n.srv1402218.hstgr.cloud";
-const YOUTUBE_ANALYZE_URL = `${N8N_HOST}/webhook/blog-youtube-analyze`;
+// Analysis runs in the Supabase edge function `blog-youtube-analyze`
+// (oEmbed metadata + transcript best-effort + Claude topic extraction + persistence).
 
 export type YouTubeAnalyzePhase = "idle" | "analyzing" | "analyzed" | "error";
 
@@ -40,16 +40,12 @@ export function useYoutubeAnalyze() {
     setResult(null);
 
     try {
-      const res = await fetch(YOUTUBE_ANALYZE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, video_id: videoId }),
+      const { data: fnData, error: fnError } = await supabase.functions.invoke("blog-youtube-analyze", {
+        body: { url, video_id: videoId },
       });
-      if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status}${body ? `: ${body.slice(0, 200)}` : ""}`);
-      }
-      const data = await res.json() as Record<string, unknown>;
+      if (fnError) throw new Error(fnError.message ?? "Analyze function failed");
+      const data = (fnData ?? {}) as Record<string, unknown>;
+      if (data.error) throw new Error(String(data.error));
 
       // n8n may return the result inline or as { source_id } for async polling
       const sourceId = (data.source_id ?? data.id) as string | undefined;
@@ -58,7 +54,7 @@ export function useYoutubeAnalyze() {
       } else {
         // Inline result
         setResult({
-          sourceId: "",
+          sourceId: String(data.stored_source_id ?? ""),
           title: String(data.title ?? ""),
           channelName: String(data.channel_name ?? ""),
           thumbnailUrl: String(data.thumbnail_url ?? ""),

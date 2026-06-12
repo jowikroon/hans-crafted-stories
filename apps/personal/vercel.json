@@ -12,6 +12,71 @@
       "source": "/:path+/",
       "destination": "/:path+",
       "permanent": true
+    },
+    {
+      "source": "/blog",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/blog/:path*",
+      "destination": "/writing/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/artikelen",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/artikelen/:path*",
+      "destination": "/writing/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/articles",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/articles/:path*",
+      "destination": "/writing/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/writing/hidden-cost-dark-patterns",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/writing/cycling-dutch-countryside",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/writing/cro-design-problem",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/writing/ai-search-ux-lessons",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/writing/bookshelf-2024",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/writing/ux-unit-economics",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/writing/sourdough-products",
+      "destination": "/writing",
+      "permanent": true
     }
   ],
   "trailingSlash": false,
@@ -19,6 +84,43 @@
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/(robots.txt|sitemap.xml|llms.txt)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
     }
   ]
 }
