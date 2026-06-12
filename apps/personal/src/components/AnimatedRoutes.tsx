@@ -26,6 +26,7 @@ const WriteCMS = lazy(() => import(/* webpackChunkName: "write-cms" */ "@/pages/
 /* BlogCMS is lazy-loaded and excluded from the SSR bundle.
    During prerender (typeof window === "undefined"), the fallback renders instead. */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
+const CommandCenter = lazy(() => import(/* webpackChunkName: "command-center" */ "@/pages/CommandCenter"));
 const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-template-editor" */ "@/components/portal/blog/VoiceTemplateEditor"));
 
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
@@ -65,7 +66,7 @@ const AnimatedRoutes = () => {
         <Route path="/empire" element={<Navigate to="/samantha" replace />} />
         <Route path="/hansai" element={<Navigate to="/samantha" replace />} />
         <Route path="/hans-ai" element={<Navigate to="/samantha" replace />} />
-        <Route path="/command" element={<Navigate to="/samantha" replace />} />
+        <Route path="/command" element={<Suspense fallback={<BlogCMSFallback />}><CommandCenter /></Suspense>} />
         <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
