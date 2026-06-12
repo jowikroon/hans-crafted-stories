@@ -5,7 +5,7 @@
 // Wire into routing: <Route path="/portal/blog/voice/:id" element={<VoiceTemplateEditor />} />
 // or use as a modal/drawer.
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ import {
   Radar, Spectrum, SecLabel, Chip, Eyebrow,
 } from "./primitives";
 import { type VoiceTemplate as VT } from "@/lib/blog/voice-analysis";
+import { ADS_AUDIENCES, AUDIENCE_CATEGORIES } from "./googleAdsAudiences";
 
 interface VTFull extends VT {
   is_default: boolean;
@@ -593,6 +594,30 @@ export default function VoiceTemplateEditor() {
               placeholder="+ unique marker"
             />
           </FormSection>
+
+          {/* 11 TARGET AUDIENCE — Google Ads audience picker (design contract #17) */}
+          <FormSection
+            idx={11}
+            title="Target audience"
+            subtitle="Google Ads audience-taxonomie — selecties voeden target_audience en de ghost-writer"
+          >
+            <AudiencePicker
+              value={active.target_audience ?? ""}
+              onChange={(v) => patch({ target_audience: v })}
+            />
+          </FormSection>
+
+          {/* 12 ANALYZE WRITING SAMPLE — voice extract (design contract #18) */}
+          <FormSection
+            idx={12}
+            title="Analyze writing sample"
+            subtitle="Plak tekst of drop een .txt/.md — Claude vult het template met confidence-scores"
+          >
+            <SampleAnalyzer
+              onApply={(updates) => patch(updates)}
+              current={active}
+            />
+          </FormSection>
         </div>
 
         {/* Completion wizard — fixed right panel */}
@@ -904,5 +929,258 @@ function CompletionWizard({ template }: { template: VTFull | null }) {
         </p>
       )}
     </aside>
+  );
+}
+
+
+// ─── Google Ads audience picker (design contract #17) ─────────────────────
+const AUDIENCE_SEP = "; ";
+
+function AudiencePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [query, setQuery] = useState("");
+  const [cat, setCat] = useState<(typeof AUDIENCE_CATEGORIES)[number] | "All">("All");
+
+  const selected = useMemo(
+    () => value.split(AUDIENCE_SEP).map((s) => s.trim()).filter(Boolean),
+    [value],
+  );
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return ADS_AUDIENCES.filter(
+      (a) =>
+        (cat === "All" || a.category === cat) &&
+        (!q || a.label.toLowerCase().includes(q)) &&
+        !selected.includes(a.label),
+    ).slice(0, 14);
+  }, [query, cat, selected]);
+
+  const add = (label: string) => onChange([...selected, label].join(AUDIENCE_SEP));
+  const remove = (label: string) => onChange(selected.filter((x) => x !== label).join(AUDIENCE_SEP));
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Selected chips */}
+      <div className="flex gap-2 flex-wrap">
+        {selected.length === 0 && (
+          <span className="text-[12px] text-muted-foreground italic">Nog geen audiences geselecteerd — zoek hieronder of typ vrij in het tekstveld.</span>
+        )}
+        {selected.map((it) => (
+          <div
+            key={it}
+            className="flex items-center gap-2 px-3 py-2 rounded border border-primary/50 text-[12.5px]"
+            style={{ background: "hsl(var(--primary) / 0.08)" }}
+          >
+            <span>{it}</span>
+            <button onClick={() => remove(it)} className="text-muted-foreground hover:text-foreground">
+              <X size={11} />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Category tabs + search */}
+      <div className="flex gap-2 flex-wrap items-center">
+        {(["All", ...AUDIENCE_CATEGORIES] as const).map((c) => (
+          <button
+            key={c}
+            onClick={() => setCat(c as typeof cat)}
+            className={`px-2.5 py-1 rounded text-[11px] uppercase tracking-wider border transition-colors ${
+              cat === c
+                ? "border-primary text-primary bg-primary/10"
+                : "border-border/60 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {c}
+          </button>
+        ))}
+        <input
+          className="input-base flex-1 min-w-[180px]"
+          placeholder="Zoek audiences… (bv. 'amazon', 'MKB', 'in-market')"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
+
+      {/* Results */}
+      <div className="flex gap-2 flex-wrap">
+        {results.map((a) => (
+          <button
+            key={a.label}
+            onClick={() => add(a.label)}
+            className="flex items-center gap-2 px-3 py-2 rounded border border-border/60 text-[12px] hover:border-primary/60 hover:bg-primary/5 text-left"
+            title={`${a.category} — klik om toe te voegen`}
+          >
+            <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">{a.category}</span>
+            {a.label}
+          </button>
+        ))}
+        {results.length === 0 && (
+          <span className="text-[12px] text-muted-foreground">Geen matches — pas je zoekterm of categorie aan.</span>
+        )}
+      </div>
+
+      {/* Free text fallback (stays the source of truth) */}
+      <Field label="target_audience (vrije tekst — picker schrijft hierin)">
+        <textarea
+          className="input-base"
+          rows={2}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="bv. Nederlandse MKB-verkopers op Bol.com en Amazon.nl; e-commerce managers; founders"
+        />
+      </Field>
+    </div>
+  );
+}
+
+
+// ─── Sample analyzer — writing sample → template suggestions (design contract #18)
+interface Suggestion { value: unknown; confidence: number }
+type SuggestionMap = Record<string, Suggestion>;
+
+const SUGGESTION_FIELDS: { key: keyof VTFull; label: string; isArray: boolean }[] = [
+  { key: "tone", label: "Tone", isArray: false },
+  { key: "perspective", label: "Perspective", isArray: false },
+  { key: "writing_style", label: "Writing style", isArray: false },
+  { key: "calibration_sentence", label: "Calibration sentence", isArray: false },
+  { key: "signature_phrases", label: "Signature phrases", isArray: true },
+  { key: "strengths", label: "Strengths", isArray: true },
+  { key: "watch_outs", label: "Watch-outs", isArray: true },
+  { key: "unique_markers", label: "Unique markers", isArray: true },
+  { key: "opening_examples", label: "Opening examples", isArray: true },
+];
+
+function SampleAnalyzer({ onApply, current }: { onApply: (u: Partial<VTFull>) => void; current: VTFull }) {
+  const [sample, setSample] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<SuggestionMap | null>(null);
+  const [applied, setApplied] = useState<Set<string>>(new Set());
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const readFile = (f: File) => {
+    const reader = new FileReader();
+    reader.onload = () => setSample(String(reader.result ?? "").slice(0, 20000));
+    reader.readAsText(f);
+  };
+
+  const analyze = async () => {
+    setBusy(true);
+    setError(null);
+    setSuggestions(null);
+    setApplied(new Set());
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke("blog-youtube-analyze", {
+        body: { action: "voice_extract", text: sample },
+      });
+      if (fnErr) throw new Error(fnErr.message);
+      const d = data as { suggestions?: SuggestionMap; error?: string };
+      if (d.error) throw new Error(d.error);
+      if (!d.suggestions) throw new Error("Geen suggesties ontvangen");
+      setSuggestions(d.suggestions);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Analyse mislukt");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const applyOne = (key: keyof VTFull) => {
+    if (!suggestions) return;
+    const sug = suggestions[key as string];
+    if (!sug) return;
+    const def = SUGGESTION_FIELDS.find((f) => f.key === key);
+    const value = def?.isArray
+      ? (Array.isArray(sug.value) ? (sug.value as unknown[]).map(String) : [])
+      : String(sug.value ?? "");
+    onApply({ [key]: value } as Partial<VTFull>);
+    setApplied((prev) => new Set(prev).add(key as string));
+  };
+
+  const applyAll = () => SUGGESTION_FIELDS.forEach((f) => suggestions?.[f.key as string] && applyOne(f.key));
+
+  return (
+    <div className="flex flex-col gap-3">
+      <textarea
+        className="input-base font-mono text-[12px]"
+        rows={5}
+        value={sample}
+        onChange={(e) => setSample(e.target.value.slice(0, 20000))}
+        onDrop={(e) => {
+          e.preventDefault();
+          const f = e.dataTransfer.files?.[0];
+          if (f) readFile(f);
+        }}
+        onDragOver={(e) => e.preventDefault()}
+        placeholder="Plak hier een representatief stuk eigen tekst (min. 200 tekens), of sleep een .txt/.md bestand hierheen…"
+      />
+      <div className="flex items-center gap-3">
+        <Button onClick={analyze} disabled={busy || sample.trim().length < 200} className="gap-2">
+          <Wand2 size={14} />
+          {busy ? "Analyzing…" : "Analyze sample"}
+        </Button>
+        <button
+          onClick={() => fileRef.current?.click()}
+          className="text-[12px] text-muted-foreground hover:text-foreground underline"
+        >
+          of kies bestand (.txt/.md)
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".txt,.md,.markdown,text/plain,text/markdown"
+          className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) readFile(f); }}
+        />
+        <span className="text-[11px] text-muted-foreground ml-auto font-mono">{sample.length}/20000</span>
+      </div>
+
+      {error && <div className="text-[12px] text-red-500">{error}</div>}
+
+      {suggestions && (
+        <div className="flex flex-col gap-2 border border-border/60 rounded-lg p-4" style={{ background: "hsl(var(--card) / 0.4)" }}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Suggesties</span>
+            <Button size="sm" variant="outline" onClick={applyAll} className="gap-1.5">
+              <Check size={12} /> Apply all
+            </Button>
+          </div>
+          {SUGGESTION_FIELDS.map((f) => {
+            const sug = suggestions[f.key as string];
+            if (!sug) return null;
+            const display = Array.isArray(sug.value) ? (sug.value as unknown[]).map(String).join(" · ") : String(sug.value ?? "");
+            const conf = Number(sug.confidence ?? 0);
+            const isApplied = applied.has(f.key as string);
+            return (
+              <div key={f.key as string} className="flex items-start gap-3 py-2 border-b border-border/40 last:border-0">
+                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{f.label}</span>
+                  <span className="text-[12.5px] leading-snug break-words">{display || "—"}</span>
+                </div>
+                <span
+                  className={`font-mono text-[11px] shrink-0 mt-0.5 ${conf >= 75 ? "text-primary" : conf >= 50 ? "text-amber-500" : "text-muted-foreground"}`}
+                  title="Confidence"
+                >
+                  {conf}%
+                </span>
+                <Button
+                  size="sm"
+                  variant={isApplied ? "secondary" : "outline"}
+                  disabled={isApplied}
+                  onClick={() => applyOne(f.key)}
+                  className="shrink-0"
+                >
+                  {isApplied ? <Check size={12} /> : "Apply"}
+                </Button>
+              </div>
+            );
+          })}
+          <p className="text-[10.5px] text-muted-foreground mt-1">
+            Apply zet de suggestie in het formulier — controleer en klik daarna zelf op Save template.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
