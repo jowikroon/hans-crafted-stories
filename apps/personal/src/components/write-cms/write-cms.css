@@ -1212,12 +1212,10 @@
   background: var(--bg-0, #fdfcf9);
   border: 1.5px solid var(--line, rgba(0,0,0,0.2));
   border-radius: 10px;
-  box-shadow: 3px 3px 0 var(--ink-0, #111);
-  opacity: 0.85;
-  transition: opacity 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
 }
-.write-cms .idea-bubble:hover { opacity: 1; border-color: var(--ink-0); }
-.write-cms .idea-bubble.dragging { transition: none; cursor: grabbing; }
+.write-cms .idea-bubble:hover { border-color: var(--ink-0); }
+.write-cms .idea-bubble.dragging { cursor: grabbing; }
 .write-cms .idea-bubble .head {
   display: flex; justify-content: space-between; align-items: center;
   padding: 7px 10px 0;

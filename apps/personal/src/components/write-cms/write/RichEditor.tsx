@@ -47,10 +47,14 @@ export default function RichEditor({ docKey, value, onChange, placeholder, banne
     },
   });
 
-  // Reset content only when switching documents (not on every autosave echo)
+  // Sync external value into the editor: on document switch AND on async hydration
+  // (usePostAutosave fills fields after first mount). Never while the user is typing.
   useEffect(() => {
     if (!editor) return;
-    if (loadedKey.current !== docKey) {
+    if (editor.isFocused) return;
+    const incoming = (value ?? "").trim();
+    const current = htmlToMd(editor.getHTML()).trim();
+    if (loadedKey.current !== docKey || (incoming && incoming !== current)) {
       loadedKey.current = docKey;
       editor.commands.setContent(mdToHtml(value), { emitUpdate: false });
     }
