@@ -4,6 +4,8 @@ import { usePostAutosave, type SaveStatus } from "../hooks/usePostAutosave";
 import { usePublish } from "../hooks/usePublish";
 import { useReviews } from "../hooks/useReviews";
 import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/useVoiceTemplate";
+import RichEditor from "../write/RichEditor";
+import OutlinePanel from "../write/OutlinePanel";
 
 function StatusPill({ status, published }: { status: string; published: boolean }) {
   const cls = status === "published" || published ? "live" : status === "scheduled" ? "scheduled" : status === "review" ? "review" : "draft";
@@ -266,15 +268,17 @@ export default function WriteMode({ postId }: { postId?: string }) {
         )}
 
         {/* EN content */}
-        <div className="paper" style={{ minHeight: 200 }}>
+        <div className="paper paper--editor-en" style={{ minHeight: 200 }}>
           <div className="eyebrow" style={{ padding: "var(--s-3) var(--s-4) 0" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-3)" }}>EN</span>
           </div>
-          <textarea
-            className="write-editor"
+          <RichEditor
+            docKey={`${post!.id}:en`}
             value={autosave.fields.content}
             placeholder="Start writing EN content..."
-            onChange={(e) => autosave.setField("content", e.target.value)}
+            onChange={(md) => autosave.setField("content", md)}
+            bannedWords={voiceTemplate?.banned_words ?? []}
+            lang="en"
           />
         </div>
 
@@ -283,16 +287,21 @@ export default function WriteMode({ postId }: { postId?: string }) {
           <div className="eyebrow" style={{ padding: "var(--s-3) var(--s-4) 0" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-3)" }}>NL</span>
           </div>
-          <textarea
-            className="write-editor"
+          <RichEditor
+            docKey={`${post!.id}:nl`}
             value={autosave.fields.content_nl}
             placeholder="Start writing NL content..."
-            onChange={(e) => autosave.setField("content_nl", e.target.value)}
+            onChange={(md) => autosave.setField("content_nl", md)}
+            bannedWords={voiceTemplate?.banned_words ?? []}
+            lang="nl"
           />
         </div>
       </main>
 
       <aside className="rail">
+        {/* Outline — heading map of the EN draft */}
+        <OutlinePanel markdown={autosave.fields.content} editorSelector=".paper--editor-en" />
+
         {/* Voice coaching card */}
         {voiceTemplate && (
           <>
