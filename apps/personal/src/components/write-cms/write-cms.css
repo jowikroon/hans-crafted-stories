@@ -1070,3 +1070,23 @@
   }
   .write-cms .cc-frame > .modes .mode { width: auto; flex: 1 1 auto; }
 }
+
+/* YouTube analyze — context summary + article-idea chips (feature: analyzer v2, 2026-06-12) */
+.write-cms .yt-context-summary {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line, rgba(0,0,0,0.12));
+  border-left: 3px solid var(--live, #1d7f4e);
+  background: var(--bg-1, rgba(0,0,0,0.02));
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-1);
+  border-radius: 4px;
+}
+.write-cms .topic-chips--opps .topic-chip--opp {
+  border-style: dashed;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.4;
+}
