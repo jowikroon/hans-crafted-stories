@@ -28,6 +28,12 @@ function rewrite(response, m, canonical) {
 }
 
 export async function onRequest(context) {
+  // HAN-118: leaked CMS stub — _redirects rule wordt door Pages niet toegepast op deze route; hard 301 hier (middleware draait vóór asset/SPA-fallback).
+  var reqPath = new URL(context.request.url).pathname;
+  if (reqPath === "/writing/untitled-3" || reqPath === "/writing/untitled-3/" || reqPath === "/writing/untitled" || reqPath === "/writing/untitled-2") {
+    return Response.redirect("https://hansvanleeuwen.com/writing", 301);
+  }
+
   var response = await context.next();
   var contentType = response.headers.get("content-type") || "";
   if (contentType.indexOf("text/html") === -1) return response;
