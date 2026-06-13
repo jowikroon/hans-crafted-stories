@@ -304,8 +304,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" /></noscript>
-    <!-- Write CMS fonts — only loaded when /write is visited -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <!-- JetBrains Mono — used only by legacy app routes; loaded non-blocking (was a render-blocking CSS @import, removed for LCP, HAN-121) -->
+    <link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" /></noscript>
+    <!-- Write CMS fonts — loaded lazily so they don't compete with critical fonts on marketing pages (CWV/LCP fix, HAN-121). The /write app requests these via its own scoped CSS when visited. -->
+    <link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" /></noscript>
     <style>
       /* Critical font-display fallback so text is visible while fonts load */
@@ -337,8 +340,8 @@
       </header>
       <main>
         <section>
-          <h1>Hans van Leeuwen – Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h1>
-          <h2>Available for freelance &amp; interim e-commerce roles — Amazon &amp; Bol.com specialist (NL/EU)</h2>
+          <h2>Hans van Leeuwen – Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h2>
+          <p>Available for freelance &amp; interim e-commerce roles — Amazon &amp; Bol.com specialist (NL/EU)</p>
           <p>I'm Hans van Leeuwen — a freelance e-commerce manager based in Amersfoort, Netherlands, specializing in <a href="/amazon-nl-specialist">Amazon marketplace management</a>, <a href="/bol-com-consultant">Bol.com optimization</a>, marketplace growth, product data optimization, and AI-assisted e-commerce operations. As an experienced <a href="/interim-ecommerce-manager">interim e-commerce manager in the Netherlands</a>, I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
           <p>Based in Amersfoort, Netherlands. Available for NL &amp; EU projects.</p>
           <p><a href="/about#contact">Request a 7-point Amazon NL &amp; Bol.com marketplace audit</a> | <a href="/work">Amazon &amp; Bol.com case studies</a> | <a href="https://www.linkedin.com/in/hansvl3" rel="noopener noreferrer">Connect on LinkedIn</a></p>

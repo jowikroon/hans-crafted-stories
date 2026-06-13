@@ -34,11 +34,42 @@ export async function onRequest(context) {
     return Response.redirect("https://hansvanleeuwen.com/writing", 301);
   }
 
+  // HAN-118: true 404 for unknown routes. Cloudflare Pages serves the SPA index.html
+  // fallback (HTTP 200) for any unmatched path, producing soft-404s (e.g. /untitled-3).
+  // We resolve the response, and if an HTML path is not a known route and not a real
+  // prerendered file, we relabel the status to 404 so search engines drop it.
+  var KNOWN_EXACT = {
+    "/": 1, "/work": 1, "/writing": 1, "/about": 1, "/privacy": 1,
+    "/amazon-nl-specialist": 1, "/bol-com-consultant": 1, "/interim-ecommerce-manager": 1,
+    "/work/connect-car-parts": 1, "/wiki": 1, "/portal": 1, "/write": 1, "/samantha": 1,
+    "/blog-cms": 1, "/auth/callback": 1
+  };
+  function isKnownRoute(p) {
+    var clean = p.replace(/\/$/, "") || "/";
+    if (KNOWN_EXACT[clean]) return true;
+    // Real prerendered blog articles live at /writing/<slug>/index.html — Pages serves them
+    // as files (not the SPA fallback). The dynamic prefixes below are legitimately app-routed.
+    if (clean.indexOf("/writing/") === 0) return true;   // article slug (real file or app route)
+    if (clean.indexOf("/write/") === 0) return true;     // CMS editor (auth-gated app route)
+    if (clean.indexOf("/work/") === 0) return true;      // case-study detail app route
+    if (clean.indexOf("/blog-cms/") === 0) return true;  // CMS sub-route
+    return false;
+  }
   var response = await context.next();
   var contentType = response.headers.get("content-type") || "";
   if (contentType.indexOf("text/html") === -1) return response;
 
   var path = new URL(context.request.url).pathname;
+
+  // HAN-118: relabel soft-404 SPA fallback as a real 404 for unknown routes.
+  if (!isKnownRoute(path)) {
+    return new Response(response.body, {
+      status: 404,
+      statusText: "Not Found",
+      headers: response.headers
+    });
+  }
+
   var m = META[path];
   if (!m) return response;
 

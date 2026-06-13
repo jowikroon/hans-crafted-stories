@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+/* Fonts are preloaded in index.html (Inter + Playfair Display, display=swap). The render-blocking @import was removed to fix LCP (HAN-121). */
 
 @tailwind base;
 @tailwind components;
