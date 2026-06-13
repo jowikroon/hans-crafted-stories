@@ -16,6 +16,7 @@ interface Props {
   onChangeEN: (md: string) => void;
   onChangeNL: (md: string) => void;
   bannedWords: string[];
+  linkTargets?: { title: string; slug: string }[];
 }
 
 function wordCount(md: string): number {
@@ -27,7 +28,7 @@ function readMinutes(en: number, nl: number): number {
   return Math.max(1, Math.round(Math.max(en, nl) / 220));
 }
 
-export default function LangSplit({ postId, contentEN, contentNL, onChangeEN, onChangeNL, bannedWords }: Props) {
+export default function LangSplit({ postId, contentEN, contentNL, onChangeEN, onChangeNL, bannedWords, linkTargets = [] }: Props) {
   const [mode, setMode] = useState<LangMode>("split");
   const [translating, setTranslating] = useState<null | "en" | "nl">(null);
   const [translateState, setTranslateState] = useState<"idle" | "done" | "error">("idle");
@@ -84,6 +85,7 @@ export default function LangSplit({ postId, contentEN, contentNL, onChangeEN, on
         onChange={onChange}
         bannedWords={bannedWords}
         lang={lang}
+        linkTargets={linkTargets}
       />
     </div>
   );

@@ -1707,3 +1707,7 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
 .write-cms .sc-brief-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); margin-top: 3px; }
 .write-cms .sc-brief-tag { color: var(--accent, #b8860b); }
 .write-cms .sc-briefs-foot { font-size: 10.5px; color: var(--ink-3); margin-top: 8px; line-height: 1.5; }
+
+/* ── Inline internal-link suggestie (design contract A8) ──────────────────── */
+.write-cms .pq-suggest.link-suggest { border-color: var(--scheduled, #2a6ea8); background: color-mix(in srgb, var(--scheduled, #2a6ea8) 6%, transparent); }
+.write-cms .pq-suggest.link-suggest .pq-wrap { border-color: var(--scheduled, #2a6ea8); color: var(--scheduled, #2a6ea8); }

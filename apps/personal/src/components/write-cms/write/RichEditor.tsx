@@ -22,16 +22,19 @@ interface RichEditorProps {
   bannedWords: string[];
   /** "en" | "nl" — used by the Translate action to pick the target language. */
   lang: "en" | "nl";
+  /** Published posts for inline internal-link suggestions (design contract A8). */
+  linkTargets?: { title: string; slug: string }[];
 }
 
 type AiAction = "tighten" | "translate" | null;
 
-export default function RichEditor({ docKey, value, onChange, placeholder, bannedWords, lang }: RichEditorProps) {
+export default function RichEditor({ docKey, value, onChange, placeholder, bannedWords, lang, linkTargets = [] }: RichEditorProps) {
   const [aiBusy, setAiBusy] = useState<AiAction>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [showTplPop, setShowTplPop] = useState(false);
   const [tplName, setTplName] = useState("");
   const [pqHint, setPqHint] = useState<string | null>(null);
+  const [linkHint, setLinkHint] = useState<{ phrase: string; slug: string; title: string } | null>(null);
   const loadedKey = useRef<string | null>(null);
 
   const editor = useEditor({
@@ -86,6 +89,30 @@ export default function RichEditor({ docKey, value, onChange, placeholder, banne
     scan();
     return () => { editor.off("update", onUpdate); if (timer) clearTimeout(timer); };
   }, [editor]);
+
+  // Inline internal-link suggestion (design contract A8): find a published title mentioned in the draft.
+  useEffect(() => {
+    if (!editor || linkTargets.length === 0) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const scan = () => {
+      const text = editor.getText().toLowerCase();
+      const hit = linkTargets.find((t) => {
+        const key = t.title.toLowerCase().split(/[:|—-]/)[0].trim();
+        return key.length > 8 && text.includes(key) && !text.includes(`/writing/${t.slug}`);
+      });
+      setLinkHint(hit ? { phrase: hit.title.split(/[:|—-]/)[0].trim(), slug: hit.slug, title: hit.title } : null);
+    };
+    const onUpdate = () => { if (timer) clearTimeout(timer); timer = setTimeout(scan, 1400); };
+    editor.on("update", onUpdate);
+    scan();
+    return () => { editor.off("update", onUpdate); if (timer) clearTimeout(timer); };
+  }, [editor, linkTargets]);
+
+  const insertInternalLink = useCallback(() => {
+    if (!editor || !linkHint) return;
+    editor.chain().focus("end").insertContent(`<p><a href="/writing/${linkHint.slug}">${linkHint.title}</a></p>`).run();
+    setLinkHint(null);
+  }, [editor, linkHint]);
 
   const wrapPullQuote = useCallback(() => {
     if (!editor || !pqHint) return;
@@ -212,6 +239,13 @@ export default function RichEditor({ docKey, value, onChange, placeholder, banne
           <span className="pq-glyph">✦</span> Pull-quote-kans gevonden
           <button className="pq-wrap" onClick={wrapPullQuote}>Wrap</button>
           <button className="pq-x" onClick={() => setPqHint(null)}>×</button>
+        </div>
+      )}
+      {linkHint && (
+        <div className="pq-suggest link-suggest">
+          <span className="pq-glyph">🔗</span> Link-kans: <strong>{linkHint.phrase}</strong>
+          <button className="pq-wrap" onClick={insertInternalLink}>Voeg link toe</button>
+          <button className="pq-x" onClick={() => setLinkHint(null)}>×</button>
         </div>
       )}
       {aiError && (
