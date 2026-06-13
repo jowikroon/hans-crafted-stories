@@ -7,6 +7,7 @@ import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/u
 import LangSplit from "../write/LangSplit";
 import HeroImageTool from "../write/HeroImageTool";
 import ScoreCards from "../write/ScoreCards";
+import TipCards, { buildRichTips } from "../write/TipCards";
 import OutlinePanel from "../write/OutlinePanel";
 import IdeaBubble from "../write/IdeaBubble";
 
@@ -359,20 +360,8 @@ export default function WriteMode({ postId }: { postId?: string }) {
               )}
             </div>
 
-            {/* Writing tips */}
-            {contentTips.length > 0 && (
-              <div className="card">
-                <div className="card-head">Tips<span>{contentTips.length}</span></div>
-                <div className="voice-tips-list">
-                  {contentTips.map((tip, i) => (
-                    <div key={i} className="voice-tip">
-                      <span className="voice-tip-dot" />
-                      <span>{tip}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Writing tips (rijke cards, design contract A6) */}
+            {contentTips.length > 0 && <TipCards tips={buildRichTips(contentTips)} />}
           </>
         )}
 
