@@ -62,6 +62,7 @@ export default function ScoreCards({
   const rollNumber = useCallback((dim: Dim, from: number, to: number) => {
     const el = numRefs.current[dim];
     if (!el) { setScores((s) => ({ ...s, [dim]: to })); return; }
+    el.textContent = String(from);
     const t0 = performance.now();
     const dur = 800;
     const step = (now: number) => {
