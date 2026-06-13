@@ -36,9 +36,8 @@ const Hero = () => {
         aria-label="Introduction"
       >
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-3xl"
         >
           <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-primary">
