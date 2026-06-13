@@ -155,13 +155,32 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
         </button>
       </div>
 
-      {/* oEmbed preview — shown when URL is valid + not yet analyzed */}
+      {/* oEmbed preview + pre-flight options (design contract B2) */}
       {ytPreview && ytAnalyze.phase === "idle" && !busy && !init && (
-        <div className="yt-preview">
-          <img src={ytPreview.thumbnail} alt="" />
-          <div className="yt-preview-meta">
-            <div className="yt-preview-title">{ytPreview.title}</div>
-            <div className="yt-preview-channel">{ytPreview.channel}</div>
+        <div className="preflight">
+          <div className="yt-preview">
+            <img src={ytPreview.thumbnail} alt="" />
+            <div className="yt-preview-meta">
+              <div className="yt-preview-title">{ytPreview.title}</div>
+              <div className="yt-preview-channel">{ytPreview.channel}</div>
+            </div>
+          </div>
+          <div className="preflight-options">
+            <div className="preflight-opt">
+              <span className="preflight-lab">Talen</span>
+              <span className="preflight-chips">
+                <span className="lang-chip on">NL</span>
+                <span className="lang-chip on">EN</span>
+              </span>
+            </div>
+            <div className="preflight-opt">
+              <span className="preflight-lab">Extra's</span>
+              <span className="preflight-chips">
+                <span className="lang-chip on">LinkedIn</span>
+                <span className="lang-chip on">SEO</span>
+              </span>
+            </div>
+            <div className="preflight-est">~90s · ≈14k tokens · ~$0.04 · ⌘⏎ start</div>
           </div>
         </div>
       )}

@@ -113,6 +113,10 @@ export default function ManageMode() {
       {/* ── SourceBar — YouTube → n8n Ghost Writer pipeline ── */}
       <ManageSourceBar workflow={workflow} category="general" />
       <PromptTemplates category="professional" />
+      <div className="alt-actions">
+        <button className="alt-action" onClick={() => (window.location.href = "/write")}>Start blanco →</button>
+        <span className="alt-action-meta">of plak een YouTube-link · of kies een vorm hierboven</span>
+      </div>
 
       {/* ── Posts table ── */}
       <div className="posts-wrap" style={{ marginTop: "var(--s-5)" }}>
