@@ -5,6 +5,7 @@ import { usePublish } from "../hooks/usePublish";
 import { useReviews } from "../hooks/useReviews";
 import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/useVoiceTemplate";
 import LangSplit from "../write/LangSplit";
+import HeroImageTool from "../write/HeroImageTool";
 import OutlinePanel from "../write/OutlinePanel";
 import IdeaBubble from "../write/IdeaBubble";
 
@@ -267,6 +268,14 @@ export default function WriteMode({ postId }: { postId?: string }) {
             )}
           </div>
         )}
+
+        {/* Hero image (Gemini, design contract A2) */}
+        <HeroImageTool
+          postId={post!.id}
+          title={post!.title}
+          currentImage={post!.image_url ?? post!.og_image ?? null}
+          onSaved={() => state.refetch()}
+        />
 
         {/* Dual-language SPLIT editor (design contract A1) */}
         <LangSplit
