@@ -1349,3 +1349,54 @@
   display: flex; justify-content: space-between; gap: 10px;
 }
 .write-cms .stage-error button { border: 0; background: none; color: #c00; cursor: pointer; }
+
+/* ── Dual-language SPLIT editor (design contract A1) ──────────────────────── */
+.write-cms .lang-split-wrap { padding: 0; }
+.write-cms .paper-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px var(--s-4, 16px);
+  border-bottom: 1.5px solid var(--line, rgba(0,0,0,0.1));
+  flex-wrap: wrap;
+}
+.write-cms .lang-tabs { display: inline-flex; gap: 2px; background: var(--bg-1, rgba(0,0,0,0.04)); border-radius: 7px; padding: 3px; }
+.write-cms .lang-tab {
+  border: 0; background: transparent; cursor: pointer;
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em;
+  padding: 5px 11px; border-radius: 5px; color: var(--ink-3);
+  transition: background 0.15s, color 0.15s;
+}
+.write-cms .lang-tab:hover { color: var(--ink-1); }
+.write-cms .lang-tab.on { background: var(--bg-0, #fff); color: var(--ink-0); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.write-cms .paper-head-end { display: inline-flex; align-items: center; gap: 12px; }
+.write-cms .lang-stats { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
+.write-cms .translate-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1.5px solid var(--line, rgba(0,0,0,0.18)); background: var(--bg-0, #fff);
+  font-family: var(--font-mono); font-size: 11px; color: var(--ink-1);
+  padding: 5px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+.write-cms .translate-chip:hover { border-color: var(--ink-0); }
+.write-cms .translate-chip.working { color: var(--scheduled, #b8860b); border-color: var(--scheduled, #b8860b); cursor: wait; }
+.write-cms .translate-chip.done { color: var(--live, #1d7f4e); border-color: var(--live, #1d7f4e); }
+.write-cms .translate-chip:disabled { opacity: 0.7; }
+
+.write-cms .editor-body { display: block; }
+.write-cms .editor-body.split { display: grid; grid-template-columns: 1fr 1px 1fr; }
+.write-cms .editor-body .lang-col { min-width: 0; transition: opacity 0.3s ease; }
+.write-cms .editor-body .lang-col.dim { opacity: 0.55; }
+.write-cms .editor-body .lang-col.dim:focus-within { opacity: 1; }
+.write-cms .lang-divider { background: var(--line, rgba(0,0,0,0.1)); }
+.write-cms .lang-tag {
+  font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--ink-3); padding: var(--s-3, 12px) var(--s-4, 16px) 0;
+}
+.write-cms .lang-tag-busy { color: var(--scheduled, #b8860b); }
+.write-cms .lang-tag-done { color: var(--live, #1d7f4e); }
+.write-cms .split-error {
+  margin: 8px var(--s-4, 16px) 12px; padding: 7px 11px; border: 1.5px solid #c00; border-radius: 6px;
+  color: #c00; font-family: var(--font-mono); font-size: 11px;
+  display: flex; justify-content: space-between; gap: 8px;
+}
+.write-cms .split-error button { border: 0; background: none; color: #c00; cursor: pointer; }
+@media (max-width: 900px) { .write-cms .editor-body.split { grid-template-columns: 1fr; } .write-cms .lang-divider { display: none; } }

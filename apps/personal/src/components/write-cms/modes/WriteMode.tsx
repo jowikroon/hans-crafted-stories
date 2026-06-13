@@ -4,7 +4,7 @@ import { usePostAutosave, type SaveStatus } from "../hooks/usePostAutosave";
 import { usePublish } from "../hooks/usePublish";
 import { useReviews } from "../hooks/useReviews";
 import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/useVoiceTemplate";
-import RichEditor from "../write/RichEditor";
+import LangSplit from "../write/LangSplit";
 import OutlinePanel from "../write/OutlinePanel";
 import IdeaBubble from "../write/IdeaBubble";
 
@@ -268,35 +268,15 @@ export default function WriteMode({ postId }: { postId?: string }) {
           </div>
         )}
 
-        {/* EN content */}
-        <div className="paper paper--editor-en" style={{ minHeight: 200 }}>
-          <div className="eyebrow" style={{ padding: "var(--s-3) var(--s-4) 0" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-3)" }}>EN</span>
-          </div>
-          <RichEditor
-            docKey={`${post!.id}:en`}
-            value={autosave.fields.content}
-            placeholder="Start writing EN content..."
-            onChange={(md) => autosave.setField("content", md)}
-            bannedWords={voiceTemplate?.banned_words ?? []}
-            lang="en"
-          />
-        </div>
-
-        {/* NL content */}
-        <div className="paper" style={{ minHeight: 120, marginTop: "var(--s-3)" }}>
-          <div className="eyebrow" style={{ padding: "var(--s-3) var(--s-4) 0" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-3)" }}>NL</span>
-          </div>
-          <RichEditor
-            docKey={`${post!.id}:nl`}
-            value={autosave.fields.content_nl}
-            placeholder="Start writing NL content..."
-            onChange={(md) => autosave.setField("content_nl", md)}
-            bannedWords={voiceTemplate?.banned_words ?? []}
-            lang="nl"
-          />
-        </div>
+        {/* Dual-language SPLIT editor (design contract A1) */}
+        <LangSplit
+          postId={post!.id}
+          contentEN={autosave.fields.content}
+          contentNL={autosave.fields.content_nl}
+          onChangeEN={(md) => autosave.setField("content", md)}
+          onChangeNL={(md) => autosave.setField("content_nl", md)}
+          bannedWords={voiceTemplate?.banned_words ?? []}
+        />
 
         {/* Draggable idea bubble — page-session only */}
         <IdeaBubble
