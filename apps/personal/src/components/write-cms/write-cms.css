@@ -1682,3 +1682,28 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
 .write-cms .an-kw-sortbar { display: flex; gap: 4px; margin-top: 4px; }
 .write-cms .an-kw-sort { border: 1px solid var(--line, rgba(0,0,0,0.14)); background: var(--bg-0, #fff); cursor: pointer; font-family: var(--font-mono); font-size: 10px; padding: 3px 8px; border-radius: 5px; color: var(--ink-2); }
 .write-cms .an-kw-sort.on { border-color: var(--ink-0); color: var(--ink-0); font-weight: 600; }
+
+/* ── Pre-flight options (design contract B2) ──────────────────────────────── */
+.write-cms .preflight { margin-top: 10px; border: 1.5px solid var(--line, rgba(0,0,0,0.12)); border-radius: 9px; overflow: hidden; }
+.write-cms .preflight .yt-preview { margin: 0; border: 0; border-bottom: 1px solid var(--line, rgba(0,0,0,0.1)); }
+.write-cms .preflight-options { padding: 10px 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.write-cms .preflight-opt { display: flex; align-items: center; gap: 7px; }
+.write-cms .preflight-lab { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); }
+.write-cms .preflight-chips { display: inline-flex; gap: 4px; }
+.write-cms .lang-chip { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--line, rgba(0,0,0,0.16)); color: var(--ink-2); }
+.write-cms .lang-chip.on { border-color: var(--live, #1d7f4e); color: var(--live, #1d7f4e); background: color-mix(in srgb, var(--live, #1d7f4e) 8%, transparent); }
+.write-cms .preflight-est { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+
+/* ── Alt-actions (design contract B3) ─────────────────────────────────────── */
+.write-cms .alt-actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.write-cms .alt-action { border: 1.5px solid var(--line, rgba(0,0,0,0.18)); background: var(--bg-0, #fff); cursor: pointer; font-size: 12.5px; padding: 6px 12px; border-radius: 7px; }
+.write-cms .alt-action:hover { border-color: var(--ink-0); }
+.write-cms .alt-action-meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); }
+
+/* ── Search Console briefs (design contract A11) ──────────────────────────── */
+.write-cms .sc-briefs-list { display: flex; flex-direction: column; gap: 7px; padding: 4px 0; }
+.write-cms .sc-brief { padding: 6px 0; border-bottom: 1px solid var(--line, rgba(0,0,0,0.07)); }
+.write-cms .sc-brief-q { font-size: 12.5px; line-height: 1.35; }
+.write-cms .sc-brief-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); margin-top: 3px; }
+.write-cms .sc-brief-tag { color: var(--accent, #b8860b); }
+.write-cms .sc-briefs-foot { font-size: 10.5px; color: var(--ink-3); margin-top: 8px; line-height: 1.5; }

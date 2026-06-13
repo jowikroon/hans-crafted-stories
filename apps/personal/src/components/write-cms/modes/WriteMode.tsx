@@ -9,6 +9,7 @@ import HeroImageTool from "../write/HeroImageTool";
 import ScoreCards from "../write/ScoreCards";
 import TipCards, { buildRichTips } from "../write/TipCards";
 import BlogLibrary from "../write/BlogLibrary";
+import SCBriefs from "../write/SCBriefs";
 import OutlinePanel from "../write/OutlinePanel";
 import IdeaBubble from "../write/IdeaBubble";
 
@@ -323,6 +324,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
       <aside className="rail">
         {/* Outline — heading map of the EN draft */}
         <OutlinePanel markdown={autosave.fields.content} editorSelector=".paper--editor-en" />
+        <SCBriefs />
 
         {/* Voice coaching card */}
         {voiceTemplate && (
