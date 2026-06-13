@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { HoverChart, InsightCards, DrilldownDrawer, type DrillPost } from "./AnalyticsExtras";
 
 interface PostMetric {
   id: string;
@@ -26,33 +27,13 @@ interface Dashboard {
   errors?: { ga4?: string; gsc?: string };
 }
 
-// Inline sparkline from a sessions series.
-function Sparkline({ series }: { series: SeriesPoint[] }) {
-  if (!series || series.length < 2) return null;
-  const w = 600, h = 120, pad = 6;
-  const vals = series.map((p) => p.value);
-  const min = Math.min(...vals), max = Math.max(...vals);
-  const span = max - min || 1;
-  const pts = series.map((p, i) => {
-    const x = pad + (i / (series.length - 1)) * (w - pad * 2);
-    const y = h - pad - ((p.value - min) / span) * (h - pad * 2);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  });
-  const area = `M${pts[0]} L${pts.join(" L")} L${(w - pad).toFixed(1)},${h - pad} L${pad},${h - pad} Z`;
-  return (
-    <svg className="chart-svg" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-      <path d={area} fill="var(--ink-0)" opacity="0.06" />
-      <polyline points={pts.join(" ")} fill="none" stroke="var(--ink-0)" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
 export default function AnalyticsMode() {
   const [posts, setPosts] = useState<PostMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [dash, setDash] = useState<Dashboard | null>(null);
   const [dashLoading, setDashLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [drill, setDrill] = useState<DrillPost | null>(null);
 
   // Content metrics from blog_posts (always available; kept as the editorial layer).
   useEffect(() => {
@@ -161,7 +142,7 @@ export default function AnalyticsMode() {
       {ga4?.series && ga4.series.length > 1 && (
         <div className="chart-card">
           <h3>Sessions · last 30 days <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>from Google Analytics 4</span></h3>
-          <Sparkline series={ga4.series} />
+          <HoverChart series={ga4.series} />
         </div>
       )}
 
@@ -192,6 +173,33 @@ export default function AnalyticsMode() {
                   {q.ctr != null ? `${q.ctr}%` : "–"} · #{q.position != null ? Math.round(q.position) : "–"}
                 </span>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* AI insight cards (design contract D1) */}
+      <InsightCards
+        statsSummary={[
+          `${stats.total} artikelen (${stats.live} live, ${stats.drafts} drafts)`,
+          ga4 ? `GA4 sessions 30d: ${ga4.sessions_30d} (${ga4.sessions_change_pct != null ? (ga4.sessions_change_pct >= 0 ? "+" : "") + ga4.sessions_change_pct + "%" : "—"})` : "GA4: niet verbonden",
+          ga4?.top_pages?.[0] ? `Top page: ${ga4.top_pages[0].title || ga4.top_pages[0].path} (${ga4.top_pages[0].sessions} sessions)` : "",
+          gsc ? `GSC: ${gsc.impressions} impressies, CTR ${gsc.ctr ?? "—"}%, gem. positie ${gsc.position != null ? Math.round(gsc.position) : "—"}` : "GSC: niet verbonden",
+          gsc?.queries?.[0] ? `Top query: ${gsc.queries[0].query} (pos ${gsc.queries[0].position != null ? Math.round(gsc.queries[0].position) : "—"})` : "",
+          `Categorieen: ${stats.topCategories.map(([c, n]) => `${c} ${n}`).join(", ")}`,
+        ].filter(Boolean).join(". ")}
+      />
+
+      {/* Per-post drilldown list (design contract D3) */}
+      {posts.length > 0 && (
+        <div className="chart-card">
+          <h3>Per artikel <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>klik voor drilldown</span></h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, padding: "var(--s-3) 0" }}>
+            {posts.slice(0, 12).map((p) => (
+              <button key={p.id} className="an-post-row" onClick={() => setDrill(p as DrillPost)}>
+                <span className="an-post-title" title={p.title}>{p.title}</span>
+                <span className="an-post-meta">{(p.word_count ?? 0).toLocaleString()}w · SEO {p.seo_score ?? "–"}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -247,6 +255,7 @@ export default function AnalyticsMode() {
           </div>
         </div>
       )}
+    <DrilldownDrawer post={drill} onClose={() => setDrill(null)} />
     </main>
   );
 }
