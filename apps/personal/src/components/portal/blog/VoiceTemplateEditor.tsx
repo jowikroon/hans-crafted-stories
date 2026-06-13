@@ -936,9 +936,35 @@ function CompletionWizard({ template }: { template: VTFull | null }) {
 // ─── Google Ads audience picker (design contract #17) ─────────────────────
 const AUDIENCE_SEP = "; ";
 
+const FIND_TOPICS = ["Amazon NL", "Bol.com", "Marketplace strategie", "E-commerce UX", "AI in e-commerce", "Advertising/PPC", "Logistiek/fulfilment", "Conversie/CRO", "Internationale expansie"];
+const FIND_GOALS = ["Leads voor advisory", "Merkautoriteit", "Bereik nieuwe sellers", "Bestaande klanten binden", "Recruitment/employer brand", "Productlaunch"];
+
 function AudiencePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [tab, setTab] = useState<"browse" | "find">("browse");
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<(typeof AUDIENCE_CATEGORIES)[number] | "All">("All");
+  const [findTopic, setFindTopic] = useState<string | null>(null);
+  const [findGoal, setFindGoal] = useState<string | null>(null);
+  const [findBusy, setFindBusy] = useState(false);
+  const [findPicks, setFindPicks] = useState<string[]>([]);
+  const [findErr, setFindErr] = useState<string | null>(null);
+
+  const runFind = async () => {
+    if (!findTopic || !findGoal) return;
+    setFindBusy(true); setFindErr(null); setFindPicks([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("claude-proxy", {
+        body: { model: "claude-haiku-4-5-20251001", max_tokens: 500, messages: [{ role: "user", content: `Geef 6 concrete Google Ads audience-segmenten voor Hans van Leeuwen (NL e-commerce). Topic: ${findTopic}. Doel: ${findGoal}. Reply met ALLEEN een JSON-array van 6 korte strings, geen markdown.` }] },
+      });
+      if (error) throw new Error(error.message);
+      const txt = (data as { content?: { text?: string }[] })?.content?.[0]?.text ?? "[]";
+      const cleaned = txt.replace(/^```json?\s*/i, "").replace(/```\s*$/, "").trim();
+      const arr = JSON.parse(cleaned);
+      setFindPicks(Array.isArray(arr) ? arr.map(String).slice(0, 6) : []);
+    } catch (e) {
+      setFindErr(e instanceof Error ? e.message : "Generatie mislukt");
+    } finally { setFindBusy(false); }
+  };
 
   const selected = useMemo(
     () => value.split(AUDIENCE_SEP).map((s) => s.trim()).filter(Boolean),
@@ -979,6 +1005,52 @@ function AudiencePicker({ value, onChange }: { value: string; onChange: (v: stri
         ))}
       </div>
 
+      {/* Browse / Find tabs */}
+      <div className="flex gap-2">
+        {(["browse", "find"] as const).map((t) => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`px-3 py-1.5 rounded text-[11px] uppercase tracking-wider border ${tab === t ? "border-primary text-primary bg-primary/10" : "border-border/60 text-muted-foreground"}`}>
+            {t === "browse" ? "Browse Google Ads" : "✦ Find for me"}
+          </button>
+        ))}
+      </div>
+
+      {tab === "find" && (
+        <div className="flex flex-col gap-3 border border-border/60 rounded-lg p-4" style={{ background: "hsl(var(--card) / 0.4)" }}>
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">01 · Topic</div>
+            <div className="flex gap-1.5 flex-wrap">
+              {FIND_TOPICS.map((t) => (
+                <button key={t} onClick={() => setFindTopic(t)} className={`px-2.5 py-1 rounded text-[11.5px] border ${findTopic === t ? "border-primary bg-primary/10 text-primary" : "border-border/60 text-muted-foreground"}`}>{t}</button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">02 · Doel</div>
+            <div className="flex gap-1.5 flex-wrap">
+              {FIND_GOALS.map((g) => (
+                <button key={g} onClick={() => setFindGoal(g)} className={`px-2.5 py-1 rounded text-[11.5px] border ${findGoal === g ? "border-primary bg-primary/10 text-primary" : "border-border/60 text-muted-foreground"}`}>{g}</button>
+              ))}
+            </div>
+          </div>
+          <Button size="sm" onClick={runFind} disabled={!findTopic || !findGoal || findBusy} className="gap-2 w-fit">
+            <Sparkles size={13} /> {findBusy ? "Genereren…" : "Generate audiences"}
+          </Button>
+          {findErr && <div className="text-[11px] text-red-500">{findErr}</div>}
+          {findPicks.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {findPicks.map((p) => (
+                <button key={p} onClick={() => { if (!selected.includes(p)) onChange([...selected, p].join(AUDIENCE_SEP)); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded border border-dashed border-primary/60 text-[12px] hover:bg-primary/5 text-left">
+                  <Check size={12} className="text-primary shrink-0" />{p}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "browse" && <>
       {/* Category tabs + search */}
       <div className="flex gap-2 flex-wrap items-center">
         {(["All", ...AUDIENCE_CATEGORIES] as const).map((c) => (
@@ -1019,6 +1091,8 @@ function AudiencePicker({ value, onChange }: { value: string; onChange: (v: stri
           <span className="text-[12px] text-muted-foreground">Geen matches — pas je zoekterm of categorie aan.</span>
         )}
       </div>
+
+      </>}
 
       {/* Free text fallback (stays the source of truth) */}
       <Field label="target_audience (vrije tekst — picker schrijft hierin)">

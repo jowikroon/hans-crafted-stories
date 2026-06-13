@@ -1677,3 +1677,8 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
 .write-cms .tpl-pop-empty { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); line-height: 1.5; }
 .write-cms .tpl-pop-item { border: 1px solid var(--line, rgba(0,0,0,0.12)); background: var(--bg-1, rgba(0,0,0,0.02)); cursor: pointer; font-size: 12px; padding: 6px 9px; border-radius: 5px; text-align: left; }
 .write-cms .tpl-pop-item:hover { border-color: var(--ink-0); }
+
+/* ── Analytics sortable columns (design contract D4) ──────────────────────── */
+.write-cms .an-kw-sortbar { display: flex; gap: 4px; margin-top: 4px; }
+.write-cms .an-kw-sort { border: 1px solid var(--line, rgba(0,0,0,0.14)); background: var(--bg-0, #fff); cursor: pointer; font-family: var(--font-mono); font-size: 10px; padding: 3px 8px; border-radius: 5px; color: var(--ink-2); }
+.write-cms .an-kw-sort.on { border-color: var(--ink-0); color: var(--ink-0); font-weight: 600; }
