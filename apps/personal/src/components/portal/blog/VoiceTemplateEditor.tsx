@@ -33,6 +33,7 @@ interface VTFull extends VT {
   strengths: string[];
   watch_outs: string[];
   unique_markers: string[];
+  tone_per_section: Record<string, string>;
 }
 
 const WRITING_STYLE_RULES: { key: string; label: string }[] = [
@@ -593,6 +594,21 @@ export default function VoiceTemplateEditor() {
               onChange={(v) => patch({ unique_markers: v })}
               placeholder="+ unique marker"
             />
+            <Field label="Tone per sectie — verschillende toon per deel van het artikel">
+              <div className="flex flex-col gap-2">
+                {["Opening", "Probleem", "Kern/Framework", "Bewijs", "Slot"].map((sec) => (
+                  <div key={sec} className="flex items-center gap-3">
+                    <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground w-28 shrink-0">{sec}</span>
+                    <input
+                      className="input-base flex-1"
+                      value={(active.tone_per_section ?? {})[sec] ?? ""}
+                      onChange={(e) => patch({ tone_per_section: { ...(active.tone_per_section ?? {}), [sec]: e.target.value } })}
+                      placeholder={sec === "Opening" ? "bv. persoonlijk, hakend" : sec === "Slot" ? "bv. declaratief, kort" : "bv. analytisch"}
+                    />
+                  </div>
+                ))}
+              </div>
+            </Field>
           </FormSection>
 
           {/* 11 TARGET AUDIENCE — Google Ads audience picker (design contract #17) */}

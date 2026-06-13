@@ -48,6 +48,13 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const [showSchedule, setShowSchedule] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [linkTargets, setLinkTargets] = useState<{ title: string; slug: string }[]>([]);
+  useEffect(() => {
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      supabase.from("blog_posts").select("title, slug").eq("status", "published").eq("published", true).limit(30)
+        .then(({ data }) => { if (data) setLinkTargets(data as { title: string; slug: string }[]); });
+    });
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -313,6 +320,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
           onChangeEN={(md) => autosave.setField("content", md)}
           onChangeNL={(md) => autosave.setField("content_nl", md)}
           bannedWords={voiceTemplate?.banned_words ?? []}
+          linkTargets={linkTargets.filter((t) => t.slug !== post!.slug)}
         />
 
         {/* Draggable idea bubble — page-session only */}
