@@ -1050,11 +1050,18 @@
    left mode-rail (Write/Manage/Voice/Analytics) beside the active mode. */
 .write-cms .cc-frame {
   display: flex; align-items: flex-start; gap: var(--s-5);
-  max-width: 1680px; margin: 0 auto; padding: var(--s-6) var(--s-5) 0;
+  max-width: 1240px; margin: 0 auto; padding: var(--s-6) var(--s-5) 0;
 }
 .write-cms .cc-frame > .modes { flex: 0 0 188px; width: 188px; }
 .write-cms .cc-stage { flex: 1 1 auto; min-width: 0; }
 .write-cms .cc-stage .shell { padding-top: var(--s-3); }
+/* compact-layout fix (2026-06-13): the mode rail already lives in .cc-frame,
+   so the inner .shell must NOT re-center or cap width — that double container
+   was what pushed content away from the rail. Inside the stage the shell is
+   full-width of the stage column. */
+.write-cms .cc-stage .shell {
+  max-width: none; margin: 0; padding-left: 0; padding-right: 0;
+}
 .write-cms .mode .mode-l { display: inline-flex; align-items: center; gap: 9px; }
 .write-cms .mode .mode-l svg { width: 15px; height: 15px; flex-shrink: 0; }
 .write-cms .mode .mode-c {
@@ -1711,3 +1718,62 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
 /* ── Inline internal-link suggestie (design contract A8) ──────────────────── */
 .write-cms .pq-suggest.link-suggest { border-color: var(--scheduled, #2a6ea8); background: color-mix(in srgb, var(--scheduled, #2a6ea8) 6%, transparent); }
 .write-cms .pq-suggest.link-suggest .pq-wrap { border-color: var(--scheduled, #2a6ea8); color: var(--scheduled, #2a6ea8); }
+
+/* ============================= VOICE editor (inline, Phase 4, 2026-06-13) ===== */
+.write-cms .voice-stat { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); margin-top: 6px; }
+.write-cms .voice-stat strong { color: var(--ink-0); }
+.write-cms .voice-grid { display: grid; grid-template-columns: 248px minmax(0,1fr); gap: var(--s-5); align-items: start; margin-top: var(--s-6); }
+@media (max-width: 720px) { .write-cms .voice-grid { grid-template-columns: 1fr; } }
+
+.write-cms .voice-list { display: flex; flex-direction: column; gap: var(--s-2); position: sticky; top: 88px; }
+.write-cms .voice-new { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px; border: 1.5px dashed var(--ink-0); border-radius: var(--r-2); background: var(--bg-inset, var(--bg-2)); font-weight: 700; font-size: 13px; }
+.write-cms .voice-new:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink-0); }
+.write-cms .voice-new .kbd { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px; padding: 2px 5px; }
+.write-cms .voice-row { text-align: left; padding: 12px 13px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--bg-1); display: flex; flex-direction: column; gap: 5px; transition: border-color 120ms, transform 120ms; }
+.write-cms .voice-row:hover { border-color: var(--ink-0); transform: translateX(2px); }
+.write-cms .voice-row.active { border-color: var(--ink-0); box-shadow: 2px 2px 0 var(--ink-0); background: var(--bg-inset, var(--bg-2)); }
+.write-cms .vr-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.write-cms .vr-name { font-weight: 700; font-size: 14px; letter-spacing: -0.01em; }
+.write-cms .vr-tag { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-fg); background: var(--accent); border-radius: 3px; padding: 2px 5px; }
+.write-cms .vr-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
+.write-cms .voice-empty { color: var(--ink-2); font-size: 14px; }
+
+.write-cms .voice-editor { background: var(--bg-1); border: 1.5px solid var(--ink-0); border-radius: var(--r-2); box-shadow: var(--shadow-stamp-sm, 4px 4px 0 var(--ink-0)); overflow: hidden; }
+.write-cms .ve-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+.write-cms .ve-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); display: block; margin-bottom: 6px; }
+.write-cms .ve-name { font-weight: 800; font-size: 24px; letter-spacing: -0.02em; width: 100%; }
+.write-cms .ve-name::placeholder { color: var(--ink-3); }
+.write-cms .ve-titleblock { flex: 1; min-width: 0; }
+.write-cms .ve-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+.write-cms .ve-danger { color: var(--draft); border-color: var(--draft); }
+.write-cms .stamp-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+.write-cms .ve-form { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 560px) { .write-cms .ve-form { grid-template-columns: 1fr; } }
+.write-cms .ve-field { display: flex; flex-direction: column; gap: 6px; }
+.write-cms .ve-field.full { grid-column: 1 / -1; }
+.write-cms .ve-label { font-weight: 700; font-size: 13px; }
+.write-cms .ve-help { font-family: var(--font-mono); font-size: 10px; line-height: 1.4; color: var(--ink-2); }
+.write-cms .ve-field textarea, .write-cms .ve-field input[type="text"] { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; background: var(--bg-inset, var(--bg-2)); border: 1px solid var(--line); border-radius: var(--r-1); padding: 10px 11px; resize: vertical; transition: border-color 120ms, box-shadow 120ms; }
+.write-cms .ve-field textarea:focus, .write-cms .ve-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft, transparent); }
+.write-cms .ve-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.write-cms .ve-chip { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--line); border-radius: 18px; padding: 5px 10px; background: var(--bg-2); color: var(--ink-1); text-transform: lowercase; }
+.write-cms .ve-chip.on { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.write-cms .ve-toggle { display: inline-flex; align-items: center; gap: 9px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-1); cursor: pointer; }
+.write-cms .ve-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.write-cms .ve-toggle .sw { width: 38px; height: 22px; border-radius: 12px; background: var(--bg-3); border: 1px solid var(--line); position: relative; transition: background 160ms; }
+.write-cms .ve-toggle .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg-1); transition: transform 160ms; }
+.write-cms .ve-toggle input:checked + .sw { background: var(--live, #2D9255); }
+.write-cms .ve-toggle input:checked + .sw::after { transform: translateX(16px); }
+.write-cms .tag-input { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: var(--bg-inset, var(--bg-2)); border: 1px solid var(--line); border-radius: var(--r-1); padding: 7px 8px; min-height: 42px; }
+.write-cms .tag-input input { flex: 1; min-width: 120px; font-family: var(--font-mono); font-size: 12px; padding: 3px; }
+.write-cms .tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; background: var(--draft-soft, #B8443222); color: var(--draft); border-radius: 14px; padding: 4px 9px; }
+.write-cms .tag.req { background: var(--scheduled-soft, #2A6EA822); color: var(--scheduled, #2A6EA8); }
+.write-cms .tag .x { cursor: pointer; font-weight: 700; opacity: 0.7; }
+.write-cms .tag .x:hover { opacity: 1; }
+.write-cms .ex-list { display: flex; flex-direction: column; gap: 8px; }
+.write-cms .ex-row { display: flex; gap: 8px; }
+.write-cms .ex-row input { flex: 1; }
+.write-cms .ex-del { border: 1px solid var(--line); border-radius: var(--r-1); background: var(--bg-1); color: var(--ink-2); width: 36px; flex-shrink: 0; }
+.write-cms .ex-add { align-self: flex-start; font-family: var(--font-mono); font-size: 11px; color: var(--ink-1); background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--r-1); padding: 7px 11px; }
+.write-cms .voice-toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--ink-0); color: var(--bg-0); font-family: var(--font-mono); font-size: 12px; padding: 10px 16px; border-radius: var(--r-1); box-shadow: 0 8px 24px #0003; z-index: 80; }
