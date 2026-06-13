@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ManageSourceBar from "../manage/ManageSourceBar";
+import PromptTemplates from "../manage/PromptTemplates";
 import { useBlogInitWorkflow } from "../manage/useBlogInitWorkflow";
 
 interface BlogPost {
@@ -111,6 +112,7 @@ export default function ManageMode() {
 
       {/* ── SourceBar — YouTube → n8n Ghost Writer pipeline ── */}
       <ManageSourceBar workflow={workflow} category="general" />
+      <PromptTemplates category="professional" />
 
       {/* ── Posts table ── */}
       <div className="posts-wrap" style={{ marginTop: "var(--s-5)" }}>
