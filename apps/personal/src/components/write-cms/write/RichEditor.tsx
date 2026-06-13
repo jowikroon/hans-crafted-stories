@@ -29,6 +29,9 @@ type AiAction = "tighten" | "translate" | null;
 export default function RichEditor({ docKey, value, onChange, placeholder, bannedWords, lang }: RichEditorProps) {
   const [aiBusy, setAiBusy] = useState<AiAction>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [showTplPop, setShowTplPop] = useState(false);
+  const [tplName, setTplName] = useState("");
+  const [pqHint, setPqHint] = useState<string | null>(null);
   const loadedKey = useRef<string | null>(null);
 
   const editor = useEditor({
@@ -64,6 +67,56 @@ export default function RichEditor({ docKey, value, onChange, placeholder, banne
   useEffect(() => {
     if (editor) editor.commands.setBannedWords(bannedWords);
   }, [editor, bannedWords.join("|")]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pull-quote auto-suggest (design contract A7): debounced scan for strong claim sentences.
+  useEffect(() => {
+    if (!editor) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const CLAIM_RX = /\b(nooit|altijd|de meeste|in de praktijk|de echte|niemand|iedereen|het probleem is|de waarheid is|never|always|the real|actually)\b/i;
+    const scan = () => {
+      const text = editor.getText();
+      const sentence = text.split(/(?<=[.!?])\s+/).find((s) => {
+        const w = s.trim().split(/\s+/).length;
+        return w >= 12 && w <= 40 && CLAIM_RX.test(s);
+      });
+      setPqHint(sentence ? sentence.trim() : null);
+    };
+    const onUpdate = () => { if (timer) clearTimeout(timer); timer = setTimeout(scan, 1200); };
+    editor.on("update", onUpdate);
+    scan();
+    return () => { editor.off("update", onUpdate); if (timer) clearTimeout(timer); };
+  }, [editor]);
+
+  const wrapPullQuote = useCallback(() => {
+    if (!editor || !pqHint) return;
+    // Append the strong sentence as a pull-quote blockquote (simple + robust).
+    editor.chain().focus("end").insertContent(`<blockquote><p>${pqHint}</p></blockquote>`).run();
+    setPqHint(null);
+  }, [editor, pqHint]);
+
+  const TPL_KEY = "hvl_write_templates_v1";
+  const loadTpls = (): { name: string; html: string }[] => {
+    try { return JSON.parse(localStorage.getItem(TPL_KEY) || "[]"); } catch { return []; }
+  };
+  const saveSelectionAsTpl = useCallback(() => {
+    if (!editor || !tplName.trim()) return;
+    const { from, to } = editor.state.selection;
+    const slice = editor.state.doc.cut(from, to);
+    const tmp = document.createElement("div");
+    // serialize selection as text fallback (keeps it simple + robust)
+    const txt = editor.state.doc.textBetween(from, to, "\n");
+    tmp.textContent = txt;
+    const tpls = loadTpls();
+    tpls.unshift({ name: tplName.trim(), html: `<p>${tmp.innerHTML}</p>` });
+    localStorage.setItem(TPL_KEY, JSON.stringify(tpls.slice(0, 12)));
+    setTplName("");
+    void slice;
+  }, [editor, tplName]);
+  const insertTpl = useCallback((html: string) => {
+    if (!editor) return;
+    editor.chain().focus().insertContent(html).run();
+    setShowTplPop(false);
+  }, [editor]);
 
   const runAi = useCallback(
     async (action: Exclude<AiAction, null>) => {
@@ -134,9 +187,33 @@ export default function RichEditor({ docKey, value, onChange, placeholder, banne
           <Btn title={`Translate selection to ${lang === "en" ? "NL" : "EN"}`} disabled={aiBusy !== null} onClick={() => runAi("translate")}>
             {aiBusy === "translate" ? "…" : lang === "en" ? "→NL" : "→EN"}
           </Btn>
+          <Btn title="Templates — selectie opslaan / invoegen" active={showTplPop} onClick={() => setShowTplPop((v) => !v)}>❖</Btn>
         </div>
       </BubbleMenu>
+
+      {showTplPop && (
+        <div className="tpl-pop">
+          <div className="tpl-pop-row">
+            <input className="tpl-pop-input" placeholder="Naam selectie…" value={tplName} onChange={(e) => setTplName(e.target.value)} />
+            <button className="tpl-pop-save" onClick={saveSelectionAsTpl} disabled={!tplName.trim()}>+ Bewaar</button>
+          </div>
+          <div className="tpl-pop-list">
+            {loadTpls().length === 0 ? (
+              <div className="tpl-pop-empty">Nog geen templates — selecteer tekst en bewaar.</div>
+            ) : loadTpls().map((t, i) => (
+              <button key={i} className="tpl-pop-item" onClick={() => insertTpl(t.html)}>{t.name}</button>
+            ))}
+          </div>
+        </div>
+      )}
       <EditorContent editor={editor} />
+      {pqHint && (
+        <div className="pq-suggest">
+          <span className="pq-glyph">✦</span> Pull-quote-kans gevonden
+          <button className="pq-wrap" onClick={wrapPullQuote}>Wrap</button>
+          <button className="pq-x" onClick={() => setPqHint(null)}>×</button>
+        </div>
+      )}
       {aiError && (
         <div className="editor-ai-error">
           {aiError}
