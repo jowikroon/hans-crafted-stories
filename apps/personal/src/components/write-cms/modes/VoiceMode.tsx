@@ -89,7 +89,6 @@ export default function VoiceMode() {
     reload().then((l) => {
       if (l.length) { setActiveId(l[0].id); setDraft({ ...l[0] }); }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const select = (r: VoiceRow) => {

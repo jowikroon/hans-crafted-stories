@@ -10,10 +10,10 @@ interface SeriesPoint { date: string; value: number }
 export function HoverChart({ series }: { series: SeriesPoint[] }) {
   const [hover, setHover] = useState<{ x: number; i: number } | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
-  if (!series || series.length < 2) return null;
+  const ok = !!series && series.length >= 2;
 
   const w = 600, h = 140, pad = 8;
-  const vals = series.map((p) => p.value);
+  const vals = (series ?? []).map((p) => p.value);
   const min = Math.min(...vals), max = Math.max(...vals);
   const span = max - min || 1;
   const xy = series.map((p, i) => ({
@@ -32,7 +32,8 @@ export function HoverChart({ series }: { series: SeriesPoint[] }) {
     setHover({ x: xy[nearest].x, i: nearest });
   }, [xy]);
 
-  const hp = hover ? { ...xy[hover.i], pt: series[hover.i] } : null;
+  const hp = hover && ok ? { ...xy[hover.i], pt: series[hover.i] } : null;
+  if (!ok) return null;
 
   return (
     <div className="an-chart-wrap">

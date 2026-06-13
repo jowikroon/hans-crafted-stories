@@ -25,9 +25,11 @@ const cors = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
+type AnyRow = Record<string, unknown> & { dimensionValues?: { value?: string }[]; keys?: string[]; clicks?: number; impressions?: number; position?: number; ctr?: number };
+
 // ---------- helpers ----------
 function b64url(bytes: Uint8Array): string {
-  let s = btoa(String.fromCharCode(...bytes));
+  const s = btoa(String.fromCharCode(...bytes));
   return s.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 function pemToDer(pem: string): Uint8Array {
@@ -42,7 +44,7 @@ function ymd(d: Date): string {
 }
 
 // Mint a Google OAuth2 access token from the service-account JSON.
-async function getAccessToken(sa: any): Promise<string> {
+async function getAccessToken(sa: Record<string, unknown>): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const header = { alg: "RS256", typ: "JWT" };
   const claim = {
@@ -121,7 +123,7 @@ async function fetchGA4(token: string) {
     }
   }
   series.sort((a, b) => a.date.localeCompare(b.date));
-  const top_pages = (pagesRep?.rows ?? []).map((r: any) => ({
+  const top_pages = (pagesRep?.rows ?? []).map((r: AnyRow) => ({
     path: r.dimensionValues?.[0]?.value ?? "",
     title: r.dimensionValues?.[1]?.value ?? "",
     sessions: Number(r.metricValues?.[0]?.value ?? 0),
@@ -139,7 +141,7 @@ async function fetchGSC(token: string) {
     });
     const ld = await lr.json();
     if (!lr.ok) throw new Error(`gsc sites: ${JSON.stringify(ld)}`);
-    const entries: any[] = ld.siteEntry ?? [];
+    const entries: AnyRow[] = ld.siteEntry ?? [];
     const domainMatch = entries.find((e) => e.siteUrl === "sc-domain:hansvanleeuwen.com");
     const anyMatch = entries.find((e) => (e.siteUrl || "").includes("hansvanleeuwen.com"));
     site = (domainMatch || anyMatch || {}).siteUrl || "";
@@ -169,7 +171,7 @@ async function fetchGSC(token: string) {
     ctr: t.ctr != null ? Math.round(t.ctr * 1000) / 10 : null, // %
     position: t.position != null ? Math.round(t.position * 10) / 10 : null,
     pages_with_traffic: (pages.rows ?? []).length,
-    queries: (queries.rows ?? []).map((r: any) => ({
+    queries: (queries.rows ?? []).map((r: AnyRow) => ({
       query: r.keys?.[0] ?? "",
       clicks: Math.round(r.clicks ?? 0),
       impressions: Math.round(r.impressions ?? 0),
@@ -229,7 +231,7 @@ Deno.serve(async (req) => {
     return json({ ok: false, configured: false, error: "GOOGLE_SA_KEY not set" }, 200);
   }
 
-  let payload: any = { ok: true, configured: true, generated_at: new Date().toISOString(), range_days: 30, errors: {} };
+  const payload: Record<string, unknown> = { ok: true, configured: true, generated_at: new Date().toISOString(), range_days: 30, errors: {} };
   try {
     const sa = JSON.parse(saRaw);
     const token = await getAccessToken(sa);
