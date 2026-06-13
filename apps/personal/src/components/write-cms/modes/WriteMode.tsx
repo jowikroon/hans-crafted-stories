@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useBlogPost } from "../hooks/useBlogPost";
 import { usePostAutosave, type SaveStatus } from "../hooks/usePostAutosave";
 import { usePublish } from "../hooks/usePublish";
@@ -8,6 +8,7 @@ import LangSplit from "../write/LangSplit";
 import HeroImageTool from "../write/HeroImageTool";
 import ScoreCards from "../write/ScoreCards";
 import TipCards, { buildRichTips } from "../write/TipCards";
+import BlogLibrary from "../write/BlogLibrary";
 import OutlinePanel from "../write/OutlinePanel";
 import IdeaBubble from "../write/IdeaBubble";
 
@@ -30,7 +31,7 @@ function SaveIndicator({ saveStatus, lastSaved, errorMessage }: { saveStatus: Sa
   if (saveStatus === "saved" && lastSaved) {
     const ago = Math.round((Date.now() - lastSaved.getTime()) / 1000);
     const label = ago < 5 ? "just now" : ago < 60 ? `${ago}s ago` : `${Math.floor(ago / 60)}m ago`;
-    return <span style={{ ...style, color: "var(--ink-3)" }}>Saved {label}</span>;
+    return <span className="save-state" style={{ ...style, color: "var(--ink-3)" }}><span className="pulse" />Saved {label}</span>;
   }
   if (saveStatus === "dirty") return <span style={{ ...style, color: "var(--ink-3)" }}>Unsaved</span>;
   return null;
@@ -44,6 +45,22 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const reviewsHook = useReviews(postId);
   const { template: voiceTemplate } = useVoiceTemplate(post?.category);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === ".") { e.preventDefault(); setFocusMode((f) => !f); }
+      if (e.key === "Escape") setFocusMode(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle("write-focus", focusMode);
+    return () => document.body.classList.remove("write-focus");
+  }, [focusMode]);
   const [scheduleDate, setScheduleDate] = useState("");
 
   const allContent = (autosave.fields.content ?? "") + " " + (autosave.fields.content_nl ?? "");
@@ -67,7 +84,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
               <input className="title-input" type="text" placeholder="Untitled draft" readOnly />
             </div>
             <div className="hero-actions">
-              <button className="stamp-btn stamp-btn--ghost stamp-btn--sm" disabled>History</button>
+              <button className="stamp-btn stamp-btn--ghost stamp-btn--sm" onClick={() => setShowLibrary(true)}>Library</button>
               <button className="stamp-btn" disabled>Publish</button>
             </div>
           </section>
@@ -90,6 +107,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
             <div className="gauge" style={{ "--pct": "0%" } as React.CSSProperties} />
           </div>
         </aside>
+        {showLibrary && <BlogLibrary onClose={() => setShowLibrary(false)} />}
       </>
     );
   }
@@ -173,7 +191,14 @@ export default function WriteMode({ postId }: { postId?: string }) {
             />
           </div>
           <div className="hero-actions">
-            <button className="stamp-btn stamp-btn--ghost stamp-btn--sm" disabled>History</button>
+            <button className="stamp-btn stamp-btn--ghost stamp-btn--sm" onClick={() => setShowLibrary(true)}>Library</button>
+            <button
+              className={`stamp-btn stamp-btn--ghost stamp-btn--sm${focusMode ? " is-active" : ""}`}
+              onClick={() => setFocusMode((f) => !f)}
+              title="Focus-modus (⌘. / Ctrl+.)"
+            >
+              {focusMode ? "Focus ✓" : "Focus"}
+            </button>
             <button
               className="stamp-btn stamp-btn--ghost stamp-btn--sm"
               onClick={() => autosave.saveNow()}
@@ -418,6 +443,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
           ))}
         </div>
       </aside>
+      {showLibrary && <BlogLibrary onClose={() => setShowLibrary(false)} />}
     </>
   );
 }
