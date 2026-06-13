@@ -6,6 +6,7 @@ import { useReviews } from "../hooks/useReviews";
 import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/useVoiceTemplate";
 import LangSplit from "../write/LangSplit";
 import HeroImageTool from "../write/HeroImageTool";
+import ScoreCards from "../write/ScoreCards";
 import OutlinePanel from "../write/OutlinePanel";
 import IdeaBubble from "../write/IdeaBubble";
 
@@ -376,35 +377,11 @@ export default function WriteMode({ postId }: { postId?: string }) {
         )}
 
         <h2 className="rail-h" style={voiceTemplate ? { marginTop: "var(--s-4)" } : {}}>Score<em>.</em></h2>
-        <div className="card">
-          <div className="card-head">Voice match<span>{voiceScore > 0 ? `${voiceScore}%` : "–"}</span></div>
-          <div className="score-row">
-            <strong>{voiceScore > 0 ? voiceScore : "–"}</strong>
-            <span className="max">/100</span>
-          </div>
-          <div className="gauge" style={{ "--pct": `${voiceScore}%` } as React.CSSProperties} />
-        </div>
-        <div className="card">
-          <div className="card-head">Completeness<span>{completenessScore > 0 ? `${completenessScore}%` : "–"}</span></div>
-          <div className="score-row">
-            <strong>{completenessScore > 0 ? completenessScore : "–"}</strong>
-            <span className="max">/100</span>
-          </div>
-          <div className="gauge" style={{ "--pct": `${completenessScore}%` } as React.CSSProperties} />
-        </div>
-        {post!.meta_title && (
-          <div className="card">
-            <div className="card-head">SEO<span></span></div>
-            <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-1)", lineHeight: 1.5, margin: 0 }}>
-              {post!.meta_title}
-            </p>
-            {post!.meta_description && (
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-2)", lineHeight: 1.5, marginTop: 6 }}>
-                {post!.meta_description}
-              </p>
-            )}
-          </div>
-        )}
+        <ScoreCards
+          voice={voiceScore}
+          seo={post!.seo_score ?? 0}
+          readability={completenessScore}
+        />
 
         {/* Agent reviews */}
         <h2 className="rail-h" style={{ marginTop: "var(--s-4)" }}>Reviews<em>.</em></h2>
