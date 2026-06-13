@@ -1777,3 +1777,32 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
 .write-cms .ex-del { border: 1px solid var(--line); border-radius: var(--r-1); background: var(--bg-1); color: var(--ink-2); width: 36px; flex-shrink: 0; }
 .write-cms .ex-add { align-self: flex-start; font-family: var(--font-mono); font-size: 11px; color: var(--ink-1); background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--r-1); padding: 7px 11px; }
 .write-cms .voice-toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--ink-0); color: var(--bg-0); font-family: var(--font-mono); font-size: 12px; padding: 10px 16px; border-radius: var(--r-1); box-shadow: 0 8px 24px #0003; z-index: 80; }
+
+/* ── YouTube stage-modal: mobile pass (2026-06-13) ───────────────────────────
+   On phones the modal becomes a full-bleed sheet: the stage-rail scrolls
+   horizontally, terminal/body padding tightens, and actions stack full-width.
+   Matches the mobile analyze-flow design. */
+@media (max-width: 560px) {
+  .write-cms .stage-modal-backdrop { place-items: stretch; }
+  .write-cms .stage-modal {
+    width: 100%; height: 100%; max-height: 100dvh;
+    border-radius: 0; border-width: 0; box-shadow: none;
+    display: flex; flex-direction: column;
+  }
+  .write-cms .stage-rail {
+    gap: 12px; padding: 12px 14px calc(12px + env(safe-area-inset-top));
+    overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none;
+  }
+  .write-cms .stage-rail::-webkit-scrollbar { display: none; }
+  .write-cms .stage-dot { flex: 0 0 auto; font-size: 9.5px; }
+  .write-cms .stage-close { font-size: 22px; padding: 4px; }
+  .write-cms .stage-body {
+    flex: 1; overflow-y: auto;
+    padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
+  }
+  .write-cms .stage-terminal { min-height: 150px; font-size: 12.5px; padding: 13px 14px; }
+  .write-cms .stage-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+  .write-cms .stage-actions > * { width: 100%; }
+  .write-cms .stage-voice-input { font-size: 16px; } /* ≥16px stops iOS zoom-on-focus */
+}
