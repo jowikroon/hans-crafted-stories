@@ -34,6 +34,7 @@ export default function AnalyticsMode() {
   const [dashLoading, setDashLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [drill, setDrill] = useState<DrillPost | null>(null);
+  const [kwSort, setKwSort] = useState<"impressions" | "ctr" | "position">("impressions");
 
   // Content metrics from blog_posts (always available; kept as the editorial layer).
   useEffect(() => {
@@ -161,16 +162,27 @@ export default function AnalyticsMode() {
         </div>
       )}
 
-      {/* Search terms */}
+      {/* Search terms (sorteerbaar, design contract D4) */}
       {gsc?.queries && gsc.queries.length > 0 && (
         <div className="chart-card">
           <h3>Search terms <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>from Search Console · last 28 days</span></h3>
+          <div className="an-kw-sortbar">
+            {(["impressions", "ctr", "position"] as const).map((k) => (
+              <button key={k} className={`an-kw-sort${kwSort === k ? " on" : ""}`} onClick={() => setKwSort(k)}>
+                {k === "impressions" ? "Impressies" : k === "ctr" ? "CTR" : "Positie"}{kwSort === k ? " ▾" : ""}
+              </button>
+            ))}
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "var(--s-3) 0" }}>
-            {gsc.queries.map((q) => (
+            {[...gsc.queries].sort((a, b) => {
+              if (kwSort === "position") return (a.position ?? 999) - (b.position ?? 999);
+              if (kwSort === "ctr") return (b.ctr ?? 0) - (a.ctr ?? 0);
+              return (b.impressions ?? 0) - (a.impressions ?? 0);
+            }).map((q) => (
               <div key={q.query} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "4px 0", borderBottom: "1px solid var(--bg-1)" }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>{q.query}</span>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "52%" }}>{q.query}</span>
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>
-                  {q.ctr != null ? `${q.ctr}%` : "–"} · #{q.position != null ? Math.round(q.position) : "–"}
+                  {(q.impressions ?? 0).toLocaleString()} impr · {q.ctr != null ? `${q.ctr}%` : "–"} · #{q.position != null ? Math.round(q.position) : "–"}
                 </span>
               </div>
             ))}
