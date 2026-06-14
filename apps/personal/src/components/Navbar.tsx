@@ -70,6 +70,7 @@ const Navbar = (_props: NavbarProps) => {
     { to: "/", label: t.home },
     { to: "/work", label: t.work, hasDropdown: true },
     { to: "/writing", label: t.writing },
+    { to: "/music", label: "Music" },
     { to: "/about", label: t.about },
     ...(user ? [{ to: "/write", label: t.commandCenter, cc: true }] : []),
   ];
@@ -82,6 +83,7 @@ const Navbar = (_props: NavbarProps) => {
     { to: "/bol-com-consultant", label: t.workMenu.bol, keywords: ["bol", "consultant", "marketplace"] },
     { to: "/interim-ecommerce-manager", label: t.workMenu.interim, keywords: ["interim", "manager", "freelance"] },
     { to: "/writing", label: t.writing, keywords: ["blog", "writing", "artikelen", "posts"] },
+    { to: "/music", label: "Music", keywords: ["music", "songs", "tracks", "spotify", "lyrics", "lo-fi", "ambient"] },
     { to: "/about", label: t.about, keywords: ["about", "over", "contact", "cv"] },
     ...(user
       ? [
