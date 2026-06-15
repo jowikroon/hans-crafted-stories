@@ -191,20 +191,59 @@ export default function MusicSong() {
             />
           </div>
 
-          {/* Official video (YouTube) — only when present */}
-          {song.videoEmbed && (
-            <div className="songvideo" style={{ margin: "20px auto", borderRadius: 14, overflow: "hidden", aspectRatio: "9 / 16", maxWidth: 320, width: "100%" }}>
-              <iframe
-                title={`Video — ${song.title}`}
-                src={song.videoEmbed}
-                width="100%"
-                height="100%"
-                frameBorder={0}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                loading="lazy"
+          {/* Official video — links out to YouTube (embedding blocked, so we link). */}
+          {song.videoUrl && (
+            <a
+              className="songvideo-card"
+              href={song.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Watch the official ${song.title} video on YouTube`}
+              style={{
+                position: "relative",
+                display: "block",
+                margin: "20px auto",
+                maxWidth: 300,
+                width: "100%",
+                aspectRatio: "9 / 16",
+                borderRadius: 14,
+                overflow: "hidden",
+              }}
+            >
+              <img
+                src={song.cover}
+                alt=""
+                aria-hidden="true"
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.7)" }}
               />
-            </div>
+              <span
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 12,
+                  color: "#fff",
+                  textShadow: "0 1px 8px rgba(0,0,0,.6)",
+                }}
+              >
+                <span
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: "50%",
+                    background: "#FF0000",
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".02em" }}>Watch on YouTube</span>
+              </span>
+            </a>
           )}
 
           {/* Listen-on platforms — only the ones this track actually has */}

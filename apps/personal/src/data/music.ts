@@ -98,8 +98,8 @@ export interface Song {
   listenUrl: string;
   /** Optional extra platform links for the song page. */
   links?: { spotify?: string; soundcloud?: string; youtube?: string; appleMusic?: string };
-  /** Optional YouTube embed (official video) for the song page. */
-  videoEmbed?: string;
+  /** Optional YouTube watch link (official video) — shown as a "Watch on YouTube" card. */
+  videoUrl?: string;
   detail: SongDetail;
 }
 
@@ -180,7 +180,7 @@ export const songs: Song[] = [
       spotify: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
       youtube: "https://youtube.com/shorts/dpOHLmNUpCE",
     },
-    videoEmbed: "https://www.youtube.com/embed/dpOHLmNUpCE",
+    videoUrl: "https://youtube.com/shorts/dpOHLmNUpCE",
     detail: {
       category: "Electronic · Single",
       facts: [
