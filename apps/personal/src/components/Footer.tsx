@@ -9,6 +9,7 @@ const socialLinks = [
 const internalLinks = [
   { label: "Amazon NL Case Studies", to: "/work" },
   { label: "Optimization Articles", to: "/writing" },
+  { label: "Music", to: "/music" },
   { label: "About Hans", to: "/about" },
 ];
 

@@ -204,11 +204,11 @@ const Writing = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">{getValue("writing_label", t.label)}</p>
-          <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
+          <p className="mb-5 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />{getValue("writing_label", t.label)}</p>
+          <h1 className="mb-4 font-display text-4xl font-medium leading-[1.02] tracking-tight text-foreground md:text-6xl">
             {getValue("writing_heading", t.heading)}
           </h1>
-          <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
+          <p className="mb-10 max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
             {getValue("writing_subtitle", t.subtitle)}
           </p>
           <p className="mb-10 text-sm text-muted-foreground">
@@ -275,7 +275,7 @@ const Writing = () => {
             {isVisible("sort_button") && (
               <button
                 onClick={() => setSort(sort === "newest" ? "oldest" : "newest")}
-                className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 text-xs font-medium text-muted-foreground transition-all hover:text-foreground"
+                className="flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-4 text-xs font-medium text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-foreground hover:text-foreground"
               >
                 <ArrowUpDown size={13} />
                 <span className="hidden sm:inline">{sort === "newest" ? t.newest : t.oldest}</span>
@@ -300,7 +300,7 @@ const Writing = () => {
                       <button
                         key={tag}
                         onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
-                        className={`rounded-full px-3 py-1 text-[11px] font-medium tracking-wide uppercase transition-all duration-200 ${
+                        className={`rounded-full px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-wide transition-all duration-200 hover:-translate-y-0.5 ${
                           getTagColors(tag, tagFilter === tag)
                         }`}
                       >

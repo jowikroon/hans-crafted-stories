@@ -18,6 +18,8 @@ import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
 import CaseStudyDetail from "@/pages/CaseStudyDetail";
 import GodStructure from "@/pages/GodStructure";
 import SamanthaAI from "@/pages/SamanthaAI";
+import Music from "@/pages/Music";
+import SongDetail from "@/pages/SongDetail";
 
 /* WriteCMS is lazy-loaded — full Blog CMS shell at /write (3-mode: Write/Manage/Analytics).
    BlogCMS is kept for /blog-cms/voice/:id route only (VoiceTemplateEditor still uses it). */
@@ -50,6 +52,8 @@ const AnimatedRoutes = () => {
         <Route path="/work/connect-car-parts" element={<PageTransition><CaseStudyDetail /></PageTransition>} />
         <Route path="/writing" element={<PageTransition><Writing /></PageTransition>} />
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
+        <Route path="/music" element={<PageTransition><Music /></PageTransition>} />
+        <Route path="/music/:slug" element={<PageTransition><SongDetail /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/amazon-nl-specialist" element={<PageTransition><AmazonNlSpecialist /></PageTransition>} />
         <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
