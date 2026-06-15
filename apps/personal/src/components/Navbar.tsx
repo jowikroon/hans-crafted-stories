@@ -120,6 +120,15 @@ const Navbar = (_props: NavbarProps) => {
   }, [searchOpen]);
   useEffect(() => setSelectedIndex(0), [searchQuery]);
 
+  // Scroll state — drives the floating pill's elevation (redesign shell)
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const isActive = (to: string) => location.pathname === to;
   const isWorkActive = location.pathname.startsWith("/work")
     || ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager"].includes(location.pathname);
@@ -185,15 +194,24 @@ const Navbar = (_props: NavbarProps) => {
         )}
       </AnimatePresence>
 
-      {/* ═══ NAVBAR ═══ */}
-      <nav aria-label="Primary navigation" className="fixed top-0 z-50 w-full bg-[#F1ECDF]/95 backdrop-blur-lg border-b border-black/10">
-        {/* ─── TIER 1 ─── */}
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center h-16">
+      {/* ═══ NAVBAR — floating rounded pill (redesign) ═══ */}
+      <nav aria-label="Primary navigation" className="fixed left-0 right-0 top-0 z-50 w-full">
+        {/* ─── TIER 1 — detached pill ─── */}
+        <div
+          className={`mx-auto mt-3.5 grid grid-cols-[1fr_auto_1fr] items-center h-[60px] max-w-6xl rounded-[100px] border border-black/10 bg-[#F1ECDF]/90 px-4 backdrop-blur-xl transition-shadow ${
+            scrolled
+              ? "shadow-[0_3px_9px_-3px_rgba(20,19,15,0.18),0_20px_46px_-22px_rgba(20,19,15,0.32)]"
+              : "shadow-[0_2px_6px_-3px_rgba(20,19,15,0.12),0_14px_34px_-20px_rgba(20,19,15,0.22)]"
+          }`}
+          style={{ width: "calc(100% - 36px)" }}
+        >
             {/* Brand */}
-            <Link to="/" className="justify-self-start flex items-center gap-2.5 text-lg font-bold tracking-tight text-[#15140F]">
-              <img src={logoImg} alt="Hans van Leeuwen — Freelance E-commerce Manager" width={30} height={30} className="h-[30px] w-[30px] rounded-md object-contain" />
-              <span className="hidden sm:inline">Hans van Leeuwen</span>
+            <Link to="/" className="group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight text-[#15140F]">
+              <img src={logoImg} alt="Hans van Leeuwen — Freelance E-commerce Manager" width={30} height={30} className="h-[30px] w-[30px] rounded-md object-contain transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" />
+              <span className="hidden sm:inline-flex items-center">
+                Hans van Leeuwen
+                <span className="ml-[7px] inline-block h-[5px] w-[5px] rounded-full bg-[#2D9255] transition-transform duration-300 group-hover:scale-150" />
+              </span>
             </Link>
 
             {/* Centre nav + Work dropdown */}
@@ -289,13 +307,12 @@ const Navbar = (_props: NavbarProps) => {
                 {mobileOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
-          </div>
         </div>
 
-        {/* ═══ MOBILE MENU ═══ */}
+        {/* ═══ MOBILE MENU — floating panel under the pill ═══ */}
         <AnimatePresence>
           {mobileOpen && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden border-b border-black/10 bg-[#F1ECDF] md:hidden">
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ width: "calc(100% - 36px)" }} className="mx-auto mt-2 overflow-hidden rounded-2xl border border-black/10 bg-[#F1ECDF]/95 backdrop-blur-xl md:hidden">
               <div className="flex flex-col gap-1 px-4 py-4">
                 <Link to="/" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isActive("/") ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.home}</Link>
                 {/* Work group */}
