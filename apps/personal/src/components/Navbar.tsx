@@ -312,7 +312,7 @@ const Navbar = (_props: NavbarProps) => {
         {/* ═══ MOBILE MENU — floating panel under the pill ═══ */}
         <AnimatePresence>
           {mobileOpen && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ width: "calc(100% - 36px)" }} className="mx-auto mt-2 overflow-hidden rounded-2xl border border-black/10 bg-[#F1ECDF]/95 backdrop-blur-xl md:hidden">
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ width: "calc(100% - 36px)" }} className="mx-auto mt-2 overflow-hidden rounded-2xl border border-black/10 bg-[#F1ECDF] shadow-[0_18px_46px_-22px_rgba(20,19,15,0.4)] dark:border-white/10 dark:bg-[hsl(40,8%,9%)] md:hidden">
               <div className="flex flex-col gap-1 px-4 py-4">
                 <Link to="/" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isActive("/") ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.home}</Link>
                 {/* Work group */}

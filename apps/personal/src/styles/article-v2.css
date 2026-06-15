@@ -49,7 +49,9 @@
   padding-bottom: 90px;
 }
 
-[data-theme="dark"] .article-v2 {
+[data-theme="dark"] .article-v2,
+
+.dark .article-v2 {
   --w2-paper: #100F0C;
   --w2-paper-2: #1A1813;
   --w2-canvas: #181711;
