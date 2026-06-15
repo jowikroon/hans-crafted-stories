@@ -28,6 +28,13 @@ function rewrite(response, m, canonical) {
 }
 
 export async function onRequest(context) {
+  // HAN-92: canonical host — 301 any www.* request to the non-www apex so the
+  // legacy builder URL (www.hansvanleeuwen.com/225250714/020307-soto) de-indexes.
+  var _u = new URL(context.request.url);
+  if (_u.hostname === "www.hansvanleeuwen.com") {
+    return Response.redirect("https://hansvanleeuwen.com" + _u.pathname + _u.search, 301);
+  }
+
   // HAN-118: leaked CMS stub — _redirects rule wordt door Pages niet toegepast op deze route; hard 301 hier (middleware draait vóór asset/SPA-fallback).
   var reqPath = new URL(context.request.url).pathname;
   if (reqPath === "/writing/untitled-3" || reqPath === "/writing/untitled-3/" || reqPath === "/writing/untitled" || reqPath === "/writing/untitled-2") {
@@ -41,6 +48,7 @@ export async function onRequest(context) {
   var KNOWN_EXACT = {
     "/": 1, "/work": 1, "/writing": 1, "/about": 1, "/privacy": 1,
     "/amazon-nl-specialist": 1, "/bol-com-consultant": 1, "/interim-ecommerce-manager": 1,
+    "/ai-ecommerce-automation": 1,
     "/work/connect-car-parts": 1, "/wiki": 1, "/portal": 1, "/write": 1, "/samantha": 1,
     "/blog-cms": 1, "/auth/callback": 1
   };

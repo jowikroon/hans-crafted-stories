@@ -41,6 +41,7 @@ const STATIC_ROUTES = [
   { loc: `${BASE}/amazon-nl-specialist`, changefreq: "monthly", priority: "0.9" },
   { loc: `${BASE}/bol-com-consultant`, changefreq: "monthly", priority: "0.9" },
   { loc: `${BASE}/interim-ecommerce-manager`, changefreq: "monthly", priority: "0.9" },
+  { loc: `${BASE}/ai-ecommerce-automation`, changefreq: "monthly", priority: "0.9" },
   { loc: `${BASE}/privacy`, changefreq: "yearly", priority: "0.3" },
 ];
 

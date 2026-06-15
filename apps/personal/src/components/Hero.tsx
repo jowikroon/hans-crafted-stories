@@ -267,6 +267,9 @@ const Hero = () => {
           <Link to="/interim-ecommerce-manager" className="font-semibold transition-colors hover:text-foreground">
             {isNl ? "Interim e-commerce manager →" : "Interim e-commerce manager →"}
           </Link>
+          <Link to="/ai-ecommerce-automation" className="font-semibold transition-colors hover:text-foreground">
+            {isNl ? "AI e-commerce automatisering →" : "AI e-commerce automation →"}
+          </Link>
           <Link to="/work" className="font-semibold transition-colors hover:text-foreground">
             {t.linkCases}
           </Link>
