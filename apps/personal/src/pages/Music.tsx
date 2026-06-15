@@ -89,8 +89,18 @@ function SongCard({ song, index, isPlaying, onToggle }: SongCardProps) {
           <span className="song__date">{formatDate(song.date)}</span>
           <span className="dot" />
           <span className="tag">{song.genre}</span>
-          <span className="dot" />
-          <span className="song__dur">{song.duration}</span>
+          {song.duration && song.duration !== "—" && (
+            <>
+              <span className="dot" />
+              <span className="song__dur">{song.duration}</span>
+            </>
+          )}
+          {song.concept && (
+            <>
+              <span className="dot" />
+              <span className="song__concept">Concept</span>
+            </>
+          )}
         </div>
         <Link className="song__title" to={`/music/${song.slug}`}>
           {song.title}
@@ -105,7 +115,7 @@ function SongCard({ song, index, isPlaying, onToggle }: SongCardProps) {
       <div className="song__player">
         {isPlaying && (
           <iframe
-            title={`Spotify — ${song.title}`}
+            title={`${song.provider === "soundcloud" ? "SoundCloud" : "Spotify"} — ${song.title}`}
             src={song.embed}
             height={song.embedHeight}
             frameBorder={0}

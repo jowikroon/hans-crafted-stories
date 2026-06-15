@@ -15,10 +15,6 @@
  * approach and add NL fields to these types.
  */
 
-import coverNightline from "@/assets/music/cover-nightline.png";
-import coverSlowStatic from "@/assets/music/cover-slow-static.png";
-import coverPaperCranes from "@/assets/music/cover-paper-cranes.png";
-import coverAmber from "@/assets/music/cover-amber.png";
 
 /** Genre filter slug as used by the toolbar pills (data-tag in the prototype). */
 export type GenreTag = "lofi" | "electronic" | "ambient" | "pop";
@@ -73,9 +69,17 @@ export interface SongDetail {
   lyricsNote?: string;
 }
 
+export type Provider = "spotify" | "soundcloud";
+
 export interface Song {
   title: string;
   slug: string;
+  /** Artist name as credited on the streaming platform (e.g. "Jowikroon"). */
+  artist: string;
+  /** Which platform hosts the embed/player. */
+  provider: Provider;
+  /** Concept / work-in-progress track (≈90%) — shown with a "Concept" badge. */
+  concept?: boolean;
   /** Genre filter tags (first one is also the primary genre label source). */
   tags: GenreTag[];
   /** Human label shown in the meta row, e.g. "Lo-fi". */
@@ -86,12 +90,16 @@ export interface Song {
   duration: string;
   /** Imported cover image (resolved URL string at build time). */
   cover: string;
-  /** Spotify embed src for the inline lazy player (from data-embed). */
+  /** Embed src for the inline lazy player (Spotify or SoundCloud iframe). */
   embed: string;
-  /** Height of the inline embed iframe (data-height in the prototype). */
+  /** Height of the inline embed iframe. */
   embedHeight: number;
-  /** Direct Spotify track link (for the "Listen on" platform buttons). */
-  spotifyUrl: string;
+  /** Direct listen link on the host platform (Spotify or SoundCloud). */
+  listenUrl: string;
+  /** Optional extra platform links for the song page. */
+  links?: { spotify?: string; soundcloud?: string; youtube?: string; appleMusic?: string };
+  /** Optional YouTube embed (official video) for the song page. */
+  videoEmbed?: string;
   detail: SongDetail;
 }
 
@@ -108,220 +116,177 @@ export interface Release {
 /** Featured "Nightline — EP" release card, ported from Music.html. */
 export const featuredRelease: Release = {
   kicker: "Latest release",
-  title: "Nightline — EP",
-  sub: "Four tracks recorded between late-night sessions over one winter. Warm tape, soft synths, and a lot of re-takes. Full notes on each song below.",
-  chips: ["2026", "Lo-fi · Electronic", "4 tracks"],
+  title: "Beat Drop",
+  sub: "My first official single, out now on Spotify — released as Jowikroon. The tracks below are concept versions (around 90% done) you can already hear on SoundCloud.",
+  chips: ["2026", "Electronic", "Single"],
   embed: "https://open.spotify.com/embed/album/7gHaf9f1kcQaOtg9sMzPlo?utm_source=generator",
   embedHeight: 352,
 };
 
-/* ── Shared demo detail content ──────────────────────────────────────────
-   The prototype only fleshed out Nightline. We reuse it as the body for
-   every track for v1. TODO: replace per-song with real production notes,
-   gear and lyrics.
-   ----------------------------------------------------------------------- */
+/** Build a SoundCloud iframe embed URL from a track page URL. */
+function scEmbed(trackUrl: string): string {
+  const u = encodeURIComponent(trackUrl);
+  return `https://w.soundcloud.com/player/?url=${u}&color=%231C6B45&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false`;
+}
 
-const demoProse: ProseBlock[] = [
-  {
-    type: "lead",
-    text: '"Nightline" started as a two-bar loop I almost deleted. Here\'s how a throwaway idea became the opener of the EP — and everything I changed along the way.',
-  },
-  { type: "h2", id: "spark", text: "The spark" },
-  {
-    type: "p",
-    text: "It was past midnight and I was noodling on a borrowed Juno. I recorded one pad chord, slowed it down, and the wobble in the tape made it feel like the room was breathing. That texture became the whole mood of the track. I built everything else around keeping that feeling intact.",
-  },
-  {
-    type: "p",
-    text: "The lesson I keep relearning: <strong>protect the accident.</strong> The thing that made me sit up was an imperfection, and the temptation is always to clean it up until it's dead.",
-  },
-  {
-    type: "callout",
-    kicker: "One thing that worked",
-    text: 'I committed to the tape wobble early by printing it to audio instead of keeping it as a plugin. Once it was "real", I stopped second-guessing it and the arrangement came together in an evening.',
-  },
-  { type: "h2", id: "arrangement", text: "Building the arrangement" },
-  {
-    type: "p",
-    text: "Drums came last, not first. I wanted the song to feel like it was floating before the beat anchored it, so the first chorus has no kick at all — just brushed percussion and the bass implying the pulse. When the full kit lands in the second verse it actually feels like an event.",
-  },
-  {
-    type: "p",
-    text: "The bassline is a single overdub played on a cheap short-scale bass, compressed hard so the dynamics flatten into something hypnotic. Sometimes the budget gear is the sound.",
-  },
-  { type: "h2", id: "mix", text: "Mixing & the mistakes" },
-  {
-    type: "p",
-    text: "I over-compressed the master on the first three bounces. It sounded loud and impressive on my headphones and completely lifeless in the car. I pulled the limiter back by 3 dB, let the chorus breathe, and the song finally felt three-dimensional.",
-  },
-  {
-    type: "p",
-    text: "If you take one thing from these notes: <strong>reference on the worst speakers you own.</strong> The phone speaker told me more truth than my monitors did.",
-  },
-  {
-    type: "pull",
-    text: "A song isn't finished when there's nothing left to add — it's finished when removing one more thing would break it.",
-  },
-  { type: "h2", id: "release", text: "Putting it out" },
-  {
-    type: "p",
-    text: 'I sat on this for two months because it felt too simple. That was fear, not taste. The simplest tracks are usually the ones people actually keep. I released it, and "Nightline" is now the most-played thing I\'ve made.',
-  },
-];
-
-const demoGear: GearItem[] = [
-  { name: "Roland Juno-106", note: "main pad & the tape-wobble chord" },
-  { name: "Short-scale bass", note: "single compressed overdub" },
-  { name: "Cassette 4-track", note: "printed warmth & saturation" },
-  { name: "Valhalla VintageVerb", note: "the big chorus space" },
-  { name: "SM57", note: "brushed percussion & room" },
-];
-
-const demoLyrics: LyricSection[] = [
-  {
-    tag: "Verse 1",
-    lines: [
-      "Streetlights bleed across the ceiling",
-      "Half a thought I can't hold on",
-      "The city hums a frequency",
-      "And I'm awake when everyone's gone",
-    ],
-  },
-  {
-    tag: "Chorus",
-    lines: [
-      "So I'm on the nightline",
-      "Talking to the quiet",
-      "Every wire in the dark",
-      "Carries something I can't say in the light",
-    ],
-  },
-  {
-    tag: "Verse 2",
-    lines: [
-      "You said the morning fixes everything",
-      "But I trust the smaller hours more",
-      "They don't ask me to pretend",
-      "That I know what I'm reaching for",
-    ],
-  },
-  {
-    tag: "Bridge",
-    lines: ["If you're up too", "Leave the line open", "We don't have to fill it", "Just don't hang up"],
-  },
-];
-
-const LYRICS_PLACEHOLDER = "Placeholder lyrics — swap with the real words for this track.";
-
-/**
- * Builds a demo SongDetail. TODO: replace with real per-song content.
- * `from` is the EP/single line; `category` is the kicker above the title.
- */
-function demoDetail(opts: {
-  category: string;
-  released: string;
-  length: string;
-  keyBpm: string;
-  from: string;
-}): SongDetail {
+/** Lighter detail for the concept tracks — honest, no fabricated studio specs. */
+function conceptDetail(opts: { category: string; released: string; length: string; note: string }): SongDetail {
   return {
     category: opts.category,
     facts: [
       { label: "Released", value: opts.released },
       { label: "Length", value: opts.length },
-      { label: "Key · BPM", value: opts.keyBpm },
-      { label: "From", value: opts.from },
+      { label: "Status", value: "Concept · ~90%" },
+      { label: "As", value: "Jowikroon" },
     ],
     session: [
-      { label: "DAW", value: "Ableton Live 12" },
-      { label: "Tempo", value: opts.keyBpm.split("·")[1]?.trim() ?? "84 BPM" },
-      { label: "Key", value: opts.keyBpm.split("·")[0]?.trim() ?? "A minor" },
-      { label: "Tracks", value: "18" },
-      { label: "Recorded", value: "Home studio, Amersfoort" },
+      { label: "Status", value: "Concept (~90%)" },
+      { label: "Host", value: "SoundCloud" },
+      { label: "Artist", value: "Jowikroon" },
     ],
-    gear: demoGear,
-    prose: demoProse,
-    lyrics: demoLyrics,
-    lyricsNote: LYRICS_PLACEHOLDER,
+    gear: [],
+    prose: [
+      { type: "lead", text: opts.note },
+      {
+        type: "p",
+        text: "This is a concept version — roughly 90% finished and already worth a listen. The mix, arrangement and a final master are still being polished before it goes to streaming platforms.",
+      },
+      {
+        type: "callout",
+        kicker: "Heads up",
+        text: "Made as Jowikroon, the artist alias of Hans van Leeuwen. Press play to hear the SoundCloud version.",
+      },
+    ],
+    lyrics: [],
   };
 }
 
-/** The 4 demo songs, ported exactly from Music.html (order = newest first). */
+/** Real catalogue: Beat Drop (Spotify) + 4 SoundCloud concept tracks. */
 export const songs: Song[] = [
   {
-    title: "Nightline",
-    slug: "nightline",
-    tags: ["lofi", "electronic"],
-    genre: "Lo-fi",
-    date: "2026-02-14",
-    duration: "3:42",
-    cover: coverNightline,
+    title: "Beat Drop",
+    slug: "beat-drop",
+    artist: "Jowikroon",
+    provider: "spotify",
+    tags: ["electronic"],
+    genre: "Electronic",
+    date: "2026-01-01",
+    duration: "2:44",
+    cover: "https://i.scdn.co/image/ab67616d0000b273e9e292c832749ec9b5aecd66",
     embed: "https://open.spotify.com/embed/track/5e5vN1pm3NUY0OQdM7uqSl?utm_source=generator",
     embedHeight: 152,
-    spotifyUrl: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
-    detail: demoDetail({
-      category: "Lo-fi · Single",
-      released: "14 Feb 2026",
-      length: "3:42",
-      keyBpm: "A minor · 84",
-      from: "Nightline EP",
+    listenUrl: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
+    links: {
+      spotify: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
+    },
+    detail: {
+      category: "Electronic · Single",
+      facts: [
+        { label: "Released", value: "2026" },
+        { label: "Length", value: "2:44" },
+        { label: "Type", value: "Official single" },
+        { label: "As", value: "Jowikroon" },
+      ],
+      session: [
+        { label: "Status", value: "Released" },
+        { label: "Host", value: "Spotify" },
+        { label: "Artist", value: "Jowikroon" },
+      ],
+      gear: [],
+      prose: [
+        { type: "lead", text: "Beat Drop is my first official single, out now on Spotify under my artist name Jowikroon." },
+        { type: "p", text: "An energetic electronic track with an official video. Press play above to listen, or open it on Spotify." },
+        { type: "callout", kicker: "Out now", text: "Released as Jowikroon — the artist alias of Hans van Leeuwen." },
+      ],
+      lyrics: [],
+    },
+  },
+  {
+    title: "Teacher Leave (Remastered x2)",
+    slug: "teacher-leave",
+    artist: "Jowikroon",
+    provider: "soundcloud",
+    concept: true,
+    tags: ["electronic"],
+    genre: "Electronic",
+    date: "2025-12-01",
+    duration: "—",
+    cover: "https://i1.sndcdn.com/avatars-CRNs7sDBulfbcqSz-QEQetg-t500x500.jpg",
+    embed: scEmbed("https://soundcloud.com/jowikroon/teacher-leave-remastered-x2-2"),
+    embedHeight: 166,
+    listenUrl: "https://soundcloud.com/jowikroon/teacher-leave-remastered-x2-2",
+    links: { soundcloud: "https://soundcloud.com/jowikroon/teacher-leave-remastered-x2-2" },
+    detail: conceptDetail({
+      category: "Electronic · Concept",
+      released: "Concept · 2025",
+      length: "—",
+      note: "Teacher Leave — a remastered concept version, already most of the way there.",
     }),
   },
   {
-    title: "Slow Static",
-    slug: "slow-static",
-    tags: ["ambient", "electronic"],
-    genre: "Ambient",
-    date: "2026-01-30",
-    duration: "4:18",
-    cover: coverSlowStatic,
-    embed: "https://open.spotify.com/embed/track/5e5vN1pm3NUY0OQdM7uqSl?utm_source=generator",
-    embedHeight: 152,
-    spotifyUrl: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
-    detail: demoDetail({
-      category: "Ambient · Single",
-      released: "30 Jan 2026",
-      length: "4:18",
-      keyBpm: "D minor · 72",
-      from: "Nightline EP",
+    title: "Hanging On (Remastered)",
+    slug: "hanging-on",
+    artist: "Jowikroon",
+    provider: "soundcloud",
+    concept: true,
+    tags: ["electronic", "pop"],
+    genre: "Electronic",
+    date: "2025-11-01",
+    duration: "—",
+    cover: "https://i1.sndcdn.com/avatars-CRNs7sDBulfbcqSz-QEQetg-t500x500.jpg",
+    embed: scEmbed("https://soundcloud.com/jowikroon/hanging-on-remastered"),
+    embedHeight: 166,
+    listenUrl: "https://soundcloud.com/jowikroon/hanging-on-remastered",
+    links: { soundcloud: "https://soundcloud.com/jowikroon/hanging-on-remastered" },
+    detail: conceptDetail({
+      category: "Electronic · Concept",
+      released: "Concept · 2025",
+      length: "—",
+      note: "Hanging On — a remastered concept, in the final stretch before release.",
     }),
   },
   {
-    title: "Paper Cranes",
-    slug: "paper-cranes",
-    tags: ["pop", "lofi"],
-    genre: "Pop",
-    date: "2026-01-12",
-    duration: "3:05",
-    cover: coverPaperCranes,
-    embed: "https://open.spotify.com/embed/track/5e5vN1pm3NUY0OQdM7uqSl?utm_source=generator",
-    embedHeight: 152,
-    spotifyUrl: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
-    detail: demoDetail({
-      category: "Pop · Single",
-      released: "12 Jan 2026",
-      length: "3:05",
-      keyBpm: "C major · 96",
-      from: "Nightline EP",
+    title: "Beat Between Our Years × Layer Cake Universe (Mashup)",
+    slug: "beat-between-our-years",
+    artist: "Jowikroon",
+    provider: "soundcloud",
+    concept: true,
+    tags: ["electronic"],
+    genre: "Mashup",
+    date: "2025-10-01",
+    duration: "—",
+    cover: "https://i1.sndcdn.com/avatars-CRNs7sDBulfbcqSz-QEQetg-t500x500.jpg",
+    embed: scEmbed("https://soundcloud.com/jowikroon/beat-between-our-years"),
+    embedHeight: 166,
+    listenUrl: "https://soundcloud.com/jowikroon/beat-between-our-years",
+    links: { soundcloud: "https://soundcloud.com/jowikroon/beat-between-our-years" },
+    detail: conceptDetail({
+      category: "Mashup · Concept",
+      released: "Concept · 2025",
+      length: "—",
+      note: "A mashup concept — Beat Between Our Years (remastered) blended with Layer Cake Universe.",
     }),
   },
   {
-    title: "Amber",
-    slug: "amber",
-    tags: ["ambient"],
-    genre: "Ambient",
-    date: "2025-12-20",
-    duration: "5:01",
-    cover: coverAmber,
-    embed: "https://open.spotify.com/embed/track/5e5vN1pm3NUY0OQdM7uqSl?utm_source=generator",
-    embedHeight: 152,
-    spotifyUrl: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
-    detail: demoDetail({
-      category: "Ambient · Single",
-      released: "20 Dec 2025",
-      length: "5:01",
-      keyBpm: "G minor · 68",
-      from: "Nightline EP",
+    title: "New Level (Main Menu)",
+    slug: "new-level",
+    artist: "Jowikroon",
+    provider: "soundcloud",
+    concept: true,
+    tags: ["electronic"],
+    genre: "Electronic",
+    date: "2025-09-01",
+    duration: "—",
+    cover: "https://i1.sndcdn.com/avatars-CRNs7sDBulfbcqSz-QEQetg-t500x500.jpg",
+    embed: scEmbed("https://soundcloud.com/jowikroon/new-level-main-menu/s-GOSTK3LpU7S"),
+    embedHeight: 166,
+    listenUrl: "https://soundcloud.com/jowikroon/new-level-main-menu/s-GOSTK3LpU7S",
+    links: { soundcloud: "https://soundcloud.com/jowikroon/new-level-main-menu/s-GOSTK3LpU7S" },
+    detail: conceptDetail({
+      category: "Electronic · Concept",
+      released: "Concept · 2025",
+      length: "—",
+      note: "New Level (Main Menu) — a concept track, private SoundCloud share.",
     }),
   },
 ];
@@ -329,9 +294,7 @@ export const songs: Song[] = [
 /** Genre filter pills, ported from the prototype toolbar. */
 export const GENRE_FILTERS: { tag: "all" | GenreTag; label: string }[] = [
   { tag: "all", label: "All" },
-  { tag: "lofi", label: "Lo-fi" },
   { tag: "electronic", label: "Electronic" },
-  { tag: "ambient", label: "Ambient" },
   { tag: "pop", label: "Pop" },
 ];
 

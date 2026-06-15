@@ -343,3 +343,28 @@
   .music-v2 .song:hover { transform: none !important; }
   .music-v2 .song.playing .wave i { animation: none !important; }
 }
+
+/* ── Concept badge (work-in-progress tracks) ── */
+.music-v2 .song__concept,
+.music-v2 .songhead__concept {
+  font-family: var(--m-font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #B8721A;
+  background: rgba(184, 114, 26, .12);
+  border: 1px solid rgba(184, 114, 26, .3);
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.dark .music-v2 .song__concept,
+.dark .music-v2 .songhead__concept,
+[data-theme="dark"] .music-v2 .song__concept,
+[data-theme="dark"] .music-v2 .songhead__concept {
+  color: #E0A050;
+  background: rgba(184, 114, 26, .2);
+  border-color: rgba(224, 160, 80, .35);
+}
+.music-v2 .songhead__concept { margin-left: 10px; }
