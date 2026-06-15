@@ -5,6 +5,8 @@ import PageTransition from "./PageTransition";
 import Index from "@/pages/Index";
 import Work from "@/pages/Work";
 import Writing from "@/pages/Writing";
+import Music from "@/pages/Music";
+import MusicSong from "@/pages/MusicSong";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
 import Portal from "@/pages/Portal";
@@ -50,6 +52,8 @@ const AnimatedRoutes = () => {
         <Route path="/work/connect-car-parts" element={<PageTransition><CaseStudyDetail /></PageTransition>} />
         <Route path="/writing" element={<PageTransition><Writing /></PageTransition>} />
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
+        <Route path="/music" element={<PageTransition><Music /></PageTransition>} />
+        <Route path="/music/:slug" element={<PageTransition><MusicSong /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/amazon-nl-specialist" element={<PageTransition><AmazonNlSpecialist /></PageTransition>} />
         <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />

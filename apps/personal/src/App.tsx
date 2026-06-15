@@ -39,7 +39,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
           <header>
             <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
           </header>
-          <main id="main-content" className="min-h-screen pt-16">
+          <main id="main-content" className={`min-h-screen ${isDarkPage ? "pt-16" : "pt-24"}`}>
             <AnimatedRoutes />
           </main>
           {!isDarkPage && <Footer />}

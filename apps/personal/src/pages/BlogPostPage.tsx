@@ -1,53 +1,103 @@
-import { useState, useEffect } from "react";
-import { getBlogPosts } from "@/lib/api/content";
-import BlogPostCard from "@/components/BlogPostCard";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Home, ChevronRight, Link2, Facebook, Linkedin, Twitter } from "lucide-react";
-import { getBlogPost, BlogPostRow } from "@/lib/api/content";
+import { Home, ChevronRight, Link2, Linkedin, Twitter, ArrowRight, ArrowUpRight } from "lucide-react";
+import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
+import "@/styles/article-v2.css";
 
-const CATEGORY_COLORS: Record<string, string> = {
-  professional: "bg-primary/90 text-primary-foreground",
-  personal: "bg-amber-600/90 text-white",
-};
+/* ────────────────────────────────────────────────────────────
+   BlogPostPage — article reader, redesign v2.
 
-const renderMarkdown = (md: string) =>
-  md
-    .split("\n")
-    .map((line) => {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("## ")) return `<h2>${trimmed.slice(3)}</h2>`;
-      if (trimmed.startsWith("### ")) return `<h3>${trimmed.slice(4)}</h3>`;
-      if (trimmed.startsWith("**") && trimmed.endsWith("**"))
-        return `<p><strong>${trimmed.slice(2, -2)}</strong></p>`;
-      if (trimmed.startsWith("- **"))
-        return `<li><strong>${trimmed.match(/\*\*(.*?)\*\*/)?.[1]}</strong>${trimmed.replace(/- \*\*.*?\*\*/, "")}</li>`;
-      if (trimmed.startsWith("- ")) return `<li>${trimmed.slice(2)}</li>`;
-      if (trimmed === "") return "";
-      return `<p>${trimmed.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</p>`;
-    })
-    .join("\n");
+   Pixel-port of the claude.ai/design prototype viewArticle
+   (project/assets/site-spa.css → ARTICLE READING VIEW), rendered
+   with the scoped .article-v2 stylesheet. Preserves everything the
+   previous reader did so SEO / SSR / drafts stay intact:
+     - Auth/preload-aware fetch via usePreloadedBlogPost + getBlogPost
+     - Bilingual NL/EN via useLang (title_nl / excerpt_nl / content_nl)
+     - useSEO with canonical + JSON-LD BlogPosting (getBlogPost* helpers)
+     - Draft detection → noindex + visible CONCEPT banner for Hans-auth
+     - Prerender-safe: scroll-spy + clipboard guarded for typeof window
 
-const shareUrl = (platform: string, url: string, title: string) => {
-  const encoded = encodeURIComponent(url);
-  const encodedTitle = encodeURIComponent(title);
-  switch (platform) {
-    case "twitter":
-      return `https://twitter.com/intent/tweet?url=${encoded}&text=${encodedTitle}`;
-    case "facebook":
-      return `https://www.facebook.com/sharer/sharer.php?u=${encoded}`;
-    case "linkedin":
-      return `https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`;
-    default:
-      return "#";
+   New in v2:
+     - Centered .ahead with category line, serif title, dek, byline
+     - .ahero full-width image
+     - .reading rail: sticky TOC (>=3 H2s) with scroll-spy + progress bar
+     - design .prose (lead / h2 / h3 / ul / pull / callout)
+     - .atags · .share · dark "Sparren?" .cta · "Meer lezen" .ncards
+   ──────────────────────────────────────────────────────────── */
+
+/* Markdown → design-prose HTML.
+   Enriches the previous renderer to also emit the design's lead / pull /
+   callout blocks, and stamps H2s with id="sec-N" so the TOC can scroll-spy.
+   Output trust model is unchanged — content originates from the CMS. */
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const inlineMd = (s: string) =>
+  esc(s)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\[(.+?)\]\((https?:[^)]+)\)/g, '<a href="$2" rel="noopener noreferrer">$1</a>');
+
+interface RenderResult { html: string; headings: { id: string; text: string }[]; }
+
+function renderArticle(md: string): RenderResult {
+  const lines = md.split("\n");
+  const headings: { id: string; text: string }[] = [];
+  const out: string[] = [];
+  let listBuf: string[] = [];
+  let h2Count = 0;
+  let firstParaDone = false;
+
+  const flushList = () => {
+    if (listBuf.length) {
+      out.push(`<ul>${listBuf.map((li) => `<li>${li}</li>`).join("")}</ul>`);
+      listBuf = [];
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const t = lines[i].trim();
+    if (t === "") { flushList(); continue; }
+
+    // H2 — gets an id for TOC scroll-spy
+    if (t.startsWith("## ")) {
+      flushList();
+      const text = t.slice(3).trim();
+      const id = `sec-${++h2Count}`;
+      headings.push({ id, text });
+      out.push(`<h2 id="${id}">${esc(text)}</h2>`);
+      continue;
+    }
+    if (t.startsWith("### ")) { flushList(); out.push(`<h3>${esc(t.slice(4).trim())}</h3>`); continue; }
+
+    // Blockquote → pull quote
+    if (t.startsWith("> ")) { flushList(); out.push(`<p class="pull">${inlineMd(t.slice(2).trim())}</p>`); continue; }
+
+    // Callout:  :::Kicker | body   (graceful: also plain "::: body")
+    if (t.startsWith(":::")) {
+      flushList();
+      const body = t.slice(3).trim();
+      const [k, ...rest] = body.split("|");
+      const kicker = rest.length ? k.trim() : "Noot";
+      const text = rest.length ? rest.join("|").trim() : body;
+      out.push(`<div class="callout"><div class="callout__k">${esc(kicker)}</div><p>${inlineMd(text)}</p></div>`);
+      continue;
+    }
+
+    // List item
+    if (t.startsWith("- ")) { listBuf.push(inlineMd(t.slice(2).trim())); continue; }
+
+    // Paragraph — the very first one becomes the lead
+    flushList();
+    if (!firstParaDone) { out.push(`<p class="lead">${inlineMd(t)}</p>`); firstParaDone = true; }
+    else out.push(`<p>${inlineMd(t)}</p>`);
   }
-};
+  flushList();
+  return { html: out.join("\n"), headings };
+}
 
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -56,29 +106,30 @@ const BlogPostPage = () => {
     () => (preloaded ?? undefined) as BlogPostRow | undefined
   );
   const { lang } = useLang();
+  const articleRef = useRef<HTMLElement>(null);
+  const progRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!slug) return;
-    if (preloaded?.slug === slug) {
-      setPost(preloaded);
-      return;
-    }
+    if (preloaded?.slug === slug) { setPost(preloaded); return; }
     setPost(undefined);
     getBlogPost(slug).then(setPost);
   }, [slug, preloaded]);
 
   // Language-aware fields
-  const displayTitle = post ? ((lang === "nl" && post.title_nl) ? post.title_nl : post.title) : "";
-  const displayExcerpt = post ? ((lang === "nl" && post.excerpt_nl) ? post.excerpt_nl : post.excerpt) : "";
-  const displayContent = post ? ((lang === "nl" && post.content_nl) ? post.content_nl : post.content) : "";
+  const displayTitle = post ? (lang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
+  const displayExcerpt = post ? (lang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";
+  const displayContent = post ? (lang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
 
-  const fullContent = displayContent || "";
+  const { html: bodyHtml, headings } = useMemo(
+    () => renderArticle(displayContent || ""),
+    [displayContent]
+  );
+  const showToc = headings.length >= 3;
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const seoHead = post ? getBlogPostHead(post) : null;
   const seoUrl = seoHead?.canonical || `https://hansvanleeuwen.com/writing/${slug}`;
-
-  // Draft = not published OR explicit status='draft'. Hidden from crawlers.
   const isDraft = !!post && (post.published === false || (post as { status?: string }).status === "draft");
 
   useSEO({
@@ -91,265 +142,205 @@ const BlogPostPage = () => {
     noindex: isDraft,
   });
 
+  /* ── TOC scroll-spy + reading-progress bar (prerender-safe) ── */
+  useEffect(() => {
+    if (typeof window === "undefined" || !post || !showToc) return;
+    const root = articleRef.current;
+    if (!root) return;
+    const secs = headings
+      .map((h) => root.querySelector<HTMLElement>(`#${h.id}`))
+      .filter((el): el is HTMLElement => !!el);
+    const links = Array.from(root.querySelectorAll<HTMLAnchorElement>(".toc a"));
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (progRef.current) progRef.current.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
+      if (!secs.length) return;
+      let cur = secs[0];
+      secs.forEach((s) => { if (s.getBoundingClientRect().top <= 140) cur = s; });
+      links.forEach((a) => a.classList.toggle("active", a.dataset.toc === cur.id));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [post, showToc, headings, slug]);
+
+  const scrollToHeading = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    const el = articleRef.current?.querySelector<HTMLElement>(`#${id}`);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 96, behavior: "smooth" });
+  };
+
+  const handleCopyLink = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(currentUrl);
+      toast.success(lang === "nl" ? "Link gekopieerd" : "Link copied to clipboard");
+    }
+  };
+
   if (post === undefined) {
-    return <section className="section-container pt-28"><p className="text-muted-foreground">Loading…</p></section>;
+    return (
+      <div className="article-v2">
+        <div className="art"><p className="adek" style={{ marginTop: 40 }}>{lang === "nl" ? "Laden…" : "Loading…"}</p></div>
+      </div>
+    );
   }
 
   if (!post) {
     return (
-      <section className="section-container pt-28 text-center">
-        <h1 className="font-display text-3xl text-foreground">Post not found</h1>
-        <Link to="/writing" className="mt-4 inline-block text-primary hover:underline">← Back to Writing</Link>
-      </section>
+      <div className="article-v2">
+        <div className="art" style={{ textAlign: "center", paddingTop: 60 }}>
+          <h1 className="atitle">{lang === "nl" ? "Artikel niet gevonden" : "Post not found"}</h1>
+          <div style={{ marginTop: 24 }}>
+            <Link to="/writing" className="cta__btn">← {lang === "nl" ? "Terug naar Writing" : "Back to Writing"}</Link>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  const categoryColor = CATEGORY_COLORS[post.category] ?? "bg-muted text-foreground";
-  const dateStr = new Date(post.created_at).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+  const dateStr = new Date(post.created_at).toLocaleDateString(lang === "nl" ? "nl-NL" : "en-US", {
+    month: "long", day: "numeric", year: "numeric",
   });
+  const catLine = post.category ? post.category : "Marketplace";
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(currentUrl);
-    toast.success("Link copied to clipboard");
-  };
+  const shareTwitter = `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(displayTitle)}`;
+  const shareLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`;
 
   return (
-    <article>
+    <div className="article-v2">
+      <div ref={progRef} className="prog" />
+
       {isDraft && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="border-b border-amber-300/60 bg-amber-50 text-amber-900"
-        >
-          <div className="section-container flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
-            <div className="flex items-center gap-3">
-              <span className="rounded-full bg-amber-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                Concept
-              </span>
-              <p className="font-medium">
+        <div className="draftbar" role="status" aria-live="polite">
+          <div className="draftbar__in">
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <span className="draftbar__badge">Concept</span>
+              <span style={{ fontWeight: 500 }}>
                 Deze versie is alleen voor jou zichtbaar. Niet vindbaar in Google. Niet gedeeld op /writing voor anonieme bezoekers.
-              </p>
+              </span>
             </div>
-            <Link
-              to={`/write/${post.id}`}
-              className="rounded-md border border-amber-400 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 transition hover:bg-amber-100"
-            >
-              Bewerk in CMS →
-            </Link>
+            <Link to={`/write/${post.id}`} className="draftbar__edit">Bewerk in CMS →</Link>
           </div>
         </div>
       )}
-      {/* Hero Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full"
-      >
-        {/* Hero Image */}
-        <div className="relative h-[50vh] min-h-[400px] max-h-[560px] w-full overflow-hidden md:h-[60vh]">
-          {post.image_url ? (
-            <img
-              src={post.image_url}
-              alt={displayTitle}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-muted to-secondary" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
 
-          {/* Breadcrumb over hero */}
-          <div className="absolute inset-x-0 top-0 z-10">
-            <div className="section-container pt-24">
-              <nav className="flex items-center gap-1.5 text-xs text-white/60" aria-label="Breadcrumb">
-                <Link to="/" className="flex items-center gap-1 transition-colors hover:text-white">
-                  <Home size={12} />
-                  <span>Home</span>
-                </Link>
-                <ChevronRight size={11} className="text-white/30" />
-                <Link to="/writing" className="transition-colors hover:text-white">Writing</Link>
-                <ChevronRight size={11} className="text-white/30" />
-                <span className="font-medium text-white/90 line-clamp-1">{displayTitle}</span>
-              </nav>
-            </div>
-          </div>
+      {/* Breadcrumb */}
+      <nav className="crumb" aria-label="Breadcrumb">
+        <Link to="/"><Home size={12} /><span>Home</span></Link>
+        <ChevronRight size={12} />
+        <Link to="/writing">Writing</Link>
+        <ChevronRight size={12} />
+        <span className="here" aria-current="page">{displayTitle}</span>
+      </nav>
 
-          {/* Hero content */}
-          <div className="absolute inset-x-0 bottom-0 z-10">
-            <div className="section-container pb-10">
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {/* Meta badges */}
-                <div className="mb-4 flex flex-wrap items-center gap-3">
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${categoryColor}`}>
-                    {post.category}
-                  </span>
-                  <span className="text-sm text-white/60">{dateStr}</span>
-                  <span className="text-white/30">·</span>
-                  <span className="text-sm text-white/60">{post.read_time}</span>
-                </div>
-
-                {/* Title */}
-                <h1 className="mb-3 max-w-3xl font-display text-3xl font-semibold leading-tight text-white md:text-4xl lg:text-5xl">
-                  {displayTitle}
-                </h1>
-
-                {/* Excerpt */}
-                {displayExcerpt && (
-                  <p className="max-w-2xl text-base leading-relaxed text-white/70 md:text-lg">
-                    {displayExcerpt}
-                  </p>
-                )}
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Author bar + Share icons */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="border-b border-border"
-      >
-        <div className="section-container flex items-center justify-between py-5">
-          {/* Author */}
-          <div className="flex items-center gap-3">
-            <img
-              src={hansProfile}
-              alt="Hans van Leeuwen"
-              className="h-10 w-10 rounded-full object-cover ring-2 ring-border"
-            />
+      <article className="art rise" ref={articleRef}>
+        {/* Head */}
+        <div className="ahead">
+          <div className="ahead__cat">{catLine} <span className="langtag">{lang.toUpperCase()}</span></div>
+          <h1 className="atitle">{displayTitle}</h1>
+          {displayExcerpt && <p className="adek">{displayExcerpt}</p>}
+          <div className="byline">
+            <span className="byline__av">H<img src={hansProfile} alt="Hans van Leeuwen" onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} /></span>
             <div>
-              <p className="text-sm font-semibold text-foreground">Hans van Leeuwen</p>
-              <p className="text-xs text-muted-foreground">E-commerce & Marketplace Specialist</p>
+              <div className="byline__n">Hans van Leeuwen</div>
+              <div className="byline__r">E-commerce &amp; Marketplace Specialist</div>
             </div>
-          </div>
-
-          {/* Share icons */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleCopyLink}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              aria-label="Copy link"
-            >
-              <Link2 size={16} />
-            </button>
-            <a
-              href={shareUrl("twitter", currentUrl, displayTitle)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              aria-label="Share on Twitter"
-            >
-              <Twitter size={16} />
-            </a>
-            <a
-              href={shareUrl("facebook", currentUrl, displayTitle)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              aria-label="Share on Facebook"
-            >
-              <Facebook size={16} />
-            </a>
-            <a
-              href={shareUrl("linkedin", currentUrl, displayTitle)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              aria-label="Share on LinkedIn"
-            >
-              <Linkedin size={16} />
-            </a>
+            <span className="dot" />
+            <span className="byline__t">{dateStr} · {post.read_time}</span>
           </div>
         </div>
-      </motion.div>
 
-      {/* Article body */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="section-container pb-20 pt-12"
-      >
-        {/* Tags */}
-        {post.tags.length > 0 && (
-          <div className="mx-auto mb-8 flex max-w-3xl flex-wrap gap-2">
-            {post.tags.map((tag) => (
-              <span key={tag} className="rounded-full bg-secondary px-3 py-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                {tag}
-              </span>
-            ))}
-          </div>
+        {/* Hero */}
+        {post.image_url && (
+          <figure className="ahero"><img src={post.image_url} alt={displayTitle} /></figure>
         )}
 
-        <div className="prose prose-stone mx-auto max-w-3xl dark:prose-invert prose-headings:font-display prose-headings:font-medium prose-h2:text-2xl prose-p:leading-relaxed prose-li:leading-relaxed">
-          {fullContent ? (
-            <div dangerouslySetInnerHTML={{ __html: renderMarkdown(fullContent) }} />
+        {/* Reading rail */}
+        <div className="reading">
+          {showToc ? (
+            <aside className="toc" aria-label={lang === "nl" ? "In dit artikel" : "In this article"}>
+              <div className="toc__l">{lang === "nl" ? "In dit artikel" : "In this article"}</div>
+              <ol>
+                {headings.map((h) => (
+                  <li key={h.id}>
+                    <a data-toc={h.id} href={`#${h.id}`} onClick={(e) => scrollToHeading(e, h.id)}>{h.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </aside>
           ) : (
-            <p className="text-muted-foreground italic">Full article coming soon.</p>
+            <div aria-hidden />
           )}
+          <div className="prose" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
         </div>
-      </motion.div>
 
-      {/* Related Articles */}
-      <RelatedArticles category={post.category} currentSlug={post.slug} />
-    </article>
+        {/* Tags */}
+        {post.tags.length > 0 && (
+          <div className="atags">{post.tags.map((t) => <span key={t} className="atag">{t}</span>)}</div>
+        )}
+
+        {/* Share */}
+        <div className="share">
+          <span className="share__l">{lang === "nl" ? "Delen" : "Share"}</span>
+          <a href={shareLinkedIn} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a>
+          <a href={shareTwitter} target="_blank" rel="noopener noreferrer" aria-label="X / Twitter"><Twitter size={17} /></a>
+          <button type="button" onClick={handleCopyLink} aria-label={lang === "nl" ? "Kopieer link" : "Copy link"}><Link2 size={17} /></button>
+        </div>
+
+        {/* Conversion CTA */}
+        <section className="cta">
+          <div className="cta__k">{lang === "nl" ? "Sparren?" : "Let's talk"}</div>
+          <h3>{lang === "nl" ? "Wil je sparren over jouw marketplace-strategie?" : "Want to spar about your marketplace strategy?"}</h3>
+          <p>{lang === "nl"
+            ? "Geen hype — een nuchtere blik op waar je groei zit en waar je marge weglekt."
+            : "No hype — a sober look at where your growth is and where margin leaks away."}</p>
+          <Link to="/about" className="cta__btn">{lang === "nl" ? "Neem contact op" : "Get in touch"} <ArrowRight size={16} /></Link>
+        </section>
+
+        {/* More */}
+        <MoreReading category={post.category} currentSlug={post.slug} lang={lang} />
+      </article>
+    </div>
   );
 };
 
-const RelatedArticles = ({ category, currentSlug }: { category: string; currentSlug: string }) => {
-  const [related, setRelated] = useState<
-    { id: string; title: string; excerpt: string; category: "professional" | "personal"; tags: string[]; date: string; readTime: string; slug: string; imageUrl?: string }[]
-  >([]);
+/* "Meer lezen" — two related cards (design .ncard).
+   Same category, excludes current; falls back to latest if none. */
+const MoreReading = ({ category, currentSlug, lang }: { category: string; currentSlug: string; lang: string }) => {
+  const [items, setItems] = useState<{ slug: string; title: string; cat: string; read: string }[]>([]);
 
   useEffect(() => {
     getBlogPosts(true).then((posts) => {
-      const filtered = posts
-        .filter((p) => p.category === category && p.slug !== currentSlug)
-        .slice(0, 3)
-        .map((p) => ({
-          id: p.id,
-          title: p.title,
-          excerpt: p.excerpt,
-          category: p.category as "professional" | "personal",
-          tags: p.tags,
-          date: p.created_at,
-          readTime: p.read_time,
-          slug: p.slug,
-          imageUrl: p.image_url || undefined,
-        }));
-      setRelated(filtered);
+      const others = posts.filter((p) => p.slug !== currentSlug);
+      const same = others.filter((p) => p.category === category);
+      const pick = (same.length ? same : others).slice(0, 2);
+      setItems(pick.map((p) => ({
+        slug: p.slug,
+        title: lang === "nl" && p.title_nl ? p.title_nl : p.title,
+        cat: p.category,
+        read: p.read_time,
+      })));
     });
-  }, [category, currentSlug]);
+  }, [category, currentSlug, lang]);
 
-  if (related.length === 0) return null;
+  if (items.length === 0) return null;
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="border-t border-border"
-    >
-      <div className="section-container py-16">
-        <h2 className="mb-8 font-display text-2xl font-medium text-foreground">Related Articles</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {related.map((post, i) => (
-            <BlogPostCard key={post.id} post={post} index={i} />
-          ))}
-        </div>
+    <section className="more">
+      <div className="more__h">{lang === "nl" ? "Meer lezen" : "More reading"}</div>
+      <div className="more__grid">
+        {items.map((o) => (
+          <Link key={o.slug} to={`/writing/${o.slug}`} className="ncard">
+            <div className="ncard__m">
+              <span className="tagx">{o.cat}</span>
+              <span className="dot"></span>
+              <span>{o.read}</span>
+            </div>
+            <div className="ncard__t">{o.title}</div>
+          </Link>
+        ))}
       </div>
-    </motion.section>
+    </section>
   );
 };
 

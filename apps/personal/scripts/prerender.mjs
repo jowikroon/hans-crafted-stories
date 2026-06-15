@@ -494,6 +494,14 @@ const SEO_PAGES = [
     },
   },
   {
+    route: "/music",
+    head: {
+      title: "Music — Songs & Production Notes | Hans van Leeuwen",
+      description: "Original songs by Hans van Leeuwen — listen on Spotify and read the production notes behind each track: how it was made, the gear, and the lyrics.",
+      canonical: `${BASE}/music`,
+    },
+  },
+  {
     route: "/interim-ecommerce-manager",
     head: {
       title: "Interim E-commerce Manager — Freelance Marketplace Lead (NL/EU) | Hans van Leeuwen",

@@ -1,0 +1,404 @@
+import { useState, useMemo, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
+import { useSEO } from "@/hooks/useSEO";
+import { useLang } from "@/hooks/useLang";
+import { translations } from "@/data/translations";
+import { usePreloadedBlogPosts } from "@/contexts/PreloadedDataContext";
+import "@/styles/writing-v2.css";
+
+type SortOrder = "newest" | "oldest";
+
+interface MappedPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  titleNl?: string;
+  excerptNl?: string;
+  category: string;
+  tags: string[];
+  date: string;
+  readTime: string;
+  slug: string;
+  imageUrl?: string;
+  isDraft: boolean;
+}
+
+const FILTER_PILLS = [
+  { tag: "all", label: "All" },
+  { tag: "amazon", label: "Amazon" },
+  { tag: "bol", label: "Bol.com" },
+  { tag: "marketplace", label: "Marketplace" },
+  { tag: "ecommerce", label: "E-commerce" },
+  { tag: "ai", label: "AI" },
+  { tag: "ux", label: "UX" },
+];
+
+function formatDate(iso: string, locale: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString(locale === "nl" ? "nl-NL" : "en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  );
+}
+
+function ChevronRight() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
+const WritingV2 = () => {
+  const preloadedPosts = usePreloadedBlogPosts();
+  const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>(() => preloadedPosts ?? []);
+  const [loading, setLoading] = useState(preloadedPosts === null);
+  const [filter, setFilter] = useState("all");
+  const [sort, setSort] = useState<SortOrder>("newest");
+  const { lang } = useLang();
+  const t = translations[lang].writing;
+  const seo = translations[lang].seo;
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
+  useSEO({
+    title: seo.writingTitle,
+    description: seo.writingDescription,
+    url: "https://hansvanleeuwen.com/writing",
+    hreflang: [
+      { lang: "en", href: "https://hansvanleeuwen.com/writing" },
+      { lang: "nl", href: "https://hansvanleeuwen.com/writing" },
+      { lang: "x-default", href: "https://hansvanleeuwen.com/writing" },
+    ],
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "CollectionPage",
+          "@id": "https://hansvanleeuwen.com/writing#page",
+          name: t.heading,
+          description: seo.writingDescription,
+          url: "https://hansvanleeuwen.com/writing",
+          isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
+          author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+            { "@type": "ListItem", position: 2, name: t.label, item: "https://hansvanleeuwen.com/writing" },
+          ],
+        },
+      ],
+    },
+  });
+
+  useEffect(() => {
+    if (preloadedPosts !== null) return;
+    getBlogPosts(true).then((p) => {
+      setBlogPosts(p);
+      setLoading(false);
+    });
+  }, [preloadedPosts]);
+
+  const mappedPosts: MappedPost[] = useMemo(
+    () =>
+      blogPosts.map((p) => ({
+        id: p.id,
+        title: p.title,
+        excerpt: p.excerpt,
+        titleNl: p.title_nl || undefined,
+        excerptNl: p.excerpt_nl || undefined,
+        category: p.category,
+        tags: p.tags ?? [],
+        date: p.created_at,
+        readTime: p.read_time,
+        slug: p.slug,
+        imageUrl: p.image_url || undefined,
+        // Draft = not published. Surfaced to Hans only (RLS gates server-side).
+        isDraft: !p.published || (typeof p.status === "string" && p.status === "draft"),
+      })),
+    [blogPosts],
+  );
+
+  // Filter & sort
+  const filtered = useMemo(() => {
+    let posts = mappedPosts;
+    if (filter !== "all") {
+      posts = posts.filter((p) => {
+        const allTags = [...p.tags.map((x) => x.toLowerCase()), p.category.toLowerCase()];
+        return allTags.some((tag) => tag.includes(filter.toLowerCase()));
+      });
+    }
+    posts = [...posts].sort((a, b) =>
+      sort === "newest"
+        ? new Date(b.date).getTime() - new Date(a.date).getTime()
+        : new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
+    return posts;
+  }, [filter, sort, mappedPosts]);
+
+  // Sticky toolbar shadow
+  useEffect(() => {
+    const tb = toolbarRef.current;
+    if (!tb) return;
+    const onScroll = () => {
+      const isStuck = window.scrollY > 10 && tb.getBoundingClientRect().top <= 73;
+      tb.classList.toggle("stuck", isStuck);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Reveal animation on scroll
+  useEffect(() => {
+    if (!("IntersectionObserver" in window)) return;
+    const rows = document.querySelectorAll(".writing-v2 .post.rv");
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
+    );
+    rows.forEach((r) => io.observe(r));
+    return () => io.disconnect();
+  }, [filtered]);
+
+  // The featured post = first/newest
+  const [featured, ...rest] = filtered;
+  const featTitle = featured && lang === "nl" && featured.titleNl ? featured.titleNl : featured?.title;
+  const featExcerpt = featured && lang === "nl" && featured.excerptNl ? featured.excerptNl : featured?.excerpt;
+  const featLang = (lang === "nl" ? "NL" : "EN").toString();
+
+  return (
+    <div className="writing-v2">
+      <div className="wrap">
+        {/* Breadcrumb */}
+        <nav className="crumb idx" aria-label="Breadcrumb">
+          <Link to="/">Home</Link>
+          <ChevronRight />
+          <span className="here" aria-current="page">
+            Writing
+          </span>
+        </nav>
+
+        {/* Masthead */}
+        <section className="masthead">
+          <span className="eyebrow">Insights &amp; Essays</span>
+          <h1 className="title">{lang === "nl" ? "Gedachten & essays" : "Thoughts & Essays"}</h1>
+          <p className="lede">
+            {lang === "nl" ? (
+              <>
+                Field notes van <strong>Hans van Leeuwen</strong> — freelance e-commerce manager en Amazon &amp; Bol.com
+                marketplace-specialist, gevestigd in Amersfoort. Praktische essays over marketplace-strategie,
+                listing-optimalisatie en e-commerce groei door NL &amp; EU, geschreven vanuit hands-on klantwerk.
+              </>
+            ) : (
+              <>
+                Field notes from <strong>Hans van Leeuwen</strong> — a freelance e-commerce manager and Amazon &amp; Bol.com
+                marketplace specialist based in Amersfoort, Netherlands. Practical writing on marketplace strategy,
+                listing optimization, and marketplace growth across the NL &amp; EU, drawn from hands-on client work.
+              </>
+            )}
+          </p>
+          <div className="proof">
+            <div className="proof__item">
+              <span className="proof__stat">70%</span>
+              <span className="proof__label">
+                {lang === "nl" ? "Amazon NL categorie-aandeel (Nielsen)" : "Amazon NL category share (Nielsen)"}
+              </span>
+            </div>
+            <div className="proof__item">
+              <span className="proof__stat">+20%</span>
+              <span className="proof__label">
+                {lang === "nl" ? "Wekelijkse sales via targeted campagnes" : "Weekly sales via targeted campaigns"}
+              </span>
+            </div>
+            <div className="proof__item">
+              <span className="proof__stat">&lt;2%</span>
+              <span className="proof__label">
+                {lang === "nl" ? "Out-of-stock rate, forecast-driven" : "Out-of-stock rate, forecast-driven"}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Toolbar */}
+        <div className="toolbar" ref={toolbarRef}>
+          <div className="filters" role="group" aria-label="Filter by topic">
+            {FILTER_PILLS.map((p) => (
+              <button
+                key={p.tag}
+                type="button"
+                className={`pill ${filter === p.tag ? "on" : ""}`}
+                aria-pressed={filter === p.tag}
+                onClick={() => setFilter(p.tag)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <div className="toolbar__right">
+            <span className="count" aria-live="polite">
+              {filtered.length} {filtered.length === 1 ? "essay" : "essays"}
+            </span>
+            <div className="sort">
+              <label htmlFor="sortSel">{lang === "nl" ? "Sorteer" : "Sort"}</label>
+              <select
+                id="sortSel"
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortOrder)}
+              >
+                <option value="newest">{lang === "nl" ? "Nieuwste" : "Newest"}</option>
+                <option value="oldest">{lang === "nl" ? "Oudste" : "Oldest"}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* List */}
+        <div className="list">
+          {loading ? (
+            <p className="empty">{lang === "nl" ? "Essays worden geladen..." : "Loading essays..."}</p>
+          ) : filtered.length === 0 ? (
+            <p className="empty">
+              {lang === "nl" ? "Geen essays voor dit onderwerp." : "No essays match that topic yet."}
+            </p>
+          ) : (
+            <>
+              {/* Featured post (first item) */}
+              {featured && (
+                <Link
+                  to={`/writing/${featured.slug}`}
+                  className="post post--featured rv"
+                  aria-label={`Featured essay: ${featTitle}`}
+                >
+                  <article className="feat__grid">
+                    <div className="feat__body">
+                      <span className="feat__kicker">
+                        {featured.isDraft
+                          ? lang === "nl"
+                            ? "Concept"
+                            : "Draft"
+                          : lang === "nl"
+                          ? "Nieuwste essay"
+                          : "Latest essay"}
+                      </span>
+                      <div className="post__meta">
+                        <time className="post__date" dateTime={featured.date}>
+                          {formatDate(featured.date, lang)}
+                        </time>
+                        <span className="dot"></span>
+                        <span className="tag">{featured.category}</span>
+                        <span className="dot"></span>
+                        <span className="lang">{featLang}</span>
+                        {featured.readTime && (
+                          <>
+                            <span className="dot"></span>
+                            <span>{featured.readTime}</span>
+                          </>
+                        )}
+                        {featured.isDraft && (
+                          <>
+                            <span className="dot"></span>
+                            <span className="draft-pill">Concept</span>
+                          </>
+                        )}
+                      </div>
+                      <h2 className="post__title">{featTitle}</h2>
+                      <p className="post__excerpt">{featExcerpt}</p>
+                      <span className="feat__cta">
+                        {lang === "nl" ? "Lees het essay" : "Read the essay"}
+                        <ArrowIcon />
+                      </span>
+                    </div>
+                    {featured.imageUrl && (
+                      <div className="feat__media">
+                        <img
+                          src={featured.imageUrl}
+                          alt={featTitle ?? ""}
+                          width={1200}
+                          height={800}
+                          loading="eager"
+                          decoding="async"
+                        />
+                      </div>
+                    )}
+                  </article>
+                </Link>
+              )}
+
+              {/* Rest of posts */}
+              {rest.map((post) => {
+                const title = lang === "nl" && post.titleNl ? post.titleNl : post.title;
+                const excerpt = lang === "nl" && post.excerptNl ? post.excerptNl : post.excerpt;
+                return (
+                  <Link key={post.id} to={`/writing/${post.slug}`} className="post rv">
+                    <div className="post__thumb">
+                      {post.imageUrl ? (
+                        <img
+                          src={post.imageUrl}
+                          alt={title}
+                          width={600}
+                          height={400}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : null}
+                    </div>
+                    <div className="post__body">
+                      <div className="post__meta">
+                        <time className="post__date" dateTime={post.date}>
+                          {formatDate(post.date, lang)}
+                        </time>
+                        <span className="dot"></span>
+                        <span className="tag">{post.category}</span>
+                        <span className="dot"></span>
+                        <span className="lang">{featLang}</span>
+                        {post.readTime && (
+                          <>
+                            <span className="dot"></span>
+                            <span>{post.readTime}</span>
+                          </>
+                        )}
+                        {post.isDraft && (
+                          <>
+                            <span className="dot"></span>
+                            <span className="draft-pill">Concept</span>
+                          </>
+                        )}
+                      </div>
+                      <h2 className="post__title">{title}</h2>
+                      <p className="post__excerpt">{excerpt}</p>
+                    </div>
+                    <span className="post__go" aria-hidden="true">
+                      <ArrowIcon />
+                    </span>
+                  </Link>
+                );
+              })}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WritingV2;
