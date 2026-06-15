@@ -38,13 +38,11 @@ const Navbar = (_props: NavbarProps) => {
   const t = translations[lang].nav;
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [workOpen, setWorkOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const workCloseTimer = useRef<ReturnType<typeof setTimeout>>();
 
   /* Theme toggle still controls page-content dark mode; the bar stays light. */
   const [siteTheme, setSiteTheme] = useState<"light" | "dark">(() => {
@@ -68,7 +66,7 @@ const Navbar = (_props: NavbarProps) => {
 
   const siteLinks = [
     { to: "/", label: t.home },
-    { to: "/work", label: t.work, hasDropdown: true },
+    { to: "/work", label: t.work },
     { to: "/writing", label: t.writing },
     { to: "/music", label: "Music" },
     { to: "/about", label: t.about },
@@ -133,8 +131,6 @@ const Navbar = (_props: NavbarProps) => {
   const isWorkActive = location.pathname.startsWith("/work")
     || ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager"].includes(location.pathname);
 
-  const openWork = () => { clearTimeout(workCloseTimer.current); setWorkOpen(true); };
-  const closeWorkSoon = () => { workCloseTimer.current = setTimeout(() => setWorkOpen(false), 120); };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((i) => Math.min(i + 1, filteredPages.length - 1)); }
@@ -214,40 +210,22 @@ const Navbar = (_props: NavbarProps) => {
               </span>
             </Link>
 
-            {/* Centre nav + Work dropdown */}
+            {/* Centre nav — plain links (Work hover dropdown removed) */}
             <div className="hidden md:flex items-center gap-1 justify-self-center">
-                {siteLinks.map((l) =>
-                  l.hasDropdown ? (
-                    <div key={l.to} className="relative" onMouseEnter={openWork} onMouseLeave={closeWorkSoon}>
-                      <button
-                        onClick={() => navigate("/work")}
-                        className={`relative flex items-center gap-1 px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${isWorkActive ? "text-[#15140F]" : "text-[#7E7A6F] hover:text-[#15140F]"}`}
-                      >
-                        {l.label}
-                        <ChevronDown size={13} className={`transition-transform ${workOpen ? "rotate-180" : ""}`} />
-                        {isWorkActive && <span className="absolute left-3.5 right-7 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
-                      </button>
-                      <AnimatePresence>
-                        {workOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -6, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.98 }} transition={{ duration: 0.14 }}
-                            className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 w-64 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl overflow-hidden py-1"
-                          >
-                            {workChildren.map((c, i) =>
-                              "group" in c ? (
-                                <p key={`g${i}`} className="px-4 pt-2.5 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F] border-t border-black/[0.06] mt-1 first:border-0 first:mt-0">{c.group}</p>
-                              ) : (
-                                <Link key={c.to} to={c.to} onClick={() => setWorkOpen(false)} className={`block px-4 py-2.5 text-sm transition-colors ${isActive(c.to) ? "text-[#15140F] bg-[#E5DFCE]/60" : "text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60"}`}>{c.label}</Link>
-                              ),
-                            )}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  ) : (
-                    <SiteLink key={l.to} to={l.to} label={l.label} active={(l as { cc?: boolean }).cc ? isCommandCenter : isActive(l.to)} />
-                  ),
-                )}
+                {siteLinks.map((l) => (
+                  <SiteLink
+                    key={l.to}
+                    to={l.to}
+                    label={l.label}
+                    active={
+                      l.to === "/work"
+                        ? isWorkActive
+                        : (l as { cc?: boolean }).cc
+                        ? isCommandCenter
+                        : isActive(l.to)
+                    }
+                  />
+                ))}
               </div>
 
             {/* Right cluster */}
