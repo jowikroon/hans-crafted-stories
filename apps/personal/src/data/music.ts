@@ -182,7 +182,7 @@ export const songs: Song[] = [
       spotify: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
       youtube: "https://youtube.com/shorts/dpOHLmNUpCE",
     },
-    videoFile: "/media/beat-drop.mp4",
+    videoFile: "/media/final_neon_beat_drop.mp4",
     videoUrl: "https://youtube.com/shorts/dpOHLmNUpCE",
     detail: {
       category: "Electronic · Single",
