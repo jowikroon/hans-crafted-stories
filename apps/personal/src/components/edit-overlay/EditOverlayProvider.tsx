@@ -14,6 +14,7 @@ import {
   type PageOverride,
 } from "@/lib/api/overrides";
 import { DEFAULT_LOGO_ID, LOGO_SETTING_KEY } from "@/lib/logos";
+import { LogoProvider } from "@/contexts/LogoContext";
 
 const STYLE_TAG_ID = "page-overrides-style";
 
@@ -71,11 +72,6 @@ export function useEditOverlay() {
   return v;
 }
 
-/** Non-throwing read of the active header logo id — safe anywhere. */
-export function useActiveLogo(): string {
-  const v = useContext(Ctx);
-  return v?.activeLogoId ?? DEFAULT_LOGO_ID;
-}
 
 export function EditOverlayProvider({ children }: { children: React.ReactNode }) {
   const [editing, setEditing] = useState(false);
@@ -240,7 +236,11 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides, activeLogoId, setActiveLogo]
   );
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={value}>
+      <LogoProvider value={{ activeLogoId, setActiveLogo }}>{children}</LogoProvider>
+    </Ctx.Provider>
+  );
 }
 
 function labelFor(el: Element): string {

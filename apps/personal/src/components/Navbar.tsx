@@ -10,7 +10,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { logoById } from "@/lib/logos";
-import { useActiveLogo } from "./edit-overlay/EditOverlayProvider";
+import { useActiveLogo } from "@/contexts/LogoContext";
 
 const THEME_KEY = "site_theme";
 
