@@ -341,7 +341,11 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
                       <span className="vp-reco-name">{proposal.chosen!.tpl.name}</span>
                       {proposal.chosen!.tpl.short_code && <span className="vp-reco-code">{proposal.chosen!.tpl.short_code}</span>}
                     </div>
-                    <p className="vp-reco-why"><strong>Waarom:</strong> {proposal.reasoning}</p>
+                    <p className="vp-reco-why">
+                      <strong>Waarom:</strong> {proposal.reasoning}
+                      <span className={`vp-tier vp-tier--${proposal.reasoningTier}`}>{proposal.reasoningTier === "ai" ? "AI" : "regel"}</span>
+                    </p>
+                    {proposal.aiBusy && <p className="vp-ai-busy"><span className="spinner" /> AI verfijnt het voorstel…</p>}
                   </div>
 
                   {proposal.ranked.length > 1 && (

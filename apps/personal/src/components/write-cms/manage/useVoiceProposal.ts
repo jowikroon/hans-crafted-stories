@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 // ─── Voice proposal (design contract #15) ─────────────────────────────────────
@@ -59,6 +59,10 @@ export interface VoiceProposal {
   context: string;
   /** True when there are zero templates and we fall back to free text. */
   empty: boolean;
+  /** True while the LLM is refining the recommendation (Tier-2 enhancement). */
+  aiBusy: boolean;
+  /** Source of the shown rationale: "ai" (LLM) or "rule" (deterministic floor). */
+  reasoningTier: "ai" | "rule";
 }
 
 const STOP = new Set([
@@ -103,6 +107,13 @@ export function useVoiceProposal(signal: VoiceSignal): VoiceProposal {
   const [usage, setUsage] = useState<Record<string, number>>({}); // template_id → recency rank (0 = most recent)
   const [loading, setLoading] = useState(true);
   const [chosenId, setChosenId] = useState<string | null>(null);
+
+  // Tier-2 LLM enhancement (best-effort; never blocks the deterministic floor).
+  const [aiBusy, setAiBusy] = useState(false);
+  const [llmRecId, setLlmRecId] = useState<string | null>(null);
+  const [llmReasoning, setLlmReasoning] = useState("");
+  const userPicked = useRef(false);
+  const aiKeyRef = useRef<string>("");
 
   useEffect(() => {
     let cancelled = false;
@@ -195,22 +206,61 @@ export function useVoiceProposal(signal: VoiceSignal): VoiceProposal {
     if (chosenId === null && ranked.length) setChosenId(ranked[0].tpl.id);
   }, [ranked, chosenId]);
 
+  // Tier-2: ask the LLM (blog-voice-suggest edge fn) to refine the pick + waarom.
+  // Fires once per stable signal; soft-fails to the deterministic proposal.
+  useEffect(() => {
+    if (loading || ranked.length === 0) return;
+    const key = JSON.stringify({ title, angle, category, topicsKey });
+    if (aiKeyRef.current === key) return;
+    aiKeyRef.current = key;
+
+    let cancelled = false;
+    setAiBusy(true);
+    (async () => {
+      try {
+        const candidates = ranked.slice(0, 5).map((r) => ({
+          id: r.tpl.id, name: r.tpl.name, tone: r.tpl.tone, description: r.tpl.description,
+          writing_style: r.tpl.writing_style, category: r.tpl.category, recently_used: r.recentlyUsed,
+        }));
+        const { data, error } = await supabase.functions.invoke("blog-voice-suggest", {
+          body: { signal: { title, angle, summary, category, topics }, candidates },
+        });
+        if (cancelled || error) return;
+        const d = (data ?? {}) as { recommended_id?: string; reasoning?: string };
+        const valid = ranked.some((r) => r.tpl.id === d.recommended_id);
+        if (d.reasoning) setLlmReasoning(String(d.reasoning));
+        if (valid && d.recommended_id) {
+          setLlmRecId(d.recommended_id);
+          if (!userPicked.current) setChosenId(d.recommended_id);
+        }
+      } catch { /* deterministic floor stands */ }
+      finally { if (!cancelled) setAiBusy(false); }
+    })();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, ranked, title, angle, category, topicsKey]);
+
   const chosen = useMemo(
     () => ranked.find((r) => r.tpl.id === chosenId) ?? ranked[0] ?? null,
     [ranked, chosenId]
   );
 
+  // Prefer the LLM rationale when it explains the currently-chosen voice.
+  const reasoningTier: "ai" | "rule" =
+    llmReasoning && chosen && chosen.tpl.id === llmRecId ? "ai" : "rule";
+
   const reasoning = useMemo(() => {
     if (!chosen) return "";
+    if (reasoningTier === "ai") return llmReasoning;
     const why = chosen.reasons.filter(Boolean);
     const head = why.length ? why[0].charAt(0).toUpperCase() + why[0].slice(1) : "Beste match op je input";
     const tail = why.slice(1, 3);
     return tail.length ? `${head}; ${tail.join("; ")}.` : `${head}.`;
-  }, [chosen]);
+  }, [chosen, reasoningTier, llmReasoning]);
 
   const context = useMemo(() => (chosen ? buildContext(chosen.tpl) : ""), [chosen]);
 
-  const setChosen = useCallback((id: string) => setChosenId(id), []);
+  const setChosen = useCallback((id: string) => { userPicked.current = true; setChosenId(id); }, []);
 
   return {
     loading,
@@ -221,5 +271,7 @@ export function useVoiceProposal(signal: VoiceSignal): VoiceProposal {
     reasoning,
     context,
     empty: !loading && ranked.length === 0,
+    aiBusy,
+    reasoningTier,
   };
 }
