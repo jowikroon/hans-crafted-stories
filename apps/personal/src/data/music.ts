@@ -98,7 +98,9 @@ export interface Song {
   listenUrl: string;
   /** Optional extra platform links for the song page. */
   links?: { spotify?: string; soundcloud?: string; youtube?: string; appleMusic?: string };
-  /** Optional YouTube watch link (official video) — shown as a "Watch on YouTube" card. */
+  /** Optional self-hosted video file (served from R2 via /media/...). Preferred over videoUrl. */
+  videoFile?: string;
+  /** Optional YouTube watch link (official video) — secondary link / fallback. */
   videoUrl?: string;
   detail: SongDetail;
 }
@@ -180,6 +182,7 @@ export const songs: Song[] = [
       spotify: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
       youtube: "https://youtube.com/shorts/dpOHLmNUpCE",
     },
+    videoFile: "/media/beat-drop.mp4",
     videoUrl: "https://youtube.com/shorts/dpOHLmNUpCE",
     detail: {
       category: "Electronic · Single",

@@ -191,60 +191,50 @@ export default function MusicSong() {
             />
           </div>
 
-          {/* Official video — links out to YouTube (embedding blocked, so we link). */}
-          {song.videoUrl && (
+          {/* Official video — self-hosted (R2) when available, else a YouTube link card. */}
+          {song.videoFile ? (
+            <figure
+              className="songvideo"
+              style={{ margin: "20px auto", maxWidth: 300, width: "100%" }}
+            >
+              <video
+                controls
+                playsInline
+                preload="metadata"
+                poster={song.cover}
+                style={{ width: "100%", aspectRatio: "9 / 16", borderRadius: 14, background: "#000", display: "block" }}
+              >
+                <source src={song.videoFile} type="video/mp4" />
+                {song.videoUrl ? (
+                  <a href={song.videoUrl} target="_blank" rel="noopener noreferrer">Watch on YouTube</a>
+                ) : null}
+              </video>
+              {song.videoUrl && (
+                <figcaption style={{ marginTop: 8, textAlign: "center", fontSize: 12 }}>
+                  <a className="songvideo__yt" href={song.videoUrl} target="_blank" rel="noopener noreferrer">
+                    Also on YouTube
+                  </a>
+                </figcaption>
+              )}
+            </figure>
+          ) : song.videoUrl ? (
             <a
               className="songvideo-card"
               href={song.videoUrl}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`Watch the official ${song.title} video on YouTube`}
-              style={{
-                position: "relative",
-                display: "block",
-                margin: "20px auto",
-                maxWidth: 300,
-                width: "100%",
-                aspectRatio: "9 / 16",
-                borderRadius: 14,
-                overflow: "hidden",
-              }}
+              style={{ position: "relative", display: "block", margin: "20px auto", maxWidth: 300, width: "100%", aspectRatio: "9 / 16", borderRadius: 14, overflow: "hidden" }}
             >
-              <img
-                src={song.cover}
-                alt=""
-                aria-hidden="true"
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.7)" }}
-              />
-              <span
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                  color: "#fff",
-                  textShadow: "0 1px 8px rgba(0,0,0,.6)",
-                }}
-              >
-                <span
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: "50%",
-                    background: "#FF0000",
-                    display: "grid",
-                    placeItems: "center",
-                  }}
-                >
+              <img src={song.cover} alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.7)" }} />
+              <span style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, color: "#fff", textShadow: "0 1px 8px rgba(0,0,0,.6)" }}>
+                <span style={{ width: 56, height: 56, borderRadius: "50%", background: "#FF0000", display: "grid", placeItems: "center" }}>
                   <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
                 </span>
                 <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".02em" }}>Watch on YouTube</span>
               </span>
             </a>
-          )}
+          ) : null}
 
           {/* Listen-on platforms — only the ones this track actually has */}
           <div className="platforms" aria-label="Listen on">
