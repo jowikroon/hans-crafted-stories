@@ -240,7 +240,7 @@ const BlogPostPage = () => {
           <h1 className="atitle">{displayTitle}</h1>
           {displayExcerpt && <p className="adek">{displayExcerpt}</p>}
           <div className="byline">
-            <span className="byline__av">H<img src={hansProfile} alt="Hans van Leeuwen" onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} /></span>
+            <span className="byline__av">H<img src={hansProfile} alt="Hans van Leeuwen" loading="lazy" decoding="async" onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} /></span>
             <div>
               <div className="byline__n">Hans van Leeuwen</div>
               <div className="byline__r">E-commerce &amp; Marketplace Specialist</div>

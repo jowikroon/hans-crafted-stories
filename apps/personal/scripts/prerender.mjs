@@ -512,6 +512,27 @@ const SEO_PAGES = [
     },
   },
   {
+    route: "/ai-ecommerce-automation",
+    head: {
+      title: "AI E-commerce Automation — Marketplace Operations on n8n, Supabase & Claude | Hans van Leeuwen",
+      description:
+        "Freelance AI e-commerce automation specialist. Run Amazon NL & Bol.com operations with n8n, Supabase and Claude — product data, ads reporting and content workflows automated. Amersfoort, NL/EU.",
+      canonical: `${BASE}/ai-ecommerce-automation`,
+      intro: [
+        'Hans van Leeuwen is a freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. This page covers the AI-automation practice: pipelines that remove repetitive manual marketplace work and surface decisions faster, with a human in the loop on strategy, pricing and brand voice.',
+        'A typical engagement covers four layers. Product data: feed normalization, enrichment and nightly validation across channels. Operations: stock, pricing and order sync between Amazon NL/DE, Bol.com and the webstore. Advertising: automated ROAS/ACOS reporting and budget alerts. Intelligence: competitor and ranking monitoring with weekly KPI reports generated automatically.',
+        'The stack is n8n for orchestration, Supabase for the data layer, Claude for content and analysis, and Channable for feed and marketplace sync. Documented results include 70% market share on Amazon NL in a competitive category (Nielsen data), out-of-stock rates below 2% through automated demand forecasting, and a twice-weekly automated SEO and competitor intelligence pipeline running on this site. Start with a free automation audit — the three highest-ROI workflows to automate first, with a written plan inside 48 hours. Also see <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.',
+      ],
+      faq: [
+        { q: "What is AI e-commerce automation?", a: "A set of pipelines — product data, operations, advertising and reporting — that remove repetitive manual marketplace work and speed up decisions, with a human in the loop on strategy, pricing and brand voice. It is concrete, monitored workflows built on n8n, Supabase and Claude, not 'an AI that runs your store'." },
+        { q: "Which platforms and tools does Hans automate?", a: "Amazon (NL, DE and other EU marketplaces), Bol.com, eBay and own-store platforms such as Magento, plus the feed and automation layer that connects them — Channable for feeds and n8n for orchestration, with Supabase as the data layer and Claude for content and analysis." },
+        { q: "Do I need to replace my team?", a: "No. Automation removes the repetitive 80% so your team focuses on strategy, merchandising and brand. The human stays in the loop on pricing limits, brand voice and final decisions." },
+        { q: "How does an engagement start?", a: "With a free automation audit: Hans maps your current manual workload and returns a prioritized plan within 48 hours, identifying the three highest-ROI workflows to automate first." },
+        { q: "Is my data and account access safe?", a: "Pipelines run on your own infrastructure and accounts; marketplace credentials are never shared in plain text. The automation layer is auditable and you keep full control of access." },
+      ],
+    },
+  },
+  {
     route: "/interim-ecommerce-manager",
     head: {
       title: "Interim E-commerce Manager — Freelance Marketplace Lead (NL/EU) | Hans van Leeuwen",

@@ -819,9 +819,6 @@ const HansAI = () => {
     <div className="relative flex h-screen overflow-hidden pt-[88px]" style={{ background: "#0a0a0a", fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
       {/* Main terminal area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-      {/* JetBrains Mono font */}
-      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
       {/* ── Compact status bar + hierarchy (Laag 1–3) ──────────── */}
       <div
         className="shrink-0 border-b px-4 py-2"

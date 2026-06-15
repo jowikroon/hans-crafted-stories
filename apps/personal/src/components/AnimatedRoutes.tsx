@@ -17,6 +17,7 @@ import NotFound from "@/pages/NotFound";
 import AmazonNlSpecialist from "@/pages/AmazonNlSpecialist";
 import BolComConsultant from "@/pages/BolComConsultant";
 import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
+import AiEcommerceAutomation from "@/pages/AiEcommerceAutomation";
 import CaseStudyDetail from "@/pages/CaseStudyDetail";
 import GodStructure from "@/pages/GodStructure";
 import SamanthaAI from "@/pages/SamanthaAI";
@@ -58,6 +59,7 @@ const AnimatedRoutes = () => {
         <Route path="/amazon-nl-specialist" element={<PageTransition><AmazonNlSpecialist /></PageTransition>} />
         <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
+        <Route path="/ai-ecommerce-automation" element={<PageTransition><AiEcommerceAutomation /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
         <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/write/:id" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
