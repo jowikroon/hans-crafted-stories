@@ -18,7 +18,19 @@ import { EditOverlayProvider } from "./components/edit-overlay/EditOverlayProvid
 import EditLayer from "./components/edit-overlay/EditLayer";
 import './styles/blog.css';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Data fetched on one page stays fresh across navigations, so
+      // revisiting /writing, /work, etc. renders instantly from cache
+      // instead of re-running the Supabase query and flashing a loader.
+      staleTime: 5 * 60 * 1000, // 5 min
+      gcTime: 30 * 60 * 1000, // keep cached data 30 min
+      refetchOnWindowFocus: false, // no refetch/flash when tabbing back
+      retry: 1,
+    },
+  },
+});
 
 interface AppShellProps {
   initialLang?: "en" | "nl";
