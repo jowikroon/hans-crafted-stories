@@ -3,9 +3,12 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
+import { useLang } from "@/hooks/useLang";
 import BlogPostCard from "@/components/BlogPostCard";
 
 const FeaturedArticles = () => {
+  const { lang } = useLang();
+  const isNl = lang === "nl";
   const [posts, setPosts] = useState<BlogPostRow[]>([]);
 
   useEffect(() => {
@@ -36,18 +39,18 @@ const FeaturedArticles = () => {
         className="mb-8 flex items-end justify-between"
       >
         <div>
-          <h2 className="mb-1 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            Writing
+          <h2 className="mb-1 font-mono text-xs font-medium uppercase tracking-[0.16em] text-primary">
+            {isNl ? "Uitgelicht" : "Writing"}
           </h2>
           <p className="font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-            Featured Articles
+            {isNl ? "Uitgelichte artikelen" : "Featured Articles"}
           </p>
         </div>
         <Link
           to="/writing"
           className="group hidden items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:flex"
         >
-          View all
+          {isNl ? "Bekijk alles" : "View all"}
           <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </motion.div>
@@ -62,7 +65,7 @@ const FeaturedArticles = () => {
         to="/writing"
         className="mt-6 flex items-center justify-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:hidden"
       >
-        View all <ArrowRight size={14} />
+        {isNl ? "Bekijk alles" : "View all"} <ArrowRight size={14} />
       </Link>
     </section>
   );

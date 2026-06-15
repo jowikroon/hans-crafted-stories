@@ -20,6 +20,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
+import { useLang } from "@/hooks/useLang";
 import { songs, featuredRelease, GENRE_FILTERS, type GenreTag, type Song } from "@/data/music";
 import "@/styles/music-v2.css";
 
@@ -64,7 +65,7 @@ function SongCard({ song, index, isPlaying, onToggle }: SongCardProps) {
   return (
     <article
       className={`song rv${isPlaying ? " playing" : ""}`}
-      style={{ "--d": `${Math.min(index, 5) * 70}ms` } as React.CSSProperties}
+      style={{ "--d": `${Math.min(index, 5) * 45}ms` } as React.CSSProperties}
     >
       <div className="song__cover">
         <div className="cover-fallback">
@@ -118,6 +119,8 @@ function SongCard({ song, index, isPlaying, onToggle }: SongCardProps) {
 }
 
 export default function Music() {
+  const { lang } = useLang();
+  const isNl = lang === "nl";
   const [filter, setFilter] = useState<"all" | GenreTag>("all");
   const [sort, setSort] = useState<SortOrder>("newest");
   const [playingSlug, setPlayingSlug] = useState<string | null>(null);
@@ -197,17 +200,27 @@ export default function Music() {
         <nav className="crumb idx" aria-label="Breadcrumb">
           <Link to="/">Home</Link>
           <ChevronRight />
-          <span className="here" aria-current="page">Music</span>
+          <span className="here" aria-current="page">{isNl ? "Muziek" : "Music"}</span>
         </nav>
 
         {/* Masthead */}
         <section className="masthead">
-          <span className="eyebrow">Sound · Studio notes</span>
-          <h1 className="title">Music</h1>
+          <span className="eyebrow">{isNl ? "Geluid · Studio-notities" : "Sound · Studio notes"}</span>
+          <h1 className="title">{isNl ? "Muziek" : "Music"}</h1>
           <p className="lede">
-            Songs I make when I step away from the spreadsheets. Each one comes with the full{" "}
-            <strong>production story</strong> — how it started, the gear, the mistakes, and the lyrics. Press play
-            below, or open a track to read the notes.
+            {isNl ? (
+              <>
+                Nummers die ik maak als ik even wegloop van de spreadsheets. Bij elk hoort het volledige{" "}
+                <strong>productieverhaal</strong> — hoe het begon, de gear, de fouten en de lyrics. Druk hieronder
+                op play, of open een track om de notities te lezen.
+              </>
+            ) : (
+              <>
+                Songs I make when I step away from the spreadsheets. Each one comes with the full{" "}
+                <strong>production story</strong> — how it started, the gear, the mistakes, and the lyrics. Press play
+                below, or open a track to read the notes.
+              </>
+            )}
           </p>
         </section>
 
@@ -257,13 +270,13 @@ export default function Music() {
           </div>
           <div className="toolbar__right">
             <span className="count" aria-live="polite">
-              {count} {count === 1 ? "track" : "tracks"}
+              {count} {isNl ? (count === 1 ? "track" : "tracks") : (count === 1 ? "track" : "tracks")}
             </span>
             <div className="sort">
-              <label htmlFor="sortSel">Sort</label>
+              <label htmlFor="sortSel">{isNl ? "Sorteer" : "Sort"}</label>
               <select id="sortSel" value={sort} onChange={(e) => setSort(e.target.value as SortOrder)}>
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
+                <option value="newest">{isNl ? "Nieuwste" : "Newest"}</option>
+                <option value="oldest">{isNl ? "Oudste" : "Oldest"}</option>
               </select>
             </div>
           </div>
@@ -272,7 +285,7 @@ export default function Music() {
         {/* Songs grid */}
         <div className="music-list" ref={listRef}>
           {filtered.length === 0 ? (
-            <p className="empty">No tracks in that genre yet.</p>
+            <p className="empty">{isNl ? "Nog geen tracks in dit genre." : "No tracks in that genre yet."}</p>
           ) : (
             filtered.map((song, i) => (
               <SongCard
