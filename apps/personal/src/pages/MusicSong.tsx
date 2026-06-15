@@ -94,7 +94,7 @@ export default function MusicSong() {
             {
               "@type": "MusicRecording",
               name: song.title,
-              byArtist: { "@type": "MusicGroup", name: "Hans van Leeuwen" },
+              byArtist: { "@type": "MusicGroup", name: song.artist },
               duration: isoDuration,
               datePublished: song.date,
               genre: song.genre,
@@ -158,10 +158,13 @@ export default function MusicSong() {
               <img src={song.cover} alt={`Cover art — ${song.title}`} />
             </div>
             <div className="songhead__info">
-              <div className="songhead__cat">{d.category}</div>
+              <div className="songhead__cat">
+                {d.category}
+                {song.concept && <span className="songhead__concept">Concept · ~90%</span>}
+              </div>
               <h1 className="songtitle">{song.title}</h1>
               <p className="songhead__by">
-                Written, produced &amp; mixed by <strong>Hans van Leeuwen</strong>
+                By <strong>{song.artist}</strong> — the artist alias of Hans van Leeuwen
               </p>
               <div className="songhead__facts">
                 {d.facts.map((f) => (
@@ -177,7 +180,7 @@ export default function MusicSong() {
           {/* Spotify player (eager — leads the page like the prototype) */}
           <div className="songplay">
             <iframe
-              title={`Spotify — ${song.title}`}
+              title={`${song.provider === "soundcloud" ? "SoundCloud" : "Spotify"} — ${song.title}`}
               style={{ borderRadius: 14 }}
               src={song.embed}
               width="100%"
@@ -188,24 +191,81 @@ export default function MusicSong() {
             />
           </div>
 
-          {/* Listen-on platforms */}
+          {/* Official video — links out to YouTube (embedding blocked, so we link). */}
+          {song.videoUrl && (
+            <a
+              className="songvideo-card"
+              href={song.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Watch the official ${song.title} video on YouTube`}
+              style={{
+                position: "relative",
+                display: "block",
+                margin: "20px auto",
+                maxWidth: 300,
+                width: "100%",
+                aspectRatio: "9 / 16",
+                borderRadius: 14,
+                overflow: "hidden",
+              }}
+            >
+              <img
+                src={song.cover}
+                alt=""
+                aria-hidden="true"
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.7)" }}
+              />
+              <span
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 12,
+                  color: "#fff",
+                  textShadow: "0 1px 8px rgba(0,0,0,.6)",
+                }}
+              >
+                <span
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: "50%",
+                    background: "#FF0000",
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".02em" }}>Watch on YouTube</span>
+              </span>
+            </a>
+          )}
+
+          {/* Listen-on platforms — only the ones this track actually has */}
           <div className="platforms" aria-label="Listen on">
-            <a className="platform" href={song.spotifyUrl} target="_blank" rel="noopener noreferrer">
-              <svg viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.59 14.43a.62.62 0 0 1-.86.21c-2.35-1.44-5.3-1.76-8.79-.96a.62.62 0 1 1-.28-1.21c3.81-.87 7.08-.5 9.72 1.11.29.18.39.57.21.85zm1.22-2.72a.78.78 0 0 1-1.07.26c-2.69-1.65-6.79-2.13-9.97-1.17a.78.78 0 1 1-.45-1.49c3.64-1.1 8.16-.56 11.25 1.33.36.22.48.7.24 1.07zm.11-2.84C14.8 8.99 9.4 8.8 6.3 9.74a.93.93 0 1 1-.54-1.78c3.56-1.08 9.52-.87 13.27 1.35a.93.93 0 1 1-.95 1.6z" /></svg>
-              <span className="pf-name">Spotify</span>
-            </a>
-            <a className="platform" href="#" target="_blank" rel="noopener noreferrer">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M9 9.5a3 3 0 1 1 0 5 3 3 0 0 1 0-5z" fill="currentColor" stroke="none" /><path d="M15 7v7.5" /></svg>
-              <span className="pf-name">Apple Music</span>
-            </a>
-            <a className="platform" href="#" target="_blank" rel="noopener noreferrer">
-              <svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23 12s0-3.2-.4-4.7c-.2-.9-.9-1.6-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.4c-.9.2-1.6.9-1.8 1.8C1 8.8 1 12 1 12s0 3.2.4 4.7c.2.9.9 1.6 1.8 1.8 1.5.5 8.8.5 8.8.5s7.3 0 8.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.6.4-4.8.4-4.8zM9.8 15V9l5.2 3-5.2 3z" /></svg>
-              <span className="pf-name">YouTube</span>
-            </a>
-            <a className="platform" href="#" target="_blank" rel="noopener noreferrer">
-              <svg viewBox="0 0 24 24" fill="#FF5500"><path d="M1.2 14.3c-.1 0-.2.1-.2.2l-.2 1.3.2 1.2c0 .1.1.2.2.2s.2-.1.2-.2l.2-1.2-.2-1.3c0-.1-.1-.2-.2-.2zm1.5-.7c-.1 0-.2.1-.2.2l-.3 2 .3 1.9c0 .1.1.2.2.2.1 0 .2-.1.2-.2l.3-1.9-.3-2c0-.1-.1-.2-.2-.2zm1.6-.5c-.1 0-.2.1-.2.2l-.3 2.5.3 2.3c0 .1.1.2.2.2.2 0 .2-.1.2-.2l.3-2.3-.3-2.5c0-.1-.1-.2-.2-.2zm1.7-.3c-.2 0-.3.1-.3.3l-.2 2.7.2 2.4c0 .2.1.3.3.3.1 0 .3-.1.3-.3l.3-2.4-.3-2.7c0-.2-.2-.3-.3-.3zm9.4-2.3c-.4 0-.8.1-1.1.2C13.9 8 12.2 6.7 10.2 6.7c-.5 0-1 .1-1.4.3-.2.1-.2.2-.2.3v10c0 .2.1.3.3.3h7.7c1.6 0 2.8-1.3 2.8-2.8 0-1.6-1.3-2.9-2.8-2.9z" /></svg>
-              <span className="pf-name">SoundCloud</span>
-            </a>
+            {song.links?.spotify && (
+              <a className="platform" href={song.links.spotify} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.59 14.43a.62.62 0 0 1-.86.21c-2.35-1.44-5.3-1.76-8.79-.96a.62.62 0 1 1-.28-1.21c3.81-.87 7.08-.5 9.72 1.11.29.18.39.57.21.85zm1.22-2.72a.78.78 0 0 1-1.07.26c-2.69-1.65-6.79-2.13-9.97-1.17a.78.78 0 1 1-.45-1.49c3.64-1.1 8.16-.56 11.25 1.33.36.22.48.7.24 1.07zm.11-2.84C14.8 8.99 9.4 8.8 6.3 9.74a.93.93 0 1 1-.54-1.78c3.56-1.08 9.52-.87 13.27 1.35a.93.93 0 1 1-.95 1.6z" /></svg>
+                <span className="pf-name">Spotify</span>
+              </a>
+            )}
+            {song.links?.soundcloud && (
+              <a className="platform" href={song.links.soundcloud} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="#FF5500"><path d="M1.2 14.3c-.1 0-.2.1-.2.2l-.2 1.3.2 1.2c0 .1.1.2.2.2s.2-.1.2-.2l.2-1.2-.2-1.3c0-.1-.1-.2-.2-.2zm1.5-.7c-.1 0-.2.1-.2.2l-.3 2 .3 1.9c0 .1.1.2.2.2.1 0 .2-.1.2-.2l.3-1.9-.3-2c0-.1-.1-.2-.2-.2zm1.6-.5c-.1 0-.2.1-.2.2l-.3 2.5.3 2.3c0 .1.1.2.2.2.2 0 .2-.1.2-.2l.3-2.3-.3-2.5c0-.1-.1-.2-.2-.2zm1.7-.3c-.2 0-.3.1-.3.3l-.2 2.7.2 2.4c0 .2.1.3.3.3.1 0 .3-.1.3-.3l.3-2.4-.3-2.7c0-.2-.2-.3-.3-.3zm9.4-2.3c-.4 0-.8.1-1.1.2C13.9 8 12.2 6.7 10.2 6.7c-.5 0-1 .1-1.4.3-.2.1-.2.2-.2.3v10c0 .2.1.3.3.3h7.7c1.6 0 2.8-1.3 2.8-2.8 0-1.6-1.3-2.9-2.8-2.9z" /></svg>
+                <span className="pf-name">SoundCloud</span>
+              </a>
+            )}
+            {song.links?.youtube && (
+              <a className="platform" href={song.links.youtube} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23 12s0-3.2-.4-4.7c-.2-.9-.9-1.6-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.4c-.9.2-1.6.9-1.8 1.8C1 8.8 1 12 1 12s0 3.2.4 4.7c.2.9.9 1.6 1.8 1.8 1.5.5 8.8.5 8.8.5s7.3 0 8.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.6.4-4.8.4-4.8zM9.8 15V9l5.2 3-5.2 3z" /></svg>
+                <span className="pf-name">YouTube</span>
+              </a>
+            )}
           </div>
 
           {/* Production notes + aside */}

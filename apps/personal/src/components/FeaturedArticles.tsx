@@ -1,10 +1,36 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { useLang } from "@/hooks/useLang";
-import BlogPostCard from "@/components/BlogPostCard";
+import "@/styles/writing-v2.css";
+
+/**
+ * FeaturedArticles — homepage "writing" teaser.
+ *
+ * 2026-06-15: restyled to the writing-v2 row language so the homepage and
+ * /writing share one visual system (no more dark image-card grid). Renders
+ * the 3 newest posts as editorial rows inside a .writing-v2 scope.
+ * Data flow unchanged — still getBlogPosts(true) from Supabase.
+ */
+
+function formatDate(iso: string, locale: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString(locale === "nl" ? "nl-NL" : "en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  );
+}
 
 const FeaturedArticles = () => {
   const { lang } = useLang();
@@ -17,27 +43,9 @@ const FeaturedArticles = () => {
 
   if (posts.length === 0) return null;
 
-  const mapped = posts.map((p) => ({
-    id: p.id,
-    title: p.title,
-    excerpt: p.excerpt,
-    category: p.category as "professional" | "personal",
-    tags: p.tags,
-    date: p.created_at,
-    readTime: p.read_time,
-    slug: p.slug,
-    imageUrl: p.image_url || undefined,
-  }));
-
   return (
-    <section className="section-container pb-20" aria-label="Featured Articles">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-8 flex items-end justify-between"
-      >
+    <section className="section-container pb-20" aria-label={isNl ? "Uitgelichte artikelen" : "Featured articles"}>
+      <div className="mb-8 flex items-end justify-between">
         <div>
           <h2 className="mb-1 font-mono text-xs font-medium uppercase tracking-[0.16em] text-primary">
             {isNl ? "Uitgelicht" : "Writing"}
@@ -53,12 +61,51 @@ const FeaturedArticles = () => {
           {isNl ? "Bekijk alles" : "View all"}
           <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
         </Link>
-      </motion.div>
+      </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {mapped.map((post, i) => (
-          <BlogPostCard key={post.id} post={post} index={i} />
-        ))}
+      <div className="writing-v2">
+        <div className="list" style={{ padding: 0 }}>
+          {posts.map((post) => {
+            const title = isNl && post.title_nl ? post.title_nl : post.title;
+            const excerpt = isNl && post.excerpt_nl ? post.excerpt_nl : post.excerpt;
+            return (
+              <Link key={post.id} to={`/writing/${post.slug}`} className="post">
+                <div className="post__thumb">
+                  {post.image_url ? (
+                    <img
+                      src={post.image_url}
+                      alt={title}
+                      width={600}
+                      height={400}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : null}
+                </div>
+                <div className="post__body">
+                  <div className="post__meta">
+                    <time className="post__date" dateTime={post.created_at}>
+                      {formatDate(post.created_at, lang)}
+                    </time>
+                    <span className="dot"></span>
+                    <span className="tag">{post.category}</span>
+                    {post.read_time && (
+                      <>
+                        <span className="dot"></span>
+                        <span>{post.read_time}</span>
+                      </>
+                    )}
+                  </div>
+                  <h2 className="post__title">{title}</h2>
+                  <p className="post__excerpt">{excerpt}</p>
+                </div>
+                <span className="post__go" aria-hidden="true">
+                  <ArrowIcon />
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       <Link
