@@ -193,7 +193,7 @@ export default function MusicSong() {
 
           {/* Official video (YouTube) — only when present */}
           {song.videoEmbed && (
-            <div className="songvideo" style={{ margin: "20px 0", borderRadius: 14, overflow: "hidden", aspectRatio: "16 / 9" }}>
+            <div className="songvideo" style={{ margin: "20px auto", borderRadius: 14, overflow: "hidden", aspectRatio: "9 / 16", maxWidth: 320, width: "100%" }}>
               <iframe
                 title={`Video — ${song.title}`}
                 src={song.videoEmbed}

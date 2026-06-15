@@ -178,7 +178,9 @@ export const songs: Song[] = [
     listenUrl: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
     links: {
       spotify: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
+      youtube: "https://youtube.com/shorts/dpOHLmNUpCE",
     },
+    videoEmbed: "https://www.youtube.com/embed/dpOHLmNUpCE",
     detail: {
       category: "Electronic · Single",
       facts: [
