@@ -67,6 +67,16 @@ const {
 // Use balanced div parsing so nested homepage markup cannot leak into prerendered article pages.
 template = clearRootHtml(template);
 
+// Prerender the homepage with the real Index render so the first paint matches
+// the hydrated page (instead of the hand-maintained static block) and there is
+// no layout swap on mount. Head, JSON-LD and the rich <noscript> stay as-is.
+{
+  const { html } = renderQuietly("/", null, { initialLang: "en" });
+  const page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+  fs.writeFileSync(path.join(distDir, "index.html"), page, "utf8");
+  console.log(`[prerender] / -> ${path.join(distDir, "index.html")} (real render)`);
+}
+
 const BASE = "https://hansvanleeuwen.com";
 
 // Static page SEO (English, primary for prerender) — aligned with functions/[[path]].ts ROUTE_META

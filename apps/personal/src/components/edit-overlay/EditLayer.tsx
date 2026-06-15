@@ -37,6 +37,20 @@ export default function EditLayer() {
     };
   }, [selectedEl]);
 
+  // The editor UI uses Bricolage Grotesque + IBM Plex Mono. These are no longer in
+  // the global <head> (kept off marketing pages), so load them on demand for admins.
+  useEffect(() => {
+    if (!isAdmin || typeof document === "undefined") return;
+    const id = "edit-overlay-fonts";
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
+    document.head.appendChild(link);
+  }, [isAdmin]);
+
   // hover + click capture while editing
   useEffect(() => {
     if (!editing) {
