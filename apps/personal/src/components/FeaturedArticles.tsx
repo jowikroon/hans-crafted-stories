@@ -36,10 +36,10 @@ const FeaturedArticles = () => {
         className="mb-8 flex items-end justify-between"
       >
         <div>
-          <h2 className="mb-1 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            Writing
+          <h2 className="mb-1 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+            <span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />Writing
           </h2>
-          <p className="font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <p className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             Featured Articles
           </p>
         </div>

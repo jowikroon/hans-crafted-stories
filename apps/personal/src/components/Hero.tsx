@@ -40,8 +40,8 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-3xl"
         >
-          <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            {getValue("hero_subtitle", t.subtitle)}
+          <p className="mb-4 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+            <span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />{getValue("hero_subtitle", t.subtitle)}
           </p>
           <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
             {isNl
@@ -145,10 +145,10 @@ const Hero = () => {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+          <h2 className="mb-2 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {t.whoIHelpLabel}
           </h2>
-          <p className="mb-6 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <p className="mb-6 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             {t.whoIHelpHeading}
           </p>
         </motion.div>
@@ -180,10 +180,10 @@ const Hero = () => {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+          <h2 className="mb-2 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {t.problemsLabel}
           </h2>
-          <p className="mb-6 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <p className="mb-6 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             {t.problemsHeading}
           </p>
         </motion.div>
@@ -215,10 +215,10 @@ const Hero = () => {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+          <h2 className="mb-2 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {getValue("expertise_label", t.expertiseLabel)}
           </h2>
-          <p className="mb-8 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <p className="mb-8 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             {getValue("expertise_heading", t.expertiseHeading)}
           </p>
         </motion.div>

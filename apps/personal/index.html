@@ -299,11 +299,14 @@
     <link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/" />
     <link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/" />
 
-    <!-- Fonts: preconnect + async load with display=swap -->
+    <!-- Fonts: preconnect + async load with display=swap. General Sans (body/UI) via Fontshare, Newsreader (serif display) via Google Fonts. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" /></noscript>
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link rel="preload" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=switzer@400,500,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=switzer@400,500,600&display=swap" /></noscript>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" /></noscript>
     <!-- JetBrains Mono — used only by legacy app routes; loaded non-blocking (was a render-blocking CSS @import, removed for LCP, HAN-121) -->
     <link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" /></noscript>
@@ -312,8 +315,8 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" /></noscript>
     <style>
       /* Critical font-display fallback so text is visible while fonts load */
-      body { font-family: Inter, system-ui, -apple-system, sans-serif; }
-      .font-display { font-family: 'Playfair Display', Georgia, serif; }
+      body { font-family: 'General Sans', system-ui, -apple-system, sans-serif; }
+      .font-display { font-family: 'Newsreader', Georgia, serif; }
     </style>
 
     <!-- Favicon set -->

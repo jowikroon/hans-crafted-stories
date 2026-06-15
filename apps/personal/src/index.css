@@ -1,4 +1,4 @@
-/* Fonts are preloaded in index.html (Inter + Playfair Display, display=swap). The render-blocking @import was removed to fix LCP (HAN-121). */
+/* Fonts are preloaded in index.html (General Sans + Newsreader, display=swap). The render-blocking @import was removed to fix LCP (HAN-121). */
 
 @tailwind base;
 @tailwind components;
@@ -45,8 +45,8 @@
     --sidebar-border: 35 15% 88%;
     --sidebar-ring: 16 55% 52%;
 
-    --font-display: 'Playfair Display', Georgia, serif;
-    --font-body: 'Inter', system-ui, sans-serif;
+    --font-display: 'Newsreader', Georgia, serif;
+    --font-body: 'General Sans', 'Switzer', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
     /* Blog CMS instrument tokens (light fallback) */
@@ -154,5 +154,17 @@
   }
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* Accessibility: respect users who prefer reduced motion — calm every
+   transition/animation site-wide. Framer Motion is handled per-component
+   via useReducedMotion; this covers CSS-driven motion too. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
