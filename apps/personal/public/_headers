@@ -3,6 +3,12 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), browsing-topics=()
+  Cross-Origin-Opener-Policy: same-origin
+  X-DNS-Prefetch-Control: on
+  # Report-Only first: observe violations, never block. Flip to Content-Security-Policy once clean.
+  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https://*.supabase.co https://pesfakewujjwkyybwaom.supabase.co https://ai.gateway.lovable.dev https://n8n.srv1402218.hstgr.cloud https://www.google-analytics.com https://region1.google-analytics.com; frame-src 'self'
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
