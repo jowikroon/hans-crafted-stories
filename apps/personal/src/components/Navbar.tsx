@@ -9,7 +9,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
-import logoImg from "@/assets/logo-hvl-v2.png";
+import { logoById } from "@/lib/logos";
+import { useActiveLogo } from "./edit-overlay/EditOverlayProvider";
 
 const THEME_KEY = "site_theme";
 
@@ -36,6 +37,7 @@ const Navbar = (_props: NavbarProps) => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
   const t = translations[lang].nav;
+  const logoSrc = logoById(useActiveLogo()).src;
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -203,7 +205,7 @@ const Navbar = (_props: NavbarProps) => {
         >
             {/* Brand */}
             <Link to="/" className="group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight text-[#15140F]">
-              <img src={logoImg} alt="Hans van Leeuwen — Freelance E-commerce Manager" width={30} height={30} className="h-[30px] w-[30px] rounded-md object-contain transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" />
+              <img src={logoSrc} alt="Hans van Leeuwen — Freelance E-commerce Manager" width={30} height={30} className="h-[30px] w-[30px] rounded-md object-contain transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" />
               <span className="hidden sm:inline-flex items-center">
                 Hans van Leeuwen
                 <span className="ml-[7px] inline-block h-[5px] w-[5px] rounded-full bg-[#2D9255] transition-transform duration-300 group-hover:scale-150" />
