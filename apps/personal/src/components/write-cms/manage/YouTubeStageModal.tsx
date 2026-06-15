@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useVoiceProposal, buildContext, type VoiceSignal, type VoiceTemplate } from "./useVoiceProposal";
 
-// ─── 4-stage YouTube → Article modal (design contract #14) ────────────────────
-// The design prototype's animated flow, wired to the REAL pipeline:
-//   Stage 1 ANALYZE  — edge fn blog-youtube-analyze (topics/summary, typewriter)
-//   Stage 2 VOICE    — n8n blog-init (brand voice memory, editable confirm)
+// ─── 4-stage YouTube → Article modal (design contract #14 + #15) ──────────────
+//   Stage 1 ANALYZE  — edge fn blog-youtube-analyze → minimalist summary card
+//   Stage 2 VOICE    — ALWAYS proposes a voice (templates + post history + signal)
 //   Stage 3 GHOST    — n8n blog-ghost-write (~40s, animated stage ticker)
 //   Stage 4 DONE     — draft card + gates + review score + open-in-editor
-// Animations: typewriter results, stage rail with pulse, progress shimmer, done stamp.
 
 const N8N = "https://n8n.srv1402218.hstgr.cloud";
 
@@ -22,6 +21,17 @@ interface Props {
 
 type Stage = 1 | 2 | 3 | 4;
 
+interface Analysis {
+  isVideo: boolean;
+  title: string;
+  channel: string;
+  transcriptFound: boolean | null; // null = own topic (no video)
+  topics: string[];
+  angle: string;
+  summary: string;
+  note?: string;
+}
+
 interface GhostResult {
   post_id?: string;
   title?: string;
@@ -33,36 +43,6 @@ interface GhostResult {
   linkedin_post_nl?: string;
   seo?: { meta_title?: string; meta_description?: string };
   error?: string;
-}
-
-/** Typewriter that reveals lines one by one. */
-function useTypewriter(lines: string[], speed = 14) {
-  const [out, setOut] = useState<string[]>([]);
-  const idx = useRef(0);
-  const chars = useRef(0);
-
-  useEffect(() => {
-    idx.current = 0;
-    chars.current = 0;
-    setOut([]);
-    if (!lines.length) return;
-    const t = setInterval(() => {
-      const li = idx.current;
-      if (li >= lines.length) { clearInterval(t); return; }
-      chars.current += 2;
-      const line = lines[li];
-      setOut((prev) => {
-        const next = [...prev];
-        next[li] = line.slice(0, chars.current);
-        return next;
-      });
-      if (chars.current >= line.length) { idx.current += 1; chars.current = 0; }
-    }, speed);
-    return () => clearInterval(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lines.join("")]);
-
-  return out;
 }
 
 const GHOST_TICKER = [
@@ -78,15 +58,14 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
   const [stage, setStage] = useState<Stage>(1);
   const [error, setError] = useState<string | null>(null);
 
-  // Stage 1
-  const [analysisLines, setAnalysisLines] = useState<string[]>([]);
-  const typedAnalysis = useTypewriter(analysisLines);
-  const [analysisDone, setAnalysisDone] = useState(false);
+  // Stage 1 — structured analysis (never a raw blank terminal)
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const analysisDone = analysis !== null;
 
-  // Stage 2
+  // Stage 2 — voice
   const [brandVoice, setBrandVoice] = useState("");
-  const [hasMemory, setHasMemory] = useState(false);
-  const [initBusy, setInitBusy] = useState(false);
+  const editedByUser = useRef(false);
+  const [memoryNote, setMemoryNote] = useState("");
 
   // Stage 3
   const [tick, setTick] = useState(0);
@@ -95,15 +74,20 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
   const isYoutube = !!youtube.trim();
   const source = youtube.trim() || topic.trim();
 
-  // Watchdog: if the analyze call hangs (VPN/extension/network), unlock the skip path
+  // Watchdog: if analyze hangs, fall through with a usable summary.
   useEffect(() => {
     if (analysisDone) return;
     const t = setTimeout(() => {
-      setAnalysisLines((prev) => prev.length ? prev : [
-        "> analyse duurt te lang (netwerk?) — je kunt zonder analyse door",
-        "> de ghost-writer haalt het transcript zelf op ✓",
-      ]);
-      setAnalysisDone(true);
+      setAnalysis((prev) => prev ?? {
+        isVideo: isYoutube,
+        title: topic.trim() || "Video-bron",
+        channel: "",
+        transcriptFound: null,
+        topics: [],
+        angle: angle.trim(),
+        summary: "",
+        note: "Analyse duurde te lang (netwerk?). Je kunt door — de ghost-writer haalt het transcript zelf op.",
+      });
     }, 25000);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -114,13 +98,16 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
     let cancelled = false;
     (async () => {
       if (!isYoutube) {
-        setAnalysisLines([
-          `> bron: eigen topic`,
-          `> "${topic.trim()}"`,
-          angle.trim() ? `> invalshoek: ${angle.trim()}` : `> geen invalshoek — ghost-writer kiest`,
-          `> analyse overgeslagen (geen video) — door naar voice check ✓`,
-        ]);
-        setAnalysisDone(true);
+        setAnalysis({
+          isVideo: false,
+          title: topic.trim(),
+          channel: "",
+          transcriptFound: null,
+          topics: [],
+          angle: angle.trim(),
+          summary: "",
+          note: angle.trim() ? undefined : "Geen invalshoek opgegeven — de ghost-writer kiest er een.",
+        });
         return;
       }
       try {
@@ -131,23 +118,30 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
         if (fnErr) throw new Error(fnErr.message);
         const d = (data ?? {}) as Record<string, unknown>;
         if (d.error) throw new Error(String(d.error));
-        const topics = Array.isArray(d.key_topics) ? (d.key_topics as string[]) : [];
-        const opps = Array.isArray(d.article_opportunities) ? (d.article_opportunities as string[]) : [];
-        setAnalysisLines([
-          `> video: ${String(d.title ?? "")}`,
-          `> kanaal: ${String(d.channel_name ?? "")}`,
-          `> transcript: ${d.transcript_found ? "gevonden ✓" : "niet beschikbaar — analyse op titel/kanaal"}`,
-          `> topics: ${topics.slice(0, 4).join(" · ")}`,
-          ...(opps.length ? [`> sterkste invalshoek: ${opps[0]}`] : []),
-          `> samenvatting: ${String(d.context_summary ?? "").slice(0, 180)}`,
-          `> analyse compleet ✓`,
-        ]);
-        setAnalysisDone(true);
+        const topics = Array.isArray(d.key_topics) ? (d.key_topics as string[]).filter(Boolean) : [];
+        const opps = Array.isArray(d.article_opportunities) ? (d.article_opportunities as string[]).filter(Boolean) : [];
+        setAnalysis({
+          isVideo: true,
+          title: String(d.title ?? "").trim() || "Onbekende video",
+          channel: String(d.channel_name ?? "").trim(),
+          transcriptFound: !!d.transcript_found,
+          topics,
+          angle: (opps[0] ?? angle.trim() ?? "").toString(),
+          summary: String(d.context_summary ?? "").trim(),
+        });
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof Error ? e.message : "Analyse mislukt");
-          setAnalysisLines(["> analyse mislukt — je kunt zonder analyse door; de ghost-writer haalt het transcript zelf op ✓"]);
-          setAnalysisDone(true);
+          setAnalysis({
+            isVideo: true,
+            title: "Video-bron",
+            channel: "",
+            transcriptFound: false,
+            topics: [],
+            angle: angle.trim(),
+            summary: "",
+            note: "Analyse mislukt — je kunt door; de ghost-writer haalt het transcript zelf op.",
+          });
         }
       }
     })();
@@ -155,54 +149,64 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Stage 2: voice memory ──
-  const startVoiceCheck = useCallback(async () => {
-    setStage(2);
-    setInitBusy(true);
-    setError(null);
-    try {
-      const res = await fetch(`${N8N}/webhook/blog-init`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category: category || "general", raw_idea_or_data: source, proposed_angle: angle.trim() || topic.trim() }),
-      });
-      if (!res.ok) throw new Error(`blog-init HTTP ${res.status}`);
-      const d = await res.json();
-      setBrandVoice(String(d.brand_voice_context ?? ""));
-      setHasMemory(!!d.has_memory);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Voice check mislukt");
-    } finally {
-      setInitBusy(false);
-    }
-  }, [category, source, angle, topic]);
+  // ── Stage 2: voice proposal (always proposes) ──
+  const signal: VoiceSignal = useMemo(() => ({
+    topics: analysis?.topics?.length ? analysis.topics : (topic.trim() ? [topic.trim()] : []),
+    angle: analysis?.angle || angle.trim() || topic.trim(),
+    summary: analysis?.summary || "",
+    category: category || "general",
+    title: analysis?.title || topic.trim(),
+  }), [analysis, angle, topic, category]);
 
-  // ── Stage 3: ghost-write (with DNA suffix, same path as useBlogInitWorkflow) ──
-  const startGhostWrite = useCallback(async (voiceText: string) => {
+  const proposal = useVoiceProposal(signal);
+
+  // Sync textarea from the chosen voice unless Hans has edited it.
+  useEffect(() => {
+    if (editedByUser.current) return;
+    const base = proposal.context;
+    setBrandVoice(base + (memoryNote ? `\n\n[Editorial memory] ${memoryNote}` : ""));
+  }, [proposal.context, memoryNote]);
+
+  const enterVoice = useCallback(() => {
+    setStage(2);
+    setError(null);
+    // Fire n8n editorial-memory enrichment in the background (best-effort).
+    (async () => {
+      try {
+        const res = await fetch(`${N8N}/webhook/blog-init`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category: category || "general", raw_idea_or_data: source, proposed_angle: signal.angle }),
+        });
+        if (!res.ok) return;
+        const d = await res.json();
+        if (d?.has_memory && d?.brand_voice_context) setMemoryNote(String(d.brand_voice_context).trim());
+      } catch { /* enrichment optional */ }
+    })();
+  }, [category, source, signal.angle]);
+
+  const switchVoice = useCallback((id: string) => {
+    editedByUser.current = false;
+    proposal.setChosenId(id);
+  }, [proposal]);
+
+  // ── Stage 3: ghost-write — uses the CHOSEN voice's DNA ──
+  const startGhostWrite = useCallback(async (voiceText: string, tpl: VoiceTemplate | null) => {
     setStage(3);
     setError(null);
     setTick(0);
     const ticker = setInterval(() => setTick((t) => Math.min(t + 1, GHOST_TICKER.length - 1)), 9000);
     try {
       let dnaSuffix = "";
-      try {
-        const { data } = await supabase
-          .from("hvl_voice_templates")
-          .select("calibration_sentence,signature_phrases,watch_outs,banned_words,tone")
-          .eq("category", category)
-          .is("archived_at", null)
-          .limit(1)
-          .maybeSingle();
-        const v = data as { calibration_sentence?: string; signature_phrases?: string[]; watch_outs?: string[]; banned_words?: string[]; tone?: string } | null;
-        if (v) {
-          const parts: string[] = [];
-          if (v.calibration_sentence?.trim()) parts.push(`Calibration sentence: "${v.calibration_sentence.trim()}"`);
-          if (v.signature_phrases?.length) parts.push(`Signature phrases: ${v.signature_phrases.join("; ")}`);
-          if (v.watch_outs?.length) parts.push(`Watch-outs: ${v.watch_outs.join("; ")}`);
-          if (v.banned_words?.length) parts.push(`Banned words: ${v.banned_words.join(", ")}`);
-          if (parts.length) dnaSuffix = `\n\n--- VOICE DNA (${v.tone ?? category}) ---\n${parts.join("\n")}`;
-        }
-      } catch { /* DNA is optional */ }
+      if (tpl) {
+        const parts: string[] = [];
+        if (tpl.content_rules?.trim()) parts.push(`Content rules: ${tpl.content_rules.trim()}`);
+        if (tpl.opening_examples?.length) parts.push(`Opening examples: ${tpl.opening_examples.join(" | ")}`);
+        if (tpl.closing_examples?.length) parts.push(`Closing examples: ${tpl.closing_examples.join(" | ")}`);
+        if (tpl.preferred_terms?.length) parts.push(`Preferred terms: ${tpl.preferred_terms.join(", ")}`);
+        if (tpl.banned_words?.length) parts.push(`Banned words: ${tpl.banned_words.join(", ")}`);
+        if (parts.length) dnaSuffix = `\n\n--- VOICE DNA (${tpl.name} · ${tpl.tone}) ---\n${parts.join("\n")}`;
+      }
 
       const res = await fetch(`${N8N}/webhook/blog-ghost-write`, {
         method: "POST",
@@ -210,10 +214,11 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
         body: JSON.stringify({
           title: source,
           language: "nl",
-          category: category || "general",
+          category: tpl?.category || category || "general",
           cluster: "autoriteit",
-          proposed_angle: angle.trim() || topic.trim(),
+          proposed_angle: signal.angle,
           brand_voice_context: voiceText + dnaSuffix,
+          voice_template_id: tpl?.id ?? null,
           narrative_history: "",
           source: "blog-cms-stage-modal",
           timestamp: new Date().toISOString(),
@@ -233,7 +238,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
     } finally {
       clearInterval(ticker);
     }
-  }, [category, source, angle, topic, onDone]);
+  }, [category, source, signal.angle, onDone]);
 
   const stageLabel = ["", "ANALYZE", "VOICE", "GHOST-WRITE", "DONE"][stage];
 
@@ -254,49 +259,120 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
         <div className="stage-body">
           <div className="stage-eyebrow">Stage {stage} · {stageLabel}</div>
 
-          {/* ── STAGE 1 ── */}
+          {/* ── STAGE 1: minimalist analyze summary ── */}
           {stage === 1 && (
             <>
-              <div className="stage-terminal">
-                {typedAnalysis.map((l, i) => <div key={i} className="term-line">{l}<span className="caret" /></div>)}
-                {!analysisDone && !error && <div className="term-line term-line--busy">analyseren…</div>}
-              </div>
+              {!analysisDone ? (
+                <div className="analyze-skeleton">
+                  <span className="spinner" />
+                  <span>{isYoutube ? "Video analyseren…" : "Bron voorbereiden…"}</span>
+                </div>
+              ) : (
+                <div className="analyze-summary">
+                  <div className="as-head">
+                    <div className="as-title">{analysis!.title || "—"}</div>
+                    <span className="as-done">analyse compleet ✓</span>
+                  </div>
+                  <div className="as-chips">
+                    {analysis!.channel && <span className="as-chip">{analysis!.channel}</span>}
+                    {analysis!.isVideo && (
+                      <span className={`as-chip ${analysis!.transcriptFound ? "as-chip--ok" : "as-chip--warn"}`}>
+                        {analysis!.transcriptFound ? "transcript gevonden" : "geen transcript — titel/kanaal"}
+                      </span>
+                    )}
+                    {!analysis!.isVideo && <span className="as-chip">eigen onderwerp</span>}
+                  </div>
+
+                  {analysis!.topics.length > 0 && (
+                    <div className="as-block">
+                      <div className="as-label">Onderwerpen</div>
+                      <div className="as-topics">
+                        {analysis!.topics.slice(0, 6).map((t, i) => <span key={i} className="as-topic">{t}</span>)}
+                      </div>
+                    </div>
+                  )}
+
+                  {analysis!.angle && (
+                    <div className="as-block">
+                      <div className="as-label">Sterkste invalshoek</div>
+                      <div className="as-angle">{analysis!.angle}</div>
+                    </div>
+                  )}
+
+                  {analysis!.summary && (
+                    <div className="as-block">
+                      <div className="as-label">Samenvatting</div>
+                      <p className="as-summary">{analysis!.summary.slice(0, 240)}{analysis!.summary.length > 240 ? "…" : ""}</p>
+                    </div>
+                  )}
+
+                  {analysis!.note && <p className="as-note">{analysis!.note}</p>}
+                </div>
+              )}
+
               <div className="stage-actions">
                 <button className="stamp-btn stamp-btn--ghost stamp-btn--sm" onClick={onClose}>Annuleren</button>
-                <button className="stamp-btn" disabled={!analysisDone} onClick={startVoiceCheck}>
+                <button className="stamp-btn" disabled={!analysisDone} onClick={enterVoice}>
                   Door naar voice check →
                 </button>
               </div>
             </>
           )}
 
-          {/* ── STAGE 2 ── */}
+          {/* ── STAGE 2: always-on voice proposal ── */}
           {stage === 2 && (
             <>
-              {initBusy ? (
-                <div className="stage-terminal"><div className="term-line term-line--busy">editorial memory raadplegen…</div></div>
-              ) : (
+              {proposal.loading ? (
+                <div className="analyze-skeleton"><span className="spinner" /><span>Stemmen vergelijken…</span></div>
+              ) : proposal.empty ? (
                 <>
-                  <p className="stage-note">
-                    {hasMemory
-                      ? "Brand-voice context uit je editorial memory — pas aan waar nodig, dit stuurt de hele draft."
-                      : "Geen memory voor deze categorie — geef de ghost-writer 2-3 zinnen richting (Voice DNA gaat er automatisch bij)."}
-                  </p>
+                  <p className="stage-note">Nog geen voice-templates gevonden — geef de ghost-writer 2-3 zinnen richting.</p>
                   <textarea
-                    className="stage-voice-input"
-                    rows={6}
-                    value={brandVoice}
-                    onChange={(e) => setBrandVoice(e.target.value)}
+                    className="stage-voice-input" rows={6} value={brandVoice}
+                    onChange={(e) => { editedByUser.current = true; setBrandVoice(e.target.value); }}
                     placeholder="bv. Analytisch maar toegankelijk. Eerste persoon. Data boven meningen. Korte zinnen."
                   />
-                  <div className="stage-actions">
-                    <button className="stamp-btn stamp-btn--ghost stamp-btn--sm" onClick={() => setStage(1)}>← Terug</button>
-                    <button className="stamp-btn" onClick={() => startGhostWrite(brandVoice)}>
-                      Start ghost-writer →
-                    </button>
+                </>
+              ) : (
+                <>
+                  <div className="vp-reco">
+                    <div className="vp-reco-head">
+                      <span className="vp-reco-eyebrow">Voorgestelde stem</span>
+                      <span className="vp-reco-name">{proposal.chosen!.tpl.name}</span>
+                      {proposal.chosen!.tpl.short_code && <span className="vp-reco-code">{proposal.chosen!.tpl.short_code}</span>}
+                    </div>
+                    <p className="vp-reco-why"><strong>Waarom:</strong> {proposal.reasoning}</p>
                   </div>
+
+                  {proposal.ranked.length > 1 && (
+                    <div className="vp-alts">
+                      {proposal.ranked.slice(0, 5).map((r) => (
+                        <button
+                          key={r.tpl.id}
+                          className={`vp-chip${r.tpl.id === proposal.chosenId ? " is-active" : ""}`}
+                          onClick={() => switchVoice(r.tpl.id)}
+                          title={r.reasons.join(" · ")}
+                        >
+                          {r.tpl.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="as-label vp-ctx-label">Brand-voice context — stuurt de hele draft (pas aan waar nodig)</div>
+                  <textarea
+                    className="stage-voice-input" rows={6} value={brandVoice}
+                    onChange={(e) => { editedByUser.current = true; setBrandVoice(e.target.value); }}
+                  />
                 </>
               )}
+
+              <div className="stage-actions">
+                <button className="stamp-btn stamp-btn--ghost stamp-btn--sm" onClick={() => setStage(1)}>← Terug</button>
+                <button className="stamp-btn" onClick={() => startGhostWrite(brandVoice, proposal.chosen?.tpl ?? null)}>
+                  Start ghost-writer →
+                </button>
+              </div>
             </>
           )}
 

@@ -1357,6 +1357,60 @@
 }
 .write-cms .stage-error button { border: 0; background: none; color: #c00; cursor: pointer; }
 
+/* ── Stage 1 analyze summary + Stage 2 voice proposal (design contract #15) ─ */
+.write-cms .spinner {
+  width: 13px; height: 13px; border-radius: 50%;
+  border: 2px solid var(--live, #1d7f4e); border-top-color: transparent;
+  display: inline-block; animation: spin 0.7s linear infinite; flex: 0 0 auto;
+}
+.write-cms .analyze-skeleton {
+  min-height: 150px; display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-2);
+  border: 1.5px dashed var(--line, rgba(0,0,0,0.15)); border-radius: 10px;
+}
+.write-cms .analyze-summary {
+  border: 1.5px solid var(--line, rgba(0,0,0,0.15)); border-radius: 10px;
+  padding: 16px 18px; background: var(--bg-1, rgba(0,0,0,0.02));
+  animation: stage-fade-in 0.25s ease; display: flex; flex-direction: column; gap: 12px;
+}
+.write-cms .as-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.write-cms .as-title { font-family: var(--font-display, inherit); font-weight: 700; font-size: 16px; line-height: 1.3; }
+.write-cms .as-done { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live, #1d7f4e); white-space: nowrap; }
+.write-cms .as-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.write-cms .as-chip {
+  font-family: var(--font-mono); font-size: 10.5px; padding: 3px 9px; border-radius: 999px;
+  border: 1px solid var(--line, rgba(0,0,0,0.18)); color: var(--ink-2); background: var(--bg-0, #fff);
+}
+.write-cms .as-chip--ok { border-color: color-mix(in srgb, var(--live, #1d7f4e) 55%, transparent); color: var(--live, #1d7f4e); }
+.write-cms .as-chip--warn { border-color: rgba(180,120,0,0.5); color: #9a6a00; }
+.write-cms .as-block { display: flex; flex-direction: column; gap: 6px; }
+.write-cms .as-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.write-cms .as-topics { display: flex; flex-wrap: wrap; gap: 6px; }
+.write-cms .as-topic { font-size: 12px; padding: 3px 10px; border-radius: 6px; background: color-mix(in srgb, var(--live, #1d7f4e) 12%, transparent); color: var(--ink-0); }
+.write-cms .as-angle { font-size: 13.5px; font-weight: 600; line-height: 1.4; color: var(--ink-0); }
+.write-cms .as-summary { font-size: 13px; line-height: 1.6; color: var(--ink-1); margin: 0; }
+.write-cms .as-note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); margin: 0; line-height: 1.5; }
+
+.write-cms .vp-reco {
+  border: 2px solid var(--ink-0, #111); border-radius: 10px; padding: 14px 16px;
+  background: color-mix(in srgb, var(--live, #1d7f4e) 8%, var(--bg-0, #fff));
+  box-shadow: 3px 3px 0 var(--ink-0, #111); animation: stage-fade-in 0.2s ease;
+}
+.write-cms .vp-reco-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.write-cms .vp-reco-eyebrow { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.write-cms .vp-reco-name { font-family: var(--font-display, inherit); font-weight: 700; font-size: 18px; }
+.write-cms .vp-reco-code { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 5px; border: 1px solid var(--line, rgba(0,0,0,0.2)); color: var(--ink-2); }
+.write-cms .vp-reco-why { font-size: 13px; line-height: 1.55; color: var(--ink-1); margin: 8px 0 0; }
+.write-cms .vp-alts { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0 4px; }
+.write-cms .vp-chip {
+  font-family: var(--font-mono); font-size: 11.5px; padding: 6px 12px; border-radius: 999px;
+  border: 1.5px solid var(--line, rgba(0,0,0,0.2)); background: var(--bg-1, #fff); color: var(--ink-1);
+  cursor: pointer; transition: transform 0.12s ease, border-color 0.12s ease;
+}
+.write-cms .vp-chip:hover { transform: translateY(-1px); border-color: var(--ink-2); }
+.write-cms .vp-chip.is-active { background: var(--ink-0, #111); color: var(--bg-0, #fff); border-color: var(--ink-0, #111); }
+.write-cms .vp-ctx-label { margin: 14px 0 6px; }
+
 /* ── Dual-language SPLIT editor (design contract A1) ──────────────────────── */
 .write-cms .lang-split-wrap { padding: 0; }
 .write-cms .paper-head {
