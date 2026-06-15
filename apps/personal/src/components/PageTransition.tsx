@@ -1,12 +1,15 @@
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
+// Opacity-only fade-in, no exit animation. Removing the exit (and the
+// `mode="wait"` on AnimatePresence) means the incoming page mounts
+// immediately instead of waiting for the previous page to animate out.
+// No y-translate so there is no layout shift on navigation.
 const PageTransition = ({ children }: { children: ReactNode }) => (
   <motion.div
-    initial={{ opacity: 0, y: 12 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -12 }}
-    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.18, ease: "easeOut" }}
   >
     {children}
   </motion.div>
