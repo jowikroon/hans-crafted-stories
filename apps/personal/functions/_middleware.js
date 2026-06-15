@@ -27,20 +27,46 @@ function rewrite(response, m, canonical) {
     .transform(response);
 }
 
+var DEFAULT_REDIRECTS = {
+  "/writing/untitled-3": "/writing",
+  "/writing/untitled-3/": "/writing",
+  "/writing/untitled": "/writing",
+  "/writing/untitled-2": "/writing"
+};
+
+// Optional KV overlay (binding: EDGE_CONFIG, namespace hvl-edge-config). Lets
+// redirects + per-route meta be edited without a deploy. Falls back to the inline
+// defaults when the binding is absent or a read fails, so behaviour is identical
+// until the binding + keys exist. Keys: "redirects" (json map), "meta" (json map).
+async function loadConfig(env) {
+  var cfg = { redirects: DEFAULT_REDIRECTS, meta: META };
+  try {
+    if (env && env.EDGE_CONFIG) {
+      var r = await env.EDGE_CONFIG.get("redirects", "json");
+      var mt = await env.EDGE_CONFIG.get("meta", "json");
+      if (r && typeof r === "object") cfg.redirects = Object.assign({}, DEFAULT_REDIRECTS, r);
+      if (mt && typeof mt === "object") cfg.meta = Object.assign({}, META, mt);
+    }
+  } catch (e) { /* fall back to inline defaults */ }
+  return cfg;
+}
+
 export async function onRequest(context) {
-  // HAN-118: leaked CMS stub — _redirects rule wordt door Pages niet toegepast op deze route; hard 301 hier (middleware draait vóór asset/SPA-fallback).
+  var cfg = await loadConfig(context.env);
   var reqPath = new URL(context.request.url).pathname;
-  if (reqPath === "/writing/untitled-3" || reqPath === "/writing/untitled-3/" || reqPath === "/writing/untitled" || reqPath === "/writing/untitled-2") {
-    return Response.redirect("https://hansvanleeuwen.com/writing", 301);
+
+  // HAN-118 + KV-driven: hard 301 for leaked/retired stubs (middleware runs before SPA fallback).
+  var target = cfg.redirects[reqPath];
+  if (target) {
+    return Response.redirect(/^https?:\/\//.test(target) ? target : "https://hansvanleeuwen.com" + target, 301);
   }
 
   var response = await context.next();
   var contentType = response.headers.get("content-type") || "";
   if (contentType.indexOf("text/html") === -1) return response;
 
-  var path = new URL(context.request.url).pathname;
-  var m = META[path];
+  var m = cfg.meta[reqPath];
   if (!m) return response;
 
-  return rewrite(response, m, "https://hansvanleeuwen.com" + path);
+  return rewrite(response, m, "https://hansvanleeuwen.com" + reqPath);
 }
