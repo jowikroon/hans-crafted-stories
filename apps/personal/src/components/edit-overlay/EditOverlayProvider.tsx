@@ -13,6 +13,8 @@ import {
   type OverrideStyle,
   type PageOverride,
 } from "@/lib/api/overrides";
+import { DEFAULT_LOGO_ID, LOGO_SETTING_KEY } from "@/lib/logos";
+import { LogoProvider } from "@/contexts/LogoContext";
 
 const STYLE_TAG_ID = "page-overrides-style";
 
@@ -57,6 +59,9 @@ interface EditOverlayValue {
   saveText: (text: string | null) => Promise<void>;
   revert: () => Promise<void>;
   reloadOverrides: () => Promise<void>;
+  /** Active header logo id (site-wide setting). */
+  activeLogoId: string;
+  setActiveLogo: (id: string) => Promise<void>;
 }
 
 const Ctx = createContext<EditOverlayValue | null>(null);
@@ -66,6 +71,7 @@ export function useEditOverlay() {
   if (!v) throw new Error("useEditOverlay must be used within EditOverlayProvider");
   return v;
 }
+
 
 export function EditOverlayProvider({ children }: { children: React.ReactNode }) {
   const [editing, setEditing] = useState(false);
@@ -95,6 +101,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     }
     const css: string[] = [];
     overrides.forEach((o) => {
+      if (o.element_key.startsWith("__site__:")) return; // site settings, not DOM styles
       const decls = Object.entries(o.style || {})
         .filter(([, v]) => v != null && v !== "")
         .map(([k, v]) => `${camelToKebab(k)}:${v} !important`)
@@ -109,6 +116,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     if (typeof document === "undefined") return;
     const applyText = () => {
       overrides.forEach((o) => {
+        if (o.element_key.startsWith("__site__:")) return; // site settings, not DOM text
         if (o.text_override == null || o.text_override === "") return;
         const sel = o.selector || `[data-lov-id="${o.element_key}"]`;
         document.querySelectorAll(sel).forEach((el) => {
@@ -192,6 +200,24 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     await apiDelete(selectedKey);
   }, [selectedKey]);
 
+  const activeLogoId = overrides.get(LOGO_SETTING_KEY)?.text_override || DEFAULT_LOGO_ID;
+
+  const setActiveLogo = useCallback(
+    async (id: string) => {
+      const row: PageOverride = {
+        element_key: LOGO_SETTING_KEY,
+        selector: null,
+        page_path: "*",
+        label: "Header logo",
+        text_override: id,
+        style: {},
+      };
+      upsertLocal(row);
+      await apiSave(row);
+    },
+    [upsertLocal]
+  );
+
   const value = useMemo<EditOverlayValue>(
     () => ({
       editing,
@@ -204,11 +230,17 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       saveText,
       revert,
       reloadOverrides,
+      activeLogoId,
+      setActiveLogo,
     }),
-    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides]
+    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides, activeLogoId, setActiveLogo]
   );
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={value}>
+      <LogoProvider value={{ activeLogoId, setActiveLogo }}>{children}</LogoProvider>
+    </Ctx.Provider>
+  );
 }
 
 function labelFor(el: Element): string {

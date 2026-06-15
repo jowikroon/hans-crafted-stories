@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useEditOverlay, keyForElement } from "./EditOverlayProvider";
 import { createChangeRequest } from "@/lib/api/overrides";
+import { LOGOS } from "@/lib/logos";
 import { toast } from "sonner";
 
 const UI_ATTR = "data-edit-ui";
@@ -143,7 +144,7 @@ const WEIGHTS = ["400", "500", "600", "700", "800"];
 const ALIGNS = ["left", "center", "right"];
 
 function EditPanel() {
-  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert } = useEditOverlay();
+  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo } = useEditOverlay();
   const current = selectedKey ? overrides.get(selectedKey) : undefined;
   const [text, setText] = useState("");
   const [instruction, setInstruction] = useState("");
@@ -207,6 +208,41 @@ function EditPanel() {
         color: "#15140F",
       }}
     >
+      {/* ── Permanent: Header logo switcher (site-wide) ── */}
+      <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(0,0,0,.10)" }}>
+        <p style={{ font: '600 10px "IBM Plex Mono", monospace', textTransform: "uppercase", letterSpacing: ".06em", color: "#7E7A6F", margin: "0 0 7px" }}>Header logo</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {LOGOS.map((l) => {
+            const active = l.id === activeLogoId;
+            return (
+              <button
+                key={l.id}
+                data-edit-ui=""
+                onClick={() => setActiveLogo(l.id)}
+                title={l.label}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: 7,
+                  borderRadius: 10,
+                  cursor: "pointer",
+                  border: active ? "2px solid #2D9255" : "1px solid rgba(0,0,0,.14)",
+                  background: active ? "#E7F2EA" : "#fff",
+                }}
+              >
+                <img src={l.src} alt={l.label} width={36} height={36} style={{ width: 36, height: 36, borderRadius: 8, objectFit: "contain", background: "#fff" }} />
+                <span style={{ font: '600 10px "Bricolage Grotesque", system-ui', color: active ? "#2D9255" : "#4B4842", maxWidth: 64, textAlign: "center", lineHeight: 1.2 }}>{l.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <small style={{ display: "block", marginTop: 8, color: "#7E7A6F", fontSize: 10 }}>
+          Applies site-wide for every visitor. Add more logos in <code>src/lib/logos.ts</code>.
+        </small>
+      </div>
+
       {!selectedEl ? (
         <p style={{ margin: 0, color: "#7E7A6F" }}>Click any element on the page to edit it.</p>
       ) : (
