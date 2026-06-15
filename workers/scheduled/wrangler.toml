@@ -1,0 +1,13 @@
+name = "hvl-edge-cron"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+
+# Hourly: warm the edge cache for key pages and health-ping the live sites.
+# Deliberately does NOT duplicate the cowork-dispatch SEO/radar schedules.
+[triggers]
+crons = ["0 * * * *"]
+
+[vars]
+HEALTH_URLS = "https://hansvanleeuwen.com,https://marketplacegrowth.nl"
+WARM_PATHS = "/,/writing,/work,/about"
+EMPIRE_HEALTH_URL = "https://pesfakewujjwkyybwaom.functions.supabase.co/empire-health"
