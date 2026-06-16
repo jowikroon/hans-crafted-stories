@@ -6,33 +6,36 @@
 
 @layer base {
   :root {
-    --background: 40 20% 97%;
-    --foreground: 30 10% 12%;
+    /* Warm creme — the music-page light feel: paper-cream canvas, deep editorial
+       green accent (the light counterpart of the neon dark theme). Same fonts +
+       structure as the neon page, one cohesive system across both themes. */
+    --background: 45 33% 98%;      /* #FBFAF7 creme */
+    --foreground: 45 21% 7%;       /* #17150F near-black ink */
 
-    --card: 40 15% 95%;
-    --card-foreground: 30 10% 12%;
+    --card: 0 0% 100%;             /* #FFFFFF */
+    --card-foreground: 45 21% 7%;
 
-    --popover: 40 20% 97%;
-    --popover-foreground: 30 10% 12%;
+    --popover: 45 33% 98%;
+    --popover-foreground: 45 21% 7%;
 
-    --primary: 16 55% 52%;
-    --primary-foreground: 40 20% 97%;
+    --primary: 151 59% 26%;        /* #1C6B45 deep editorial green */
+    --primary-foreground: 45 33% 98%;
 
-    --secondary: 35 15% 90%;
-    --secondary-foreground: 30 10% 25%;
+    --secondary: 43 23% 94%;       /* #F3F1EC paper-2 */
+    --secondary-foreground: 48 8% 25%;
 
-    --muted: 35 12% 92%;
-    --muted-foreground: 30 8% 50%;
+    --muted: 43 23% 94%;
+    --muted-foreground: 47 6% 51%; /* #8A877C */
 
-    --accent: 16 55% 52%;
-    --accent-foreground: 40 20% 97%;
+    --accent: 151 59% 26%;         /* deep green */
+    --accent-foreground: 45 33% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 45 33% 98%;
 
-    --border: 35 15% 88%;
-    --input: 35 15% 88%;
-    --ring: 16 55% 52%;
+    --border: 43 16% 88%;
+    --input: 43 16% 88%;
+    --ring: 151 59% 26%;
 
     --radius: 0.5rem;
 
@@ -58,25 +61,28 @@
   }
 
   .dark {
-    --background: 30 10% 8%;
-    --foreground: 40 15% 90%;
-    --card: 30 10% 12%;
-    --card-foreground: 40 15% 90%;
-    --popover: 30 10% 8%;
-    --popover-foreground: 40 15% 90%;
-    --primary: 16 55% 58%;
-    --primary-foreground: 30 10% 8%;
-    --secondary: 30 10% 16%;
-    --secondary-foreground: 40 15% 85%;
-    --muted: 30 8% 18%;
-    --muted-foreground: 35 10% 55%;
-    --accent: 16 55% 58%;
-    --accent-foreground: 30 10% 8%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 30 8% 20%;
-    --input: 30 8% 20%;
-    --ring: 16 55% 58%;
+    /* Neon "After Hours" — the /music page palette, now the site-wide dark theme.
+       Near-black canvas, one acid-neon-green accent. Sidebar/CMS tokens below
+       are intentionally left on their own scale (the /write CMS owns them). */
+    --background: 240 11% 4%;      /* #08080A near-black */
+    --foreground: 240 8% 95%;      /* #F2F2F4 ink */
+    --card: 240 10% 6%;            /* #0E0E11 bg-2 */
+    --card-foreground: 240 8% 95%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 240 8% 95%;
+    --primary: 77 100% 60%;        /* #C6FF34 acid neon */
+    --primary-foreground: 60 33% 3%; /* near-black ink on neon */
+    --secondary: 240 9% 9%;        /* #141418 bg-3 */
+    --secondary-foreground: 240 8% 88%;
+    --muted: 240 9% 11%;
+    --muted-foreground: 240 4% 54%; /* #86868F grey */
+    --accent: 77 100% 60%;         /* neon */
+    --accent-foreground: 60 33% 3%;
+    --destructive: 0 62.8% 40%;
+    --destructive-foreground: 240 8% 95%;
+    --border: 240 8% 16%;          /* subtle hairline */
+    --input: 240 9% 14%;
+    --ring: 77 100% 60%;
     --sidebar-background: 220 20% 6%;
     --sidebar-foreground: 220 10% 80%;
     --sidebar-primary: 45 90% 55%;
