@@ -39,7 +39,12 @@ interface AppShellProps {
 const AppShell = ({ initialLang }: AppShellProps) => {
   const location = useLocation();
   const isCompact = location.pathname === "/samantha";
+  // The /write Command Center is a full-page standalone app (its own cream
+  // canvas + left mode-rail). Treat it like the other app surfaces: compact,
+  // header blended onto the CMS background, and no marketing Footer.
+  const isCmsPage = location.pathname === "/write" || location.pathname.startsWith("/write/");
   const isDarkPage = isCompact || location.pathname === "/god-structure" || location.pathname.startsWith("/blog-cms");
+  const isAppPage = isDarkPage || isCmsPage;
 
   return (
     <AuthProvider>
@@ -49,12 +54,16 @@ const AppShell = ({ initialLang }: AppShellProps) => {
             Skip to content
           </a>
           <header>
-            <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
+            <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact || isCmsPage} />
           </header>
-          <main id="main-content" className={`min-h-screen ${isDarkPage ? "pt-16" : "pt-24"}`}>
+          <main
+            id="main-content"
+            className={`min-h-screen ${isAppPage ? "pt-16" : "pt-24"}`}
+            style={isCmsPage ? { background: "#F1ECDF" } : undefined}
+          >
             <AnimatedRoutes />
           </main>
-          {!isDarkPage && <Footer />}
+          {!isAppPage && <Footer />}
           <SamanthaGlobalButton />
           <CookieConsent />
           <TrackingScriptInjector />

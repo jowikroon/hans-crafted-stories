@@ -24,14 +24,14 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
   const [ytPreview, setYtPreview] = useState<YtPreview | null>(null);
   const [showStageModal, setShowStageModal] = useState(false);
   const [ytPreviewLoading, setYtPreviewLoading] = useState(false);
-  const autoFilledAngle = useRef(false);
+  const autoFilledTopic = useRef(false);
 
   const busy = phase === "verifying" || phase === "resuming";
   const hasValidYtUrl = !!youtube.trim() && !!extractVideoId(youtube);
 
   // oEmbed preflight — fires 600ms after a valid YouTube URL is entered
   useEffect(() => {
-    autoFilledAngle.current = false;
+    autoFilledTopic.current = false;
     if (!hasValidYtUrl) { setYtPreview(null); return; }
     const timer = setTimeout(async () => {
       setYtPreviewLoading(true);
@@ -52,13 +52,13 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
     return () => clearTimeout(timer);
   }, [youtube, hasValidYtUrl]);
 
-  // Auto-fill angle with first key topic after successful analysis
+  // Auto-fill the Topic field with the first key topic after successful analysis
   useEffect(() => {
-    if (ytAnalyze.phase === "analyzed" && ytAnalyze.result?.keyTopics.length && !angle.trim() && !autoFilledAngle.current) {
-      setAngle(ytAnalyze.result.keyTopics[0]);
-      autoFilledAngle.current = true;
+    if (ytAnalyze.phase === "analyzed" && ytAnalyze.result?.keyTopics.length && !topic.trim() && !autoFilledTopic.current) {
+      setTopic(ytAnalyze.result.keyTopics[0]);
+      autoFilledTopic.current = true;
     }
-  }, [ytAnalyze.phase, ytAnalyze.result, angle, setAngle]);
+  }, [ytAnalyze.phase, ytAnalyze.result, topic, setTopic]);
 
   // Clear analysis when YouTube URL is cleared
   useEffect(() => {
@@ -218,7 +218,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
                 <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
                   <path d="M2 8l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Analyzed — click a topic to use as angle
+                Analyzed — click a topic or article idea below
               </div>
             </div>
             <button
@@ -243,8 +243,8 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
                 <button
                   key={t}
                   className="topic-chip"
-                  onClick={() => { setAngle(t); autoFilledAngle.current = true; }}
-                  title="Use as angle"
+                  onClick={() => { setTopic(t); autoFilledTopic.current = true; }}
+                  title="Use as topic"
                 >
                   {t}
                   <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
@@ -262,7 +262,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
                 <button
                   key={o}
                   className="topic-chip topic-chip--opp"
-                  onClick={() => { setAngle(o); autoFilledAngle.current = true; }}
+                  onClick={() => { setAngle(o); autoFilledTopic.current = true; }}
                   title="Use as angle"
                 >
                   {o}

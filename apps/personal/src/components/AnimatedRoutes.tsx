@@ -32,6 +32,7 @@ const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/Bl
 const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-template-editor" */ "@/components/portal/blog/VoiceTemplateEditor"));
 
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
+const WriteCmsFallback = () => <div className="min-h-screen bg-[#F1ECDF]" />;
 
 /* /blog-cms is retired — React CMS shell at /write is canonical.
    /write is now a React route (write-src.html is the archived static prototype). */
@@ -61,8 +62,8 @@ const AnimatedRoutes = () => {
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/ai-ecommerce-automation" element={<PageTransition><AiEcommerceAutomation /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
-        <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
-        <Route path="/write/:id" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
+        <Route path="/write" element={<Suspense fallback={<WriteCmsFallback />}><WriteCMS /></Suspense>} />
+        <Route path="/write/:id" element={<Suspense fallback={<WriteCmsFallback />}><WriteCMS /></Suspense>} />
         <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
