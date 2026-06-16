@@ -1,18 +1,30 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ReactNode } from "react";
 
-// Opacity-only fade-in, no exit animation. Removing the exit (and the
-// `mode="wait"` on AnimatePresence) means the incoming page mounts
-// immediately instead of waiting for the previous page to animate out.
-// No y-translate so there is no layout shift on navigation.
-const PageTransition = ({ children }: { children: ReactNode }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.18, ease: "easeOut" }}
-  >
-    {children}
-  </motion.div>
-);
+/* Page transition — a smooth fade with a whisper of blur on enter.
+   Intentionally keeps NO y-translate and NO exit animation (preserves the
+   #121 "snappier navigation / no layout shift" decision): the incoming page
+   still mounts immediately. Reduced-motion users get an instant, blur-free
+   fade. The tiny blur is GPU-cheap and reads as "premium" without cost to
+   layout stability or LCP. */
+const PageTransition = ({ children }: { children: ReactNode }) => {
+  const reduce = useReducedMotion();
+  if (reduce) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.12 }}>
+        {children}
+      </motion.div>
+    );
+  }
+  return (
+    <motion.div
+      initial={{ opacity: 0, filter: "blur(6px)" }}
+      animate={{ opacity: 1, filter: "blur(0px)" }}
+      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 export default PageTransition;

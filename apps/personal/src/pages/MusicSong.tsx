@@ -18,6 +18,7 @@ import { Link, useParams } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
 import "@/styles/music-v2.css";
+import "@/styles/music-neon.css";
 
 function ChevronRight() {
   return (
@@ -112,7 +113,7 @@ export default function MusicSong() {
 
   if (!song) {
     return (
-      <div className="music-v2">
+      <div className="music-v2 music-neon-song">
         <main className="songpage">
           <div className="wrap">
             <nav className="crumb" aria-label="Breadcrumb" style={{ paddingTop: 40 }}>
@@ -137,7 +138,7 @@ export default function MusicSong() {
   const d = song.detail;
 
   return (
-    <div className="music-v2">
+    <div className="music-v2 music-neon-song">
       <main className="songpage">
         <div className="wrap">
           {/* Breadcrumb */}

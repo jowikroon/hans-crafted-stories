@@ -7,6 +7,7 @@ import { ArrowRight, ShoppingCart, BarChart3, Search, TrendingUp, MapPin, Users,
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageContent } from "@/hooks/usePageContent";
+import Magnetic from "@/components/Magnetic";
 
 const icons = [
   <ShoppingCart size={20} />,
@@ -71,24 +72,28 @@ const Hero = () => {
             {getValue("hero_location", t.location)}
           </p>
           <div className="flex flex-wrap gap-4" role="group" aria-label={isNl ? "Actieknoppen" : "Call to action"}>
-            <Link
-              to="/work"
-              className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
-              aria-label={getValue("hero_cta_work", t.ctaWork)}
-            >
-              {getValue("hero_cta_work", t.ctaWork)}
-              <ArrowRight
-                size={16}
-                className="transition-transform duration-300 group-hover:translate-x-0.5"
-              />
-            </Link>
-            <Link
-              to="/about#contact"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-sm font-bold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
-              aria-label={getValue("hero_cta_consult", t.ctaConsult)}
-            >
-              {getValue("hero_cta_consult", t.ctaConsult)}
-            </Link>
+            <Magnetic>
+              <Link
+                to="/work"
+                className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
+                aria-label={getValue("hero_cta_work", t.ctaWork)}
+              >
+                {getValue("hero_cta_work", t.ctaWork)}
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-300 group-hover:translate-x-0.5"
+                />
+              </Link>
+            </Magnetic>
+            <Magnetic>
+              <Link
+                to="/about#contact"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-sm font-bold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
+                aria-label={getValue("hero_cta_consult", t.ctaConsult)}
+              >
+                {getValue("hero_cta_consult", t.ctaConsult)}
+              </Link>
+            </Magnetic>
             <Link
               to="/about#contact"
               className="inline-flex items-center gap-2 rounded-full border-2 border-border/60 px-6 py-3 text-sm font-medium text-muted-foreground transition-all duration-300 hover:border-foreground/30 hover:text-foreground"
