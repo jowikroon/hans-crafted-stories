@@ -324,3 +324,57 @@ body.mn-cursor-down .mn-cursor-ring { transform: scale(.82); }
   .music-neon .mn-composer__grid, .music-neon .mn-composer__row { grid-template-columns: 1fr; }
   .music-neon .mn-studio__stat { padding: 0 16px; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   NEON SONG DETAIL (/music/:slug) — dark re-theme of the music-v2
+   song page classes, applied via the .music-neon-song wrapper added
+   alongside .music-v2 on MusicSong.tsx. Scoped so it only re-skins
+   the song page; the rest of music-v2 is untouched.
+   ════════════════════════════════════════════════════════════ */
+.music-neon-song {
+  --mn-bg: #08080A; --mn-bg-2: #0E0E11; --mn-bg-3: #141418;
+  --mn-hair: rgba(255,255,255,.075); --mn-hair-2: rgba(255,255,255,.045);
+  --mn-ink: #F2F2F4; --mn-grey: #86868F; --mn-grey-2: #A6A6AE; --mn-grey-dim: #56565E; --mn-grey-faint: #34343A;
+  --mn-neon: #C6FF34; --mn-neon-soft: rgba(198,255,52,.18); --mn-neon-ink: #0A0A05;
+  background: var(--mn-bg); color: var(--mn-grey);
+  margin-top: -4rem; padding-top: 4rem; min-height: 100vh;
+}
+.music-neon-song.music-v2 { --paper: var(--mn-bg); --paper-2: var(--mn-bg-2); --card: var(--mn-bg-2); --ink: var(--mn-ink); --ink-2: var(--mn-grey-2); --muted: var(--mn-grey-dim); --hair: var(--mn-hair); --hair-2: var(--mn-hair-2); --accent: var(--mn-neon); }
+.music-neon-song ::selection { background: var(--mn-neon); color: var(--mn-neon-ink); }
+.music-neon-song .crumb a, .music-neon-song .crumb .here { color: var(--mn-grey-dim); }
+.music-neon-song .crumb a:hover { color: var(--mn-neon); }
+.music-neon-song .songtitle { color: var(--mn-ink); }
+.music-neon-song .songhead__cat { color: var(--mn-neon); }
+.music-neon-song .songhead__concept { color: var(--mn-neon-ink); background: var(--mn-neon); }
+.music-neon-song .songhead__by { color: var(--mn-grey); }
+.music-neon-song .songfact__k { color: var(--mn-grey-dim); }
+.music-neon-song .songfact__v { color: var(--mn-grey-2); }
+.music-neon-song .cover-fallback { background: linear-gradient(145deg, color-mix(in srgb, var(--mn-neon) 60%, #0c0b09), #0c0b09); color: var(--mn-neon-ink); }
+.music-neon-song .songplay iframe, .music-neon-song .songvideo__yt iframe { filter: grayscale(.4) brightness(.92); transition: filter .5s ease; }
+.music-neon-song .songplay iframe:hover { filter: none; }
+.music-neon-song .platform { background: var(--mn-bg-2); border: 1px solid var(--mn-hair); color: var(--mn-grey-2); }
+.music-neon-song .platform:hover { border-color: color-mix(in srgb, var(--mn-neon) 45%, var(--mn-hair)); color: var(--mn-ink); }
+.music-neon-song .prose { color: var(--mn-grey); }
+.music-neon-song .prose h2, .music-neon-song .prose h3 { color: var(--mn-ink); }
+.music-neon-song .prose .lead { color: var(--mn-grey-2); }
+.music-neon-song .pull { color: var(--mn-ink); border-left-color: var(--mn-neon); }
+.music-neon-song .callout { background: var(--mn-bg-2); border: 1px solid var(--mn-hair); }
+.music-neon-song .callout__k { color: var(--mn-neon); }
+.music-neon-song .specs, .music-neon-song .gearlist { background: var(--mn-bg-2); border: 1px solid var(--mn-hair); }
+.music-neon-song .specs__h { color: var(--mn-grey-dim); }
+.music-neon-song .specrow { color: var(--mn-grey-2); border-color: var(--mn-hair-2); }
+.music-neon-song .lyrics__h, .music-neon-song .lyrics__tag { color: var(--mn-neon); }
+.music-neon-song .lyrics__v { color: var(--mn-grey-2); }
+.music-neon-song .lyrics__note { color: var(--mn-grey-dim); }
+.music-neon-song .more__h { color: var(--mn-grey-dim); }
+.music-neon-song .ncard { background: var(--mn-bg-2); border: 1px solid var(--mn-hair); transition: border-color .22s ease, transform .22s ease; }
+.music-neon-song .ncard:hover { border-color: color-mix(in srgb, var(--mn-neon) 45%, var(--mn-hair)); transform: translateY(-2px); }
+.music-neon-song .ncard__m { color: var(--mn-grey-dim); }
+.music-neon-song .ncard__t { color: var(--mn-ink); }
+.music-neon-song .ncard__m .tag { color: var(--mn-neon); }
+.music-neon-song .share__label { color: var(--mn-grey-dim); }
+.music-neon-song .share a { color: var(--mn-grey-2); }
+.music-neon-song .share a:hover { color: var(--mn-neon); }
+.music-neon-song .tag { color: var(--mn-neon); }
+.music-neon-song .dot { background: var(--mn-grey-dim); }
+.music-neon-song .songvideo-card { background: var(--mn-bg-2); border: 1px solid var(--mn-hair); }
