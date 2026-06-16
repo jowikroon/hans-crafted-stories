@@ -299,19 +299,22 @@
     <link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/" />
     <link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/" />
 
-    <!-- Fonts: preconnect + async load with display=swap -->
+    <!-- Fonts: preconnect + async load with display=swap. General Sans (body/UI) via Fontshare, Newsreader (serif display) via Google Fonts. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" /></noscript>
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link rel="preload" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=switzer@400,500,600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=switzer@400,500,600&display=swap" /></noscript>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" /></noscript>
     <!-- CMS / editor fonts (Bricolage Grotesque, IBM Plex Mono, Fraunces, JetBrains Mono) are
          no longer loaded here. They are scoped to where they're used: the /write CMS loads them
          via write-cms.css, and the admin edit overlay injects them on demand. This keeps marketing
          pages from fetching fonts they never render. -->
     <style>
       /* Critical font-display fallback so text is visible while fonts load */
-      body { font-family: Inter, system-ui, -apple-system, sans-serif; }
-      .font-display { font-family: 'Playfair Display', Georgia, serif; }
+      body { font-family: 'General Sans', system-ui, -apple-system, sans-serif; }
+      .font-display { font-family: 'Newsreader', Georgia, serif; }
     </style>
 
     <!-- Favicon set -->

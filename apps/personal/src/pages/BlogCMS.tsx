@@ -1435,7 +1435,7 @@ function renderMarkdownToHTML(md: string): string {
       const size = level === 1 ? 34 : level === 2 ? 22 : 17;
       const top = level === 1 ? 0 : 28;
       out.push(
-        `<h${level} style="font-family:'Playfair Display',Georgia,serif;font-weight:500;font-size:${size}px;margin-top:${top}px;margin-bottom:14px;letter-spacing:-0.01em">${inlineFmt(h[2])}</h${level}>`
+        `<h${level} style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:${size}px;margin-top:${top}px;margin-bottom:14px;letter-spacing:-0.01em">${inlineFmt(h[2])}</h${level}>`
       );
       continue;
     }
@@ -1444,7 +1444,7 @@ function renderMarkdownToHTML(md: string): string {
       flushList();
       if (!inQuote) {
         out.push(
-          '<blockquote style="border-left:2px solid hsl(var(--primary));padding:8px 18px;margin:20px 0;font-style:italic;font-family:\'Playfair Display\',Georgia,serif;font-size:17px;color:hsl(var(--foreground) / 0.9)">'
+          '<blockquote style="border-left:2px solid hsl(var(--primary));padding:8px 18px;margin:20px 0;font-style:italic;font-family:\'Newsreader\',Georgia,serif;font-size:17px;color:hsl(var(--foreground) / 0.9)">'
         );
         inQuote = true;
       }
