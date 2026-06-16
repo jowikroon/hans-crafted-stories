@@ -1,315 +1,275 @@
 /**
- * Music.tsx — /music index (songs grid + featured release).
+ * Music.tsx — /music "After Hours" neon page.
  *
- * Pixel-port of the claude.ai/design prototype project/Music.html, rendered
- * with the .music-v2 scoped stylesheet. The prototype's imperative music.js
- * behaviours are reimplemented here with React state:
- *   - deterministic waveform bars (same seeded RNG as music.js)
- *   - lazy inline Spotify embed on play (one open at a time)
- *   - genre filter pills + newest/oldest sort
- *   - IntersectionObserver reveal (SSR-guarded)
+ * Pixel-port of the claude.ai/design prototype project/Music - Neon.html,
+ * rendered with the scoped .music-neon stylesheet. Dark, near-black canvas
+ * with one acid-neon accent, an ambient cursor-lit grid, numbered track rows
+ * with lazy inline Spotify/SoundCloud playback, a live Amersfoort clock, and
+ * — folded in at the bottom — the Music Studio release timeline.
  *
- * Copy is English (matches the prototype). The site is bilingual via useLang,
- * but Music v1 hardcodes English strings — add NL fields to src/data/music.ts
- * and branch on `lang` when localizing.
- *
- * Navbar + Footer are provided by App.tsx around the router; this page only
- * renders the inner content. Default export, wired at /music.
+ * Data comes from the live src/data/music.ts (real catalogue: Beat Drop +
+ * SoundCloud concepts). The permanent site Navbar renders above this in its
+ * dark variant (App.tsx isDarkPage); the global light Footer is hidden there,
+ * so this page renders its own neon footer.
  */
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
-import { useLang } from "@/hooks/useLang";
-import { songs, featuredRelease, GENRE_FILTERS, type GenreTag, type Song } from "@/data/music";
-import "@/styles/music-v2.css";
+import { songs, featuredRelease, type Song } from "@/data/music";
+import ReleaseTimeline from "@/components/music/ReleaseTimeline";
+import "@/styles/music-neon.css";
 
-type SortOrder = "newest" | "oldest";
-
-/* ── deterministic waveform bars (ported from music.js fillWave) ──
-   Seeds a tiny LCG from the song title so the bars are stable across
-   renders and SSR/CSR — no Math.random, no hydration mismatch. */
+/* deterministic waveform bars — stable across SSR/CSR (no Math.random) */
 function waveBars(key: string, n: number): number[] {
   let seed = 0;
   for (let i = 0; i < key.length; i++) seed = (seed * 31 + key.charCodeAt(i)) >>> 0;
-  const rng = () => {
-    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-    return seed / 0x7fffffff;
-  };
   const out: number[] = [];
-  for (let b = 0; b < n; b++) out.push(4 + Math.round(Math.pow(rng(), 0.7) * 26));
+  for (let i = 0; i < n; i++) {
+    const h = 6 + Math.round(Math.abs(Math.sin(i * 0.7) + Math.sin(i * 1.9) * 0.6) * 22) + ((seed >>= 1, seed) % 8);
+    out.push(Math.max(5, Math.min(30, h)));
+  }
   return out;
 }
 
-function ChevronRight() {
+const PlayIcon = () => (
+  <svg className="ic-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+);
+const PauseIcon = () => (
+  <svg className="ic-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+);
+const ArrowRight = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+);
+
+function fmtDate(iso: string): string {
+  if (!iso || iso === "—") return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function TrackRow({ song, index, playing, onToggle }: { song: Song; index: number; playing: boolean; onToggle: (slug: string) => void }) {
+  const bars = waveBars(song.title, 34);
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-
-interface SongCardProps {
-  song: Song;
-  index: number;
-  isPlaying: boolean;
-  onToggle: (slug: string) => void;
-}
-
-function SongCard({ song, index, isPlaying, onToggle }: SongCardProps) {
-  const bars = useMemo(() => waveBars(song.title, 52), [song.title]);
-  return (
-    <article
-      className={`song rv${isPlaying ? " playing" : ""}`}
-      style={{ "--d": `${Math.min(index, 5) * 45}ms` } as React.CSSProperties}
-    >
-      <div className="song__cover">
-        <div className="cover-fallback">
-          <span>{song.title}</span>
-        </div>
-        <img src={song.cover} alt={`Cover art — ${song.title}`} loading="lazy" decoding="async" />
-        <span className="cover-scrim" />
-        <button
-          type="button"
-          className="song__play"
-          aria-label={isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
-          aria-pressed={isPlaying}
-          onClick={() => onToggle(song.slug)}
-        >
-          <svg className="ic-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-          <svg className="ic-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+    <article className={`mn-track${playing ? " playing" : ""}`}>
+      <span className="mn-track__idx">{String(index + 1).padStart(2, "0")}</span>
+      <div className="mn-track__cover">
+        {song.cover && <img src={song.cover} alt={`Cover — ${song.title}`} loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
+        <button className="mn-track__play" type="button" aria-label={playing ? `Pause ${song.title}` : `Play ${song.title}`} aria-pressed={playing} onClick={() => onToggle(song.slug)}>
+          <span className="ico">{playing ? <PauseIcon /> : <PlayIcon />}</span>
         </button>
       </div>
-      <div className="song__main">
-        <div className="song__meta">
-          <span className="song__date">{formatDate(song.date)}</span>
-          <span className="dot" />
+      <div className="mn-track__main">
+        <Link className="mn-track__title" to={`/music/${song.slug}`}>{song.title}</Link>
+        <div className="mn-track__meta">
           <span className="tag">{song.genre}</span>
-          {song.duration && song.duration !== "—" && (
-            <>
-              <span className="dot" />
-              <span className="song__dur">{song.duration}</span>
-            </>
-          )}
-          {song.concept && (
-            <>
-              <span className="dot" />
-              <span className="song__concept">Concept</span>
-            </>
-          )}
-        </div>
-        <Link className="song__title" to={`/music/${song.slug}`}>
-          {song.title}
-        </Link>
-        <div className="wave" aria-hidden="true">
-          {bars.map((h, i) => (
-            <i key={i} style={{ height: `${h}px`, "--bi": i } as React.CSSProperties} />
-          ))}
+          {song.concept && <span className="concept">Concept</span>}
+          <span className="d" />
+          <span>{fmtDate(song.date)}</span>
         </div>
       </div>
-      {/* Inline Spotify player — rendered only after the user presses play (lazy). */}
-      <div className="song__player">
-        {isPlaying && (
+      <div className="mn-wave" aria-hidden="true">
+        {bars.map((h, i) => <i key={i} style={{ height: `${h}px`, "--bi": i } as React.CSSProperties} />)}
+      </div>
+      <span className="mn-track__dur">{song.duration}</span>
+      <Link className="mn-track__open" to={`/music/${song.slug}`}>Notes <ArrowRight /></Link>
+      {playing && (
+        <div className="mn-track__embed">
           <iframe
-            title={`${song.provider === "soundcloud" ? "SoundCloud" : "Spotify"} — ${song.title}`}
+            title={`Player — ${song.title}`}
             src={song.embed}
             height={song.embedHeight}
-            frameBorder={0}
             loading="lazy"
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           />
-        )}
-      </div>
+        </div>
+      )}
     </article>
   );
 }
 
-export default function Music() {
-  const { lang } = useLang();
-  const isNl = lang === "nl";
-  const [filter, setFilter] = useState<"all" | GenreTag>("all");
-  const [sort, setSort] = useState<SortOrder>("newest");
-  const [playingSlug, setPlayingSlug] = useState<string | null>(null);
-  const listRef = useRef<HTMLDivElement>(null);
-
+const Music = () => {
   useSEO({
-    title: "Music — Songs & Production Notes | Hans van Leeuwen",
-    description:
-      "Original songs by Hans van Leeuwen — listen on Spotify and read the production notes behind each track: how it was made, the gear, and the lyrics.",
+    title: "Music — After Hours | Hans van Leeuwen",
+    description: "Tracks recorded after midnight — a tape machine, soft synths, and whatever the night left behind. Press play, and read the notes for every song.",
     url: "https://hansvanleeuwen.com/music",
     type: "music.playlist",
+    hreflang: [
+      { lang: "en", href: "https://hansvanleeuwen.com/music" },
+      { lang: "nl", href: "https://hansvanleeuwen.com/music" },
+      { lang: "x-default", href: "https://hansvanleeuwen.com/music" },
+    ],
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
-        {
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-            { "@type": "ListItem", position: 2, name: "Music", item: "https://hansvanleeuwen.com/music" },
-          ],
-        },
-        {
-          "@type": "MusicGroup",
-          name: "Hans van Leeuwen",
-          url: "https://hansvanleeuwen.com/music",
-          genre: ["Lo-fi", "Electronic", "Ambient"],
-        },
+        { "@type": "BreadcrumbList", itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+          { "@type": "ListItem", position: 2, name: "Music", item: "https://hansvanleeuwen.com/music" },
+        ] },
+        { "@type": "MusicGroup", name: "Hans van Leeuwen", url: "https://hansvanleeuwen.com/music", genre: ["Lo-fi", "Electronic", "Ambient"] },
       ],
     },
   });
 
-  const filtered = useMemo(() => {
-    let list = songs;
-    if (filter !== "all") list = list.filter((s) => s.tags.includes(filter));
-    list = [...list].sort((a, b) =>
-      sort === "newest"
-        ? new Date(b.date).getTime() - new Date(a.date).getTime()
-        : new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-    return list;
-  }, [filter, sort]);
+  const [playingSlug, setPlayingSlug] = useState<string | null>(null);
+  const toggle = (slug: string) => setPlayingSlug((cur) => (cur === slug ? null : slug));
 
-  // Stop playback if the playing song is filtered out.
-  useEffect(() => {
-    if (playingSlug && !filtered.some((s) => s.slug === playingSlug)) setPlayingSlug(null);
-  }, [filtered, playingSlug]);
+  const clockRef = useRef<HTMLSpanElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  // Scroll reveal — SSR-guarded.
+  /* live Amersfoort clock */
   useEffect(() => {
-    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const root = listRef.current;
-    if (!root) return;
-    root.closest(".music-v2")?.classList.add("js");
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) {
-            en.target.classList.add("in");
-            io.unobserve(en.target);
-          }
-        });
-      },
-      { rootMargin: "0px 0px -6% 0px", threshold: 0.06 },
-    );
-    root.querySelectorAll(".song.rv").forEach((s) => io.observe(s));
+    const tick = () => {
+      if (!clockRef.current) return;
+      const t = new Date();
+      clockRef.current.innerHTML = `Amersfoort <b>${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}</b>`;
+    };
+    tick();
+    const id = window.setInterval(tick, 20000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  /* scroll reveal */
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+    const els = rootRef.current?.querySelectorAll<HTMLElement>(".mn-rv");
+    if (!els) return;
+    if (reduce || !("IntersectionObserver" in window)) { els.forEach((el) => el.classList.add("in")); return; }
+    const io = new IntersectionObserver((es) => es.forEach((en) => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } }), { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+    els.forEach((el, i) => { el.style.setProperty("--d", `${(i % 4) * 70}ms`); io.observe(el); });
     return () => io.disconnect();
-  }, [filtered]);
+  }, []);
 
-  const togglePlay = (slug: string) => setPlayingSlug((cur) => (cur === slug ? null : slug));
-  const count = filtered.length;
+  /* neon cursor + ambient grid lighting (fine pointers, motion-ok only) */
+  useEffect(() => {
+    const fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+    const reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+    const docEl = document.documentElement;
+    if (!fine || reduce) { docEl.style.setProperty("--mn-mx", "50vw"); docEl.style.setProperty("--mn-my", "32vh"); return; }
+
+    document.body.classList.add("mn-neon-cursor");
+    const mk = (cls: string) => { const d = document.createElement("div"); d.className = `mn-cursor ${cls}`; document.body.appendChild(d); return d; };
+    const glow = mk("mn-cursor-glow"), ring = mk("mn-cursor-ring"), dot = mk("mn-cursor-dot");
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, gx = mx, gy = my, raf = 0;
+
+    const onMove = (e: MouseEvent) => {
+      mx = e.clientX; my = e.clientY;
+      docEl.style.setProperty("--mn-mx", `${mx}px`);
+      docEl.style.setProperty("--mn-my", `${my}px`);
+      dot.style.transform = `translate(${mx}px,${my}px)`;
+    };
+    const frame = () => {
+      rx += (mx - rx) * 0.2; ry += (my - ry) * 0.2; gx += (mx - gx) * 0.085; gy += (my - gy) * 0.085;
+      ring.style.transform = `translate(${rx}px,${ry}px)`;
+      glow.style.transform = `translate(${gx}px,${gy}px)`;
+      raf = requestAnimationFrame(frame);
+    };
+    const hot = "a, button, .mn-track, .mn-cue, .mn-chip, input, select, [data-cursor]";
+    const over = (e: Event) => { if ((e.target as Element).closest?.(hot)) document.body.classList.add("mn-cursor-hot"); };
+    const out = (e: Event) => { const re = (e as MouseEvent).relatedTarget as Element | null; if ((e.target as Element).closest?.(hot) && !re?.closest?.(hot)) document.body.classList.remove("mn-cursor-hot"); };
+    const down = () => document.body.classList.add("mn-cursor-down");
+    const up = () => document.body.classList.remove("mn-cursor-down");
+
+    addEventListener("mousemove", onMove, { passive: true });
+    document.addEventListener("mouseover", over);
+    document.addEventListener("mouseout", out);
+    document.addEventListener("mousedown", down);
+    document.addEventListener("mouseup", up);
+    raf = requestAnimationFrame(frame);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseover", over);
+      document.removeEventListener("mouseout", out);
+      document.removeEventListener("mousedown", down);
+      document.removeEventListener("mouseup", up);
+      document.body.classList.remove("mn-neon-cursor", "mn-cursor-hot", "mn-cursor-down");
+      [glow, ring, dot].forEach((el) => el.remove());
+    };
+  }, []);
 
   return (
-    <div className="music-v2">
-      <div className="wrap">
-        {/* Breadcrumb */}
-        <nav className="crumb idx" aria-label="Breadcrumb">
-          <Link to="/">Home</Link>
-          <ChevronRight />
-          <span className="here" aria-current="page">{isNl ? "Muziek" : "Music"}</span>
-        </nav>
-
-        {/* Masthead */}
-        <section className="masthead">
-          <span className="eyebrow">{isNl ? "Geluid · Studio-notities" : "Sound · Studio notes"}</span>
-          <h1 className="title">{isNl ? "Muziek" : "Music"}</h1>
-          <p className="lede">
-            {isNl ? (
-              <>
-                Nummers die ik maak als ik even wegloop van de spreadsheets. Bij elk hoort het volledige{" "}
-                <strong>productieverhaal</strong> — hoe het begon, de gear, de fouten en de lyrics. Druk hieronder
-                op play, of open een track om de notities te lezen.
-              </>
-            ) : (
-              <>
-                Songs I make when I step away from the spreadsheets. Each one comes with the full{" "}
-                <strong>production story</strong> — how it started, the gear, the mistakes, and the lyrics. Press play
-                below, or open a track to read the notes.
-              </>
-            )}
-          </p>
-        </section>
-
-        {/* Featured release — eager album embed (above the fold, as in the prototype). */}
-        <section className="release" aria-label="Latest release">
-          <div className="release__body">
-            <span className="release__kicker">
-              <span className="pulse" />
-              {featuredRelease.kicker}
-            </span>
-            <h2 className="release__title">{featuredRelease.title}</h2>
-            <p className="release__sub">{featuredRelease.sub}</p>
-            <div className="release__meta">
-              {featuredRelease.chips.map((c) => (
-                <span key={c} className="release__chip">{c}</span>
-              ))}
-            </div>
-          </div>
-          <div className="release__player">
-            <iframe
-              title="Spotify — Nightline EP"
-              style={{ borderRadius: 14 }}
-              src={featuredRelease.embed}
-              width="100%"
-              height={featuredRelease.embedHeight}
-              frameBorder={0}
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-            />
-          </div>
-        </section>
-
-        {/* Toolbar */}
-        <div className="toolbar">
-          <div className="filters" role="group" aria-label="Filter by genre">
-            {GENRE_FILTERS.map((f) => (
-              <button
-                key={f.tag}
-                type="button"
-                className={`pill ${filter === f.tag ? "on" : ""}`}
-                aria-pressed={filter === f.tag}
-                onClick={() => setFilter(f.tag)}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-          <div className="toolbar__right">
-            <span className="count" aria-live="polite">
-              {count} {isNl ? (count === 1 ? "track" : "tracks") : (count === 1 ? "track" : "tracks")}
-            </span>
-            <div className="sort">
-              <label htmlFor="sortSel">{isNl ? "Sorteer" : "Sort"}</label>
-              <select id="sortSel" value={sort} onChange={(e) => setSort(e.target.value as SortOrder)}>
-                <option value="newest">{isNl ? "Nieuwste" : "Newest"}</option>
-                <option value="oldest">{isNl ? "Oudste" : "Oldest"}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Songs grid */}
-        <div className="music-list" ref={listRef}>
-          {filtered.length === 0 ? (
-            <p className="empty">{isNl ? "Nog geen tracks in dit genre." : "No tracks in that genre yet."}</p>
-          ) : (
-            filtered.map((song, i) => (
-              <SongCard
-                key={song.slug}
-                song={song}
-                index={i}
-                isPlaying={playingSlug === song.slug}
-                onToggle={togglePlay}
-              />
-            ))
-          )}
-        </div>
+    <div className="music-neon" ref={rootRef}>
+      {/* ambient field */}
+      <div className="mn-field" aria-hidden="true">
+        <div className="mn-field__grid" />
+        <div className="mn-field__glow" />
+        <div className="mn-field__vign" />
       </div>
+
+      {/* hero */}
+      <section className="mn-wrap mn-hero">
+        <span className="mn-kicker"><span className="mn-live" />Now playing <span className="mn-sep">/</span> made after midnight</span>
+        <h1 className="mn-hero__title">Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</h1>
+        <p className="mn-hero__lede">No singles chasing a playlist. Just a handful of <b>tracks</b>, a tape machine, and whatever the night left behind. Press play — and if you want to stay a while, every song keeps the notes: the gear, the mistakes, the lyrics.</p>
+        <div className="mn-hero__cues">
+          <span className="mn-cue">Lo-fi</span><span className="mn-cue">Ambient</span><span className="mn-cue">Electronic</span><span className="mn-cue">Self-produced</span><span className="mn-cue">Amersfoort · 2026</span>
+        </div>
+        {/* live clock lives in the page (the permanent header is shared) */}
+        <span ref={clockRef} className="mn-clock" style={{ display: "none" }} />
+      </section>
+
+      {/* featured release */}
+      <section className="mn-wrap mn-rv" aria-label="Latest release">
+        <p className="mn-slabel"><span className="n">01</span> Latest release</p>
+        <div className="mn-release">
+          <div className="mn-release__body">
+            <span className="mn-release__kicker"><span className="mn-live" />{featuredRelease.kicker}</span>
+            <h2 className="mn-release__title">{featuredRelease.title}</h2>
+            <p className="mn-release__sub">{featuredRelease.sub}</p>
+            <div className="mn-release__meta">{featuredRelease.chips.map((c) => <span key={c} className="mn-chip">{c}</span>)}</div>
+          </div>
+          <div className="mn-release__player">
+            <iframe title={`Spotify — ${featuredRelease.title}`} src={featuredRelease.embed} width="100%" height={featuredRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+          </div>
+        </div>
+      </section>
+
+      {/* tracks */}
+      <section className="mn-wrap mn-rv" id="songs" aria-label="Tracks">
+        <p className="mn-slabel" style={{ marginTop: "clamp(54px,8vh,90px)" }}><span className="n">02</span> The tracks</p>
+        <div className="mn-tracks">
+          {songs.map((song, i) => (
+            <TrackRow key={song.slug} song={song} index={i} playing={playingSlug === song.slug} onToggle={toggle} />
+          ))}
+        </div>
+      </section>
+
+      {/* release timeline studio (folded into the page) */}
+      <section className="mn-wrap mn-rv" aria-label="Release timeline">
+        <ReleaseTimeline />
+      </section>
+
+      {/* outro */}
+      <section className="mn-wrap mn-outro mn-rv">
+        <p className="mn-outro__line">That&apos;s the record so far. <em>No encore</em> — just press play again, or follow along for whatever the next late night turns into.</p>
+        <a href={featuredRelease.embed.includes("album/") ? "https://open.spotify.com/album/7gHaf9f1kcQaOtg9sMzPlo" : "#"} className="mn-outro__cta" target="_blank" rel="noopener noreferrer" data-cursor>
+          Follow on Spotify <ArrowRight />
+        </a>
+      </section>
+
+      {/* page-local neon footer (global light footer is hidden on dark pages) */}
+      <footer className="mn-footer">
+        <div className="mn-footer__inner">
+          <div>
+            <div className="mn-footer__brand">Hans van Leeuwen</div>
+            <p className="mn-footer__note">E-commerce manager by day. Making songs by night. Notes, gear and lyrics for every track.</p>
+          </div>
+          <nav className="mn-footer__links" aria-label="Footer">
+            <Link to="/writing">Writing</Link>
+            <Link to="/music">Music</Link>
+            <Link to="/about">About</Link>
+            <a href="https://open.spotify.com/album/7gHaf9f1kcQaOtg9sMzPlo" target="_blank" rel="noopener noreferrer">Spotify</a>
+          </nav>
+        </div>
+        <div className="mn-footer__copy">
+          <span>© 2026 Hans van Leeuwen · Amersfoort, NL</span>
+          <span>All tracks self-produced</span>
+        </div>
+      </footer>
     </div>
   );
-}
+};
 
+export default Music;
