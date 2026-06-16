@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const N8N_HOST = "https://n8n.srv1402218.hstgr.cloud";
-const BLOG_INIT_URL = `${N8N_HOST}/webhook/hans-blog-init`;
+const BLOG_INIT_URL = `${N8N_HOST}/webhook/blog-init`;
 const GHOST_WRITER_URL = `${N8N_HOST}/webhook/blog-ghost-write`;
 
 /** Normalized response after Phase 1 (Blog Init). */
@@ -77,7 +77,7 @@ export function useBlogInitWorkflow(onDispatched?: () => void): BlogInitWorkflow
       setInit(normalized);
       setPhase("verifying"); // stays verifying — user must confirm
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not reach hans-blog-init");
+      setError(err instanceof Error ? err.message : "Could not reach blog-init");
       setPhase("error");
     }
   }
