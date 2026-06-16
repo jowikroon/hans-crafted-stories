@@ -49,12 +49,16 @@ const AppShell = ({ initialLang }: AppShellProps) => {
             Skip to content
           </a>
           <header>
-            <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
+            <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact || isCmsPage} />
           </header>
-          <main id="main-content" className={`min-h-screen ${isDarkPage ? "pt-16" : "pt-24"}`}>
+          <main
+            id="main-content"
+            className={`min-h-screen ${isAppPage ? "pt-16" : "pt-24"}`}
+            style={isCmsPage ? { background: "#F1ECDF" } : undefined}
+          >
             <AnimatedRoutes />
           </main>
-          {!isDarkPage && <Footer />}
+          {!isAppPage && <Footer />}
           <SamanthaGlobalButton />
           <CookieConsent />
           <TrackingScriptInjector />

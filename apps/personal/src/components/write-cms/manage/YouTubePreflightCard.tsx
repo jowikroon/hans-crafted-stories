@@ -34,6 +34,7 @@ interface Props {
   onAnalyze: () => void;
   onReset: () => void;
   onPickTopic: (topic: string) => void;
+  onPickAngle: (angle: string) => void;
   workflow: BlogInitWorkflow;
 }
 
@@ -109,6 +110,7 @@ export default function YouTubePreflightCard({
   onAnalyze,
   onReset,
   onPickTopic,
+  onPickAngle,
   workflow,
 }: Props) {
   const { template: voiceTemplate, loading: voiceLoading } = useVoiceTemplate(category);
@@ -262,7 +264,7 @@ export default function YouTubePreflightCard({
                   <li key={opp}>
                     <button
                       className="preflight-opp"
-                      onClick={() => onPickTopic(opp)}
+                      onClick={() => onPickAngle(opp)}
                       title="Use as angle"
                     >
                       {opp}
