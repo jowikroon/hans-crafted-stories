@@ -47,10 +47,10 @@ const FeaturedArticles = () => {
     <section className="section-container pb-20" aria-label={isNl ? "Uitgelichte artikelen" : "Featured articles"}>
       <div className="mb-8 flex items-end justify-between">
         <div>
-          <h2 className="mb-1 font-mono text-xs font-medium uppercase tracking-[0.16em] text-primary">
-            {isNl ? "Uitgelicht" : "Writing"}
+          <h2 className="mb-1 inline-flex items-center gap-3 font-mono text-xs font-medium uppercase tracking-[0.16em] text-primary">
+            <span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />{isNl ? "Uitgelicht" : "Writing"}
           </h2>
-          <p className="font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <p className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             {isNl ? "Uitgelichte artikelen" : "Featured Articles"}
           </p>
         </div>

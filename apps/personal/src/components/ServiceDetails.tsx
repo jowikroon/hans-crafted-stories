@@ -87,10 +87,10 @@ const ServiceDetails = () => {
       {/* Deliverables */}
       <section className="section-container pb-12 pt-0" aria-label={t.deliverablesLabel}>
         <motion.div {...fadeUp}>
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+          <h2 className="mb-2 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {t.deliverablesLabel}
           </h2>
-          <p className="mb-8 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <p className="mb-8 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             {t.deliverablesHeading}
           </p>
         </motion.div>
@@ -112,10 +112,10 @@ const ServiceDetails = () => {
       {/* Engagement Model */}
       <section className="section-container pb-12 pt-0" aria-label={t.processLabel}>
         <motion.div {...fadeUp}>
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+          <h2 className="mb-2 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {t.processLabel}
           </h2>
-          <p className="mb-8 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <p className="mb-8 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             {t.processHeading}
           </p>
         </motion.div>
@@ -143,10 +143,10 @@ const ServiceDetails = () => {
       {/* Service Area — captures high-intent keyword variants */}
       <section className="section-container pb-12 pt-0" aria-label={lang === "nl" ? "Interim E-commerce Manager" : "Interim E-commerce Manager"}>
         <motion.div {...fadeUp}>
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+          <h2 className="mb-2 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {lang === "nl" ? "Interim & Freelance" : "Interim & Freelance"}
           </h2>
-          <p className="mb-4 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <p className="mb-4 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             {lang === "nl"
               ? "Interim E-commerce Manager voor Amazon NL & Bol.com"
               : "Interim E-commerce Manager for Amazon NL & Bol.com"}
@@ -162,10 +162,10 @@ const ServiceDetails = () => {
       {/* Industries */}
       <section className="section-container pb-20 pt-0" aria-label={t.industriesLabel}>
         <motion.div {...fadeUp}>
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
+          <h2 className="mb-2 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {t.industriesLabel}
           </h2>
-          <p className="mb-8 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <p className="mb-8 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             {t.industriesHeading}
           </p>
         </motion.div>
