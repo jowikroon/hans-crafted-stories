@@ -5,6 +5,7 @@
 // on-page editor's "Header Logo" switcher — no other code changes needed.
 import logoBronze from "@/assets/logo-hvl-bronze.png";
 import logoWordmarkV2 from "@/assets/logo-hvl-v2.png";
+import logoHMonogram from "@/assets/logo-hvl-h.svg";
 
 export interface LogoOption {
   id: string;
@@ -13,12 +14,13 @@ export interface LogoOption {
 }
 
 export const LOGOS: LogoOption[] = [
+  { id: "h-monogram", label: "h monogram", src: logoHMonogram },
   { id: "bronze", label: "Bronze mark", src: logoBronze },
   { id: "wordmark-v2", label: "Wordmark v2", src: logoWordmarkV2 },
 ];
 
 /** Active logo when nothing has been chosen in the editor yet. */
-export const DEFAULT_LOGO_ID = "bronze";
+export const DEFAULT_LOGO_ID = "h-monogram";
 
 /** Key under which the chosen logo id is persisted in page_overrides. */
 export const LOGO_SETTING_KEY = "__site__:header-logo";
