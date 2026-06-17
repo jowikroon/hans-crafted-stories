@@ -3,6 +3,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useEditOverlay, keyForElement } from "./EditOverlayProvider";
 import { createChangeRequest } from "@/lib/api/overrides";
 import { LOGOS } from "@/lib/logos";
+import { HEADERS } from "@/lib/headers";
 import { toast } from "sonner";
 
 const UI_ATTR = "data-edit-ui";
@@ -158,7 +159,7 @@ const WEIGHTS = ["400", "500", "600", "700", "800"];
 const ALIGNS = ["left", "center", "right"];
 
 function EditPanel() {
-  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo } = useEditOverlay();
+  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader } = useEditOverlay();
   const current = selectedKey ? overrides.get(selectedKey) : undefined;
   const [text, setText] = useState("");
   const [instruction, setInstruction] = useState("");
@@ -254,6 +255,40 @@ function EditPanel() {
         </div>
         <small style={{ display: "block", marginTop: 8, color: "#7E7A6F", fontSize: 10 }}>
           Applies site-wide for every visitor. Add more logos in <code>src/lib/logos.ts</code>.
+        </small>
+      </div>
+      {/* ── Permanent: Header style switcher (site-wide) ── */}
+      <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(0,0,0,.10)" }}>
+        <p style={{ font: '600 10px "IBM Plex Mono", monospace', textTransform: "uppercase", letterSpacing: ".06em", color: "#7E7A6F", margin: "0 0 7px" }}>Header style</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {HEADERS.map((h) => {
+            const active = h.id === activeHeaderId;
+            return (
+              <button
+                key={h.id}
+                data-edit-ui=""
+                onClick={() => setActiveHeader(h.id)}
+                title={h.label}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: 7,
+                  borderRadius: 10,
+                  cursor: "pointer",
+                  border: active ? "2px solid #2D9255" : "1px solid rgba(0,0,0,.14)",
+                  background: active ? "#E7F2EA" : "#fff",
+                }}
+              >
+                <HeaderSwatch id={h.id} />
+                <span style={{ font: '600 10px "Bricolage Grotesque", system-ui', color: active ? "#2D9255" : "#4B4842", maxWidth: 64, textAlign: "center", lineHeight: 1.2 }}>{h.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <small style={{ display: "block", marginTop: 8, color: "#7E7A6F", fontSize: 10 }}>
+          Applies site-wide. Add more in <code>src/lib/headers.ts</code>.
         </small>
       </div>
 
@@ -377,6 +412,38 @@ function EditPanel() {
         </>
       )}
     </aside>
+  );
+}
+
+/** Tiny inline preview of a header design for the editor switcher. */
+function HeaderSwatch({ id }: { id: string }) {
+  const dark = id === "dnav";
+  return (
+    <span
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: dark ? "flex-start" : "center",
+        gap: 4,
+        width: 56,
+        height: 22,
+        padding: "0 6px",
+        boxSizing: "border-box",
+        borderRadius: dark ? 5 : 100,
+        background: dark ? "#15140F" : "#FBF8F0",
+        border: dark ? "1px solid rgba(255,255,255,.12)" : "1px solid rgba(0,0,0,.14)",
+      }}
+    >
+      <span
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: dark ? "#F5C400" : "#2D9255",
+          flexShrink: 0,
+        }}
+      />
+    </span>
   );
 }
 

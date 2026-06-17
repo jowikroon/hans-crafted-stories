@@ -14,7 +14,9 @@ import {
   type PageOverride,
 } from "@/lib/api/overrides";
 import { DEFAULT_LOGO_ID, LOGO_SETTING_KEY } from "@/lib/logos";
+import { DEFAULT_HEADER_ID, HEADER_SETTING_KEY } from "@/lib/headers";
 import { LogoProvider } from "@/contexts/LogoContext";
+import { HeaderProvider } from "@/contexts/HeaderContext";
 
 const STYLE_TAG_ID = "page-overrides-style";
 
@@ -62,6 +64,9 @@ interface EditOverlayValue {
   /** Active header logo id (site-wide setting). */
   activeLogoId: string;
   setActiveLogo: (id: string) => Promise<void>;
+  /** Active header style id (site-wide setting). */
+  activeHeaderId: string;
+  setActiveHeader: (id: string) => Promise<void>;
 }
 
 const Ctx = createContext<EditOverlayValue | null>(null);
@@ -218,6 +223,24 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     [upsertLocal]
   );
 
+  const activeHeaderId = overrides.get(HEADER_SETTING_KEY)?.text_override || DEFAULT_HEADER_ID;
+
+  const setActiveHeader = useCallback(
+    async (id: string) => {
+      const row: PageOverride = {
+        element_key: HEADER_SETTING_KEY,
+        selector: null,
+        page_path: "*",
+        label: "Header style",
+        text_override: id,
+        style: {},
+      };
+      upsertLocal(row);
+      await apiSave(row);
+    },
+    [upsertLocal]
+  );
+
   const value = useMemo<EditOverlayValue>(
     () => ({
       editing,
@@ -232,13 +255,17 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       reloadOverrides,
       activeLogoId,
       setActiveLogo,
+      activeHeaderId,
+      setActiveHeader,
     }),
-    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides, activeLogoId, setActiveLogo]
+    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader]
   );
 
   return (
     <Ctx.Provider value={value}>
-      <LogoProvider value={{ activeLogoId, setActiveLogo }}>{children}</LogoProvider>
+      <HeaderProvider value={{ activeHeaderId, setActiveHeader }}>
+        <LogoProvider value={{ activeLogoId, setActiveLogo }}>{children}</LogoProvider>
+      </HeaderProvider>
     </Ctx.Provider>
   );
 }
