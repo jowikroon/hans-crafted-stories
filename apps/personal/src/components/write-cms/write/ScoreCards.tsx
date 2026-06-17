@@ -118,7 +118,7 @@ export default function ScoreCards({
     setTimeout(() => { card?.classList.remove("bump"); gauge?.classList.remove("flash"); }, 1250);
   }, [applied, scores, rollNumber, sparkBurst, deltaToast]);
 
-  const Card = ({ dim }: { dim: Dim }) => {
+  const renderCard = (dim: Dim) => {
     const meta = DIM_META[dim];
     const val = scores[dim];
     return (
@@ -147,9 +147,9 @@ export default function ScoreCards({
 
   return (
     <>
-      <Card dim="voice" />
-      <Card dim="seo" />
-      <Card dim="readability" />
+      {renderCard("voice")}
+      {renderCard("seo")}
+      {renderCard("readability")}
 
       {/* Suggestion drawer */}
       {openDim && (
