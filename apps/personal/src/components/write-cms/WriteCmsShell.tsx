@@ -38,9 +38,9 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
   const raw = params.get("mode");
   const mode: CmsMode = postId
     ? "write"
-    : raw === "manage" || raw === "voice" || raw === "experience" || raw === "analytics"
+    : raw === "write" || raw === "voice" || raw === "experience" || raw === "analytics"
     ? raw
-    : "write";
+    : "manage";
 
   const [counts, setCounts] = useState({ drafts: 0, articles: 0, voice: 0, experience: 0 });
   useEffect(() => {
@@ -69,7 +69,8 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
 
   const setMode = (m: CmsMode) => {
     const next = new URLSearchParams(params);
-    if (m === "write") next.delete("mode");
+    // Manage is the default landing mode, so it owns the clean (param-less) URL.
+    if (m === "manage") next.delete("mode");
     else next.set("mode", m);
     setParams(next, { replace: false });
   };

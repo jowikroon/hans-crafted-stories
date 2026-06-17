@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import RichEditor from "./RichEditor";
 
@@ -27,6 +27,37 @@ function wordCount(md: string): number {
 function readMinutes(en: number, nl: number): number {
   return Math.max(1, Math.round(Math.max(en, nl) / 220));
 }
+
+// Hoisted out of LangSplit's render so React keeps the same component identity
+// across keystrokes — defining it inline remounted the TipTap RichEditor on every
+// change, which stole focus / reset the cursor while typing.
+interface ColProps {
+  lang: "en" | "nl"; label: string; value: string; onChange: (md: string) => void; dim: boolean;
+  postId: string; bannedWords: string[]; linkTargets: { title: string; slug: string }[];
+  translating: null | "en" | "nl"; translateState: "idle" | "done" | "error"; target: "en" | "nl";
+}
+const LangColumn = memo(function LangColumn({
+  lang, label, value, onChange, dim, postId, bannedWords, linkTargets, translating, translateState, target,
+}: ColProps) {
+  return (
+    <div className={`lang-col${dim ? " dim" : ""}`}>
+      <div className="lang-tag">
+        {label}
+        {translating === lang && <span className="lang-tag-busy"> · vertalen…</span>}
+        {translateState === "done" && lang === target && <span className="lang-tag-done"> · vertaald ✓</span>}
+      </div>
+      <RichEditor
+        docKey={`${postId}:${lang}`}
+        value={value}
+        placeholder={`Start ${label} content...`}
+        onChange={onChange}
+        bannedWords={bannedWords}
+        lang={lang}
+        linkTargets={linkTargets}
+      />
+    </div>
+  );
+});
 
 export default function LangSplit({ postId, contentEN, contentNL, onChangeEN, onChangeNL, bannedWords, linkTargets = [] }: Props) {
   const [mode, setMode] = useState<LangMode>("split");
@@ -71,24 +102,6 @@ export default function LangSplit({ postId, contentEN, contentNL, onChangeEN, on
   const showEN = mode === "split" || mode === "en";
   const showNL = mode === "split" || mode === "nl";
 
-  const Column = ({ lang, label, value, onChange, dim }: { lang: "en" | "nl"; label: string; value: string; onChange: (md: string) => void; dim: boolean }) => (
-    <div className={`lang-col${dim ? " dim" : ""}`}>
-      <div className="lang-tag">
-        {label}
-        {translating === lang && <span className="lang-tag-busy"> · vertalen…</span>}
-        {translateState === "done" && lang === target && <span className="lang-tag-done"> · vertaald ✓</span>}
-      </div>
-      <RichEditor
-        docKey={`${postId}:${lang}`}
-        value={value}
-        placeholder={`Start ${label} content...`}
-        onChange={onChange}
-        bannedWords={bannedWords}
-        lang={lang}
-        linkTargets={linkTargets}
-      />
-    </div>
-  );
 
   return (
     <div className="paper paper--editor-en lang-split-wrap">
@@ -120,9 +133,9 @@ export default function LangSplit({ postId, contentEN, contentNL, onChangeEN, on
       </div>
 
       <div className={`editor-body ${mode}`}>
-        {showEN && <Column lang="en" label="EN" value={contentEN} onChange={onChangeEN} dim={mode === "split" && primary !== "en"} />}
+        {showEN && <LangColumn lang="en" label="EN" value={contentEN} onChange={onChangeEN} dim={mode === "split" && primary !== "en"} postId={postId} bannedWords={bannedWords} linkTargets={linkTargets} translating={translating} translateState={translateState} target={target} />}
         {mode === "split" && <div className="lang-divider" />}
-        {showNL && <Column lang="nl" label="NL" value={contentNL} onChange={onChangeNL} dim={mode === "split" && primary !== "nl"} />}
+        {showNL && <LangColumn lang="nl" label="NL" value={contentNL} onChange={onChangeNL} dim={mode === "split" && primary !== "nl"} postId={postId} bannedWords={bannedWords} linkTargets={linkTargets} translating={translating} translateState={translateState} target={target} />}
       </div>
 
       {error && (
