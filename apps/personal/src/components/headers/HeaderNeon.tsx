@@ -56,6 +56,14 @@ const HeaderNeon = (_props: NavbarProps) => {
     localStorage.setItem(THEME_KEY, siteTheme);
   }, [siteTheme]);
 
+  /* Mark <html> while the neon header is mounted so the scoped neon-dark palette
+     (html[data-header="neon"].dark in index.css) applies — and ONLY then.
+     Cleared on unmount so switching back to dnav restores the default dark theme. */
+  useEffect(() => {
+    document.documentElement.setAttribute("data-header", "neon");
+    return () => { document.documentElement.removeAttribute("data-header"); };
+  }, []);
+
   /* ── Nav model ── */
   const workChildren = [
     { to: "/work", label: t.workMenu.allCases },
