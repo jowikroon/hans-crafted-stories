@@ -16,8 +16,17 @@
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
+import { useAuth } from "@/hooks/useAuth";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
 import "@/styles/music-v2.css";
+
+/** Turn a YouTube watch/Shorts/youtu.be URL into an embeddable /embed/<id> URL. */
+function youtubeEmbedUrl(url?: string): string | null {
+  if (!url) return null;
+  const m = url.match(/(?:shorts\/|watch\?v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{6,})/);
+  return m ? `https://www.youtube-nocookie.com/embed/${m[1]}?rel=0&playsinline=1` : null;
+}
+
 
 function ChevronRight() {
   return (
@@ -45,7 +54,10 @@ function ProseNode({ block }: { block: ProseBlock }) {
 
 export default function MusicSong() {
   const { slug } = useParams<{ slug: string }>();
-  const song = getSongBySlug(slug);
+  const { user } = useAuth();
+  const resolved = getSongBySlug(slug);
+  // SoundCloud songs are login-gated: hide the detail page from public visitors.
+  const song = resolved && resolved.provider === "soundcloud" && !user ? undefined : resolved;
 
   // Two "More tracks" picks = the next songs after this one (wraps around).
   const more = useMemo(() => {
@@ -191,8 +203,11 @@ export default function MusicSong() {
             />
           </div>
 
-          {/* Official video — self-hosted (R2) when available, else a YouTube link card. */}
-          {song.videoFile ? (
+          {/* Official video — self-hosted only when videoFile is an absolute URL that
+              actually serves the mp4 (e.g. an R2 public URL). The relative "/media/..."
+              Cloudflare-Pages path does not resolve on Vercel, so in that case we fall
+              through to an inline YouTube embed (playable on-page), then a link card. */}
+          {song.videoFile && /^https?:\/\//.test(song.videoFile) ? (
             <figure
               className="songvideo"
               style={{ margin: "20px auto", maxWidth: 300, width: "100%" }}
@@ -214,6 +229,24 @@ export default function MusicSong() {
                   <a className="songvideo__yt" href={song.videoUrl} target="_blank" rel="noopener noreferrer">
                     Also on YouTube
                   </a>
+                </figcaption>
+              )}
+            </figure>
+          ) : youtubeEmbedUrl(song.videoUrl) ? (
+            <figure className="songvideo" style={{ margin: "20px auto", maxWidth: 300, width: "100%" }}>
+              <div style={{ position: "relative", width: "100%", aspectRatio: "9 / 16", borderRadius: 14, overflow: "hidden", background: "#000" }}>
+                <iframe
+                  src={youtubeEmbedUrl(song.videoUrl)!}
+                  title={`Official ${song.title} video`}
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
+                />
+              </div>
+              {song.videoUrl && (
+                <figcaption style={{ marginTop: 8, textAlign: "center", fontSize: 12 }}>
+                  <a className="songvideo__yt" href={song.videoUrl} target="_blank" rel="noopener noreferrer">Open on YouTube</a>
                 </figcaption>
               )}
             </figure>
