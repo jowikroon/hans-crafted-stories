@@ -10,6 +10,7 @@ import { PreloadedDataProvider, type PreloadedData } from "@/contexts/PreloadedD
 import type { BlogPostRow } from "@/lib/api/content";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ScrollProgress from "./components/ScrollProgress";
 import AnimatedRoutes from "./components/AnimatedRoutes";
 import SamanthaGlobalButton from "@/features/samantha/components/global/SamanthaGlobalButton";
 import CookieConsent from "./components/CookieConsent";
@@ -39,7 +40,7 @@ interface AppShellProps {
 const AppShell = ({ initialLang }: AppShellProps) => {
   const location = useLocation();
   const isCompact = location.pathname === "/samantha";
-  const isDarkPage = isCompact || location.pathname === "/god-structure" || location.pathname.startsWith("/blog-cms") || location.pathname === "/music";
+  const isDarkPage = isCompact || location.pathname === "/god-structure" || location.pathname.startsWith("/blog-cms") || location.pathname === "/music" || location.pathname.startsWith("/music/");
 
   return (
     <AuthProvider>
@@ -48,6 +49,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
           <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground">
             Skip to content
           </a>
+          <ScrollProgress />
           <header>
             <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
           </header>

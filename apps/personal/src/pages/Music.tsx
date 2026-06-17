@@ -152,18 +152,27 @@ const Music = () => {
     const glow = mk("mn-cursor-glow"), ring = mk("mn-cursor-ring"), dot = mk("mn-cursor-dot");
     let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, gx = mx, gy = my, raf = 0;
 
+    /* idle-aware rAF: the loop runs only while the ring/glow catch up to the
+       cursor, parks itself when settled, and stops on tab blur — saves battery
+       vs. an always-on requestAnimationFrame loop. */
+    let running = false;
+    const startLoop = () => { if (!running && !document.hidden) { running = true; raf = requestAnimationFrame(frame); } };
     const onMove = (e: MouseEvent) => {
       mx = e.clientX; my = e.clientY;
       docEl.style.setProperty("--mn-mx", `${mx}px`);
       docEl.style.setProperty("--mn-my", `${my}px`);
       dot.style.transform = `translate(${mx}px,${my}px)`;
+      startLoop();
     };
     const frame = () => {
       rx += (mx - rx) * 0.2; ry += (my - ry) * 0.2; gx += (mx - gx) * 0.085; gy += (my - gy) * 0.085;
       ring.style.transform = `translate(${rx}px,${ry}px)`;
       glow.style.transform = `translate(${gx}px,${gy}px)`;
+      if (Math.abs(mx - rx) < 0.4 && Math.abs(my - ry) < 0.4 && Math.abs(mx - gx) < 0.4 && Math.abs(my - gy) < 0.4) { running = false; return; }
       raf = requestAnimationFrame(frame);
     };
+    const onVisibility = () => { if (document.hidden) { running = false; cancelAnimationFrame(raf); } else { startLoop(); } };
+    document.addEventListener("visibilitychange", onVisibility);
     const hot = "a, button, .mn-track, .mn-cue, .mn-chip, input, select, [data-cursor]";
     const over = (e: Event) => { if ((e.target as Element).closest?.(hot)) document.body.classList.add("mn-cursor-hot"); };
     const out = (e: Event) => { const re = (e as MouseEvent).relatedTarget as Element | null; if ((e.target as Element).closest?.(hot) && !re?.closest?.(hot)) document.body.classList.remove("mn-cursor-hot"); };
@@ -175,10 +184,11 @@ const Music = () => {
     document.addEventListener("mouseout", out);
     document.addEventListener("mousedown", down);
     document.addEventListener("mouseup", up);
-    raf = requestAnimationFrame(frame);
+    startLoop();
 
     return () => {
       cancelAnimationFrame(raf);
+      document.removeEventListener("visibilitychange", onVisibility);
       removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseover", over);
       document.removeEventListener("mouseout", out);
