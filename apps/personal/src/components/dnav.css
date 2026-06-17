@@ -14,7 +14,13 @@
 
 .dnav{
   position:fixed;top:0;left:0;right:0;z-index:300;
-  border-bottom:1px solid transparent;
+  /* Always frosted-dark so the light-on-dark menu stays legible on EVERY page,
+     not only over dark image mastheads or after scrolling. (.is-scrolled / .is-open
+     keep the same look; this just makes the resting state legible on light pages.) */
+  background:rgba(10,10,12,.74);
+  backdrop-filter:saturate(150%) blur(18px);
+  -webkit-backdrop-filter:saturate(150%) blur(18px);
+  border-bottom:1px solid rgba(255,255,255,.09);
   transition:background .32s ease,backdrop-filter .32s ease,border-color .32s ease;
 }
 .dnav__inner{
