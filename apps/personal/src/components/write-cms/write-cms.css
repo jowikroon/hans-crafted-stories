@@ -1864,3 +1864,13 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
   .write-cms .stage-actions > * { width: 100%; }
   .write-cms .stage-voice-input { font-size: 16px; } /* ≥16px stops iOS zoom-on-focus */
 }
+
+/* ── Ervaringen mode (experience bank) — appended for ExperienceMode.tsx ── */
+.write-cms .exp-help {
+  margin: -2px 0 14px;
+  max-width: 60ch;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-soft, #6b6b6b);
+  opacity: 0.85;
+}

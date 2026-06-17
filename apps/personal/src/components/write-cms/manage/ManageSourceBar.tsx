@@ -3,6 +3,10 @@ import ManagePhaseTwoConfirm from "./ManagePhaseTwoConfirm";
 import type { BlogInitWorkflow } from "./useBlogInitWorkflow";
 import { useYoutubeAnalyze, extractVideoId } from "./useYoutubeAnalyze";
 import YouTubeStageModal from "./YouTubeStageModal";
+import { usePipelineChoice } from "./usePipelineChoice";
+
+const AUTO_PIPELINE_WEBHOOK =
+  "https://n8n.srv1402218.hstgr.cloud/webhook/auto-blog-pipeline";
 
 interface YtPreview { title: string; channel: string; thumbnail: string }
 
@@ -20,6 +24,9 @@ const SpinIcon = () => (
 export default function ManageSourceBar({ workflow, category = "general" }: Props) {
   const { topic, youtube, angle, phase, init, error, setTopic, setYoutube, setAngle, startPhase1, confirmPhase2, cancel } = workflow;
   const ytAnalyze = useYoutubeAnalyze();
+  const { pipeline, setPipeline } = usePipelineChoice();
+
+  const [autoState, setAutoState] = useState<"idle" | "starting" | "started" | "error">("idle");
 
   const [ytPreview, setYtPreview] = useState<YtPreview | null>(null);
   const [showStageModal, setShowStageModal] = useState(false);
@@ -28,6 +35,41 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
 
   const busy = phase === "verifying" || phase === "resuming";
   const hasValidYtUrl = !!youtube.trim() && !!extractVideoId(youtube);
+
+  // Auto pipeline: fire-and-forget POST to the n8n webhook. The pipeline runs
+  // async server-side and can take minutes, so we use a short timeout and treat
+  // a timeout as "started" rather than blocking the UI.
+  const startAutoPipeline = async () => {
+    setAutoState("starting");
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 8000);
+    try {
+      await fetch(AUTO_PIPELINE_WEBHOOK, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: youtube.trim() || topic.trim(),
+          language: "nl",
+          category,
+          cluster: "autoriteit",
+          source_type: youtube.trim() ? "youtube" : "topic",
+          proposed_angle: angle.trim(),
+          brand_voice_context: "",
+        }),
+        signal: controller.signal,
+      });
+      setAutoState("started");
+    } catch (e) {
+      // AbortError == our timeout == pipeline started async server-side.
+      if (e instanceof DOMException && e.name === "AbortError") {
+        setAutoState("started");
+      } else {
+        setAutoState("error");
+      }
+    } finally {
+      window.clearTimeout(timer);
+    }
+  };
 
   // oEmbed preflight — fires 600ms after a valid YouTube URL is entered
   useEffect(() => {
@@ -68,6 +110,20 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
   return (
     <div className="source-bar">
       <div className="source-bar-row">
+        {/* Pipeline picker — Klassiek vs Auto */}
+        <label className="source-field">
+          <span className="source-label">Pipeline</span>
+          <select
+            className="source-input"
+            value={pipeline}
+            onChange={(e) => setPipeline(e.target.value as "classic" | "auto")}
+            disabled={busy || !!init}
+          >
+            <option value="classic">Klassiek</option>
+            <option value="auto">Auto (Opus + gates + poort)</option>
+          </select>
+        </label>
+
         {/* YouTube URL */}
         <label className="source-field">
           <span className="source-label">
@@ -137,23 +193,53 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
         <button
           className="stamp-btn stamp-btn--sm source-bar-cta"
           onClick={() => {
+            if (pipeline === "auto") {
+              if (!topic.trim() && !youtube.trim()) return;
+              startAutoPipeline();
+              return;
+            }
+            // classic — unchanged behaviour
             if (!topic.trim() && !youtube.trim()) { startPhase1(category); return; }
             setShowStageModal(true);
           }}
-          disabled={busy || !!init || ytAnalyze.phase === "analyzing"}
+          disabled={busy || !!init || ytAnalyze.phase === "analyzing" || autoState === "starting"}
         >
-          {phase === "verifying" && !init ? (
+          {autoState === "starting" ? (
+            <><SpinIcon /> Auto-pipeline starten…</>
+          ) : phase === "verifying" && !init ? (
             <><SpinIcon /> Consulting memory…</>
           ) : (
             <>
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                 <path d="M5.5 3.5l7 4.5-7 4.5V3.5z" fill="currentColor"/>
               </svg>
-              Ghost-write
+              {pipeline === "auto" ? "Ghost-write (Auto)" : "Ghost-write"}
             </>
           )}
         </button>
       </div>
+
+      {/* Auto-pipeline started */}
+      {autoState === "started" && (
+        <div className="source-notice source-notice--ok">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <path d="M2 8l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Auto-pipeline gestart — draft verschijnt in Manage als 'ie klaar is (dry-run: niets gaat live)
+          <button className="source-notice-retry" onClick={() => setAutoState("idle")}>Dismiss</button>
+        </div>
+      )}
+
+      {/* Auto-pipeline error */}
+      {autoState === "error" && (
+        <div className="source-notice source-notice--err">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <path d="M8 2v8M8 13v1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          Auto-pipeline kon niet starten — probeer opnieuw of val terug op Klassiek.
+          <button className="source-notice-retry" onClick={() => setAutoState("idle")}>Dismiss</button>
+        </div>
+      )}
 
       {/* oEmbed preview + pre-flight options (design contract B2) */}
       {ytPreview && ytAnalyze.phase === "idle" && !busy && !init && (

@@ -418,6 +418,63 @@ export type Database = {
         }
         Relationships: []
       }
+      hvl_experience_bank: {
+        Row: {
+          active: boolean | null
+          archived_at: string | null
+          category: string | null
+          client: string | null
+          created_at: string | null
+          gate_type: string | null
+          id: string
+          language: string | null
+          last_used_at: string | null
+          lesson: string | null
+          metrics: string | null
+          situation: string
+          tags: string[] | null
+          theme: string | null
+          updated_at: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          archived_at?: string | null
+          category?: string | null
+          client?: string | null
+          created_at?: string | null
+          gate_type?: string | null
+          id?: string
+          language?: string | null
+          last_used_at?: string | null
+          lesson?: string | null
+          metrics?: string | null
+          situation: string
+          tags?: string[] | null
+          theme?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          archived_at?: string | null
+          category?: string | null
+          client?: string | null
+          created_at?: string | null
+          gate_type?: string | null
+          id?: string
+          language?: string | null
+          last_used_at?: string | null
+          lesson?: string | null
+          metrics?: string | null
+          situation?: string
+          tags?: string[] | null
+          theme?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       hvl_voice_templates: {
         Row: {
           archived_at: string | null
