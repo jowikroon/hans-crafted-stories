@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useSkin } from "@/hooks/useSkin";
 import { Link } from "react-router-dom";
 import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { useSEO } from "@/hooks/useSEO";
@@ -65,6 +66,7 @@ const WritingV2 = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>(() => preloadedPosts ?? []);
   const [loading, setLoading] = useState(preloadedPosts === null);
   const [filter, setFilter] = useState("all");
+  const { skin, setSkin, skins } = useSkin();
   const [sort, setSort] = useState<SortOrder>("newest");
   const { lang } = useLang();
   const t = translations[lang].writing;
@@ -258,6 +260,21 @@ const WritingV2 = () => {
             <span className="count" aria-live="polite">
               {filtered.length} {filtered.length === 1 ? "essay" : "essays"}
             </span>
+            <div className="skinpick">
+              <label htmlFor="skinSel">{lang === "nl" ? "Stijl" : "Style"}</label>
+              <select
+                id="skinSel"
+                value={skin}
+                onChange={(e) => setSkin(e.target.value as typeof skin)}
+                aria-label={lang === "nl" ? "Kies een stijl voor deze pagina" : "Choose a style for this page"}
+              >
+                {skins.map((sk) => (
+                  <option key={sk.id} value={sk.id}>
+                    {sk.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="sort">
               <label htmlFor="sortSel">{lang === "nl" ? "Sorteer" : "Sort"}</label>
               <select
