@@ -168,3 +168,31 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Neon "After Hours" palette — scoped to the NEON header template only.
+   Applies when the neon header is active (html[data-header="neon"]) AND the
+   neon header's own dark toggle is on (.dark). Leaves the dnav header and the
+   global light/dark themes completely untouched. Source: PR #139.
+   ───────────────────────────────────────────────────────────── */
+html[data-header="neon"].dark {
+  --background: 240 11% 4%;
+  --foreground: 240 8% 95%;
+  --card: 240 10% 6%;
+  --card-foreground: 240 8% 95%;
+  --popover: 240 10% 6%;
+  --popover-foreground: 240 8% 95%;
+  --primary: 77 100% 60%;
+  --primary-foreground: 60 33% 3%;
+  --secondary: 240 9% 9%;
+  --secondary-foreground: 240 8% 88%;
+  --muted: 240 9% 11%;
+  --muted-foreground: 240 4% 54%;
+  --accent: 77 100% 60%;
+  --accent-foreground: 60 33% 3%;
+  --destructive: 0 62.8% 40%;
+  --destructive-foreground: 240 8% 95%;
+  --border: 240 8% 16%;
+  --input: 240 9% 14%;
+  --ring: 77 100% 60%;
+}
