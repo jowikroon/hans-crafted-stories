@@ -197,8 +197,17 @@ export const songs: Song[] = [
         { label: "Status", value: "Released" },
         { label: "Host", value: "Spotify" },
         { label: "Artist", value: "Jowikroon" },
+        { label: "Tempo", value: "~124 BPM" },
+        { label: "Style", value: "Minimal techno · funk-house" },
+        { label: "Also on", value: "Suno" },
       ],
-      gear: [],
+      gear: [
+        { name: "Drum machine", note: "tight, punchy kick with crisp offbeat hi-hats and soft, filtered claps for a hypnotic pulse" },
+        { name: "Sub bass", note: "rounded, rubbery low end locked to the kick" },
+        { name: "Arp synth", note: "looping arpeggiated pattern with subtle, evolving variation" },
+        { name: "Piano", note: "bright, syncopated riff that adds the human \"player\" touch" },
+        { name: "Analog-style pads", note: "slow-blooming background chords that fill space without crowding the groove" },
+      ],
       prose: [
         { type: "lead", text: "Beat Drop is my first official single, out now on Spotify under my artist name Jowikroon." },
         { type: "p", text: "An energetic electronic track with an official video. Press play above to listen, or open it on Spotify." },

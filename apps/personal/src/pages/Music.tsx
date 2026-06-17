@@ -38,6 +38,11 @@ const PlayIcon = () => (
 const PauseIcon = () => (
   <svg className="ic-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
 );
+const RhythmIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 12h3l2 6 4-14 2 8h5" />
+  </svg>
+);
 const ArrowRight = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
 );
@@ -152,27 +157,18 @@ const Music = () => {
     const glow = mk("mn-cursor-glow"), ring = mk("mn-cursor-ring"), dot = mk("mn-cursor-dot");
     let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, gx = mx, gy = my, raf = 0;
 
-    /* idle-aware rAF: the loop runs only while the ring/glow catch up to the
-       cursor, parks itself when settled, and stops on tab blur — saves battery
-       vs. an always-on requestAnimationFrame loop. */
-    let running = false;
-    const startLoop = () => { if (!running && !document.hidden) { running = true; raf = requestAnimationFrame(frame); } };
     const onMove = (e: MouseEvent) => {
       mx = e.clientX; my = e.clientY;
       docEl.style.setProperty("--mn-mx", `${mx}px`);
       docEl.style.setProperty("--mn-my", `${my}px`);
       dot.style.transform = `translate(${mx}px,${my}px)`;
-      startLoop();
     };
     const frame = () => {
       rx += (mx - rx) * 0.2; ry += (my - ry) * 0.2; gx += (mx - gx) * 0.085; gy += (my - gy) * 0.085;
       ring.style.transform = `translate(${rx}px,${ry}px)`;
       glow.style.transform = `translate(${gx}px,${gy}px)`;
-      if (Math.abs(mx - rx) < 0.4 && Math.abs(my - ry) < 0.4 && Math.abs(mx - gx) < 0.4 && Math.abs(my - gy) < 0.4) { running = false; return; }
       raf = requestAnimationFrame(frame);
     };
-    const onVisibility = () => { if (document.hidden) { running = false; cancelAnimationFrame(raf); } else { startLoop(); } };
-    document.addEventListener("visibilitychange", onVisibility);
     const hot = "a, button, .mn-track, .mn-cue, .mn-chip, input, select, [data-cursor]";
     const over = (e: Event) => { if ((e.target as Element).closest?.(hot)) document.body.classList.add("mn-cursor-hot"); };
     const out = (e: Event) => { const re = (e as MouseEvent).relatedTarget as Element | null; if ((e.target as Element).closest?.(hot) && !re?.closest?.(hot)) document.body.classList.remove("mn-cursor-hot"); };
@@ -184,11 +180,10 @@ const Music = () => {
     document.addEventListener("mouseout", out);
     document.addEventListener("mousedown", down);
     document.addEventListener("mouseup", up);
-    startLoop();
+    raf = requestAnimationFrame(frame);
 
     return () => {
       cancelAnimationFrame(raf);
-      document.removeEventListener("visibilitychange", onVisibility);
       removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseover", over);
       document.removeEventListener("mouseout", out);
@@ -229,6 +224,11 @@ const Music = () => {
             <h2 className="mn-release__title">{featuredRelease.title}</h2>
             <p className="mn-release__sub">{featuredRelease.sub}</p>
             <div className="mn-release__meta">{featuredRelease.chips.map((c) => <span key={c} className="mn-chip">{c}</span>)}</div>
+            <div className="mn-release__cta-row">
+              <Link to="/music/beat-drop" className="mn-release__cta" data-cursor aria-label={`Open the ${featuredRelease.title} track page`}>
+                <RhythmIcon /> Rhythm
+              </Link>
+            </div>
           </div>
           <div className="mn-release__player">
             <iframe title={`Spotify — ${featuredRelease.title}`} src={featuredRelease.embed} width="100%" height={featuredRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
