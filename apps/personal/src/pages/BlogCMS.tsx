@@ -1006,11 +1006,11 @@ function AddTagInput({ onAdd }: { onAdd: (tag: string) => void }) {
 }
 
 // ─── SOURCE BAR — Ghost Writer engine entry point ─────────────────────────
-// Wires to the two-phase hans-blog-init pipeline defined in repo CLAUDE.md.
-// Phase 1: POST to hans-blog-init → returns brand_voice, recent_posts, resume_url.
+// Wires to the two-phase blog-init pipeline defined in repo CLAUDE.md.
+// Phase 1: POST to blog-init → returns brand_voice, recent_posts, resume_url.
 // Phase 2: Hans confirms the angle, we POST to resume_url with the final prompt.
 // The n8n orchestrator then writes the generated post into blog_posts directly.
-const BLOG_INIT_URL = "https://n8n.srv1402218.hstgr.cloud/webhook/hans-blog-init";
+const BLOG_INIT_URL = "https://n8n.srv1402218.hstgr.cloud/webhook/blog-init";
 
 interface InitResponse {
   status: string;
@@ -1055,7 +1055,7 @@ function SourceBar({
     } catch (err) {
       toast({
         title: "Ghost Writer offline",
-        description: err instanceof Error ? err.message : "Could not reach hans-blog-init",
+        description: err instanceof Error ? err.message : "Could not reach blog-init",
         variant: "destructive",
       });
       setPhase("idle");
