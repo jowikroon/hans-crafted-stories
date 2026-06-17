@@ -6,8 +6,9 @@ import WriteMode from "./modes/WriteMode";
 import ManageMode from "./modes/ManageMode";
 import AnalyticsMode from "./modes/AnalyticsMode";
 import VoiceMode from "./modes/VoiceMode";
+import ExperienceMode from "./modes/ExperienceMode";
 
-type CmsMode = "write" | "manage" | "voice" | "analytics";
+type CmsMode = "write" | "manage" | "voice" | "experience" | "analytics";
 
 const ICONS: Record<CmsMode, JSX.Element> = {
   write: (
@@ -18,6 +19,9 @@ const ICONS: Record<CmsMode, JSX.Element> = {
   ),
   voice: (
     <svg viewBox="0 0 16 16" fill="none"><rect x="6" y="1.5" width="4" height="8" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M3.5 7a4.5 4.5 0 0 0 9 0M8 11.5V14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+  ),
+  experience: (
+    <svg viewBox="0 0 16 16" fill="none"><path d="M3 2.5h7a2 2 0 0 1 2 2V14l-2-1.3L8 14l-2-1.3L4 14V4.5a2 2 0 0 1 2-2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M6 6h4M6 8.5h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
   ),
   analytics: (
     <svg viewBox="0 0 16 16" fill="none"><path d="M2 13V3M2 13h12M5 11V8M8 11V5M11 11V7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
@@ -34,25 +38,26 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
   const raw = params.get("mode");
   const mode: CmsMode = postId
     ? "write"
-    : raw === "manage" || raw === "voice" || raw === "analytics"
+    : raw === "manage" || raw === "voice" || raw === "experience" || raw === "analytics"
     ? raw
     : "write";
 
-  const [counts, setCounts] = useState({ drafts: 0, articles: 0, voice: 0 });
+  const [counts, setCounts] = useState({ drafts: 0, articles: 0, voice: 0, experience: 0 });
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [{ data: posts }, { count: voice }] = await Promise.all([
+        const [{ data: posts }, { count: voice }, { count: experience }] = await Promise.all([
           supabase.from("blog_posts").select("status, published"),
           supabase.from("hvl_voice_templates").select("id", { count: "exact", head: true }),
+          supabase.from("hvl_experience_bank").select("id", { count: "exact", head: true }).is("archived_at", null),
         ]);
         if (cancelled) return;
         const articles = posts?.length ?? 0;
         const drafts = (posts ?? []).filter(
           (p: { status: string; published: boolean }) => !(p.published || p.status === "published"),
         ).length;
-        setCounts({ drafts, articles, voice: voice ?? 0 });
+        setCounts({ drafts, articles, voice: voice ?? 0, experience: experience ?? 0 });
       } catch {
         /* counts are decorative; ignore failures */
       }
@@ -73,6 +78,7 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
     { id: "write", label: "Write", count: counts.drafts ? `${counts.drafts} open` : "open" },
     { id: "manage", label: "Manage", count: counts.articles ? String(counts.articles) : "–" },
     { id: "voice", label: "Voice", count: counts.voice ? `${counts.voice} tpl` : "tpl" },
+    { id: "experience", label: "Ervaringen", count: counts.experience ? String(counts.experience) : "bank" },
     { id: "analytics", label: "Analytics", count: "7d" },
   ];
 
@@ -97,6 +103,7 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
           {mode === "write" && <WriteMode postId={postId} />}
           {mode === "manage" && <ManageMode />}
           {mode === "voice" && <VoiceMode />}
+          {mode === "experience" && <ExperienceMode />}
           {mode === "analytics" && <AnalyticsMode />}
         </div>
       </div>
