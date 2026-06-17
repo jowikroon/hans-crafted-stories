@@ -1,15 +1,29 @@
 /* ============================================================
-   DARK NAV  ·  .dnav
-   Ported from the live hansvanleeuwen.com dark menu reference.
-   - transparent while sitting over the cinematic hero masthead
-   - turns to dark frosted glass on scroll (.is-scrolled) and while
-     the mobile sheet is open (.is-open), so text never washes out
+   SITE NAV  ·  .dnav   (LIGHT THEME)
+   Header for hansvanleeuwen.com. Reworked from the original dark
+   reference to read on the light/cream pages the site actually uses.
+   - dark ink links on the light paper background (visible at the top
+     of every page, not just after scrolling)
+   - turns to a light frosted-glass bar on scroll (.is-scrolled) and
+     while the mobile sheet is open (.is-open)
+   - gold accent (#D8A24A) underline on the active link
    - full mobile sheet (burger -> slide-down panel, scroll-locked,
      ESC / link-tap to close)
-   Colors and sizes match the reference exactly; gold accent #D8A24A.
+   Behaviour and class names are unchanged; only the palette flipped.
    ============================================================ */
 
-:root{ --dnav-h:74px; --dnav-accent:#D8A24A; }
+:root{
+  --dnav-h:74px;
+  --dnav-accent:#D8A24A;
+  /* light-theme palette (self-contained so the nav never depends on
+     page-level tokens) */
+  --dnav-paper:#FBFAF7;       /* page background it sits over          */
+  --dnav-ink:#181611;         /* primary text / brand / active link    */
+  --dnav-ink-soft:#56524A;    /* idle links                            */
+  --dnav-hair:rgba(24,22,17,.10);
+  --dnav-hair-2:rgba(24,22,17,.06);
+  --dnav-tint:rgba(24,22,17,.05); /* hover/raised surfaces             */
+}
 @media (max-width:560px){ :root{ --dnav-h:64px; } }
 
 .dnav{
@@ -30,32 +44,32 @@
 }
 /* frosted state — also forced while the mobile sheet is open */
 .dnav.is-scrolled,.dnav.is-open{
-  background:rgba(10,10,12,.74);
+  background:color-mix(in srgb,var(--dnav-paper) 82%,transparent);
   backdrop-filter:saturate(150%) blur(18px);
   -webkit-backdrop-filter:saturate(150%) blur(18px);
-  border-bottom-color:rgba(255,255,255,.09);
+  border-bottom-color:var(--dnav-hair);
 }
 
 /* ── brand ── */
 .dnav__brand{display:flex;align-items:center;gap:11px;flex:0 0 auto;text-decoration:none;}
 .dnav__mark{
   width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
-  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);
-  font-family:var(--font-display,'General Sans',system-ui,sans-serif);font-weight:700;font-size:16px;color:#fff;
+  background:var(--dnav-ink);border:1px solid var(--dnav-ink);
+  font-family:var(--font-display,'General Sans',system-ui,sans-serif);font-weight:700;font-size:16px;color:var(--dnav-paper);
   letter-spacing:-.02em;transition:transform .3s cubic-bezier(.34,1.3,.5,1),box-shadow .3s ease,border-color .3s ease;
 }
 .dnav__brand:hover .dnav__mark{transform:rotate(-7deg) scale(1.06);border-color:color-mix(in srgb,var(--dnav-accent) 60%,transparent);box-shadow:0 0 20px rgba(216,162,74,.28);}
-.dnav__name{font-family:var(--font-display,'General Sans',system-ui,sans-serif);font-weight:600;font-size:16px;color:#fff;letter-spacing:-.018em;white-space:nowrap;}
+.dnav__name{font-family:var(--font-display,'General Sans',system-ui,sans-serif);font-weight:600;font-size:16px;color:var(--dnav-ink);letter-spacing:-.018em;white-space:nowrap;}
 
 /* ── desktop links ── */
 .dnav__links{display:flex;align-items:center;gap:2px;margin-left:6px;}
 .dnav__links a{
-  position:relative;font-size:14.5px;font-weight:500;color:rgba(255,255,255,.66);
+  position:relative;font-size:14.5px;font-weight:500;color:var(--dnav-ink-soft);
   padding:9px 13px;border-radius:9px;letter-spacing:-.005em;white-space:nowrap;text-decoration:none;
   transition:color .2s ease,background .2s ease;
 }
-.dnav__links a:hover{color:#fff;background:rgba(255,255,255,.06);}
-.dnav__links a.is-active{color:#fff;}
+.dnav__links a:hover{color:var(--dnav-ink);background:var(--dnav-tint);}
+.dnav__links a.is-active{color:var(--dnav-ink);}
 .dnav__links a.is-active::after{
   content:"";position:absolute;left:13px;right:13px;bottom:4px;height:2px;border-radius:2px;
   background:var(--dnav-accent);box-shadow:0 0 12px color-mix(in srgb,var(--dnav-accent) 60%,transparent);
@@ -65,34 +79,34 @@
 .dnav__right{margin-left:auto;display:flex;align-items:center;gap:12px;}
 .dnav__lang{
   display:inline-flex;align-items:center;gap:2px;padding:3px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:9px;
+  background:var(--dnav-tint);border:1px solid var(--dnav-hair-2);border-radius:9px;
 }
 .dnav__lang button{
   font-family:var(--font-body,system-ui,sans-serif);font-size:12.5px;font-weight:600;letter-spacing:.02em;
-  color:rgba(255,255,255,.6);background:transparent;border:0;cursor:pointer;padding:6px 11px;border-radius:6px;
+  color:var(--dnav-ink-soft);background:transparent;border:0;cursor:pointer;padding:6px 11px;border-radius:6px;
   transition:color .16s ease,background .16s ease;
 }
-.dnav__lang button.on{background:rgba(255,255,255,.15);color:#fff;}
-.dnav__lang button:hover:not(.on){color:#fff;}
-.dnav__divider{width:1px;height:22px;background:rgba(255,255,255,.14);}
+.dnav__lang button.on{background:#fff;color:var(--dnav-ink);box-shadow:0 1px 2px rgba(0,0,0,.07);}
+.dnav__lang button:hover:not(.on){color:var(--dnav-ink);}
+.dnav__divider{width:1px;height:22px;background:var(--dnav-hair);}
 .dnav__login{
-  display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#fff;
-  padding:8px 16px;border-radius:9px;border:1px solid rgba(255,255,255,.2);text-decoration:none;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:var(--dnav-ink);
+  padding:8px 16px;border-radius:9px;border:1px solid var(--dnav-hair);text-decoration:none;cursor:pointer;
   background:transparent;font-family:inherit;
   transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease;
 }
-.dnav__login:hover{background:#fff;color:#0b0b0d;border-color:#fff;transform:translateY(-1px);}
+.dnav__login:hover{background:var(--dnav-ink);color:var(--dnav-paper);border-color:var(--dnav-ink);transform:translateY(-1px);}
 .dnav__login svg{width:14px;height:14px;transition:transform .2s ease;}
 .dnav__login:hover svg{transform:translateX(2px);}
 
 /* ── burger (mobile only) ── */
 .dnav__burger{
   display:none;width:42px;height:42px;border-radius:10px;cursor:pointer;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
+  background:var(--dnav-tint);border:1px solid var(--dnav-hair);
   position:relative;flex:0 0 auto;
 }
 .dnav__burger span{
-  position:absolute;left:11px;right:11px;height:2px;border-radius:2px;background:#fff;
+  position:absolute;left:11px;right:11px;height:2px;border-radius:2px;background:var(--dnav-ink);
   transition:transform .3s cubic-bezier(.2,.7,.2,1),opacity .2s ease,top .3s ease;
 }
 .dnav__burger span:nth-child(1){top:14px;}
@@ -106,7 +120,7 @@
 .dnav__sheet{
   position:fixed;left:0;right:0;top:var(--dnav-h);z-index:290;
   height:calc(100vh - var(--dnav-h));height:calc(100dvh - var(--dnav-h));
-  background:rgba(8,8,10,.97);
+  background:color-mix(in srgb,var(--dnav-paper) 97%,transparent);
   backdrop-filter:saturate(140%) blur(20px);-webkit-backdrop-filter:saturate(140%) blur(20px);
   display:flex;flex-direction:column;
   padding:18px clamp(18px,5vw,34px) 34px;
@@ -117,15 +131,15 @@
 .dnav.is-open .dnav__sheet{opacity:1;visibility:visible;transform:none;}
 .dnav__sheet a.dnav__slink{
   display:flex;align-items:center;justify-content:space-between;text-decoration:none;
-  font-family:var(--font-display,'General Sans',system-ui,sans-serif);font-weight:600;font-size:26px;color:rgba(255,255,255,.82);
-  letter-spacing:-.02em;padding:18px 4px;border-bottom:1px solid rgba(255,255,255,.08);
+  font-family:var(--font-display,'General Sans',system-ui,sans-serif);font-weight:600;font-size:26px;color:var(--dnav-ink-soft);
+  letter-spacing:-.02em;padding:18px 4px;border-bottom:1px solid var(--dnav-hair);
   transition:color .18s ease,padding-left .2s ease;
 }
-.dnav__sheet a.dnav__slink:hover,.dnav__sheet a.dnav__slink:focus-visible{color:#fff;padding-left:10px;}
-.dnav__sheet a.dnav__slink.is-active{color:#fff;}
+.dnav__sheet a.dnav__slink:hover,.dnav__sheet a.dnav__slink:focus-visible{color:var(--dnav-ink);padding-left:10px;}
+.dnav__sheet a.dnav__slink.is-active{color:var(--dnav-ink);}
 .dnav__sheet a.dnav__slink.is-active .ix{color:var(--dnav-accent);}
-.dnav__sheet a.dnav__slink .ix{font-family:var(--font-mono,monospace);font-size:12px;font-weight:500;color:rgba(255,255,255,.32);letter-spacing:.06em;}
-.dnav__sheet a.dnav__slink:hover .ix{color:rgba(255,255,255,.5);}
+.dnav__sheet a.dnav__slink .ix{font-family:var(--font-mono,monospace);font-size:12px;font-weight:500;color:var(--dnav-ink-soft);opacity:.6;letter-spacing:.06em;}
+.dnav__sheet a.dnav__slink:hover .ix{opacity:.9;}
 .dnav__sheetfoot{margin-top:auto;padding-top:26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
 .dnav__sheetfoot .dnav__lang{padding:4px;}
 .dnav__sheetfoot .dnav__login{flex:1 1 auto;justify-content:center;padding:13px 18px;font-size:15px;}
@@ -142,3 +156,9 @@
 @media (prefers-reduced-motion:reduce){
   .dnav,.dnav__sheet,.dnav__burger span,.dnav__mark{transition:none !important;}
 }
+
+/* ── header logo image (chosen in the on-page editor) ──
+   When a logo image is shown it fills the mark; the dark square is only
+   the fallback backdrop for the "h" letter. */
+.dnav__mark:has(.dnav__logo){background:transparent;border-color:transparent;}
+.dnav__logo{width:34px;height:34px;border-radius:9px;object-fit:contain;display:block;}
