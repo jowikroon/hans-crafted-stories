@@ -18,7 +18,6 @@ import { Link, useParams } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
 import "@/styles/music-v2.css";
-import "@/styles/music-neon.css";
 
 function ChevronRight() {
   return (
@@ -113,7 +112,7 @@ export default function MusicSong() {
 
   if (!song) {
     return (
-      <div className="music-v2 music-neon-song">
+      <div className="music-v2">
         <main className="songpage">
           <div className="wrap">
             <nav className="crumb" aria-label="Breadcrumb" style={{ paddingTop: 40 }}>
@@ -138,7 +137,7 @@ export default function MusicSong() {
   const d = song.detail;
 
   return (
-    <div className="music-v2 music-neon-song">
+    <div className="music-v2">
       <main className="songpage">
         <div className="wrap">
           {/* Breadcrumb */}
@@ -255,6 +254,12 @@ export default function MusicSong() {
               <a className="platform" href={song.links.youtube} target="_blank" rel="noopener noreferrer">
                 <svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23 12s0-3.2-.4-4.7c-.2-.9-.9-1.6-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.4c-.9.2-1.6.9-1.8 1.8C1 8.8 1 12 1 12s0 3.2.4 4.7c.2.9.9 1.6 1.8 1.8 1.5.5 8.8.5 8.8.5s7.3 0 8.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.6.4-4.8.4-4.8zM9.8 15V9l5.2 3-5.2 3z" /></svg>
                 <span className="pf-name">YouTube</span>
+              </a>
+            )}
+            {song.links?.suno && (
+              <a className="platform" href={song.links.suno} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a1.4 1.4 0 0 1 1.4 1.4v6.06a3.6 3.6 0 1 1-1.9-3.17V4.4A1.4 1.4 0 0 1 12 3zm-1.6 8.3a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4z"/></svg>
+                <span className="pf-name">Suno</span>
               </a>
             )}
           </div>
