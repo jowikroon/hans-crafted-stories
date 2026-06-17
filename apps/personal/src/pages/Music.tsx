@@ -16,6 +16,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
+import { useAuth } from "@/hooks/useAuth";
 import { songs, featuredRelease, type Song } from "@/data/music";
 import ReleaseTimeline from "@/components/music/ReleaseTimeline";
 import "@/styles/music-neon.css";
@@ -89,6 +90,11 @@ function TrackRow({ song, index, playing, onToggle }: { song: Song; index: numbe
 }
 
 const Music = () => {
+  const { user } = useAuth();
+  // SoundCloud tracks are gated: only visible when logged in. Public visitors
+  // see Spotify releases only.
+  const visibleSongs = songs.filter((sg) => sg.provider !== "soundcloud" || !!user);
+
   useSEO({
     title: "Music — After Hours | Hans van Leeuwen",
     description: "Tracks recorded after midnight — a tape machine, soft synths, and whatever the night left behind. Press play, and read the notes for every song.",
@@ -240,7 +246,7 @@ const Music = () => {
       <section className="mn-wrap mn-rv" id="songs" aria-label="Tracks">
         <p className="mn-slabel" style={{ marginTop: "clamp(54px,8vh,90px)" }}><span className="n">02</span> The tracks</p>
         <div className="mn-tracks">
-          {songs.map((song, i) => (
+          {visibleSongs.map((song, i) => (
             <TrackRow key={song.slug} song={song} index={i} playing={playingSlug === song.slug} onToggle={toggle} />
           ))}
         </div>
