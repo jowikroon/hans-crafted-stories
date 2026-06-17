@@ -5,6 +5,7 @@ import { useAllPageElements } from "@/hooks/usePageElements";
 import { Badge } from "@/components/ui/badge";
 import PremiumToggle from "./PremiumToggle";
 import PortalLangToggle from "./PortalLangToggle";
+import WritingSkinControl from "./WritingSkinControl";
 
 const pageLabels: Record<string, string> = {
   home: "Home",
@@ -79,6 +80,9 @@ const PortalPagesTab = ({ subFilter }: { subFilter?: string }) => {
 
         <PortalLangToggle />
       </div>
+
+      {/* Writing skin selector — redactional default */}
+      {activePage === "writing" && <WritingSkinControl />}
 
       {/* Elements grouped */}
       <div className="space-y-6">

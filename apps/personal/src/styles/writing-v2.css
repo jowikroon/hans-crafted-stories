@@ -53,6 +53,65 @@
   --w2-draft-amber-soft: rgba(184, 114, 26, .22);
 }
 
+/* ============================================================
+   SKIN PRESETS — selectable looks for /writing.
+   Set data-skin="<id>" on <html>. Each preset only overrides the
+   --w2-* tokens; all layout/markup stays identical. Base (no attr)
+   = "editorial-light". data-theme/.dark dark overrides still apply
+   and compose on top of skins that opt into dark via their own vars.
+   Picker UI lives in WritingV2 toolbar; redactional default in Portal.
+   ============================================================ */
+
+/* paper — warm, calm, serif-leaning editorial (default-ish, softer) */
+[data-skin="paper"] .writing-v2 {
+  --w2-paper: #F7F4ED;
+  --w2-paper-2: #EEEAE0;
+  --w2-ink: #211E16;
+  --w2-ink-2: #4D4A40;
+  --w2-card: #FFFDF8;
+  --w2-accent: #1C6B45;
+  --w2-font-display: 'Newsreader', Georgia, serif;
+  --w2-title-size: clamp(26px, 3.2vw, 38px);
+}
+
+/* mono-dark — the v1 redesign look: dark, humanist, compact, green */
+[data-skin="mono-dark"] .writing-v2 {
+  --w2-paper: #100F0C;
+  --w2-paper-2: #1A1813;
+  --w2-ink: #F4F2EC;
+  --w2-ink-2: #C3C0B6;
+  --w2-muted: #8C897E;
+  --w2-hair: rgba(244, 242, 236, .14);
+  --w2-hair-2: rgba(244, 242, 236, .07);
+  --w2-card: #181711;
+  --w2-accent: #34A26A;
+  --w2-draft-amber-soft: rgba(184, 114, 26, .22);
+  --w2-row-py: 24px;
+}
+
+/* slate — cool, neutral, modern product-blog feel */
+[data-skin="slate"] .writing-v2 {
+  --w2-paper: #F8FAFC;
+  --w2-paper-2: #EEF2F6;
+  --w2-ink: #0F172A;
+  --w2-ink-2: #334155;
+  --w2-muted: #64748B;
+  --w2-hair: rgba(15, 23, 42, .10);
+  --w2-hair-2: rgba(15, 23, 42, .06);
+  --w2-card: #FFFFFF;
+  --w2-accent: #2563EB;
+  --w2-accent-ink: #FFFFFF;
+}
+
+/* comfy — light, airier spacing, larger type */
+[data-skin="comfy"] .writing-v2 {
+  --w2-paper: #FBFAF7;
+  --w2-card: #FFFFFF;
+  --w2-accent: #1C6B45;
+  --w2-row-py: 42px;
+  --w2-title-size: clamp(28px, 3.4vw, 40px);
+}
+
 .writing-v2 ::selection {
   background: var(--w2-accent);
   color: var(--w2-accent-ink);
@@ -296,6 +355,43 @@
   border-color: var(--w2-ink);
   outline: 2px solid var(--w2-accent);
   outline-offset: 2px;
+}
+
+/* skinpick — style/skin selector, mirrors .sort exactly */
+.writing-v2 .skinpick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.writing-v2 .skinpick label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--w2-muted);
+}
+
+.writing-v2 .skinpick select {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--w2-ink);
+  background: transparent;
+  border: 1px solid var(--w2-hair);
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: border-color .18s ease;
+}
+
+.writing-v2 .skinpick select:hover,
+.writing-v2 .skinpick select:focus-visible {
+  border-color: var(--w2-ink);
+  outline: 2px solid var(--w2-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .writing-v2 .skinpick label { display: none; }
 }
 
 /* ───────────────── LIST ───────────────── */

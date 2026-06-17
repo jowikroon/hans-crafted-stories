@@ -2,6 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <!-- Skin preset init — set data-skin on <html> before paint to avoid FOUC.
+         Source of truth = localStorage 'writing_skin'. Default 'editorial-light' (base). -->
+    <script>
+      (function(){
+        try{
+          var s = localStorage.getItem('writing_skin');
+          if (s && s !== 'editorial-light') document.documentElement.setAttribute('data-skin', s);
+        }catch(e){}
+      })();
+    </script>
     <!-- Tracking audit: only GTM loads in head. GA4, Hotjar, and other scripts are configured inside GTM or loaded deferred via TrackingScriptInjector (after first user interaction) to reduce CWV impact. -->
     <!-- dataLayer init (must be before GTM) -->
     <script>
