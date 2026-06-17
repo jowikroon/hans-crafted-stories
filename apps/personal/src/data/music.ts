@@ -97,7 +97,7 @@ export interface Song {
   /** Direct listen link on the host platform (Spotify or SoundCloud). */
   listenUrl: string;
   /** Optional extra platform links for the song page. */
-  links?: { spotify?: string; soundcloud?: string; youtube?: string; appleMusic?: string };
+  links?: { spotify?: string; soundcloud?: string; youtube?: string; appleMusic?: string; suno?: string };
   /** Optional self-hosted video file (served from R2 via /media/...). Preferred over videoUrl. */
   videoFile?: string;
   /** Optional YouTube watch link (official video) — secondary link / fallback. */
@@ -181,6 +181,7 @@ export const songs: Song[] = [
     links: {
       spotify: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
       youtube: "https://youtube.com/shorts/dpOHLmNUpCE",
+      suno: "https://suno.com/@jowikroon",
     },
     videoFile: "/media/final_neon_beat_drop.mp4",
     videoUrl: "https://youtube.com/shorts/dpOHLmNUpCE",
@@ -201,9 +202,20 @@ export const songs: Song[] = [
       prose: [
         { type: "lead", text: "Beat Drop is my first official single, out now on Spotify under my artist name Jowikroon." },
         { type: "p", text: "An energetic electronic track with an official video. Press play above to listen, or open it on Spotify." },
-        { type: "callout", kicker: "Out now", text: "Released as Jowikroon — the artist alias of Hans van Leeuwen." },
+        { type: "h2", id: "style", text: "Sound & style" },
+        { type: "p", text: "Mellow, mid-tempo groove around 124 BPM, blending minimal techno with a warm, funk-infused house feel. The mix is ultra-clean and precise: a tight, punchy kick locks in with a rounded, rubbery sub bass, while crisp offbeat hi-hats and soft, filtered claps create a steady, hypnotic pulse." },
+        { type: "p", text: "Instead of dense layering, a few carefully chosen elements carry the track — an arpeggiated synth pattern loops with subtle variation, interacting with a bright, syncopated piano riff that adds a human, \"player\" touch. Analog-style pads bloom slowly in the background, filling space without crowding the groove." },
+        { type: "p", text: "The arrangement evolves through gradual filtering, muting, and reintroducing parts, with occasional restrained risers for tension. The focus stays on repetition, groove and tonal clarity — a smooth, hypnotic flow that feels both mechanical and soulful, built for understated but uplifting movement on the dancefloor." },
+        { type: "callout", kicker: "Out now", text: "Released as Jowikroon — the artist alias of Hans van Leeuwen. Also on Suno." },
       ],
-      lyrics: [],
+      lyrics: [
+        { tag: "Verse 1", lines: ["Clock ticks", "Time flies", "Neon whispers", "Behind my eyes", "A new sound grows", "A rhythm takes hold"] },
+        { tag: "Pre-Chorus", lines: ["Something's coming", "Can you feel it now", "Static in the airwaves", "Sweat upon your brow"] },
+        { tag: "Chorus", lines: ["Beat drop", "Yeah the beat drop", "The floor shakes", "My mind breaks", "Beat drop", "Oh the beat drop", "Laser lights flashing", "Hearts all crashing", "Beat drop", "Feel the beat drop", "Everything changes", "No more cages"] },
+        { tag: "Verse 2", lines: ["Old ghosts fade", "New lines are drawn", "Cassette tape spinning", "Just before the dawn", "Less is more", "Then more is more again", "Keytar screaming", "Through the city rain"] },
+        { tag: "Pre-Chorus", lines: ["Something's building", "Can you hear it now", "Midnight on the dial", "Turn it up and howl"] },
+        { tag: "Chorus", lines: ["Beat drop", "Yeah the beat drop", "The floor shakes", "My mind breaks", "Beat drop", "Oh the beat drop", "Laser lights flashing", "Hearts all crashing", "Beat drop", "Feel the beat drop", "Everything changes", "No more cages"] },
+      ],
     },
   },
   {
