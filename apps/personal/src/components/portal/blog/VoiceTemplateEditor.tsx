@@ -6,6 +6,7 @@
 // or use as a modal/drawer.
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { extractFileText, ANALYZER_ACCEPT } from "./extractFileText";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -627,7 +628,7 @@ export default function VoiceTemplateEditor() {
           <FormSection
             idx={12}
             title="Analyze writing sample"
-            subtitle="Plak tekst of drop een .txt/.md — Claude vult het template met confidence-scores"
+            subtitle="Plak tekst of drop een .txt / .md / .pdf / .docx — Claude vult het template met confidence-scores"
           >
             <SampleAnalyzer
               onApply={(updates) => patch(updates)}
@@ -1149,10 +1150,15 @@ function SampleAnalyzer({ onApply, current }: { onApply: (u: Partial<VTFull>) =>
   const [applied, setApplied] = useState<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const readFile = (f: File) => {
-    const reader = new FileReader();
-    reader.onload = () => setSample(String(reader.result ?? "").slice(0, 20000));
-    reader.readAsText(f);
+  const readFile = async (f: File) => {
+    setError(null);
+    try {
+      const text = await extractFileText(f);
+      if (!text.trim()) { setError("Geen tekst gevonden in dit bestand"); return; }
+      setSample(text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Kon bestand niet verwerken");
+    }
   };
 
   const analyze = async () => {
@@ -1203,7 +1209,7 @@ function SampleAnalyzer({ onApply, current }: { onApply: (u: Partial<VTFull>) =>
           if (f) readFile(f);
         }}
         onDragOver={(e) => e.preventDefault()}
-        placeholder="Plak hier een representatief stuk eigen tekst (min. 200 tekens), of sleep een .txt/.md bestand hierheen…"
+        placeholder="Plak hier een representatief stuk eigen tekst (min. 200 tekens), of sleep een .txt / .md / .pdf / .docx bestand hierheen…"
       />
       <div className="flex items-center gap-3">
         <Button onClick={analyze} disabled={busy || sample.trim().length < 200} className="gap-2">
@@ -1214,12 +1220,12 @@ function SampleAnalyzer({ onApply, current }: { onApply: (u: Partial<VTFull>) =>
           onClick={() => fileRef.current?.click()}
           className="text-[12px] text-muted-foreground hover:text-foreground underline"
         >
-          of kies bestand (.txt/.md)
+          of kies bestand (.txt / .md / .pdf / .docx)
         </button>
         <input
           ref={fileRef}
           type="file"
-          accept=".txt,.md,.markdown,text/plain,text/markdown"
+          accept={ANALYZER_ACCEPT}
           className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) readFile(f); }}
         />
