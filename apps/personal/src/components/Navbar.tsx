@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/hooks/useLang";
+import { useActiveLogo } from "@/contexts/LogoContext";
+import { logoById } from "@/lib/logos";
 import { translations } from "@/data/translations";
 import "./dnav.css";
 
@@ -38,6 +40,11 @@ const Navbar = (_props: NavbarProps) => {
   const { lang, setLang } = useLang();
   const { user, signOut } = useAuth();
   const t = translations[lang].nav;
+
+  /* Active header logo (chosen in the on-page editor, persisted site-wide).
+     Falls back to the default mark when nothing is selected. */
+  const activeLogoId = useActiveLogo();
+  const logo = logoById(activeLogoId);
 
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -116,7 +123,11 @@ const Navbar = (_props: NavbarProps) => {
     <header className={`dnav${scrolled ? " is-scrolled" : ""}${open ? " is-open" : ""}`} id="dnav">
       <div className="dnav__inner">
         <Link to="/" className="dnav__brand" aria-label="Hans van Leeuwen — home" onClick={() => setOpen(false)}>
-          <span className="dnav__mark">h</span>
+          <span className="dnav__mark">
+            {logo?.src
+              ? <img src={logo.src} alt={logo.label || "Hans van Leeuwen"} className="dnav__logo" />
+              : "h"}
+          </span>
           <span className="dnav__name">Hans van Leeuwen</span>
         </Link>
 
