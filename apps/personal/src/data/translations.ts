@@ -27,6 +27,7 @@ type TranslationStrings = {
     home: string;
     work: string;
     writing: string;
+    music: string;
     about: string;
     commandCenter: string;
     search: string;
@@ -34,6 +35,15 @@ type TranslationStrings = {
     noResults: string;
     login: string;
     portal: string;
+  };
+
+  /* ── Music page ── */
+  music: {
+    label: string;
+    heading: string;
+    subtitle: string;
+    intro: string;
+    listenLabel: string;
   };
 
   /* ── Hero / Home ── */
@@ -180,7 +190,7 @@ export const translations: Record<Lang, TranslationStrings> = {
   en: {
     /* ── About ── */
     about: "About",
-    coreCompetencies: "Core Competencies",
+    coreCompetencies: "Amazon NL & Bol.com Marketplace Expertise",
     experience: "Experience",
     education: "Education",
     downloadCvEn: "Download CV (EN)",
@@ -300,6 +310,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       home: "Home",
       work: "Case Studies",
       writing: "Articles",
+      music: "Music",
       about: "About Hans",
       commandCenter: "Command Center",
       search: "Search",
@@ -307,6 +318,15 @@ export const translations: Record<Lang, TranslationStrings> = {
       noResults: "No results found.",
       login: "Login",
       portal: "Portal",
+    },
+
+    /* ── Music ── */
+    music: {
+      label: "Music",
+      heading: "Music",
+      subtitle: "Beat Drop — my music project.",
+      intro: "Alongside my work in e-commerce, I make music under the name Beat Drop. It's where I switch off the spreadsheets and let the rhythm do the talking. Have a listen below.",
+      listenLabel: "Listen on Spotify",
     },
 
     /* ── Hero ── */
@@ -508,8 +528,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       workDescription: "E-commerce and marketplace case studies with measurable results — Amazon NL, Bol.com, UX, and 3D work. Get a 7-point audit or book a 30-min growth call.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
       privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
-      aboutTitle: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
-      aboutDescription: "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and digital commerce. Based in Amersfoort, NL.",
+      aboutTitle: "About Hans van Leeuwen – Freelance Amazon NL & Bol.com Manager | 10+ Years",
+      aboutDescription: "Freelance e-commerce manager with 10+ years in Amazon NL & Bol.com. Interim marketplace lead for listings, ads, CRO & growth. Based in Amersfoort. Get a free audit.",
       notFoundTitle: "Page Not Found | Hans van Leeuwen",
     },
   },
@@ -517,7 +537,7 @@ export const translations: Record<Lang, TranslationStrings> = {
   nl: {
     /* ── About ── */
     about: "Over mij",
-    coreCompetencies: "Kerncompetenties",
+    coreCompetencies: "Amazon NL & Bol.com Marktplaats-expertise",
     experience: "Werkervaring",
     education: "Opleiding",
     downloadCvEn: "Download CV (EN)",
@@ -637,6 +657,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       home: "Home",
       work: "Werk",
       writing: "Artikelen",
+      music: "Muziek",
       about: "Over mij",
       commandCenter: "Command Center",
       search: "Zoeken",
@@ -644,6 +665,15 @@ export const translations: Record<Lang, TranslationStrings> = {
       noResults: "Geen resultaten gevonden.",
       login: "Inloggen",
       portal: "Portal",
+    },
+
+    /* ── Music ── */
+    music: {
+      label: "Muziek",
+      heading: "Muziek",
+      subtitle: "Beat Drop — mijn muziekproject.",
+      intro: "Naast mijn werk in e-commerce maak ik muziek onder de naam Beat Drop. Hier zet ik de spreadsheets even uit en laat ik het ritme het werk doen. Luister hieronder mee.",
+      listenLabel: "Luister op Spotify",
     },
 
     /* ── Hero ── */
@@ -845,8 +875,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       workDescription: "E-commerce en marktplaats cases met meetbare resultaten — Amazon NL, Bol.com, UX en 3D. Vraag een 7-punts audit of plan een 30-min groeigesprek.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
       privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
-      aboutTitle: "Over Hans van Leeuwen – E-commerce Manager | 10+ Jaar Ervaring",
-      aboutDescription: "Leer meer over Hans van Leeuwen: 10+ jaar ervaring in e-commercemanagement, marktplaatsstrategie (Amazon, Bol.com), UX-design en digitale commerce. Gevestigd in Amersfoort, NL.",
+      aboutTitle: "Over Hans van Leeuwen – Freelance Amazon NL & Bol.com Manager | 10+ Jaar",
+      aboutDescription: "Freelance e-commerce manager met 10+ jaar ervaring in Amazon NL & Bol.com. Interim marktplaatsspecialist voor listings, ads, CRO & groei. Amersfoort. Vraag een gratis audit aan.",
       notFoundTitle: "Pagina Niet Gevonden | Hans van Leeuwen",
     },
   },
