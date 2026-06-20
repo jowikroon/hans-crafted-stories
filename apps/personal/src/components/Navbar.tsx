@@ -57,15 +57,6 @@ const Navbar = (_props: NavbarProps) => {
   }, [siteTheme]);
 
   /* ── Nav model ── */
-  const workChildren = [
-    { to: "/work", label: t.workMenu.allCases },
-    { to: "/work/connect-car-parts", label: "Connect Car Parts" },
-    { group: t.workMenu.services },
-    { to: "/amazon-nl-specialist", label: t.workMenu.amazon },
-    { to: "/bol-com-consultant", label: t.workMenu.bol },
-    { to: "/interim-ecommerce-manager", label: t.workMenu.interim },
-  ] as const;
-
   const siteLinks = [
     { to: "/", label: t.home },
     { to: "/work", label: t.work },
@@ -294,17 +285,14 @@ const Navbar = (_props: NavbarProps) => {
           {mobileOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ width: "calc(100% - 36px)" }} className="mx-auto mt-2 overflow-hidden rounded-2xl border border-black/10 bg-[#F1ECDF] shadow-[0_18px_46px_-22px_rgba(20,19,15,0.4)] dark:border-white/10 dark:bg-[hsl(40,8%,9%)] md:hidden">
               <div className="flex flex-col gap-1 px-4 py-4">
-                <Link to="/" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isActive("/") ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.home}</Link>
-                {/* Work group */}
-                <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F]">{t.work}</p>
-                {workChildren.map((c, i) => "group" in c
-                  ? <p key={`mg${i}`} className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F]">{c.group}</p>
-                  : <Link key={c.to} to={c.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-5 py-2 text-sm ${isActive(c.to) ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{c.label}</Link>)}
-                <Link to="/writing" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isActive("/writing") ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.writing}</Link>
-                <Link to="/about" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isActive("/about") ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.about}</Link>
-                {user && (
-                  <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isCommandCenter ? "bg-[#2D9255] text-white" : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{t.commandCenter}</Link>
-                )}
+                {/* Top-level links only — no sub-items/children in the mobile menu */}
+                {siteLinks.map((l) => {
+                  const cc = (l as { cc?: boolean }).cc;
+                  const active = cc ? isCommandCenter : isActive(l.to);
+                  return (
+                    <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : "bg-[#E5DFCE] text-[#15140F]") : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{l.label}</Link>
+                  );
+                })}
 
                 <div className="my-1 h-px bg-black/10" />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
