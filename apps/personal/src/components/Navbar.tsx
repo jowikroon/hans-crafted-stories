@@ -19,7 +19,7 @@ const getLinks = (lang: Lang) => {
     { to: "/work", label: t.work },
     { to: "/writing", label: t.writing },
     { to: "/music", label: t.music },
-    { to: "/about", label: lang === "nl" ? "Over Hans" : "About Hans" },
+    { to: "/about", label: t.about },
   ];
 };
 
