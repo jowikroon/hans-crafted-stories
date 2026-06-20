@@ -27,6 +27,7 @@ type TranslationStrings = {
     home: string;
     work: string;
     writing: string;
+    music: string;
     about: string;
     commandCenter: string;
     search: string;
@@ -303,6 +304,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       home: "Home",
       work: "Case Studies",
       writing: "Articles",
+      music: "Music",
       about: "About Hans",
       commandCenter: "Command Center",
       search: "Search",
@@ -643,6 +645,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       home: "Home",
       work: "Werk",
       writing: "Artikelen",
+      music: "Muziek",
       about: "Over mij",
       commandCenter: "Command Center",
       search: "Zoeken",
