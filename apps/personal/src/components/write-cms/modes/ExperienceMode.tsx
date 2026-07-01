@@ -22,6 +22,9 @@ interface ExperienceRow {
   lesson: string;
   tags: string[];
   category: string;
+  client_masked: string;
+  metrics_general: string;
+  metrics_masked: string;
 }
 
 type Draft = Omit<ExperienceRow, "id"> & { id?: string };
@@ -32,9 +35,10 @@ const CATEGORIES = ["professional", "technical", "general"] as const;
 const EMPTY: Draft = {
   client: "", theme: "", gate_type: "ervaring", situation: "",
   metrics: "", lesson: "", tags: [], category: "professional",
+  client_masked: "", metrics_general: "", metrics_masked: "",
 };
 
-const SELECT = "id, client, theme, gate_type, situation, metrics, lesson, tags, category";
+const SELECT = "id, client, theme, gate_type, situation, metrics, lesson, tags, category, client_masked, metrics_general, metrics_masked";
 
 const norm = (r: Record<string, unknown>): ExperienceRow => ({
   id: String(r.id),
@@ -46,6 +50,9 @@ const norm = (r: Record<string, unknown>): ExperienceRow => ({
   lesson: (r.lesson as string) ?? "",
   tags: (r.tags as string[]) ?? [],
   category: (r.category as string) ?? "professional",
+  client_masked: (r.client_masked as string) ?? "",
+  metrics_general: (r.metrics_general as string) ?? "",
+  metrics_masked: (r.metrics_masked as string) ?? "",
 });
 
 const snippet = (s: string, n = 80) => (s.length > n ? `${s.slice(0, n)}…` : s);
@@ -105,6 +112,9 @@ export default function ExperienceMode() {
         lesson: draft.lesson,
         tags: draft.tags,
         category: draft.category,
+        client_masked: draft.client_masked.trim() || null,
+        metrics_general: draft.metrics_general.trim() || null,
+        metrics_masked: draft.metrics_masked.trim() || null,
       };
       let savedId = draft.id;
       if (draft.id) {
@@ -211,6 +221,18 @@ export default function ExperienceMode() {
 
                 <EField full label="Metrics" help="Harde cijfers: omzet, marge, %, tijd.">
                   <textarea rows={3} value={draft.metrics} placeholder="bv. marge van 28% naar 34% in 6 weken" onChange={(e) => set("metrics", e.target.value)} />
+                </EField>
+
+                <EField label="Klant gemaskeerd" help={'Publieke variant van de klantnaam (bv. "een Europees consumentenmerk").'}>
+                  <input value={draft.client_masked} placeholder="bv. een Nederlandse retailer" onChange={(e) => set("client_masked", e.target.value)} />
+                </EField>
+
+                <EField full label="Metrics algemeen" help="Afgerond/gegeneraliseerd maar nog kwantitatief.">
+                  <textarea rows={2} value={draft.metrics_general} placeholder="bv. marge enkele procentpunten omhoog in weken" onChange={(e) => set("metrics_general", e.target.value)} />
+                </EField>
+
+                <EField full label="Metrics gemaskeerd" help="Zonder cijfers — het punt blijft overeind.">
+                  <textarea rows={2} value={draft.metrics_masked} placeholder="bv. structurele margeverbetering binnen een kwartaal" onChange={(e) => set("metrics_masked", e.target.value)} />
                 </EField>
 
                 <EField full label="Les" help="Wat je eruit haalde — de geleerde les.">

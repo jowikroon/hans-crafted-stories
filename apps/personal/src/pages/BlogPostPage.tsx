@@ -9,6 +9,7 @@ import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
 import "@/styles/article-v2.css";
+import { applyMaskTokens, type MaskingConfig } from "@/lib/masking";
 
 /* ────────────────────────────────────────────────────────────
    BlogPostPage — article reader, redesign v2.
@@ -36,14 +37,19 @@ import "@/styles/article-v2.css";
    callout blocks, and stamps H2s with id="sec-N" so the TOC can scroll-spy.
    Output trust model is unchanged — content originates from the CMS. */
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-const inlineMd = (s: string) =>
-  esc(s)
+type MaskCtx = { cfg: MaskingConfig | null | undefined; counters: Record<string, number> };
+const inlineMd = (s: string, mask?: MaskCtx) => {
+  let out = esc(s);
+  if (mask) out = applyMaskTokens(out, mask.cfg, mask.counters);
+  return out
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\[(.+?)\]\((https?:[^)]+)\)/g, '<a href="$2" rel="noopener noreferrer">$1</a>');
+};
 
 interface RenderResult { html: string; headings: { id: string; text: string }[]; }
 
-function renderArticle(md: string): RenderResult {
+function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderResult {
+  const mask: MaskCtx = { cfg: maskingCfg, counters: {} };
   const lines = md.split("\n");
   const headings: { id: string; text: string }[] = [];
   const out: string[] = [];
@@ -74,7 +80,7 @@ function renderArticle(md: string): RenderResult {
     if (t.startsWith("### ")) { flushList(); out.push(`<h3>${esc(t.slice(4).trim())}</h3>`); continue; }
 
     // Blockquote → pull quote
-    if (t.startsWith("> ")) { flushList(); out.push(`<p class="pull">${inlineMd(t.slice(2).trim())}</p>`); continue; }
+    if (t.startsWith("> ")) { flushList(); out.push(`<p class="pull">${inlineMd(t.slice(2).trim(), mask)}</p>`); continue; }
 
     // Callout:  :::Kicker | body   (graceful: also plain "::: body")
     if (t.startsWith(":::")) {
@@ -83,17 +89,17 @@ function renderArticle(md: string): RenderResult {
       const [k, ...rest] = body.split("|");
       const kicker = rest.length ? k.trim() : "Noot";
       const text = rest.length ? rest.join("|").trim() : body;
-      out.push(`<div class="callout"><div class="callout__k">${esc(kicker)}</div><p>${inlineMd(text)}</p></div>`);
+      out.push(`<div class="callout"><div class="callout__k">${esc(kicker)}</div><p>${inlineMd(text, mask)}</p></div>`);
       continue;
     }
 
     // List item
-    if (t.startsWith("- ")) { listBuf.push(inlineMd(t.slice(2).trim())); continue; }
+    if (t.startsWith("- ")) { listBuf.push(inlineMd(t.slice(2).trim(), mask)); continue; }
 
     // Paragraph — the very first one becomes the lead
     flushList();
-    if (!firstParaDone) { out.push(`<p class="lead">${inlineMd(t)}</p>`); firstParaDone = true; }
-    else out.push(`<p>${inlineMd(t)}</p>`);
+    if (!firstParaDone) { out.push(`<p class="lead">${inlineMd(t, mask)}</p>`); firstParaDone = true; }
+    else out.push(`<p>${inlineMd(t, mask)}</p>`);
   }
   flushList();
   return { html: out.join("\n"), headings };
@@ -122,8 +128,8 @@ const BlogPostPage = () => {
   const displayContent = post ? (lang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
 
   const { html: bodyHtml, headings } = useMemo(
-    () => renderArticle(displayContent || ""),
-    [displayContent]
+    () => renderArticle(displayContent || "", post?.masking),
+    [displayContent, post?.masking]
   );
   const showToc = headings.length >= 3;
 
