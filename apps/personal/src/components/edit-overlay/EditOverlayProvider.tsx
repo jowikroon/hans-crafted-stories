@@ -15,8 +15,10 @@ import {
 } from "@/lib/api/overrides";
 import { DEFAULT_LOGO_ID, LOGO_SETTING_KEY } from "@/lib/logos";
 import { DEFAULT_HEADER_ID, HEADER_SETTING_KEY } from "@/lib/headers";
+import { DEFAULT_FONT_ID, FONT_SETTING_KEY, fontById } from "@/lib/fonts";
 import { LogoProvider } from "@/contexts/LogoContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
+import { FontProvider } from "@/contexts/FontContext";
 
 const STYLE_TAG_ID = "page-overrides-style";
 
@@ -67,6 +69,9 @@ interface EditOverlayValue {
   /** Active header style id (site-wide setting). */
   activeHeaderId: string;
   setActiveHeader: (id: string) => Promise<void>;
+  /** Active font style id (site-wide setting). */
+  activeFontId: string;
+  setActiveFont: (id: string) => Promise<void>;
 }
 
 const Ctx = createContext<EditOverlayValue | null>(null);
@@ -241,6 +246,48 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     [upsertLocal]
   );
 
+  const activeFontId = overrides.get(FONT_SETTING_KEY)?.text_override || DEFAULT_FONT_ID;
+
+  const setActiveFont = useCallback(
+    async (id: string) => {
+      const row: PageOverride = {
+        element_key: FONT_SETTING_KEY,
+        selector: null,
+        page_path: "*",
+        label: "Font style",
+        text_override: id,
+        style: {},
+      };
+      upsertLocal(row);
+      await apiSave(row);
+    },
+    [upsertLocal]
+  );
+
+  // ── Apply the active FONT style site-wide (CSS vars + on-demand webfont) ──
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const font = fontById(activeFontId);
+    (font.hrefs || []).forEach((href, i) => {
+      const id = `site-font-${font.id}-${i}`;
+      if (document.getElementById(id)) return;
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = href;
+      document.head.appendChild(link);
+    });
+    const root = document.documentElement;
+    if (activeFontId && activeFontId !== DEFAULT_FONT_ID) {
+      root.style.setProperty("--font-display", font.display);
+      root.style.setProperty("--font-body", font.body);
+    } else {
+      // Fall back to the values defined in index.css :root.
+      root.style.removeProperty("--font-display");
+      root.style.removeProperty("--font-body");
+    }
+  }, [activeFontId]);
+
   const value = useMemo<EditOverlayValue>(
     () => ({
       editing,
@@ -257,14 +304,18 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       setActiveLogo,
       activeHeaderId,
       setActiveHeader,
+      activeFontId,
+      setActiveFont,
     }),
-    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader]
+    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont]
   );
 
   return (
     <Ctx.Provider value={value}>
       <HeaderProvider value={{ activeHeaderId, setActiveHeader }}>
-        <LogoProvider value={{ activeLogoId, setActiveLogo }}>{children}</LogoProvider>
+        <LogoProvider value={{ activeLogoId, setActiveLogo }}>
+          <FontProvider value={{ activeFontId, setActiveFont }}>{children}</FontProvider>
+        </LogoProvider>
       </HeaderProvider>
     </Ctx.Provider>
   );
