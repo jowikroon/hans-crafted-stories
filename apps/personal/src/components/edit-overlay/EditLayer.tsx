@@ -4,6 +4,7 @@ import { useEditOverlay, keyForElement } from "./EditOverlayProvider";
 import { createChangeRequest } from "@/lib/api/overrides";
 import { LOGOS } from "@/lib/logos";
 import { HEADERS } from "@/lib/headers";
+import { FONTS } from "@/lib/fonts";
 import { toast } from "sonner";
 import MaskPanel from "./MaskPanel";
 
@@ -51,6 +52,22 @@ export default function EditLayer() {
     link.href =
       "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
     document.head.appendChild(link);
+  }, [isAdmin]);
+
+  // Preload every font-style's webfont so the switcher swatches preview accurately.
+  useEffect(() => {
+    if (!isAdmin || typeof document === "undefined") return;
+    FONTS.forEach((f) =>
+      (f.hrefs || []).forEach((href, i) => {
+        const id = `edit-font-preview-${f.id}-${i}`;
+        if (document.getElementById(id)) return;
+        const link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = href;
+        document.head.appendChild(link);
+      })
+    );
   }, [isAdmin]);
 
   // hover + click capture while editing
@@ -163,7 +180,7 @@ const WEIGHTS = ["400", "500", "600", "700", "800"];
 const ALIGNS = ["left", "center", "right"];
 
 function EditPanel() {
-  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader } = useEditOverlay();
+  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont } = useEditOverlay();
   const current = selectedKey ? overrides.get(selectedKey) : undefined;
   const [text, setText] = useState("");
   const [instruction, setInstruction] = useState("");
@@ -293,6 +310,43 @@ function EditPanel() {
         </div>
         <small style={{ display: "block", marginTop: 8, color: "#7E7A6F", fontSize: 10 }}>
           Applies site-wide. Add more in <code>src/lib/headers.ts</code>.
+        </small>
+      </div>
+
+      {/* ── Permanent: Font switcher (site-wide) ── */}
+      <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(0,0,0,.10)" }}>
+        <p style={{ font: '600 10px "IBM Plex Mono", monospace', textTransform: "uppercase", letterSpacing: ".06em", color: "#7E7A6F", margin: "0 0 7px" }}>Font</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {FONTS.map((f) => {
+            const active = f.id === activeFontId;
+            return (
+              <button
+                key={f.id}
+                data-edit-ui=""
+                onClick={() => setActiveFont(f.id)}
+                title={f.pairing}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: 7,
+                  borderRadius: 10,
+                  cursor: "pointer",
+                  width: 84,
+                  border: active ? "2px solid #2D9255" : "1px solid rgba(0,0,0,.14)",
+                  background: active ? "#E7F2EA" : "#fff",
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, background: "#FBF8F0", border: "1px solid rgba(0,0,0,.08)", fontFamily: f.display, fontSize: 20, lineHeight: 1, color: "#15140F" }}>Aa</span>
+                <span style={{ font: '600 10px "Bricolage Grotesque", system-ui', color: active ? "#2D9255" : "#4B4842", textAlign: "center", lineHeight: 1.2 }}>{f.label}</span>
+                <span style={{ fontFamily: f.body, fontSize: 8.5, color: "#7E7A6F", textAlign: "center", lineHeight: 1.15, maxWidth: 76 }}>{f.pairing}</span>
+              </button>
+            );
+          })}
+        </div>
+        <small style={{ display: "block", marginTop: 8, color: "#7E7A6F", fontSize: 10 }}>
+          Applies site-wide — main + sub font per style. Add more in <code>src/lib/fonts.ts</code>.
         </small>
       </div>
 
