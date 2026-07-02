@@ -37,6 +37,14 @@ export async function onRequest(context) {
 
   // HAN-118: leaked CMS stub — _redirects rule wordt door Pages niet toegepast op deze route; hard 301 hier (middleware draait vóór asset/SPA-fallback).
   var reqPath = new URL(context.request.url).pathname;
+  var GONE_PREFIXES = ["/writing/one-man-just-liberated-fable"];
+  for (var gi = 0; gi < GONE_PREFIXES.length; gi++) {
+    if (reqPath.indexOf(GONE_PREFIXES[gi]) === 0) {
+      return Response.redirect("https://hansvanleeuwen.com/writing", 301);
+    }
+  }
+
+  // HAN-118: leaked CMS stub redirects
   if (reqPath === "/writing/untitled-3" || reqPath === "/writing/untitled-3/" || reqPath === "/writing/untitled" || reqPath === "/writing/untitled-2") {
     return Response.redirect("https://hansvanleeuwen.com/writing", 301);
   }
