@@ -1,0 +1,170 @@
+/* Music CMS — additions on top of the shared write-cms.css tokens.
+   Everything is scoped under .write-cms.music-cms so the Blog CMS is untouched. */
+
+.write-cms.music-cms .mc-notice {
+  margin-top: var(--s-4);
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--scheduled, #b58a2a);
+  background: var(--paper-2, #faf9f6);
+  font-size: 13px;
+  color: var(--ink-2);
+  border-radius: 6px;
+}
+.write-cms.music-cms .mc-notice code { font-family: var(--font-mono); font-size: 12px; }
+.write-cms.music-cms .mc-notice--error { border-left-color: #c0392b; color: #c0392b; }
+
+.write-cms.music-cms .mc-worksheet { display: grid; gap: 6px; margin-top: var(--s-4); }
+.write-cms.music-cms .mc-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  margin-top: var(--s-3);
+}
+.write-cms.music-cms .mc-textarea,
+.write-cms.music-cms .mc-lyrics {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper, #fff);
+  color: var(--ink-1, inherit);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.55;
+  resize: vertical;
+}
+.write-cms.music-cms .mc-textarea:focus,
+.write-cms.music-cms .mc-lyrics:focus { outline: 2px solid var(--ink-3); outline-offset: 1px; }
+
+.write-cms.music-cms .mc-section-h {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: var(--s-6) 0 var(--s-3);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.write-cms.music-cms .mc-toggle {
+  border: none;
+  background: none;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.write-cms.music-cms .mc-toggle:hover { color: var(--ink-1); }
+
+/* Template picker */
+.write-cms.music-cms .tpl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+.write-cms.music-cms .tpl-card {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper, #fff);
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.write-cms.music-cms .tpl-card:hover { border-color: var(--ink-3); }
+.write-cms.music-cms .tpl-card.on {
+  border-color: var(--ink-1, #111);
+  box-shadow: 0 0 0 1px var(--ink-1, #111);
+}
+.write-cms.music-cms .tpl-artist {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+.write-cms.music-cms .tpl-name { font-size: 14px; font-weight: 600; }
+.write-cms.music-cms .tpl-tagline { font-size: 12px; color: var(--ink-2); line-height: 1.45; }
+
+/* Lyrics paper */
+.write-cms.music-cms .mc-paper { padding: 0; overflow: hidden; }
+.write-cms.music-cms .mc-lyrics {
+  border: none;
+  border-radius: 0;
+  min-height: 320px;
+  padding: 20px 22px;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+.write-cms.music-cms .mc-lyrics:focus { outline: none; }
+
+/* Rail: prompt preview */
+.write-cms.music-cms .mc-pre {
+  margin-top: 10px;
+  max-height: 260px;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper-2, #faf9f6);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink-2);
+}
+.write-cms.music-cms .mc-pre--method { max-height: none; font-size: 11.5px; }
+.write-cms.music-cms .mc-pre--master { max-height: 480px; font-size: 11px; }
+.write-cms.music-cms .mc-rail-note { font-size: 12px; color: var(--ink-2); line-height: 1.5; margin: 8px 0; }
+.write-cms.music-cms .mc-phases {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+
+/* Songs table extras */
+.write-cms.music-cms .mc-row-del {
+  border: none;
+  background: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.write-cms.music-cms .mc-row-del:hover { color: #c0392b; background: rgba(192, 57, 43, 0.08); }
+
+/* Voices mode */
+.write-cms.music-cms .mc-voice-list { display: grid; gap: 8px; margin-top: var(--s-4); }
+.write-cms.music-cms .mc-voice { border: 1px solid var(--line); border-radius: 8px; background: var(--paper, #fff); }
+.write-cms.music-cms .mc-voice.open { border-color: var(--ink-3); }
+.write-cms.music-cms .mc-voice-head {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.write-cms.music-cms .mc-voice-body { padding: 0 14px 14px; display: grid; gap: 8px; justify-items: start; }
+
+/* Auth gate */
+.write-cms.music-cms .mc-gate {
+  display: grid;
+  place-items: center;
+  min-height: 50vh;
+  text-align: center;
+  padding: var(--s-6);
+}
+.write-cms.music-cms .mc-gate p { color: var(--ink-2); font-size: 14px; max-width: 420px; margin: 10px auto 18px; }
