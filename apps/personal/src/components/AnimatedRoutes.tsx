@@ -26,6 +26,10 @@ import SamanthaAI from "@/pages/SamanthaAI";
    BlogCMS is kept for /blog-cms/voice/:id route only (VoiceTemplateEditor still uses it). */
 const WriteCMS = lazy(() => import(/* webpackChunkName: "write-cms" */ "@/pages/WriteCMS"));
 
+/* MusicCMS — songwriter Command Center op /music-cms, zusje van /write.
+   Lazy-loaded en buiten de SSR-bundel, zelfde patroon als WriteCMS. */
+const MusicCMS = lazy(() => import(/* webpackChunkName: "music-cms" */ "@/pages/MusicCMS"));
+
 /* BlogCMS is lazy-loaded and excluded from the SSR bundle.
    During prerender (typeof window === "undefined"), the fallback renders instead. */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
@@ -63,6 +67,8 @@ const AnimatedRoutes = () => {
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
         <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/write/:id" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
+        <Route path="/music-cms" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
+        <Route path="/music-cms/:id" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
         <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
