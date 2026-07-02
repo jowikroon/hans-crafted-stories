@@ -23,6 +23,7 @@ export interface BlogPostRow {
   canonical_url: string;
   primary_keyword: string;
   scheduled_at: string | null;
+  masking?: import("@/lib/masking").MaskingConfig | null;
   created_at: string;
   updated_at: string;
 }

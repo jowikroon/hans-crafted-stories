@@ -5,6 +5,7 @@ import { createChangeRequest } from "@/lib/api/overrides";
 import { LOGOS } from "@/lib/logos";
 import { HEADERS } from "@/lib/headers";
 import { toast } from "sonner";
+import MaskPanel from "./MaskPanel";
 
 const UI_ATTR = "data-edit-ui";
 const Z = 2147483000;
@@ -91,6 +92,9 @@ export default function EditLayer() {
 
   return (
     <>
+      {/* Per-artikel data-masking (alleen op /writing/:slug) */}
+      <MaskPanel />
+
       {/* Floating toggle */}
       <button
         data-edit-ui=""
