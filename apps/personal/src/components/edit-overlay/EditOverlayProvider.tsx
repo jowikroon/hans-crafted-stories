@@ -151,6 +151,13 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
         if (o.text_override == null || o.text_override === "") return;
         const sel = o.selector || `[data-lov-id="${o.element_key}"]`;
         document.querySelectorAll(sel).forEach((el) => {
+          // Guardrail (2026-07-03 incident): een text-override op een structureel
+          // container-element (zoals #root) vervangt de hele DOM-boom door platte
+          // tekst en sloopt de site. Sla overrides op containers en extreem lange
+          // teksten over — text-overrides zijn bedoeld voor leaf-elementen.
+          if (el.id === "root" || el.tagName === "BODY" || el.tagName === "HTML") return;
+          if (el.children.length > 3) return;
+          if ((o.text_override as string).length > 2000) return;
           if (el.textContent !== o.text_override) el.textContent = o.text_override!;
         });
       });
