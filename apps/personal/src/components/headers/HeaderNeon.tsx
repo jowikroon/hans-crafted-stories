@@ -271,7 +271,7 @@ const HeaderNeon = (_props: NavbarProps) => {
                           </div>
                           <p className="px-4 pt-2.5 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F]">{t.workspace.label}</p>
                           <div className="pb-1">
-                            <a href="/write" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><PenLine size={15} /> {t.workspace.blogCms}</a>
+                            <Link to="/write" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><PenLine size={15} /> {t.workspace.blogCms}</Link>
                             <Link to="/samantha" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Sparkles size={15} /> {t.workspace.samantha}<span className="ml-auto text-[9px] font-mono text-[#7E7A6F]">⌘J</span></Link>
                             <Link to="/portal" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><LayoutDashboard size={15} /> {t.workspace.portal}</Link>
                             <Link to="/wiki" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BookOpen size={15} /> {t.workspace.docs}</Link>
@@ -324,7 +324,7 @@ const HeaderNeon = (_props: NavbarProps) => {
                 {user ? (
                   <>
                     <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F]">{t.workspace.label}</p>
-                    <a href="/write" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><PenLine size={14} /> {t.workspace.blogCms}</a>
+                    <Link to="/write" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><PenLine size={14} /> {t.workspace.blogCms}</Link>
                     <Link to="/samantha" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><Sparkles size={14} /> {t.workspace.samantha}</Link>
                     <Link to="/portal" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><LayoutDashboard size={14} /> {t.workspace.portal}</Link>
                     <Link to="/wiki" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><BookOpen size={14} /> {t.workspace.docs}</Link>

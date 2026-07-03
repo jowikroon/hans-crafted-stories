@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode, type CSSProperties } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import Navbar from "@/components/Navbar";
 import coverImg from "@/assets/nhog-cover.jpeg";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -239,8 +238,7 @@ const ReleaseSet = () => {
 
   return (
     <div style={{ minHeight: "100vh", background: "#07080C", fontFamily: FONT_BODY }}>
-      <Navbar />
-      <div style={{ paddingTop: 96 }}>
+      <div style={{ paddingTop: 8 }}>
         {/* ═══ Hero ═══ */}
         <section style={{ display: "flex", flexDirection: "column", gap: 8, padding: "48px 48px 0" }}>
           <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 800, fontSize: 28, color: "#F4F7FF", textTransform: "uppercase" }}>
