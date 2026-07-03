@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -64,6 +65,10 @@ interface EditOverlayValue {
   saveStyle: (patch: OverrideStyle) => Promise<void>;
   saveText: (text: string | null) => Promise<void>;
   revert: () => Promise<void>;
+  /** Maak de laatste wijziging in deze sessie ongedaan (undo-stack). */
+  undoLast: () => Promise<boolean>;
+  /** Aantal wijzigingen in de sessie-undo-stack. */
+  undoCount: number;
   reloadOverrides: () => Promise<void>;
   /** Active header logo id (site-wide setting). */
   activeLogoId: string;
@@ -93,6 +98,17 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
   const [overrides, setOverrides] = useState<Map<string, PageOverride>>(new Map());
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [selectedEl, setSelectedEl] = useState<HTMLElement | null>(null);
+
+  // ── Sessie-undo-stack: vorige staat per gewijzigde key (null = key bestond niet) ──
+  const undoStack = useRef<{ key: string; prev: PageOverride | null }[]>([]);
+  const [undoCount, setUndoCount] = useState(0);
+  const pushUndo = useCallback((key: string, prev: PageOverride | null) => {
+    undoStack.current.push(
+      prev ? { key, prev: { ...prev, style: { ...(prev.style || {}) } } } : { key, prev: null }
+    );
+    if (undoStack.current.length > 50) undoStack.current.shift();
+    setUndoCount(undoStack.current.length);
+  }, []);
 
   const reloadOverrides = useCallback(async () => {
     const list = await getOverrides();
@@ -172,6 +188,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       if (!selectedEl) return;
       const { key, selector } = keyForElement(selectedEl);
       const existing = overrides.get(key);
+      pushUndo(key, existing ?? null);
       const merged: PageOverride = {
         element_key: key,
         selector,
@@ -183,7 +200,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       upsertLocal(merged);
       await apiSave(merged);
     },
-    [selectedEl, overrides, upsertLocal]
+    [selectedEl, overrides, upsertLocal, pushUndo]
   );
 
   const saveText = useCallback(
@@ -191,6 +208,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       if (!selectedEl) return;
       const { key, selector } = keyForElement(selectedEl);
       const existing = overrides.get(key);
+      pushUndo(key, existing ?? null);
       const merged: PageOverride = {
         element_key: key,
         selector,
@@ -202,18 +220,38 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       upsertLocal(merged);
       await apiSave(merged);
     },
-    [selectedEl, overrides, upsertLocal]
+    [selectedEl, overrides, upsertLocal, pushUndo]
   );
 
   const revert = useCallback(async () => {
     if (!selectedKey) return;
+    const existing = overrides.get(selectedKey);
+    if (existing) pushUndo(selectedKey, existing);
     setOverrides((prev) => {
       const next = new Map(prev);
       next.delete(selectedKey);
       return next;
     });
     await apiDelete(selectedKey);
-  }, [selectedKey]);
+  }, [selectedKey, overrides, pushUndo]);
+
+  const undoLast = useCallback(async () => {
+    const entry = undoStack.current.pop();
+    setUndoCount(undoStack.current.length);
+    if (!entry) return false;
+    if (entry.prev) {
+      upsertLocal(entry.prev);
+      await apiSave(entry.prev);
+    } else {
+      setOverrides((prev) => {
+        const next = new Map(prev);
+        next.delete(entry.key);
+        return next;
+      });
+      await apiDelete(entry.key);
+    }
+    return true;
+  }, [upsertLocal]);
 
   const activeLogoId = overrides.get(LOGO_SETTING_KEY)?.text_override || DEFAULT_LOGO_ID;
 
@@ -322,6 +360,8 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       saveStyle,
       saveText,
       revert,
+      undoLast,
+      undoCount,
       reloadOverrides,
       activeLogoId,
       setActiveLogo,
@@ -332,7 +372,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       navItems,
       setNavItems,
     }),
-    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont, navItems, setNavItems]
+    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, undoLast, undoCount, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont, navItems, setNavItems]
   );
 
   return (
