@@ -11,6 +11,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { logoById } from "@/lib/logos";
 import { useActiveLogo } from "@/contexts/LogoContext";
+import { useNavMenu } from "@/contexts/NavMenuContext";
 
 const THEME_KEY = "site_theme";
 
@@ -57,12 +58,13 @@ const Navbar = (_props: NavbarProps) => {
   }, [siteTheme]);
 
   /* ── Nav model ── */
+  /* Editable header menu (Design mode in /write); defaults mirror the old
+     hardcoded list, so nothing changes until Hans customises it. */
+  const { navItems } = useNavMenu();
   const siteLinks = [
-    { to: "/", label: t.home },
-    { to: "/work", label: t.work },
-    { to: "/writing", label: t.writing },
-    { to: "/music", label: t.music },
-    { to: "/about", label: t.about },
+    ...navItems
+      .filter((i) => i.visible)
+      .map((i) => ({ to: i.to, label: (lang === "nl" ? i.labelNl : i.labelEn) || i.labelNl || i.labelEn })),
     ...(user ? [{ to: "/write", label: t.commandCenter, cc: true }] : []),
   ];
 
