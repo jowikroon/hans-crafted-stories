@@ -150,9 +150,152 @@ export default function EditLayer() {
           {hoverRect && <Outline rect={hoverRect} color="#F5C400" dashed />}
           {selRect && <Outline rect={selRect} color="#C2410C" />}
           <EditPanel />
+          <QuickActions />
         </>
       )}
     </>
+  );
+}
+
+/* ── Rechtsklik quick-actions ──
+   In edit mode opent rechtsklik een kleine pill boven-links van de cursor
+   (minimale muisafstand): ↶ = stap terug (sessie-undo), ✕ = klaar met bewerken.
+   Verdwijnt bij intentioneel doorscrollen of een tweede rechtsklik; Escape sluit ook. */
+const QA_W = 94;
+const QA_H = 46;
+
+function QuickActions() {
+  const { setEditing, select, undoLast, undoCount } = useEditOverlay();
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+
+  // Keyframes + hover-gedrag eenmalig injecteren
+  useEffect(() => {
+    const id = "edit-qa-style";
+    if (document.getElementById(id)) return;
+    const tag = document.createElement("style");
+    tag.id = id;
+    tag.textContent = [
+      "@keyframes editQaIn{from{opacity:0;transform:translateY(7px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}",
+      "[data-edit-qa] button{transition:transform .15s ease, background .15s ease, opacity .15s ease}",
+      "[data-edit-qa] button:hover{transform:scale(1.12);background:#fff}",
+      "[data-edit-qa] button:active{transform:scale(.96)}",
+    ].join("\n");
+    document.head.appendChild(tag);
+  }, []);
+
+  // Rechtsklik: toggle. Open boven-links van de cursor, geclampt binnen viewport.
+  useEffect(() => {
+    const onCtx = (e: MouseEvent) => {
+      if (isOurUI(e.target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setPos((p) => {
+        if (p) return null; // tweede rechtsklik → weer weg
+        const x = Math.min(Math.max(e.clientX - QA_W + 24, 8), window.innerWidth - QA_W - 8);
+        const y = Math.max(e.clientY - QA_H - 10, 8);
+        return { x, y };
+      });
+    };
+    document.addEventListener("contextmenu", onCtx, true);
+    return () => document.removeEventListener("contextmenu", onCtx, true);
+  }, []);
+
+  // Doorscrollen met intentie (cumulatief > drempel) → pill verdwijnt. Escape sluit direct.
+  useEffect(() => {
+    if (!pos) return;
+    let acc = 0;
+    let lastY = window.scrollY;
+    const bump = (d: number) => {
+      acc += Math.abs(d);
+      if (acc > 48) setPos(null);
+    };
+    const onWheel = (e: WheelEvent) => bump(Math.abs(e.deltaY) + Math.abs(e.deltaX));
+    const onScroll = () => {
+      bump(window.scrollY - lastY);
+      lastY = window.scrollY;
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPos(null);
+    };
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [pos]);
+
+  if (!pos) return null;
+
+  const btn: React.CSSProperties = {
+    display: "grid",
+    placeItems: "center",
+    width: 34,
+    height: 34,
+    borderRadius: "50%",
+    border: "1px solid rgba(0,0,0,.12)",
+    background: "#FBF8F0",
+    color: "#15140F",
+    cursor: "pointer",
+    padding: 0,
+  };
+
+  return (
+    <div
+      data-edit-ui=""
+      data-edit-qa=""
+      role="menu"
+      aria-label="Edit quick actions"
+      style={{
+        position: "fixed",
+        left: pos.x,
+        top: pos.y,
+        zIndex: Z + 1,
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: 6,
+        borderRadius: 100,
+        background: "#15140F",
+        boxShadow: "0 10px 30px rgba(0,0,0,.28)",
+        animation: "editQaIn .18s cubic-bezier(.2,.9,.3,1.2) both",
+      }}
+    >
+      <button
+        title={undoCount ? "Stap terug — laatste wijziging ongedaan maken" : "Niets om terug te zetten"}
+        aria-label="Stap terug"
+        onClick={async () => {
+          const ok = await undoLast();
+          if (ok) {
+            toast.success("Laatste wijziging teruggezet");
+          } else {
+            toast("Niets om terug te zetten");
+          }
+        }}
+        style={{ ...btn, opacity: undoCount ? 1 : 0.45 }}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 14 4 9l5-5" />
+          <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+        </svg>
+      </button>
+      <button
+        title="Klaar met bewerken"
+        aria-label="Klaar met bewerken"
+        onClick={() => {
+          setEditing(false);
+          select(null);
+          setPos(null);
+        }}
+        style={btn}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
   );
 }
 
