@@ -4,6 +4,16 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/writing/one-man-just-liberated-fable-and-now-it-s-illegal",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/writing/one-man-just-liberated-fable-and-now-it-s-illegal-:suffix",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
       "source": "/blog-cms",
       "destination": "/write",
       "permanent": false
