@@ -99,6 +99,19 @@ const Navbar = (_props: NavbarProps) => {
 
   const isCommandCenter = location.pathname.startsWith("/write");
 
+  /* Bar theme — follows the global dark toggle so header items stay visible in
+     dark designs, but stays light on /write to match the always-light CMS. */
+  const barDark = siteTheme === "dark" && !isCommandCenter;
+  const barInk = barDark ? "text-[#F5F1E6]" : "text-[#15140F]";
+  const barMut = barDark ? "text-[#B4AE9F]" : "text-[#7E7A6F]";
+  const barHovInk = barDark ? "hover:text-white" : "hover:text-[#15140F]";
+  const barHovBg = barDark ? "hover:bg-white/10" : "hover:bg-[#E5DFCE]";
+  const barBord = barDark ? "border-white/15" : "border-black/10";
+  const barSep = barDark ? "text-white/25" : "text-black/20";
+  const barPill = barDark ? "border-white/10 bg-[hsl(240,10%,7%)]/90" : "border-black/10 bg-[#F1ECDF]/90";
+  const barChip = barDark ? "bg-white/10" : "bg-[#E5DFCE]";
+  const barAvatar = barDark ? "bg-[#F5F1E6] text-[#15140F]" : "bg-[#15140F] text-[#F1ECDF]";
+
   /* ── Effects ── */
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -140,7 +153,7 @@ const Navbar = (_props: NavbarProps) => {
     <Link
       to={to}
       className={`relative px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${
-        active ? "text-[#15140F]" : "text-[#7E7A6F] hover:text-[#15140F]"
+        active ? barInk : `${barMut} ${barHovInk}`
       }`}
     >
       {label}
@@ -189,7 +202,7 @@ const Navbar = (_props: NavbarProps) => {
       <nav aria-label="Primary navigation" className="fixed left-0 right-0 top-0 z-50 w-full">
         {/* ─── TIER 1 — detached pill ─── */}
         <div
-          className={`mx-auto mt-3.5 grid grid-cols-[1fr_auto_1fr] items-center h-[60px] max-w-6xl rounded-[100px] border border-black/10 bg-[#F1ECDF]/90 px-4 backdrop-blur-xl transition-shadow dark:border-white/10 dark:bg-[hsl(240,10%,6%)]/90 ${
+          className={`mx-auto mt-3.5 grid grid-cols-[1fr_auto_1fr] items-center h-[60px] max-w-6xl rounded-[100px] border ${barPill} px-4 backdrop-blur-xl transition-shadow ${
             scrolled
               ? "shadow-[0_3px_9px_-3px_rgba(20,19,15,0.18),0_20px_46px_-22px_rgba(20,19,15,0.32)]"
               : "shadow-[0_2px_6px_-3px_rgba(20,19,15,0.12),0_14px_34px_-20px_rgba(20,19,15,0.22)]"
@@ -197,7 +210,7 @@ const Navbar = (_props: NavbarProps) => {
           style={{ width: "calc(100% - 36px)" }}
         >
             {/* Brand */}
-            <Link to="/" className="group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight text-[#15140F]">
+            <Link to="/" className={`group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight ${barInk}`}>
               <img src={logoSrc} alt="Hans van Leeuwen — Freelance E-commerce Manager" width={30} height={30} className="h-[30px] w-[30px] rounded-md object-contain transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" />
               <span className="hidden sm:inline-flex items-center">
                 Hans van Leeuwen
@@ -225,23 +238,23 @@ const Navbar = (_props: NavbarProps) => {
 
             {/* Right cluster */}
             <div className="flex items-center gap-1.5 sm:gap-2.5 justify-self-end">
-              <button onClick={() => setSearchOpen(true)} className="rounded-full p-2 text-[#7E7A6F] hover:text-[#15140F] hover:bg-[#E5DFCE] transition-all" aria-label={t.search}>
+              <button onClick={() => setSearchOpen(true)} className={`rounded-full p-2 ${barMut} ${barHovInk} ${barHovBg} transition-all`} aria-label={t.search}>
                 <Search size={16} />
               </button>
-              <button onClick={() => setSiteTheme(siteTheme === "dark" ? "light" : "dark")} className="rounded-full p-2 text-[#7E7A6F] hover:text-[#15140F] hover:bg-[#E5DFCE] transition-all" aria-label={siteTheme === "dark" ? "Light mode" : "Dark mode"}>
+              <button onClick={() => setSiteTheme(siteTheme === "dark" ? "light" : "dark")} className={`rounded-full p-2 ${barMut} ${barHovInk} ${barHovBg} transition-all`} aria-label={siteTheme === "dark" ? "Light mode" : "Dark mode"}>
                 {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               <div className="hidden sm:flex items-center gap-0.5 font-mono text-xs">
-                <button onClick={() => setLang("nl")} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? "text-[#15140F] font-semibold" : "text-[#7E7A6F] hover:text-[#15140F]"}`}>NL</button>
-                <span className="text-black/20">|</span>
-                <button onClick={() => setLang("en")} className={`px-1.5 py-0.5 rounded ${lang === "en" ? "text-[#15140F] font-semibold" : "text-[#7E7A6F] hover:text-[#15140F]"}`}>ENG</button>
+                <button onClick={() => setLang("nl")} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</button>
+                <span className={barSep}>|</span>
+                <button onClick={() => setLang("en")} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</button>
               </div>
 
               {/* Account chip (logged-in) or Login pill */}
               {user ? (
                 <div className="relative hidden sm:block">
-                  <button onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? "border-[#2D9255] bg-[#E5DFCE]" : "border-black/10 text-[#15140F] hover:bg-[#E5DFCE]"}`}>
-                    <span className="grid h-6 w-6 place-items-center rounded-full bg-[#15140F] text-[11px] font-mono font-semibold text-[#F1ECDF]">{firstName.charAt(0).toLowerCase()}</span>
+                  <button onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? `border-[#2D9255] ${barChip}` : `${barBord} ${barInk} ${barHovBg}`}`}>
+                    <span className={`grid h-6 w-6 place-items-center rounded-full ${barAvatar} text-[11px] font-mono font-semibold`}>{firstName.charAt(0).toLowerCase()}</span>
                     <span className="max-w-[90px] truncate">{firstName}</span>
                     <ChevronDown size={12} className={`transition-transform ${profileOpen ? "rotate-180" : ""}`} />
                   </button>
@@ -272,12 +285,12 @@ const Navbar = (_props: NavbarProps) => {
                   </AnimatePresence>
                 </div>
               ) : (
-                <Link to="/portal" className="hidden sm:inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-1.5 text-sm font-medium text-[#15140F] hover:bg-[#E5DFCE] transition-all">
+                <Link to="/portal" className={`hidden sm:inline-flex items-center gap-2 rounded-full border ${barBord} px-4 py-1.5 text-sm font-medium ${barInk} ${barHovBg} transition-all`}>
                   <LogIn size={14} /><span>{t.login}</span>
                 </Link>
               )}
 
-              <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden rounded-lg p-1.5 text-[#15140F]" aria-label="Toggle menu">
+              <button onClick={() => setMobileOpen(!mobileOpen)} className={`md:hidden rounded-lg p-1.5 ${barInk}`} aria-label="Toggle menu">
                 {mobileOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
@@ -286,33 +299,33 @@ const Navbar = (_props: NavbarProps) => {
         {/* ═══ MOBILE MENU — floating panel under the pill ═══ */}
         <AnimatePresence>
           {mobileOpen && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ width: "calc(100% - 36px)" }} className="mx-auto mt-2 overflow-hidden rounded-2xl border border-black/10 bg-[#F1ECDF] shadow-[0_18px_46px_-22px_rgba(20,19,15,0.4)] dark:border-white/10 dark:bg-[hsl(40,8%,9%)] md:hidden">
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ width: "calc(100% - 36px)" }} className={`mx-auto mt-2 overflow-hidden rounded-2xl border ${barDark ? "border-white/10 bg-[hsl(240,8%,9%)]" : "border-black/10 bg-[#F1ECDF]"} shadow-[0_18px_46px_-22px_rgba(20,19,15,0.4)] md:hidden`}>
               <div className="flex flex-col gap-1 px-4 py-4">
                 {/* Top-level links only — no sub-items/children in the mobile menu */}
                 {siteLinks.map((l) => {
                   const cc = (l as { cc?: boolean }).cc;
                   const active = cc ? isCommandCenter : isActive(l.to);
                   return (
-                    <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : "bg-[#E5DFCE] text-[#15140F]") : "text-[#7E7A6F] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"}`}>{l.label}</Link>
+                    <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : `${barChip} ${barInk}`) : `${barMut} ${barHovBg} ${barHovInk}`}`}>{l.label}</Link>
                   );
                 })}
 
-                <div className="my-1 h-px bg-black/10" />
+                <div className={`my-1 h-px ${barDark ? "bg-white/10" : "bg-black/10"}`} />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
-                  <button onClick={() => setLang("nl")} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? "text-[#15140F] font-semibold" : "text-[#7E7A6F]"}`}>NL</button>
-                  <span className="text-black/20">|</span>
-                  <button onClick={() => setLang("en")} className={`px-1.5 py-0.5 rounded ${lang === "en" ? "text-[#15140F] font-semibold" : "text-[#7E7A6F]"}`}>ENG</button>
+                  <button onClick={() => setLang("nl")} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</button>
+                  <span className={barSep}>|</span>
+                  <button onClick={() => setLang("en")} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</button>
                 </div>
 
                 {user ? (
                   <>
-                    <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F]">{t.workspace.label}</p>
-                    <Link to="/write" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><PenLine size={14} /> {t.workspace.blogCms}</Link>
-                    <Link to="/release-set" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><Disc3 size={14} /> Release Set</Link>
-                    <Link to="/samantha" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><Sparkles size={14} /> {t.workspace.samantha}</Link>
-                    <Link to="/portal" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><LayoutDashboard size={14} /> {t.workspace.portal}</Link>
-                    <Link to="/wiki" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><BookOpen size={14} /> {t.workspace.docs}</Link>
-                    {isAdmin && <Link to="/god-structure" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#4B4842] hover:bg-[#E5DFCE]/60 hover:text-[#15140F]"><Network size={14} /> {t.workspace.dashboard}</Link>}
+                    <p className={`px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold ${barMut}`}>{t.workspace.label}</p>
+                    <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><PenLine size={14} /> {t.workspace.blogCms}</Link>
+                    <Link to="/release-set" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Disc3 size={14} /> Release Set</Link>
+                    <Link to="/samantha" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Sparkles size={14} /> {t.workspace.samantha}</Link>
+                    <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><LayoutDashboard size={14} /> {t.workspace.portal}</Link>
+                    <Link to="/wiki" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BookOpen size={14} /> {t.workspace.docs}</Link>
+                    {isAdmin && <Link to="/god-structure" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Network size={14} /> {t.workspace.dashboard}</Link>}
                     <button onClick={() => { signOut(); setMobileOpen(false); }} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#C2410C] hover:bg-[#C2410C]/10 w-full text-left"><LogOut size={14} /> {t.workspace.signOut}</button>
                   </>
                 ) : (
