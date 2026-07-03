@@ -1874,3 +1874,71 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
   color: var(--ink-soft, #6b6b6b);
   opacity: 0.85;
 }
+
+/* ==================== ERVARINGEN V2 — FOGG GEDRAGSLAAG ==================== */
+/* Bank Pulse — motivatie: gate-dekking in één oogopslag */
+.write-cms .exp-pulse { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; margin-top: var(--s-5); padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--bg-1); }
+.write-cms .exp-pulse-pct { font-family: var(--font-mono); font-size: 26px; font-weight: 600; line-height: 1; color: var(--accent); }
+.write-cms .exp-pulse-meta { display: flex; flex-direction: column; gap: 5px; }
+.write-cms .exp-pulse-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.write-cms .exp-pulse-bar { width: 130px; height: 6px; border-radius: 3px; background: var(--bg-2); border: 1px solid var(--line); overflow: hidden; }
+.write-cms .exp-pulse-bar span { display: block; height: 100%; background: var(--accent); transition: width var(--t-base); }
+.write-cms .exp-pulse-gates { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.write-cms .exp-gate-chip { font-family: var(--font-mono); font-size: 11px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-inset, var(--bg-2)); color: var(--ink-1); transition: border-color 120ms, transform 120ms; }
+.write-cms .exp-gate-chip:hover { border-color: var(--ink-0); transform: translateY(-1px); }
+.write-cms .exp-gate-chip.hungry { color: var(--draft); border-color: var(--draft); background: var(--draft-soft); font-weight: 600; }
+
+/* Gate-honger nudge — prompt met one-tap prefill */
+.write-cms .exp-nudge { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: var(--s-3); padding: 12px 16px; border: 1.5px dashed var(--draft); border-radius: var(--r-2); background: var(--draft-soft); }
+.write-cms .exp-nudge-txt { font-size: 13px; color: var(--ink-0); }
+.write-cms .exp-nudge-txt strong { font-family: var(--font-mono); font-size: 12px; }
+.write-cms .exp-nudge-btn { font-weight: 700; font-size: 12.5px; padding: 8px 12px; border: 1.5px solid var(--ink-0); border-radius: var(--r-1); background: var(--bg-1); box-shadow: var(--shadow-stamp-sm); transition: transform 120ms, box-shadow 120ms; }
+.write-cms .exp-nudge-btn:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink-0); }
+
+/* Quick Capture — ability: één zin is genoeg */
+.write-cms .exp-capture { display: flex; gap: 6px; }
+.write-cms .exp-capture input { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 12.5px; background: var(--bg-inset, var(--bg-2)); border: 1.5px solid var(--ink-0); border-radius: var(--r-2); padding: 10px 11px; transition: border-color 120ms, box-shadow 120ms; }
+.write-cms .exp-capture input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft, transparent); }
+.write-cms .exp-capture-go { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12px; padding: 0 11px; border: 1.5px solid var(--ink-0); border-radius: var(--r-2); background: var(--accent); color: var(--accent-fg); }
+.write-cms .exp-capture-go:disabled { opacity: 0.5; cursor: default; }
+.write-cms .exp-capture-go .kbd { font-family: var(--font-mono); font-size: 9px; border: 1px solid currentColor; border-radius: 4px; padding: 1px 4px; opacity: 0.85; }
+
+/* Zoek + Zeigarnik "onvolledig"-filter */
+.write-cms .exp-tools { display: flex; gap: 6px; }
+.write-cms .exp-search { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 12px; background: var(--bg-1); border: 1px solid var(--line); border-radius: var(--r-2); padding: 8px 10px; transition: border-color 120ms; }
+.write-cms .exp-search:focus { border-color: var(--accent); }
+.write-cms .exp-filter { font-family: var(--font-mono); font-size: 11px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--bg-1); color: var(--ink-1); white-space: nowrap; transition: border-color 120ms, color 120ms; }
+.write-cms .exp-filter.on { border-color: var(--draft); color: var(--draft); background: var(--draft-soft); font-weight: 600; }
+
+/* Completeness dots 0–4 — half af is oké */
+.write-cms .exp-dots { display: inline-flex; gap: 4px; align-items: center; flex: none; }
+.write-cms .exp-dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-3); background: transparent; transition: background 160ms, border-color 160ms; }
+.write-cms .exp-dot.on { background: var(--accent); border-color: var(--accent); }
+.write-cms .exp-dots--sm .exp-dot { width: 6px; height: 6px; border-width: 1px; }
+.write-cms .exp-complete { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.write-cms .exp-complete-l { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); }
+.write-cms .exp-complete-badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-fg); background: var(--accent); border-radius: 999px; padding: 3px 8px; animation: exp-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes exp-pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* Tag-suggesties — deterministische keyword-extractie, geen AI */
+.write-cms .exp-tag-suggest { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+.write-cms .exp-tag-suggest-l { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.write-cms .exp-tag-chip { font-family: var(--font-mono); font-size: 11px; padding: 3px 8px; border: 1px dashed var(--line-strong); border-radius: 999px; background: var(--bg-1); color: var(--ink-1); transition: color 120ms, border-color 120ms; }
+.write-cms .exp-tag-chip:hover { border-style: solid; color: var(--ink-0); }
+
+/* Rij-metadata: gate-label naast de snippet */
+.write-cms .exp-row-gate { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-2); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; margin-right: 6px; }
+
+/* Mobiel ≤720px: één-paneel-flow + sticky save-bar */
+.write-cms .exp-back { display: none; }
+.write-cms .exp-savebar { display: none; }
+@media (max-width: 720px) {
+  .write-cms .exp-grid.m-editor .voice-list { display: none; }
+  .write-cms .exp-grid.m-list .voice-editor { display: none; }
+  .write-cms .exp-grid .voice-list { position: static; }
+  .write-cms .exp-back { display: inline-flex; align-self: flex-start; font-family: var(--font-mono); font-size: 12px; color: var(--ink-1); padding: 4px 0; margin-bottom: 4px; }
+  .write-cms .exp-back:hover { color: var(--ink-0); }
+  .write-cms .exp-savebar { display: flex; align-items: center; gap: 10px; position: sticky; bottom: 0; z-index: 20; margin-top: var(--s-3); padding: 10px 14px; background: var(--bg-1); border-top: 1.5px solid var(--ink-0); }
+  .write-cms .exp-savebar-state { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); margin-right: auto; }
+  .write-cms .exp-pulse-gates { margin-left: 0; }
+}

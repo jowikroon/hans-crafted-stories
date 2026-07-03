@@ -424,6 +424,7 @@ export type Database = {
           archived_at: string | null
           category: string | null
           client: string | null
+          client_masked: string | null
           created_at: string | null
           gate_type: string | null
           id: string
@@ -431,6 +432,8 @@ export type Database = {
           last_used_at: string | null
           lesson: string | null
           metrics: string | null
+          metrics_general: string | null
+          metrics_masked: string | null
           situation: string
           tags: string[] | null
           theme: string | null
@@ -442,6 +445,7 @@ export type Database = {
           archived_at?: string | null
           category?: string | null
           client?: string | null
+          client_masked?: string | null
           created_at?: string | null
           gate_type?: string | null
           id?: string
@@ -449,6 +453,8 @@ export type Database = {
           last_used_at?: string | null
           lesson?: string | null
           metrics?: string | null
+          metrics_general?: string | null
+          metrics_masked?: string | null
           situation: string
           tags?: string[] | null
           theme?: string | null
@@ -460,6 +466,7 @@ export type Database = {
           archived_at?: string | null
           category?: string | null
           client?: string | null
+          client_masked?: string | null
           created_at?: string | null
           gate_type?: string | null
           id?: string
@@ -467,6 +474,8 @@ export type Database = {
           last_used_at?: string | null
           lesson?: string | null
           metrics?: string | null
+          metrics_general?: string | null
+          metrics_masked?: string | null
           situation?: string
           tags?: string[] | null
           theme?: string | null
