@@ -19,6 +19,8 @@ import { DEFAULT_FONT_ID, FONT_SETTING_KEY, fontById } from "@/lib/fonts";
 import { LogoProvider } from "@/contexts/LogoContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
 import { FontProvider } from "@/contexts/FontContext";
+import { NavMenuProvider } from "@/contexts/NavMenuContext";
+import { NAV_SETTING_KEY, parseNavSetting, serializeNavSetting, type NavMenuItem } from "@/lib/navMenu";
 
 const STYLE_TAG_ID = "page-overrides-style";
 
@@ -72,6 +74,9 @@ interface EditOverlayValue {
   /** Active font style id (site-wide setting). */
   activeFontId: string;
   setActiveFont: (id: string) => Promise<void>;
+  /** Editable header menu (site-wide setting). */
+  navItems: NavMenuItem[];
+  setNavItems: (items: NavMenuItem[]) => Promise<void>;
 }
 
 const Ctx = createContext<EditOverlayValue | null>(null);
@@ -264,6 +269,24 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     [upsertLocal]
   );
 
+  const navItems = parseNavSetting(overrides.get(NAV_SETTING_KEY)?.text_override);
+
+  const setNavItems = useCallback(
+    async (items: NavMenuItem[]) => {
+      const row: PageOverride = {
+        element_key: NAV_SETTING_KEY,
+        selector: null,
+        page_path: "*",
+        label: "Header menu",
+        text_override: serializeNavSetting(items),
+        style: {},
+      };
+      upsertLocal(row);
+      await apiSave(row);
+    },
+    [upsertLocal]
+  );
+
   // ── Apply the active FONT style site-wide (CSS vars + on-demand webfont) ──
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -306,15 +329,19 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       setActiveHeader,
       activeFontId,
       setActiveFont,
+      navItems,
+      setNavItems,
     }),
-    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont]
+    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont, navItems, setNavItems]
   );
 
   return (
     <Ctx.Provider value={value}>
       <HeaderProvider value={{ activeHeaderId, setActiveHeader }}>
         <LogoProvider value={{ activeLogoId, setActiveLogo }}>
-          <FontProvider value={{ activeFontId, setActiveFont }}>{children}</FontProvider>
+          <FontProvider value={{ activeFontId, setActiveFont }}>
+            <NavMenuProvider value={{ navItems, setNavItems }}>{children}</NavMenuProvider>
+          </FontProvider>
         </LogoProvider>
       </HeaderProvider>
     </Ctx.Provider>
