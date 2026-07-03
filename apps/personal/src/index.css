@@ -202,3 +202,8 @@ html[data-header="neon"].dark {
   --input: 240 9% 14%;
   --ring: 77 100% 60%;
 }
+
+/* Anchor-targets (bv. /release-set#2b) niet onder de fixed nav laten schuiven */
+[id] {
+  scroll-margin-top: 5.5rem;
+}
