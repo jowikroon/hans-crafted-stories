@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Artist Radar — Mis nooit meer een show van je favoriete artiest | Hans van Leeuwen</title>
+<meta name="description" content="Kies je favoriete artiesten en wij mailen je bij geruchten, aankondigingen en zodra tickets in Nederland of België in de verkoop gaan.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://hansvanleeuwen.com/muziek/artist-radar/">
+<meta property="og:title" content="Artist Radar — Mis nooit meer een show van je favoriete artiest">
+<meta property="og:description" content="Kies je artiesten. Wij mailen je zodra tickets in NL of BE in de verkoop gaan.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hansvanleeuwen.com/muziek/artist-radar/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Schibsted Grotesk',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    --bg:#FAF9F7; --card:#FFFFFF; --field:#FAFAF9;
+    --ink:#1C1917; --muted:#78716C; --faint:#A8A29E;
+    --line:rgba(0,0,0,.07); --line-soft:rgba(0,0,0,.05);
+    --copper:#A0714F; --copper-ink:#7C5638;
+    --copper-soft:rgba(160,113,79,.08); --copper-line:rgba(160,113,79,.28);
+    --shadow:0 24px 60px -40px rgba(28,25,23,.3);
+    --cta-glow:0 12px 28px -14px rgba(160,113,79,.65);
+    background:var(--bg); color:var(--ink);
+    transition:background .35s ease,color .35s ease;
+  }
+  body.dark{
+    --bg:#151210; --card:#1F1915; --field:#1A1512;
+    --ink:#EFE7DD; --muted:#A79C8F; --faint:#7A7065;
+    --line:rgba(255,255,255,.09); --line-soft:rgba(255,255,255,.06);
+    --copper:#C68F65; --copper-ink:#D9B18F;
+    --copper-soft:rgba(198,143,101,.1); --copper-line:rgba(198,143,101,.32);
+    --shadow:0 24px 60px -40px rgba(0,0,0,.7);
+    --cta-glow:0 12px 28px -14px rgba(198,143,101,.5);
+  }
+  @keyframes radar-sweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+  @keyframes chip-in{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+  @keyframes fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  ::placeholder{color:var(--faint)}
+  *{box-sizing:border-box}
+  a.ar-back{position:fixed;left:clamp(16px,3vw,28px);bottom:16px;z-index:40;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--card);transition:color .2s,border-color .2s}
+  a.ar-back:hover{color:var(--copper-ink);border-color:var(--copper-line)}
+  #themeBtn:hover{border-color:var(--copper-line)}
+</style>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:clamp(16px,3vw,28px) clamp(18px,4vw,36px) 80px">
+
+  <header style="width:100%;max-width:860px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div style="display:flex;align-items:center;gap:9px">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--copper)"></span>
+      <span style="font-weight:800;letter-spacing:.13em;font-size:12px;text-transform:uppercase;color:var(--copper)">Artist Radar</span>
+    </div>
+    <button id="themeBtn" aria-label="Wissel thema" style="display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;transition:border-color .2s">
+      <span id="sunIcon" style="width:26px;height:26px;display:grid;place-items:center;border-radius:50%;transition:all .25s ease">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </span>
+      <span id="moonIcon" style="width:26px;height:26px;display:grid;place-items:center;border-radius:50%;transition:all .25s ease">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+      </span>
+    </button>
+  </header>
+
+  <div style="margin-top:clamp(18px,3vh,32px);height:38px;display:flex;align-items:flex-end;justify-content:center;gap:9px">
+    <div class="neon-a" style="width:3px;height:26px;border-radius:2px;background:var(--copper);opacity:.35;will-change:opacity,box-shadow"></div>
+    <div class="neon-b" style="width:3px;height:38px;border-radius:2px;background:var(--copper);opacity:.35;will-change:opacity,box-shadow"></div>
+  </div>
+
+  <div style="margin-top:clamp(8px,1.5vh,16px);position:relative;width:min(400px,78vw);aspect-ratio:1">
+    <div style="position:absolute;inset:-34px;pointer-events:none;color:var(--muted)">
+      <span style="position:absolute;right:0;top:50%;transform:translate(4px,-50%);font-size:10.5px;font-weight:700;letter-spacing:.18em;opacity:.62">O</span>
+      <span style="position:absolute;bottom:0;left:50%;transform:translate(-50%,2px);font-size:10.5px;font-weight:700;letter-spacing:.18em;opacity:.62">Z</span>
+      <span style="position:absolute;left:0;top:50%;transform:translate(-4px,-50%);font-size:10.5px;font-weight:700;letter-spacing:.18em;opacity:.62">W</span>
+      <svg viewBox="0 0 488 488" style="position:absolute;inset:0;width:100%;height:100%">
+        <g stroke="var(--copper-line)" stroke-width="1" stroke-linecap="round" fill="none">
+          <line x1="244" y1="16" x2="244" y2="27"></line>
+          <line x1="472" y1="244" x2="461" y2="244"></line>
+          <line x1="244" y1="472" x2="244" y2="461"></line>
+          <line x1="16" y1="244" x2="27" y2="244"></line>
+        </g>
+        <g stroke="var(--line)" stroke-width="1" stroke-linecap="round" fill="none" opacity=".8">
+          <line x1="313.6" y1="30.7" x2="309.1" y2="41.1"></line>
+          <line x1="457.3" y1="174.4" x2="446.9" y2="178.9"></line>
+          <line x1="457.3" y1="313.6" x2="446.9" y2="309.1"></line>
+          <line x1="313.6" y1="457.3" x2="309.1" y2="446.9"></line>
+          <line x1="174.4" y1="457.3" x2="178.9" y2="446.9"></line>
+          <line x1="30.7" y1="313.6" x2="41.1" y2="309.1"></line>
+          <line x1="30.7" y1="174.4" x2="41.1" y2="178.9"></line>
+          <line x1="174.4" y1="30.7" x2="178.9" y2="41.1"></line>
+        </g>
+      </svg>
+    </div>
+    <div class="wood-ring" style="position:absolute;inset:-13px;border-radius:50%;background:repeating-radial-gradient(circle at 50% 50%, #3a2a1d 0px, #4a3524 1.5px, #5c4330 3px, #45301f 4.5px, #3a2a1d 6px), repeating-conic-gradient(from 0deg at 50% 50%, rgba(0,0,0,.18) 0deg, rgba(255,255,255,.05) 3deg, rgba(0,0,0,.12) 7deg);mask:radial-gradient(circle, transparent calc(100% - 15px), #000 calc(100% - 14px), #000 100%);-webkit-mask:radial-gradient(circle, transparent calc(100% - 15px), #000 calc(100% - 14px), #000 100%);opacity:.5;box-shadow:inset 0 0 8px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.4);will-change:transform"></div>
+    <div style="position:absolute;inset:-13px;border-radius:50%;animation:radar-sweep 60s linear infinite;transform-origin:50% 50%;pointer-events:none;mix-blend-mode:screen">
+      <div class="wood-glow" style="position:absolute;top:-6px;left:50%;width:64px;height:64px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle, rgba(120,214,255,.55), rgba(160,113,79,.35) 45%, transparent 70%);filter:blur(3px)"></div>
+    </div>
+    <div class="radar-halo halo-a" style="position:absolute;inset:-18px;border-radius:50%;border:1px solid var(--copper-line);opacity:0;will-change:transform,opacity"></div>
+    <div class="radar-halo halo-b" style="position:absolute;inset:-18px;border-radius:50%;border:1px solid var(--copper-line);opacity:0;will-change:transform,opacity"></div>
+    <div class="radar-disc" style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,var(--copper-soft),transparent 72%);border:1px solid var(--copper-line);will-change:transform">
+      <div class="radar-ring ring-a" style="position:absolute;inset:17%;border-radius:50%;border:1px solid var(--line-soft);will-change:transform;transform-origin:50% 50%"></div>
+      <div class="radar-ring ring-b" style="position:absolute;inset:34%;border-radius:50%;border:1px solid var(--line-soft);will-change:transform;transform-origin:50% 50%"></div>
+      <svg viewBox="0 0 420 420" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+        <defs>
+          <radialGradient id="beatGlow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" style="stop-color:var(--copper);stop-opacity:.26"></stop>
+            <stop offset=".6" style="stop-color:var(--copper);stop-opacity:0"></stop>
+          </radialGradient>
+        </defs>
+        <circle class="radar-beat-glow" cx="210" cy="210" r="200" fill="url(#beatGlow)" opacity="0"></circle>
+      </svg>
+      <div style="position:absolute;inset:0;border-radius:50%;animation:radar-sweep 60s linear infinite;transform-origin:50% 50%">
+        <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 230deg, transparent 0deg, var(--copper-soft) 60deg, var(--copper-line) 126deg, transparent 132deg);mask:radial-gradient(circle, transparent 2%, #000 4%, #000 92%, transparent 98%);opacity:.8"></div>
+        <svg viewBox="0 0 420 420" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible">
+          <defs>
+            <linearGradient id="ecgFade" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0" style="stop-color:var(--copper);stop-opacity:.1"></stop>
+              <stop offset=".35" style="stop-color:var(--copper);stop-opacity:.3"></stop>
+              <stop offset=".75" style="stop-color:var(--copper);stop-opacity:.75"></stop>
+              <stop offset="1" style="stop-color:var(--copper);stop-opacity:.95"></stop>
+            </linearGradient>
+          </defs>
+          <path class="ecg-line" d="M210,210 L210,0" fill="none" stroke="url(#ecgFade)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle class="neon-tip-glow" cx="210" cy="5" r="9" fill="#38D6FF" opacity="0.35" style="filter:blur(4px)"></circle>
+          <circle class="neon-tip" cx="210" cy="5" r="3.4" fill="#EAFCFF" style="filter:drop-shadow(0 0 6px #38D6FF) drop-shadow(0 0 12px #22B8FF)"></circle>
+        </svg>
+      </div>
+      <div class="radar-hub-hit" style="position:absolute;left:50%;top:50%;width:38px;height:38px;margin:-19px;border-radius:50%;pointer-events:none;display:grid;place-items:center;z-index:9">
+        <div class="radar-hub" style="width:13px;height:13px;border-radius:50%;background:var(--copper);box-shadow:0 0 16px var(--copper-line);will-change:transform"></div>
+      </div>
+      <div id="dots"></div>
+    </div>
+    <div id="tip" style="display:none"></div>
+  </div>
+
+  <div id="legend"></div>
+
+  <h1 style="font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(34px,6vw,52px);line-height:1.08;letter-spacing:-.01em;text-align:center;margin:clamp(26px,4vh,40px) 0 0;max-width:16ch">Mis nooit meer een show van je favoriete artiest</h1>
+  <p style="font-size:clamp(15px,2vw,16.5px);color:var(--muted);text-align:center;margin:14px 0 0;max-width:44ch;line-height:1.6;text-wrap:pretty">Kies je artiesten. Wij mailen je bij geruchten, aankondigingen en zodra tickets in Nederland of België in de verkoop gaan.</p>
+
+  <div id="formzone" style="width:100%;max-width:480px;margin-top:clamp(28px,4vh,40px)"></div>
+
+</div>
+<a class="ar-back" href="/music">&larr; Terug naar hansvanleeuwen.com</a>
+<script>
+(function(){
+  "use strict";
+  var DB = [
+    {id:'fredagain',name:'Fred again..',genre:'Electronic'},
+    {id:'50cent',name:'50 Cent',genre:'Hip-hop'},
+    {id:'kendrick',name:'Kendrick Lamar',genre:'Hip-hop'},
+    {id:'stromae',name:'Stromae',genre:'Pop'},
+    {id:'angele',name:'Angèle',genre:'Pop'},
+    {id:'cdw',name:'Charlotte de Witte',genre:'Techno'},
+    {id:'amelie',name:'Amelie Lens',genre:'Techno'},
+    {id:'froukje',name:'Froukje',genre:'Pop'},
+    {id:'s10',name:'S10',genre:'Pop'},
+    {id:'goldband',name:'Goldband',genre:'Pop'},
+    {id:'antoon',name:'Antoon',genre:'Pop'},
+    {id:'meau',name:'Meau',genre:'Pop'},
+    {id:'chefspecial',name:"Chef'Special",genre:'Indie'},
+    {id:'weeknd',name:'The Weeknd',genre:'R&B'},
+    {id:'dualipa',name:'Dua Lipa',genre:'Pop'},
+    {id:'tame',name:'Tame Impala',genre:'Indie'},
+    {id:'bicep',name:'Bicep',genre:'Electronic'},
+    {id:'overmono',name:'Overmono',genre:'Electronic'},
+    {id:'arctic',name:'Arctic Monkeys',genre:'Rock'},
+    {id:'sza',name:'SZA',genre:'R&B'},
+    {id:'centralcee',name:'Central Cee',genre:'Hip-hop'},
+    {id:'rosalia',name:'Rosalía',genre:'Pop'},
+    {id:'badbunny',name:'Bad Bunny',genre:'Pop'},
+    {id:'massive',name:'Massive Attack',genre:'Electronic'},
+    {id:'eminem',name:'Eminem',genre:'Hip-hop'},
+    {id:'drake',name:'Drake',genre:'Hip-hop'},
+    {id:'billie',name:'Billie Eilish',genre:'Pop'},
+    {id:'taylor',name:'Taylor Swift',genre:'Pop'},
+    {id:'coldplay',name:'Coldplay',genre:'Rock'},
+    {id:'beyonce',name:'Beyoncé',genre:'R&B'},
+    {id:'adele',name:'Adele',genre:'Pop'},
+    {id:'travis',name:'Travis Scott',genre:'Hip-hop'},
+    {id:'harry',name:'Harry Styles',genre:'Pop'},
+    {id:'postmalone',name:'Post Malone',genre:'Hip-hop'},
+    {id:'dojacat',name:'Doja Cat',genre:'Pop'},
+    {id:'tiesto',name:'Tiësto',genre:'Electronic'},
+    {id:'garrix',name:'Martin Garrix',genre:'Electronic'},
+    {id:'armin',name:'Armin van Buuren',genre:'Electronic'},
+    {id:'lostfreq',name:'Lost Frequencies',genre:'Electronic'},
+    {id:'snelle',name:'Snelle',genre:'Hip-hop'},
+    {id:'suzanfreek',name:'Suzan & Freek',genre:'Pop'},
+    {id:'ronnieflex',name:'Ronnie Flex',genre:'Hip-hop'},
+    {id:'kensington',name:'Kensington',genre:'Rock'},
+    {id:'direct',name:'DI-RECT',genre:'Rock'}
+  ];
+  var POPULAR = ['fredagain','froukje','stromae','cdw'];
+  var EVENTS = [
+    {a:'fredagain',venue:'Lowlands',city:'Biddinghuizen',c:'NL',date:'15 aug 2026',k:20260815,status:'available',urgent:true},
+    {a:'fredagain',venue:'AFAS Live',city:'Amsterdam',c:'NL',date:'18 nov 2026',k:20261118,status:'available'},
+    {a:'froukje',venue:'TivoliVredenburg',city:'Utrecht',c:'NL',date:'9 okt 2026',k:20261009,status:'available'},
+    {a:'froukje',venue:'Doornroosje',city:'Nijmegen',c:'NL',date:'1 feb 2027',k:20270201,status:'announced'},
+    {a:'goldband',venue:'Fluor',city:'Amersfoort',c:'NL',date:'26 sep 2026',k:20260926,status:'announced'},
+    {a:'cdw',venue:'Shelter',city:'Amsterdam',c:'NL',date:'10 okt 2026',k:20261010,status:'available'},
+    {a:'cdw',venue:'Sportpaleis',city:'Antwerpen',c:'BE',date:'21 mrt 2027',k:20270321,status:'announced'},
+    {a:'overmono',venue:'013',city:'Tilburg',c:'NL',date:'27 nov 2026',k:20261127,status:'available'},
+    {a:'bicep',venue:'Paradiso',city:'Amsterdam',c:'NL',date:'5 dec 2026',k:20261205,status:'announced'},
+    {a:'amelie',venue:'Ancienne Belgique',city:'Brussel',c:'BE',date:'16 jan 2027',k:20270116,status:'announced'},
+    {a:'stromae',venue:'Ziggo Dome',city:'Amsterdam',c:'NL',date:'najaar 2027',k:20271001,status:'rumored'},
+    {a:'weeknd',venue:'Johan Cruijff ArenA',city:'Amsterdam',c:'NL',date:'zomer 2027',k:20270701,status:'rumored'},
+    {a:'dualipa',venue:'Werchter',city:'Werchter',c:'BE',date:'zomer 2027',k:20270702,status:'rumored'}
+  ];
+  var STATUS = {
+    available:{col:'#15803D',label:'Tickets te koop',short:'te koop',hint:'De verkoop loopt — pak je plek.'},
+    announced:{col:'#B45309',label:'Aangekondigd',short:'aangekondigd',hint:'Datum bekend, verkoop volgt.'},
+    rumored:{col:'#64748B',label:'Gerucht',short:'gerucht',hint:'Nog niet bevestigd — we houden het scherp.'}
+  };
+  var NOW_DAY = 183;
+
+  var state = { dark:false, query:'', focused:false, selected:[], email:'', submitted:false, hovered:null, tipFading:false, account:false, first:'', last:'', city:'' };
+  var tipTimer=null, raf=null, rings=null, ringT=null;
+
+  function $(s){ return document.querySelector(s); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function norm(s){ return (s||'').toLowerCase().trim(); }
+  function dayOf(k){ var y=Math.floor(k/10000),m=Math.floor(k/100)%100,d=k%100; return (y-2026)*365+(m-1)*30+d; }
+
+  function buildDots(){
+    var sel=state.selected, events=[];
+    sel.forEach(function(a){ EVENTS.filter(function(e){return e.a===a.id;}).forEach(function(e){ events.push(Object.assign({},e,{name:a.name})); }); });
+    return events.map(function(e,i){
+      var days=Math.max(0,dayOf(e.k)-NOW_DAY);
+      var w=e.status==='available'?0.42:e.status==='announced'?0.78:1.0;
+      var score=days*w;
+      var rNorm=Math.max(0.16,Math.min(0.9,0.16+score/520));
+      var theta=(i*137.508-90)*Math.PI/180;
+      var R=rNorm*42;
+      var x=50+R*Math.cos(theta), y=50+R*Math.sin(theta);
+      var st=STATUS[e.status];
+      var size=e.status==='available'?11:e.status==='announced'?9:6.5;
+      return Object.assign({},e,{x:x,y:y,size:size,col:st.col,label:st.label,short:st.short,hint:st.hint,days:days});
+    });
+  }
+
+  function canSubmit(){
+    var acctOk=!state.account||(state.first.trim()&&state.last.trim()&&state.city.trim());
+    return /.+@.+\..+/.test(state.email)&&state.selected.length>0&&acctOk;
+  }
+  function addArtist(id){
+    var a=DB.find(function(x){return x.id===id;}); if(!a) return;
+    if(state.selected.some(function(x){return x.id===id;})) return;
+    state.selected=state.selected.concat([a]); state.query=''; state.focused=false;
+    var si=$('#searchInput'); if(si) si.value='';
+    updateDynamic();
+  }
+  function removeArtist(id){ state.selected=state.selected.filter(function(x){return x.id!==id;}); updateDynamic(); }
+
+  // ---- dynamic renderers ----
+  function renderDots(){
+    var dots=buildDots(), host=$('#dots'); if(!host) return dots;
+    host.innerHTML='';
+    dots.forEach(function(d,i){
+      var blip=document.createElement('div');
+      blip.className='radar-blip';
+      blip.setAttribute('style','position:absolute;left:'+d.x.toFixed(2)+'%;top:'+d.y.toFixed(2)+'%;transform:translate(-50%,-50%);will-change:transform');
+      var pad=document.createElement('div');
+      pad.setAttribute('style','display:grid;place-items:center;width:'+(d.size+16)+'px;height:'+(d.size+16)+'px;border-radius:50%;cursor:pointer;pointer-events:auto;transition:transform .16s ease');
+      var dot=document.createElement('div');
+      dot.setAttribute('style','width:'+d.size+'px;height:'+d.size+'px;border-radius:50%;background:'+d.col+';box-shadow:0 0 12px '+d.col+'99'+(d.urgent?';outline:2px solid '+d.col+'55;outline-offset:2px':'')+';transition:box-shadow .16s ease');
+      pad.appendChild(dot);
+      (function(dd){
+        function enter(){ if(tipTimer){clearTimeout(tipTimer);tipTimer=null;} state.hovered=dd; state.tipFading=false; pad.style.transform='scale(1.28)'; renderTip(); }
+        function leave(){ pad.style.transform=''; if(tipTimer)clearTimeout(tipTimer); state.tipFading=true; renderTip(); tipTimer=setTimeout(function(){ state.hovered=null; state.tipFading=false; renderTip(); },3000); }
+        pad.addEventListener('mouseenter',enter);
+        pad.addEventListener('mouseleave',leave);
+        pad.addEventListener('click',enter);
+      })(d);
+      blip.appendChild(pad);
+      host.appendChild(blip);
+    });
+    return dots;
+  }
+  function renderTip(){
+    var tip=$('#tip'), hv=state.hovered;
+    if(!tip) return;
+    if(!hv){ tip.style.display='none'; tip.innerHTML=''; return; }
+    var fade=state.tipFading;
+    var left=Math.max(8,Math.min(92,hv.x)).toFixed(1), top=hv.y.toFixed(1);
+    tip.setAttribute('style','position:absolute;left:'+left+'%;top:'+top+'%;transform:translate(-50%,calc(-100% - 14px));z-index:20;pointer-events:none;min-width:170px;max-width:230px;padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);opacity:'+(fade?0:1)+';transition:'+(fade?'opacity 3s ease':'opacity .16s ease'));
+    tip.innerHTML=''+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+
+        '<span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+hv.col+'"></span>'+
+        '<span style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)">'+esc(hv.label)+'</span>'+
+      '</div>'+
+      '<div style="font-size:15px;font-weight:700;line-height:1.25">'+esc(hv.name)+'</div>'+
+      '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+esc(hv.venue+' · '+hv.city)+'</div>'+
+      '<div style="font-size:12.5px;color:var(--ink);font-weight:600;margin-top:4px">'+esc(hv.date)+'</div>';
+  }
+  function renderLegend(dots){
+    var host=$('#legend'); if(!host) return;
+    if(state.selected.length===0){ host.innerHTML=''; return; }
+    var counts={available:0,announced:0,rumored:0};
+    dots.forEach(function(d){ counts[d.status]++; });
+    var rows=[['available','Tickets te koop'],['announced','Aangekondigd'],['rumored','Gerucht']];
+    host.setAttribute('style','display:flex;flex-wrap:wrap;gap:18px;justify-content:center;margin-top:22px;animation:fade-up .3s ease both');
+    host.innerHTML=rows.map(function(p){
+      var n=counts[p[0]], col=STATUS[p[0]].col;
+      return '<span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;opacity:'+(n?1:.38)+';transition:opacity .25s">'+
+        '<span style="width:9px;height:9px;border-radius:50%;background:'+col+(n?';box-shadow:0 0 8px '+col+'88':'')+'"></span>'+
+        '<span style="font-weight:700">'+n+'</span>'+
+        '<span style="color:var(--muted);font-weight:500">'+p[1]+'</span></span>';
+    }).join('');
+  }
+  var FIELD_INPUT='box-sizing:border-box;width:100%;padding:13px 15px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15.5px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s';
+  var BIG_INPUT='width:100%;box-sizing:border-box;padding:15px 18px;border-radius:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s';
+
+  function spotSvg(sz){ return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" style="flex-shrink:0" aria-label="Spotify"><circle cx="12" cy="12" r="12" fill="#1DB954"></circle><path d="M6.5 9.2c3.4-1 7.2-.8 10.3 1M7 12.2c2.8-.8 5.9-.6 8.4.9M7.6 15c2.2-.6 4.5-.4 6.4.8" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"></path></svg>'; }
+
+  function renderForm(){
+    var zone=$('#formzone'); if(!zone) return;
+    if(state.submitted){ renderSuccess(); return; }
+    zone.innerHTML=''+
+      '<div style="display:flex;flex-direction:column;gap:14px">'+
+        '<div style="position:relative">'+
+          '<input id="searchInput" placeholder="Zoek een artiest… (bv. Eminem)" style="'+BIG_INPUT+';box-shadow:var(--shadow)" />'+
+          '<div id="dropdown"></div>'+
+        '</div>'+
+        '<div id="chips"></div>'+
+        '<div id="popular"></div>'+
+        '<input id="emailInput" type="email" placeholder="jij@voorbeeld.nl" style="'+BIG_INPUT+'" />'+
+        '<label id="acctToggle" style="display:flex;align-items:center;gap:11px;padding:2px;cursor:pointer;user-select:none">'+
+          '<span id="acctCheck"></span>'+
+          '<span style="display:flex;flex-direction:column;gap:1px">'+
+            '<span style="font-size:14px;font-weight:600">Maak een gratis account</span>'+
+            '<span style="font-size:12.5px;color:var(--muted)">Beheer je radar en krijg persoonlijke tips voor shows bij jou in de buurt.</span>'+
+          '</span>'+
+        '</label>'+
+        '<div id="acctFields"></div>'+
+        '<button id="ctaBtn"></button>'+
+        '<p style="display:flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;color:var(--faint);text-align:center;margin:2px 0 0">'+spotSvg(13)+'Alleen artiesten die op Spotify staan · gratis · uitschrijven met één klik</p>'+
+      '</div>';
+    var si=$('#searchInput');
+    si.value=state.query;
+    si.addEventListener('input',function(e){ state.query=e.target.value; state.focused=true; updateDynamic(); });
+    si.addEventListener('focus',function(){ state.focused=true; updateDynamic(); });
+    si.addEventListener('blur',function(){ setTimeout(function(){ state.focused=false; updateDynamic(); },180); });
+    si.addEventListener('focus',function(){ this.style.borderColor='var(--copper-line)'; this.style.boxShadow='0 0 0 3px var(--copper-soft),var(--shadow)'; });
+    si.addEventListener('blur',function(){ this.style.borderColor='var(--line)'; this.style.boxShadow='var(--shadow)'; });
+    var em=$('#emailInput');
+    em.value=state.email;
+    em.addEventListener('input',function(e){ state.email=e.target.value; updateDynamic(); });
+    em.addEventListener('keydown',function(e){ if(e.key==='Enter') submit(); });
+    em.addEventListener('focus',function(){ this.style.borderColor='var(--copper-line)'; this.style.boxShadow='0 0 0 3px var(--copper-soft)'; });
+    em.addEventListener('blur',function(){ this.style.borderColor='var(--line)'; this.style.boxShadow='none'; });
+    $('#acctToggle').addEventListener('click',function(e){ e.preventDefault(); toggleAccount(); });
+    $('#ctaBtn').addEventListener('click',submit);
+    renderAcctFields();
+    updateDynamic();
+  }
+
+  function renderAcctFields(){
+    var host=$('#acctFields'); if(!host) return;
+    if(!state.account){ host.innerHTML=''; return; }
+    host.setAttribute('style','display:flex;flex-direction:column;gap:11px;padding:16px;border-radius:13px;border:1px solid var(--copper-line);background:var(--copper-soft);animation:fade-up .22s ease both;margin-top:0');
+    host.innerHTML=''+
+      '<div style="display:flex;gap:11px;flex-wrap:wrap">'+
+        '<input id="fFirst" placeholder="Voornaam" style="'+FIELD_INPUT+';flex:1;min-width:130px" />'+
+        '<input id="fLast" placeholder="Achternaam" style="'+FIELD_INPUT+';flex:1;min-width:130px" />'+
+      '</div>'+
+      '<input id="fCity" placeholder="Woonplaats" style="'+FIELD_INPUT+'" />';
+    var f=$('#fFirst'), l=$('#fLast'), c=$('#fCity');
+    f.value=state.first; l.value=state.last; c.value=state.city;
+    f.addEventListener('input',function(e){ state.first=e.target.value; updateCta(); });
+    l.addEventListener('input',function(e){ state.last=e.target.value; updateCta(); });
+    c.addEventListener('input',function(e){ state.city=e.target.value; updateCta(); });
+    [f,l,c].forEach(function(x){
+      x.addEventListener('focus',function(){ this.style.borderColor='var(--copper-line)'; this.style.boxShadow='0 0 0 3px var(--copper-soft)'; });
+      x.addEventListener('blur',function(){ this.style.borderColor='var(--line)'; this.style.boxShadow='none'; });
+    });
+  }
+
+  function toggleAccount(){ state.account=!state.account; updateCheck(); renderAcctFields(); updateCta(); }
+  function updateCheck(){
+    var chk=$('#acctCheck'); if(!chk) return;
+    chk.setAttribute('style','flex-shrink:0;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;transition:all .18s ease;'+(state.account?'background:var(--copper);border:1px solid var(--copper)':'background:var(--field);border:1px solid var(--line)'));
+    chk.innerHTML=state.account?'<span style="color:#fff;font-size:12px;line-height:1">✓</span>':'';
+  }
+  function updateCta(){
+    var b=$('#ctaBtn'); if(!b) return;
+    var ok=canSubmit();
+    b.textContent=state.account?'Maak account & zet op radar':'Zet op mijn radar';
+    b.disabled=!ok;
+    b.setAttribute('style','width:100%;padding:16px;border-radius:13px;border:none;font-size:15.5px;font-weight:700;font-family:inherit;transition:all .2s ease;'+(ok?'background:var(--copper);color:#fff;cursor:pointer;box-shadow:var(--cta-glow)':'background:var(--line);color:var(--faint);cursor:not-allowed'));
+  }
+
+  function updateDynamic(){
+    var dots=renderDots();
+    renderTip();
+    renderLegend(dots);
+    // dropdown
+    var drop=$('#dropdown');
+    if(drop){
+      var q=norm(state.query);
+      var selIds={}; state.selected.forEach(function(a){ selIds[a.id]=1; });
+      var filtered=DB.filter(function(a){ return !selIds[a.id]&&(q===''||norm(a.name).indexOf(q)>=0); }).slice(0,6);
+      if(state.focused&&filtered.length>0&&q.length>0){
+        drop.setAttribute('style','position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;border-radius:13px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);overflow:hidden;animation:fade-up .18s ease both');
+        drop.innerHTML=filtered.map(function(a){
+          return '<div class="ar-drop" data-id="'+a.id+'" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 17px;cursor:pointer;transition:background .12s">'+
+            '<span style="display:flex;align-items:center;gap:9px;min-width:0;flex:1">'+spotSvg(15)+
+              '<span style="font-size:14.5px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(a.name)+'</span>'+
+            '</span>'+
+            '<span style="font-size:12px;color:var(--faint);flex-shrink:0;white-space:nowrap">'+esc(a.genre)+'</span></div>';
+        }).join('');
+        Array.prototype.forEach.call(drop.querySelectorAll('.ar-drop'),function(el){
+          el.addEventListener('mousedown',function(ev){ ev.preventDefault(); addArtist(el.getAttribute('data-id')); });
+          el.addEventListener('mouseenter',function(){ el.style.background='var(--copper-soft)'; });
+          el.addEventListener('mouseleave',function(){ el.style.background=''; });
+        });
+      } else { drop.innerHTML=''; drop.removeAttribute('style'); }
+    }
+    // chips
+    var chips=$('#chips');
+    if(chips){
+      if(state.selected.length>0){
+        chips.setAttribute('style','display:flex;flex-wrap:wrap;gap:8px');
+        chips.innerHTML=state.selected.map(function(a){
+          return '<span style="display:inline-flex;align-items:center;gap:8px;padding:8px 9px 8px 14px;border-radius:999px;background:var(--copper-soft);border:1px solid var(--copper-line);font-size:14px;font-weight:600;color:var(--copper-ink);animation:chip-in .25s ease both">'+esc(a.name)+
+            '<span class="ar-x" data-id="'+a.id+'" style="cursor:pointer;width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:var(--line);font-size:12px;line-height:1;color:var(--muted);transition:all .15s ease">✕</span></span>';
+        }).join('');
+        Array.prototype.forEach.call(chips.querySelectorAll('.ar-x'),function(el){
+          el.addEventListener('click',function(){ removeArtist(el.getAttribute('data-id')); });
+          el.addEventListener('mouseenter',function(){ el.style.background='rgba(220,38,38,.14)'; el.style.color='#DC2626'; });
+          el.addEventListener('mouseleave',function(){ el.style.background='var(--line)'; el.style.color='var(--muted)'; });
+        });
+      } else { chips.innerHTML=''; chips.removeAttribute('style'); }
+    }
+    // popular
+    var pop=$('#popular');
+    if(pop){
+      if(state.selected.length===0){
+        var selIds2={}; state.selected.forEach(function(a){ selIds2[a.id]=1; });
+        var pids=POPULAR.filter(function(id){ return !selIds2[id]; });
+        pop.setAttribute('style','display:flex;flex-wrap:wrap;gap:8px;justify-content:center');
+        pop.innerHTML=pids.map(function(id){
+          var a=DB.find(function(x){return x.id===id;});
+          return '<span class="ar-pop" data-id="'+id+'" style="cursor:pointer;padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13.5px;font-weight:600;color:var(--muted);transition:all .18s ease">+ '+esc(a.name)+'</span>';
+        }).join('');
+        Array.prototype.forEach.call(pop.querySelectorAll('.ar-pop'),function(el){
+          el.addEventListener('click',function(){ addArtist(el.getAttribute('data-id')); });
+          el.addEventListener('mouseenter',function(){ el.style.borderColor='var(--copper-line)'; el.style.color='var(--copper-ink)'; el.style.background='var(--copper-soft)'; el.style.transform='translateY(-1px)'; });
+          el.addEventListener('mouseleave',function(){ el.style.borderColor='var(--line)'; el.style.color='var(--muted)'; el.style.background='var(--card)'; el.style.transform=''; });
+        });
+      } else { pop.innerHTML=''; pop.removeAttribute('style'); }
+    }
+    updateCheck();
+    updateCta();
+  }
+
+  function submit(){
+    if(!canSubmit()) return;
+    state.submitted=true;
+    renderSuccess();
+    try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); }
+  }
+  function renderSuccess(){
+    var zone=$('#formzone'); if(!zone) return;
+    var selCount=state.selected.length===1?state.selected[0].name:(state.selected.length+' artiesten');
+    var hasAccount=state.account&&state.first.trim();
+    var successTitle=hasAccount?('Welkom, '+state.first.trim()):'Je radar staat aan';
+    zone.innerHTML=''+
+      '<div style="text-align:center;animation:fade-up .35s ease both">'+
+        '<div style="width:52px;height:52px;margin:0 auto;border-radius:50%;background:var(--copper-soft);border:1px solid var(--copper-line);display:grid;place-items:center;color:var(--copper-ink);font-size:22px;animation:pop .4s ease both">✓</div>'+
+        '<h2 style="font-family:\'Instrument Serif\',serif;font-weight:400;font-size:26px;margin:18px 0 0">'+esc(successTitle)+'</h2>'+
+        '<p style="font-size:15px;color:var(--muted);margin:10px 0 0;line-height:1.6">We houden <span style="color:var(--ink);font-weight:600">'+esc(selCount)+'</span> op de radar en mailen je op <span style="color:var(--ink);font-weight:600">'+esc(state.email)+'</span> zodra er iets beweegt.</p>'+
+        (hasAccount?('<div style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:8px 15px;border-radius:999px;background:var(--copper-soft);border:1px solid var(--copper-line);font-size:13px;font-weight:600;color:var(--copper-ink)"><span style="width:7px;height:7px;border-radius:50%;background:var(--copper)"></span>Account aangemaakt · '+esc(state.city)+'</div>'):'')+
+        '<button id="resetBtn" style="margin-top:22px;padding:12px 22px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:14.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .18s ease">Nog een artiest toevoegen</button>'+
+      '</div>';
+    var rb=$('#resetBtn');
+    rb.addEventListener('click',function(){ state.submitted=false; state.query=''; renderForm(); });
+    rb.addEventListener('mouseenter',function(){ rb.style.borderColor='var(--copper-line)'; rb.style.color='var(--copper-ink)'; });
+    rb.addEventListener('mouseleave',function(){ rb.style.borderColor='var(--line)'; rb.style.color='var(--ink)'; });
+  }
+
+  // ---- theme ----
+  function applyThemeIcons(){
+    var s=$('#sunIcon'), m=$('#moonIcon');
+    if(s) s.style.cssText='width:26px;height:26px;display:grid;place-items:center;border-radius:50%;transition:all .25s ease;'+(!state.dark?'background:var(--copper-soft);color:var(--copper-ink)':'color:var(--faint)');
+    if(m) m.style.cssText='width:26px;height:26px;display:grid;place-items:center;border-radius:50%;transition:all .25s ease;'+(state.dark?'background:var(--copper-soft);color:var(--copper-ink)':'color:var(--faint)');
+  }
+  function toggleTheme(){
+    state.dark=!state.dark;
+    document.body.classList.toggle('dark',state.dark);
+    try{ localStorage.setItem('ar-theme',state.dark?'dark':'light'); }catch(e){}
+    applyThemeIcons();
+  }
+
+  // ---- heartbeat animation (ported verbatim from source component) ----
+  var BEAT_SECONDS=3.4, SWEEP_SECONDS=60, SHOW_BLIPS=true;
+  function startAnim(){
+    if(raf) cancelAnimationFrame(raf);
+    var BEAT=function(){ return BEAT_SECONDS*1000; };
+    var start=performance.now();
+    var q=function(sel){ return document.querySelector(sel); };
+    function tick(){
+      var now=performance.now();
+      var t=(now-start)/1000;
+      var ph=((now-start)%BEAT())/BEAT();
+      var lub=Math.exp(-Math.pow((ph-0.03)/0.045,2));
+      var dub=0.6*Math.exp(-Math.pow((ph-0.20)/0.06,2));
+      var beat=Math.max(lub,dub);
+      var line=q('.ecg-line');
+      if(line){
+        var ampMain=0.9+0.35*Math.sin(t*0.35)+0.18*Math.sin(t*0.11+1.3);
+        var ampEcho=0.4+0.25*Math.sin(t*0.22+0.7);
+        var d='M210,210';
+        for(var y=208;y>=0;y-=2){
+          var rp=1-y/210; var x=210;
+          if(rp>0.4){
+            var local=(rp-0.4)/0.6;
+            var wave=Math.sin((local*4+t*0.85)*Math.PI*2);
+            var spike=beat*Math.sin(local*Math.PI*3.0)*38*ampMain;
+            var wob=Math.sin(local*10+t*1.2)*1.6;
+            x=210+wave*7*ampMain+spike*(1-Math.abs(local-0.55)*1.1)+wob;
+          } else {
+            var local2=rp/0.4;
+            var anchor=Math.pow(local2,0.85);
+            x=210+(Math.sin(local2*9-t*1.9)*2.4*ampEcho
+                 +Math.sin(local2*4+t*0.75)*1.5*ampEcho
+                 +Math.sin(local2*19+t*2.4)*0.7*ampEcho
+                 +beat*Math.sin(local2*Math.PI*1.6)*2.4)*anchor;
+          }
+          d+=' L'+x.toFixed(2)+','+y;
+        }
+        line.setAttribute('d',d);
+        line.setAttribute('stroke-width',(2.0+0.9*beat+0.25*Math.sin(t*0.55)).toFixed(2));
+      }
+      var disc=q('.radar-disc'); if(disc) disc.style.transform='scale('+(1+beat*0.02).toFixed(4)+')';
+      (function(){
+        var springs=rings||(rings=[{x:0,v:0},{x:0,v:0}]);
+        var dt=(now-(ringT||now))/1000; ringT=now;
+        if(dt>0.05)dt=0.05;
+        var cfg=[{k:150,c:12,m:1.0,amp:0.032},{k:95,c:9.5,m:1.7,amp:0.05}];
+        var els=[q('.ring-a'),q('.ring-b')];
+        for(var i=0;i<springs.length;i++){
+          var sp=springs[i], p=cfg[i];
+          var a=(p.k*(beat-sp.x)-p.c*sp.v)/p.m;
+          sp.v+=a*dt; sp.x+=sp.v*dt;
+          var el=els[i]; if(!el)continue;
+          var sc=1+sp.x*p.amp;
+          el.style.transform='scale('+sc.toFixed(4)+')';
+          el.style.opacity=(0.55+Math.min(0.45,Math.abs(sp.x)*0.5)).toFixed(3);
+        }
+      })();
+      var hub=q('.radar-hub'); if(hub) hub.style.transform='scale('+(1+beat*0.26).toFixed(3)+')';
+      var glow=q('.radar-beat-glow'); if(glow) glow.setAttribute('opacity',(0.08+beat*0.34).toFixed(3));
+      var setHalo=function(sel,off){
+        var el=q(sel); if(!el)return;
+        var p=((now-start)%BEAT()+off*BEAT())%BEAT()/BEAT();
+        el.style.transform='scale('+(1+p*0.22).toFixed(3)+')';
+        el.style.opacity=Math.max(0,0.34*(1-p)-0.03).toFixed(3);
+      };
+      setHalo('.halo-a',0);
+      setHalo('.halo-b',0.5);
+      var beatB=(function(){var p2=((now-start)%BEAT()+0.5*BEAT())%BEAT()/BEAT();var l=Math.exp(-Math.pow((p2-0.03)/0.045,2));var dd=0.6*Math.exp(-Math.pow((p2-0.20)/0.06,2));return Math.max(l,dd);})();
+      var na=q('.neon-a'), nb=q('.neon-b');
+      if(na){ var g=beat; na.style.opacity=(0.3+0.4*g).toFixed(3); na.style.boxShadow='0 0 '+(4+g*8).toFixed(1)+'px '+(1+g*1.2).toFixed(1)+'px var(--copper)'; }
+      if(nb){ var g2=beatB; nb.style.opacity=(0.3+0.4*g2).toFixed(3); nb.style.boxShadow='0 0 '+(4+g2*8).toFixed(1)+'px '+(1+g2*1.2).toFixed(1)+'px var(--copper)'; }
+      var sweep=document.querySelector('.radar-disc > div[style*="radar-sweep"]');
+      if(sweep){ var dur=SWEEP_SECONDS+'s'; if(sweep.style.animationDuration!==dur) sweep.style.animationDuration=dur; }
+      document.querySelectorAll('.radar-blip').forEach(function(b,i){
+        if(!SHOW_BLIPS){b.style.display='none';return;}
+        b.style.display='';
+        var bob=1+0.1*Math.sin(t*(0.5+i*0.22)+i);
+        b.style.transform='translate(-50%,-50%) scale('+bob.toFixed(3)+')';
+        b.style.opacity=(0.62+0.28*(0.5+0.5*Math.sin(t*(0.38+i*0.16)+i*1.7))).toFixed(3);
+      });
+      var ntip=q('.neon-tip'), nglow=q('.neon-tip-glow'), wglow=q('.wood-glow');
+      if(ntip){ ntip.setAttribute('r',(3.2+0.7*beat).toFixed(2)); }
+      if(nglow){ nglow.setAttribute('opacity',(0.22+0.32*beat).toFixed(3)); nglow.setAttribute('r',(8+2.5*beat).toFixed(1)); }
+      if(wglow){ wglow.style.opacity=(0.38+0.22*beat).toFixed(3); }
+      raf=requestAnimationFrame(tick);
+    }
+    raf=requestAnimationFrame(tick);
+  }
+
+  function init(){
+    var dark=false;
+    try{ var saved=localStorage.getItem('ar-theme'); dark = saved ? saved==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches; }catch(e){}
+    state.dark=dark;
+    document.body.classList.toggle('dark',dark);
+    applyThemeIcons();
+    var tb=$('#themeBtn'); if(tb) tb.addEventListener('click',toggleTheme);
+    renderForm();
+    startAnim();
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',init); } else { init(); }
+})();
+</script>
+</body>
+</html>

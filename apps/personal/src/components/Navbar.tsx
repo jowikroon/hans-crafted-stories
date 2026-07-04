@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
-  ChevronDown, Network, Sparkles, PenLine, Disc3,
+  ChevronDown, Network, Sparkles, PenLine, Disc3, Radar,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -43,6 +43,7 @@ const Navbar = (_props: NavbarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [musicOpen, setMusicOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -138,6 +139,7 @@ const Navbar = (_props: NavbarProps) => {
   const isActive = (to: string) => location.pathname === to;
   const isWorkActive = location.pathname.startsWith("/work")
     || ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager"].includes(location.pathname);
+  const isMusicActive = location.pathname === "/music" || location.pathname.startsWith("/music/");
 
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -159,6 +161,28 @@ const Navbar = (_props: NavbarProps) => {
       {label}
       {active && <span className="absolute left-3.5 right-3.5 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
     </Link>
+  );
+
+  /* Muziek dropdown: Overzicht (/music) + Artist Radar. Artist Radar is a
+     static page under /muziek/, so it uses a plain <a> (full nav), not Link. */
+  const MusicNav = ({ label }: { label: string }) => (
+    <div className="relative" onMouseEnter={() => setMusicOpen(true)} onMouseLeave={() => setMusicOpen(false)}>
+      <Link to="/music" className={`relative flex items-center gap-1 px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${isMusicActive ? "text-[#15140F]" : "text-[#7E7A6F] hover:text-[#15140F]"}`}>
+        {label}
+        <ChevronDown size={13} className={`transition-transform ${musicOpen ? "rotate-180" : ""}`} />
+        {isMusicActive && <span className="absolute left-3.5 right-6 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
+      </Link>
+      <AnimatePresence>
+        {musicOpen && (
+          <motion.div initial={{ opacity: 0, y: -4, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.97 }} transition={{ duration: 0.14 }} className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50 w-56">
+            <div className="rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl overflow-hidden dark:border-white/10 dark:bg-[hsl(40,8%,9%)]">
+              <Link to="/music" onClick={() => setMusicOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors dark:text-[#C9BFB0] dark:hover:bg-white/5"><Disc3 size={15} /> Overzicht</Link>
+              <a href="/muziek/artist-radar/" className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors dark:text-[#C9BFB0] dark:hover:bg-white/5"><Radar size={15} /> Artist Radar</a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 
   return (
@@ -220,20 +244,24 @@ const Navbar = (_props: NavbarProps) => {
 
             {/* Centre nav — plain links (Work hover dropdown removed) */}
             <div className="hidden md:flex items-center gap-1 justify-self-center">
-                {siteLinks.map((l) => (
-                  <SiteLink
-                    key={l.to}
-                    to={l.to}
-                    label={l.label}
-                    active={
-                      l.to === "/work"
-                        ? isWorkActive
-                        : (l as { cc?: boolean }).cc
-                        ? isCommandCenter
-                        : isActive(l.to)
-                    }
-                  />
-                ))}
+                {siteLinks.map((l) =>
+                  l.to === "/music" ? (
+                    <MusicNav key={l.to} label={l.label} />
+                  ) : (
+                    <SiteLink
+                      key={l.to}
+                      to={l.to}
+                      label={l.label}
+                      active={
+                        l.to === "/work"
+                          ? isWorkActive
+                          : (l as { cc?: boolean }).cc
+                          ? isCommandCenter
+                          : isActive(l.to)
+                      }
+                    />
+                  )
+                )}
               </div>
 
             {/* Right cluster */}
@@ -306,7 +334,12 @@ const Navbar = (_props: NavbarProps) => {
                   const cc = (l as { cc?: boolean }).cc;
                   const active = cc ? isCommandCenter : isActive(l.to);
                   return (
-                    <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : `${barChip} ${barInk}`) : `${barMut} ${barHovBg} ${barHovInk}`}`}>{l.label}</Link>
+                    <div key={l.to} className="flex flex-col">
+                      <Link to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : `${barChip} ${barInk}`) : `${barMut} ${barHovBg} ${barHovInk}`}`}>{l.label}</Link>
+                      {l.to === "/music" && (
+                        <a href="/muziek/artist-radar/" onClick={() => setMobileOpen(false)} className={`ml-3 rounded-lg px-3 py-2 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Radar size={14} /> Artist Radar</a>
+                      )}
+                    </div>
                   );
                 })}
 
