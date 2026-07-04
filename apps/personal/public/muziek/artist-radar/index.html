@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Artist Radar — Mis nooit meer een show van je favoriete artiest | Hans van Leeuwen</title>
-<meta name="description" content="Kies je favoriete artiesten en wij mailen je bij geruchten, aankondigingen en zodra tickets in Nederland of België in de verkoop gaan.">
+<meta name="description" content="Kies je favoriete artiesten. Onze AI scant elke week bronnen in Nederland en België — gerucht, aankondiging of ticketverkoop: jij hoort het als eerste.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://hansvanleeuwen.com/muziek/artist-radar/">
 <meta property="og:title" content="Artist Radar — Mis nooit meer een show van je favoriete artiest">
@@ -13,143 +13,199 @@
 <meta property="og:url" content="https://hansvanleeuwen.com/muziek/artist-radar/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  html,body{margin:0;padding:0}
-  body{
-    font-family:'Schibsted Grotesk',sans-serif;
-    -webkit-font-smoothing:antialiased;
-    --bg:#FAF9F7; --card:#FFFFFF; --field:#FAFAF9;
-    --ink:#1C1917; --muted:#78716C; --faint:#A8A29E;
-    --line:rgba(0,0,0,.07); --line-soft:rgba(0,0,0,.05);
-    --copper:#A0714F; --copper-ink:#7C5638;
-    --copper-soft:rgba(160,113,79,.08); --copper-line:rgba(160,113,79,.28);
-    --shadow:0 24px 60px -40px rgba(28,25,23,.3);
-    --cta-glow:0 12px 28px -14px rgba(160,113,79,.65);
-    background:var(--bg); color:var(--ink);
-    transition:background .35s ease,color .35s ease;
-  }
-  body.dark{
-    --bg:#151210; --card:#1F1915; --field:#1A1512;
-    --ink:#EFE7DD; --muted:#A79C8F; --faint:#7A7065;
-    --line:rgba(255,255,255,.09); --line-soft:rgba(255,255,255,.06);
-    --copper:#C68F65; --copper-ink:#D9B18F;
-    --copper-soft:rgba(198,143,101,.1); --copper-line:rgba(198,143,101,.32);
-    --shadow:0 24px 60px -40px rgba(0,0,0,.7);
-    --cta-glow:0 12px 28px -14px rgba(198,143,101,.5);
-  }
-  @keyframes radar-sweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-  @keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
-  @keyframes chip-in{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#FAFAF9;color:#1C1917;font-family:'Instrument Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  @keyframes radar-sweep{to{transform:rotate(360deg)}}
+  @keyframes blip{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:1;transform:scale(1.25)}}
+  @keyframes ring-pulse{0%{transform:scale(.5);opacity:.5}100%{transform:scale(2.2);opacity:0}}
   @keyframes fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  ::placeholder{color:var(--faint)}
-  *{box-sizing:border-box}
-  a.ar-back{position:fixed;left:clamp(16px,3vw,28px);bottom:16px;z-index:40;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--card);transition:color .2s,border-color .2s}
-  a.ar-back:hover{color:var(--copper-ink);border-color:var(--copper-line)}
-  #themeBtn:hover{border-color:var(--copper-line)}
+  @keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+  @keyframes chip-in{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+  ::selection{background:#A0714F;color:#fff}
+  a{color:inherit;text-decoration:none}
+  .hd-link{transition:color .15s}
+  .hd-link:hover{color:#1C1917}
+  .hd-login:hover{border-color:#A0714F !important;color:#A0714F !important}
+  .music-menu{position:relative}
+  .music-dd{display:none}
+  .music-menu:hover .music-dd{display:block}
+  .music-menu:hover .music-caret{transform:rotate(180deg)}
+  .mm-item{transition:background .15s,color .15s}
+  .mm-item:hover{background:rgba(160,113,79,.08);color:#A0714F}
+  .ar-input:focus{border-color:rgba(160,113,79,.55) !important;box-shadow:0 0 0 3px rgba(160,113,79,.1) !important}
+  .chips-box:focus-within{border-color:rgba(160,113,79,.4);box-shadow:0 0 0 3px rgba(160,113,79,.08)}
+  .drop-row{transition:background .12s}
+  .drop-row:hover{background:rgba(160,113,79,.07)}
+  .free-row{transition:background .12s}
+  .free-row:hover{background:rgba(180,83,9,.09)}
+  .pop-chip{transition:all .18s ease}
+  .pop-chip:hover{border-color:rgba(160,113,79,.4) !important;color:#A0714F !important;background:rgba(160,113,79,.04) !important;transform:translateY(-1px);box-shadow:0 5px 12px -5px rgba(160,113,79,.4)}
+  .pop-chip:active{transform:scale(.96)}
+  .sug-chip{transition:all .18s ease}
+  .sug-chip:hover{background:rgba(160,113,79,.1) !important;transform:translateY(-1px);box-shadow:0 5px 12px -5px rgba(160,113,79,.4)}
+  .sug-chip:active{transform:scale(.96)}
+  .chip-x{transition:all .15s ease}
+  .chip-x:hover{background:rgba(220,38,38,.12) !important;color:#DC2626 !important}
+  .chip-x:active{transform:scale(.85)}
+  .reset-btn{transition:all .18s ease}
+  .reset-btn:hover{border-color:rgba(160,113,79,.45) !important;color:#A0714F !important}
+  .mng-btn{transition:all .18s ease}
+  .mng-btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
 </style>
 </head>
 <body>
-<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:clamp(16px,3vw,28px) clamp(18px,4vw,36px) 80px">
+<div style="min-height:100vh">
 
-  <header style="width:100%;max-width:860px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-    <div style="display:flex;align-items:center;gap:9px">
-      <span style="width:8px;height:8px;border-radius:50%;background:var(--copper)"></span>
-      <span style="font-weight:800;letter-spacing:.13em;font-size:12px;text-transform:uppercase;color:var(--copper)">Artist Radar</span>
+  <!-- HEADER -->
+  <header style="position:sticky;top:0;z-index:40;background:#ffffff;border-bottom:1px solid rgba(0,0,0,.08)">
+    <div style="max-width:1180px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+      <a href="/" style="display:flex;align-items:center;gap:11px">
+        <img src="https://hansvanleeuwen.com/assets/logo-hvl-bronze-DwB-FD4t.png" alt="Hans van Leeuwen" style="height:36px;width:auto;display:block" />
+        <span style="font-weight:700;font-size:15.5px;color:#1C1917">Hans van Leeuwen</span>
+      </a>
+      <nav style="display:flex;align-items:center;gap:2px">
+        <a class="hd-link" href="/" style="padding:9px 14px;font-size:14.5px;color:#44403C;font-weight:500">Home</a>
+        <a class="hd-link" href="/work" style="padding:9px 14px;font-size:14.5px;color:#44403C;font-weight:500">Case Studies</a>
+        <a class="hd-link" href="/writing" style="padding:9px 14px;font-size:14.5px;color:#44403C;font-weight:500">Articles</a>
+        <div class="music-menu">
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:9px 14px;font-size:14.5px;color:#A0714F;font-weight:700;cursor:pointer;border-bottom:2px solid #A0714F">Music <span class="music-caret" style="font-size:10px;transition:transform .15s">▾</span></span>
+          <div class="music-dd" style="position:absolute;left:0;top:100%;min-width:210px;background:#ffffff;border:1px solid rgba(0,0,0,.09);border-radius:10px;box-shadow:0 18px 44px -18px rgba(0,0,0,.28);padding:6px;z-index:50">
+            <a class="mm-item" href="/muziek/artist-radar/" style="display:block;padding:10px 12px;font-size:14px;color:#1C1917;font-weight:600;border-radius:7px">Artist Radar</a>
+            <a class="mm-item" href="/music" style="display:block;padding:10px 12px;font-size:14px;color:#44403C;font-weight:500;border-radius:7px">Songs &amp; Production Notes</a>
+          </div>
+        </div>
+        <a class="hd-link" href="/about" style="padding:9px 14px;font-size:14.5px;color:#44403C;font-weight:500">About Hans</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:18px">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13.5px">
+          <span style="font-weight:700;color:#1C1917">NL</span>
+          <span style="color:rgba(0,0,0,.25)">|</span>
+          <span style="font-weight:500;color:#78716C">ENG</span>
+        </div>
+        <a class="hd-login" href="/portal" style="padding:8px 18px;border-radius:8px;border:1px solid rgba(0,0,0,.14);font-size:14px;font-weight:600;color:#1C1917">Login</a>
+      </div>
     </div>
-    <button id="themeBtn" aria-label="Wissel thema" style="display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;transition:border-color .2s">
-      <span id="sunIcon" style="width:26px;height:26px;display:grid;place-items:center;border-radius:50%;transition:all .25s ease">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
-      </span>
-      <span id="moonIcon" style="width:26px;height:26px;display:grid;place-items:center;border-radius:50%;transition:all .25s ease">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
-      </span>
-    </button>
   </header>
 
-  <div style="margin-top:clamp(18px,3vh,32px);height:38px;display:flex;align-items:flex-end;justify-content:center;gap:9px">
-    <div class="neon-a" style="width:3px;height:26px;border-radius:2px;background:var(--copper);opacity:.35;will-change:opacity,box-shadow"></div>
-    <div class="neon-b" style="width:3px;height:38px;border-radius:2px;background:var(--copper);opacity:.35;will-change:opacity,box-shadow"></div>
-  </div>
+  <main style="max-width:1180px;margin:0 auto;padding:0 28px">
+    <div style="padding:22px 0 0;font-size:13.5px;color:#78716C"><a href="/" style="color:inherit">Home</a> · <a href="/music" style="color:inherit">Music</a> · <span style="color:#1C1917;font-weight:600">Artist Radar</span></div>
 
-  <div style="margin-top:clamp(8px,1.5vh,16px);position:relative;width:min(400px,78vw);aspect-ratio:1">
-    <div style="position:absolute;inset:-34px;pointer-events:none;color:var(--muted)">
-      <span style="position:absolute;right:0;top:50%;transform:translate(4px,-50%);font-size:10.5px;font-weight:700;letter-spacing:.18em;opacity:.62">O</span>
-      <span style="position:absolute;bottom:0;left:50%;transform:translate(-50%,2px);font-size:10.5px;font-weight:700;letter-spacing:.18em;opacity:.62">Z</span>
-      <span style="position:absolute;left:0;top:50%;transform:translate(-4px,-50%);font-size:10.5px;font-weight:700;letter-spacing:.18em;opacity:.62">W</span>
-      <svg viewBox="0 0 488 488" style="position:absolute;inset:0;width:100%;height:100%">
-        <g stroke="var(--copper-line)" stroke-width="1" stroke-linecap="round" fill="none">
-          <line x1="244" y1="16" x2="244" y2="27"></line>
-          <line x1="472" y1="244" x2="461" y2="244"></line>
-          <line x1="244" y1="472" x2="244" y2="461"></line>
-          <line x1="16" y1="244" x2="27" y2="244"></line>
-        </g>
-        <g stroke="var(--line)" stroke-width="1" stroke-linecap="round" fill="none" opacity=".8">
-          <line x1="313.6" y1="30.7" x2="309.1" y2="41.1"></line>
-          <line x1="457.3" y1="174.4" x2="446.9" y2="178.9"></line>
-          <line x1="457.3" y1="313.6" x2="446.9" y2="309.1"></line>
-          <line x1="313.6" y1="457.3" x2="309.1" y2="446.9"></line>
-          <line x1="174.4" y1="457.3" x2="178.9" y2="446.9"></line>
-          <line x1="30.7" y1="313.6" x2="41.1" y2="309.1"></line>
-          <line x1="30.7" y1="174.4" x2="41.1" y2="178.9"></line>
-          <line x1="174.4" y1="30.7" x2="178.9" y2="41.1"></line>
-        </g>
-      </svg>
-    </div>
-    <div class="wood-ring" style="position:absolute;inset:-13px;border-radius:50%;background:repeating-radial-gradient(circle at 50% 50%, #3a2a1d 0px, #4a3524 1.5px, #5c4330 3px, #45301f 4.5px, #3a2a1d 6px), repeating-conic-gradient(from 0deg at 50% 50%, rgba(0,0,0,.18) 0deg, rgba(255,255,255,.05) 3deg, rgba(0,0,0,.12) 7deg);mask:radial-gradient(circle, transparent calc(100% - 15px), #000 calc(100% - 14px), #000 100%);-webkit-mask:radial-gradient(circle, transparent calc(100% - 15px), #000 calc(100% - 14px), #000 100%);opacity:.5;box-shadow:inset 0 0 8px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.4);will-change:transform"></div>
-    <div style="position:absolute;inset:-13px;border-radius:50%;animation:radar-sweep 60s linear infinite;transform-origin:50% 50%;pointer-events:none;mix-blend-mode:screen">
-      <div class="wood-glow" style="position:absolute;top:-6px;left:50%;width:64px;height:64px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle, rgba(120,214,255,.55), rgba(160,113,79,.35) 45%, transparent 70%);filter:blur(3px)"></div>
-    </div>
-    <div class="radar-halo halo-a" style="position:absolute;inset:-18px;border-radius:50%;border:1px solid var(--copper-line);opacity:0;will-change:transform,opacity"></div>
-    <div class="radar-halo halo-b" style="position:absolute;inset:-18px;border-radius:50%;border:1px solid var(--copper-line);opacity:0;will-change:transform,opacity"></div>
-    <div class="radar-disc" style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,var(--copper-soft),transparent 72%);border:1px solid var(--copper-line);will-change:transform">
-      <div class="radar-ring ring-a" style="position:absolute;inset:17%;border-radius:50%;border:1px solid var(--line-soft);will-change:transform;transform-origin:50% 50%"></div>
-      <div class="radar-ring ring-b" style="position:absolute;inset:34%;border-radius:50%;border:1px solid var(--line-soft);will-change:transform;transform-origin:50% 50%"></div>
-      <svg viewBox="0 0 420 420" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
-        <defs>
-          <radialGradient id="beatGlow" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0" style="stop-color:var(--copper);stop-opacity:.26"></stop>
-            <stop offset=".6" style="stop-color:var(--copper);stop-opacity:0"></stop>
-          </radialGradient>
-        </defs>
-        <circle class="radar-beat-glow" cx="210" cy="210" r="200" fill="url(#beatGlow)" opacity="0"></circle>
-      </svg>
-      <div style="position:absolute;inset:0;border-radius:50%;animation:radar-sweep 60s linear infinite;transform-origin:50% 50%">
-        <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 230deg, transparent 0deg, var(--copper-soft) 60deg, var(--copper-line) 126deg, transparent 132deg);mask:radial-gradient(circle, transparent 2%, #000 4%, #000 92%, transparent 98%);opacity:.8"></div>
-        <svg viewBox="0 0 420 420" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible">
-          <defs>
-            <linearGradient id="ecgFade" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0" style="stop-color:var(--copper);stop-opacity:.1"></stop>
-              <stop offset=".35" style="stop-color:var(--copper);stop-opacity:.3"></stop>
-              <stop offset=".75" style="stop-color:var(--copper);stop-opacity:.75"></stop>
-              <stop offset="1" style="stop-color:var(--copper);stop-opacity:.95"></stop>
-            </linearGradient>
-          </defs>
-          <path class="ecg-line" d="M210,210 L210,0" fill="none" stroke="url(#ecgFade)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
-          <circle class="neon-tip-glow" cx="210" cy="5" r="9" fill="#38D6FF" opacity="0.35" style="filter:blur(4px)"></circle>
-          <circle class="neon-tip" cx="210" cy="5" r="3.4" fill="#EAFCFF" style="filter:drop-shadow(0 0 6px #38D6FF) drop-shadow(0 0 12px #22B8FF)"></circle>
-        </svg>
+    <!-- HERO -->
+    <section style="display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;padding:40px 0 20px" class="ar-hero">
+      <div>
+        <div style="font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#A0714F;font-weight:700;margin-bottom:16px">Artist Radar · NL &amp; BE</div>
+        <h1 style="font-family:'Instrument Serif',serif;font-weight:400;font-size:56px;line-height:1.04;letter-spacing:-.01em">Mis nooit meer<br>een show van je<br>favoriete artiest.</h1>
+        <p style="margin-top:20px;font-size:17px;line-height:1.6;color:#57534E;max-width:470px">Kies hieronder een artiest — dat is alles. Onze AI scant elke week betrouwbare bronnen in Nederland en België. Gerucht, aankondiging of ticketverkoop: jij hoort het als eerste.</p>
+        <div style="margin-top:22px;display:flex;align-items:center;gap:10px;font-size:14px;color:#78716C">
+          <span style="width:8px;height:8px;border-radius:50%;background:#15803D;animation:blip 4.5s ease-in-out infinite"></span>
+          Radar actief · alleen bronnen met bewezen autoriteit
+        </div>
       </div>
-      <div class="radar-hub-hit" style="position:absolute;left:50%;top:50%;width:38px;height:38px;margin:-19px;border-radius:50%;pointer-events:none;display:grid;place-items:center;z-index:9">
-        <div class="radar-hub" style="width:13px;height:13px;border-radius:50%;background:var(--copper);box-shadow:0 0 16px var(--copper-line);will-change:transform"></div>
+      <div style="display:flex;justify-content:center;align-items:center;position:relative;height:460px">
+        <div style="position:relative;width:420px;height:420px">
+          <div class="radar-halo halo-a" style="position:absolute;inset:-20px;border-radius:50%;border:1px solid rgba(160,113,79,.35);opacity:0"></div>
+          <div class="radar-halo halo-b" style="position:absolute;inset:-20px;border-radius:50%;border:1px solid rgba(160,113,79,.25);opacity:0"></div>
+          <div class="radar-disc" style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(160,113,79,.09),transparent 72%);border:1px solid rgba(160,113,79,.28);box-shadow:0 30px 80px -40px rgba(160,113,79,.55),inset 0 0 60px rgba(160,113,79,.05);transform-origin:center;will-change:transform">
+            <div style="position:absolute;inset:70px;border-radius:50%;border:1px solid rgba(0,0,0,.06)"></div>
+            <div style="position:absolute;inset:140px;border-radius:50%;border:1px solid rgba(0,0,0,.06)"></div>
+            <svg viewBox="0 0 420 420" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+              <g stroke="rgba(160,113,79,.35)" stroke-width="1" stroke-linecap="round">
+                <line x1="210" y1="4" x2="210" y2="12"></line>
+                <line x1="210" y1="408" x2="210" y2="416"></line>
+                <line x1="4" y1="210" x2="12" y2="210"></line>
+                <line x1="408" y1="210" x2="416" y2="210"></line>
+              </g>
+            </svg>
+            <svg viewBox="0 0 420 420" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+              <defs>
+                <radialGradient id="beatGlow" cx="0.5" cy="0.5" r="0.5">
+                  <stop offset="0" stop-color="#A0714F" stop-opacity=".28"></stop>
+                  <stop offset=".6" stop-color="#A0714F" stop-opacity="0"></stop>
+                </radialGradient>
+                <linearGradient id="ecgFade" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0" stop-color="#A0714F" stop-opacity=".08"></stop>
+                  <stop offset=".35" stop-color="#A0714F" stop-opacity=".28"></stop>
+                  <stop offset=".75" stop-color="#A0714F" stop-opacity=".72"></stop>
+                  <stop offset="1" stop-color="#A0714F" stop-opacity=".95"></stop>
+                </linearGradient>
+              </defs>
+              <circle class="radar-beat-glow" cx="210" cy="210" r="200" fill="url(#beatGlow)" opacity="0"></circle>
+            </svg>
+            <div style="position:absolute;inset:0;border-radius:50%;animation:radar-sweep 22s linear infinite;transform-origin:50% 50%">
+              <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 230deg, rgba(160,113,79,0) 0deg, rgba(160,113,79,.06) 25deg, rgba(160,113,79,.18) 80deg, rgba(160,113,79,.36) 118deg, rgba(160,113,79,.5) 128deg, rgba(160,113,79,0) 132deg);mask:radial-gradient(circle, transparent 2%, #000 4%, #000 92%, transparent 98%)"></div>
+              <svg viewBox="0 0 420 420" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible">
+                <path class="ecg-line" d="M210,210 L210,0" fill="none" stroke="url(#ecgFade)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 8px rgba(160,113,79,.6))"></path>
+              </svg>
+            </div>
+            <div class="radar-hub" style="position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border-radius:50%;background:#A0714F;box-shadow:0 0 18px rgba(160,113,79,.75),inset 0 0 4px rgba(255,255,255,.35);will-change:transform"></div>
+            <div class="radar-blip-a" style="position:absolute;left:32%;top:34%;width:9px;height:9px;border-radius:50%;background:#B45309;box-shadow:0 0 12px rgba(180,83,9,.6);will-change:transform"></div>
+            <div class="radar-blip-b" style="position:absolute;left:65%;top:58%;width:9px;height:9px;border-radius:50%;background:#15803D;box-shadow:0 0 12px rgba(21,128,61,.6);will-change:transform"></div>
+            <div class="radar-blip-c" style="position:absolute;left:44%;top:70%;width:6px;height:6px;border-radius:50%;background:#64748B;opacity:.7;will-change:transform"></div>
+          </div>
+        </div>
       </div>
-      <div id="dots"></div>
-    </div>
-    <div id="tip" style="display:none"></div>
-  </div>
+    </section>
 
-  <div id="legend"></div>
+    <!-- SIGNUP -->
+    <section id="radar" style="margin:16px 0 64px">
+      <div id="signupCard" style="border:1px solid rgba(0,0,0,.06);border-radius:18px;background:#ffffff;padding:32px;box-shadow:0 24px 60px -40px rgba(28,25,23,.35)">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+          <h2 style="font-family:'Instrument Serif',serif;font-weight:400;font-size:27px">Wie wil je niet missen?</h2>
+          <span style="font-size:13px;color:#78716C">Klaar in 10 seconden · geen account, geen wachtwoord</span>
+        </div>
 
-  <h1 style="font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(34px,6vw,52px);line-height:1.08;letter-spacing:-.01em;text-align:center;margin:clamp(26px,4vh,40px) 0 0;max-width:16ch">Mis nooit meer een show van je favoriete artiest</h1>
-  <p style="font-size:clamp(15px,2vw,16.5px);color:var(--muted);text-align:center;margin:14px 0 0;max-width:44ch;line-height:1.6;text-wrap:pretty">Kies je artiesten. Wij mailen je bij geruchten, aankondigingen en zodra tickets in Nederland of België in de verkoop gaan.</p>
+        <div style="position:relative">
+          <div class="chips-box" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;min-height:54px;border-radius:12px;border:1px solid rgba(0,0,0,.08);background:#FAFAF9;align-items:center;transition:border-color .15s,box-shadow .15s">
+            <span id="chips" style="display:contents"></span>
+            <input id="searchInput" class="ar-input" placeholder="Typ een artiestnaam — of tik hieronder" style="flex:1;min-width:190px;padding:8px 4px;border:none;background:transparent;color:#1C1917;font-size:15.5px;font-family:inherit;outline:none" />
+          </div>
+          <div id="dropdown"></div>
+        </div>
 
-  <div id="formzone" style="width:100%;max-width:480px;margin-top:clamp(28px,4vh,40px)"></div>
+        <div id="popular"></div>
+        <div id="suggest"></div>
+        <div id="signals"></div>
+        <div id="emailBlock"></div>
+      </div>
 
+      <div id="celebration" style="display:none"></div>
+    </section>
+
+    <!-- SIGNAAL-NIVEAUS -->
+    <section style="padding:0 0 130px">
+      <h3 style="font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#78716C;font-weight:700;margin-bottom:20px">Drie signaal-niveaus</h3>
+      <div class="ar-levels" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+        <div style="border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:22px;background:#ffffff">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px"><span style="width:10px;height:10px;border-radius:50%;border:2px dashed #64748B"></span><span style="font-weight:700;font-size:14px;color:#475569;text-transform:uppercase;letter-spacing:.05em">Rumored</span></div>
+          <p style="font-size:14px;color:#57534E;line-height:1.55">Gerucht van een bron met bewezen autoriteit. Gebundeld in de wekelijkse digest — nooit los gemaild.</p>
+        </div>
+        <div style="border:1px solid rgba(180,83,9,.25);border-radius:14px;padding:22px;background:#ffffff">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px"><span style="width:10px;height:10px;border-radius:50%;background:#B45309"></span><span style="font-weight:700;font-size:14px;color:#B45309;text-transform:uppercase;letter-spacing:.05em">Announced</span></div>
+          <p style="font-size:14px;color:#57534E;line-height:1.55">Officiële aankondiging van artiest, venue of promotor. Je krijgt direct bericht.</p>
+        </div>
+        <div style="border:1px solid rgba(21,128,61,.3);border-radius:14px;padding:22px;background:#ffffff">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px"><span style="width:10px;height:10px;border-radius:50%;background:#15803D"></span><span style="font-weight:700;font-size:14px;color:#15803D;text-transform:uppercase;letter-spacing:.05em">Available</span></div>
+          <p style="font-size:14px;color:#57534E;line-height:1.55">Tickets in de verkoop. Onsale binnen 14 dagen? Dan gemarkeerd als <span style="color:#DC2626;font-weight:700">urgent</span>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
 </div>
-<a class="ar-back" href="/music">&larr; Terug naar hansvanleeuwen.com</a>
+<style>
+  @media(max-width:860px){
+    .ar-hero{grid-template-columns:1fr !important;gap:10px !important}
+    .ar-hero > div:last-child{display:none !important}
+    .ar-levels{grid-template-columns:1fr !important}
+    .email-grid{grid-template-columns:1fr !important}
+  }
+</style>
 <script>
 (function(){
   "use strict";
+  var FN = "https://pesfakewujjwkyybwaom.supabase.co/functions/v1/artist-radar-signup";
+
   var DB = [
     {id:'fredagain',name:'Fred again..',genre:'Electronic'},
     {id:'50cent',name:'50 Cent',genre:'Hip-hop'},
@@ -174,340 +230,220 @@
     {id:'centralcee',name:'Central Cee',genre:'Hip-hop'},
     {id:'rosalia',name:'Rosalía',genre:'Pop'},
     {id:'badbunny',name:'Bad Bunny',genre:'Pop'},
-    {id:'massive',name:'Massive Attack',genre:'Electronic'},
-    {id:'eminem',name:'Eminem',genre:'Hip-hop'},
-    {id:'drake',name:'Drake',genre:'Hip-hop'},
-    {id:'billie',name:'Billie Eilish',genre:'Pop'},
-    {id:'taylor',name:'Taylor Swift',genre:'Pop'},
-    {id:'coldplay',name:'Coldplay',genre:'Rock'},
-    {id:'beyonce',name:'Beyoncé',genre:'R&B'},
-    {id:'adele',name:'Adele',genre:'Pop'},
-    {id:'travis',name:'Travis Scott',genre:'Hip-hop'},
-    {id:'harry',name:'Harry Styles',genre:'Pop'},
-    {id:'postmalone',name:'Post Malone',genre:'Hip-hop'},
-    {id:'dojacat',name:'Doja Cat',genre:'Pop'},
-    {id:'tiesto',name:'Tiësto',genre:'Electronic'},
-    {id:'garrix',name:'Martin Garrix',genre:'Electronic'},
-    {id:'armin',name:'Armin van Buuren',genre:'Electronic'},
-    {id:'lostfreq',name:'Lost Frequencies',genre:'Electronic'},
-    {id:'snelle',name:'Snelle',genre:'Hip-hop'},
-    {id:'suzanfreek',name:'Suzan & Freek',genre:'Pop'},
-    {id:'ronnieflex',name:'Ronnie Flex',genre:'Hip-hop'},
-    {id:'kensington',name:'Kensington',genre:'Rock'},
-    {id:'direct',name:'DI-RECT',genre:'Rock'}
+    {id:'massive',name:'Massive Attack',genre:'Electronic'}
   ];
-  var POPULAR = ['fredagain','froukje','stromae','cdw'];
-  var EVENTS = [
-    {a:'fredagain',venue:'Lowlands',city:'Biddinghuizen',c:'NL',date:'15 aug 2026',k:20260815,status:'available',urgent:true},
-    {a:'fredagain',venue:'AFAS Live',city:'Amsterdam',c:'NL',date:'18 nov 2026',k:20261118,status:'available'},
-    {a:'froukje',venue:'TivoliVredenburg',city:'Utrecht',c:'NL',date:'9 okt 2026',k:20261009,status:'available'},
-    {a:'froukje',venue:'Doornroosje',city:'Nijmegen',c:'NL',date:'1 feb 2027',k:20270201,status:'announced'},
-    {a:'goldband',venue:'Fluor',city:'Amersfoort',c:'NL',date:'26 sep 2026',k:20260926,status:'announced'},
-    {a:'cdw',venue:'Shelter',city:'Amsterdam',c:'NL',date:'10 okt 2026',k:20261010,status:'available'},
-    {a:'cdw',venue:'Sportpaleis',city:'Antwerpen',c:'BE',date:'21 mrt 2027',k:20270321,status:'announced'},
-    {a:'overmono',venue:'013',city:'Tilburg',c:'NL',date:'27 nov 2026',k:20261127,status:'available'},
-    {a:'bicep',venue:'Paradiso',city:'Amsterdam',c:'NL',date:'5 dec 2026',k:20261205,status:'announced'},
-    {a:'amelie',venue:'Ancienne Belgique',city:'Brussel',c:'BE',date:'16 jan 2027',k:20270116,status:'announced'},
-    {a:'stromae',venue:'Ziggo Dome',city:'Amsterdam',c:'NL',date:'najaar 2027',k:20271001,status:'rumored'},
-    {a:'weeknd',venue:'Johan Cruijff ArenA',city:'Amsterdam',c:'NL',date:'zomer 2027',k:20270701,status:'rumored'},
-    {a:'dualipa',venue:'Werchter',city:'Werchter',c:'BE',date:'zomer 2027',k:20270702,status:'rumored'}
-  ];
-  var STATUS = {
-    available:{col:'#15803D',label:'Tickets te koop',short:'te koop',hint:'De verkoop loopt — pak je plek.'},
-    announced:{col:'#B45309',label:'Aangekondigd',short:'aangekondigd',hint:'Datum bekend, verkoop volgt.'},
-    rumored:{col:'#64748B',label:'Gerucht',short:'gerucht',hint:'Nog niet bevestigd — we houden het scherp.'}
+  var POPULAR = ['fredagain','froukje','stromae','cdw','goldband','dualipa'];
+  var SIGNALS = {
+    fredagain:{dot:'#15803D',text:'2 actieve signalen · tickets beschikbaar in NL'},
+    cdw:{dot:'#B45309',text:'1 signaal · show aangekondigd in BE'},
+    stromae:{dot:'#64748B',text:'1 gerucht · mogelijk NL-show najaar 2027'},
+    froukje:{dot:'#B45309',text:'1 signaal · clubtour aangekondigd'},
+    dualipa:{dot:'#64748B',text:'1 gerucht · stadiontour Europa 2027'}
   };
-  var NOW_DAY = 183;
 
-  var state = { dark:false, query:'', focused:false, selected:[], email:'', submitted:false, hovered:null, tipFading:false, account:false, first:'', last:'', city:'' };
-  var tipTimer=null, raf=null, rings=null, ringT=null;
+  var state = { query:'', focused:false, selected:[], email:'', nl:true, be:true, submitted:false };
+  var emailBuilt=false, raf=null, rings=null, ringT=null;
 
-  function $(s){ return document.querySelector(s); }
+  function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function norm(s){ return (s||'').toLowerCase().trim(); }
-  function dayOf(k){ var y=Math.floor(k/10000),m=Math.floor(k/100)%100,d=k%100; return (y-2026)*365+(m-1)*30+d; }
+  function selIds(){ var m={}; state.selected.forEach(function(a){ m[a.id]=1; }); return m; }
+  function canSubmit(){ return /.+@.+\..+/.test(state.email) && state.selected.length>0 && (state.nl||state.be); }
+  function scopeText(){ return [state.nl&&'Nederland',state.be&&'België'].filter(Boolean).join(' & ') || 'geen land geselecteerd'; }
 
-  function buildDots(){
-    var sel=state.selected, events=[];
-    sel.forEach(function(a){ EVENTS.filter(function(e){return e.a===a.id;}).forEach(function(e){ events.push(Object.assign({},e,{name:a.name})); }); });
-    return events.map(function(e,i){
-      var days=Math.max(0,dayOf(e.k)-NOW_DAY);
-      var w=e.status==='available'?0.42:e.status==='announced'?0.78:1.0;
-      var score=days*w;
-      var rNorm=Math.max(0.16,Math.min(0.9,0.16+score/520));
-      var theta=(i*137.508-90)*Math.PI/180;
-      var R=rNorm*42;
-      var x=50+R*Math.cos(theta), y=50+R*Math.sin(theta);
-      var st=STATUS[e.status];
-      var size=e.status==='available'?11:e.status==='announced'?9:6.5;
-      return Object.assign({},e,{x:x,y:y,size:size,col:st.col,label:st.label,short:st.short,hint:st.hint,days:days});
-    });
+  function addArtist(a){ if(state.selected.some(function(x){return x.id===a.id;})) return; state.selected=state.selected.concat([a]); state.query=''; state.focused=false; var si=$('searchInput'); if(si) si.value=''; updateDynamic(); }
+  function addFree(){ var name=state.query.trim(); if(name.length<2) return; var id='free-'+norm(name).replace(/\s+/g,'-'); if(state.selected.some(function(x){return x.id===id;})) return; state.selected=state.selected.concat([{id:id,name:name,genre:'vrije invoer',pending:true}]); state.query=''; state.focused=false; var si=$('searchInput'); if(si) si.value=''; updateDynamic(); }
+  function removeArtist(id){ state.selected=state.selected.filter(function(a){return a.id!==id;}); updateDynamic(); }
+
+  function renderChips(){
+    var host=$('chips'); if(!host) return;
+    host.innerHTML=state.selected.map(function(a){
+      return '<span style="display:inline-flex;align-items:center;gap:8px;padding:7px 8px 7px 13px;border-radius:999px;background:rgba(160,113,79,.09);border:1px solid rgba(160,113,79,.2);font-size:14px;font-weight:600;color:#7C5638;animation:chip-in .25s ease both">'+
+        esc(a.name)+
+        (a.pending?'<span style="font-size:10px;letter-spacing:.06em;color:#B45309;font-weight:700;text-transform:uppercase">nieuw</span>':'')+
+        '<span class="chip-x" data-id="'+esc(a.id)+'" style="cursor:pointer;width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.06);font-size:12px;line-height:1;color:#57534E">✕</span>'+
+        '</span>';
+    }).join('');
+    Array.prototype.forEach.call(host.querySelectorAll('.chip-x'),function(el){ el.addEventListener('click',function(){ removeArtist(el.getAttribute('data-id')); }); });
   }
 
-  function canSubmit(){
-    var acctOk=!state.account||(state.first.trim()&&state.last.trim()&&state.city.trim());
-    return /.+@.+\..+/.test(state.email)&&state.selected.length>0&&acctOk;
+  function filteredList(){
+    var ids=selIds(), q=norm(state.query);
+    return DB.filter(function(a){ return !ids[a.id]&&(q===''||norm(a.name).indexOf(q)>=0); }).slice(0,6);
   }
-  function addArtist(id){
-    var a=DB.find(function(x){return x.id===id;}); if(!a) return;
-    if(state.selected.some(function(x){return x.id===id;})) return;
-    state.selected=state.selected.concat([a]); state.query=''; state.focused=false;
-    var si=$('#searchInput'); if(si) si.value='';
-    updateDynamic();
-  }
-  function removeArtist(id){ state.selected=state.selected.filter(function(x){return x.id!==id;}); updateDynamic(); }
 
-  // ---- dynamic renderers ----
-  function renderDots(){
-    var dots=buildDots(), host=$('#dots'); if(!host) return dots;
-    host.innerHTML='';
-    dots.forEach(function(d,i){
-      var blip=document.createElement('div');
-      blip.className='radar-blip';
-      blip.setAttribute('style','position:absolute;left:'+d.x.toFixed(2)+'%;top:'+d.y.toFixed(2)+'%;transform:translate(-50%,-50%);will-change:transform');
-      var pad=document.createElement('div');
-      pad.setAttribute('style','display:grid;place-items:center;width:'+(d.size+16)+'px;height:'+(d.size+16)+'px;border-radius:50%;cursor:pointer;pointer-events:auto;transition:transform .16s ease');
-      var dot=document.createElement('div');
-      dot.setAttribute('style','width:'+d.size+'px;height:'+d.size+'px;border-radius:50%;background:'+d.col+';box-shadow:0 0 12px '+d.col+'99'+(d.urgent?';outline:2px solid '+d.col+'55;outline-offset:2px':'')+';transition:box-shadow .16s ease');
-      pad.appendChild(dot);
-      (function(dd){
-        function enter(){ if(tipTimer){clearTimeout(tipTimer);tipTimer=null;} state.hovered=dd; state.tipFading=false; pad.style.transform='scale(1.28)'; renderTip(); }
-        function leave(){ pad.style.transform=''; if(tipTimer)clearTimeout(tipTimer); state.tipFading=true; renderTip(); tipTimer=setTimeout(function(){ state.hovered=null; state.tipFading=false; renderTip(); },3000); }
-        pad.addEventListener('mouseenter',enter);
-        pad.addEventListener('mouseleave',leave);
-        pad.addEventListener('click',enter);
-      })(d);
-      blip.appendChild(pad);
-      host.appendChild(blip);
-    });
-    return dots;
+  function renderDropdown(){
+    var host=$('dropdown'); if(!host) return;
+    var q=norm(state.query);
+    var fr=filteredList();
+    var exact=DB.some(function(a){ return norm(a.name)===q; });
+    var showFree=q.length>=2&&!exact;
+    var show=state.focused&&(fr.length>0||showFree);
+    if(!show){ host.innerHTML=''; host.removeAttribute('style'); return; }
+    host.setAttribute('style','position:absolute;left:0;right:0;top:100%;margin-top:8px;z-index:30;border-radius:12px;border:1px solid rgba(0,0,0,.1);background:#ffffff;box-shadow:0 26px 60px -28px rgba(28,25,23,.4);overflow:hidden;max-height:288px;overflow-y:auto');
+    var html=fr.map(function(a){
+      return '<div class="drop-row" data-id="'+esc(a.id)+'" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,.04)">'+
+        '<span style="font-size:15px;font-weight:600">'+esc(a.name)+'</span><span style="font-size:12.5px;color:#78716C">'+esc(a.genre)+'</span></div>';
+    }).join('');
+    if(showFree){
+      html+='<div class="free-row" id="freeAdd" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;background:rgba(180,83,9,.05)">'+
+        '<span style="width:22px;height:22px;border-radius:6px;display:grid;place-items:center;background:rgba(180,83,9,.14);color:#B45309;font-weight:800;font-size:15px">+</span>'+
+        '<span style="font-size:14.5px">Niet gevonden? Voeg &ldquo;<span style="color:#B45309;font-weight:700">'+esc(state.query)+'</span>&rdquo; toe — wij nemen ’m op in de radar</span></div>';
+    }
+    host.innerHTML=html;
+    Array.prototype.forEach.call(host.querySelectorAll('.drop-row'),function(el){ el.addEventListener('mousedown',function(ev){ ev.preventDefault(); var a=DB.find(function(x){return x.id===el.getAttribute('data-id');}); if(a) addArtist(a); }); });
+    var fa=$('freeAdd'); if(fa) fa.addEventListener('mousedown',function(ev){ ev.preventDefault(); addFree(); });
   }
-  function renderTip(){
-    var tip=$('#tip'), hv=state.hovered;
-    if(!tip) return;
-    if(!hv){ tip.style.display='none'; tip.innerHTML=''; return; }
-    var fade=state.tipFading;
-    var left=Math.max(8,Math.min(92,hv.x)).toFixed(1), top=hv.y.toFixed(1);
-    tip.setAttribute('style','position:absolute;left:'+left+'%;top:'+top+'%;transform:translate(-50%,calc(-100% - 14px));z-index:20;pointer-events:none;min-width:170px;max-width:230px;padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);opacity:'+(fade?0:1)+';transition:'+(fade?'opacity 3s ease':'opacity .16s ease'));
-    tip.innerHTML=''+
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+
-        '<span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+hv.col+'"></span>'+
-        '<span style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)">'+esc(hv.label)+'</span>'+
-      '</div>'+
-      '<div style="font-size:15px;font-weight:700;line-height:1.25">'+esc(hv.name)+'</div>'+
-      '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+esc(hv.venue+' · '+hv.city)+'</div>'+
-      '<div style="font-size:12.5px;color:var(--ink);font-weight:600;margin-top:4px">'+esc(hv.date)+'</div>';
+
+  function renderPopular(){
+    var host=$('popular'); if(!host) return;
+    var ids=selIds();
+    if(state.selected.length!==0){ host.innerHTML=''; host.removeAttribute('style'); return; }
+    var pids=POPULAR.filter(function(id){ return !ids[id]; });
+    host.setAttribute('style','margin-top:14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px');
+    host.innerHTML='<span style="font-size:13px;color:#78716C;margin-right:2px">Veel gevolgd:</span>'+pids.map(function(id){
+      var a=DB.find(function(x){return x.id===id;});
+      return '<span class="pop-chip" data-id="'+esc(id)+'" style="cursor:pointer;padding:8px 15px;border-radius:999px;border:1px solid rgba(0,0,0,.07);background:#ffffff;font-size:13.5px;font-weight:600;color:#44403C;box-shadow:0 1px 2px rgba(28,25,23,.05)">'+esc(a.name)+'</span>';
+    }).join('');
+    Array.prototype.forEach.call(host.querySelectorAll('.pop-chip'),function(el){ el.addEventListener('click',function(){ var a=DB.find(function(x){return x.id===el.getAttribute('data-id');}); if(a) addArtist(a); }); });
   }
-  function renderLegend(dots){
-    var host=$('#legend'); if(!host) return;
-    if(state.selected.length===0){ host.innerHTML=''; return; }
-    var counts={available:0,announced:0,rumored:0};
-    dots.forEach(function(d){ counts[d.status]++; });
-    var rows=[['available','Tickets te koop'],['announced','Aangekondigd'],['rumored','Gerucht']];
-    host.setAttribute('style','display:flex;flex-wrap:wrap;gap:18px;justify-content:center;margin-top:22px;animation:fade-up .3s ease both');
-    host.innerHTML=rows.map(function(p){
-      var n=counts[p[0]], col=STATUS[p[0]].col;
-      return '<span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;opacity:'+(n?1:.38)+';transition:opacity .25s">'+
-        '<span style="width:9px;height:9px;border-radius:50%;background:'+col+(n?';box-shadow:0 0 8px '+col+'88':'')+'"></span>'+
-        '<span style="font-weight:700">'+n+'</span>'+
-        '<span style="color:var(--muted);font-weight:500">'+p[1]+'</span></span>';
+
+  function renderSuggest(){
+    var host=$('suggest'); if(!host) return;
+    var ids=selIds(), sugg=[], label='';
+    if(state.selected.length>0){
+      var last=state.selected.slice().reverse().find(function(a){ return !a.pending; });
+      if(last){ sugg=DB.filter(function(a){ return !ids[a.id]&&a.genre===last.genre; }).slice(0,3); label='Omdat je '+last.name+' koos — vaak samen gevolgd:'; }
+    }
+    if(sugg.length===0||state.submitted){ host.innerHTML=''; host.removeAttribute('style'); return; }
+    host.setAttribute('style','margin-top:16px;padding:14px 16px;border-radius:12px;background:rgba(160,113,79,.05);border:1px solid rgba(160,113,79,.18);animation:fade-up .35s ease both');
+    host.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px"><span style="font-size:13px;color:#7C5638;font-weight:600">'+esc(label)+'</span>'+sugg.map(function(a){
+      return '<span class="sug-chip" data-id="'+esc(a.id)+'" style="cursor:pointer;padding:7px 14px;border-radius:999px;border:1px solid rgba(160,113,79,.25);background:#ffffff;font-size:13.5px;font-weight:600;color:#7C5638">+ '+esc(a.name)+'</span>';
+    }).join('')+'</div>';
+    Array.prototype.forEach.call(host.querySelectorAll('.sug-chip'),function(el){ el.addEventListener('click',function(){ var a=DB.find(function(x){return x.id===el.getAttribute('data-id');}); if(a) addArtist(a); }); });
+  }
+
+  function renderSignals(){
+    var host=$('signals'); if(!host) return;
+    var rows=state.selected.filter(function(a){ return SIGNALS[a.id]; });
+    if(rows.length===0){ host.innerHTML=''; host.removeAttribute('style'); return; }
+    host.setAttribute('style','margin-top:16px;display:flex;flex-direction:column;gap:8px;animation:fade-up .35s ease both');
+    host.innerHTML=rows.map(function(a){
+      var sig=SIGNALS[a.id];
+      return '<div style="display:flex;align-items:center;gap:11px;padding:12px 15px;border-radius:11px;border:1px solid rgba(0,0,0,.07);background:#FAFAF9">'+
+        '<span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;background:'+sig.dot+'"></span>'+
+        '<span style="font-size:14px;font-weight:600">'+esc(a.name)+'</span>'+
+        '<span style="font-size:13.5px;color:#57534E">'+esc(sig.text)+'</span></div>';
     }).join('');
   }
-  var FIELD_INPUT='box-sizing:border-box;width:100%;padding:13px 15px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15.5px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s';
-  var BIG_INPUT='width:100%;box-sizing:border-box;padding:15px 18px;border-radius:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s';
 
-  function spotSvg(sz){ return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" style="flex-shrink:0" aria-label="Spotify"><circle cx="12" cy="12" r="12" fill="#1DB954"></circle><path d="M6.5 9.2c3.4-1 7.2-.8 10.3 1M7 12.2c2.8-.8 5.9-.6 8.4.9M7.6 15c2.2-.6 4.5-.4 6.4.8" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"></path></svg>'; }
+  function scopeChipStyle(on){ return on
+    ? 'display:flex;align-items:center;gap:7px;cursor:pointer;padding:13px 16px;border-radius:11px;font-size:14px;font-weight:700;border:1px solid rgba(160,113,79,.3);background:rgba(160,113,79,.08);color:#7C5638;user-select:none;flex:1;justify-content:center;transition:all .18s ease'
+    : 'display:flex;align-items:center;gap:7px;cursor:pointer;padding:13px 16px;border-radius:11px;font-size:14px;font-weight:600;border:1px solid rgba(0,0,0,.08);background:#FAFAF9;color:#78716C;user-select:none;flex:1;justify-content:center;transition:all .18s ease'; }
+  function scopeBoxStyle(on){ return on
+    ? 'width:17px;height:17px;border-radius:5px;display:grid;place-items:center;background:#A0714F;color:#fff;font-size:11px;font-weight:800'
+    : 'width:17px;height:17px;border-radius:5px;display:grid;place-items:center;background:transparent;border:1px solid rgba(0,0,0,.15);color:transparent;font-size:11px'; }
 
-  function renderForm(){
-    var zone=$('#formzone'); if(!zone) return;
-    if(state.submitted){ renderSuccess(); return; }
-    zone.innerHTML=''+
-      '<div style="display:flex;flex-direction:column;gap:14px">'+
-        '<div style="position:relative">'+
-          '<input id="searchInput" placeholder="Zoek een artiest… (bv. Eminem)" style="'+BIG_INPUT+';box-shadow:var(--shadow)" />'+
-          '<div id="dropdown"></div>'+
-        '</div>'+
-        '<div id="chips"></div>'+
-        '<div id="popular"></div>'+
-        '<input id="emailInput" type="email" placeholder="jij@voorbeeld.nl" style="'+BIG_INPUT+'" />'+
-        '<label id="acctToggle" style="display:flex;align-items:center;gap:11px;padding:2px;cursor:pointer;user-select:none">'+
-          '<span id="acctCheck"></span>'+
-          '<span style="display:flex;flex-direction:column;gap:1px">'+
-            '<span style="font-size:14px;font-weight:600">Maak een gratis account</span>'+
-            '<span style="font-size:12.5px;color:var(--muted)">Beheer je radar en krijg persoonlijke tips voor shows bij jou in de buurt.</span>'+
-          '</span>'+
-        '</label>'+
-        '<div id="acctFields"></div>'+
-        '<button id="ctaBtn"></button>'+
-        '<p style="display:flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;color:var(--faint);text-align:center;margin:2px 0 0">'+spotSvg(13)+'Alleen artiesten die op Spotify staan · gratis · uitschrijven met één klik</p>'+
-      '</div>';
-    var si=$('#searchInput');
-    si.value=state.query;
-    si.addEventListener('input',function(e){ state.query=e.target.value; state.focused=true; updateDynamic(); });
-    si.addEventListener('focus',function(){ state.focused=true; updateDynamic(); });
-    si.addEventListener('blur',function(){ setTimeout(function(){ state.focused=false; updateDynamic(); },180); });
-    si.addEventListener('focus',function(){ this.style.borderColor='var(--copper-line)'; this.style.boxShadow='0 0 0 3px var(--copper-soft),var(--shadow)'; });
-    si.addEventListener('blur',function(){ this.style.borderColor='var(--line)'; this.style.boxShadow='var(--shadow)'; });
-    var em=$('#emailInput');
-    em.value=state.email;
-    em.addEventListener('input',function(e){ state.email=e.target.value; updateDynamic(); });
-    em.addEventListener('keydown',function(e){ if(e.key==='Enter') submit(); });
-    em.addEventListener('focus',function(){ this.style.borderColor='var(--copper-line)'; this.style.boxShadow='0 0 0 3px var(--copper-soft)'; });
-    em.addEventListener('blur',function(){ this.style.borderColor='var(--line)'; this.style.boxShadow='none'; });
-    $('#acctToggle').addEventListener('click',function(e){ e.preventDefault(); toggleAccount(); });
-    $('#ctaBtn').addEventListener('click',submit);
-    renderAcctFields();
-    updateDynamic();
-  }
-
-  function renderAcctFields(){
-    var host=$('#acctFields'); if(!host) return;
-    if(!state.account){ host.innerHTML=''; return; }
-    host.setAttribute('style','display:flex;flex-direction:column;gap:11px;padding:16px;border-radius:13px;border:1px solid var(--copper-line);background:var(--copper-soft);animation:fade-up .22s ease both;margin-top:0');
+  function ensureEmailBlock(){
+    var host=$('emailBlock'); if(!host) return;
+    if(state.selected.length===0){ host.innerHTML=''; host.removeAttribute('style'); emailBuilt=false; return; }
+    if(emailBuilt) return;
+    host.setAttribute('style','margin-top:24px;padding-top:24px;border-top:1px solid rgba(0,0,0,.07);animation:fade-up .4s ease both');
     host.innerHTML=''+
-      '<div style="display:flex;gap:11px;flex-wrap:wrap">'+
-        '<input id="fFirst" placeholder="Voornaam" style="'+FIELD_INPUT+';flex:1;min-width:130px" />'+
-        '<input id="fLast" placeholder="Achternaam" style="'+FIELD_INPUT+';flex:1;min-width:130px" />'+
+      '<div class="email-grid" style="display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:end">'+
+        '<div><label style="display:block;font-size:13px;font-weight:600;color:#57534E;margin-bottom:8px">Waar mogen we het signaal naartoe sturen?</label>'+
+        '<input id="emailInput" class="ar-input" type="email" placeholder="jij@voorbeeld.nl" style="width:100%;padding:14px 16px;border-radius:11px;border:1px solid rgba(0,0,0,.09);background:#FAFAF9;color:#1C1917;font-size:15.5px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s" /></div>'+
+        '<div style="display:flex;gap:9px">'+
+          '<div id="nlChip"><span id="nlBox"></span> NL</div>'+
+          '<div id="beChip"><span id="beBox"></span> BE</div>'+
+        '</div>'+
       '</div>'+
-      '<input id="fCity" placeholder="Woonplaats" style="'+FIELD_INPUT+'" />';
-    var f=$('#fFirst'), l=$('#fLast'), c=$('#fCity');
-    f.value=state.first; l.value=state.last; c.value=state.city;
-    f.addEventListener('input',function(e){ state.first=e.target.value; updateCta(); });
-    l.addEventListener('input',function(e){ state.last=e.target.value; updateCta(); });
-    c.addEventListener('input',function(e){ state.city=e.target.value; updateCta(); });
-    [f,l,c].forEach(function(x){
-      x.addEventListener('focus',function(){ this.style.borderColor='var(--copper-line)'; this.style.boxShadow='0 0 0 3px var(--copper-soft)'; });
-      x.addEventListener('blur',function(){ this.style.borderColor='var(--line)'; this.style.boxShadow='none'; });
-    });
+      '<div style="margin-top:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">'+
+        '<button id="ctaBtn" style="font-family:inherit"></button>'+
+        '<span id="ctaHint" style="font-size:13px;color:#78716C;max-width:380px;line-height:1.5"></span>'+
+      '</div>';
+    var em=$('emailInput'); em.value=state.email;
+    em.addEventListener('input',function(e){ state.email=e.target.value; updateEmailBlock(); });
+    em.addEventListener('keydown',function(e){ if(e.key==='Enter') submit(); });
+    $('nlChip').addEventListener('click',function(){ state.nl=!state.nl; updateEmailBlock(); });
+    $('beChip').addEventListener('click',function(){ state.be=!state.be; updateEmailBlock(); });
+    $('ctaBtn').addEventListener('click',submit);
+    emailBuilt=true;
   }
-
-  function toggleAccount(){ state.account=!state.account; updateCheck(); renderAcctFields(); updateCta(); }
-  function updateCheck(){
-    var chk=$('#acctCheck'); if(!chk) return;
-    chk.setAttribute('style','flex-shrink:0;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;transition:all .18s ease;'+(state.account?'background:var(--copper);border:1px solid var(--copper)':'background:var(--field);border:1px solid var(--line)'));
-    chk.innerHTML=state.account?'<span style="color:#fff;font-size:12px;line-height:1">✓</span>':'';
-  }
-  function updateCta(){
-    var b=$('#ctaBtn'); if(!b) return;
+  function updateEmailBlock(){
+    if(!emailBuilt) return;
+    var nlC=$('nlChip'), beC=$('beChip'), nlB=$('nlBox'), beB=$('beBox'), cta=$('ctaBtn'), hint=$('ctaHint');
+    if(nlC) nlC.setAttribute('style',scopeChipStyle(state.nl));
+    if(beC) beC.setAttribute('style',scopeChipStyle(state.be));
+    if(nlB){ nlB.setAttribute('style',scopeBoxStyle(state.nl)); nlB.textContent='✓'; }
+    if(beB){ beB.setAttribute('style',scopeBoxStyle(state.be)); beB.textContent='✓'; }
     var ok=canSubmit();
-    b.textContent=state.account?'Maak account & zet op radar':'Zet op mijn radar';
-    b.disabled=!ok;
-    b.setAttribute('style','width:100%;padding:16px;border-radius:13px;border:none;font-size:15.5px;font-weight:700;font-family:inherit;transition:all .2s ease;'+(ok?'background:var(--copper);color:#fff;cursor:pointer;box-shadow:var(--cta-glow)':'background:var(--line);color:var(--faint);cursor:not-allowed'));
+    if(cta){ cta.textContent='Zet op mijn radar'; cta.disabled=!ok;
+      cta.setAttribute('style','font-family:inherit;padding:15px 30px;border-radius:11px;border:none;font-size:15.5px;font-weight:700;transition:.15s;'+(ok?'background:#A0714F;color:#ffffff;cursor:pointer;box-shadow:0 12px 26px -12px rgba(160,113,79,.7)':'background:#E7E5E4;color:#A8A29E;cursor:not-allowed')); }
+    if(hint){ hint.textContent = ok?'We sturen één bevestigingslink — daarna doet de radar de rest.':'Vul je e-mail in — meer is het niet.'; hint.style.color='#78716C'; }
   }
 
   function updateDynamic(){
-    var dots=renderDots();
-    renderTip();
-    renderLegend(dots);
-    // dropdown
-    var drop=$('#dropdown');
-    if(drop){
-      var q=norm(state.query);
-      var selIds={}; state.selected.forEach(function(a){ selIds[a.id]=1; });
-      var filtered=DB.filter(function(a){ return !selIds[a.id]&&(q===''||norm(a.name).indexOf(q)>=0); }).slice(0,6);
-      if(state.focused&&filtered.length>0&&q.length>0){
-        drop.setAttribute('style','position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;border-radius:13px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);overflow:hidden;animation:fade-up .18s ease both');
-        drop.innerHTML=filtered.map(function(a){
-          return '<div class="ar-drop" data-id="'+a.id+'" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 17px;cursor:pointer;transition:background .12s">'+
-            '<span style="display:flex;align-items:center;gap:9px;min-width:0;flex:1">'+spotSvg(15)+
-              '<span style="font-size:14.5px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(a.name)+'</span>'+
-            '</span>'+
-            '<span style="font-size:12px;color:var(--faint);flex-shrink:0;white-space:nowrap">'+esc(a.genre)+'</span></div>';
-        }).join('');
-        Array.prototype.forEach.call(drop.querySelectorAll('.ar-drop'),function(el){
-          el.addEventListener('mousedown',function(ev){ ev.preventDefault(); addArtist(el.getAttribute('data-id')); });
-          el.addEventListener('mouseenter',function(){ el.style.background='var(--copper-soft)'; });
-          el.addEventListener('mouseleave',function(){ el.style.background=''; });
-        });
-      } else { drop.innerHTML=''; drop.removeAttribute('style'); }
-    }
-    // chips
-    var chips=$('#chips');
-    if(chips){
-      if(state.selected.length>0){
-        chips.setAttribute('style','display:flex;flex-wrap:wrap;gap:8px');
-        chips.innerHTML=state.selected.map(function(a){
-          return '<span style="display:inline-flex;align-items:center;gap:8px;padding:8px 9px 8px 14px;border-radius:999px;background:var(--copper-soft);border:1px solid var(--copper-line);font-size:14px;font-weight:600;color:var(--copper-ink);animation:chip-in .25s ease both">'+esc(a.name)+
-            '<span class="ar-x" data-id="'+a.id+'" style="cursor:pointer;width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:var(--line);font-size:12px;line-height:1;color:var(--muted);transition:all .15s ease">✕</span></span>';
-        }).join('');
-        Array.prototype.forEach.call(chips.querySelectorAll('.ar-x'),function(el){
-          el.addEventListener('click',function(){ removeArtist(el.getAttribute('data-id')); });
-          el.addEventListener('mouseenter',function(){ el.style.background='rgba(220,38,38,.14)'; el.style.color='#DC2626'; });
-          el.addEventListener('mouseleave',function(){ el.style.background='var(--line)'; el.style.color='var(--muted)'; });
-        });
-      } else { chips.innerHTML=''; chips.removeAttribute('style'); }
-    }
-    // popular
-    var pop=$('#popular');
-    if(pop){
-      if(state.selected.length===0){
-        var selIds2={}; state.selected.forEach(function(a){ selIds2[a.id]=1; });
-        var pids=POPULAR.filter(function(id){ return !selIds2[id]; });
-        pop.setAttribute('style','display:flex;flex-wrap:wrap;gap:8px;justify-content:center');
-        pop.innerHTML=pids.map(function(id){
-          var a=DB.find(function(x){return x.id===id;});
-          return '<span class="ar-pop" data-id="'+id+'" style="cursor:pointer;padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13.5px;font-weight:600;color:var(--muted);transition:all .18s ease">+ '+esc(a.name)+'</span>';
-        }).join('');
-        Array.prototype.forEach.call(pop.querySelectorAll('.ar-pop'),function(el){
-          el.addEventListener('click',function(){ addArtist(el.getAttribute('data-id')); });
-          el.addEventListener('mouseenter',function(){ el.style.borderColor='var(--copper-line)'; el.style.color='var(--copper-ink)'; el.style.background='var(--copper-soft)'; el.style.transform='translateY(-1px)'; });
-          el.addEventListener('mouseleave',function(){ el.style.borderColor='var(--line)'; el.style.color='var(--muted)'; el.style.background='var(--card)'; el.style.transform=''; });
-        });
-      } else { pop.innerHTML=''; pop.removeAttribute('style'); }
-    }
-    updateCheck();
-    updateCta();
+    var si=$('searchInput'); if(si) si.placeholder=state.selected.length?'Nog een artiest…':'Typ een artiestnaam — of tik hieronder';
+    renderChips(); renderDropdown(); renderPopular(); renderSuggest(); renderSignals(); ensureEmailBlock(); updateEmailBlock();
   }
 
-  function submit(){
+  async function submit(){
     if(!canSubmit()) return;
-    state.submitted=true;
-    renderSuccess();
-    try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); }
+    var btn=$('ctaBtn'), hint=$('ctaHint');
+    if(btn){ btn.disabled=true; btn.textContent='Bezig…'; }
+    var payload={ email:state.email.trim(),
+      artists:state.selected.map(function(a){ return {id:a.id,name:a.name,genre:a.genre||''}; }),
+      countries:[state.nl?'NL':null,state.be?'BE':null].filter(Boolean),
+      source:'muziek/artist-radar' };
+    var ok=false;
+    try{ var r=await fetch(FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); ok=r.ok; }catch(e){ ok=false; }
+    if(ok){ state.submitted=true; renderCelebration(); try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){} }
+    else { if(btn){ btn.disabled=false; } updateEmailBlock(); if(hint){ hint.textContent='Er ging iets mis — probeer het zo nog eens.'; hint.style.color='#DC2626'; } }
   }
-  function renderSuccess(){
-    var zone=$('#formzone'); if(!zone) return;
-    var selCount=state.selected.length===1?state.selected[0].name:(state.selected.length+' artiesten');
-    var hasAccount=state.account&&state.first.trim();
-    var successTitle=hasAccount?('Welkom, '+state.first.trim()):'Je radar staat aan';
-    zone.innerHTML=''+
-      '<div style="text-align:center;animation:fade-up .35s ease both">'+
-        '<div style="width:52px;height:52px;margin:0 auto;border-radius:50%;background:var(--copper-soft);border:1px solid var(--copper-line);display:grid;place-items:center;color:var(--copper-ink);font-size:22px;animation:pop .4s ease both">✓</div>'+
-        '<h2 style="font-family:\'Instrument Serif\',serif;font-weight:400;font-size:26px;margin:18px 0 0">'+esc(successTitle)+'</h2>'+
-        '<p style="font-size:15px;color:var(--muted);margin:10px 0 0;line-height:1.6">We houden <span style="color:var(--ink);font-weight:600">'+esc(selCount)+'</span> op de radar en mailen je op <span style="color:var(--ink);font-weight:600">'+esc(state.email)+'</span> zodra er iets beweegt.</p>'+
-        (hasAccount?('<div style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:8px 15px;border-radius:999px;background:var(--copper-soft);border:1px solid var(--copper-line);font-size:13px;font-weight:600;color:var(--copper-ink)"><span style="width:7px;height:7px;border-radius:50%;background:var(--copper)"></span>Account aangemaakt · '+esc(state.city)+'</div>'):'')+
-        '<button id="resetBtn" style="margin-top:22px;padding:12px 22px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:14.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .18s ease">Nog een artiest toevoegen</button>'+
+
+  function renderCelebration(){
+    var card=$('signupCard'), cel=$('celebration');
+    if(card) card.style.display='none';
+    if(!cel) return;
+    cel.style.display='block';
+    cel.innerHTML=''+
+      '<div style="border:1px solid rgba(160,113,79,.25);border-radius:18px;background:#ffffff;padding:44px;text-align:center;animation:fade-up .4s ease both;box-shadow:0 24px 60px -40px rgba(28,25,23,.35)">'+
+        '<div style="position:relative;width:72px;height:72px;margin:0 auto 22px">'+
+          '<span style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(21,128,61,.4);animation:ring-pulse 3.2s ease-out infinite"></span>'+
+          '<span style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(21,128,61,.3);animation:ring-pulse 3.2s 1s ease-out infinite"></span>'+
+          '<span style="position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;background:rgba(21,128,61,.1);border:1px solid rgba(21,128,61,.35);color:#15803D;font-size:30px;font-weight:800;animation:pop .5s ease both">✓</span>'+
+        '</div>'+
+        '<h2 style="font-family:\'Instrument Serif\',serif;font-weight:400;font-size:32px">Mooi. Je radar draait.</h2>'+
+        '<p style="margin-top:12px;font-size:16px;color:#57534E;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6">We houden je artiesten in de gaten en mailen je op <span style="color:#A0714F;font-weight:700">'+esc(state.email)+'</span> zodra er een signaal is — gerucht, aankondiging of ticketverkoop.</p>'+
+        '<div style="margin-top:20px;display:inline-flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:520px">'+
+          state.selected.map(function(a){ return '<span style="padding:7px 14px;border-radius:999px;background:rgba(160,113,79,.08);border:1px solid rgba(160,113,79,.25);font-size:13.5px;font-weight:600;color:#7C5638">'+esc(a.name)+'</span>'; }).join('')+
+        '</div>'+
+        '<div style="margin-top:22px;font-size:14px;color:#78716C">Scope: <span style="color:#1C1917;font-weight:600">'+esc(scopeText())+'</span></div>'+
+        '<div style="margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">'+
+          '<button id="resetBtn" class="reset-btn" style="padding:12px 22px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:#ffffff;color:#1C1917;font-size:14.5px;font-weight:600;font-family:inherit;cursor:pointer">Nog een artiest toevoegen</button>'+
+          '<a href="/music" class="mng-btn" style="padding:12px 22px;border-radius:10px;border:none;background:#A0714F;color:#ffffff;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 10px 24px -12px rgba(160,113,79,.6);display:inline-flex;align-items:center">Ontdek meer muziek →</a>'+
+        '</div>'+
       '</div>';
-    var rb=$('#resetBtn');
-    rb.addEventListener('click',function(){ state.submitted=false; state.query=''; renderForm(); });
-    rb.addEventListener('mouseenter',function(){ rb.style.borderColor='var(--copper-line)'; rb.style.color='var(--copper-ink)'; });
-    rb.addEventListener('mouseleave',function(){ rb.style.borderColor='var(--line)'; rb.style.color='var(--ink)'; });
+    var rb=$('resetBtn'); if(rb) rb.addEventListener('click',resetForm);
+  }
+  function resetForm(){
+    state.submitted=false; state.query=''; state.focused=false;
+    var cel=$('celebration'), card=$('signupCard');
+    if(cel){ cel.style.display='none'; cel.innerHTML=''; }
+    if(card) card.style.display='block';
+    var si=$('searchInput'); if(si) si.value='';
+    updateDynamic();
   }
 
-  // ---- theme ----
-  function applyThemeIcons(){
-    var s=$('#sunIcon'), m=$('#moonIcon');
-    if(s) s.style.cssText='width:26px;height:26px;display:grid;place-items:center;border-radius:50%;transition:all .25s ease;'+(!state.dark?'background:var(--copper-soft);color:var(--copper-ink)':'color:var(--faint)');
-    if(m) m.style.cssText='width:26px;height:26px;display:grid;place-items:center;border-radius:50%;transition:all .25s ease;'+(state.dark?'background:var(--copper-soft);color:var(--copper-ink)':'color:var(--faint)');
-  }
-  function toggleTheme(){
-    state.dark=!state.dark;
-    document.body.classList.toggle('dark',state.dark);
-    try{ localStorage.setItem('ar-theme',state.dark?'dark':'light'); }catch(e){}
-    applyThemeIcons();
-  }
-
-  // ---- heartbeat animation (ported verbatim from source component) ----
-  var BEAT_SECONDS=3.4, SWEEP_SECONDS=60, SHOW_BLIPS=true;
+  // ---- heartbeat animation (Master) ----
   function startAnim(){
     if(raf) cancelAnimationFrame(raf);
-    var BEAT=function(){ return BEAT_SECONDS*1000; };
-    var start=performance.now();
-    var q=function(sel){ return document.querySelector(sel); };
+    var BEAT=3400, start=performance.now();
+    var q=function(s){ return document.querySelector(s); };
     function tick(){
-      var now=performance.now();
-      var t=(now-start)/1000;
-      var ph=((now-start)%BEAT())/BEAT();
+      var now=performance.now(); var t=(now-start)/1000;
+      var ph=((now-start)%BEAT)/BEAT;
       var lub=Math.exp(-Math.pow((ph-0.03)/0.045,2));
       var dub=0.6*Math.exp(-Math.pow((ph-0.20)/0.06,2));
       var beat=Math.max(lub,dub);
@@ -525,12 +461,8 @@
             var wob=Math.sin(local*10+t*1.2)*1.6;
             x=210+wave*7*ampMain+spike*(1-Math.abs(local-0.55)*1.1)+wob;
           } else {
-            var local2=rp/0.4;
-            var anchor=Math.pow(local2,0.85);
-            x=210+(Math.sin(local2*9-t*1.9)*2.4*ampEcho
-                 +Math.sin(local2*4+t*0.75)*1.5*ampEcho
-                 +Math.sin(local2*19+t*2.4)*0.7*ampEcho
-                 +beat*Math.sin(local2*Math.PI*1.6)*2.4)*anchor;
+            var local2=rp/0.4; var anchor=Math.pow(local2,0.85);
+            x=210+(Math.sin(local2*9-t*1.9)*2.4*ampEcho+Math.sin(local2*4+t*0.75)*1.5*ampEcho+Math.sin(local2*19+t*2.4)*0.7*ampEcho+beat*Math.sin(local2*Math.PI*1.6)*2.4)*anchor;
           }
           d+=' L'+x.toFixed(2)+','+y;
         }
@@ -538,62 +470,28 @@
         line.setAttribute('stroke-width',(2.0+0.9*beat+0.25*Math.sin(t*0.55)).toFixed(2));
       }
       var disc=q('.radar-disc'); if(disc) disc.style.transform='scale('+(1+beat*0.02).toFixed(4)+')';
-      (function(){
-        var springs=rings||(rings=[{x:0,v:0},{x:0,v:0}]);
-        var dt=(now-(ringT||now))/1000; ringT=now;
-        if(dt>0.05)dt=0.05;
-        var cfg=[{k:150,c:12,m:1.0,amp:0.032},{k:95,c:9.5,m:1.7,amp:0.05}];
-        var els=[q('.ring-a'),q('.ring-b')];
-        for(var i=0;i<springs.length;i++){
-          var sp=springs[i], p=cfg[i];
-          var a=(p.k*(beat-sp.x)-p.c*sp.v)/p.m;
-          sp.v+=a*dt; sp.x+=sp.v*dt;
-          var el=els[i]; if(!el)continue;
-          var sc=1+sp.x*p.amp;
-          el.style.transform='scale('+sc.toFixed(4)+')';
-          el.style.opacity=(0.55+Math.min(0.45,Math.abs(sp.x)*0.5)).toFixed(3);
-        }
-      })();
-      var hub=q('.radar-hub'); if(hub) hub.style.transform='scale('+(1+beat*0.26).toFixed(3)+')';
-      var glow=q('.radar-beat-glow'); if(glow) glow.setAttribute('opacity',(0.08+beat*0.34).toFixed(3));
-      var setHalo=function(sel,off){
-        var el=q(sel); if(!el)return;
-        var p=((now-start)%BEAT()+off*BEAT())%BEAT()/BEAT();
-        el.style.transform='scale('+(1+p*0.22).toFixed(3)+')';
-        el.style.opacity=Math.max(0,0.34*(1-p)-0.03).toFixed(3);
-      };
-      setHalo('.halo-a',0);
-      setHalo('.halo-b',0.5);
-      var beatB=(function(){var p2=((now-start)%BEAT()+0.5*BEAT())%BEAT()/BEAT();var l=Math.exp(-Math.pow((p2-0.03)/0.045,2));var dd=0.6*Math.exp(-Math.pow((p2-0.20)/0.06,2));return Math.max(l,dd);})();
-      var na=q('.neon-a'), nb=q('.neon-b');
-      if(na){ var g=beat; na.style.opacity=(0.3+0.4*g).toFixed(3); na.style.boxShadow='0 0 '+(4+g*8).toFixed(1)+'px '+(1+g*1.2).toFixed(1)+'px var(--copper)'; }
-      if(nb){ var g2=beatB; nb.style.opacity=(0.3+0.4*g2).toFixed(3); nb.style.boxShadow='0 0 '+(4+g2*8).toFixed(1)+'px '+(1+g2*1.2).toFixed(1)+'px var(--copper)'; }
-      var sweep=document.querySelector('.radar-disc > div[style*="radar-sweep"]');
-      if(sweep){ var dur=SWEEP_SECONDS+'s'; if(sweep.style.animationDuration!==dur) sweep.style.animationDuration=dur; }
-      document.querySelectorAll('.radar-blip').forEach(function(b,i){
-        if(!SHOW_BLIPS){b.style.display='none';return;}
-        b.style.display='';
-        var bob=1+0.1*Math.sin(t*(0.5+i*0.22)+i);
-        b.style.transform='translate(-50%,-50%) scale('+bob.toFixed(3)+')';
-        b.style.opacity=(0.62+0.28*(0.5+0.5*Math.sin(t*(0.38+i*0.16)+i*1.7))).toFixed(3);
-      });
-      var ntip=q('.neon-tip'), nglow=q('.neon-tip-glow'), wglow=q('.wood-glow');
-      if(ntip){ ntip.setAttribute('r',(3.2+0.7*beat).toFixed(2)); }
-      if(nglow){ nglow.setAttribute('opacity',(0.22+0.32*beat).toFixed(3)); nglow.setAttribute('r',(8+2.5*beat).toFixed(1)); }
-      if(wglow){ wglow.style.opacity=(0.38+0.22*beat).toFixed(3); }
+      var hub=q('.radar-hub'); if(hub) hub.style.transform='translate(-50%,-50%) scale('+(1+beat*0.6).toFixed(3)+')';
+      var glow=q('.radar-beat-glow'); if(glow) glow.setAttribute('opacity',(0.12+beat*0.75).toFixed(3));
+      var setHalo=function(sel,off){ var el=q(sel); if(!el)return; var p=((now-start)%BEAT+off*BEAT)%BEAT/BEAT; el.style.transform='scale('+(1+p*0.30).toFixed(3)+')'; el.style.opacity=Math.max(0,0.55*(1-p)-0.03).toFixed(3); };
+      setHalo('.halo-a',0); setHalo('.halo-b',0.5);
+      ['.radar-blip-a','.radar-blip-b','.radar-blip-c'].forEach(function(sel,i){ var b=q(sel); if(!b)return; var bob=1+0.14*Math.sin(t*(0.55+i*0.25)+i); b.style.transform='scale('+bob.toFixed(3)+')'; b.style.opacity=(0.55+0.35*(0.5+0.5*Math.sin(t*(0.4+i*0.18)+i*1.7))).toFixed(3); });
       raf=requestAnimationFrame(tick);
     }
     raf=requestAnimationFrame(tick);
   }
 
   function init(){
-    var dark=false;
-    try{ var saved=localStorage.getItem('ar-theme'); dark = saved ? saved==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches; }catch(e){}
-    state.dark=dark;
-    document.body.classList.toggle('dark',dark);
-    applyThemeIcons();
-    var tb=$('#themeBtn'); if(tb) tb.addEventListener('click',toggleTheme);
-    renderForm();
+    var si=$('searchInput');
+    if(si){
+      si.addEventListener('input',function(e){ state.query=e.target.value; state.focused=true; renderDropdown(); });
+      si.addEventListener('focus',function(){ state.focused=true; renderDropdown(); });
+      si.addEventListener('blur',function(){ setTimeout(function(){ state.focused=false; renderDropdown(); },180); });
+      si.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){ e.preventDefault(); var fr=filteredList(); if(fr[0]) addArtist(fr[0]); else { var q=norm(state.query); if(q.length>=2 && !DB.some(function(a){return norm(a.name)===q;})) addFree(); } }
+        else if(e.key==='Backspace' && state.query==='' && state.selected.length){ removeArtist(state.selected[state.selected.length-1].id); }
+      });
+    }
+    updateDynamic();
     startAnim();
   }
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',init); } else { init(); }
