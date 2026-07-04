@@ -586,6 +586,12 @@
   min-height: 380px;
 }
 
+/* No hero image → single column so the panel never shows an empty half. */
+.writing-v2 .feat__grid--solo {
+  grid-template-columns: 1fr;
+  min-height: 0;
+}
+
 .writing-v2 .feat__body {
   padding: clamp(28px, 3.4vw, 48px);
   display: flex;
