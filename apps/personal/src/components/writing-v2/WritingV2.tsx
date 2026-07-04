@@ -306,7 +306,7 @@ const WritingV2 = () => {
                   className="post post--featured rv"
                   aria-label={`Featured essay: ${featTitle}`}
                 >
-                  <article className="feat__grid">
+                  <article className={`feat__grid${featured.imageUrl ? "" : " feat__grid--solo"}`}>
                     <div className="feat__body">
                       <span className="feat__kicker">
                         {featured.isDraft
