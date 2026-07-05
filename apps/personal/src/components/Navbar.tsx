@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
   ChevronDown, Network, Sparkles, PenLine, Disc3, Radar,
@@ -47,6 +47,8 @@ const Navbar = (_props: NavbarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const musicCloseTimer = useRef<number | null>(null);
+  const prefersReduced = useReducedMotion();
 
   /* Theme toggle still controls page-content dark mode; the bar stays light. */
   const [siteTheme, setSiteTheme] = useState<"light" | "dark">(() => {
@@ -163,22 +165,65 @@ const Navbar = (_props: NavbarProps) => {
     </Link>
   );
 
-  /* Muziek dropdown: Overzicht (/music) + Artist Radar. Artist Radar is a
-     static page under /muziek/, so it uses a plain <a> (full nav), not Link. */
+  /* Muziek dropdown — Overzicht (/music) + Artist Radar (static page under
+     /muziek/, plain <a> = full nav). Best-in-class menu motion: hover-intent
+     with a 140ms close-grace (a diagonal move to the panel never drops it),
+     focus-open + Escape for keyboard, ARIA menu semantics, and a staggered
+     item reveal on the site's signature ease. Honours prefers-reduced-motion. */
+  const openMusic = () => {
+    if (musicCloseTimer.current) { window.clearTimeout(musicCloseTimer.current); musicCloseTimer.current = null; }
+    setMusicOpen(true);
+  };
+  const closeMusicSoon = () => {
+    if (musicCloseTimer.current) window.clearTimeout(musicCloseTimer.current);
+    musicCloseTimer.current = window.setTimeout(() => setMusicOpen(false), 140);
+  };
+  const musicPanel = prefersReduced
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.12 } }
+    : { initial: { opacity: 0, y: -6, scale: 0.96 }, animate: { opacity: 1, y: 0, scale: 1 }, exit: { opacity: 0, y: -6, scale: 0.98 }, transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const } };
+  const musicListV = { hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.04 } } };
+  const musicItemV = prefersReduced
+    ? { hidden: { opacity: 0 }, show: { opacity: 1 } }
+    : { hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.26, ease: [0.22, 1, 0.36, 1] as const } } };
+  const musicItemCls = "group/mi flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 rounded-lg transition-colors dark:text-[#C9BFB0] dark:hover:text-white dark:hover:bg-white/5";
+  const musicIconCls = "shrink-0 text-[#2D9255] transition-transform duration-200 group-hover/mi:-translate-y-px group-hover/mi:scale-110";
   const MusicNav = ({ label }: { label: string }) => (
-    <div className="relative" onMouseEnter={() => setMusicOpen(true)} onMouseLeave={() => setMusicOpen(false)}>
-      <Link to="/music" className={`relative flex items-center gap-1 px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${isMusicActive ? "text-[#15140F]" : "text-[#7E7A6F] hover:text-[#15140F]"}`}>
+    <div
+      className="relative"
+      onMouseEnter={openMusic}
+      onMouseLeave={closeMusicSoon}
+      onFocusCapture={openMusic}
+      onBlurCapture={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) closeMusicSoon(); }}
+      onKeyDown={(e) => { if (e.key === "Escape") { setMusicOpen(false); (e.currentTarget.querySelector("a") as HTMLElement | null)?.focus(); } }}
+    >
+      <Link
+        to="/music"
+        aria-haspopup="true"
+        aria-expanded={musicOpen}
+        className={`relative flex items-center gap-1 px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${isMusicActive ? barInk : `${barMut} ${barHovInk}`}`}
+      >
         {label}
-        <ChevronDown size={13} className={`transition-transform ${musicOpen ? "rotate-180" : ""}`} />
+        <ChevronDown size={13} className={`transition-transform duration-200 ${musicOpen ? "rotate-180" : ""}`} />
         {isMusicActive && <span className="absolute left-3.5 right-6 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
       </Link>
       <AnimatePresence>
         {musicOpen && (
-          <motion.div initial={{ opacity: 0, y: -4, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.97 }} transition={{ duration: 0.14 }} className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50 w-56">
-            <div className="rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl overflow-hidden dark:border-white/10 dark:bg-[hsl(40,8%,9%)]">
-              <Link to="/music" onClick={() => setMusicOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors dark:text-[#C9BFB0] dark:hover:bg-white/5"><Disc3 size={15} /> Overzicht</Link>
-              <a href="/muziek/artist-radar/" className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors dark:text-[#C9BFB0] dark:hover:bg-white/5"><Radar size={15} /> Artist Radar</a>
-            </div>
+          <motion.div {...musicPanel} style={{ transformOrigin: "top center" }} className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50 w-56">
+            <motion.div
+              role="menu"
+              aria-label={label}
+              variants={musicListV}
+              initial="hidden"
+              animate="show"
+              className="p-1.5 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-[0_18px_46px_-22px_rgba(20,19,15,0.45)] dark:border-white/10 dark:bg-[hsl(40,8%,9%)]"
+            >
+              <motion.div variants={musicItemV}>
+                <Link role="menuitem" to="/music" onClick={() => setMusicOpen(false)} className={musicItemCls}><Disc3 size={15} className={musicIconCls} /> {lang === "nl" ? "Overzicht" : "Overview"}</Link>
+              </motion.div>
+              <motion.div variants={musicItemV}>
+                <a role="menuitem" href="/muziek/artist-radar/" className={musicItemCls}><Radar size={15} className={musicIconCls} /> Artist Radar</a>
+              </motion.div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
