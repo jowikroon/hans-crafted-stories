@@ -164,6 +164,7 @@
           <div id="dropdown"></div>
         </div>
 
+        <input id="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0" />
         <div id="popular"></div>
         <div id="suggest"></div>
         <div id="signals"></div>
@@ -395,6 +396,7 @@
     var payload={ email:state.email.trim(),
       artists:state.selected.map(function(a){ return {id:a.id,name:a.name,genre:a.genre||''}; }),
       countries:[state.nl?'NL':null,state.be?'BE':null].filter(Boolean),
+      website:(($('hp')||{}).value||''),
       source:'muziek/artist-radar' };
     var ok=false;
     try{ var r=await fetch(FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); ok=r.ok; }catch(e){ ok=false; }
@@ -414,8 +416,8 @@
           '<span style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(21,128,61,.3);animation:ring-pulse 3.2s 1s ease-out infinite"></span>'+
           '<span style="position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;background:rgba(21,128,61,.1);border:1px solid rgba(21,128,61,.35);color:#15803D;font-size:30px;font-weight:800;animation:pop .5s ease both">✓</span>'+
         '</div>'+
-        '<h2 style="font-family:\'Instrument Serif\',serif;font-weight:400;font-size:32px">Mooi. Je radar draait.</h2>'+
-        '<p style="margin-top:12px;font-size:16px;color:#57534E;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6">We houden je artiesten in de gaten en mailen je op <span style="color:#A0714F;font-weight:700">'+esc(state.email)+'</span> zodra er een signaal is — gerucht, aankondiging of ticketverkoop.</p>'+
+        '<h2 style="font-family:\'Instrument Serif\',serif;font-weight:400;font-size:32px">Mooi. Je radar draait bijna.</h2>'+
+        '<p style="margin-top:12px;font-size:16px;color:#57534E;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6">Nog één tik: bevestig via de link die we net naar <span style="color:#A0714F;font-weight:700">'+esc(state.email)+'</span> stuurden. Daarna houden we je artiesten in de gaten en hoef je nooit meer iets te doen.</p>'+
         '<div style="margin-top:20px;display:inline-flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:520px">'+
           state.selected.map(function(a){ return '<span style="padding:7px 14px;border-radius:999px;background:rgba(160,113,79,.08);border:1px solid rgba(160,113,79,.25);font-size:13.5px;font-weight:600;color:#7C5638">'+esc(a.name)+'</span>'; }).join('')+
         '</div>'+
