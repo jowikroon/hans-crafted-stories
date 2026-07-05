@@ -68,7 +68,6 @@ const Navbar = (_props: NavbarProps) => {
     ...navItems
       .filter((i) => i.visible)
       .map((i) => ({ to: i.to, label: (lang === "nl" ? i.labelNl : i.labelEn) || i.labelNl || i.labelEn })),
-    ...(user ? [{ to: "/write", label: t.commandCenter, cc: true }] : []),
   ];
 
   const searchablePages = [
