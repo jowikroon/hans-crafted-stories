@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
-  ChevronDown, Network, Sparkles, PenLine, Disc3, Radar,
+  ChevronDown, Network, Sparkles, PenLine, Disc3,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -140,7 +140,7 @@ const Navbar = (_props: NavbarProps) => {
   const isActive = (to: string) => location.pathname === to;
   const isWorkActive = location.pathname.startsWith("/work")
     || ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager"].includes(location.pathname);
-  const isMusicActive = location.pathname === "/music" || location.pathname.startsWith("/music/");
+  const isMusicActive = location.pathname === "/music" || location.pathname.startsWith("/music/") || location.pathname.startsWith("/muziek");
 
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -184,8 +184,7 @@ const Navbar = (_props: NavbarProps) => {
   const musicItemV = prefersReduced
     ? { hidden: { opacity: 0 }, show: { opacity: 1 } }
     : { hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.26, ease: [0.22, 1, 0.36, 1] as const } } };
-  const musicItemCls = "group/mi flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 rounded-lg transition-colors dark:text-[#C9BFB0] dark:hover:text-white dark:hover:bg-white/5";
-  const musicIconCls = "shrink-0 text-[#2D9255] transition-transform duration-200 group-hover/mi:-translate-y-px group-hover/mi:scale-110";
+  const musicItemCls = "block px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 rounded-lg transition-colors dark:text-[#C9BFB0] dark:hover:text-white dark:hover:bg-white/5";
   const MusicNav = ({ label }: { label: string }) => (
     <div
       className="relative"
@@ -217,10 +216,13 @@ const Navbar = (_props: NavbarProps) => {
               className="p-1.5 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-[0_18px_46px_-22px_rgba(20,19,15,0.45)] dark:border-white/10 dark:bg-[hsl(40,8%,9%)]"
             >
               <motion.div variants={musicItemV}>
-                <Link role="menuitem" to="/music" onClick={() => setMusicOpen(false)} className={musicItemCls}><Disc3 size={15} className={musicIconCls} /> {lang === "nl" ? "Overzicht" : "Overview"}</Link>
+                <Link role="menuitem" to="/music" onClick={() => setMusicOpen(false)} className={musicItemCls}>Hiscovery</Link>
               </motion.div>
               <motion.div variants={musicItemV}>
-                <a role="menuitem" href="/muziek/artist-radar/" className={musicItemCls}><Radar size={15} className={musicIconCls} /> Artist Radar</a>
+                <Link role="menuitem" to="/muziek/artist-radar" onClick={() => setMusicOpen(false)} className={musicItemCls}>Artist Radar</Link>
+              </motion.div>
+              <motion.div variants={musicItemV}>
+                <Link role="menuitem" to="/music#songs" onClick={() => setMusicOpen(false)} className={musicItemCls}>Songs &amp; Production Notes</Link>
               </motion.div>
             </motion.div>
           </motion.div>
@@ -381,7 +383,10 @@ const Navbar = (_props: NavbarProps) => {
                     <div key={l.to} className="flex flex-col">
                       <Link to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : `${barChip} ${barInk}`) : `${barMut} ${barHovBg} ${barHovInk}`}`}>{l.label}</Link>
                       {l.to === "/music" && (
-                        <a href="/muziek/artist-radar/" onClick={() => setMobileOpen(false)} className={`ml-3 rounded-lg px-3 py-2 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Radar size={14} /> Artist Radar</a>
+                        <>
+                          <Link to="/muziek/artist-radar" onClick={() => setMobileOpen(false)} className={`ml-3 rounded-lg px-3 py-2 text-sm block ${barMut} ${barHovBg} ${barHovInk}`}>Artist Radar</Link>
+                          <Link to="/music#songs" onClick={() => setMobileOpen(false)} className={`ml-3 rounded-lg px-3 py-2 text-sm block ${barMut} ${barHovBg} ${barHovInk}`}>Songs &amp; Production Notes</Link>
+                        </>
                       )}
                     </div>
                   );
