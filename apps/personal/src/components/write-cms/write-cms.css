@@ -2005,3 +2005,80 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
   .write-cms .menu-row { flex-wrap: wrap; }
   .write-cms .menu-path { order: 3; width: 100%; }
 }
+
+/* ─── Gate-vuller — neon A/B experience chooser ─────────────────────────────── */
+.write-cms .gate-filler {
+  --gate-neon: #00E5FF;
+  --gate-neon-2: #FF2FB9;
+  margin: var(--s-4) 0;
+  padding: var(--s-4);
+  border: 2px solid var(--gate-neon);
+  border-radius: var(--r-2);
+  background:
+    radial-gradient(120% 100% at 0% 0%, color-mix(in srgb, var(--gate-neon) 12%, transparent), transparent 60%),
+    var(--bg-1);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gate-neon) 40%, transparent),
+              0 0 24px color-mix(in srgb, var(--gate-neon) 28%, transparent);
+}
+.write-cms .gate-filler-head {
+  display: flex; align-items: baseline; gap: var(--s-3);
+  margin-bottom: var(--s-3); flex-wrap: wrap;
+}
+.write-cms .gate-filler-title {
+  font-family: var(--font-display); font-weight: 800; font-size: 15px;
+  letter-spacing: -0.01em; color: var(--ink-0);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--gate-neon) 45%, transparent);
+}
+.write-cms .gate-filler-sub {
+  font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--ink-2);
+}
+.write-cms .gate-block { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px dashed var(--bg-3); }
+.write-cms .gate-block:first-of-type { border-top: 0; padding-top: 0; }
+.write-cms .gate-block-head { display: flex; align-items: center; gap: var(--s-2); margin-bottom: var(--s-2); flex-wrap: wrap; }
+.write-cms .gate-lang {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  padding: 1px 5px; border-radius: 999px; color: var(--bg-0);
+  background: var(--gate-neon);
+}
+.write-cms .gate-name { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--ink-0); }
+.write-cms .gate-brief { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
+.write-cms .gate-options { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+@media (max-width: 720px) { .write-cms .gate-options { grid-template-columns: 1fr; } }
+.write-cms .gate-opt {
+  display: flex; flex-direction: column; gap: 4px; text-align: left;
+  padding: var(--s-3); cursor: pointer;
+  border: 1.5px solid color-mix(in srgb, var(--gate-neon) 55%, transparent);
+  border-radius: var(--r-1); background: var(--bg-inset); color: var(--ink-0);
+  transition: transform 120ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.write-cms .gate-opt--b { border-color: color-mix(in srgb, var(--gate-neon-2) 55%, transparent); }
+.write-cms .gate-opt:hover {
+  transform: translateY(-2px);
+  border-color: var(--gate-neon);
+  box-shadow: 0 0 0 1px var(--gate-neon), 0 0 18px color-mix(in srgb, var(--gate-neon) 45%, transparent);
+}
+.write-cms .gate-opt--b:hover {
+  border-color: var(--gate-neon-2);
+  box-shadow: 0 0 0 1px var(--gate-neon-2), 0 0 18px color-mix(in srgb, var(--gate-neon-2) 45%, transparent);
+}
+.write-cms .gate-opt-badge {
+  align-self: flex-start; font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em; padding: 1px 6px; border-radius: 999px;
+  color: var(--bg-0); background: var(--gate-neon);
+}
+.write-cms .gate-opt--b .gate-opt-badge { background: var(--gate-neon-2); }
+.write-cms .gate-opt-theme { font-family: var(--font-display); font-weight: 700; font-size: 13px; }
+.write-cms .gate-opt-client { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
+.write-cms .gate-opt-situation { font-size: 12px; line-height: 1.45; color: var(--ink-1); }
+.write-cms .gate-opt-metric {
+  font-family: var(--font-mono); font-size: 10px; color: var(--ink-0);
+  padding: 2px 6px; border-radius: var(--r-1); align-self: flex-start;
+  background: color-mix(in srgb, var(--gate-neon) 16%, transparent);
+}
+.write-cms .gate-opt--b .gate-opt-metric { background: color-mix(in srgb, var(--gate-neon-2) 16%, transparent); }
+.write-cms .gate-opt-cta {
+  margin-top: 2px; font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-0);
+}
+.write-cms .gate-empty { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); padding: var(--s-2) 0; }

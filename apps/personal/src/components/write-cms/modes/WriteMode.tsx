@@ -5,6 +5,7 @@ import { usePublish } from "../hooks/usePublish";
 import { useReviews } from "../hooks/useReviews";
 import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/useVoiceTemplate";
 import LangSplit from "../write/LangSplit";
+import GateFiller from "../write/GateFiller";
 import HeroImageTool from "../write/HeroImageTool";
 import ScoreCards from "../write/ScoreCards";
 import TipCards, { buildRichTips } from "../write/TipCards";
@@ -321,6 +322,14 @@ export default function WriteMode({ postId }: { postId?: string }) {
           onChangeNL={(md) => autosave.setField("content_nl", md)}
           bannedWords={voiceTemplate?.banned_words ?? []}
           linkTargets={linkTargets.filter((t) => t.slug !== post!.slug)}
+        />
+
+        {/* Gate-vuller — neon A/B keuze per [HANS:]-gate uit de experience-bank */}
+        <GateFiller
+          contentEN={autosave.fields.content}
+          contentNL={autosave.fields.content_nl}
+          onChangeEN={(md) => autosave.setField("content", md)}
+          onChangeNL={(md) => autosave.setField("content_nl", md)}
         />
 
         {/* Draggable idea bubble — page-session only */}
