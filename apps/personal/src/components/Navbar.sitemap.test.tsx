@@ -59,19 +59,21 @@ describe("header is always present", () => {
   });
 });
 
-describe("Command Center visibility", () => {
-  it("is hidden when logged out", () => {
+describe("account access", () => {
+  // Workspace links (/write etc.) moved from a top-level "Command Center" link
+  // into the account dropdown. Logged-out shows a Login link; logged-in swaps it
+  // for the account menu. (t.commandCenter is validated separately below.)
+  it("logged out: shows the Login link and no workspace link", () => {
     authState.user = null;
     renderNav("/");
+    expect(screen.getAllByText(translations.nl.nav.login).length).toBeGreaterThan(0);
+    expect(document.querySelector('a[href="/write"]')).toBeNull();
     expect(screen.queryByText("Command Center")).toBeNull();
   });
-  it("is shown and links to /write when logged in", () => {
+  it("logged in: swaps the Login link for the account menu", () => {
     authState.user = { email: "hans@example.com" };
     renderNav("/write");
-    const cc = screen.getAllByText("Command Center")[0];
-    expect(cc).toBeTruthy();
-    const href = cc.closest("a")?.getAttribute("href");
-    expect(href).toBe("/write");
+    expect(screen.queryByText(translations.nl.nav.login)).toBeNull();
   });
 });
 
