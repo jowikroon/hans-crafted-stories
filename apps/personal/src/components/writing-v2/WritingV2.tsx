@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSkin } from "@/hooks/useSkin";
 import { Link } from "react-router-dom";
-import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
+import { getBlogPosts, isHansSession, BlogPostRow } from "@/lib/api/content";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
@@ -23,6 +23,7 @@ interface MappedPost {
   slug: string;
   imageUrl?: string;
   isDraft: boolean;
+  isPublic: boolean;
 }
 
 const FILTER_PILLS = [
@@ -68,6 +69,8 @@ const WritingV2 = () => {
   const [filter, setFilter] = useState("all");
   const { skin, setSkin, skins } = useSkin();
   const [sort, setSort] = useState<SortOrder>("newest");
+  const [authed, setAuthed] = useState(false);
+  const [publishedOnly, setPublishedOnly] = useState(false);
   const { lang } = useLang();
   const t = translations[lang].writing;
   const seo = translations[lang].seo;
@@ -106,12 +109,17 @@ const WritingV2 = () => {
   });
 
   useEffect(() => {
-    if (preloadedPosts !== null) return;
+    let alive = true;
+    isHansSession().then((h) => { if (alive) setAuthed(h); });
+    // Always refetch live so newly published posts appear without a site rebuild.
+    // Preloaded posts (SSR/prerender) are used only for the instant first paint.
     getBlogPosts(true).then((p) => {
+      if (!alive) return;
       setBlogPosts(p);
       setLoading(false);
     });
-  }, [preloadedPosts]);
+    return () => { alive = false; };
+  }, []);
 
   const mappedPosts: MappedPost[] = useMemo(
     () =>
@@ -129,6 +137,8 @@ const WritingV2 = () => {
         imageUrl: p.image_url || undefined,
         // Draft = not published. Surfaced to Hans only (RLS gates server-side).
         isDraft: !p.published || (typeof p.status === "string" && p.status === "draft"),
+        // Public = exactly what anonymous visitors see (RLS: published + status=published).
+        isPublic: p.published === true && p.status === "published",
       })),
     [blogPosts],
   );
@@ -136,6 +146,9 @@ const WritingV2 = () => {
   // Filter & sort
   const filtered = useMemo(() => {
     let posts = mappedPosts;
+    if (authed && publishedOnly) {
+      posts = posts.filter((p) => p.isPublic);
+    }
     if (filter !== "all") {
       posts = posts.filter((p) => {
         const allTags = [...p.tags.map((x) => x.toLowerCase()), p.category.toLowerCase()];
@@ -148,7 +161,7 @@ const WritingV2 = () => {
         : new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
     return posts;
-  }, [filter, sort, mappedPosts]);
+  }, [filter, sort, mappedPosts, authed, publishedOnly]);
 
   // Sticky toolbar shadow
   useEffect(() => {
@@ -255,6 +268,17 @@ const WritingV2 = () => {
                 {p.label}
               </button>
             ))}
+            {authed && (
+              <button
+                type="button"
+                className={`pill ${publishedOnly ? "on" : ""}`}
+                aria-pressed={publishedOnly}
+                onClick={() => setPublishedOnly((v) => !v)}
+                title={lang === "nl" ? "Toon alleen wat bezoekers zien" : "Show only what visitors see"}
+              >
+                {lang === "nl" ? "Alleen gepubliceerd" : "Published only"}
+              </button>
+            )}
           </div>
           <div className="toolbar__right">
             <span className="count" aria-live="polite">
