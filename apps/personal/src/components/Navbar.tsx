@@ -216,9 +216,6 @@ const Navbar = (_props: NavbarProps) => {
               className="p-1.5 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-[0_18px_46px_-22px_rgba(20,19,15,0.45)] dark:border-white/10 dark:bg-[hsl(40,8%,9%)]"
             >
               <motion.div variants={musicItemV}>
-                <Link role="menuitem" to="/music" onClick={() => setMusicOpen(false)} className={musicItemCls}>Hiscovery</Link>
-              </motion.div>
-              <motion.div variants={musicItemV}>
                 <Link role="menuitem" to="/muziek/artist-radar" onClick={() => setMusicOpen(false)} className={musicItemCls}>Artist Radar</Link>
               </motion.div>
               <motion.div variants={musicItemV}>
