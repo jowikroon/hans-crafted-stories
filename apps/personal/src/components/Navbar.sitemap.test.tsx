@@ -50,12 +50,12 @@ describe("header is always present", () => {
   it("renders the brand on a public route (logged out)", () => {
     authState.user = null;
     renderNav("/");
-    expect(screen.getAllByText("Hans van Leeuwen").length).toBeGreaterThan(0);
+    expect(screen.getAllByAltText(/Hans van Leeuwen/i).length).toBeGreaterThan(0);
   });
   it("renders the brand on a logged-in CMS route", () => {
     authState.user = { email: "hans@example.com" };
     renderNav("/write");
-    expect(screen.getAllByText("Hans van Leeuwen").length).toBeGreaterThan(0);
+    expect(screen.getAllByAltText(/Hans van Leeuwen/i).length).toBeGreaterThan(0);
   });
 });
 

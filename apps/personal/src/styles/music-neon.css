@@ -342,3 +342,53 @@ body.mn-cursor-down .mn-cursor-ring { transform: scale(.82); }
       which hid it on touch devices). ── */
 .music-neon .mn-rel__del { opacity: 1; }
 .music-neon .mn-rel.is-user .mn-rel__del { opacity: 1; }
+
+/* ============================================================
+   Interactive hero genre menu (upgraded from static cues).
+   Real filter over the track list with a spring-glided neon
+   highlight, tactile press, and keyboard focus ring. (2026-07-05)
+   ============================================================ */
+.music-neon .mn-cue--btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  cursor: pointer;
+  background: transparent;
+  transition: color .2s var(--mn-ease), border-color .2s var(--mn-ease),
+              transform .18s var(--mn-spring), box-shadow .25s var(--mn-ease);
+  will-change: transform;
+}
+.music-neon .mn-cue--btn:hover {
+  transform: translateY(-1px);
+  color: var(--mn-neon);
+  border-color: color-mix(in srgb, var(--mn-neon) 40%, transparent);
+  box-shadow: 0 0 18px var(--mn-neon-soft);
+}
+.music-neon .mn-cue--btn:active { transform: translateY(0) scale(.95); }
+.music-neon .mn-cue--btn:focus-visible { outline: 2px solid var(--mn-neon); outline-offset: 3px; }
+.music-neon .mn-cue--btn.is-active {
+  color: var(--mn-neon-ink);
+  border-color: transparent;
+  box-shadow: 0 0 26px var(--mn-neon-soft);
+}
+.music-neon .mn-cue__pill {
+  position: absolute; inset: 0; z-index: -1;
+  border-radius: 99px;
+  background: var(--mn-neon);
+}
+.music-neon .mn-cue__label { position: relative; z-index: 1; }
+
+.music-neon .mn-tracks__empty {
+  color: var(--mn-grey-dim); font-family: var(--mn-font-mono);
+  font-size: 13px; padding: 22px 4px;
+}
+.music-neon .mn-tracks__reset {
+  color: var(--mn-neon); background: none; border: none; cursor: pointer;
+  font: inherit; text-decoration: underline; text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-neon .mn-cue--btn,
+  .music-neon .mn-cue--btn:hover,
+  .music-neon .mn-cue--btn:active { transform: none; }
+}

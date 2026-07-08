@@ -37,10 +37,34 @@ interface AppShellProps {
   initialLang?: "en" | "nl";
 }
 
+/**
+ * Per-route background for the <main> box.
+ *
+ * The navbar is a floating, semi-transparent pill (`position: fixed`), and
+ * <main> carries a top padding (pt-16/pt-24) to clear it. That padding strip
+ * sits *behind* the navbar. If a page paints its own (dark) background only on
+ * an inner wrapper, the strip keeps showing the creme <body> colour — the
+ * "dark below the menu, light above" band. <main> lives outside the page
+ * transition transform, so giving it the page's own base colour makes the
+ * strip and the content one continuous surface. Light / theme-aware pages
+ * return undefined and keep inheriting the (flip-on-dark) <body> colour.
+ */
+const mainBackgroundFor = (pathname: string): string | undefined => {
+  if (pathname === "/music") return "#08080A";        // .music-neon (After Hours)
+  if (pathname === "/release-set") return "#07080C";  // Release Set studio
+  if (pathname === "/god-structure") return "hsl(220, 20%, 6%)";
+  if (pathname === "/samantha") return "#0A0A0C";     // Samantha immersive
+  if (pathname.startsWith("/write")) return "#F1ECDF";      // Write CMS (light default)
+  if (pathname.startsWith("/blog-cms")) return "#F1ECDF";   // Voice editor (write-cms styles)
+  if (pathname.startsWith("/music-cms")) return "#FAF9F6";  // Music CMS paper
+  return undefined;
+};
+
 const AppShell = ({ initialLang }: AppShellProps) => {
   const location = useLocation();
   const isCompact = location.pathname === "/samantha";
   const isDarkPage = isCompact || location.pathname === "/god-structure" || location.pathname.startsWith("/blog-cms") || location.pathname === "/music" || location.pathname.startsWith("/music/") || location.pathname === "/release-set";
+  const mainBg = mainBackgroundFor(location.pathname);
 
   return (
     <AuthProvider>
@@ -53,7 +77,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
           <header>
             <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
           </header>
-          <main id="main-content" className={`min-h-screen ${isDarkPage ? "pt-16" : "pt-24"}`}>
+          <main id="main-content" style={mainBg ? { backgroundColor: mainBg } : undefined} className={`min-h-screen ${isDarkPage ? "pt-16" : "pt-24"}`}>
             <AnimatedRoutes />
           </main>
           {!isDarkPage && <Footer />}

@@ -168,3 +168,58 @@
   padding: var(--s-6);
 }
 .write-cms.music-cms .mc-gate p { color: var(--ink-2); font-size: 14px; max-width: 420px; margin: 10px auto 18px; }
+
+/* ============================================================
+   Premium animated mode-rail — MUSIC CMS ONLY
+   Scoped under .music-cms so the locked /write rail is untouched.
+   Adds a spring-driven sliding highlight, tactile hover/press,
+   and a clear focus ring. BJ Fogg: obvious trigger, instant
+   response, low effort. (2026-07-05)
+   ============================================================ */
+.music-cms .modes.mc-modes { gap: 9px; }
+
+.music-cms .mode.mc-mode {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1.5px solid color-mix(in srgb, var(--ink-0) 15%, transparent);
+  background: color-mix(in srgb, var(--bg-1) 90%, transparent);
+  box-shadow: none;
+  transition: transform .18s cubic-bezier(.2,.8,.2,1),
+              border-color .2s ease, box-shadow .25s ease, color .2s ease;
+  will-change: transform;
+}
+.music-cms .mode.mc-mode:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  box-shadow: 0 10px 24px -16px color-mix(in srgb, var(--accent) 85%, #000);
+}
+.music-cms .mode.mc-mode:active { transform: translateY(0) scale(.985); }
+.music-cms .mode.mc-mode:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* active state — pill provides the fill, so keep the button chrome quiet */
+.music-cms .mode.mc-mode[data-active] {
+  color: var(--accent-fg);
+  border-color: transparent;
+  background: transparent;
+}
+.music-cms .mc-mode__pill {
+  position: absolute; inset: 0; z-index: -1;
+  border-radius: 13px;
+  background: var(--accent);
+  box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--accent) 90%, #000),
+              inset 0 1px 0 rgba(255,255,255,.20);
+}
+.music-cms .mode.mc-mode .mode-l,
+.music-cms .mode.mc-mode .mode-c { position: relative; z-index: 1; }
+.music-cms .mode.mc-mode .mode-l svg {
+  transition: transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.music-cms .mode.mc-mode[data-active] .mode-l svg { transform: scale(1.12) rotate(-3deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .music-cms .mode.mc-mode,
+  .music-cms .mode.mc-mode:hover,
+  .music-cms .mode.mc-mode:active { transform: none; }
+}

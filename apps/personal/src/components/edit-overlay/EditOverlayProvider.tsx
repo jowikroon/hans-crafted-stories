@@ -55,6 +55,8 @@ export function keyForElement(el: Element): { key: string; selector: string } {
   return { key: path, selector: path };
 }
 
+const LOGO_MOTION_KEY = "__site__:logoMotion";
+
 interface EditOverlayValue {
   editing: boolean;
   setEditing: (v: boolean) => void;
@@ -82,6 +84,9 @@ interface EditOverlayValue {
   /** Editable header menu (site-wide setting). */
   navItems: NavMenuItem[];
   setNavItems: (items: NavMenuItem[]) => Promise<void>;
+  /** Logo hover motion on/off (site-wide setting; default on). */
+  logoMotion: boolean;
+  setLogoMotion: (on: boolean) => Promise<void>;
 }
 
 const Ctx = createContext<EditOverlayValue | null>(null);
@@ -332,6 +337,23 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     [upsertLocal]
   );
 
+  const logoMotion = (overrides.get(LOGO_MOTION_KEY)?.text_override ?? "on") !== "off";
+  const setLogoMotion = useCallback(
+    async (on: boolean) => {
+      const row: PageOverride = {
+        element_key: LOGO_MOTION_KEY,
+        selector: null,
+        page_path: "*",
+        label: "Logo hover motion",
+        text_override: on ? "on" : "off",
+        style: {},
+      };
+      upsertLocal(row);
+      await apiSave(row);
+    },
+    [upsertLocal]
+  );
+
   // ── Apply the active FONT style site-wide (CSS vars + on-demand webfont) ──
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -378,14 +400,16 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       setActiveFont,
       navItems,
       setNavItems,
+      logoMotion,
+      setLogoMotion,
     }),
-    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, undoLast, undoCount, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont, navItems, setNavItems]
+    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, undoLast, undoCount, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont, navItems, setNavItems, logoMotion, setLogoMotion]
   );
 
   return (
     <Ctx.Provider value={value}>
       <HeaderProvider value={{ activeHeaderId, setActiveHeader }}>
-        <LogoProvider value={{ activeLogoId, setActiveLogo }}>
+        <LogoProvider value={{ activeLogoId, setActiveLogo, logoMotion, setLogoMotion }}>
           <FontProvider value={{ activeFontId, setActiveFont }}>
             <NavMenuProvider value={{ navItems, setNavItems }}>{children}</NavMenuProvider>
           </FontProvider>

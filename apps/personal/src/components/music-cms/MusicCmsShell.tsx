@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import "../write-cms/write-cms.css";
@@ -72,19 +73,31 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
   return (
     <div className="write-cms music-cms" data-theme="light">
       <div className="cc-frame">
-        <nav className="modes" aria-label="Music CMS modes">
-          {RAIL.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              className="mode"
-              aria-current={mode === r.id ? "page" : undefined}
-              onClick={() => setMode(r.id)}
-            >
-              <span className="mode-l">{ICONS[r.id]}{r.label}</span>
-              <span className="mode-c">{r.count}</span>
-            </button>
-          ))}
+        <nav className="modes mc-modes" aria-label="Music CMS modes">
+          {RAIL.map((r) => {
+            const active = mode === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                className="mode mc-mode"
+                data-active={active || undefined}
+                aria-current={active ? "page" : undefined}
+                onClick={() => setMode(r.id)}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="mc-mode-active"
+                    className="mc-mode__pill"
+                    aria-hidden="true"
+                    transition={{ type: "spring", stiffness: 520, damping: 38, mass: 0.8 }}
+                  />
+                )}
+                <span className="mode-l">{ICONS[r.id]}{r.label}</span>
+                <span className="mode-c">{r.count}</span>
+              </button>
+            );
+          })}
         </nav>
         <div className="cc-stage">
           {gated ? (
