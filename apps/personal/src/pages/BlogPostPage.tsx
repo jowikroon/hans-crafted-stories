@@ -154,8 +154,10 @@ const BlogPostPage = () => {
 
   useEffect(() => {
     if (!slug) return;
-    if (preloaded?.slug === slug) { setPost(preloaded); return; }
-    setPost(undefined);
+    // Preloaded (SSR/prerender) gives the instant first paint, but always refetch
+    // live so content edits (new figures, published/unpublished changes) appear
+    // without waiting for a site rebuild.
+    if (!preloaded || preloaded.slug !== slug) setPost(undefined);
     getBlogPost(slug).then(setPost);
   }, [slug, preloaded]);
 
