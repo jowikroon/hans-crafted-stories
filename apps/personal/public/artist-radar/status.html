@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Artist Radar</title>
+<style>
+  html,body{margin:0}
+  body{font-family:'Instrument Sans',system-ui,-apple-system,sans-serif;background:#FAFAF9;color:#57534E;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  main{max-width:460px;padding:36px;text-align:center}
+  .kicker{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#A0714F;margin-bottom:14px}
+  h1{color:#1C1917;font-size:1.6rem;margin:0 0 .5rem;line-height:1.2}
+  p{line-height:1.6;font-size:15px;margin:.2rem 0 0}
+  .cta{margin-top:28px}
+  a{display:inline-block;background:#A0714F;color:#fff;text-decoration:none;font-weight:700;padding:12px 24px;border-radius:10px}
+</style>
+</head>
+<body>
+  <main>
+    <div class="kicker">● Artist Radar</div>
+    <h1 id="t">Artist Radar</h1>
+    <p id="p"></p>
+    <div class="cta"><a href="https://hansvanleeuwen.com/music">Naar de muziekpagina</a></div>
+  </main>
+  <script>
+    var M={
+      confirmed:{t:"Je radar staat aan ✅",p:"Vanaf nu mailen we je zodra er een signaal is voor je artiesten in NL of BE. Tot snel!"},
+      already:{t:"Je stond al aan ✅",p:"Je radar was al bevestigd — we houden je artiesten in de gaten."},
+      unsubscribed:{t:"Uitgeschreven",p:"Je ontvangt geen radar-updates meer. Van gedachten veranderd? Je bent altijd welkom terug."},
+      invalid:{t:"Link niet gevonden",p:"Deze link is ongeldig of is al gebruikt."}
+    };
+    var s=new URLSearchParams(location.search).get("state");
+    var m=M[s]||M.invalid;
+    document.getElementById("t").textContent=m.t;
+    document.getElementById("p").textContent=m.p;
+    document.title="Artist Radar — "+m.t;
+  </script>
+</body>
+</html>
