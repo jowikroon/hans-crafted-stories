@@ -68,6 +68,19 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
     const t = lines[i].trim();
     if (t === "") { flushList(); continue; }
 
+    // H1 — CMS content often opens with the title as an H1, duplicating the page
+    // title (.atitle). Drop a redundant leading H1; promote any later H1 to a
+    // chapter so it never renders as a literal "#".
+    if (t.startsWith("# ")) {
+      flushList();
+      const text = t.slice(2).trim();
+      if (out.length === 0 && !firstParaDone) continue;
+      const id = `sec-${++h2Count}`;
+      headings.push({ id, text });
+      out.push(`<h2 id="${id}">${esc(text)}</h2>`);
+      continue;
+    }
+
     // H2 — gets an id for TOC scroll-spy
     if (t.startsWith("## ")) {
       flushList();
@@ -95,6 +108,19 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
 
     // List item
     if (t.startsWith("- ")) { listBuf.push(inlineMd(t.slice(2).trim(), mask)); continue; }
+
+    // Bold-only line → section heading (H2). Older articles / CMS content use
+    // "**Heading**" on its own line instead of "## Heading"; promote it so it
+    // gets a chapter in the TOC and the heading style, not a bold paragraph.
+    const boldOnly = t.match(/^\*\*(.+?)\*\*$/);
+    if (boldOnly && !boldOnly[1].includes("**") && firstParaDone) {
+      flushList();
+      const text = boldOnly[1].trim();
+      const id = `sec-${++h2Count}`;
+      headings.push({ id, text });
+      out.push(`<h2 id="${id}">${esc(text)}</h2>`);
+      continue;
+    }
 
     // Paragraph — the very first one becomes the lead
     flushList();
