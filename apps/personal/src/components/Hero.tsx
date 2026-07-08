@@ -91,12 +91,6 @@ const Hero = () => {
                 {getValue("hero_cta_consult", t.ctaConsult)}
               </Link>
             </Magnetic>
-            <Link
-              to="/about#contact"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-border/60 px-6 py-3 text-sm font-medium text-muted-foreground transition-all duration-300 hover:border-foreground/30 hover:text-foreground"
-            >
-              {t.ctaConsultSecondary}
-            </Link>
           </div>
           <p className="mt-3 text-xs text-muted-foreground/60">
             {isNl
