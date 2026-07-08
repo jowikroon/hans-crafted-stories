@@ -75,7 +75,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
       flushList();
       const ialt = esc(imgm[1].trim());
       const isrc = imgm[2];
-      out.push(`<figure class="fig"><img src="${isrc}" alt="${ialt}" loading="lazy" />${ialt ? `<figcaption>${ialt}</figcaption>` : ""}</figure>`);
+      out.push(`<figure class="fig"><img src="${isrc}" alt="${ialt}" decoding="async" />${ialt ? `<figcaption>${ialt}</figcaption>` : ""}</figure>`);
       continue;
     }
 
