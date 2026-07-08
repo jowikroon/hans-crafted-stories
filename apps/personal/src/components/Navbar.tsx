@@ -10,7 +10,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { logoById } from "@/lib/logos";
-import { useActiveLogo } from "@/contexts/LogoContext";
+import { useActiveLogo, useLogoMotion } from "@/contexts/LogoContext";
 import { useNavMenu } from "@/contexts/NavMenuContext";
 
 const THEME_KEY = "site_theme";
@@ -39,6 +39,7 @@ const Navbar = (_props: NavbarProps) => {
   const { isAdmin } = useAdmin();
   const t = translations[lang].nav;
   const logoSrc = logoById(useActiveLogo()).src;
+  const logoMotion = useLogoMotion();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -277,12 +278,14 @@ const Navbar = (_props: NavbarProps) => {
           style={{ width: "calc(100% - 36px)" }}
         >
             {/* Brand */}
-            <Link to="/" className={`group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight ${barInk}`}>
-              <img src={logoSrc} alt="Hans van Leeuwen — Freelance E-commerce Manager" width={30} height={30} className="h-[30px] w-[30px] rounded-md object-contain transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" />
-              <span className="hidden sm:inline-flex items-center">
-                Hans van Leeuwen
-                <span className="ml-[7px] inline-block h-[5px] w-[5px] rounded-full bg-[#2D9255] transition-transform duration-300 group-hover:scale-150" />
-              </span>
+            <Link to="/" aria-label="Hans van Leeuwen — home" className={`group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight ${barInk}`}>
+              <img
+                src={logoSrc}
+                alt="Hans van Leeuwen — Freelance E-commerce Manager"
+                width={30}
+                height={30}
+                className={`h-[30px] w-[30px] rounded-md object-contain${logoMotion ? " transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" : ""}`}
+              />
             </Link>
 
             {/* Centre nav — plain links (Work hover dropdown removed) */}

@@ -368,3 +368,48 @@
   border-color: rgba(224, 160, 80, .35);
 }
 .music-v2 .songhead__concept { margin-left: 10px; }
+
+/* ============================================================
+   Sticky song section menu (Notes / Gear / Lyrics).
+   Site animated-menu standard: spring-glided active pill,
+   tactile hover/press, scroll-spy driven. (2026-07-05)
+   ============================================================ */
+.music-v2 .songnav {
+  position: sticky; top: 84px; z-index: 20;
+  display: inline-flex; gap: 4px;
+  margin: 8px 0 26px;
+  padding: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper-2) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.music-v2 .songnav__item {
+  position: relative; isolation: isolate;
+  appearance: none; border: 0; cursor: pointer;
+  padding: 8px 16px; border-radius: 999px;
+  font-family: var(--font-body, inherit);
+  font-size: 13px; font-weight: 650; letter-spacing: .01em;
+  color: color-mix(in srgb, var(--ink, #57534E) 62%, transparent);
+  background: transparent;
+  transition: color .2s ease, transform .16s cubic-bezier(.2,.8,.2,1);
+  will-change: transform;
+}
+.music-v2 .songnav__item:hover { color: var(--accent); transform: translateY(-1px); }
+.music-v2 .songnav__item:active { transform: translateY(0) scale(.96); }
+.music-v2 .songnav__item:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.music-v2 .songnav__item.is-active { color: var(--accent-ink); }
+.music-v2 .songnav__pill {
+  position: absolute; inset: 0; z-index: -1;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 8px 22px -12px color-mix(in srgb, var(--accent) 85%, #000);
+}
+.music-v2 .songnav__label { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .music-v2 .songnav__item,
+  .music-v2 .songnav__item:hover,
+  .music-v2 .songnav__item:active { transform: none; }
+}

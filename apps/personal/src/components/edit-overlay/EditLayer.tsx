@@ -323,7 +323,7 @@ const WEIGHTS = ["400", "500", "600", "700", "800"];
 const ALIGNS = ["left", "center", "right"];
 
 function EditPanel() {
-  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont } = useEditOverlay();
+  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont, logoMotion, setLogoMotion } = useEditOverlay();
   const current = selectedKey ? overrides.get(selectedKey) : undefined;
   const [text, setText] = useState("");
   const [instruction, setInstruction] = useState("");
@@ -372,10 +372,10 @@ function EditPanel() {
       data-edit-ui=""
       style={{
         position: "fixed",
-        top: 72,
-        right: 16,
+        left: 20,
+        bottom: 72,
         width: 288,
-        maxHeight: "calc(100vh - 96px)",
+        maxHeight: "calc(100vh - 140px)",
         overflowY: "auto",
         zIndex: Z,
         background: "#F1ECDF",
@@ -387,6 +387,24 @@ function EditPanel() {
         color: "#15140F",
       }}
     >
+      {/* ── Logo hover motion (site-wide on/off) ── */}
+      <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(0,0,0,.10)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <div>
+          <p style={{ font: '600 10px "IBM Plex Mono", monospace', textTransform: "uppercase", letterSpacing: ".06em", color: "#7E7A6F", margin: "0 0 2px" }}>Logo hover motion</p>
+          <span style={{ fontSize: 11, color: "#7E7A6F" }}>{logoMotion ? "Aan — logo beweegt bij hover" : "Uit — logo blijft stil"}</span>
+        </div>
+        <button
+          data-edit-ui=""
+          role="switch"
+          aria-checked={logoMotion}
+          onClick={() => setLogoMotion(!logoMotion)}
+          title="Logo hover-animatie aan/uit"
+          style={{ position: "relative", width: 42, height: 24, borderRadius: 999, border: "1px solid rgba(0,0,0,.14)", background: logoMotion ? "#2D9255" : "#D9D3C4", cursor: "pointer", transition: "background .18s ease", flexShrink: 0 }}
+        >
+          <span style={{ position: "absolute", top: 2, left: logoMotion ? 20 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.3)", transition: "left .18s cubic-bezier(.2,.9,.3,1.2)" }} />
+        </button>
+      </div>
+
       {/* ── Permanent: Header logo switcher (site-wide) ── */}
       <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(0,0,0,.10)" }}>
         <p style={{ font: '600 10px "IBM Plex Mono", monospace', textTransform: "uppercase", letterSpacing: ".06em", color: "#7E7A6F", margin: "0 0 7px" }}>Header logo</p>

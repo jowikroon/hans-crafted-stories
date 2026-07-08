@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
@@ -99,6 +100,13 @@ const Music = () => {
   // SoundCloud tracks are gated: only visible when logged in. Public visitors
   // see Spotify releases only.
   const visibleSongs = songs.filter((sg) => sg.provider !== "soundcloud" || !!user);
+
+  // Hero genre menu — a real, animated filter over the track list. "All" plus
+  // the genres actually present in the visible catalogue. Clicking a chip
+  // filters the tracks and glides the neon highlight (framer layoutId).
+  const [genre, setGenre] = useState<string>("All");
+  const genres = ["All", ...Array.from(new Set(visibleSongs.map((sg) => sg.genre)))];
+  const shownSongs = genre === "All" ? visibleSongs : visibleSongs.filter((sg) => sg.genre === genre);
 
   useSEO({
     title: "Music — After Hours | Hans van Leeuwen",
@@ -214,8 +222,33 @@ const Music = () => {
         <span className="mn-kicker"><span className="mn-live" />Now playing <span className="mn-sep">/</span> made after midnight</span>
         <h1 className="mn-hero__title">Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</h1>
         <p className="mn-hero__lede">No singles chasing a playlist. Just a handful of <b>tracks</b>, a tape machine, and whatever the night left behind. Press play — and if you want to stay a while, every song keeps the notes: the gear, the mistakes, the lyrics.</p>
-        <div className="mn-hero__cues">
-          <span className="mn-cue">Lo-fi</span><span className="mn-cue">Ambient</span><span className="mn-cue">Electronic</span><span className="mn-cue">Self-produced</span><span className="mn-cue">Amersfoort · 2026</span>
+        <div className="mn-hero__cues" role="tablist" aria-label="Filter tracks by genre">
+          {genres.map((g) => {
+            const active = genre === g;
+            return (
+              <button
+                key={g}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                className={`mn-cue mn-cue--btn${active ? " is-active" : ""}`}
+                onClick={() => {
+                  setGenre(g);
+                  document.getElementById("songs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="mn-cue-active"
+                    className="mn-cue__pill"
+                    aria-hidden="true"
+                    transition={{ type: "spring", stiffness: 480, damping: 34, mass: 0.7 }}
+                  />
+                )}
+                <span className="mn-cue__label">{g}</span>
+              </button>
+            );
+          })}
         </div>
         {/* live clock lives in the page (the permanent header is shared) */}
         <span ref={clockRef} className="mn-clock" style={{ display: "none" }} />
@@ -246,9 +279,12 @@ const Music = () => {
       <section className="mn-wrap mn-rv" id="songs" aria-label="Tracks">
         <p className="mn-slabel" style={{ marginTop: "clamp(54px,8vh,90px)" }}><span className="n">02</span> The tracks</p>
         <div className="mn-tracks">
-          {visibleSongs.map((song, i) => (
+          {shownSongs.map((song, i) => (
             <TrackRow key={song.slug} song={song} index={i} playing={playingSlug === song.slug} onToggle={toggle} />
           ))}
+          {shownSongs.length === 0 && (
+            <p className="mn-tracks__empty">No tracks in <b>{genre}</b> yet — <button type="button" className="mn-tracks__reset" onClick={() => setGenre("All")}>show all</button>.</p>
+          )}
         </div>
       </section>
 

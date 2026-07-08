@@ -13,7 +13,8 @@
  * /music/:slug. Navbar + Footer come from App.tsx.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
@@ -50,6 +51,65 @@ function ProseNode({ block }: { block: ProseBlock }) {
   if (block.type === "pull") return <p className="pull">{block.text}</p>;
   const cls = block.type === "lead" ? "lead" : undefined;
   return <p className={cls} dangerouslySetInnerHTML={{ __html: block.text }} />;
+}
+
+/**
+ * Sticky in-page section menu for the song detail (Notes / Gear / Lyrics).
+ * Scroll-spy via IntersectionObserver, smooth-scroll on click, and a
+ * spring-glided active pill (framer layoutId). Lifted to the site's animated
+ * menu standard. (2026-07-05)
+ */
+function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
+  const [active, setActive] = useState(items[0]?.id ?? "");
+  useEffect(() => {
+    const els = items
+      .map((it) => document.getElementById(it.id))
+      .filter((el): el is HTMLElement => !!el);
+    if (els.length === 0) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const vis = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (vis[0]) setActive((vis[0].target as HTMLElement).id);
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: [0, 0.25, 0.6, 1] },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [items]);
+
+  const go = (id: string) => {
+    setActive(id);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <nav className="songnav" aria-label="Song sections">
+      {items.map((it) => {
+        const on = active === it.id;
+        return (
+          <button
+            key={it.id}
+            type="button"
+            className={`songnav__item${on ? " is-active" : ""}`}
+            aria-current={on ? "true" : undefined}
+            onClick={() => go(it.id)}
+          >
+            {on && (
+              <motion.span
+                layoutId="songnav-active"
+                className="songnav__pill"
+                aria-hidden="true"
+                transition={{ type: "spring", stiffness: 480, damping: 34, mass: 0.7 }}
+              />
+            )}
+            <span className="songnav__label">{it.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
 }
 
 export default function MusicSong() {
@@ -297,8 +357,16 @@ export default function MusicSong() {
             )}
           </div>
 
+          <SongSectionNav
+            items={[
+              { id: "song-notes", label: "Notes" },
+              ...(d.gear && d.gear.length ? [{ id: "song-gear", label: "Gear" }] : []),
+              { id: "song-lyrics", label: "Lyrics" },
+            ]}
+          />
+
           {/* Production notes + aside */}
-          <div className="songbody">
+          <div className="songbody" id="song-notes">
             <article className="prose">
               {d.prose.map((block, i) => (
                 <ProseNode key={i} block={block} />
@@ -317,7 +385,7 @@ export default function MusicSong() {
                   ))}
                 </dl>
               </div>
-              <div className="gearlist">
+              <div className="gearlist" id="song-gear">
                 <div className="specs__h">Gear &amp; instruments</div>
                 <ul>
                   {d.gear.map((g) => (
@@ -333,7 +401,7 @@ export default function MusicSong() {
           </div>
 
           {/* Lyrics */}
-          <section className="lyrics" aria-label="Lyrics">
+          <section className="lyrics" aria-label="Lyrics" id="song-lyrics">
             <div className="lyrics__h">Lyrics</div>
             <div className="lyrics__cols">
               {d.lyrics.map((v) => (
