@@ -50,7 +50,6 @@ type TranslationStrings = {
     location: string;
     ctaWork: string;
     ctaConsult: string;
-    ctaConsultSecondary: string;
     ctaAbout: string;
     resultsLabel: string;
     results: string[];
@@ -327,8 +326,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         "I'm Hans van Leeuwen — a freelance e-commerce manager and marketplace consultant based in Amersfoort. I specialize in Amazon, Bol.com, and scalable marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
       ctaWork: "View Amazon & Bol.com case studies",
-      ctaConsult: "Get a 7-point marketplace audit",
-      ctaConsultSecondary: "Book a 30-min Amazon NL & Bol.com growth call",
+      ctaConsult: "Contact me",
       ctaAbout: "About me",
       resultsLabel: "Proven results",
       results: [
@@ -668,8 +666,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         "Ik ben Hans van Leeuwen — freelance e-commerce manager en marktplaatsconsultant, gevestigd in Amersfoort. Ik ben gespecialiseerd in Amazon, Bol.com en schaalbare marktplaatsgroei. Ik help merken in Nederland en de EU digitale kanalen om te zetten in omzetmotoren.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
       ctaWork: "Bekijk Amazon & Bol.com cases",
-      ctaConsult: "Vraag een 7-punts marketplace audit aan",
-      ctaConsultSecondary: "Plan een 30-min Amazon NL & Bol.com groeigesprek",
+      ctaConsult: "Neem contact op met mij",
       ctaAbout: "Over mij",
       resultsLabel: "Bewezen resultaten",
       results: [
