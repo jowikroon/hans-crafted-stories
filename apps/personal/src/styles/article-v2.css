@@ -12,25 +12,24 @@
    ============================================================ */
 
 /* Fonts via Fontshare + Newsreader (serif) — only when an article is mounted */
-@import url("https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&f[]=general-sans@400,500,600,700&f[]=jetbrains-mono@400,500&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 .article-v2 {
-  --w2-font-display: 'General Sans', 'Switzer', 'Inter', system-ui, sans-serif;
-  --w2-font-body: 'Switzer', 'Inter', system-ui, sans-serif;
-  --w2-font-serif: 'Newsreader', Georgia, serif;
-  --w2-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --w2-font-display: 'Archivo', 'Inter', system-ui, sans-serif;
+  --w2-font-body: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
+  --w2-font-serif: 'Archivo', 'Inter', system-ui, sans-serif;
+  --w2-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-  --w2-paper: #FBFAF7;
+  --w2-paper: #FAF8F2;
   --w2-paper-2: #F2EFE9;
   --w2-canvas: #FFFFFF;
-  --w2-ink: #17150F;
-  --w2-ink-2: #46443C;
-  --w2-muted: #8A877C;
-  --w2-hair: rgba(23, 21, 15, .10);
+  --w2-ink: #131210;
+  --w2-ink-2: #33302A;
+  --w2-muted: #6E6A5E;
+  --w2-hair: #DAD5C7;
   --w2-hair-2: rgba(23, 21, 15, .06);
   --w2-card: #FFFFFF;
-  --w2-accent: #1C6B45;
+  --w2-accent: #1C7A48;
   --w2-accent-ink: #FFFFFF;
   --w2-draft-amber: #B8721A;
   --w2-draft-amber-soft: #FCEDD2;
@@ -126,10 +125,10 @@
 }
 .article-v2 .ahead__cat .langtag { color: var(--w2-muted); }
 .article-v2 .atitle {
-  font-family: var(--w2-font-serif); font-weight: 500; font-size: clamp(32px, 4.4vw, 52px);
-  line-height: 1.05; letter-spacing: -.018em; text-wrap: balance;
+  font-family: var(--w2-font-display); font-weight: 900; font-size: clamp(42px, 5.8vw, 64px);
+  line-height: 0.98; letter-spacing: -.035em; text-wrap: balance;
 }
-.article-v2[data-serif="off"] .atitle { font-weight: 700; letter-spacing: -.032em; }
+.article-v2[data-serif="off"] .atitle { font-weight: 900; letter-spacing: -.035em; }
 .article-v2 .adek {
   margin: 22px auto 0; font-size: clamp(17px, 1.6vw, 20px); line-height: 1.5;
   color: var(--w2-ink-2); max-width: 58ch; text-wrap: pretty;
@@ -177,18 +176,21 @@
 .article-v2 .prose { max-width: 680px; }
 .article-v2 .prose > * + * { margin-top: 24px; }
 .article-v2 .prose p {
-  font-size: 19px; line-height: 1.75; color: var(--w2-ink-2);
+  font-size: 19px; line-height: 1.68; color: var(--w2-ink-2);
   letter-spacing: -.003em; text-wrap: pretty;
 }
 .article-v2 .prose strong { color: var(--w2-ink); font-weight: 600; }
-.article-v2 .prose a { color: var(--w2-accent); text-decoration: underline; text-underline-offset: 3px; }
+.article-v2 .prose a { color: var(--w2-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--w2-accent) 45%, transparent); transition: text-decoration-color .15s; }
+.article-v2 .prose a:hover { text-decoration-color: var(--w2-accent); }
+.article-v2 .prose code { font-family: var(--w2-font-mono); font-size: 0.82em; background: rgba(28,122,72,0.09); color: #155E39; padding: 2px 7px; border-radius: 5px; }
+.dark .article-v2 .prose code { background: rgba(28,122,72,0.2); color: #62CE91; }
 .article-v2 .prose .lead { font-size: 21px; line-height: 1.6; color: var(--w2-ink); font-weight: 400; }
 .article-v2 .prose h2 {
-  font-family: var(--w2-font-serif); font-weight: 500; font-size: clamp(24px, 2.6vw, 31px);
-  line-height: 1.14; letter-spacing: -.012em; color: var(--w2-ink);
+  font-family: var(--w2-font-display); font-weight: 800; font-size: clamp(26px, 2.8vw, 30px);
+  line-height: 1.1; letter-spacing: -.025em; color: var(--w2-ink);
   margin-top: 52px; scroll-margin-top: 96px;
 }
-.article-v2[data-serif="off"] .prose h2 { font-weight: 700; letter-spacing: -.028em; }
+.article-v2[data-serif="off"] .prose h2 { font-weight: 800; letter-spacing: -.025em; }
 .article-v2 .prose h2 + p { margin-top: 16px; }
 .article-v2 .prose h3 {
   font-family: var(--w2-font-display); font-weight: 600; font-size: clamp(18px, 1.8vw, 21px);
