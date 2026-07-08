@@ -68,6 +68,17 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
     const t = lines[i].trim();
     if (t === "") { flushList(); continue; }
 
+    // Image: ![alt](url) on its own line. url may be an inline data: URI
+    // (e.g. a self-contained SVG chart) or an https: URL. Renders a figure.
+    const imgm = t.match(/^!\[([^\]]*)\]\((data:[^)]+|https?:\/\/[^)]+)\)$/);
+    if (imgm) {
+      flushList();
+      const ialt = esc(imgm[1].trim());
+      const isrc = imgm[2];
+      out.push(`<figure class="fig"><img src="${isrc}" alt="${ialt}" loading="lazy" />${ialt ? `<figcaption>${ialt}</figcaption>` : ""}</figure>`);
+      continue;
+    }
+
     // H1 — CMS content often opens with the title as an H1, duplicating the page
     // title (.atitle). Drop a redundant leading H1; promote any later H1 to a
     // chapter so it never renders as a literal "#".
