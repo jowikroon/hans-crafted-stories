@@ -34,7 +34,7 @@ export interface BlogPostRow {
  */
 const HANS_USER_ID = "0200ed4f-c866-4ec3-b235-541843133c1a";
 
-async function isHansSession(): Promise<boolean> {
+export async function isHansSession(): Promise<boolean> {
   try {
     const { data } = await supabase.auth.getSession();
     return data.session?.user?.id === HANS_USER_ID;
