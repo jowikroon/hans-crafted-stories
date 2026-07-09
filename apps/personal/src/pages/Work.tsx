@@ -191,7 +191,7 @@ const Work = () => {
             {getValue("work_description", tw.description)}
           </p>
           <p className="mb-10 text-sm text-muted-foreground">
-            {tw.relatedHeading} —{" "}
+            {tw.relatedHeading}:{" "}
             <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
               {tw.linkWriting}
             </Link>
