@@ -13,12 +13,12 @@ const fade = {
 
 const content = {
   en: {
-    title: "Bol.com Consultant — Freelance Bol.com Specialist & Ads Manager",
+    title: "Bol.com Consultant, Freelance Bol.com Specialist & Ads Manager",
     metaDesc: "Freelance Bol.com consultant & specialist. Bol Ads, content optimization, catalog management & analytics. Vendor-to-seller transitions. Based in Amersfoort, NL.",
     breadcrumb: "Bol.com Consultant",
     h1: "Bol.com Consultant",
-    subtitle: "Freelance Bol.com specialist — content, Bol Ads & marketplace growth",
-    intro: "I help brands grow on Bol.com — the Netherlands' largest online marketplace. From optimizing product content and managing Bol Ads campaigns to transitioning from vendor to seller, I deliver measurable results with a hands-on approach.",
+    subtitle: "Freelance Bol.com specialist, content, Bol Ads & marketplace growth",
+    intro: "I help brands grow on Bol.com, the Netherlands' largest online marketplace. From optimizing product content and managing Bol Ads campaigns to transitioning from vendor to seller, I deliver measurable results with a hands-on approach.",
     services: [
       "Bol.com product content optimization (titles, descriptions, attributes)",
       "Bol Ads campaign setup, management & ROAS optimization",
@@ -35,16 +35,16 @@ const content = {
       { stat: "20%", desc: "weekly sales growth from targeted Bol Ads campaigns" },
     ],
     ctaHeading: "Ready to grow on Bol.com?",
-    ctaText: "Get a free Bol.com marketplace assessment — I'll map your opportunities and quick wins within 48 hours.",
-    ctaButton: "Request your Bol.com audit",
+    ctaText: "Get a free Bol.com marketplace assessment, I'll map your opportunities and quick wins within 48 hours.",
+    ctaButton: "Contact me",
   },
   nl: {
-    title: "Bol.com Consultant — Freelance Bol.com Specialist & Ads Manager",
+    title: "Bol.com Consultant, Freelance Bol.com Specialist & Ads Manager",
     metaDesc: "Freelance Bol.com consultant & specialist. Bol Ads, contentoptimalisatie, catalogusbeheer & analytics. Vendor-naar-seller transities. Gevestigd in Amersfoort.",
     breadcrumb: "Bol.com Consultant",
     h1: "Bol.com Consultant",
-    subtitle: "Freelance Bol.com specialist — content, Bol Ads & marktplaatsgroei",
-    intro: "Ik help merken groeien op Bol.com — de grootste online marktplaats van Nederland. Van het optimaliseren van productcontent en het beheren van Bol Ads campagnes tot vendor-naar-seller transities. Hands-on en meetbaar.",
+    subtitle: "Freelance Bol.com specialist, content, Bol Ads & marktplaatsgroei",
+    intro: "Ik help merken groeien op Bol.com, de grootste online marktplaats van Nederland. Van het optimaliseren van productcontent en het beheren van Bol Ads campagnes tot vendor-naar-seller transities. Hands-on en meetbaar.",
     services: [
       "Bol.com productcontent optimalisatie (titels, beschrijvingen, attributen)",
       "Bol Ads campagne-opzet, beheer & ROAS-optimalisatie",
@@ -61,8 +61,8 @@ const content = {
       { stat: "20%", desc: "wekelijkse omzetgroei door gerichte Bol Ads campagnes" },
     ],
     ctaHeading: "Klaar om te groeien op Bol.com?",
-    ctaText: "Ontvang een gratis Bol.com marktplaats assessment — ik breng je kansen en quick wins in kaart binnen 48 uur.",
-    ctaButton: "Vraag je Bol.com audit aan",
+    ctaText: "Ontvang een gratis Bol.com marktplaats assessment, ik breng je kansen en quick wins in kaart binnen 48 uur.",
+    ctaButton: "Neem contact op met mij",
   },
 };
 
@@ -157,7 +157,7 @@ const BolComConsultant = () => {
       <motion.div {...fade} className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-8 md:p-12 text-center">
         <h2 className="mb-4 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{t.ctaHeading}</h2>
         <p className="mb-6 max-w-xl mx-auto text-sm text-muted-foreground">{t.ctaText}</p>
-        <a href="mailto:hansvl3@gmail.com?subject=Bol.com Audit Request" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all hover:gap-3 hover:shadow-lg">
+        <a href="/about#contact" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all hover:gap-3 hover:shadow-lg">
           {t.ctaButton} <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
         </a>
         <p className="mt-6 text-xs text-muted-foreground/60">

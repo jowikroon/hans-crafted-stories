@@ -13,12 +13,12 @@ const fade = {
 
 const content = {
   en: {
-    title: "Amazon NL Specialist — Freelance Amazon Netherlands Account Manager",
+    title: "Amazon NL Specialist, Freelance Amazon Netherlands Account Manager",
     metaDesc: "Freelance Amazon NL specialist & account manager. Listings, A+ content, Sponsored Products & Brands, Buy Box optimization. 10+ years, based in Amersfoort.",
     breadcrumb: "Amazon NL Specialist",
     h1: "Amazon NL Specialist",
-    subtitle: "Freelance Amazon Netherlands account manager — listings, ads & growth",
-    intro: "I help brands sell more on Amazon Netherlands through optimized listings, data-driven advertising, and strategic account management. From launch to scale — hands-on, measurable, and results-focused.",
+    subtitle: "Freelance Amazon Netherlands account manager, listings, ads & growth",
+    intro: "I help brands sell more on Amazon Netherlands through optimized listings, data-driven advertising, and strategic account management. From launch to scale, hands-on, measurable, and results-focused.",
     services: [
       "Product listing optimization (titles, bullets, backend keywords, images)",
       "A+ Content / Enhanced Brand Content creation",
@@ -35,16 +35,16 @@ const content = {
       { stat: "20%", desc: "weekly sales increase via targeted Sponsored campaigns" },
     ],
     ctaHeading: "Ready to grow on Amazon Netherlands?",
-    ctaText: "Get a free 7-point Amazon NL audit — I'll identify your top growth opportunities within 48 hours.",
-    ctaButton: "Request your Amazon audit",
+    ctaText: "Get a free 7-point Amazon NL audit, I'll identify your top growth opportunities within 48 hours.",
+    ctaButton: "Contact me",
   },
   nl: {
-    title: "Amazon NL Specialist — Freelance Amazon Nederland Accountmanager",
+    title: "Amazon NL Specialist, Freelance Amazon Nederland Accountmanager",
     metaDesc: "Freelance Amazon NL specialist & accountmanager. Listings, A+ content, Sponsored Products & Brands, Buy Box optimalisatie. 10+ jaar, gevestigd in Amersfoort.",
     breadcrumb: "Amazon NL Specialist",
     h1: "Amazon NL Specialist",
-    subtitle: "Freelance Amazon Nederland accountmanager — listings, ads & groei",
-    intro: "Ik help merken meer te verkopen op Amazon Nederland door geoptimaliseerde listings, datagedreven advertenties en strategisch accountmanagement. Van lancering tot schaling — hands-on, meetbaar en resultaatgericht.",
+    subtitle: "Freelance Amazon Nederland accountmanager, listings, ads & groei",
+    intro: "Ik help merken meer te verkopen op Amazon Nederland door geoptimaliseerde listings, datagedreven advertenties en strategisch accountmanagement. Van lancering tot schaling, hands-on, meetbaar en resultaatgericht.",
     services: [
       "Productlisting optimalisatie (titels, bullets, backend keywords, afbeeldingen)",
       "A+ Content / Enhanced Brand Content creatie",
@@ -61,8 +61,8 @@ const content = {
       { stat: "20%", desc: "wekelijkse omzetstijging via gerichte Sponsored campagnes" },
     ],
     ctaHeading: "Klaar om te groeien op Amazon Nederland?",
-    ctaText: "Ontvang een gratis 7-punts Amazon NL audit — ik identificeer je grootste groeikansen binnen 48 uur.",
-    ctaButton: "Vraag je Amazon audit aan",
+    ctaText: "Ontvang een gratis 7-punts Amazon NL audit, ik identificeer je grootste groeikansen binnen 48 uur.",
+    ctaButton: "Neem contact op met mij",
   },
 };
 
@@ -157,7 +157,7 @@ const AmazonNlSpecialist = () => {
       <motion.div {...fade} className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-8 md:p-12 text-center">
         <h2 className="mb-4 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{t.ctaHeading}</h2>
         <p className="mb-6 max-w-xl mx-auto text-sm text-muted-foreground">{t.ctaText}</p>
-        <a href="mailto:hansvl3@gmail.com?subject=Amazon NL Audit Request" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all hover:gap-3 hover:shadow-lg">
+        <a href="/about#contact" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all hover:gap-3 hover:shadow-lg">
           {t.ctaButton} <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
         </a>
         <p className="mt-6 text-xs text-muted-foreground/60">

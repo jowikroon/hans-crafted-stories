@@ -323,7 +323,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       headingEmphasis: "strategy",
       freelanceH2: "Grow Amazon NL & Bol.com revenue with a hands-on interim marketplace lead",
       description:
-        "I'm Hans van Leeuwen — a freelance e-commerce manager and marketplace consultant based in Amersfoort. I specialize in Amazon, Bol.com, and scalable marketplace growth. I help brands across the Netherlands and EU turn digital channels into revenue engines.",
+        "I'm Hans van Leeuwen, a freelance e-commerce and marketplace manager based in Amersfoort. After ten years growing Amazon and Bol.com revenue for brands, I know where marketplace growth actually comes from: sharp listings, disciplined ads, and reliable operations. I help brands across the Netherlands and EU turn their digital channels into revenue engines.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
       ctaWork: "View Amazon & Bol.com case studies",
       ctaConsult: "Contact me",
@@ -407,9 +407,9 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Work ── */
     work: {
       label: "Portfolio & Case Studies",
-      heading: "E-commerce, 3D & UX Design Work",
+      heading: "Marketplace results, plus design & 3D work",
       description:
-        "A curated collection of case studies — from Amazon & Bol.com e-commerce UX concepts to 3D creative experiments, VR games, and branding projects. Each project features real results and measurable outcomes.",
+        "Real marketplace results first: Amazon NL & Bol.com case studies with measurable outcomes. Below that, selected e-commerce UX, 3D, VR and branding work.",
       projectSingular: "project",
       projectPlural: "projects",
       matching: "matching",
@@ -434,7 +434,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. What data do we collect?",
-          body: "We only collect anonymous analytical data via Google Analytics 4 (GA4), managed through Google Tag Manager. This includes page views, session duration, and device type. No personal data such as names, email addresses, or IP addresses is stored — IP anonymization is enabled by default in GA4.",
+          body: "We only collect anonymous analytical data via Google Analytics 4 (GA4), managed through Google Tag Manager. This includes page views, session duration, and device type. No personal data such as names, email addresses, or IP addresses is stored, IP anonymization is enabled by default in GA4.",
         },
         {
           heading: "3. Cookies",
@@ -507,11 +507,11 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "10+ years growing Amazon NL & Bol.com revenue. Listings, ads, CRO & forecasting. Based in Amersfoort — NL/EU. Get a 7-point marketplace audit.",
+      homeDescription: "10+ years growing Amazon NL & Bol.com revenue. Listings, ads, CRO & forecasting. Based in Amersfoort, NL/EU. Available for freelance and interim marketplace work.",
       writingTitle: "E-commerce Insights for Amazon NL & Bol.com | Hans van Leeuwen",
-      writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU. Get a 7-point audit or book a growth call.",
+      writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
       workTitle: "Amazon NL & Bol.com Case Studies | Portfolio | Hans van Leeuwen",
-      workDescription: "E-commerce and marketplace case studies with measurable results — Amazon NL, Bol.com, UX, and 3D work. Get a 7-point audit or book a 30-min growth call.",
+      workDescription: "Amazon NL & Bol.com case studies with measurable results, plus selected UX and 3D work. Freelance marketplace manager based in Amersfoort.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
       privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
       aboutTitle: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
@@ -530,7 +530,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     downloadCvNl: "Download CV (NL)",
     bio: [
       "E-commerce Manager met 10+ jaar ervaring in het versnellen van digitale commerceprestaties via marktplaatsen en D2C-kanalen. Gespecialiseerd in Amazon, Bol.com en schaalbare groeistrategieën.",
-      "Ik combineer een sterke achtergrond in UX-design met hands-on commerciële expertise om datagedreven strategieën te creëren die meetbare resultaten opleveren. Van 70% marktaandeel op Amazon NL tot het terugbrengen van out-of-stock rates onder de 2% — ik zet complexiteit om in groei.",
+      "Ik combineer een sterke achtergrond in UX-design met hands-on commerciële expertise om datagedreven strategieën te creëren die meetbare resultaten opleveren. Van 70% marktaandeel op Amazon NL tot het terugbrengen van out-of-stock rates onder de 2%, ik zet complexiteit om in groei.",
     ],
     experienceList: [
       {
@@ -663,7 +663,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       headingEmphasis: "strategie",
       freelanceH2: "Groei Amazon NL & Bol.com omzet met een hands-on interim marktplaatsmanager",
       description:
-        "Ik ben Hans van Leeuwen — freelance e-commerce manager en marktplaatsconsultant, gevestigd in Amersfoort. Ik ben gespecialiseerd in Amazon, Bol.com en schaalbare marktplaatsgroei. Ik help merken in Nederland en de EU digitale kanalen om te zetten in omzetmotoren.",
+        "Ik ben Hans van Leeuwen, freelance e-commerce en marketplace manager in Amersfoort. Na tien jaar Amazon- en Bol.com-omzet laten groeien voor merken weet ik waar marketplace-groei echt vandaan komt: scherpe listings, gedisciplineerde ads en betrouwbare operatie. Ik help merken in Nederland en de EU hun digitale kanalen omzetten in omzetmotoren.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
       ctaWork: "Bekijk Amazon & Bol.com cases",
       ctaConsult: "Neem contact op met mij",
@@ -747,9 +747,9 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Work ── */
     work: {
       label: "Portfolio & Cases",
-      heading: "E-commerce, 3D & UX Designwerk",
+      heading: "Marketplace-resultaat, plus design & 3D",
       description:
-        "Een zorgvuldig samengestelde collectie cases — van Amazon & Bol.com e-commerce UX-concepten tot 3D-creatieve experimenten, VR-games en brandingprojecten. Elk project bevat concrete resultaten en meetbare uitkomsten.",
+        "Eerst echt marketplace-resultaat: Amazon NL & Bol.com cases met meetbare uitkomsten. Daaronder geselecteerd e-commerce UX-, 3D-, VR- en brandingwerk.",
       projectSingular: "project",
       projectPlural: "projecten",
       matching: "gevonden",
@@ -774,7 +774,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. Welke gegevens verzamelen wij?",
-          body: "Wij verzamelen uitsluitend anonieme analytische gegevens via Google Analytics 4 (GA4), beheerd via Google Tag Manager. Dit omvat onder andere paginaweergaven, sessieduur en apparaattype. Er worden geen persoonsgegevens zoals naam, e-mailadres of IP-adres opgeslagen — IP-anonimisering is standaard ingeschakeld in GA4.",
+          body: "Wij verzamelen uitsluitend anonieme analytische gegevens via Google Analytics 4 (GA4), beheerd via Google Tag Manager. Dit omvat onder andere paginaweergaven, sessieduur en apparaattype. Er worden geen persoonsgegevens zoals naam, e-mailadres of IP-adres opgeslagen, IP-anonimisering is standaard ingeschakeld in GA4.",
         },
         {
           heading: "3. Cookies",
@@ -847,11 +847,11 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "10+ jaar groei op Amazon NL & Bol.com. Listings, ads, CRO & forecasting. Gevestigd in Amersfoort — NL/EU. Vraag een 7-punts marktplaats audit aan.",
+      homeDescription: "10+ jaar groei op Amazon NL & Bol.com. Listings, ads, CRO & forecasting. Gevestigd in Amersfoort, NL/EU. Beschikbaar voor freelance en interim marketplace-werk.",
       writingTitle: "E-commerce Inzichten voor Amazon NL & Bol.com | Hans van Leeuwen",
-      writingDescription: "Artikelen over marktplaatsstrategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU. Vraag een 7-punts audit of plan een groeigesprek.",
+      writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
       workTitle: "Amazon NL & Bol.com Cases | Portfolio | Hans van Leeuwen",
-      workDescription: "E-commerce en marktplaats cases met meetbare resultaten — Amazon NL, Bol.com, UX en 3D. Vraag een 7-punts audit of plan een 30-min groeigesprek.",
+      workDescription: "Amazon NL & Bol.com cases met meetbare resultaten, plus geselecteerd UX- en 3D-werk. Freelance marketplace-manager in Amersfoort.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
       privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
       aboutTitle: "Over Hans van Leeuwen – E-commerce Manager | 10+ Jaar Ervaring",

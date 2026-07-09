@@ -13,12 +13,12 @@ const fade = {
 
 const content = {
   en: {
-    title: "Interim E-commerce Manager — Freelance Marketplace Lead (NL/EU)",
+    title: "Interim E-commerce Manager, Freelance Marketplace Lead (NL/EU)",
     metaDesc: "Interim e-commerce manager for Amazon NL & Bol.com. Hands-on marketplace leadership, operations & KPI-driven growth. 10+ years, based in Amersfoort, Netherlands.",
     breadcrumb: "Interim E-commerce Manager",
     h1: "Interim E-commerce Manager",
-    subtitle: "Freelance marketplace lead — strategy, operations & hands-on execution",
-    intro: "Need senior e-commerce leadership without the permanent headcount? I step in as your interim e-commerce manager — driving marketplace strategy, managing daily operations, and delivering KPI-driven growth on Amazon NL, Bol.com, and beyond.",
+    subtitle: "Freelance marketplace lead, strategy, operations & hands-on execution",
+    intro: "Need senior e-commerce leadership without the permanent headcount? I step in as your interim e-commerce manager, driving marketplace strategy, managing daily operations, and delivering KPI-driven growth on Amazon NL, Bol.com, and beyond.",
     whenToHire: "When to Bring in an Interim E-commerce Manager",
     scenarios: [
       "You need to fix ACOS and restructure ad campaigns fast",
@@ -39,16 +39,16 @@ const content = {
       "Process documentation and knowledge transfer",
     ],
     ctaHeading: "Need an interim e-commerce lead?",
-    ctaText: "Let's discuss your situation — I'll share how I can help within a 30-minute introductory call. No obligation.",
-    ctaButton: "Schedule a 30-min call",
+    ctaText: "Let's discuss your situation, I'll share how I can help within a 30-minute introductory call. No obligation.",
+    ctaButton: "Contact me",
   },
   nl: {
-    title: "Interim E-commerce Manager — Freelance Marktplaats Lead (NL/EU)",
+    title: "Interim E-commerce Manager, Freelance Marktplaats Lead (NL/EU)",
     metaDesc: "Interim e-commerce manager voor Amazon NL & Bol.com. Hands-on marktplaats leiderschap, operations & KPI-gedreven groei. 10+ jaar, gevestigd in Amersfoort.",
     breadcrumb: "Interim E-commerce Manager",
     h1: "Interim E-commerce Manager",
-    subtitle: "Freelance marktplaats lead — strategie, operations & hands-on uitvoering",
-    intro: "Senior e-commerce leiderschap nodig zonder vast dienstverband? Ik stap in als je interim e-commerce manager — ik stuur marktplaatsstrategie aan, beheer dagelijkse operations en lever KPI-gedreven groei op Amazon NL, Bol.com en daarbuiten.",
+    subtitle: "Freelance marktplaats lead, strategie, operations & hands-on uitvoering",
+    intro: "Senior e-commerce leiderschap nodig zonder vast dienstverband? Ik stap in als je interim e-commerce manager, ik stuur marktplaatsstrategie aan, beheer dagelijkse operations en lever KPI-gedreven groei op Amazon NL, Bol.com en daarbuiten.",
     whenToHire: "Wanneer een Interim E-commerce Manager Inschakelen",
     scenarios: [
       "Je moet ACOS fixen en advertentiecampagnes snel herstructureren",
@@ -69,8 +69,8 @@ const content = {
       "Procesdocumentatie en kennisoverdracht",
     ],
     ctaHeading: "Een interim e-commerce lead nodig?",
-    ctaText: "Laten we je situatie bespreken — ik deel hoe ik kan helpen in een kennismakingsgesprek van 30 minuten. Vrijblijvend.",
-    ctaButton: "Plan een 30-min gesprek",
+    ctaText: "Laten we je situatie bespreken, ik deel hoe ik kan helpen in een kennismakingsgesprek van 30 minuten. Vrijblijvend.",
+    ctaButton: "Neem contact op met mij",
   },
 };
 
@@ -166,7 +166,7 @@ const InterimEcommerceManager = () => {
       <motion.div {...fade} className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-8 md:p-12 text-center">
         <h2 className="mb-4 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{t.ctaHeading}</h2>
         <p className="mb-6 max-w-xl mx-auto text-sm text-muted-foreground">{t.ctaText}</p>
-        <a href="mailto:hansvl3@gmail.com?subject=Interim E-commerce Manager Inquiry" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all hover:gap-3 hover:shadow-lg">
+        <a href="/about#contact" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all hover:gap-3 hover:shadow-lg">
           {t.ctaButton} <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
         </a>
         <p className="mt-6 text-xs text-muted-foreground/60">
