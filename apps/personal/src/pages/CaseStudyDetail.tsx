@@ -6,16 +6,16 @@ import { useLang } from "@/hooks/useLang";
 import { useSEO } from "@/hooks/useSEO";
 
 const images = [
-  { src: "/cases/connect-car-parts/ccp-10.png", alt: "Connect Car Parts — full campaign overview" },
-  { src: "/cases/connect-car-parts/ccp-3.png", alt: "ABS vs Bosch vs Brembo vs ATE — brand comparison" },
-  { src: "/cases/connect-car-parts/ccp-4.png", alt: "ABS Rem Schijven — product photography layout" },
-  { src: "/cases/connect-car-parts/ccp-6.png", alt: "Frankberg Bremskit — brake kit promotion" },
-  { src: "/cases/connect-car-parts/ccp-7.png", alt: "Frankberg — friction coefficient performance chart" },
-  { src: "/cases/connect-car-parts/ccp-8.png", alt: "ABS — ECE Certified, Made in Europe" },
-  { src: "/cases/connect-car-parts/ccp-9.png", alt: "ABS Brake Parts — full brand infographic" },
+  { src: "/cases/connect-car-parts/ccp-10.png", alt: "Connect Car Parts, full campaign overview" },
+  { src: "/cases/connect-car-parts/ccp-3.png", alt: "ABS vs Bosch vs Brembo vs ATE, brand comparison" },
+  { src: "/cases/connect-car-parts/ccp-4.png", alt: "ABS Rem Schijven, product photography layout" },
+  { src: "/cases/connect-car-parts/ccp-6.png", alt: "Frankberg Bremskit, brake kit promotion" },
+  { src: "/cases/connect-car-parts/ccp-7.png", alt: "Frankberg, friction coefficient performance chart" },
+  { src: "/cases/connect-car-parts/ccp-8.png", alt: "ABS, ECE Certified, Made in Europe" },
+  { src: "/cases/connect-car-parts/ccp-9.png", alt: "ABS Brake Parts, full brand infographic" },
   { src: "/cases/connect-car-parts/ccp-1.png", alt: "Marketplace listing performance comparison" },
-  { src: "/cases/connect-car-parts/ccp-14.png", alt: "How to choose the right brake disc — guide visual" },
-  { src: "/cases/connect-car-parts/ccp-13.png", alt: "SEO analysis tool — marketplace optimization" },
+  { src: "/cases/connect-car-parts/ccp-14.png", alt: "How to choose the right brake disc, guide visual" },
+  { src: "/cases/connect-car-parts/ccp-13.png", alt: "SEO analysis tool, marketplace optimization" },
 ];
 
 const stats = [
@@ -33,7 +33,7 @@ const CaseStudyDetail = () => {
     breadcrumbWork: "Portfolio",
     breadcrumbCase: "Connect Car Parts",
     label: "Case Study",
-    title: "Connect Car Parts — Marketplace Content Optimalisatie",
+    title: "Connect Car Parts, Marketplace Content Optimalisatie",
     subtitle: "Van handmatige productlijsten naar geautomatiseerde, publish-ready Amazon content voor 2.400+ automotive onderdelen.",
     problemTitle: "De Uitdaging",
     problemText: "Connect Car Parts verkoopt premium remonderdelen (ABS, Frankberg) op Amazon DE, NL en FR. Met 2.400+ SKU's was handmatige contentcreatie onhoudbaar: inconsistente titels, ontbrekende attributen, policy-afwijzingen en geen kwaliteitsmeting per listing.",
@@ -60,7 +60,7 @@ const CaseStudyDetail = () => {
     breadcrumbWork: "Portfolio",
     breadcrumbCase: "Connect Car Parts",
     label: "Case Study",
-    title: "Connect Car Parts — Marketplace Content Optimization",
+    title: "Connect Car Parts, Marketplace Content Optimization",
     subtitle: "From manual product listings to automated, publish-ready Amazon content for 2,400+ automotive parts.",
     problemTitle: "The Challenge",
     problemText: "Connect Car Parts sells premium brake parts (ABS, Frankberg) on Amazon DE, NL, and FR. With 2,400+ SKUs, manual content creation was unsustainable: inconsistent titles, missing attributes, policy rejections, and no quality measurement per listing.",
@@ -87,8 +87,8 @@ const CaseStudyDetail = () => {
 
   useSEO({
     title: lang === "nl"
-      ? "Connect Car Parts — Marketplace Content Optimalisatie | Hans van Leeuwen"
-      : "Connect Car Parts — Marketplace Content Optimization | Hans van Leeuwen",
+      ? "Connect Car Parts, Marketplace Content Optimalisatie | Hans van Leeuwen"
+      : "Connect Car Parts, Marketplace Content Optimization | Hans van Leeuwen",
     description: lang === "nl"
       ? "Case study: AI-gestuurde Amazon content optimalisatie voor 2.400+ automotive onderdelen. Kwaliteitsscore 94/100, 93% tijdsbesparing per SKU."
       : "Case study: AI-powered Amazon content optimization for 2,400+ automotive parts. Quality score 94/100, 93% time reduction per SKU.",

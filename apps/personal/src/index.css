@@ -9,7 +9,7 @@
     /* Warm creme — the music-page light feel: paper-cream canvas, deep editorial
        green accent (the light counterpart of the neon dark theme). Same fonts +
        structure as the neon page, one cohesive system across both themes. */
-    --background: 45 33% 98%;      /* #FBFAF7 creme */
+    --background: 45 40% 96%;      /* #FAF8F2 creme */
     --foreground: 45 21% 7%;       /* #17150F near-black ink */
 
     --card: 0 0% 100%;             /* #FFFFFF */
@@ -18,7 +18,7 @@
     --popover: 45 33% 98%;
     --popover-foreground: 45 21% 7%;
 
-    --primary: 151 59% 26%;        /* #1C6B45 deep editorial green */
+    --primary: 148 63% 29%;        /* #1C7A48 editorial green */
     --primary-foreground: 45 33% 98%;
 
     --secondary: 43 23% 94%;       /* #F3F1EC paper-2 */
@@ -27,7 +27,7 @@
     --muted: 43 23% 94%;
     --muted-foreground: 47 6% 51%; /* #8A877C */
 
-    --accent: 151 59% 26%;         /* deep green */
+    --accent: 148 63% 29%;         /* editorial green */
     --accent-foreground: 45 33% 98%;
 
     --destructive: 0 70% 50%;
@@ -35,7 +35,7 @@
 
     --border: 43 16% 88%;
     --input: 43 16% 88%;
-    --ring: 151 59% 26%;
+    --ring: 148 63% 29%;
 
     --radius: 0.5rem;
 
@@ -48,9 +48,9 @@
     --sidebar-border: 35 15% 88%;
     --sidebar-ring: 16 55% 52%;
 
-    --font-display: 'Newsreader', Georgia, serif;
-    --font-body: 'General Sans', 'Switzer', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-display: 'Archivo', 'Inter', system-ui, sans-serif;
+    --font-body: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
     /* Blog CMS instrument tokens (light fallback) */
     --ok: 140 45% 40%;
