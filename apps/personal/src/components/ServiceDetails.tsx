@@ -19,7 +19,7 @@ const content = {
     steps: [
       { title: "Discovery", desc: "Audit your current marketplace presence, identify quick wins and long-term growth levers." },
       { title: "Strategy", desc: "Build a tailored action plan with KPIs, timelines, and clear ownership." },
-      { title: "Execution", desc: "Hands-on implementation — from listing optimization to ad campaigns — with weekly check-ins." },
+      { title: "Execution", desc: "Hands-on implementation, from listing optimization to ad campaigns, with weekly check-ins." },
       { title: "Scale", desc: "Iterate based on data, expand to new channels, and compound results over time." },
     ],
     industriesLabel: "Industries & Categories",
@@ -51,7 +51,7 @@ const content = {
     steps: [
       { title: "Analyse", desc: "Audit van je huidige marketplace aanwezigheid, identificatie van quick wins en groei-hefbomen." },
       { title: "Strategie", desc: "Op maat gemaakt actieplan met KPI's, tijdlijnen en duidelijke verantwoordelijkheden." },
-      { title: "Uitvoering", desc: "Hands-on implementatie — van listing optimalisatie tot advertentiecampagnes — met wekelijkse check-ins." },
+      { title: "Uitvoering", desc: "Hands-on implementatie, van listing optimalisatie tot advertentiecampagnes, met wekelijkse check-ins." },
       { title: "Opschalen", desc: "Itereren op basis van data, uitbreiden naar nieuwe kanalen en resultaten versterken." },
     ],
     industriesLabel: "Branches & Categorieën",
