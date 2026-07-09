@@ -48,6 +48,85 @@ const inlineMd = (s: string, mask?: MaskCtx) => {
 
 interface RenderResult { html: string; headings: { id: string; text: string }[]; }
 
+
+/* ── Inline figure system (stat cards + SVG line chart + "Bekijk context" modal).
+   Authored in article Markdown as a fenced block:
+     :::figure num=03 title="Marketplace projectmap"
+     caption Klantresultaten met geencodeerde platformregels
+     stat 70% | Amazon NL categorie-aandeel (Nielsen)
+     axis OUTPUTKWALITEIT
+     xaxis SESSIE 1 | SESSIE 20
+     line Met project | 2,6,14,28,46,68,100
+     line Losse chats | 4,5,5,6,6,7,8 | dashed
+     note Extra context voor de pop-up.
+     :::
+   Inline shows stats (or a compact chart) + caption + button; the modal shows
+   the full chart + stats + note. Output trust model unchanged (CMS content). */
+type FigSeries = { name: string; values: number[]; dashed: boolean };
+function lineChartSvg(series: FigSeries[], axisLabel: string, xLeft: string, xRight: string, h = 300): string {
+  const W = 760, H = h, padL = 8, padR = 8, top = 46, bot = H - 44;
+  const all = series.flatMap((s) => s.values);
+  const max = Math.max(1, ...all);
+  const n = Math.max(...series.map((s) => s.values.length), 2);
+  const px = (i: number) => padL + (i / (n - 1)) * (W - padL - padR);
+  const py = (v: number) => bot - (v / max) * (bot - top);
+  let g = "";
+  // baseline gridlines
+  for (let k = 1; k <= 3; k++) { const y = top + (k / 4) * (bot - top); g += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}" stroke="currentColor" stroke-opacity=".08"/>`; }
+  series.forEach((s) => {
+    const pts = s.values.map((v, i) => [px(i), py(v)]);
+    const d = pts.map((pt, i) => (i === 0 ? `M${pt[0].toFixed(1)} ${pt[1].toFixed(1)}` : `L${pt[0].toFixed(1)} ${pt[1].toFixed(1)}`)).join(" ");
+    if (!s.dashed) {
+      const area = `${d} L${px(n - 1).toFixed(1)} ${bot} L${px(0).toFixed(1)} ${bot} Z`;
+      g += `<path d="${area}" class="figc__area"/><path d="${d}" class="figc__line"/>`;
+    } else {
+      g += `<path d="${d}" class="figc__dash"/>`;
+    }
+    const last = pts[pts.length - 1];
+    g += `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4" class="${s.dashed ? "figc__dotm" : "figc__dot"}"/>`;
+    g += `<text x="${(last[0] - 8).toFixed(1)}" y="${(last[1] - 8).toFixed(1)}" text-anchor="end" class="figc__slab">${esc(s.name)}</text>`;
+  });
+  return `<svg class="figc" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(axisLabel || "grafiek")}">`
+    + `<text x="${padL}" y="26" class="figc__ax">${esc(axisLabel)}</text>${g}`
+    + `<text x="${padL}" y="${H - 14}" class="figc__x">${esc(xLeft)}</text>`
+    + `<text x="${W - padR}" y="${H - 14}" text-anchor="end" class="figc__x">${esc(xRight)}</text></svg>`;
+}
+function attr(header: string, key: string): string {
+  const m = header.match(new RegExp(key + '=(?:"([^"]*)"|([^\\s]+))'));
+  return (m ? (m[1] ?? m[2]) : "").trim();
+}
+function buildFigure(header: string, body: string[], autoNum: number, mask?: MaskCtx): string {
+  const num = (attr(header, "num") || String(autoNum)).padStart(2, "0");
+  const title = attr(header, "title");
+  let caption = "", axis = "", xL = "", xR = "", note = "";
+  const stats: { v: string; l: string }[] = [];
+  const series: FigSeries[] = [];
+  for (const raw of body) {
+    const t = raw.trim(); if (!t) continue;
+    if (t.startsWith("caption ")) caption = t.slice(8).trim();
+    else if (t.startsWith("axis ")) axis = t.slice(5).trim();
+    else if (t.startsWith("xaxis ")) { const [a, b] = t.slice(6).split("|"); xL = (a || "").trim(); xR = (b || "").trim(); }
+    else if (t.startsWith("note ")) note = t.slice(5).trim();
+    else if (t.startsWith("stat ")) { const [v, ...l] = t.slice(5).split("|"); stats.push({ v: v.trim(), l: l.join("|").trim() }); }
+    else if (t.startsWith("line ")) { const parts = t.slice(5).split("|"); const name = (parts[0] || "").trim(); const values = (parts[1] || "").split(",").map((x) => parseFloat(x.trim())).filter((x) => !isNaN(x)); const dashed = /dashed/i.test(parts[2] || ""); if (values.length) series.push({ name, values, dashed }); }
+  }
+  const statsHtml = stats.length
+    ? `<div class="fig__stats">${stats.map((s) => `<div class="fig__stat"><div class="fig__num">${esc(s.v)}</div><div class="fig__lab">${inlineMd(s.l, mask)}</div></div>`).join("")}</div>`
+    : "";
+  const chartHtml = series.length ? lineChartSvg(series, axis, xL, xR) : "";
+  const inlineBody = statsHtml || (chartHtml ? `<div class="fig__chartwrap">${chartHtml}</div>` : "");
+  const modalHtml = `<div class="figm"><div class="figm__k">FIGUUR ${num}</div>`
+    + (title ? `<h3 class="figm__t">${esc(title)}</h3>` : "")
+    + (chartHtml ? `<div class="figm__chart">${chartHtml}</div>` : "")
+    + (statsHtml && chartHtml ? statsHtml : "")
+    + (note ? `<p class="figm__note">${inlineMd(note, mask)}</p>` : "")
+    + `</div>`;
+  return `<figure class="fig" data-fig="${num}">${inlineBody}`
+    + `<div class="fig__foot"><span class="fig__cap"><b>FIGUUR ${num}</b> ${inlineMd(caption, mask)}</span>`
+    + `<button type="button" class="fig__btn" data-fig-open="${num}">Bekijk context</button></div>`
+    + `<div class="fig__modalsrc" id="figm-${num}" hidden>${modalHtml}</div></figure>`;
+}
+
 function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderResult {
   const mask: MaskCtx = { cfg: maskingCfg, counters: {} };
   const lines = md.split("\n");
@@ -55,6 +134,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
   const out: string[] = [];
   let listBuf: string[] = [];
   let h2Count = 0;
+  let figCount = 0;
   let firstParaDone = false;
 
   const flushList = () => {
@@ -106,6 +186,18 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
     // Blockquote → pull quote
     if (t.startsWith("> ")) { flushList(); out.push(`<p class="pull">${inlineMd(t.slice(2).trim(), mask)}</p>`); continue; }
 
+    // Inline figure block:  :::figure ... :::
+    if (t.startsWith(":::figure")) {
+      flushList();
+      const header = t.slice(3).trim();
+      const bodyLines: string[] = [];
+      let j = i + 1;
+      for (; j < lines.length; j++) { if (lines[j].trim() === ":::") break; bodyLines.push(lines[j]); }
+      i = j; // skip past closing :::
+      out.push(buildFigure(header, bodyLines, ++figCount, mask));
+      continue;
+    }
+
     // Callout:  :::Kicker | body   (graceful: also plain "::: body")
     if (t.startsWith(":::")) {
       flushList();
@@ -151,6 +243,7 @@ const BlogPostPage = () => {
   const { lang } = useLang();
   const articleRef = useRef<HTMLElement>(null);
   const progRef = useRef<HTMLDivElement>(null);
+  const [figHtml, setFigHtml] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -208,6 +301,29 @@ const BlogPostPage = () => {
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, [post, showToc, headings, slug]);
+
+  /* ── Inline figure "Bekijk context" modal: open + ESC/scroll-lock ── */
+  useEffect(() => {
+    const root = articleRef.current;
+    if (!root) return;
+    const onClick = (e: MouseEvent) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-fig-open]");
+      if (!btn || !root.contains(btn)) return;
+      const id = btn.getAttribute("data-fig-open");
+      const src = root.querySelector(`#figm-${id}`);
+      if (src) setFigHtml(src.innerHTML);
+    };
+    root.addEventListener("click", onClick);
+    return () => root.removeEventListener("click", onClick);
+  }, [bodyHtml]);
+
+  useEffect(() => {
+    if (!figHtml) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFigHtml(null); };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+  }, [figHtml]);
 
   const scrollToHeading = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -345,6 +461,15 @@ const BlogPostPage = () => {
         {/* More */}
         <MoreReading category={post.category} currentSlug={post.slug} lang={lang} />
       </article>
+
+      {figHtml && (
+        <div className="figov" onClick={(e) => { if (e.target === e.currentTarget) setFigHtml(null); }}>
+          <div className="figov__box" role="dialog" aria-modal="true">
+            <button type="button" className="figov__x" onClick={() => setFigHtml(null)} aria-label={lang === "nl" ? "Sluiten" : "Close"}>&times;</button>
+            <div dangerouslySetInnerHTML={{ __html: figHtml }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
