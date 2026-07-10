@@ -124,10 +124,34 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   return <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>{children}</ThemeContext.Provider>;
 };
 
+/* Fallback store for renders outside <ThemeProvider> (unit tests, isolated
+   embeds): same behaviour, minus View Transitions and cross-tab sync. */
+let fallbackTheme: Theme | null = null;
+const fallbackListeners = new Set<(t: Theme) => void>();
+
 export const useTheme = (): ThemeContextValue => {
   const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used inside <ThemeProvider>");
-  return ctx;
+  const [local, setLocal] = useState<Theme>(() => fallbackTheme ?? getStoredTheme() ?? getSystemTheme());
+  useEffect(() => {
+    if (ctx) return;
+    const fn = (t: Theme) => setLocal(t);
+    fallbackListeners.add(fn);
+    return () => {
+      fallbackListeners.delete(fn);
+    };
+  }, [ctx]);
+  if (ctx) return ctx;
+  const set = (next: Theme) => {
+    fallbackTheme = next;
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch {
+      /* private mode */
+    }
+    applyTheme(next);
+    fallbackListeners.forEach((fn) => fn(next));
+  };
+  return { theme: local, setTheme: set, toggleTheme: () => set(local === "dark" ? "light" : "dark") };
 };
 
 /**
