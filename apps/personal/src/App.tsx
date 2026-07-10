@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
 import { LangProvider } from "@/hooks/useLang";
 import { PreloadedDataProvider, type PreloadedData } from "@/contexts/PreloadedDataContext";
 import type { BlogPostRow } from "@/lib/api/content";
@@ -68,6 +69,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
   const mainBg = mainBackgroundFor(location.pathname);
 
   return (
+    <ThemeProvider>
     <AuthProvider>
       <LangProvider initialLang={initialLang}>
         <EditOverlayProvider>
@@ -89,6 +91,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
         </EditOverlayProvider>
       </LangProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 };
 

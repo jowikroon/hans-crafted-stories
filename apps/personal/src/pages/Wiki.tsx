@@ -1,3 +1,4 @@
+import { useForcedTheme } from "@/hooks/useTheme";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,18 +18,12 @@ import {
   getTextColor, getLayerBorderBg,
 } from "@/lib/config/infrastructure";
 
-const THEME_KEY = "site_theme";
-
 const Wiki = () => {
   const { user, loading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
 
-  useEffect(() => {
-    const prev = localStorage.getItem(THEME_KEY) || "light";
-    document.documentElement.classList.add("dark");
-    localStorage.setItem(THEME_KEY, "dark");
-    return () => { document.documentElement.classList.toggle("dark", prev === "dark"); localStorage.setItem(THEME_KEY, prev); };
-  }, []);
+  /* Dark-only immersive page: forced without touching the visitor's saved theme. */
+  useForcedTheme("dark");
 
   useEffect(() => {
     document.title = "Wiki — System Documentation";

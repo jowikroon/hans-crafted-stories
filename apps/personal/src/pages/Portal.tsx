@@ -1,3 +1,4 @@
+import { useForcedTheme } from "@/hooks/useTheme";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,7 +39,6 @@ const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
   { id: "status", label: "Status", icon: Activity, hint: "System health and uptime" },
 ];
 
-const THEME_KEY = "site_theme";
 
 const Portal = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
@@ -49,16 +49,8 @@ const Portal = () => {
   const { toast } = useToast();
   const { isVisible } = usePageElements("portal");
 
-  // Force dark mode when Portal mounts; restore previous theme on unmount
-  useEffect(() => {
-    const prev = localStorage.getItem(THEME_KEY) || "light";
-    document.documentElement.classList.add("dark");
-    localStorage.setItem(THEME_KEY, "dark");
-    return () => {
-      document.documentElement.classList.toggle("dark", prev === "dark");
-      localStorage.setItem(THEME_KEY, prev);
-    };
-  }, []);
+  // Dark-only immersive page: forced without touching the visitor's saved theme.
+  useForcedTheme("dark");
 
   useEffect(() => {
     document.title = "Portal — Hans van Leeuwen";
