@@ -338,6 +338,23 @@
     <meta name="theme-color" content="#ffffff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="format-detection" content="telephone=no" />
+    <script>
+      /* Theme guard — paints light/dark before first render (no flash).
+         Kept in sync with src/hooks/useTheme.tsx (key "site_theme"). */
+      (function () {
+        try {
+          var t = localStorage.getItem("site_theme");
+          if (t !== "dark" && t !== "light") {
+            t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          var el = document.documentElement;
+          el.classList.toggle("dark", t === "dark");
+          el.style.colorScheme = t;
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute("content", t === "dark" ? "#08080A" : "#FAF8F2");
+        } catch (e) {}
+      })();
+    </script>
 </head>
 
   <body>

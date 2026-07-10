@@ -9,6 +9,7 @@
     /* Warm creme — the music-page light feel: paper-cream canvas, deep editorial
        green accent (the light counterpart of the neon dark theme). Same fonts +
        structure as the neon page, one cohesive system across both themes. */
+    color-scheme: light;
     --background: 45 40% 96%;      /* #FAF8F2 creme */
     --foreground: 45 21% 7%;       /* #17150F near-black ink */
 
@@ -64,6 +65,7 @@
     /* Neon "After Hours" — the /music page palette, now the site-wide dark theme.
        Near-black canvas, one acid-neon-green accent. Sidebar/CMS tokens below
        are intentionally left on their own scale (the /write CMS owns them). */
+    color-scheme: dark;
     --background: 240 11% 4%;      /* #08080A near-black */
     --foreground: 240 8% 95%;      /* #F2F2F4 ink */
     --card: 240 10% 6%;            /* #0E0E11 bg-2 */
@@ -112,6 +114,78 @@
   h1, h2, h3, h4 {
     font-family: var(--font-display);
   }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Motion system — one duration/easing scale for the whole site.
+   Grounded in Material Motion + NN/g guidance: micro-interactions
+   120–200ms, standard UI 200–260ms, page/scene changes 320–400ms;
+   ease-out for anything that responds to input. Framer Motion
+   components keep their own springs; these tokens cover CSS motion. */
+@layer base {
+  :root {
+    --motion-fast: 140ms;
+    --motion-base: 220ms;
+    --motion-slow: 320ms;
+    --motion-page: 380ms;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-press: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* Every interactive element answers the pointer: colour, elevation and
+     opacity ease in ~140ms. transform is deliberately NOT in this list —
+     Framer Motion drives transforms frame-by-frame on 13+ components and a
+     CSS transition on top would double-smooth them into mush. */
+  :where(a, button, [role="button"], input, select, textarea, summary) {
+    transition:
+      color var(--motion-fast) var(--ease-out),
+      background-color var(--motion-fast) var(--ease-out),
+      border-color var(--motion-fast) var(--ease-out),
+      box-shadow var(--motion-fast) var(--ease-out),
+      opacity var(--motion-fast) var(--ease-out);
+  }
+
+  /* Tactile press: button-likes dip 2% while held. Instant on press
+     (feedback <100ms reads as immediate), eased on release. */
+  :where(button, [role="button"]):not(:disabled) {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: var(--motion-fast);
+    transition-timing-function: var(--ease-press);
+  }
+  :where(button, [role="button"]):not(:disabled):active {
+    transform: scale(0.98);
+  }
+
+  /* One consistent keyboard focus ring everywhere (zero specificity, so
+     component-level rings still win where they exist). */
+  :where(a, button, [role="button"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+/* Theme flip — View Transitions API cross-fade (Chrome/Edge/Safari 18+). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-slow);
+  animation-timing-function: var(--ease-in-out);
+}
+
+/* Fallback colour fade for browsers without the View Transitions API.
+   Added by useTheme for 400ms around a toggle — property-scoped, never
+   `transition: all` (which would also animate layout and transforms). */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition:
+    background-color var(--motion-slow) var(--ease-in-out),
+    border-color var(--motion-slow) var(--ease-in-out),
+    color var(--motion-slow) var(--ease-in-out),
+    fill var(--motion-slow) var(--ease-in-out),
+    stroke var(--motion-slow) var(--ease-in-out),
+    box-shadow var(--motion-slow) var(--ease-in-out) !important;
 }
 
 @layer components {
@@ -172,6 +246,10 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
   }
 }
 

@@ -1,3 +1,4 @@
+import { useTheme } from "@/hooks/useTheme";
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,7 +13,6 @@ import { translations } from "@/data/translations";
 import { logoById } from "@/lib/logos";
 import { useActiveLogo } from "@/contexts/LogoContext";
 
-const THEME_KEY = "site_theme";
 
 /* ─────────────────────────────────────────────────────────────
    ONE unified navigation, two layers.
@@ -46,15 +46,9 @@ const HeaderNeon = (_props: NavbarProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  /* Theme toggle still controls page-content dark mode; the bar stays light. */
-  const [siteTheme, setSiteTheme] = useState<"light" | "dark">(() => {
-    if (typeof window !== "undefined" && localStorage.getItem(THEME_KEY) === "dark") return "dark";
-    return "light";
-  });
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", siteTheme === "dark");
-    localStorage.setItem(THEME_KEY, siteTheme);
-  }, [siteTheme]);
+  /* Theme toggle still controls page-content dark mode; the bar stays light.
+     State lives in the site-wide ThemeProvider (src/hooks/useTheme). */
+  const { theme: siteTheme, toggleTheme } = useTheme();
 
   /* Mark <html> while the neon header is mounted so the scoped neon-dark palette
      (html[data-header="neon"].dark in index.css) applies — and ONLY then.
@@ -243,7 +237,7 @@ const HeaderNeon = (_props: NavbarProps) => {
               <button onClick={() => setSearchOpen(true)} className="rounded-full p-2 text-[#7E7A6F] hover:text-[#15140F] hover:bg-[#E5DFCE] transition-all" aria-label={t.search}>
                 <Search size={16} />
               </button>
-              <button onClick={() => setSiteTheme(siteTheme === "dark" ? "light" : "dark")} className="rounded-full p-2 text-[#7E7A6F] hover:text-[#15140F] hover:bg-[#E5DFCE] transition-all" aria-label={siteTheme === "dark" ? "Light mode" : "Dark mode"}>
+              <button onClick={toggleTheme} className="rounded-full p-2 text-[#7E7A6F] hover:text-[#15140F] hover:bg-[#E5DFCE] transition-all" aria-label={siteTheme === "dark" ? "Light mode" : "Dark mode"}>
                 {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               <div className="hidden sm:flex items-center gap-0.5 font-mono text-xs">
