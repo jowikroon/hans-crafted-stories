@@ -34,6 +34,9 @@ const MusicCMS = lazy(() => import(/* webpackChunkName: "music-cms" */ "@/pages/
 /* ReleaseSet — Neon House of Glass release-set (ingelogde subpagina via top-right menu). */
 const ReleaseSet = lazy(() => import(/* webpackChunkName: "release-set" */ "@/pages/ReleaseSet"));
 
+/* Dashboards — klant-dashboards (ConnectCarParts) achter login, via profielmenu. */
+const Dashboards = lazy(() => import(/* webpackChunkName: "dashboards" */ "@/pages/Dashboards"));
+
 /* BlogCMS is lazy-loaded and excluded from the SSR bundle.
    During prerender (typeof window === "undefined"), the fallback renders instead. */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
@@ -75,6 +78,7 @@ const AnimatedRoutes = () => {
         <Route path="/music-cms" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
         <Route path="/music-cms/:id" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
         <Route path="/release-set" element={<Suspense fallback={<BlogCMSFallback />}><ReleaseSet /></Suspense>} />
+        <Route path="/dashboards" element={<Suspense fallback={<BlogCMSFallback />}><Dashboards /></Suspense>} />
         <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
