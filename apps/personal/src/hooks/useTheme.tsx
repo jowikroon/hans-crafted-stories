@@ -31,10 +31,14 @@ const THEME_COLOR: Record<Theme, string> = {
   dark: "#08080A",
 };
 
-const getSystemTheme = (): Theme =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+/* Guarded: the prerender pipeline exposes a window shim WITHOUT matchMedia,
+   so checking `typeof window` alone is not enough (broke Build personal). */
+const matchMediaSafe = (query: string): boolean =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia(query).matches;
+
+const getSystemTheme = (): Theme => (matchMediaSafe("(prefers-color-scheme: dark)") ? "dark" : "light");
 
 const getStoredTheme = (): Theme | null => {
   if (typeof window === "undefined") return null;
@@ -77,7 +81,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     } catch {
       /* private mode — non-fatal */
     }
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = matchMediaSafe("(prefers-reduced-motion: reduce)");
     const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
     if (!reduce && typeof doc.startViewTransition === "function") {
       /* Cross-fade the whole page between the two themes. flushSync makes
@@ -113,6 +117,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   /* Follow the OS while the visitor has no explicit stored choice. */
   useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = (e: MediaQueryListEvent) => {
       if (!getStoredTheme()) setThemeState(e.matches ? "dark" : "light");
