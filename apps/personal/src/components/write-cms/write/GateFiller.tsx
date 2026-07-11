@@ -148,6 +148,13 @@ export default function GateFiller({ contentEN, contentNL, onChangeEN, onChangeN
   }, [gates, rows]);
 
   const pick = (gate: Gate, row: BankRow) => {
+    // Safety lock: never silently replace content. One click used to overwrite a
+    // whole draft; now the editor confirms before touching the (Supabase) source.
+    const ok = typeof window === "undefined" || window.confirm(
+      `Deze ervaring invoegen op de plek van "${gate.label || "deze gate"}"? ` +
+      `Dit vervangt alleen die placeholder in de ${gate.lang.toUpperCase()}-tekst.`
+    );
+    if (!ok) return;
     const insert = compose(row);
     if (gate.lang === "en") onChangeEN(contentEN.replace(gate.raw, insert));
     else onChangeNL(contentNL.replace(gate.raw, insert));
