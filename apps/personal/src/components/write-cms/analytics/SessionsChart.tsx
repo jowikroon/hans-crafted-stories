@@ -106,7 +106,7 @@ export default function SessionsChart({ points, height = 160, label = "Sessions"
             strokeWidth="1.2"
           />
         )}
-        {/* x labels — first, mid, last */}
+        {/* x labels, first, mid, last */}
         {[0, Math.floor(points.length / 2), points.length - 1].map((i) =>
           points[i] ? (
             <text

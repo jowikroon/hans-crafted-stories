@@ -123,7 +123,7 @@ export default function HeroImageTool({
                 ) : variants.length ? (
                   <img className="it-frame" src={picked ?? variants[0].url} alt="" />
                 ) : (
-                  <div className="it-frame empty"><span>Nog geen cover — beschrijf en genereer</span></div>
+                  <div className="it-frame empty"><span>Nog geen cover, beschrijf en genereer</span></div>
                 )}
                 {variants.length > 1 && (
                   <div className="it-variant-row">
@@ -150,7 +150,7 @@ export default function HeroImageTool({
                   rows={2}
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder={title || "bv. Amazon vs Bol.com — marktaandeel in 2026"}
+                  placeholder={title || "bv. Amazon vs Bol.com, marktaandeel in 2026"}
                 />
               </label>
 
@@ -164,7 +164,7 @@ export default function HeroImageTool({
               </div>
 
               <div className="it-guard">
-                🔒 System prompt locked — warm cream + black + amber <b>#F5C400</b>, editorial line-art, no photorealism, 16:9.
+                🔒 System prompt locked, warm cream + black + amber <b>#F5C400</b>, editorial line-art, no photorealism, 16:9.
               </div>
 
               {note && <div className="it-note">{note}</div>}

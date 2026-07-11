@@ -184,7 +184,7 @@ export default function YouTubePreflightCard({
               {voiceLoading ? "voice…" : fit.label}
             </span>
 
-            {/* Language chip — derived from analyzeResult if backend returns it */}
+            {/* Language chip, derived from analyzeResult if backend returns it */}
             {analyzeResult?.contextSummary && (
               <span className="preflight-chip">EN+NL output</span>
             )}

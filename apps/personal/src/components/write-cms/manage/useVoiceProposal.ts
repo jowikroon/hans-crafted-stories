@@ -91,7 +91,7 @@ function haystack(t: VoiceTemplate): string {
 /** Build the editable brand-voice context block from a template. */
 export function buildContext(t: VoiceTemplate): string {
   const L: string[] = [];
-  L.push(`Stem: ${t.name}${t.tone ? ` — ${t.tone}` : ""}.`);
+  L.push(`Stem: ${t.name}${t.tone ? `, ${t.tone}` : ""}.`);
   if (t.writing_style) L.push(`Stijl: ${t.writing_style}.`);
   if (t.perspective) L.push(`Perspectief: ${t.perspective}.`);
   if (t.target_audience) L.push(`Publiek: ${t.target_audience}.`);
@@ -184,7 +184,7 @@ export function useVoiceProposal(signal: VoiceSignal): VoiceProposal {
       const r = usage[tpl.id];
       const recentlyUsed = r === 0;
       if (recentlyUsed && !(cat && tpl.category.toLowerCase() === cat)) {
-        score -= 2; reasons.push("net nog gebruikt — afwisseling kan");
+        score -= 2; reasons.push("net nog gebruikt, afwisseling kan");
       } else if (r !== undefined && r <= 4) {
         reasons.push("zit in je recente stemmen");
       }

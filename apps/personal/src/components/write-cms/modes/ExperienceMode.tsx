@@ -220,7 +220,7 @@ export default function ExperienceMode() {
       setActiveId(target?.id ?? null);
       setDraft(target ? { ...target } : null);
       setDirty(false);
-      flash(c === 4 ? "4/4 — verhaal compleet ✓" : "Verhaal opgeslagen");
+      flash(c === 4 ? "4/4, verhaal compleet ✓" : "Verhaal opgeslagen");
     } catch {
       flash("Opslaan mislukt");
     } finally {
@@ -243,7 +243,7 @@ export default function ExperienceMode() {
       setCapture("");
       const list = await reload();
       if (list[0]) { setActiveId(list[0].id); if (!dirty) setDraft({ ...list[0] }); }
-      flash("Gevangen als 1/4 — afmaken kan later");
+      flash("Gevangen als 1/4, afmaken kan later");
     } catch {
       flash("Vangen mislukt");
     } finally {
@@ -253,7 +253,7 @@ export default function ExperienceMode() {
 
   const remove = async () => {
     if (!draft?.id) return;
-    if (!window.confirm("Dit verhaal verwijderen — kan niet ongedaan.")) return;
+    if (!window.confirm("Dit verhaal verwijderen, kan niet ongedaan.")) return;
     await supabase.from("hvl_experience_bank").update({ archived_at: new Date().toISOString() }).eq("id", draft.id);
     const list = await reload();
     setActiveId(list[0]?.id ?? null);
@@ -287,10 +287,10 @@ export default function ExperienceMode() {
             : <>{rows.length} verhaal{rows.length === 1 ? "" : "en"} in de bank{incompleteCount > 0 && <> · <strong>{incompleteCount} onvolledig</strong></>}</>}
         </p>
         <p className="exp-help">
-          Deze echte verhalen vullen de [HANS:] gates in de Auto-pipeline. Nooit verzonnen — alleen wat jij hier invoert.
+          Deze echte verhalen vullen de [HANS:] gates in de Auto-pipeline. Nooit verzonnen, alleen wat jij hier invoert.
         </p>
 
-        {/* Bank Pulse — motivatie: dekking van de zes gate-types */}
+        {/* Bank Pulse, motivatie: dekking van de zes gate-types */}
         <div className="exp-pulse" role="group" aria-label="Bank Pulse: gate-dekking">
           <span className="exp-pulse-pct">{pulsePct}%</span>
           <div className="exp-pulse-meta">
@@ -305,7 +305,7 @@ export default function ExperienceMode() {
                   key={g}
                   type="button"
                   className={`exp-gate-chip ${c === 0 ? "hungry" : ""}`}
-                  title={c === 0 ? `Nog geen verhaal voor '${g}' — tik om er één te starten` : `${c} verhaal${c === 1 ? "" : "en"} · nieuw verhaal voor '${g}'`}
+                  title={c === 0 ? `Nog geen verhaal voor '${g}', tik om er één te starten` : `${c} verhaal${c === 1 ? "" : "en"} · nieuw verhaal voor '${g}'`}
                   onClick={() => createNew(g)}
                 >
                   {g} · {c}
@@ -315,11 +315,11 @@ export default function ExperienceMode() {
           </div>
         </div>
 
-        {/* Gate-honger nudge — prompt met one-tap prefill */}
+        {/* Gate-honger nudge, prompt met one-tap prefill */}
         {!loading && hungryGate && (
           <div className="exp-nudge">
             <span className="exp-nudge-txt">
-              De <strong>‘{hungryGate}’</strong>-gate heeft honger — nog geen verhaal dat hem kan vullen.
+              De <strong>‘{hungryGate}’</strong>-gate heeft honger, nog geen verhaal dat hem kan vullen.
             </span>
             <button type="button" className="exp-nudge-btn" onClick={() => createNew(hungryGate)}>
               + Verhaal voor ‘{hungryGate}’
@@ -330,12 +330,12 @@ export default function ExperienceMode() {
         <div className={`voice-grid exp-grid ${mView === "editor" ? "m-editor" : "m-list"}`}>
           {/* list */}
           <aside className="voice-list">
-            {/* Quick Capture — ability: één zin is genoeg */}
+            {/* Quick Capture, ability: één zin is genoeg */}
             <div className="exp-capture">
               <input
                 id="exp-capture-input"
                 value={capture}
-                placeholder="Eén zin is genoeg — vang &#39;m nu…"
+                placeholder="Eén zin is genoeg, vang &#39;m nu…"
                 aria-label="Quick capture: sla een verhaal op met één zin"
                 onChange={(e) => setCapture(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void quickCapture(); } }}
@@ -394,7 +394,7 @@ export default function ExperienceMode() {
             ))}
             {!loading && rows.length === 0 && <p className="voice-empty">Nog geen verhalen. Vang er één hierboven →</p>}
             {!loading && rows.length > 0 && visible.length === 0 && (
-              <p className="voice-empty">Niets gevonden{onlyIncomplete ? " — alles is compleet ✓" : ""}.</p>
+              <p className="voice-empty">Niets gevonden{onlyIncomplete ? ", alles is compleet ✓" : ""}.</p>
             )}
           </aside>
 
@@ -413,7 +413,7 @@ export default function ExperienceMode() {
                   />
                   <div className="exp-complete" aria-live="polite">
                     <Dots n={draftC} />
-                    <span className="exp-complete-l">{draftC}/4 velden — half af is oké</span>
+                    <span className="exp-complete-l">{draftC}/4 velden, half af is oké</span>
                     {draftC === 4 && <span className="exp-complete-badge">Compleet ✓</span>}
                   </div>
                 </div>
@@ -438,7 +438,7 @@ export default function ExperienceMode() {
                   </select>
                 </EField>
 
-                <EField full label="Situatie" help="Wat speelde er. Verplicht — dit is de kern van het verhaal.">
+                <EField full label="Situatie" help="Wat speelde er. Verplicht, dit is de kern van het verhaal.">
                   <textarea rows={5} value={draft.situation} placeholder="Beschrijf concreet wat er gebeurde…" onChange={(e) => set("situation", e.target.value)} />
                 </EField>
 
@@ -454,11 +454,11 @@ export default function ExperienceMode() {
                   <textarea rows={2} value={draft.metrics_general} placeholder="bv. marge enkele procentpunten omhoog in weken" onChange={(e) => set("metrics_general", e.target.value)} />
                 </EField>
 
-                <EField full label="Metrics gemaskeerd" help="Zonder cijfers — het punt blijft overeind.">
+                <EField full label="Metrics gemaskeerd" help="Zonder cijfers, het punt blijft overeind.">
                   <textarea rows={2} value={draft.metrics_masked} placeholder="bv. structurele margeverbetering binnen een kwartaal" onChange={(e) => set("metrics_masked", e.target.value)} />
                 </EField>
 
-                <EField full label="Les" help="Wat je eruit haalde — de geleerde les.">
+                <EField full label="Les" help="Wat je eruit haalde, de geleerde les.">
                   <textarea rows={3} value={draft.lesson} placeholder="bv. niet de prijs maar de levertijd won de Buy Box" onChange={(e) => set("lesson", e.target.value)} />
                 </EField>
 
@@ -475,7 +475,7 @@ export default function ExperienceMode() {
                     onChange={(e) => set("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))}
                   />
                   {tagSuggestions.length > 0 && (
-                    <div className="exp-tag-suggest" aria-label="Tag-suggesties — deterministische keyword-extractie, geen AI">
+                    <div className="exp-tag-suggest" aria-label="Tag-suggesties, deterministische keyword-extractie, geen AI">
                       <span className="exp-tag-suggest-l">Suggesties</span>
                       {tagSuggestions.map((t) => (
                         <button key={t} type="button" className="exp-tag-chip" onClick={() => set("tags", [...draft.tags, t])}>

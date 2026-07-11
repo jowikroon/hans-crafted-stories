@@ -324,7 +324,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
           linkTargets={linkTargets.filter((t) => t.slug !== post!.slug)}
         />
 
-        {/* Gate-vuller — neon A/B keuze per [HANS:]-gate uit de experience-bank */}
+        {/* Gate-vuller, neon A/B keuze per [HANS:]-gate uit de experience-bank */}
         <GateFiller
           contentEN={autosave.fields.content}
           contentNL={autosave.fields.content_nl}
@@ -332,14 +332,14 @@ export default function WriteMode({ postId }: { postId?: string }) {
           onChangeNL={(md) => autosave.setField("content_nl", md)}
         />
 
-        {/* Draggable idea bubble — page-session only */}
+        {/* Draggable idea bubble, page-session only */}
         <IdeaBubble
           onInsert={(md) => autosave.setField("content", `${autosave.fields.content.trimEnd()}\n\n${md}\n`)}
         />
       </main>
 
       <aside className="rail">
-        {/* Outline — heading map of the EN draft */}
+        {/* Outline, heading map of the EN draft */}
         <OutlinePanel markdown={autosave.fields.content} editorSelector=".paper--editor-en" />
         <SCBriefs />
 

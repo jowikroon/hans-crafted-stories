@@ -540,14 +540,8 @@ function EditPanel() {
             <>
               <div style={row}>
                 <p style={lbl}>Text</p>
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  onBlur={() => saveText(text)}
-                  rows={3}
-                  style={{ ...ipt, resize: "vertical" }}
-                />
-                <small style={{ color: "#7E7A6F", fontSize: 10 }}>Best-effort for hardcoded text — permanent text → use “Code change”.</small>
+                <div style={{ ...ipt, minHeight: 44, opacity: 0.6, cursor: "not-allowed", whiteSpace: "pre-wrap", pointerEvents: "none" }}>{text}</div>
+                <small style={{ color: "#7E7A6F", fontSize: 10 }}>Tekst bewerken via de voorkant is uitgeschakeld. Pas teksten aan in Blog CMS &gt; Manage (/write). Hier stel je alleen stijl in.</small>
               </div>
 
               <div style={{ display: "flex", gap: 8 }}>

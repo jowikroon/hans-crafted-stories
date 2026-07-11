@@ -140,7 +140,7 @@ export default function VoiceMode() {
 
   const remove = async () => {
     if (!draft?.id) return;
-    if (!window.confirm(`"${draft.name}" verwijderen — kan niet ongedaan.`)) return;
+    if (!window.confirm(`"${draft.name}" verwijderen, kan niet ongedaan.`)) return;
     await supabase.from("hvl_voice_templates").update({ archived_at: new Date().toISOString() }).eq("id", draft.id);
     const list = await reload();
     setActiveId(list[0]?.id ?? null);

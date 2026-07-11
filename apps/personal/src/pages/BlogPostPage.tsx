@@ -416,7 +416,7 @@ const BlogPostPage = () => {
             <span className="byline__av">H<img src={hansProfile} alt="Hans van Leeuwen" loading="lazy" decoding="async" onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} /></span>
             <div>
               <div className="byline__n">Hans van Leeuwen</div>
-              <div className="byline__r">E-commerce &amp; Marketplace Specialist</div>
+              <div className="byline__r">E-commerce and Marketplace Specialist</div>
             </div>
             <span className="dot" />
             <span className="byline__t">{dateStr} · {post.read_time}</span>

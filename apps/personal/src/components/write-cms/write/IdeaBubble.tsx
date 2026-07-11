@@ -13,15 +13,15 @@ interface Idea {
 }
 
 const IDEAS: Idea[] = [
-  { tag: "impact", what: "Open with a one-sentence claim before the intro. Readers decide in 8 seconds — lead with the take, not the setup.", md: "> 💡 **Impact:** verplaats je sterkste zin naar alinea 1 — open met de claim, niet met de aanloop." },
-  { tag: "design", what: "Add a comparison table — readers scan, and tables get screenshotted.", md: "> 💡 **Design:** voeg hier een vergelijkingstabel toe (aanpak · faalmodus · fix · impact)." },
-  { tag: "closure", what: "End with a callback to your opening metaphor — strong closure beats a generic CTA.", md: "> 💡 **Slot:** sluit af met een callback naar je openingsmetafoor in plaats van een generieke CTA." },
-  { tag: "skimmers", what: "Numbered list at the top for skimmers — \"if you only read one bullet, read #2\".", md: "> 💡 **Skimmers:** zet bovenaan een genummerde lijst met de 3-4 kernpunten." },
-  { tag: "authenticity", what: "Drop in one dated observation from your own work. \"Q2 2026, drie Bol.com accounts\" beats \"recent trends\" — specificity reads as real.", md: "> 💡 **Authenticiteit:** voeg één gedateerde observatie uit eigen werk toe (bv. \"Q2 2026, drie Bol.com accounts...\")." },
-  { tag: "readability", what: "Break the longest paragraph into three. Readers bail after line 5 of any single block.", md: "> 💡 **Leesbaarheid:** splits de langste alinea in drieën — max ±3 regels per blok." },
+  { tag: "impact", what: "Open with a one-sentence claim before the intro. Readers decide in 8 seconds, lead with the take, not the setup.", md: "> 💡 **Impact:** verplaats je sterkste zin naar alinea 1, open met de claim, niet met de aanloop." },
+  { tag: "design", what: "Add a comparison table, readers scan, and tables get screenshotted.", md: "> 💡 **Design:** voeg hier een vergelijkingstabel toe (aanpak · faalmodus · fix · impact)." },
+  { tag: "closure", what: "End with a callback to your opening metaphor, strong closure beats a generic CTA.", md: "> 💡 **Slot:** sluit af met een callback naar je openingsmetafoor in plaats van een generieke CTA." },
+  { tag: "skimmers", what: "Numbered list at the top for skimmers, \"if you only read one bullet, read #2\".", md: "> 💡 **Skimmers:** zet bovenaan een genummerde lijst met de 3-4 kernpunten." },
+  { tag: "authenticity", what: "Drop in one dated observation from your own work. \"Q2 2026, drie Bol.com accounts\" beats \"recent trends\", specificity reads as real.", md: "> 💡 **Authenticiteit:** voeg één gedateerde observatie uit eigen werk toe (bv. \"Q2 2026, drie Bol.com accounts...\")." },
+  { tag: "readability", what: "Break the longest paragraph into three. Readers bail after line 5 of any single block.", md: "> 💡 **Leesbaarheid:** splits de langste alinea in drieën, max ±3 regels per blok." },
   { tag: "design", what: "Add a pull-quote between sections. Pull-quotes triple time-on-page and are the most-screenshotted element on technical blogs.", md: "> 💡 **Pull-quote:** til je scherpste zin uit de tekst en zet hem als quote tussen twee secties." },
   { tag: "e-e-a-t", what: "Found a claim with a number? Add the source inline. E-E-A-T scores ~20% higher with cited sources.", md: "> 💡 **E-E-A-T:** check claims met cijfers en zet de bron er inline bij." },
-  { tag: "voice", what: "Read the draft out loud once. Anything you would never say to a client gets rewritten in your own words.", md: "> 💡 **Voice:** lees hardop — alles wat je nooit tegen een klant zou zeggen, herschrijven." },
+  { tag: "voice", what: "Read the draft out loud once. Anything you would never say to a client gets rewritten in your own words.", md: "> 💡 **Voice:** lees hardop, alles wat je nooit tegen een klant zou zeggen, herschrijven." },
 ];
 
 export default function IdeaBubble({ onInsert }: { onInsert: (md: string) => void }) {

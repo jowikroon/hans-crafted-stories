@@ -113,7 +113,7 @@ export default function AnalyticsMode() {
           </>
         ) : (
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)" }}>
-            live data not connected — set GOOGLE_SA_KEY secret, then refresh
+            live data not connected, set GOOGLE_SA_KEY secret, then refresh
           </span>
         )}
         <span className="sep">·</span>

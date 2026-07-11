@@ -31,7 +31,7 @@ export function useYoutubeAnalyze() {
   const analyze = useCallback(async (url: string) => {
     const videoId = extractVideoId(url);
     if (!videoId) {
-      setError("Invalid YouTube URL — cannot extract video ID");
+      setError("Invalid YouTube URL, cannot extract video ID");
       setPhase("error");
       return;
     }
@@ -75,7 +75,7 @@ export function useYoutubeAnalyze() {
 
   async function pollForResult(sourceId: string, attempts = 0): Promise<void> {
     if (attempts > 20) {
-      setError("Analysis timed out after 60s — check n8n workflows.");
+      setError("Analysis timed out after 60s, check n8n workflows.");
       setPhase("error");
       return;
     }

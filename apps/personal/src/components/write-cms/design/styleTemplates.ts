@@ -24,7 +24,7 @@ export const STYLE_TEMPLATES: StyleTemplate[] = [
   {
     id: "editorial-paper",
     label: "Editorial Paper",
-    hint: "Warm papier, Newsreader-koppen — de klassieke site-look",
+    hint: "Warm papier, Newsreader-koppen, de klassieke site-look",
     skin: "editorial-light",
     font: "editorial",
     swatch: ["#FBF8F0", "#15140F", "#2D9255"],
@@ -42,7 +42,7 @@ export const STYLE_TEMPLATES: StyleTemplate[] = [
   {
     id: "neon-after-hours",
     label: "Neon After Hours",
-    hint: "Donker, compact, neon accent — de Music-Neon vibe",
+    hint: "Donker, compact, neon accent, de Music-Neon vibe",
     skin: "mono-dark",
     font: "mono",
     swatch: ["#08080A", "#F2EEE2", "#FFD83D"],
