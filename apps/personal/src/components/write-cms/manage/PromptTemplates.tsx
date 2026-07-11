@@ -48,7 +48,7 @@ export default function PromptTemplates({ category = "professional" }: { categor
           language: "nl",
           category,
           cluster: "autoriteit",
-          proposed_angle: `${tpl.name} — ${tpl.angle}`,
+          proposed_angle: `${tpl.name}, ${tpl.angle}`,
           brand_voice_context: `Schrijf in de vorm: ${tpl.shape}. ${tpl.angle}`,
           narrative_history: "",
           source: "blog-cms-prompt-template",

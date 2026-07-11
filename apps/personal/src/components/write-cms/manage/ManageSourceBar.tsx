@@ -110,7 +110,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
   return (
     <div className="source-bar">
       <div className="source-bar-row">
-        {/* Pipeline picker — Klassiek vs Auto */}
+        {/* Pipeline picker, Klassiek vs Auto */}
         <label className="source-field">
           <span className="source-label">Pipeline</span>
           <select
@@ -174,7 +174,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
           />
         </label>
 
-        {/* Analyze button — only when valid YouTube URL + not yet analyzed */}
+        {/* Analyze button, only when valid YouTube URL + not yet analyzed */}
         {hasValidYtUrl && ytAnalyze.phase === "idle" && !busy && !init && (
           <button
             className="stamp-btn stamp-btn--ghost stamp-btn--sm source-bar-cta"
@@ -189,7 +189,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
           </button>
         )}
 
-        {/* Ghost-write button — opens the 4-stage modal (design contract #14) */}
+        {/* Ghost-write button, opens the 4-stage modal (design contract #14) */}
         <button
           className="stamp-btn stamp-btn--sm source-bar-cta"
           onClick={() => {
@@ -225,7 +225,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
             <path d="M2 8l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Auto-pipeline gestart — draft verschijnt in Manage als 'ie klaar is (dry-run: niets gaat live)
+          Auto-pipeline gestart, draft verschijnt in Manage als 'ie klaar is (dry-run: niets gaat live)
           <button className="source-notice-retry" onClick={() => setAutoState("idle")}>Dismiss</button>
         </div>
       )}
@@ -236,7 +236,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
             <path d="M8 2v8M8 13v1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          Auto-pipeline kon niet starten — probeer opnieuw of val terug op Klassiek.
+          Auto-pipeline kon niet starten, probeer opnieuw of val terug op Klassiek.
           <button className="source-notice-retry" onClick={() => setAutoState("idle")}>Dismiss</button>
         </div>
       )}
@@ -290,7 +290,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
         </div>
       )}
 
-      {/* Analyzed — thumbnail + clickable topic chips */}
+      {/* Analyzed, thumbnail + clickable topic chips */}
       {ytAnalyze.phase === "analyzed" && ytAnalyze.result && (
         <>
           <div className="yt-preview">
@@ -304,7 +304,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
                 <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
                   <path d="M2 8l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Analyzed — click a topic to use as angle
+                Analyzed, click a topic to use as angle
               </div>
             </div>
             <button
@@ -362,7 +362,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
         </>
       )}
 
-      {/* Phase 2 — brand voice confirmation */}
+      {/* Phase 2, brand voice confirmation */}
       {init && (
         <ManagePhaseTwoConfirm
           init={init}
@@ -378,7 +378,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
             <path d="M2 8l4 4 8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Ghost writer dispatched — the draft will appear in the posts table when n8n completes.
+          Ghost writer dispatched, the draft will appear in the posts table when n8n completes.
         </div>
       )}
 

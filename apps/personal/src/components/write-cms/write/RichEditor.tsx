@@ -208,13 +208,13 @@ export default function RichEditor({ docKey, value, onChange, placeholder, banne
             ↗
           </Btn>
           <span className="bubble-sep" />
-          <Btn title="Tighten — AI rewrite, zelfde betekenis, minder woorden" disabled={aiBusy !== null} onClick={() => runAi("tighten")}>
+          <Btn title="Tighten, AI rewrite, zelfde betekenis, minder woorden" disabled={aiBusy !== null} onClick={() => runAi("tighten")}>
             {aiBusy === "tighten" ? "…" : "Tighten"}
           </Btn>
           <Btn title={`Translate selection to ${lang === "en" ? "NL" : "EN"}`} disabled={aiBusy !== null} onClick={() => runAi("translate")}>
             {aiBusy === "translate" ? "…" : lang === "en" ? "→NL" : "→EN"}
           </Btn>
-          <Btn title="Templates — selectie opslaan / invoegen" active={showTplPop} onClick={() => setShowTplPop((v) => !v)}>❖</Btn>
+          <Btn title="Templates, selectie opslaan / invoegen" active={showTplPop} onClick={() => setShowTplPop((v) => !v)}>❖</Btn>
         </div>
       </BubbleMenu>
 
@@ -226,7 +226,7 @@ export default function RichEditor({ docKey, value, onChange, placeholder, banne
           </div>
           <div className="tpl-pop-list">
             {loadTpls().length === 0 ? (
-              <div className="tpl-pop-empty">Nog geen templates — selecteer tekst en bewaar.</div>
+              <div className="tpl-pop-empty">Nog geen templates, selecteer tekst en bewaar.</div>
             ) : loadTpls().map((t, i) => (
               <button key={i} className="tpl-pop-item" onClick={() => insertTpl(t.html)}>{t.name}</button>
             ))}

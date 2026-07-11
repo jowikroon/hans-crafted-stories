@@ -17,7 +17,7 @@ const DIM_META: Record<Dim, { label: string; color: string }> = {
 
 const SUGGESTIONS: Record<Dim, Suggestion[]> = {
   voice: [
-    { what: "Open met een persoonlijke observatie i.p.v. een algemene claim", why: "Je calibratiezin landt sterker als eerste alinea — anti-AI-detectie hefboom #1", delta: 4 },
+    { what: "Open met een persoonlijke observatie i.p.v. een algemene claim", why: "Je calibratiezin landt sterker als eerste alinea, anti-AI-detectie hefboom #1", delta: 4 },
     { what: "Vervang 2 generieke werkwoorden door je signature phrases", why: "Herkenbaarheid: lezers herkennen je stem aan terugkerende formuleringen", delta: 3 },
     { what: "Voeg één gedateerde ervaring uit eigen werk toe", why: "Specificiteit (\"Q2 2026, drie Bol-accounts\") leest als echt, niet als AI", delta: 5 },
     { what: "Schrap één banned word dat nog in de tekst staat", why: "Banned words zijn de zichtbare brand-fingerprint van je voice", delta: 2 },

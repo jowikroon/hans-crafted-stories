@@ -27,7 +27,7 @@ export function buildRichTips(plain: string[]): RichTip[] {
     category: cats[i % cats.length],
     headline: t.length > 60 ? t.slice(0, 58) + "…" : t,
     suggestion: t,
-    why: "Deze regel komt uit je voice template — consistent toepassen houdt je stem herkenbaar.",
+    why: "Deze regel komt uit je voice template, consistent toepassen houdt je stem herkenbaar.",
     stat: i === 0 ? "Voice-consistentie weegt het zwaarst voor merkherkenning" : undefined,
     impact: ["+toon", "+vindbaarheid", "+autoriteit", "+vertrouwen"][i % 4],
   }));

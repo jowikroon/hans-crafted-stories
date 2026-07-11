@@ -75,7 +75,7 @@ export default function LangSplit({ postId, contentEN, contentNL, onChangeEN, on
   const translate = useCallback(async () => {
     const sourceMd = primary === "en" ? contentEN : contentNL;
     const sourceText = (sourceMd ?? "").trim();
-    if (!sourceText) { setError("Niets om te vertalen — schrijf eerst de bron."); setTranslateState("error"); return; }
+    if (!sourceText) { setError("Niets om te vertalen, schrijf eerst de bron."); setTranslateState("error"); return; }
     setTranslating(target);
     setError(null);
     setTranslateState("idle");

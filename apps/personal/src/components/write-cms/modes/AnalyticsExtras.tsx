@@ -106,7 +106,7 @@ export function InsightCards({ statsSummary }: { statsSummary: string }) {
         <button className="an-refresh-btn" onClick={load} disabled={busy}>{busy ? "⟳ Synthesise…" : insights ? "Refresh" : "Generate"}</button>
       </div>
       {error && <div className="an-insight-error">{error}</div>}
-      {!insights && !busy && !error && <p className="an-insight-empty">Klik Generate — Claude leest je GA4 + Search Console + redactionele cijfers en geeft 3 inzichten.</p>}
+      {!insights && !busy && !error && <p className="an-insight-empty">Klik Generate, Claude leest je GA4 + Search Console + redactionele cijfers en geeft 3 inzichten.</p>}
       {insights && (
         <div className="insights-row">
           {cards.map(({ key, cls, tag }) => insights[key] && (
@@ -164,11 +164,11 @@ export function DrilldownDrawer({ post, onClose }: { post: DrillPost | null; onC
           <div className="an-drill-sec">
             <div className="an-drill-sec-h">Waar het beter kan</div>
             <ul className="an-drill-improve">
-              {(post.seo_score ?? 0) < 70 && <li>SEO-score onder 70 — keyword vroeg plaatsen + interne link.</li>}
-              {(post.voice_match_score ?? 0) < 70 && <li>Voice-match laag — calibratiezin + signature phrases inzetten.</li>}
-              {(post.completeness_score ?? 0) < 70 && <li>Nog niet compleet — open [HANS:]-gates invullen.</li>}
-              {(post.word_count ?? 0) < 800 && <li>Kort artikel ({post.word_count ?? 0} woorden) — uitdiepen voor autoriteit.</li>}
-              {(post.seo_score ?? 0) >= 70 && (post.voice_match_score ?? 0) >= 70 && (post.completeness_score ?? 0) >= 70 && (post.word_count ?? 0) >= 800 && <li>Sterk artikel — overweeg een LinkedIn-herpublicatie.</li>}
+              {(post.seo_score ?? 0) < 70 && <li>SEO-score onder 70, keyword vroeg plaatsen + interne link.</li>}
+              {(post.voice_match_score ?? 0) < 70 && <li>Voice-match laag, calibratiezin + signature phrases inzetten.</li>}
+              {(post.completeness_score ?? 0) < 70 && <li>Nog niet compleet, open [HANS:]-gates invullen.</li>}
+              {(post.word_count ?? 0) < 800 && <li>Kort artikel ({post.word_count ?? 0} woorden), uitdiepen voor autoriteit.</li>}
+              {(post.seo_score ?? 0) >= 70 && (post.voice_match_score ?? 0) >= 70 && (post.completeness_score ?? 0) >= 70 && (post.word_count ?? 0) >= 800 && <li>Sterk artikel, overweeg een LinkedIn-herpublicatie.</li>}
             </ul>
           </div>
           <div className="an-drill-foot">Laatst bijgewerkt {new Date(post.updated_at).toLocaleDateString()}</div>

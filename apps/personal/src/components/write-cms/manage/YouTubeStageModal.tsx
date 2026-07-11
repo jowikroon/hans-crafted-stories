@@ -86,7 +86,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
         topics: [],
         angle: angle.trim(),
         summary: "",
-        note: "Analyse duurde te lang (netwerk?). Je kunt door — de ghost-writer haalt het transcript zelf op.",
+        note: "Analyse duurde te lang (netwerk?). Je kunt door, de ghost-writer haalt het transcript zelf op.",
       });
     }, 25000);
     return () => clearTimeout(t);
@@ -106,7 +106,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
           topics: [],
           angle: angle.trim(),
           summary: "",
-          note: angle.trim() ? undefined : "Geen invalshoek opgegeven — de ghost-writer kiest er een.",
+          note: angle.trim() ? undefined : "Geen invalshoek opgegeven, de ghost-writer kiest er een.",
         });
         return;
       }
@@ -140,7 +140,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
             topics: [],
             angle: angle.trim(),
             summary: "",
-            note: "Analyse mislukt — je kunt door; de ghost-writer haalt het transcript zelf op.",
+            note: "Analyse mislukt, je kunt door; de ghost-writer haalt het transcript zelf op.",
           });
         }
       }
@@ -253,7 +253,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
               <span className="lbl">{["Analyze", "Voice", "Ghost-write", "Done"][s - 1]}</span>
             </div>
           ))}
-          <button className="stage-close" title={stage === 3 ? "Ghost-write loopt — even geduld" : "Sluiten"} onClick={() => stage !== 3 && onClose()}>×</button>
+          <button className="stage-close" title={stage === 3 ? "Ghost-write loopt, even geduld" : "Sluiten"} onClick={() => stage !== 3 && onClose()}>×</button>
         </div>
 
         <div className="stage-body">
@@ -277,7 +277,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
                     {analysis!.channel && <span className="as-chip">{analysis!.channel}</span>}
                     {analysis!.isVideo && (
                       <span className={`as-chip ${analysis!.transcriptFound ? "as-chip--ok" : "as-chip--warn"}`}>
-                        {analysis!.transcriptFound ? "transcript gevonden" : "geen transcript — titel/kanaal"}
+                        {analysis!.transcriptFound ? "transcript gevonden" : "geen transcript, titel/kanaal"}
                       </span>
                     )}
                     {!analysis!.isVideo && <span className="as-chip">eigen onderwerp</span>}
@@ -326,7 +326,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
                 <div className="analyze-skeleton"><span className="spinner" /><span>Stemmen vergelijken…</span></div>
               ) : proposal.empty ? (
                 <>
-                  <p className="stage-note">Nog geen voice-templates gevonden — geef de ghost-writer 2-3 zinnen richting.</p>
+                  <p className="stage-note">Nog geen voice-templates gevonden, geef de ghost-writer 2-3 zinnen richting.</p>
                   <textarea
                     className="stage-voice-input" rows={6} value={brandVoice}
                     onChange={(e) => { editedByUser.current = true; setBrandVoice(e.target.value); }}
@@ -363,7 +363,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
                     </div>
                   )}
 
-                  <div className="as-label vp-ctx-label">Brand-voice context — stuurt de hele draft (pas aan waar nodig)</div>
+                  <div className="as-label vp-ctx-label">Brand-voice context, stuurt de hele draft (pas aan waar nodig)</div>
                   <textarea
                     className="stage-voice-input" rows={6} value={brandVoice}
                     onChange={(e) => { editedByUser.current = true; setBrandVoice(e.target.value); }}

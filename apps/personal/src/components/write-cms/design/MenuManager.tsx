@@ -103,12 +103,12 @@ export default function MenuManager() {
             <div className="menu-labels">
               <input
                 value={it.labelNl}
-                aria-label={`Label NL — ${it.to}`}
+                aria-label={`Label NL, ${it.to}`}
                 onChange={(e) => mark(items.map((x, i) => (i === idx ? { ...x, labelNl: e.target.value } : x)))}
               />
               <input
                 value={it.labelEn}
-                aria-label={`Label EN — ${it.to}`}
+                aria-label={`Label EN, ${it.to}`}
                 onChange={(e) => mark(items.map((x, i) => (i === idx ? { ...x, labelEn: e.target.value } : x)))}
               />
             </div>
@@ -142,7 +142,7 @@ export default function MenuManager() {
       <div className="menu-add">
         <select value={addTo} onChange={(e) => setAddTo(e.target.value)} aria-label="Pagina om toe te voegen">
           {(addableLeft.length ? addableLeft : ADDABLE_PAGES).map((p) => (
-            <option key={p.to} value={p.to}>{p.label} — {p.to}</option>
+            <option key={p.to} value={p.to}>{p.label}, {p.to}</option>
           ))}
         </select>
         <input
@@ -156,8 +156,8 @@ export default function MenuManager() {
       <footer className="design-savebar">
         <span className="design-savestate">
           {state === "saving" && "Opslaan…"}
-          {state === "saved" && "Opgeslagen — live voor alle bezoekers"}
-          {state === "error" && "Opslaan mislukt — ben je ingelogd als admin?"}
+          {state === "saved" && "Opgeslagen, live voor alle bezoekers"}
+          {state === "error" && "Opslaan mislukt, ben je ingelogd als admin?"}
           {dirty && "Niet-opgeslagen wijzigingen"}
         </span>
         <button type="button" className="design-save" onClick={save} disabled={!dirty}>

@@ -75,7 +75,7 @@ export function useBlogInitWorkflow(onDispatched?: () => void): BlogInitWorkflow
         has_memory: data.has_memory ?? (data.brand_voice_context || data.brand_voice ? true : false),
       };
       setInit(normalized);
-      setPhase("verifying"); // stays verifying — user must confirm
+      setPhase("verifying"); // stays verifying, user must confirm
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not reach blog-init");
       setPhase("error");
@@ -103,7 +103,7 @@ export function useBlogInitWorkflow(onDispatched?: () => void): BlogInitWorkflow
       if (d.calibration_sentence?.trim()) parts.push(`Calibration sentence (match this voice exactly): "${d.calibration_sentence.trim()}"`);
       if (d.signature_phrases?.length) parts.push(`Signature phrases to weave in naturally: ${d.signature_phrases.join("; ")}`);
       if (d.strengths?.length) parts.push(`Voice strengths to lean into: ${d.strengths.join("; ")}`);
-      if (d.watch_outs?.length) parts.push(`Watch-outs — avoid these habits: ${d.watch_outs.join("; ")}`);
+      if (d.watch_outs?.length) parts.push(`Watch-outs, avoid these habits: ${d.watch_outs.join("; ")}`);
       if (d.unique_markers?.length) parts.push(`Unique markers that distinguish this voice from generic AI prose: ${d.unique_markers.join("; ")}`);
       if (d.banned_words?.length) parts.push(`Banned words (never use): ${d.banned_words.join(", ")}`);
       return parts.length ? `\n\n--- VOICE DNA (${d.tone ?? category}) ---\n${parts.join("\n")}` : "";
