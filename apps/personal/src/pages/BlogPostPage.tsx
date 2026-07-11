@@ -465,8 +465,8 @@ const BlogPostPage = () => {
           <div className="cta__k">{lang === "nl" ? "Sparren?" : "Let's talk"}</div>
           <h3>{lang === "nl" ? "Wil je sparren over jouw marketplace-strategie?" : "Want to spar about your marketplace strategy?"}</h3>
           <p>{lang === "nl"
-            ? "Geen hype — een nuchtere blik op waar je groei zit en waar je marge weglekt."
-            : "No hype — a sober look at where your growth is and where margin leaks away."}</p>
+            ? "Geen hype. Een nuchtere blik op waar je groei zit en waar je marge weglekt."
+            : "No hype. A sober look at where your growth is and where margin leaks away."}</p>
           <Link to="/about" className="cta__btn">{lang === "nl" ? "Neem contact op" : "Get in touch"} <ArrowRight size={16} /></Link>
         </section>
 

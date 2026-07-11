@@ -220,15 +220,15 @@ const WritingV2 = () => {
           <p className="lede">
             {lang === "nl" ? (
               <>
-                Field notes van <strong>Hans van Leeuwen</strong> — freelance e-commerce manager en Amazon &amp; Bol.com
+                Field notes van <strong>Hans van Leeuwen</strong>, freelance e-commerce manager en Amazon en Bol.com
                 marketplace-specialist, gevestigd in Amersfoort. Praktische essays over marketplace-strategie,
-                listing-optimalisatie en e-commerce groei door NL &amp; EU, geschreven vanuit hands-on klantwerk.
+                listing-optimalisatie en e-commerce groei door NL en EU, geschreven vanuit hands-on klantwerk.
               </>
             ) : (
               <>
-                Field notes from <strong>Hans van Leeuwen</strong> — a freelance e-commerce manager and Amazon &amp; Bol.com
+                Field notes from <strong>Hans van Leeuwen</strong>, a freelance e-commerce manager and Amazon and Bol.com
                 marketplace specialist based in Amersfoort, Netherlands. Practical writing on marketplace strategy,
-                listing optimization, and marketplace growth across the NL &amp; EU, drawn from hands-on client work.
+                listing optimization, and marketplace growth across the NL and EU, drawn from hands-on client work.
               </>
             )}
           </p>
