@@ -250,8 +250,20 @@ const BlogPostPage = () => {
     // Preloaded (SSR/prerender) gives the instant first paint, but always refetch
     // live so content edits (new figures, published/unpublished changes) appear
     // without waiting for a site rebuild.
+    let active = true;
     if (!preloaded || preloaded.slug !== slug) setPost(undefined);
-    getBlogPost(slug).then(setPost);
+    getBlogPost(slug).then((p) => {
+      // Guard against a stale response from a previously-requested slug winning
+      // the race on fast client-side navigation between articles. Only apply the
+      // result if this effect is still current AND the fetched post matches the
+      // slug we asked for. This prevents one article showing another's content.
+      if (!active) return;
+      if (p && p.slug !== slug) return;
+      setPost(p);
+    });
+    return () => {
+      active = false;
+    };
   }, [slug, preloaded]);
 
   // Language-aware fields
