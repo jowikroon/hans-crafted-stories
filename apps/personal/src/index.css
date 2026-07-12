@@ -1,4 +1,4 @@
-/* Fonts are preloaded in index.html (General Sans + Newsreader, display=swap). The render-blocking @import was removed to fix LCP (HAN-121). */
+/* Fonts are preloaded in index.html (Switzer + JetBrains Mono + Newsreader, display=swap). The render-blocking @import was removed to fix LCP (HAN-121). */
 
 @tailwind base;
 @tailwind components;
@@ -49,9 +49,9 @@
     --sidebar-border: 35 15% 88%;
     --sidebar-ring: 16 55% 52%;
 
-    --font-display: 'Archivo', 'Inter', system-ui, sans-serif;
-    --font-body: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
-    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-display: 'Switzer', 'Inter', system-ui, sans-serif;
+    --font-body: 'Switzer', 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
     /* Blog CMS instrument tokens (light fallback) */
     --ok: 140 45% 40%;
