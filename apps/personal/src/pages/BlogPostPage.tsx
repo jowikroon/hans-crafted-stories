@@ -237,7 +237,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const preloaded = usePreloadedBlogPost(slug);
-  const [post, setPost] = useState<BlogPostRow | null | undefined>(
+  const [rawPost, setRawPost] = useState<BlogPostRow | null | undefined>(
     () => (preloaded ?? undefined) as BlogPostRow | undefined
   );
   const { lang } = useLang();
@@ -251,7 +251,7 @@ const BlogPostPage = () => {
     // live so content edits (new figures, published/unpublished changes) appear
     // without waiting for a site rebuild.
     let active = true;
-    if (!preloaded || preloaded.slug !== slug) setPost(undefined);
+    if (!preloaded || preloaded.slug !== slug) setRawPost(undefined);
     getBlogPost(slug).then((p) => {
       // Guard against a stale response from a previously-requested slug winning
       // the race on fast client-side navigation between articles. Only apply the
@@ -259,12 +259,19 @@ const BlogPostPage = () => {
       // slug we asked for. This prevents one article showing another's content.
       if (!active) return;
       if (p && p.slug !== slug) return;
-      setPost(p);
+      setRawPost(p);
     });
     return () => {
       active = false;
     };
   }, [slug, preloaded]);
+
+  // Definitive guard against cross-article content leaks: never expose a post
+  // whose slug does not match the current route, not even for a single frame
+  // during client-side navigation. A mismatch is treated as loading (undefined),
+  // so an article URL can only ever render its own content.
+  const post =
+    rawPost && slug && rawPost.slug !== slug ? undefined : rawPost;
 
   // Language-aware fields
   const displayTitle = post ? (lang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
