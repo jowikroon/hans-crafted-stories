@@ -45,6 +45,11 @@ const RhythmIcon = () => (
     <path d="M4 12h3l2 6 4-14 2 8h5" />
   </svg>
 );
+const RadarIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4.5" /><path d="M12 12l6.4-6.4" /><circle cx="12" cy="12" r="0.6" fill="currentColor" />
+  </svg>
+);
 const ArrowRight = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
 );
@@ -288,6 +293,36 @@ const Music = () => {
         </div>
       </section>
 
+      {/* artist radar */}
+      <section className="mn-wrap mn-rv" aria-label="Artist Radar">
+        <p className="mn-slabel" style={{ marginTop: "clamp(54px,8vh,90px)" }}><span className="n">03</span> Artist Radar</p>
+        <div className="mn-release">
+          <div className="mn-release__body">
+            <span className="mn-release__kicker"><span className="mn-live" />Gratis alert-service</span>
+            <h2 className="mn-release__title">Mis nooit meer een show van je favoriete artiest</h2>
+            <p className="mn-release__sub">Kies je artiesten — je krijgt een mail bij geruchten, aankondigingen en zodra tickets in Nederland of België in de verkoop gaan.</p>
+            <div className="mn-release__meta">
+              <span className="mn-chip">Geruchten</span>
+              <span className="mn-chip">Aankondigingen</span>
+              <span className="mn-chip">Ticketverkoop NL/BE</span>
+            </div>
+            <div className="mn-release__cta-row">
+              <Link to="/muziek/artist-radar" className="mn-release__cta" data-cursor aria-label="Open the Artist Radar and put artists on your radar">
+                <RadarIcon /> Zet artiesten op je radar
+              </Link>
+            </div>
+          </div>
+          <div className="mn-release__player mn-radar-visual" aria-hidden="true">
+            <div className="mn-radar-rings">
+              <div className="mn-radar-sweep" />
+              <span className="mn-radar-dot" style={{ left: "62%", top: "30%" }} />
+              <span className="mn-radar-dot" style={{ left: "34%", top: "58%", animationDelay: ".9s" }} />
+              <span className="mn-radar-dot" style={{ left: "70%", top: "68%", animationDelay: "1.7s" }} />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* release timeline studio (folded into the page) */}
       <section className="mn-wrap mn-rv" aria-label="Release timeline">
         <ReleaseTimeline />
@@ -311,6 +346,7 @@ const Music = () => {
           <nav className="mn-footer__links" aria-label="Footer">
             <Link to="/writing">Writing</Link>
             <Link to="/music">Music</Link>
+            <Link to="/muziek/artist-radar">Artist Radar</Link>
             <Link to="/about">About</Link>
             <a href="https://open.spotify.com/album/7gHaf9f1kcQaOtg9sMzPlo" target="_blank" rel="noopener noreferrer">Spotify</a>
           </nav>
