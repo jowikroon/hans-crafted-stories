@@ -9,7 +9,7 @@
    ============================================================ */
 
 .music-neon {
-  --mn-font-display: 'General Sans', system-ui, sans-serif;
+  --mn-font-display: 'Switzer', system-ui, sans-serif;
   --mn-font-body: 'Switzer', system-ui, sans-serif;
   --mn-font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
@@ -392,3 +392,17 @@ body.mn-cursor-down .mn-cursor-ring { transform: scale(.82); }
   .music-neon .mn-cue--btn:hover,
   .music-neon .mn-cue--btn:active { transform: none; }
 }
+
+
+/* ── Artist Radar card (section 03) ── */
+.music-neon .mn-radar-visual { position: relative; min-height: 280px; display: grid; place-items: center; background: radial-gradient(circle at 50% 50%, var(--mn-neon-soft), transparent 72%); border-left: 1px solid var(--mn-hair); }
+.music-neon .mn-radar-rings { position: relative; width: 210px; height: 210px; border-radius: 50%; border: 1px solid var(--mn-hair); }
+.music-neon .mn-radar-rings::before, .music-neon .mn-radar-rings::after { content: ""; position: absolute; border-radius: 50%; border: 1px solid var(--mn-hair); }
+.music-neon .mn-radar-rings::before { inset: 18%; }
+.music-neon .mn-radar-rings::after { inset: 36%; }
+.music-neon .mn-radar-sweep { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0deg, var(--mn-neon-soft) 70deg, rgba(198,255,52,.32) 88deg, transparent 92deg); animation: mn-radar-spin 7s linear infinite; }
+.music-neon .mn-radar-dot { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--mn-neon); box-shadow: 0 0 14px var(--mn-neon); animation: mn-radar-blink 2.8s ease-in-out infinite; }
+@keyframes mn-radar-spin { to { transform: rotate(360deg); } }
+@keyframes mn-radar-blink { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .music-neon .mn-radar-sweep { animation: none; } .music-neon .mn-radar-dot { animation: none; opacity: .8; } }
+@media (max-width: 860px) { .music-neon .mn-radar-visual { border-left: 0; border-top: 1px solid var(--mn-hair); min-height: 240px; } }

@@ -53,8 +53,8 @@ const About = () => {
           "@id": "https://hansvanleeuwen.com/#person",
           name: "Hans van Leeuwen",
           url: "https://hansvanleeuwen.com/about",
-          jobTitle: "Freelance E-commerce Manager",
-          description: "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
+          jobTitle: "Freelance E-commerce Manager & UX Designer",
+          description: "Freelance e-commerce manager & UX designer with 10+ years of experience in marketplace strategy, Amazon, Bol.com, AI-assisted automation, and digital commerce.",
           image: {
             "@type": "ImageObject",
             url: "https://hansvanleeuwen.com/og-image.png",
@@ -62,7 +62,7 @@ const About = () => {
             height: 630,
             caption: "Hans van Leeuwen – Freelance E-commerce Manager",
           },
-          knowsAbout: ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Conversion optimization", "Digital commerce", "SEO", "Amazon Ads", "Bol Ads"],
+          knowsAbout: ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Interaction design", "AI-assisted e-commerce automation", "Conversion optimization", "Digital commerce", "SEO", "Amazon Ads", "Bol Ads"],
           address: {
             "@type": "PostalAddress",
             addressLocality: "Amersfoort",
@@ -70,6 +70,7 @@ const About = () => {
           },
           sameAs: [
             "https://www.linkedin.com/in/hansvl3",
+            "https://x.com/hansvl3",
           ],
         },
         {

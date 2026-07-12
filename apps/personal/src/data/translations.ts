@@ -189,7 +189,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     downloadCvEn: "Download CV (EN)",
     downloadCvNl: "Download CV (NL)",
     bio: [
-      "E-commerce Manager with 10+ years of experience accelerating digital commerce performance across marketplaces and D2C channels. Specializing in Amazon, Bol.com, and scalable revenue growth strategies.",
+      "E-commerce Manager with 10+ years of experience accelerating digital commerce performance across marketplaces and D2C channels. Specializing in Amazon, Bol.com, AI-assisted e-commerce automation, and scalable revenue growth strategies.",
       "I combine a strong background in UX design with hands-on commercial expertise to create data-driven strategies that deliver measurable results. From achieving 70% market share on Amazon NL to cutting out-of-stock rates below 2%, I turn complexity into growth.",
     ],
     experienceList: [
@@ -198,8 +198,8 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-commerce Manager",
         period: "Dec 2025 – Present",
         highlights: [
-          "Leading growth strategy for marketplaces and D2C webshop",
-          "Implementing A/B testing frameworks and automation",
+          "Automated VIN-based part lookup — a first in the industry",
+          "Connected eBay, Amazon and Bol.com into one marketplace operation",
           "Forecasting revenue and delivering actionable KPI insights",
         ],
       },
@@ -210,23 +210,14 @@ export const translations: Record<Lang, TranslationStrings> = {
         highlights: [
           "Achieved 70% market share in earplug category (Nielsen Data)",
           "Launched Bol.com seller channel, transitioning from vendor model",
-          "20% weekly sales increase via Muffy Kids social campaign",
-        ],
-      },
-      {
-        company: "Alpine Hearing Protection",
-        role: "E-commerce Manager",
-        period: "Oct 2021 – Mar 2022",
-        highlights: [
-          "Cut out-of-stock rates below 2%",
-          "Outsourced customer service, improving NPS scores",
-          "Centralized data and refined shipping logistics",
+          "Automated marketplace content via Channable integration",
+          "Cut out-of-stock rates below 2%; outsourced customer service, lifting NPS",
         ],
       },
       {
         company: "Webhelp",
         role: "Team Coach",
-        period: "Feb 2020 – Oct 2021",
+        period: "Feb 2020 – Feb 2022",
         highlights: [
           "Directed COVID-19 tracking, aiding national strategies",
           "Implemented training to boost pandemic response skills",
@@ -244,7 +235,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       {
         company: "Intergamma (Karwei & Gamma)",
         role: "E-Commerce Manager",
-        period: "Feb 2017 – Aug 2019",
+        period: "Feb 2016 – Aug 2019",
         highlights: [
           "Managed online catalogs for KARWEI.nl, Gamma.nl & Gamma.be",
           "Delivered company-wide e-commerce training",
@@ -288,7 +279,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     educationList: [
       {
         institution: "HU University of Applied Sciences Utrecht",
-        degree: "B.A.Sc. Communication & Media Design",
+        degree: "B.A.Sc. Communication & Media Studies — User Experience specialisation",
         period: "2012 – 2016",
       },
       {
@@ -325,7 +316,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       description:
         "I'm Hans van Leeuwen, a freelance e-commerce and marketplace manager based in Amersfoort. After ten years growing Amazon and Bol.com revenue for brands, I know where marketplace growth actually comes from: sharp listings, disciplined ads, and reliable operations. I help brands across the Netherlands and EU turn their digital channels into revenue engines.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
-      ctaWork: "View Amazon & Bol.com case studies",
+      ctaWork: "View portfolio & case studies",
       ctaConsult: "Contact me",
       ctaAbout: "About me",
       resultsLabel: "Proven results",
@@ -377,7 +368,7 @@ export const translations: Record<Lang, TranslationStrings> = {
           description: "Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction and increasing conversions.",
         },
       ],
-      linkCases: "Amazon NL marketplace case studies →",
+      linkCases: "Portfolio & Amazon NL case studies →",
       linkWriting: "Amazon & Bol.com optimization articles →",
       linkAbout: "About Hans →",
     },
@@ -398,7 +389,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       clear: "Clear",
       loading: "Loading…",
       relatedHeading: "Related",
-      linkWork: "Amazon NL & Bol.com case studies",
+      linkWork: "Portfolio & case studies",
       linkAbout: "About Hans",
       linkAmazonNl: "Amazon NL specialist",
       linkBolCom: "Bol.com consultant",
@@ -514,8 +505,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       workDescription: "UX, interaction and 3D design portfolio, plus Amazon NL & Bol.com case studies with measurable results. Freelance e-commerce manager & UX designer in Amersfoort.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
       privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
-      aboutTitle: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
-      aboutDescription: "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and digital commerce. Based in Amersfoort, NL.",
+      aboutTitle: "About Hans van Leeuwen – E-commerce Manager & UX Designer | 10+ Years Experience",
+      aboutDescription: "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and AI-assisted digital commerce. Based in Amersfoort, NL.",
       notFoundTitle: "Page Not Found | Hans van Leeuwen",
     },
   },
@@ -538,8 +529,8 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-commerce Manager",
         period: "Dec 2025 – Heden",
         highlights: [
-          "Leid groeistrategie voor marktplaatsen en D2C-webshop",
-          "Implementatie van A/B-testframeworks en automatisering",
+          "VIN-gebaseerde onderdelen-lookup geautomatiseerd — een primeur in de branche",
+          "eBay, Amazon en Bol.com verbonden tot één marketplace-operatie",
           "Omzetprognoses en leveren van actionable KPI-inzichten",
         ],
       },
@@ -550,23 +541,14 @@ export const translations: Record<Lang, TranslationStrings> = {
         highlights: [
           "70% marktaandeel behaald in oordoppencategorie (Nielsen Data)",
           "Bol.com verkoopkanaal gelanceerd, transitie van vendor naar seller",
-          "20% wekelijkse omzetstijging via Muffy Kids sociale campagne",
-        ],
-      },
-      {
-        company: "Alpine Hearing Protection",
-        role: "E-commerce Manager",
-        period: "Okt 2021 – Mrt 2022",
-        highlights: [
-          "Out-of-stock rates teruggebracht onder 2%",
-          "Klantenservice uitbesteed, NPS-scores verbeterd",
-          "Data gecentraliseerd en verzendlogistiek geoptimaliseerd",
+          "Marketplace-content geautomatiseerd via Channable-integratie",
+          "Out-of-stock onder 2% gebracht; klantenservice uitbesteed, NPS verbeterd",
         ],
       },
       {
         company: "Webhelp",
         role: "Team Coach",
-        period: "Feb 2020 – Okt 2021",
+        period: "Feb 2020 – Feb 2022",
         highlights: [
           "COVID-19-tracking geleid, bijgedragen aan nationale strategieën",
           "Trainingen geïmplementeerd ter versterking van pandemierespons",
@@ -584,7 +566,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       {
         company: "Intergamma (Karwei & Gamma)",
         role: "E-Commerce Manager",
-        period: "Feb 2017 – Aug 2019",
+        period: "Feb 2016 – Aug 2019",
         highlights: [
           "Online catalogi beheerd voor KARWEI.nl, Gamma.nl & Gamma.be",
           "Bedrijfsbrede e-commercetraining gegeven",
@@ -628,7 +610,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     educationList: [
       {
         institution: "Hogeschool Utrecht",
-        degree: "B.A.Sc. Communicatie & Media Design",
+        degree: "B.A.Sc. Communication & Media Studies — specialisatie User Experience",
         period: "2012 – 2016",
       },
       {
@@ -665,7 +647,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       description:
         "Ik ben Hans van Leeuwen, freelance e-commerce en marketplace manager in Amersfoort. Na tien jaar Amazon- en Bol.com-omzet laten groeien voor merken weet ik waar marketplace-groei echt vandaan komt: scherpe listings, gedisciplineerde ads en betrouwbare operatie. Ik help merken in Nederland en de EU hun digitale kanalen omzetten in omzetmotoren.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
-      ctaWork: "Bekijk Amazon & Bol.com cases",
+      ctaWork: "Bekijk portfolio & cases",
       ctaConsult: "Neem contact op met mij",
       ctaAbout: "Over mij",
       resultsLabel: "Bewezen resultaten",
@@ -717,7 +699,7 @@ export const translations: Record<Lang, TranslationStrings> = {
           description: "Zoekgerichte contentstrategieën die organisch verkeer stimuleren en marktplaatsrankings verbeteren. UX-design gericht op frictieverlaging en hogere conversies.",
         },
       ],
-      linkCases: "Amazon NL marktplaats case studies →",
+      linkCases: "Portfolio & Amazon NL cases →",
       linkWriting: "Amazon & Bol.com optimalisatie artikelen →",
       linkAbout: "Over Hans →",
     },
@@ -738,7 +720,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       clear: "Wissen",
       loading: "Laden…",
       relatedHeading: "Gerelateerd",
-      linkWork: "Amazon NL & Bol.com cases",
+      linkWork: "Portfolio & cases",
       linkAbout: "Over Hans",
       linkAmazonNl: "Amazon NL specialist",
       linkBolCom: "Bol.com consultant",
@@ -854,7 +836,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       workDescription: "UX-, interactie- en 3D-designportfolio, plus Amazon NL & Bol.com cases met meetbaar resultaat. Freelance e-commerce manager & UX designer in Amersfoort.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
       privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
-      aboutTitle: "Over Hans van Leeuwen – E-commerce Manager | 10+ Jaar Ervaring",
+      aboutTitle: "Over Hans van Leeuwen – E-commerce Manager & UX Designer | 10+ Jaar Ervaring",
       aboutDescription: "Leer meer over Hans van Leeuwen: 10+ jaar ervaring in e-commercemanagement, marktplaatsstrategie (Amazon, Bol.com), UX-design en digitale commerce. Gevestigd in Amersfoort, NL.",
       notFoundTitle: "Pagina Niet Gevonden | Hans van Leeuwen",
     },
