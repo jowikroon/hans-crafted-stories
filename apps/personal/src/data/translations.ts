@@ -301,7 +301,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Navigation ── */
     nav: {
       home: "Home",
-      work: "Case Studies",
+      work: "Portfolio",
       writing: "Articles",
       music: "Music",
       about: "About Hans",
@@ -311,7 +311,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       noResults: "No results found.",
       login: "Login",
       portal: "Portal",
-      workMenu: { allCases: "All case studies", services: "Services", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
+      workMenu: { allCases: "Full portfolio", services: "Services", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
       workspace: { label: "Workspace", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Sign out" },
       cms: { write: "Write", manage: "Manage", analytics: "Analytics" },
     },
@@ -406,10 +406,10 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── Work ── */
     work: {
-      label: "Portfolio & Case Studies",
-      heading: "Marketplace results, plus design & 3D work",
+      label: "Portfolio",
+      heading: "Design, UX & e-commerce work",
       description:
-        "Real marketplace results first: Amazon NL & Bol.com case studies with measurable outcomes. Below that, selected e-commerce UX, 3D, VR and branding work.",
+        "A decade of design-driven e-commerce. UX and interaction design, 3D, VR and creative work — alongside Amazon NL & Bol.com case studies with measurable results.",
       projectSingular: "project",
       projectPlural: "projects",
       matching: "matching",
@@ -510,8 +510,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       homeDescription: "10+ years growing Amazon NL & Bol.com revenue. Listings, ads, CRO & forecasting. Based in Amersfoort, NL/EU. Available for freelance and interim marketplace work.",
       writingTitle: "E-commerce Insights for Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
-      workTitle: "Amazon NL & Bol.com Case Studies | Portfolio | Hans van Leeuwen",
-      workDescription: "Amazon NL & Bol.com case studies with measurable results, plus selected UX and 3D work. Freelance marketplace manager based in Amersfoort.",
+      workTitle: "Portfolio — UX & E-commerce Design | Hans van Leeuwen",
+      workDescription: "UX, interaction and 3D design portfolio, plus Amazon NL & Bol.com case studies with measurable results. Freelance e-commerce manager & UX designer in Amersfoort.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
       privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
       aboutTitle: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
@@ -641,7 +641,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Navigation ── */
     nav: {
       home: "Home",
-      work: "Werk",
+      work: "Portfolio",
       writing: "Artikelen",
       music: "Muziek",
       about: "Over mij",
@@ -651,7 +651,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       noResults: "Geen resultaten gevonden.",
       login: "Inloggen",
       portal: "Portal",
-      workMenu: { allCases: "Alle cases", services: "Diensten", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
+      workMenu: { allCases: "Volledig portfolio", services: "Diensten", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
       workspace: { label: "Werkruimte", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Uitloggen" },
       cms: { write: "Schrijven", manage: "Beheren", analytics: "Analytics" },
     },
@@ -746,10 +746,10 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── Work ── */
     work: {
-      label: "Portfolio & Cases",
-      heading: "Marketplace-resultaat, plus design & 3D",
+      label: "Portfolio",
+      heading: "Design, UX & e-commerce werk",
       description:
-        "Eerst echt marketplace-resultaat: Amazon NL & Bol.com cases met meetbare uitkomsten. Daaronder geselecteerd e-commerce UX-, 3D-, VR- en brandingwerk.",
+        "Tien jaar design-gedreven e-commerce. UX- en interactieontwerp, 3D-, VR- en creatief werk — naast Amazon NL & Bol.com cases met meetbaar resultaat.",
       projectSingular: "project",
       projectPlural: "projecten",
       matching: "gevonden",
@@ -850,8 +850,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       homeDescription: "10+ jaar groei op Amazon NL & Bol.com. Listings, ads, CRO & forecasting. Gevestigd in Amersfoort, NL/EU. Beschikbaar voor freelance en interim marketplace-werk.",
       writingTitle: "E-commerce Inzichten voor Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
-      workTitle: "Amazon NL & Bol.com Cases | Portfolio | Hans van Leeuwen",
-      workDescription: "Amazon NL & Bol.com cases met meetbare resultaten, plus geselecteerd UX- en 3D-werk. Freelance marketplace-manager in Amersfoort.",
+      workTitle: "Portfolio — UX & E-commerce Design | Hans van Leeuwen",
+      workDescription: "UX-, interactie- en 3D-designportfolio, plus Amazon NL & Bol.com cases met meetbaar resultaat. Freelance e-commerce manager & UX designer in Amersfoort.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
       privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
       aboutTitle: "Over Hans van Leeuwen – E-commerce Manager | 10+ Jaar Ervaring",

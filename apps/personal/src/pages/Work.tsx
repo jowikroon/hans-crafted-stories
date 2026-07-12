@@ -126,7 +126,7 @@ const Work = () => {
     el.textContent = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: "Design Portfolio & Case Studies",
+      name: "Design & UX Portfolio",
       itemListElement: items,
     });
     return () => { document.getElementById(scriptId)?.remove(); };

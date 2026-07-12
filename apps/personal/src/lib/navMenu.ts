@@ -25,7 +25,7 @@ export const NAV_SETTING_KEY = "__site__:nav-menu";
 /** Defaults — identical to the historic hardcoded Navbar links. */
 export const DEFAULT_NAV_ITEMS: NavMenuItem[] = [
   { id: "home",    to: "/",        labelNl: "Home",      labelEn: "Home",         visible: true, builtin: true },
-  { id: "work",    to: "/work",    labelNl: "Werk",      labelEn: "Case Studies", visible: true, builtin: true },
+  { id: "work",    to: "/work",    labelNl: "Portfolio", labelEn: "Portfolio",    visible: true, builtin: true },
   { id: "writing", to: "/writing", labelNl: "Artikelen", labelEn: "Articles",     visible: true, builtin: true },
   { id: "music",   to: "/music",   labelNl: "Muziek",    labelEn: "Music",        visible: true, builtin: true },
   { id: "about",   to: "/about",   labelNl: "Over mij",  labelEn: "About Hans",   visible: true, builtin: true },
@@ -34,7 +34,7 @@ export const DEFAULT_NAV_ITEMS: NavMenuItem[] = [
 /** Public routes that can be added to the menu from the Design mode. */
 export const ADDABLE_PAGES: { to: string; label: string }[] = [
   { to: "/", label: "Home" },
-  { to: "/work", label: "Werk / Case Studies" },
+  { to: "/work", label: "Portfolio" },
   { to: "/work/connect-car-parts", label: "Case: Connect Car Parts" },
   { to: "/writing", label: "Artikelen / Writing" },
   { to: "/music", label: "Muziek" },
