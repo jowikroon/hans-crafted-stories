@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>eBay DE — order-to-cash: wat is écht nodig (A4)</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .sheet { width:210mm; min-height:297mm; padding:11mm 11mm 8mm; margin:0 auto; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:8px; }
+  header h1{ font-size:16.5px; font-weight:700; letter-spacing:-.2px; }
+  header .sub{ font-size:8.4px; color:#52606d; margin-top:3px; }
+  .key{ font-size:8.4px; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid #1a5fb4;
+        border-radius:3px; padding:6px 9px; margin:8px 0; color:#1c3d5f; line-height:1.4; }
+  .key b{ color:#12406e; }
+  h2{ font-size:9.6px; text-transform:uppercase; letter-spacing:.4px; color:#102a43;
+      margin:10px 0 4px; padding:2px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  table{ width:100%; border-collapse:collapse; margin-top:2px; }
+  th,td{ text-align:left; font-size:8px; padding:3px 6px; border-bottom:1px solid #e4e9f0; vertical-align:top; line-height:1.3; }
+  th{ font-size:7px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  td.s{ width:24%; } td.w{ width:34%; } td.n{ width:24%; } td.st{ width:18%; }
+  b.k{ color:#102a43; }
+  .tag{ display:inline-block; font-size:6.6px; font-weight:700; padding:1px 5px; border-radius:8px; }
+  .ebay{ background:#e6effb; color:#12406e; } .ours{ background:#eaf6ef; color:#14532d; } .dep{ background:#fff2e2; color:#7a4b0a; }
+  .cols{ display:flex; gap:8px; }
+  .col{ flex:1; }
+  ul{ margin:2px 0 0 14px; } li{ font-size:7.7px; color:#3e4c59; line-height:1.35; margin-bottom:2px; }
+  .miss li b{ color:#102a43; }
+  footer{ margin-top:9px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1;
+          display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.4px;padding:1px 8px;border-radius:8px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>eBay.de — wat is écht nodig per klantorder <span class="accent">· order-to-cash</span></h1>
+    <div class="sub">CCP × A.B.S. · onderzoek 2026-07-06 · btw/factuur = finance/legal, laat factuurplicht + OSS-tarief door Sjoerd/adviseur bevestigen</div>
+  </header>
+
+  <div class="key">
+    <b>Kern:</b> voor de klantkant heb je Magento/ABS/DPD niet nodig om te mailen. <b>eBay stuurt zelf de bestelbevestiging én de trackingmail</b> (zodra het trackingnummer op de order staat). Een <b>klantfactuur is B2C niet verplicht</b> in DE (B2B wél). Retouren lopen <b>eBay-managed</b> (label + RMA) en verwerk je fysiek als webshopretour. → De Magento-DE-storefront is nodig voor onze eigen administratie/factuur, maar is <b>geen blocker</b> voor het correct bedienen van klanten maandag.
+  </div>
+
+  <h2>Wie stuurt wat — per order</h2>
+  <table>
+    <tr><th>Stap</th><th>Wie doet het</th><th>Nodig van ons</th><th>Status</th></tr>
+    <tr><td class="s"><b class="k">Bestelbevestiging</b></td><td class="w"><span class="tag ebay">eBay</span> automatisch (kosten + leverdatum)</td><td class="n">Niets</td><td class="st">✔ automatisch</td></tr>
+    <tr><td class="s"><b class="k">Betaling + uitbetaling</b></td><td class="w"><span class="tag ebay">eBay Managed Payments</span> → onze bank</td><td class="n">Payout-config gekoppeld</td><td class="st">Check</td></tr>
+    <tr><td class="s"><b class="k">Verzend-/trackingmail</b></td><td class="w"><span class="tag ebay">eBay</span> zodra trackingnr. op de order staat</td><td class="n">Tracking terug naar eBay (T&amp;T-flow) of handmatig</td><td class="st">🔄 Niek (ABS API) + Hans</td></tr>
+    <tr><td class="s"><b class="k">Klantfactuur</b></td><td class="w"><span class="tag ours">optioneel</span> eBay-factuurtool / Magento / ABS</td><td class="n">B2C niet verplicht · B2B verplicht</td><td class="st">Besluit Sjoerd</td></tr>
+    <tr><td class="s"><b class="k">Verzendlabel</b></td><td class="w"><span class="tag ours">wij</span> DPD DE-label</td><td class="n">DPD-tarief + label werkend</td><td class="st">🔄 Hans/Sjoerd</td></tr>
+    <tr><td class="s"><b class="k">Retour + refund</b></td><td class="w"><span class="tag ebay">eBay-managed</span> label + RMA, <span class="tag ours">wij</span> verwerken</td><td class="n">Retourbeleid + adres + provider</td><td class="st">🔄 instellen</td></tr>
+  </table>
+
+  <div class="cols">
+    <div class="col">
+      <h2>Klantfactuur — de Bolmate-voor-eBay</h2>
+      <ul>
+        <li><b>B2C:</b> geen factuurplicht in DE — eBay-bevestiging volstaat.</li>
+        <li><b>B2B:</b> factuur verplicht, binnen 6 mnd, op verzoek.</li>
+        <li><b>easybill</b> — koppelt direct aan eBay, auto-factuur + mail (1–14 dgn), OSS/DE-tarief. Buiten Magento om.</li>
+        <li><b>Billbee</b> — multichannel: eBay + Amazon + <b>bol.com</b> → één tool i.p.v. Bolmate + los eBay.</li>
+        <li><b>Review:</b> geen losse review-spam; wel nette review-uitnodiging als tekst/bijlage bij de factuurmail.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h2>Retouren — ja, als webshop</h2>
+      <ul>
+        <li>Aanvraag past bij beleid → <b>auto-geaccepteerd</b>.</li>
+        <li>Artikelwaarde <b>≥ €12</b> → eBay stuurt DHL/Hermes-retourlabel.</li>
+        <li><b>RMA = eBay-ordernummer</b> (eigen RMA kan niet meer).</li>
+        <li>Te groot/zwaar (schijven >5 kg) → <b>eigen DPD-label uploaden</b>.</li>
+        <li>Pakket komt bij ons binnen → controleren + <b>refund via eBay</b>.</li>
+        <li>Instellen: retourbeleid (30 dgn), retouradres, provider, verwerker.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Gemiste randzaken — marketplace manager scope</h2>
+  <div class="cols">
+    <div class="col miss">
+      <ul>
+        <li><b>Business Policies</b> (Shipping/Payment/Return) compleet + aan álle listings gekoppeld.</li>
+        <li><b>Payout-config</b> eBay Managed Payments: bank, schema, valuta EUR.</li>
+        <li><b>Handling time</b> realistisch (Late-Shipment-Rate ≤3%).</li>
+        <li><b>Out-of-stock control</b> — voorkom verkoop niet-leverbaar (5 min sync-mismatch).</li>
+        <li><b>eBay Messages</b> reactietijd (telt mee voor serviceniveau).</li>
+      </ul>
+    </div>
+    <div class="col miss">
+      <ul>
+        <li><b>Cases</b>: INR (niet ontvangen) / SNAD (niet als beschreven), annuleringen, refunds — proces + eigenaar.</li>
+        <li><b>Tracking-upload-discipline</b> — geldig trackingnr. tijdig op elke order.</li>
+        <li><b>GPSR</b>: Responsible Person op elke listing + verpakking; check Compliance Dashboard in Seller Hub.</li>
+        <li><b>OSS</b>: 19% DE-btw op listing + factuur (verzenden vanuit NL); DE-voorraad → apart DE-btw-nr.</li>
+        <li><b>Promoted Listings</b> (Anzeigen) — ná content-check.</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <span>Bron: eBay Rechtsportal + hulppagina's · IT-Recht Kanzlei · easybill · Billbee · GPSR/OSS-gidsen 2026 (zie .md-rapport voor links)</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </footer>
+</div>
+</body>
+<

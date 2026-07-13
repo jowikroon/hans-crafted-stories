@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Channable — veld-opschoonplan (troepvelden)</title>
+<style>
+  :root{ --blue:#1a5fb4; --ink:#1f2933; --mut:#5b6b7b; --line:#e2e8f0; --bg:#f4f6f9; --ok:#1f7a4d; --okbg:#eaf6ef; --del:#b02a2a; --delbg:#fdecec; --keep:#8a5a00; --keepbg:#fff3e0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); padding:20px; line-height:1.5; }
+  .wrap{ max-width:1000px; margin:0 auto; }
+  h1{ font-size:19px; font-weight:700; } .lead{ font-size:12.5px; color:var(--mut); margin-top:4px; }
+  .kpi{ display:flex; gap:12px; flex-wrap:wrap; margin:14px 0; }
+  .kpi .box{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:11px 15px; flex:1; min-width:150px; }
+  .kpi .n{ font-size:22px; font-weight:700; color:#102a43; } .kpi .l{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.3px; }
+  .kpi .box.red .n{ color:var(--del); }
+  h2{ font-size:14px; color:#102a43; margin:20px 0 8px; padding:3px 8px; background:#eef2f7; border-left:3px solid var(--blue); border-radius:3px; }
+  table{ width:100%; border-collapse:collapse; margin-top:6px; font-size:12.5px; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th,td{ text-align:left; padding:8px 11px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; background:#f7f9fc; }
+  td.n{ text-align:right; font-weight:700; color:#102a43; white-space:nowrap; }
+  code{ font-family:"Consolas",monospace; font-size:11.5px; background:#eef2f7; color:#0b3d6b; padding:1px 5px; border-radius:4px; }
+  .pill{ display:inline-block; font-size:10.5px; font-weight:700; border-radius:20px; padding:1px 8px; }
+  .pill.del{ background:var(--delbg); color:var(--del); } .pill.keep{ background:var(--keepbg); color:var(--keep); } .pill.ok{ background:var(--okbg); color:var(--ok); }
+  .note{ font-size:12px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid var(--blue); border-radius:7px; padding:10px 13px; margin-top:12px; }
+  .note.warn{ background:#fff8ec; border-color:#f3d9a6; border-left-color:#d98a1a; color:#7a4b0a; }
+  .note b{ color:#12508f; }
+  ol{ margin:6px 0 0 20px; font-size:12.5px; } ol li{ margin-bottom:5px; }
+  footer{ margin-top:18px; font-size:10.5px; color:#94a3b8; border-top:1px solid var(--line); padding-top:6px; }
+</style></head>
+<body><div class="wrap">
+<h1>Channable — veld-opschoonplan <span style="color:#1a5fb4">· troepvelden</span></h1>
+<p class="lead">Gemeten over <b>270 items</b> uit alle 18 categorieën. Van de <b>488 velden</b> zijn er <b>369 altijd leeg</b>. Doel: de ballast weg zonder de velden te raken die wél gebruikt worden (kanaal-output + andere kanalen).</p>
+
+<div class="kpi">
+  <div class="box"><div class="n">488</div><div class="l">velden totaal</div></div>
+  <div class="box"><div class="n">119</div><div class="l">in gebruik</div></div>
+  <div class="box red"><div class="n">342</div><div class="l">verwijder-kandidaten</div></div>
+  <div class="box"><div class="n">27</div><div class="l">leeg maar behouden</div></div>
+</div>
+
+<h2>1 · Behouden — niet verwijderen (leeg in master, maar wél in gebruik)</h2>
+<table>
+  <tr><th>Veld(en)</th><th>Waarom behouden</th></tr>
+  <tr><td><code>ebay_title_de</code>, <code>ebay_omschrijving_de</code></td><td>Output van je eBay-kanaalregels (leeg in master, gevuld op kanaal).</td></tr>
+  <tr><td><code>einbauposition_de</code></td><td>Wordt nu gevuld door de nieuwe Einbauposition-regel.</td></tr>
+  <tr><td><code>ebay_description_de</code>, <code>categories_clean_de</code></td><td>Reserve-/toekomstvelden — laat staan tot besluit.</td></tr>
+  <tr><td><code>amazon_*</code> (8), <code>bol_*</code> (4), <code>beslist_*</code>, google-velden (22 totaal)</td><td>Voeden je <b>andere kanalen</b> (Amazon NL, Bol, Google). Leeg voor auto-parts, maar niet verwijderen zonder die kanalen te checken.</td></tr>
+</table>
+
+<h2>2 · Opruimen — per batch (342 velden)</h2>
+<table>
+  <tr><th>Batch</th><th>Voorbeelden</th><th class="n">Aantal</th><th>Status</th></tr>
+  <tr><td>Afbeeldingsslots</td><td><code>additional_image_1..7</code>, <code>additional_image_labels</code></td><td class="n">19</td><td><span class="pill del">verwijder</span></td></tr>
+  <tr><td><code>attributes_*</code> (ongebruikte item-specifics)</td><td><code>attributes_afwerking</code>, <code>attributes_boutpatroon</code>, <code>attributes_kleur</code></td><td class="n">24</td><td><span class="pill del">verwijder*</span></td></tr>
+  <tr><td>Prijs/voorraad ongebruikt</td><td><code>allow_backorders</code>, <code>bundle_price_type</code>, <code>min_order_qty</code></td><td class="n">21</td><td><span class="pill del">verwijder</span></td></tr>
+  <tr><td>API/systeem/Magento-ruis</td><td><code>api_error_code</code>, <code>approved_at</code>, <code>attribute_set_id</code>, <code>active_category_ids</code></td><td class="n">15</td><td><span class="pill del">verwijder</span></td></tr>
+  <tr><td>GPSR ongebruikt</td><td>lege <code>gpsr_*</code>-varianten</td><td class="n">13</td><td><span class="pill del">verwijder</span></td></tr>
+  <tr><td>Verzending/gewicht ongebruikt</td><td><code>package_weight_grams</code>, <code>shipping_profile_*</code></td><td class="n">8</td><td><span class="pill del">verwijder</span></td></tr>
+  <tr><td>Compat/voertuig ongebruikt</td><td><code>compatibility_description</code>, <code>car_models_top2</code>, <code>car_brands_count</code></td><td class="n">7</td><td><span class="pill del">verwijder</span></td></tr>
+  <tr><td>Bundle/set-velden</td><td><code>bundle_values</code>, <code>bundle_sku_type</code></td><td class="n">6</td><td><span class="pill del">verwijder</span></td></tr>
+  <tr><td>Overige losse velden</td><td><code>aantal_items</code>, <code>abs_ref</code>, <code>adult</code>, <code>age_group</code>, <code>brake_system</code>, <code>breedte_mm</code>…</td><td class="n">229</td><td><span class="pill del">verwijder na check</span></td></tr>
+</table>
+<p class="lead" style="margin-top:6px">* <code>attributes_*</code>: als je later een item-specific hieruit tóch wilt mappen, houd díe ene. De rest kan weg.</p>
+
+<h2>3 · Methode — waar en hoe</h2>
+<div class="note"><b>Belangrijk:</b> de meeste lege velden zijn <b>import-kolommen</b> (Google Sheets + Magento-attributen). Die verwijder je bij de <b>bron</b>, niet in Channable — anders komen ze bij de volgende import terug.</div>
+<ol>
+  <li><b>Google Sheets</b> ("Aanvullende productdata ABS" e.a.): verwijder de altijd-lege kolommen uit het sheet.</li>
+  <li><b>Magento-import</b> (koppeling 750543): beperk de geïmporteerde attributen tot wat je gebruikt (via de Channable-Magento-extensie / attribuutselectie — Atvise).</li>
+  <li><b>Channable-velden</b> (Setup → Velden): alleen de <i>custom/regel-velden</i> die niet uit een import komen, verwijder je hier direct.</li>
+  <li>Doe het <b>per batch</b> (bovenste tabel), en draai daarna één import + preview om te bevestigen dat er niets kapot ging.</li>
+</ol>
+<div class="note warn"><b>Niet in één klap:</b> velden zijn project-breed (alle kanalen). Verwijder per batch, begin met de veiligste (afbeeldingsslots, api/systeem, bundle), en check na elke batch de kanaal-preview.</div>
+
+<footer>CCP × A.B.S. · Channable project 314525 · steekproef 270 items / 18 categorieën · 2026-07-08 · verwijder-kandidaten = altijd leeg in steekproef; bevestig per batch vóór verwijderen.</footer>
+</div></body></html>

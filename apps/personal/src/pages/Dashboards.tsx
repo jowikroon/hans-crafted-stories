@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BarChart3, Package, TrendingUp, Search, Euro, Percent, Gauge, Settings2, LogIn, Lock,
+  Paperclip, FileText, Download, CalendarDays, HardDrive,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import coworkAttachments from "@/data/coworkAttachments.json";
 
 /* ─────────────────────────────────────────────────────────────
    /dashboards — klant-dashboards achter login (profielmenu).
@@ -22,6 +24,7 @@ const dt = (s: unknown) => (s ? new Date(String(s)).toLocaleDateString("nl-NL", 
 
 const SECTIONS = [
   { id: "overzicht", label: "Overzicht", icon: BarChart3 },
+  { id: "attachments", label: "Attachments", icon: Paperclip },
   { id: "orders", label: "Orders", icon: Package },
   { id: "verkoop", label: "Verkoopresultaten", icon: TrendingUp },
   { id: "product", label: "Productinzichten", icon: Search },
@@ -36,6 +39,13 @@ type SectionId = (typeof SECTIONS)[number]["id"];
 interface Data {
   orders: Row[]; lineItems: Row[]; transactions: Row[]; payouts: Row[];
   traffic: Row[]; alerts: Row[]; econ: Row[]; fixed: Row[]; listings: number;
+}
+
+interface Attachment {
+  name: string;
+  size: number;
+  modified: string;
+  url: string;
 }
 
 const EMPTY_HINT =
@@ -56,6 +66,65 @@ const Empty = ({ what }: { what: string }) => (
   </div>
 );
 
+const attachmentCategory = (name: string) => {
+  const lower = name.toLowerCase();
+  if (lower.includes("ceo") || lower.includes("rapport") || lower.includes("dossier")) return "Rapporten";
+  if (lower.includes("blueprint") || lower.includes("playbook") || lower.includes("roadmap") || lower.includes("checklist")) return "Blueprints & checklists";
+  if (lower.includes("returnless") || lower.includes("retour")) return "Retourflow";
+  if (lower.includes("channable") || lower.includes("magento") || lower.includes("item-specifics") || lower.includes("veld")) return "Channable & Magento";
+  if (lower.includes("top400") || lower.endsWith(".xlsx") || lower.endsWith(".txt")) return "Data exports";
+  return "Overig";
+};
+
+const attachmentVersionKey = (name: string) => {
+  const ext = name.split(".").pop()?.toLowerCase() ?? "";
+  const stem = name.replace(/\.[^.]+$/, "").toLowerCase()
+    .replace(/\b20\d{2}[-_. ]?\d{2}[-_. ]?\d{2}\b/g, "")
+    .replace(/\bv\d+\b/g, "")
+    .replace(/\blive\b/g, "")
+    .replace(/[-_. ]+/g, " ")
+    .trim();
+  return `${stem}.${ext}`;
+};
+
+const formatBytes = (bytes: number) => {
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${bytes} B`;
+};
+
+const formatModified = (value: string) =>
+  new Date(value).toLocaleString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+const allAttachments = coworkAttachments as Attachment[];
+
+const latestAttachments = allAttachments
+  .reduce<Record<string, Attachment>>((acc, file) => {
+    const key = attachmentVersionKey(file.name);
+    const current = acc[key];
+    if (!current) {
+      acc[key] = file;
+      return acc;
+    }
+    const fileTime = new Date(file.modified).getTime();
+    const currentTime = new Date(current.modified).getTime();
+    const newerAndNotSmaller = fileTime >= currentTime && file.size >= current.size;
+    const newerAndCloseInSize = fileTime > currentTime && file.size >= current.size * 0.8;
+    if (newerAndNotSmaller || newerAndCloseInSize || (fileTime === currentTime && file.size > current.size)) acc[key] = file;
+    return acc;
+  }, {});
+
+const sortedAttachments = Object.values(latestAttachments)
+  .sort((a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime() || b.size - a.size);
+
+const attachmentGroups = sortedAttachments
+  .reduce<Record<string, Attachment[]>>((acc, file) => {
+    const category = attachmentCategory(file.name);
+    acc[category] = acc[category] ?? [];
+    acc[category].push(file);
+    return acc;
+  }, {});
+
 const Tbl = ({ head, rows }: { head: string[]; rows: (string | number)[][] }) => (
   <div className="overflow-x-auto rounded-lg border border-black/10 dark:border-white/10">
     <table className="w-full text-sm">
@@ -72,6 +141,42 @@ const Tbl = ({ head, rows }: { head: string[]; rows: (string | number)[][] }) =>
         ))}
       </tbody>
     </table>
+  </div>
+);
+
+const AttachmentsPanel = () => (
+  <div className="space-y-5">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Card k="Nieuwste bestand" v={sortedAttachments[0]?.name ?? "Geen"} s={sortedAttachments[0] ? formatModified(sortedAttachments[0].modified) : undefined} />
+      <Card k="Unieke documenten" v={sortedAttachments.length} s={`${allAttachments.length} bronbestanden`} />
+      <Card k="Categorieen" v={Object.keys(attachmentGroups).length} />
+      <Card k="Map" v="CCP eBay DE" s="cowork attachments" />
+    </div>
+
+    {Object.entries(attachmentGroups).map(([category, files]) => (
+      <section key={category} className="space-y-2">
+        <h2 className="text-sm font-semibold text-[#15140F] dark:text-[#F5F1E6]">{category}</h2>
+        <div className="overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
+          {files.map((file) => (
+            <a
+              key={file.url}
+              href={file.url}
+              target="_blank"
+              rel="noreferrer"
+              className="grid gap-3 border-t border-black/[0.06] bg-[#FBF8F0] px-4 py-3 text-sm transition-colors first:border-t-0 hover:bg-[#E5DFCE]/70 md:grid-cols-[1fr_auto_auto_auto] dark:border-white/[0.06] dark:bg-white/5 dark:hover:bg-white/10"
+            >
+              <span className="flex min-w-0 items-center gap-2 font-medium text-[#15140F] dark:text-[#F5F1E6]">
+                <FileText size={15} className="shrink-0 text-[#7E7A6F]" />
+                <span className="truncate">{file.name}</span>
+              </span>
+              <span className="inline-flex items-center gap-1 text-xs text-[#7E7A6F]"><CalendarDays size={13} /> {formatModified(file.modified)}</span>
+              <span className="inline-flex items-center gap-1 text-xs text-[#7E7A6F]"><HardDrive size={13} /> {formatBytes(file.size)}</span>
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-[#15140F] dark:text-[#F5F1E6]"><Download size={13} /> Open</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
   </div>
 );
 
@@ -206,9 +311,10 @@ const Dashboards = () => {
         <p className="mb-5 text-sm text-[#7E7A6F]">ConnectCarParts · eBay DE · live uit Supabase</p>
 
         {err && <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Fout bij laden: {err}</p>}
-        {!data && !err && <p className="text-sm text-[#7E7A6F]">Laden…</p>}
+        {section === "attachments" && <AttachmentsPanel />}
+        {section !== "attachments" && !data && !err && <p className="text-sm text-[#7E7A6F]">Laden…</p>}
 
-        {data && agg && (
+        {section !== "attachments" && data && agg && (
           <>
             {section === "overzicht" && (
               <div className="space-y-5">

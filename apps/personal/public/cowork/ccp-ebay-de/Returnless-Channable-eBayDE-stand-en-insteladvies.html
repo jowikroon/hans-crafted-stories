@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8">
+<title>Returnless Channable eBay DE — stand & insteladvies</title><style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; font-size:9.6px; }
+  .sheet{ width:210mm; min-height:297mm; padding:12mm 12mm 9mm; margin:0 auto; page-break-after:always; }
+  .sheet:last-child{ page-break-after:auto; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:10px; }
+  header h1{ font-size:15.5px; font-weight:700; }
+  header .sub{ font-size:8.2px; color:#52606d; margin-top:2px; }
+  h2{ font-size:10px; text-transform:uppercase; letter-spacing:.4px; color:#102a43; margin:12px 0 5px; padding:3px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  .lead{ border-left:4px solid #1a5fb4; background:#eef5ff; border-radius:7px; padding:8px 11px; margin-bottom:10px; font-size:9px; color:#1c3d5f; } .lead b{ color:#12406e; }
+  table{ width:100%; border-collapse:collapse; margin-top:3px; }
+  th,td{ text-align:left; font-size:8.5px; padding:4px 7px; border-bottom:1px solid #e7ecf2; vertical-align:top; line-height:1.35; }
+  th{ font-size:7px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  td.k{ font-weight:700; color:#102a43; width:22%; }
+  .ok{ color:#1f7a44; font-weight:700; } .chg{ color:#a52222; font-weight:700; }
+  .tag{ display:inline-block; font-size:7px; font-weight:700; padding:1px 6px; border-radius:8px; }
+  .t-ok{ background:#eaf6ef; color:#14532d; } .t-chg{ background:#fdecec; color:#8f1f1f; } .t-ver{ background:#fff3e0; color:#8a5a00; }
+  .note{ font-size:8.4px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid #1a5fb4; border-radius:6px; padding:6px 10px; margin-top:7px; } .note b{ color:#12508f; }
+  .note.warn{ color:#7a1f1f; background:#fdecec; border-color:#f0cccc; border-left-color:#d64545; } .note.warn b{ color:#a52222; }
+  .path{ font-family:"Consolas",monospace; font-size:7.6px; color:#12508f; background:#eef5ff; border:1px solid #cfe0f7; border-radius:4px; padding:1px 5px; }
+  .foot{ margin-top:10px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7px;padding:2px 8px;border-radius:8px;font-weight:600;}
+  ul{ margin-left:14px; } li{ font-size:8.6px; line-height:1.5; }
+</style></head><body>
+
+<!-- PAGINA 1 : HUIDIGE STAND -->
+<div class="sheet">
+  <header>
+    <h1>Returnless &times; Channable (eBay DE) &mdash; stand &amp; exact insteladvies</h1>
+    <div class="sub">CCP &#183; live uitgelezen in het Returnless-paneel (ingelogd als Luca) + gekruist met de officiële Returnless-handleiding &#183; 2026-07-10</div>
+  </header>
+
+  <div class="lead"><b>Legenda:</b> <span class="tag t-ok">staat goed</span> <span class="tag t-chg">aanpassen</span> <span class="tag t-ver">live bevestigen</span>. De carriers- en retourformulier-pagina's blokkeerden in mijn sessie; die punten staan als "live bevestigen".</div>
+
+  <h2>1 &#183; Integraties in Returnless (live gelezen)</h2>
+  <table>
+    <tr><th>Integratie</th><th>Rol</th><th>Actie</th></tr>
+    <tr><td class="k">Demo</td><td>Demo-integratie</td><td>laten</td></tr>
+    <tr><td class="k">Magento 2 - Production (CCP)</td><td>Werkende order-bron (webshop, PostNL-retouren)</td><td><span class="tag t-ok">behouden</span></td></tr>
+    <tr><td class="k">Magento 2 - Development (CCP)</td><td>Secundaire fallback die 82x faalde ("could not fetch sales order: Development")</td><td><span class="tag t-chg">verwijderen / loskoppelen</span></td></tr>
+    <tr><td class="k">Channable - CCP eBay DE</td><td><b>Nieuw</b> ("eBay DE retour koppeling")</td><td><span class="tag t-ver">instellen (hieronder)</span></td></tr>
+  </table>
+
+  <h2>2 &#183; Channable-integratie "CCP eBay DE" &mdash; huidige stand vs advies</h2>
+  <table>
+    <tr><th>Instelling</th><th>Nu</th><th>Advies</th><th>Waarom</th></tr>
+    <tr><td class="k">Integratie inschakelen</td><td>AAN</td><td><span class="tag t-ok">AAN</span></td><td>Correct.</td></tr>
+    <tr><td class="k">Naam / Beschrijving</td><td>CCP eBay DE / eBay DE retour koppeling</td><td>laten</td><td>Duidelijk.</td></tr>
+    <tr><td class="k">Validatiemethode</td><td>E-mailadres</td><td><span class="tag t-chg">Postcode</span></td><td><b>Belangrijk:</b> de eBay-koper-e-mail is gemaskeerd (@members.ebay.com). De klant kent dat adres niet en zijn eigen e-mail matcht niet met de order. Postcode matcht wel op het verzendadres. Zie ook nog te testen.</td></tr>
+    <tr><td class="k">Shipping status filter</td><td>None</td><td><span class="tag t-ok">None laten</span></td><td>CCP-orders staan op "manual/processing", niet op "Shipped". Een filter op een verzendstatus zou geen enkele order vinden.</td></tr>
+    <tr><td class="k">Company ID</td><td>101300</td><td><span class="tag t-ok">correct</span></td><td>Klopt met project.</td></tr>
+    <tr><td class="k">Project ID</td><td>314525</td><td><span class="tag t-ok">correct</span></td><td>Klopt met eBay DE-project.</td></tr>
+    <tr><td class="k">API token</td><td>ingevuld</td><td><span class="tag t-ver">Opslaan/verify</span></td><td>Klik Opslaan zodat Returnless de koppeling verifieert.</td></tr>
+    <tr><td class="k">Importer inschakelen</td><td>UIT</td><td><span class="tag t-ok">UIT laten</span></td><td>eBay maakt geen retouren aan in Channable. De importer is bedoeld voor kanalen die dat wél doen (bv. bol). Voor eBay gebruik je "Search order" (klant meldt zelf).</td></tr>
+    <tr><td class="k">Importeren naar formulier / Default status / Kanaalfilter / Status-mapping</td><td>leeg / niet gemapt</td><td>n.v.t. zolang importer uit</td><td>Pas invullen als je later bol via Channable wilt importeren (dan: kanaalfilter = bol, statussen mappen).</td></tr>
+  </table>
+  <div class="note"><b>Model voor eBay DE:</b> "eigen retourformulier" (klant zoekt zijn order op) &mdash; niet de importer. Dat is precies wat je nu hebt staan (Search order ingevuld, importer uit). De enige echte wijziging op deze pagina is <b>Validatiemethode &rarr; Postcode</b>.</div>
+
+  <div class="foot"><span>Bron: live Returnless-integratiepagina (nZBA2...) + Returnless product guide (Channable) &#183; 2026-07-10</span><span class="pill">CCP &#183; pagina 1/2</span></div>
+</div>
+
+<!-- PAGINA 2 : RETOURFORMULIER + CARRIER + VOORWAARDE -->
+<div class="sheet">
+  <header>
+    <h1>Wat nog instellen &mdash; retourformulier, carrier, opruimen, voorwaarde</h1>
+    <div class="sub">CCP &#183; de stappen buiten de integratiepagina + de harde voorwaarde</div>
+  </header>
+
+  <h2>3 &#183; Retourformulier koppelen <span style="font-weight:400;color:#8a5a00">(live bevestigen)</span></h2>
+  <div class="note"><b>Waar:</b> Instellingen &rarr; Retourformulieren &rarr; open het formulier &rarr; tab <b>Integraties</b>. Er is nu één formulier: "Retourformulier".</div>
+  <ul>
+    <li><b>Default search integration</b> op het eBay DE-formulier = <b>Channable - CCP eBay DE</b>. Hiermee wordt "Search order" actief voor dit formulier.</li>
+    <li>Zet aan: <b>Finalize return</b> (retour "accepted" in Channable &rarr; refund via eBay).</li>
+    <li><b>Keuze:</b> gebruik hiervoor bij voorkeur een <b>apart formulier voor eBay DE</b> (Duitse taal, DE&rarr;NL label), zodat de bestaande webshop-"Retourformulier" op Magento blijft staan. Eén formulier kan maar één default search integration hebben.</li>
+    <li><b>Let op (doc-bevestigd):</b> Channable levert geen productafbeeldingen via de API &rarr; in dit formulier zie je geen productfoto's. Functioneel geen probleem.</li>
+  </ul>
+
+  <h2>4 &#183; Carrier / retourlabel DE&rarr;NL <span style="font-weight:400;color:#8a5a00">(live bevestigen)</span></h2>
+  <div class="note"><b>Waar:</b> Instellingen &rarr; <span class="path">Verzendcontracten</span>. PostNL draait al voor NL-retouren.</div>
+  <ul>
+    <li>Voeg <b>DPD</b> (of DHL Paket Retoure) toe voor DE&rarr;NL als die er nog niet is. Eigen DPD-tarief of dat van Returnless.</li>
+    <li>Retouradres (bestemming) = <b>ABS NL-magazijn</b>.</li>
+    <li>Landregel op het eBay DE-formulier: <b>Duitse koper &rarr; DPD DE-label naar NL</b>; NL-koper &rarr; PostNL.</li>
+  </ul>
+
+  <h2>5 &#183; Opruimen &mdash; Magento 2 - Development</h2>
+  <div class="note warn"><b>Doen:</b> verwijder of ontkoppel de integratie <b>Magento 2 - Development</b> als order-bron. Dit is de secundaire koppeling die 82x faalde ("could not fetch sales order: Development"). Zo draaien order-lookups alleen op Production en verdwijnen de valse fouten. Bevestig eerst dat hij niet als default search op een actief formulier staat.</div>
+
+  <h2>6 &#183; Harde voorwaarde &mdash; buiten Returnless</h2>
+  <div class="note warn"><b>De eBay DE-order moet eerst schoon in Magento/Channable landen.</b> Zolang de storeview/landcode de import breekt (Allow Countries DE ontbreekt, land als naam i.p.v. ISO), staat de order niet in het systeem en vindt de "Search order" hem niet. Volgorde: eerst order-import fixen (DE toestaan + ISO-landcode + storeview terug), dan pas retouren testen.</div>
+
+  <h2>7 &#183; Validatie (test na instellen)</h2>
+  <ul>
+    <li>eBay DE-testorder landt schoon in Magento (144013xxx, geen platform_failure).</li>
+    <li>In het eBay DE-formulier: zoek de order op via <b>postcode</b> &rarr; order gevonden via Channable.</li>
+    <li>Retour aanmaken &rarr; label = DPD DE-ophaalpunt &rarr; NL-adres (niet PostNL).</li>
+    <li>NL-testretour &rarr; PostNL-label (landregel werkt).</li>
+    <li>"Mark as received" / Finalize &rarr; refund via eBay + status-sync.</li>
+    <li><span class="path">Instellingen &rarr; Integraties &rarr; Application logs</span>: geen nieuwe "could not fetch sales order: Development".</li>
+  </ul>
+
+  <div class="foot"><span>Advies gekruist met Returnless product guide (Channable-integratie: Search order, Return importer, Finalize return, Default search integration) &#183; 2026-07-10</span><span class="pill">CCP &#183; pagina 2/2</span></div>
+</div>
+</body></html>

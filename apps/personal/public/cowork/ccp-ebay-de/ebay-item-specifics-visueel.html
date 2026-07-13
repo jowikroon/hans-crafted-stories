@@ -1,0 +1,201 @@
+<!DOCTYPE html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eBay DE — Artikelmerkmale: koppeling & regel (nabouw)</title>
+<style>
+  :root{ --blue:#1a5fb4; --chip:#e7f0fb; --chipbd:#bcd6f5; --chiptx:#12508f; --ink:#1f2933; --mut:#5b6b7b; --line:#e2e8f0; --bg:#f4f6f9;
+         --ok:#1f7a4d; --okbg:#eaf6ef; --link:#8a5a00; --linkbg:#fff3e0; --rule:#7a3fb4; --rulebg:#f3ecfb; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); padding:18px; line-height:1.5; }
+  .wrap{ max-width:1040px; margin:0 auto; }
+  header h1{ font-size:19px; font-weight:700; }
+  header p{ font-size:12.5px; color:var(--mut); margin-top:4px; }
+  .legend{ display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--mut); margin:12px 0; background:#fff; border:1px solid var(--line); border-radius:10px; padding:9px 12px; }
+  .pill{ display:inline-block; font-size:11px; font-weight:700; border-radius:20px; padding:1px 9px; }
+  .pill.ok{ background:var(--okbg); color:var(--ok); } .pill.link{ background:var(--linkbg); color:var(--link); } .pill.rule{ background:var(--rulebg); color:var(--rule); }
+
+  .filter{ display:flex; align-items:center; gap:8px; margin:14px 0; flex-wrap:wrap; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .filter b{ font-size:12px; color:var(--mut); }
+  .fbtn{ font:inherit; font-size:12.5px; padding:6px 13px; border:1px solid #cbd5e1; border-radius:20px; background:#fff; color:#334155; cursor:pointer; font-weight:600; }
+  .fbtn.on{ background:var(--blue); color:#fff; border-color:var(--blue); }
+
+  h2{ font-size:14px; color:#102a43; margin:20px 0 8px; padding:3px 8px; background:#eef2f7; border-left:3px solid var(--blue); border-radius:3px; }
+
+  /* rule nabouw */
+  .card{ background:#fff; border:1px solid var(--line); border-radius:11px; margin-top:12px; overflow:hidden; box-shadow:0 1px 2px rgba(16,42,67,.04); }
+  .card>.hd{ background:#eef2f7; border-bottom:1px solid var(--line); padding:9px 14px; font-weight:700; font-size:13px; color:#102a43; display:flex; align-items:center; gap:8px; }
+  .card>.hd .tag{ font-size:10.5px; font-weight:700; color:#12508f; background:var(--chip); border:1px solid var(--chipbd); border-radius:6px; padding:1px 7px; }
+  .card>.bd{ padding:13px 14px; }
+  .row{ display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px dashed #eef2f7; }
+  .row:last-child{ border-bottom:none; }
+  .lbl{ width:42px; flex:0 0 42px; font-weight:700; color:#334155; font-size:13px; padding-top:5px; }
+  .ctrls{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+  .drop{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid #cbd5e1; border-radius:7px; padding:5px 9px; font-size:12.5px; color:#102a43; }
+  .op{ background:#f1f5f9; border:1px solid #dbe3ec; border-radius:7px; padding:5px 9px; font-size:12.5px; color:#334155; }
+  .val{ background:#fff; border:1px solid #cbd5e1; border-radius:7px; padding:5px 10px; font-size:12.5px; color:#102a43; }
+  .combine{ margin-top:6px; background:#fbfdff; border:1px solid #dbe6f4; border-radius:9px; padding:11px 12px; }
+  .chip{ display:inline-flex; align-items:center; gap:5px; background:var(--chip); border:1px solid var(--chipbd); color:var(--chiptx); border-radius:7px; padding:2px 8px; font-size:12.5px; font-weight:600; margin:2px 3px 2px 0; }
+  .chip .ico{ font-size:10px; opacity:.8; }
+  .txt{ color:#243b53; font-size:12.5px; }
+  .cond{ color:#8a5a00; font-size:11px; font-style:italic; margin-top:6px; }
+  .ex{ font-size:12px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid var(--blue); border-radius:7px; padding:8px 11px; margin-top:10px; }
+  .ex b{ color:#12508f; }
+
+  /* attribute mapping cards */
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+  @media(max-width:760px){ .grid{ grid-template-columns:1fr; } }
+  .attr{ background:#fff; border:1px solid var(--line); border-radius:11px; padding:12px 14px; box-shadow:0 1px 2px rgba(16,42,67,.04); }
+  .attr .top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .attr .ebn{ font-size:13.5px; font-weight:700; color:#102a43; }
+  .map{ display:flex; align-items:center; gap:8px; margin:9px 0 6px; font-size:12.5px; }
+  .arrow{ color:#94a3b8; font-weight:700; }
+  .src{ font-family:"Consolas",monospace; font-size:12px; background:#eef2f7; color:#0b3d6b; border-radius:6px; padding:2px 7px; }
+  .why{ font-size:12px; color:var(--mut); }
+  .exline{ font-size:12px; margin-top:7px; color:#243b53; }
+  .exline .q{ background:#f7faff; border:1px solid #e2ebf7; border-radius:6px; padding:2px 7px; font-weight:600; color:#12508f; }
+  .note{ font-size:12px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid var(--blue); border-radius:7px; padding:9px 12px; margin-top:12px; }
+  .note.warn{ background:#fff8ec; border-color:#f3d9a6; border-left-color:#d98a1a; color:#7a4b0a; }
+  .note b{ color:#12508f; }
+  .hidden{ display:none; }
+  footer{ margin-top:18px; font-size:10.5px; color:#94a3b8; border-top:1px solid #d9e2ec; padding-top:6px; }
+</style></head>
+<body><div class="wrap">
+<header>
+  <h1>eBay DE — Artikelmerkmale: koppeling & regel <span style="color:#1a5fb4">· nabouw</span></h1>
+  <p>Wat er nodig is om de belangrijke eBay-velden (Artikelmerkmale) te vullen. De meeste hoeven <b>geen regel</b> — de data zit al in een bestaand veld en moet je alleen <b>koppelen op de attribuut-pagina</b>. Eén veld (Einbauposition) heeft wél een kanaalregel gekregen. Kies bovenin de categorie om te zien wat van toepassing is.</p>
+</header>
+
+<div class="legend">
+  <span><span class="pill ok">✓ gevuld/gekoppeld</span> staat al goed</span>
+  <span><span class="pill link">🔗 te koppelen</span> data bestaat — alleen mappen op attribuut-pagina</span>
+  <span><span class="pill rule">🧩 regel</span> kanaalregel vult een veld (transform)</span>
+</div>
+
+<div class="filter">
+  <b>Categorie</b>
+  <button class="fbtn on" data-f="all" onclick="setF('all')">Alle</button>
+  <button class="fbtn" data-f="schijf" onclick="setF('schijf')">Remschijven</button>
+  <button class="fbtn" data-f="overig" onclick="setF('overig')">Overige onderdelen</button>
+</div>
+
+<!-- ============ EINBAUPOSITION REGEL ============ -->
+<h2>1 · Kanaalregel — Einbauposition <span style="font-weight:400;color:#7a4b0a;font-size:11px">(gebouwd)</span></h2>
+<div class="card">
+  <div class="hd">DE — Einbauposition (Achse + Seite) <span class="tag">doelveld: einbauposition_de</span> <span class="pill rule">🧩 regel</span></div>
+  <div class="bd">
+    <div class="row"><div class="lbl">Als</div><div class="ctrls">
+      <span class="drop"><span class="ico">▤</span> vooras_achteras_duits</span><span class="op">is gevuld</span>
+      <span class="txt">én</span><span class="drop"><span class="ico">▤</span> links_rechts</span><span class="op">is gevuld</span></div></div>
+    <div class="row"><div class="lbl">Dan</div><div class="ctrls"><span class="txt">neem</span><span class="drop"><span class="ico">▤</span> einbauposition_de</span><span class="txt">en</span><span class="op">combineer waarde</span></div></div>
+    <div class="combine">
+      <span class="chip"><span class="ico">▤</span>vooras_achteras_duits</span><span class="txt">"&nbsp;"</span><span class="chip"><span class="ico">▤</span>links_rechts</span>
+      <div class="cond">2e sectie: als er géén links/rechts is → alleen de as (bv. "Vorderachse"). Geen losse spaties.</div>
+    </div>
+    <div class="ex"><b>Voorbeelden (NL → titel):</b><br>
+      Remklauw 630252 (achteras, rechts) → <b>Hinterachse Rechts</b><br>
+      Remschijf 16880 (vooras, geen zijde) → <b>Vorderachse</b><br>
+      Draagarm 210016 (achteras, links) → <b>Hinterachse Links</b></div>
+    <div class="note">Koppel dit veld <code>einbauposition_de</code> op de eBay attribuut-pagina aan <b>Einbauposition</b>. Kopers filteren hierop en er komen minder verkeerde bestellingen binnen.</div>
+  </div>
+</div>
+
+<!-- ============ ATTRIBUUT-MAPPING ============ -->
+<h2>2 · Attribuut-koppelingen — géén regel nodig, alleen mappen</h2>
+<p class="txt" style="color:#5b6b7b;margin:2px 0 4px">Deze eBay-velden vul je door ze op de <b>attribuut-pagina</b> (Categorieën → Attributen) te koppelen aan een bestaand bronveld. De waarde is er al.</p>
+
+<div class="grid" id="grid">
+
+  <div class="attr" data-cat="all">
+    <div class="top"><span class="ebn">OE-/OEM-Referenznummer</span><span class="pill link">🔗 te koppelen</span></div>
+    <div class="map"><span class="txt">eBay-veld</span><span class="arrow">←</span><span class="src">oe_reference</span></div>
+    <div class="why">Veel kopers zoeken rechtstreeks op het OE-nummer van hun oude onderdeel.</div>
+    <div class="exline">Voorbeeld: <span class="q">1J0.615.301D, 1J0.615.301A</span></div>
+  </div>
+
+  <div class="attr" data-cat="all">
+    <div class="top"><span class="ebn">Vergleichsnummer</span><span class="pill link">🔗 te koppelen</span></div>
+    <div class="map"><span class="txt">eBay-veld</span><span class="arrow">←</span><span class="src">oe_reference</span></div>
+    <div class="why">Zelfde bron; vergroot de kans dat jouw listing bij een vergelijkingsnummer-zoekopdracht verschijnt.</div>
+    <div class="exline">Voorbeeld: <span class="q">4400100Q0D, 4400100Q0E</span></div>
+  </div>
+
+  <div class="attr" data-cat="all">
+    <div class="top"><span class="ebn">EAN</span><span class="pill link">🔗 te koppelen</span></div>
+    <div class="map"><span class="txt">eBay-veld</span><span class="arrow">←</span><span class="src">ean</span></div>
+    <div class="why">eBay-catalogusmatch en vertrouwenssignaal; soms verplicht.</div>
+    <div class="exline">Voorbeeld: <span class="q">8717109021424</span></div>
+  </div>
+
+  <div class="attr" data-cat="all">
+    <div class="top"><span class="ebn">Einbauposition</span><span class="pill ok">✓ via regel</span></div>
+    <div class="map"><span class="txt">eBay-veld</span><span class="arrow">←</span><span class="src">einbauposition_de</span></div>
+    <div class="why">Wordt gevuld door de kanaalregel hierboven. Koppelen en klaar.</div>
+    <div class="exline">Voorbeeld: <span class="q">Hinterachse Rechts</span></div>
+  </div>
+
+  <div class="attr" data-cat="all">
+    <div class="top"><span class="ebn">Hersteller</span><span class="pill ok">✓ gekoppeld</span></div>
+    <div class="map"><span class="txt">eBay-veld</span><span class="arrow">←</span><span class="src">brand</span></div>
+    <div class="why">Merk-dynamisch (ABS én Brembo). Staat al goed.</div>
+    <div class="exline">Voorbeeld: <span class="q">ABS</span> / <span class="q">Brembo</span></div>
+  </div>
+
+  <div class="attr" data-cat="all">
+    <div class="top"><span class="ebn">Herstellernummer</span><span class="pill ok">✓ gekoppeld</span></div>
+    <div class="map"><span class="txt">eBay-veld</span><span class="arrow">←</span><span class="src">sku</span></div>
+    <div class="why">Artikelnummer / MPN. Staat al goed.</div>
+    <div class="exline">Voorbeeld: <span class="q">16880</span></div>
+  </div>
+
+  <div class="attr" data-cat="schijf">
+    <div class="top"><span class="ebn">Außendurchmesser</span><span class="pill link">🔗 te koppelen</span></div>
+    <div class="map"><span class="txt">eBay-veld</span><span class="arrow">←</span><span class="src">buitendiameter</span></div>
+    <div class="why">Remschijven worden op maat gefilterd — belangrijk filter.</div>
+    <div class="exline">Voorbeeld: <span class="q">256 mm</span></div>
+  </div>
+
+  <div class="attr" data-cat="schijf">
+    <div class="top"><span class="ebn">Lochzahl / Lochkreis</span><span class="pill link">🔗 te koppelen</span></div>
+    <div class="map"><span class="txt">eBay-veld</span><span class="arrow">←</span><span class="src">bolt_pattern</span></div>
+    <div class="why">Steekmaat van de wielbouten; bepaalt of de schijf past.</div>
+    <div class="exline">Voorbeeld: <span class="q">5x100</span></div>
+  </div>
+
+  <div class="attr" data-cat="schijf">
+    <div class="top"><span class="ebn">Nabenbohrung</span><span class="pill link">🔗 te koppelen</span></div>
+    <div class="map"><span class="txt">eBay-veld</span><span class="arrow">←</span><span class="src">centreringdiameter</span></div>
+    <div class="why">Centreergat-diameter; onderdeel van de pasvorm-check.</div>
+    <div class="exline">Voorbeeld: <span class="q">65 mm</span></div>
+  </div>
+
+</div>
+
+<!-- ============ COMPATIBILITEIT ============ -->
+<h2>3 · Grootste hefboom — Fahrzeug-Kompatibilitätsliste</h2>
+<div class="card">
+  <div class="hd">Voertuig-compatibiliteit ("Passt zu meinem Fahrzeug?") <span class="pill link">🔗 nog niet gevoed</span></div>
+  <div class="bd">
+    <div class="txt" style="color:#243b53">Het veld <code>compatibility_k_type</code> is <b>leeg</b>. Terwijl we de volledige fitment-data wél in de feed hebben:</div>
+    <div class="combine" style="margin-top:8px">
+      <span class="chip"><span class="ico">▤</span>car_brands</span>
+      <span class="chip"><span class="ico">▤</span>car_models</span>
+      <span class="chip"><span class="ico">▤</span>from_year</span>
+      <span class="chip"><span class="ico">▤</span>to_year</span>
+      <div class="cond">Hieruit is de eBay-kompatibiliteitslijst op te bouwen (merk · model · bouwjaar). K-Typ (KBA) erbij is ideaal, maar merk/model/jaar volstaat om te starten.</div>
+    </div>
+    <div class="ex"><b>Voorbeeld (remschijf 16880):</b> past o.a. op SEAT IBIZA IV (6J5), AUDI, SKODA, VW — met bouwjaren uit <code>from_year</code>/<code>to_year</code>.</div>
+    <div class="note warn"><b>Waarom #1:</b> de meeste auto-onderdeel-kopers filteren op hun eigen auto. Zonder compatibiliteitslijst val je uit die zoekresultaten en krijg je meer retouren. Dit is een aparte, grotere klus dan de koppelingen hierboven.</div>
+  </div>
+</div>
+
+<footer>CCP × A.B.S. · eBay DE (kanaal 159122) · nabouw item-specifics + Einbauposition-regel · voorbeelden uit live feed-data 2026-07-08 · Uitvoeren nog niet gedaan.</footer>
+</div>
+<script>
+function setF(f){
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.toggle('on', b.dataset.f===f));
+  document.querySelectorAll('#grid .attr').forEach(a=>{
+    const c=a.dataset.cat;
+    const show = f==='all' || c==='all' || c===f;
+    a.classList.toggle('hidden', !show);
+  });
+}
+</script>
+</body></html>

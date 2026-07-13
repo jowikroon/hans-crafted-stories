@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Channable import-regels — attribuutverrijking (nabouw)</title>
+<style>
+  :root{ --blue:#1a5fb4; --chip:#e7f0fb; --chipbd:#bcd6f5; --chiptx:#12508f; --ink:#1f2933; --mut:#5b6b7b; --line:#e2e8f0; --bg:#f4f6f9; --gr:#eaf6ef; --grbd:#bfe4cf; --grtx:#14532d; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); padding:18px; line-height:1.5; }
+  .wrap{ max-width:1000px; margin:0 auto; }
+  header h1{ font-size:18px; font-weight:700; }
+  header p{ font-size:12px; color:var(--mut); margin-top:3px; }
+  .filter{ display:flex; align-items:center; gap:10px; margin:14px 0; flex-wrap:wrap; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .filter label{ font-size:12px; color:var(--mut); font-weight:600; }
+  .filter select{ font:inherit; font-size:14px; padding:7px 12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#102a43; font-weight:600; }
+  .filter .hint{ font-size:11px; color:var(--mut); }
+  .rulehead{ display:flex; align-items:center; gap:10px; margin:14px 0 4px; }
+  .rulehead .dot{ width:8px;height:8px;border-radius:50%;background:#7c3aed; }
+  .rulehead .name{ font-size:15px; font-weight:700; color:#102a43; }
+  .rulehead .gate{ font-size:11px; background:#efeaff; color:#4c1d95; border:1px solid #d8ccf5; border-radius:20px; padding:1px 9px; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:11px; margin-top:10px; overflow:hidden; box-shadow:0 1px 2px rgba(16,42,67,.04); }
+  .card > .hd{ background:#eef2f7; border-bottom:1px solid var(--line); padding:9px 14px; font-weight:700; font-size:13px; color:#102a43; display:flex; align-items:center; gap:8px;}
+  .card > .hd .tag{ font-size:10.5px; font-weight:700; color:#12508f; background:var(--chip); border:1px solid var(--chipbd); border-radius:6px; padding:1px 7px;}
+  .card > .hd .tag.stat{ color:var(--grtx); background:var(--gr); border-color:var(--grbd); }
+  .card > .bd{ padding:12px 14px; }
+  .items{ font-size:11px; color:#8aa0b6; margin-bottom:6px; }
+  .row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px dashed #eef2f7; flex-wrap:wrap; }
+  .row:last-child{ border-bottom:none; }
+  .lbl{ width:44px; flex:0 0 44px; font-weight:700; color:#334155; font-size:13px; }
+  .drop{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid #cbd5e1; border-radius:7px; padding:5px 9px; font-size:12.5px; color:#102a43; }
+  .drop .fi{ color:var(--blue); font-size:11px; }
+  .op{ background:#f1f5f9; border:1px solid #dbe3ec; border-radius:7px; padding:5px 9px; font-size:12.5px; color:#334155; }
+  .chip{ display:inline-flex; align-items:center; gap:5px; background:var(--chip); border:1px solid var(--chipbd); color:var(--chiptx); border-radius:7px; padding:3px 9px; font-size:12.5px; font-weight:600; }
+  .chip .ico{ font-size:10px; opacity:.8; }
+  .statval{ background:var(--gr); border:1px solid var(--grbd); color:var(--grtx); border-radius:7px; padding:3px 10px; font-size:12.5px; font-weight:700; }
+  .txt{ color:#243b53; font-size:12.5px; }
+  .cond{ color:#6b4e00; font-size:11px; font-style:italic; margin-top:6px; }
+  .note{ font-size:11.5px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid var(--blue); border-radius:7px; padding:9px 12px; margin-top:12px; }
+  .note b{ color:#12508f; }
+  .note.warn{ background:#fff8ec; border-color:#f3d9a6; border-left-color:#d98a1a; color:#7a4b0a; }
+  .note.warn b{ color:#b45309; }
+  footer{ margin-top:18px; font-size:10.5px; color:#94a3b8; }
+  .hidden{ display:none; }
+  .legend{ font-size:11.5px; color:var(--mut); margin:6px 0; }
+  .legend .chip,.legend .statval{ font-size:10.5px; padding:1px 7px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Channable import-regels — attribuutverrijking <span style="color:#7c3aed">· nabouw-mockup</span></h1>
+    <p>Import-regels vullen velden <b>één keer</b> op projectniveau → beschikbaar voor eBay, Bol én Amazon. Kies bovenin de set; alleen die regels zijn zichtbaar.</p>
+  </header>
+
+  <div class="legend">
+    <span class="chip"><span class="ico">▤</span>veld</span> = kopieer bestaand veld &nbsp;·&nbsp; <span class="statval">"Nein"</span> = vaste (statische) waarde ("plaats waarde")
+  </div>
+
+  <div class="filter">
+    <label for="set">Regelset</label>
+    <select id="set" onchange="show(this.value)">
+      <option value="gen">Generiek — statische defaults (alle producten)</option>
+      <option value="blok">Remblokken — attribuutverrijking</option>
+      <option value="map">Attribuut-mapping (kanaal-Opbouw, ter referentie)</option>
+    </select>
+    <span class="hint">· project 314525 · import-niveau (gedeeld over kanalen)</span>
+  </div>
+
+  <!-- GENERIEK -->
+  <section id="gen">
+    <div class="rulehead"><span class="dot"></span><span class="name">Import — statische defaults (alle producten)</span><span class="gate">import-regel · geen conditie</span></div>
+    <div class="card"><div class="hd">Regel — Oldtimer-Teil <span class="tag stat">statisch</span></div><div class="bd">
+      <div class="items">Alle items</div>
+      <div class="row"><div class="lbl">Dan</div><span class="txt">neem</span><span class="drop"><span class="ico">▤</span> ebay_oldtimer_teil</span><span class="txt">en</span><span class="op">plaats waarde</span><span class="statval">Nein</span></div>
+      <div class="cond">Moderne OE-vervangingsonderdelen → nooit "oldtimer".</div>
+    </div></div>
+    <div class="card"><div class="hd">Regel — Tuning- & Styling-Teil <span class="tag stat">statisch</span></div><div class="bd">
+      <div class="items">Alle items</div>
+      <div class="row"><div class="lbl">Dan</div><span class="txt">neem</span><span class="drop"><span class="ico">▤</span> ebay_tuning_teil</span><span class="txt">en</span><span class="op">plaats waarde</span><span class="statval">Nein</span></div>
+      <div class="cond">OE-kwaliteit, geen tuning/styling.</div>
+    </div></div>
+    <div class="note">Deze twee gelden voor élke categorie en élk kanaal → zet ze zonder conditie op importniveau. Scheelt handwerk per categorie.</div>
+  </section>
+
+  <!-- REMBLOKKEN -->
+  <section id="blok" class="hidden">
+    <div class="rulehead"><span class="dot"></span><span class="name">Import — Remblokken (Bremsbeläge) attribuutverrijking</span><span class="gate">import-regel · gegate op categorie</span></div>
+    <div class="card"><div class="hd">Conditie voor alle regels hieronder</div><div class="bd">
+      <div class="row"><div class="lbl">Als</div><span class="drop"><span class="ico">▤</span><span class="fi">categories_clean</span></span><span class="op">bevat</span><span class="statval" style="background:#fff;border-color:#cbd5e1;color:#102a43">remblokken</span></div>
+    </div></div>
+    <div class="card"><div class="hd">Regel — Anzahl Pro Packung <span class="tag stat">statisch</span></div><div class="bd">
+      <div class="row"><div class="lbl">Dan</div><span class="txt">neem</span><span class="drop"><span class="ico">▤</span> ebay_anzahl_pro_packung</span><span class="txt">en</span><span class="op">plaats waarde</span><span class="statval">4</span></div>
+      <div class="cond">Bremsbelagsatz voor één as = 4 belägen. Bevestig dat al je blok-SKU's assets zijn.</div>
+    </div></div>
+    <div class="card"><div class="hd">Regel — Im Lieferumfang Enthalten <span class="tag stat">statisch</span></div><div class="bd">
+      <div class="row"><div class="lbl">Dan</div><span class="txt">neem</span><span class="drop"><span class="ico">▤</span> ebay_lieferumfang</span><span class="txt">en</span><span class="op">plaats waarde</span><span class="statval">1 Bremsbelagsatz (4 Beläge)</span></div>
+    </div></div>
+    <div class="card"><div class="hd">Regel — Oe/OEM Referenznummer(n) <span class="tag">kopieer veld</span></div><div class="bd">
+      <div class="row"><div class="lbl">Dan</div><span class="txt">neem</span><span class="drop"><span class="ico">▤</span> ebay_oe_referenz</span><span class="txt">en</span><span class="op">kopieer waarde van</span><span class="chip"><span class="ico">▤</span>oe_reference</span></div>
+      <div class="cond">De rijkste blok-data — dé zoekterm voor kopers. Zeker doen.</div>
+    </div></div>
+    <div class="card"><div class="hd">Regel — Vergleichsnummer <span class="tag">kopieer veld</span></div><div class="bd">
+      <div class="row"><div class="lbl">Dan</div><span class="txt">neem</span><span class="drop"><span class="ico">▤</span> ebay_vergleichsnummer</span><span class="txt">en</span><span class="op">kopieer waarde van</span><span class="chip"><span class="ico">▤</span>oe_reference</span></div>
+      <div class="cond">Mag dezelfde bron als OE — extra vindbaarheid.</div>
+    </div></div>
+  </section>
+
+  <!-- MAPPING -->
+  <section id="map" class="hidden">
+    <div class="rulehead"><span class="dot" style="background:#1a5fb4"></span><span class="name">Attribuut-mapping (kanaal-Opbouw eBay DE) — ter referentie</span><span class="gate" style="background:#e7f0fb;color:#12508f;border-color:#bcd6f5">koppeling, geen import-regel</span></div>
+    <div class="card"><div class="hd">Bremsbeläge — item-specifics koppelen aan velden</div><div class="bd">
+      <div class="row"><span class="txt" style="width:170px;font-weight:700">Hersteller (vereist)</span><span class="op">← veld</span><span class="chip"><span class="ico">▤</span>brand</span></div>
+      <div class="row"><span class="txt" style="width:170px;font-weight:700">Herstellernummer (MPN)</span><span class="op">← veld</span><span class="chip"><span class="ico">▤</span>sku</span></div>
+      <div class="row"><span class="txt" style="width:170px;font-weight:700">Produktart</span><span class="op">← veld</span><span class="chip"><span class="ico">▤</span>product_type</span></div>
+      <div class="row"><span class="txt" style="width:170px;font-weight:700">Material</span><span class="op">← veld</span><span class="chip"><span class="ico">▤</span>material</span><span class="cond" style="margin:0">alleen indien gevuld</span></div>
+      <div class="row"><span class="txt" style="width:170px;font-weight:700">Oe/OEM Referenz</span><span class="op">← veld</span><span class="chip"><span class="ico">▤</span>ebay_oe_referenz</span></div>
+      <div class="row"><span class="txt" style="width:170px;font-weight:700">Vergleichsnummer</span><span class="op">← veld</span><span class="chip"><span class="ico">▤</span>ebay_vergleichsnummer</span></div>
+      <div class="row"><span class="txt" style="width:170px;font-weight:700">Oldtimer-Teil</span><span class="op">← veld</span><span class="chip"><span class="ico">▤</span>ebay_oldtimer_teil</span></div>
+      <div class="row"><span class="txt" style="width:170px;font-weight:700">Tuning-Teil</span><span class="op">← veld</span><span class="chip"><span class="ico">▤</span>ebay_tuning_teil</span></div>
+      <div class="row"><span class="txt" style="width:170px;font-weight:700;color:#b45309">Breite</span><span class="op" style="background:#fdecec;color:#8f1f1f">leeg laten</span><span class="cond" style="margin:0">verwijder de foute mapping naar <b>diameter</b> (schijfmaat, niet blok-breedte)</span></div>
+    </div></div>
+    <div class="note warn"><b>Fout te corrigeren:</b> "Breite" staat nu op <code>diameter</code>. Diameter is een remschijf-maat → haal die mapping weg zodat je geen verkeerde maat op remblokken toont.</div>
+  </section>
+
+  <div class="note"><b>Niet invullen zonder bron (niet verzinnen):</b> Ursprungsland (herkomstland), Herstellergarantie (alleen als je een echte garantie voert), Besonderheiten. Laat leeg tot je de data/policy hebt.</div>
+
+  <footer>Nabouw-mockup import-regels. Import-niveau = gedeeld over eBay/Bol/Amazon. CCP · project 314525 · 2026-07-07.</footer>
+</div>
+<script>function show(v){document.querySelectorAll('section').forEach(s=>s.classList.toggle('hidden', s.id!==v));}</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veld-gap analyse per categorie — eBay DE</title>
+<style>
+  :root{ --blue:#1a5fb4; --ink:#1f2933; --mut:#5b6b7b; --line:#e2e8f0; --bg:#f4f6f9; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:#fff; padding:20px; line-height:1.5; max-width:1000px; margin:0 auto; }
+  h1{ font-size:19px; font-weight:700; }
+  .lead{ font-size:12.5px; color:var(--mut); margin-top:4px; }
+  h2{ font-size:13px; color:#102a43; margin:18px 0 6px; border-left:3px solid var(--blue); padding-left:8px; }
+  .legend{ font-size:12px; color:var(--mut); margin:8px 0; }
+  .pill{ display:inline-block; font-size:11px; font-weight:700; border-radius:20px; padding:1px 9px; margin-right:4px; }
+  .ok{ background:#eaf6ef; color:#14532d; } .miss{ background:#fdecec; color:#8f1f1f; } .scan{ background:#fff3e0; color:#8a5a00; } .na{ background:#eef1f5; color:#64748b; }
+  table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
+  th,td{ text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; background:#f7f9fc; position:sticky; top:0; }
+  td.cat{ font-weight:700; color:#102a43; white-space:nowrap; }
+  td.pa{ color:#12508f; }
+  .c{ text-align:center; font-weight:700; }
+  .c.ok{ color:#1f7a4d; } .c.miss{ color:#b02a2a; } .c.scan{ color:#a6690a; } .c.na{ color:#94a3b8; font-weight:400; }
+  .gap{ font-size:11.5px; color:#8f1f1f; }
+  .note{ font-size:12px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid var(--blue); border-radius:7px; padding:9px 12px; margin-top:12px; }
+  .note b{ color:#12508f; }
+  .warn{ background:#fff8ec; border-color:#f3d9a6; border-left-color:#d98a1a; color:#7a4b0a; }
+  pre{ background:#0f2233; color:#e6f0fb; border-radius:8px; padding:12px 14px; font-family:"Consolas",monospace; font-size:11px; line-height:1.5; white-space:pre-wrap; margin-top:8px; }
+  .small{ font-size:11px; color:var(--mut); }
+</style>
+</head>
+<body>
+  <h1>Veld-gap analyse per categorie — eBay DE titels & omschrijvingen</h1>
+  <p class="lead">Toont per categorie welke velden voor titel + omschrijving <b>nog niet aanwezig</b> zijn. Universele velden (<code>brand, sku, ean, oe_reference, gpsr_manufacturer_name</code>) zijn overal aanwezig en staan niet in de tabel. Alleen de <b>categorie-specifieke</b> velden die kunnen ontbreken staan hieronder.</p>
+
+  <div class="legend">
+    <span class="pill ok">aanwezig</span> veld gevuld in feed &nbsp;
+    <span class="pill miss">ontbreekt</span> leeg/afwezig &nbsp;
+    <span class="pill scan">te scannen</span> nog niet live geverifieerd &nbsp;
+    <span class="pill na">n.v.t.</span> niet relevant voor deze categorie
+  </div>
+
+  <h2>Bevestigd (live geverifieerd 2026-07-07)</h2>
+  <table>
+    <tr><th>Categorie</th><th>Produktart DE</th><th class="c">Positie (DE)</th><th class="c">Type/variant</th><th class="c">Maten</th><th class="c">Voertuig (merk+model)</th><th>Wat ontbreekt</th></tr>
+    <tr><td class="cat">Remschijven</td><td class="pa">Bremsscheibe</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="c ok">✓</td><td class="gap" style="color:#1f7a4d">— niets, compleet</td></tr>
+    <tr><td class="cat">Remblokken</td><td class="pa">Bremsbeläge</td><td class="c miss">✗</td><td class="c na">n.v.t.</td><td class="c miss">✗</td><td class="c miss">✗</td><td class="gap"><b>positie, maten, voertuig</b> (car_brands/car_models) ontbreken — alleen OE/EAN aanwezig</td></tr>
+  </table>
+  <div class="note"><b>Verklaring:</b> remschijven zijn ooit verrijkt (positie via <code>vooras_achteras_duits</code>, type via <code>remschijftype_de</code>, maten, voertuig via <code>car_brands_top1/car_models_top1</code>). Remblokken kwamen data-arm uit Magento — vandaar de data-arme titel/omschrijving zonder voertuig.</div>
+
+  <h2>Nog te scannen (18 categorieën) — hypothese: waarschijnlijk data-arm zoals remblokken</h2>
+  <table>
+    <tr><th>Categorie</th><th>Produktart DE</th><th class="c">Positie (DE)</th><th class="c">Type/variant</th><th class="c">Voertuig (merk+model)</th><th>Vermoedelijk nodig</th></tr>
+    <tr><td class="cat">Remklauwen</td><td class="pa">Bremssattel</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie (links/rechts), voertuig · check Altteilpfand</td></tr>
+    <tr><td class="cat">Draagarmen</td><td class="pa">Querlenker</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie (links/rechts, oben/unten), voertuig</td></tr>
+    <tr><td class="cat">Remtrommel</td><td class="pa">Bremstrommel</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie (Hinterachse), voertuig</td></tr>
+    <tr><td class="cat">Remslangen</td><td class="pa">Bremsschlauch</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie, voertuig, evt. lengte</td></tr>
+    <tr><td class="cat">Wielremcilinder</td><td class="pa">Radbremszylinder</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie, voertuig, evt. Ø (bore)</td></tr>
+    <tr><td class="cat">Slijtindicatoren</td><td class="pa">Warnkontakt</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie, voertuig</td></tr>
+    <tr><td class="cat">Accessoiresets</td><td class="pa">Zubehörsatz</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">voertuig, subtype (waarvoor)</td></tr>
+    <tr><td class="cat">Draagarmrubber</td><td class="pa">Lagerung Lenker</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie, voertuig</td></tr>
+    <tr><td class="cat">Fuseekogel</td><td class="pa">Traggelenk</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie (oben/unten), voertuig</td></tr>
+    <tr><td class="cat">Spoorstangeind</td><td class="pa">Spurstangenkopf</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie (links/rechts), voertuig</td></tr>
+    <tr><td class="cat">Axiaalkogel</td><td class="pa">Axialgelenk</td><td class="c na">–</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">voertuig</td></tr>
+    <tr><td class="cat">Stabilisatorstangen</td><td class="pa">Koppelstange</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie (links/rechts), voertuig</td></tr>
+    <tr><td class="cat">Wielsnelheidssensor</td><td class="pa">ABS-Sensor</td><td class="c scan">?</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">positie, voertuig, evt. kabellengte</td></tr>
+    <tr><td class="cat">Manchette</td><td class="pa">Manschette</td><td class="c na">–</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">voertuig, subtype (uit SKU)</td></tr>
+    <tr><td class="cat">Wartelmoer</td><td class="pa">Achsmutter</td><td class="c na">–</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">voertuig</td></tr>
+    <tr><td class="cat">Koppelingkabel</td><td class="pa">Kupplungsseilzug</td><td class="c na">–</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">voertuig, evt. lengte</td></tr>
+    <tr><td class="cat">Trekkabel</td><td class="pa">Handbremsseil</td><td class="c na">–</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">voertuig, evt. lengte</td></tr>
+    <tr><td class="cat">Gaskabel</td><td class="pa">Gaszug</td><td class="c na">–</td><td class="c na">–</td><td class="c scan">?</td><td class="gap">voertuig, evt. lengte</td></tr>
+  </table>
+
+  <div class="note warn"><b>Belangrijk:</b> de "?"-cellen zijn <b>niet</b> geverifieerd — het is een gefundeerde inschatting (alleen remschijven bleken verrijkt; de rest is nooit aangepakt, dus waarschijnlijk data-arm zoals remblokken). Bevestig per categorie met de scan-prompt hieronder vóór je op deze aanname bouwt.</div>
+
+  <h2>Veld-gap scan-prompt (read-only) — vult de "?" per categorie exact in</h2>
+  <p class="small">Plak dit in Claude-in-Chrome (Channable open). Wijzigt niets — leest alleen en rapporteert per categorie welke velden leeg zijn.</p>
+  <pre>Je leest ALLEEN (niets wijzigen, nooit "Uitvoeren", nooit aan "SKU selectie").
+Project 314525, kanaal eBay DE (152339). Voor de categorie &lt;CATEGORIE&gt;:
+1. Open Regels &gt; kies één representatief item met categories_clean = &lt;CATEGORIE&gt; (bv. via Bekijk / Items na).
+2. Controleer op dat item welke van deze velden GEVULD vs LEEG zijn:
+   vooras_achteras_duits, einbauposition_de, links_rechts (of vergelijkbaar positie-veld),
+   remschijftype_de (of type/variant-veld), buitendiameter/afmetingen,
+   car_brands_top1, car_models_top1, oe_reference, ean, brand, sku, gpsr_manufacturer_name.
+3. Rapporteer in dit format (toon ALLEEN wat ontbreekt):
+   Categorie &lt;CATEGORIE&gt; — ontbreekt: [lijst lege velden]. Aanwezig: [kort]. Bruikbare positie-veldnaam: [naam of geen].
+Doe dit voor 2-3 sample-SKU's per categorie voor zekerheid. Geen schrijfactie.</pre>
+
+  <div class="note"><b>Vervolg:</b> de scan-output vult deze tabel exact, en voedt de status-balk in de <code>/channable-templates</code> skill (plan vs live). Wil je dat ik de scan nu zelf live draai? Dan moet ik één van je 3 verbonden browsers kiezen — zeg welke (of doe 'm op de laptop met bovenstaande prompt, dan verwerk ik de uitkomst).</div>
+
+  <p class="small" style="margin-top:16px; color:#94a3b8">Universele velden overal aanwezig: brand · sku · ean · oe_reference · gpsr_manufacturer_name · categories_clean. CCP · eBay DE 152339 · 2026-07-07.</p>
+</body>
+</html>

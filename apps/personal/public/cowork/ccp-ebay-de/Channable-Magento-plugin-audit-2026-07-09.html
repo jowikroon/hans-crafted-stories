@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Channable ↔ Magento plugin — volledige audit</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; font-size:10px; }
+  .sheet{ width:210mm; min-height:297mm; padding:12mm 12mm 9mm; margin:0 auto; page-break-after:always; }
+  .sheet:last-child{ page-break-after:auto; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:10px; }
+  header h1{ font-size:16px; font-weight:700; }
+  header .sub{ font-size:8.4px; color:#52606d; margin-top:2px; }
+  h2{ font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:#102a43; margin:13px 0 5px; padding:3px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  table{ width:100%; border-collapse:collapse; margin-top:3px; }
+  th,td{ text-align:left; font-size:8.7px; padding:4px 7px; border-bottom:1px solid #e7ecf2; vertical-align:top; line-height:1.35; }
+  th{ font-size:7.2px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  td.k{ font-weight:700; color:#102a43; width:31%; }
+  .on{ color:#1f7a44; font-weight:700; } .off{ color:#a52222; font-weight:700; }
+  .tag{ display:inline-block; font-size:7px; font-weight:700; padding:1px 6px; border-radius:8px; }
+  .t1{ background:#eaf6ef; color:#14532d; } .t2{ background:#fff3e0; color:#8a5a00; }
+  .lead{ border-left:4px solid #1a5fb4; background:#eef5ff; border-radius:7px; padding:8px 11px; margin-bottom:10px; font-size:9px; color:#1c3d5f; }
+  .lead b{ color:#12406e; }
+  .two{ display:flex; gap:10px; }
+  .two > div{ flex:1; }
+  ul{ margin-left:14px; } li{ font-size:8.7px; line-height:1.45; margin-bottom:1px; }
+  .pill-list span{ display:inline-block; background:#eef5ff; border:1px solid #cfe0f7; color:#1c3d5f; font-size:8px; padding:1px 7px; border-radius:9px; margin:2px 3px 0 0; }
+  .prio{ background:#fdf0f0; border:1px solid #f0cccc; border-left:4px solid #d64545; border-radius:6px; padding:8px 11px; font-size:8.8px; color:#7a1f1f; }
+  .prio b{ color:#a52222; }
+  .good{ background:#f0f8f3; border:1px solid #bfe4cf; border-radius:6px; padding:7px 10px; font-size:8.6px; color:#1f5137; }
+  .foot{ margin-top:11px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7px;padding:2px 8px;border-radius:8px;font-weight:600;}
+  .note{ font-size:7.8px; color:#52606d; margin-top:3px; }
+</style>
+</head>
+<body>
+
+<!-- PAGINA 1 -->
+<div class="sheet">
+  <header>
+    <h1>Channable &#8596; Magento koppeling — volledige plugin-audit</h1>
+    <div class="sub">CCP &#183; connectcarparts.nl &#183; live afgelezen in Magento admin + Channable-API, 2026-07-09 &#183; Magento 2.4.7-p10 &#183; Channable-extensie</div>
+  </header>
+
+  <div class="lead">
+    <b>Kern:</b> de plugin exporteert een productfeed (veilig, alleen productdata &mdash; geen klant-PII) en importeert marketplace-orders. De feed deelt nu <b>9 standaardvelden + 12 extra velden</b> van de <b>308 beschikbare Magento-attributen</b>. Drie hoofdfuncties staan <b>uit</b>: real-time item-updates, returns-sync en B2B-orders. Groot onbenut potentieel in fitment- en OE-data.
+    <div class="note">Verify-tier: <span class="tag t1">1 = direct afgelezen</span> <span class="tag t2">2 = inferentie, nog te bevestigen</span></div>
+  </div>
+
+  <h2>1 &#183; Plugin-status per sectie (aan/uit) &mdash; wat elke functie doet</h2>
+  <table>
+    <tr><th>Sectie / functie</th><th>Stand</th><th>Wat het doet</th></tr>
+    <tr><td class="k">General &rarr; Enable</td><td class="on">AAN</td><td>Koppeling actief. Debug Mode: uit.</td></tr>
+    <tr><td class="k">Feed &rarr; Enable</td><td class="on">AAN</td><td>Bouwt de productfeed die Channable ophaalt. 250 producten per pagina.</td></tr>
+    <tr><td class="k">Item Updates (real-time)</td><td class="off">UIT</td><td>Zou voorraad/prijs-wijzigingen <b>direct</b> naar Channable pushen (Observer-modus, 50/run). Nu uit &rarr; updates lopen alleen mee als Channable de feed periodiek ophaalt.</td></tr>
+    <tr><td class="k">Order import &rarr; Enable</td><td class="on">AAN</td><td>Haalt marketplace-orders op en maakt ze aan in Magento.</td></tr>
+    <tr><td class="k">Returns &rarr; Enable</td><td class="off">UIT</td><td>Zou marketplace-retouren naar Magento syncen + creditnota's matchen. Nu uit &rarr; retouren handmatig.</td></tr>
+  </table>
+
+  <h2>2 &#183; Order-import instellingen (27 velden &mdash; belangrijkste)</h2>
+  <table>
+    <tr><th>Instelling</th><th>Stand</th><th>Effect / kans</th></tr>
+    <tr><td class="k">Default + Fallback verzendmethode</td><td>freeshipping "Vandaag verzonden ma&ndash;za"</td><td>Eén vaste methode voor alle kanalen. Geen per-land/carrier-mapping.</td></tr>
+    <tr><td class="k">Import Customers</td><td class="off">Nee</td><td>Orders als gast (groep NOT LOGGED IN). Bewust; prima.</td></tr>
+    <tr><td class="k">Order-e-mail naar klant</td><td class="off">Nee</td><td>Marketplace verzorgt communicatie. Bewust.</td></tr>
+    <tr><td class="k">Factuur aanmaken voor order</td><td class="off">Nee</td><td>Geen automatische Magento-factuur. Relevant voor DE VAT/OSS + eBay factuur-upload.</td></tr>
+    <tr><td class="k">Enable business orders (B2B)</td><td class="off">Nee</td><td>Duitse zakelijke kopers (USt-IdNr.) worden niet als B2B verwerkt. Gemist B2B-segment.</td></tr>
+    <tr><td class="k">Order voor out-of-stock</td><td class="off">Nee</td><td>Geen oversell. Goed.</td></tr>
+    <tr><td class="k">Accept FBB/LVB orders</td><td class="off">Nee</td><td>bol LVB / fulfilment-by-marketplace uit. OK zolang eigen verzending.</td></tr>
+    <tr><td class="k">Company Name op order</td><td class="on">Ja</td><td>Bedrijfsnaam wordt overgenomen.</td></tr>
+    <tr><td class="k">Order ID prefix</td><td>M- (alfanumeriek)</td><td>Magento-ordernrs krijgen prefix M-.</td></tr>
+  </table>
+
+  <h2>3 &#183; Wat we NU delen met Channable (feed-uitvoer)</h2>
+  <div class="two">
+    <div>
+      <b style="font-size:8.8px;color:#12406e;">Standaardvelden (9)</b>
+      <div class="pill-list">
+        <span>Name &rarr; Product Name</span><span>Description</span><span>Brand &rarr; Fabrikant</span><span>EAN/GTIN &rarr; ean</span><span>SKU</span><span>Size*</span><span>Color*</span><span>Material</span><span>Gender*</span>
+      </div>
+      <div class="note">* Size / Color / Gender: gemapt maar leeg voor auto-onderdelen &rarr; ruis, geen waarde.</div>
+      <div class="note">Prijs: excl. &eacute;n incl. BTW. Voorraad: Manage Stock. Levertijd: Netherlands. Afbeeldingen: alle, hoofdafbeelding = eerste.</div>
+    </div>
+    <div>
+      <b style="font-size:8.8px;color:#12406e;">Extra velden (12 &mdash; maatvoering)</b>
+      <div class="pill-list">
+        <span>Inbouwplaats</span><span>Buitendiameter</span><span>Remschijfdikte</span><span>Minimale dikte</span><span>Steek wielbouten</span><span>Naafdoorsnee</span><span>Hoogte</span><span>Aantal wielbouten</span><span>Oppervlakte</span><span>Remschijftype</span><span>Materiaal</span><span>Centreringdiameter</span>
+      </div>
+      <div class="note">Sterk gericht op remschijf- + wielbout-maten. Fitment en OE ontbreken (zie p.2).</div>
+    </div>
+  </div>
+  <div class="good" style="margin-top:8px"><b>Privacy:</b> de feed bevat uitsluitend <b>productdata</b> &mdash; geen klantgegevens. Veilig te delen. Klant-PII komt alleen <b>inkomend</b> via order-import (naam/adres in Magento); eBay-koper-e-mail is gemaskeerd (@members.ebay.com).</div>
+
+  <div class="foot"><span>Bron: Magento system_config secties channable_* + feed-attribuutpicker (308 opties) &#183; live 2026-07-09</span><span class="pill">CCP &#183; pagina 1/2</span></div>
+</div>
+
+<!-- PAGINA 2 -->
+<div class="sheet">
+  <header>
+    <h1>Plugin-audit &mdash; blinde vlekken &amp; onbenutte kansen</h1>
+    <div class="sub">CCP &#183; 308 Magento-attributen beschikbaar &#183; 21 nu in gebruik &#183; ~287 ongebruikt (meeste irrelevant, deze wél waardevol)</div>
+  </header>
+
+  <h2>4 &#183; Blinde vlekken &mdash; bestaat in Magento, NIET in de feed</h2>
+  <table>
+    <tr><th>Magento-attribuut (beschikbaar)</th><th>Waarde voor marketplace</th><th>Verify</th></tr>
+    <tr><td class="k">OE References &#183; Voor OE nummer &#183; alternatief OE-nummer</td><td>OE/OEM-referentienummers &mdash; eBay item-specific "OE/OEM Referenznummer(n)", cruciaal voor vindbaarheid. <b>Nu niet in de feed als extra veld.</b></td><td><span class="tag t2">2</span></td></tr>
+    <tr><td class="k">Bouwjaar/Modeljaar tot-vanaf &#183; Voertuigtype &#183; Voertuiglijn/-variant &#183; Uitvoeringscode &#183; Chassisnr (VIN)</td><td>Volledige voertuig-fitment (TecDoc). Marketplaces belonen compatibiliteitsdata (Fahrzeug-Verwendungsliste). Nu geen gestructureerde fitment mee.</td><td><span class="tag t1">1</span></td></tr>
+    <tr><td class="k">Country of Manufacture &#183; Productieland v/h voertuig</td><td>eBay "Herstellungsland und -region" (Ursprungsland). Eerder als "bron onbekend" gemarkeerd &mdash; <b>de bron bestaat</b>.</td><td><span class="tag t1">1</span></td></tr>
+    <tr><td class="k">Harmonized System Code (HS-code)</td><td>Douane-/goederencode &mdash; relevant voor DE cross-border, GPSR/douane.</td><td><span class="tag t1">1</span></td></tr>
+    <tr><td class="k">Gewicht / Weight / Dynamic Weight</td><td>Productgewicht &mdash; accurate verzendkosten &amp; carrier-keuze.</td><td><span class="tag t1">1</span></td></tr>
+    <tr><td class="k">Remtype &#183; Remzadel uitvoering &#183; Draagarmtype &#183; Sensortype &#183; Kwaliteit &#183; Emissienorm</td><td>Onderdeel-specifieke item-specifics per categorie (buiten remschijven).</td><td><span class="tag t1">1</span></td></tr>
+  </table>
+  <div class="note">De 12 huidige extra velden dekken vrijwel alleen remschijf-maatvoering. Voor de andere 20 eBay-categorie&euml;n (remblokken, stuurdelen, wiellagersets&hellip;) mist categorie-specifieke data in de feed.</div>
+
+  <h2>5 &#183; Uit-staande functies &mdash; kans of risico</h2>
+  <table>
+    <tr><th>Functie (uit)</th><th>Gevolg nu</th><th>Kans / advies</th></tr>
+    <tr><td class="k">Item Updates (real-time voorraad/prijs)</td><td>Voorraad/prijs bereikt Channable pas bij de periodieke feed-ophaal &rarr; venster van stale data.</td><td><b>Aanzetten</b> = minder oversell-risico &amp; snellere prijswijzigingen. Belangrijkste quick win.</td></tr>
+    <tr><td class="k">Returns-sync</td><td>Marketplace-retouren niet automatisch in Magento; handmatige creditnota's.</td><td>Aanzetten zodra retourvolume groeit (DE).</td></tr>
+    <tr><td class="k">Business orders (B2B)</td><td>Duitse zakelijke kopers niet als B2B verwerkt (geen USt-IdNr.-flow).</td><td>Overwegen voor DE B2B-segment.</td></tr>
+    <tr><td class="k">Factuur aanmaken</td><td>Geen automatische Magento-factuur bij order.</td><td>Koppelt aan de eBay factuur-upload-vraag; aanzetten kan facturatie vereenvoudigen.</td></tr>
+  </table>
+
+  <h2>6 &#183; Aanbevolen volgorde (na de DE-livegang)</h2>
+  <div class="prio">
+    <b>1.</b> Voeg <b>OE References</b> + <b>voertuig-fitment</b> (bouwjaar/type/uitvoering) toe als extra feed-velden &rarr; direct betere eBay-vindbaarheid &amp; compatibiliteit. &nbsp;
+    <b>2.</b> Voeg <b>Country of Manufacture</b> + <b>HS-code</b> + <b>Gewicht</b> toe &rarr; vult eBay Ursprungsland, douane, verzendlogica. &nbsp;
+    <b>3.</b> Zet <b>Item Updates</b> aan &rarr; real-time voorraad/prijs, minder oversell. &nbsp;
+    <b>4.</b> Later: Returns-sync + B2B-orders + auto-factuur, afhankelijk van DE-volume.
+  </div>
+
+  <h2>7 &#183; Nog te bevestigen (tier-2)</h2>
+  <ul>
+    <li><b>OE-data:</b> attribuut "OE References" bestaat maar staat niet in de extra velden &mdash; te bevestigen of Channable de OE-nummers tóch al via een andere bron/route binnenkrijgt, of dat dit de reden is dat OE in listings soms ontbreekt.</li>
+    <li><b>Feed offers = 0</b> in de Channable-API: waarschijnlijk API-scope-ruis (dashboard toont producten + sales), maar bevestigen op welke store-view-scope de productexport draait.</li>
+  </ul>
+
+  <div class="foot"><span>Verify: config-waarden + 308-attributenlijst direct uit de DOM gelezen (tier 1); OE-route + feed-scope = tier 2 &#183; 2026-07-09</span><span class="pill">CCP &#183; pagina 2/2</span></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eBay DE — Masterplaybook · Connect Car Parts</title><style>
+  :root{ --blue:#1a5fb4; --chip:#e7f0fb; --chipbd:#bcd6f5; --chiptx:#12508f; --ink:#1f2933; --mut:#5b6b7b; --line:#e2e8f0; --bg:#f4f6f9;
+         --grn:#1f7a44; --grnbg:#eaf6ef; --grnbd:#bfe4cf; --amb:#8a5a00; --ambbg:#fff6e6; --ambbd:#f2d9a8; --red:#a52222; --redbg:#fdecec; --redbd:#f0cccc; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); padding:18px; line-height:1.5; }
+  .wrap{ max-width:1040px; margin:0 auto; }
+  header h1{ font-size:20px; font-weight:700; }
+  header p{ font-size:12px; color:var(--mut); margin-top:3px; }
+  /* segmented nav */
+  .nav{ display:flex; flex-wrap:wrap; gap:6px; margin:15px 0; background:#fff; border:1px solid var(--line); border-radius:12px; padding:7px; box-shadow:0 1px 2px rgba(16,42,67,.04); }
+  .nav button{ font:inherit; font-size:12.5px; font-weight:600; color:#475569; background:transparent; border:0; border-radius:8px; padding:8px 13px; cursor:pointer; }
+  .nav button:hover{ background:#eef2f7; }
+  .nav button.active{ background:var(--blue); color:#fff; }
+  .view{ display:none; } .view.active{ display:block; }
+  /* status pills */
+  .pill{ font-size:10.5px; font-weight:700; border-radius:20px; padding:2px 10px; display:inline-block; }
+  .p-done{ background:var(--grnbg); color:var(--grn); border:1px solid var(--grnbd); }
+  .p-doing{ background:var(--ambbg); color:var(--amb); border:1px solid var(--ambbd); }
+  .p-todo{ background:#eef2f7; color:#475569; border:1px solid #d6dee8; }
+  /* cards */
+  .card{ background:#fff; border:1px solid var(--line); border-radius:12px; margin-top:13px; overflow:hidden; box-shadow:0 1px 2px rgba(16,42,67,.04); }
+  .card > .hd{ background:#eef2f7; border-bottom:1px solid var(--line); padding:10px 15px; font-weight:700; font-size:13.5px; color:#102a43; display:flex; align-items:center; gap:9px; flex-wrap:wrap;}
+  .card > .hd .tag{ font-size:10.5px; font-weight:700; color:#12508f; background:var(--chip); border:1px solid var(--chipbd); border-radius:6px; padding:1px 8px;}
+  .card > .hd .spacer{ margin-left:auto; }
+  .card > .bd{ padding:13px 15px; }
+  .lead{ font-size:12.5px; color:#33414f; } .lead b{ color:#102a43; }
+  .kv{ font-size:12.5px; color:#33414f; margin-top:7px; } .kv b{ color:#102a43; }
+  /* mini status table */
+  table{ width:100%; border-collapse:collapse; margin-top:4px; }
+  th,td{ text-align:left; font-size:12px; padding:8px 10px; border-bottom:1px solid #eef2f7; vertical-align:top; }
+  th{ font-size:10px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; }
+  td.w{ font-weight:600; color:#102a43; width:30%; }
+  /* chips + rule rows (from original) */
+  .row{ display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px dashed #eef2f7; } .row:last-child{ border-bottom:none; }
+  .lbl{ width:44px; flex:0 0 44px; font-weight:700; color:#334155; font-size:13px; padding-top:5px; }
+  .ctrls{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+  .drop{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid #cbd5e1; border-radius:7px; padding:4px 9px; font-size:12.5px; color:#102a43; }
+  .drop::after{ content:"▾"; color:#94a3b8; font-size:11px; margin-left:2px; } .drop .fi{ color:var(--blue); font-size:11px; }
+  .op{ background:#f1f5f9; border:1px solid #dbe3ec; border-radius:7px; padding:4px 9px; font-size:12.5px; color:#334155; } .op::after{ content:" ▾"; color:#94a3b8; font-size:11px; }
+  .val{ background:#fff; border:1px solid #cbd5e1; border-radius:7px; padding:4px 10px; font-size:12.5px; color:#102a43; }
+  .combine{ margin-top:6px; background:#fbfdff; border:1px solid #dbe6f4; border-radius:9px; padding:11px 12px; }
+  .chip{ display:inline-flex; align-items:center; gap:5px; background:var(--chip); border:1px solid var(--chipbd); color:var(--chiptx); border-radius:7px; padding:2px 8px; font-size:12.5px; font-weight:600; margin:2px 3px 2px 0;}
+  .chip .ico{ font-size:10px; opacity:.8; } .chip.bad{ background:var(--redbg); border-color:var(--redbd); color:var(--red); } .chip.good{ background:var(--grnbg); border-color:var(--grnbd); color:var(--grn); }
+  .txt{ color:#243b53; font-size:12.5px; } .nl{ display:block; height:7px; }
+  .cond{ color:#8a5a00; font-size:11px; font-style:italic; margin-top:8px; }
+  .note{ font-size:12px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid var(--blue); border-radius:8px; padding:9px 12px; margin-top:11px; } .note b{ color:#12508f; }
+  .note.warn{ color:#7a1f1f; background:var(--redbg); border-color:var(--redbd); border-left-color:var(--red); } .note.warn b{ color:var(--red); }
+  .note.ok{ color:#1f5137; background:var(--grnbg); border-color:var(--grnbd); border-left-color:var(--grn); } .note.ok b{ color:var(--grn); }
+  ul.clean{ list-style:none; margin-top:6px; } ul.clean li{ font-size:12.5px; padding:5px 0 5px 24px; position:relative; color:#33414f; border-bottom:1px dashed #eef2f7; }
+  ul.clean li:last-child{ border-bottom:none; } ul.clean li::before{ position:absolute; left:0; top:5px; font-size:12px; }
+  li.done::before{ content:"✓"; color:var(--grn); font-weight:700; } li.doing::before{ content:"◐"; color:var(--amb); } li.todo::before{ content:"○"; color:#94a3b8; }
+  .filter{ display:flex; align-items:center; gap:10px; margin:6px 0 2px; flex-wrap:wrap; background:#fff; border:1px solid var(--line); border-radius:10px; padding:9px 12px; }
+  .filter label{ font-size:12px; color:var(--mut); font-weight:600; }
+  .filter select{ font:inherit; font-size:13.5px; padding:6px 11px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#102a43; font-weight:600; }
+  .rulehead{ display:flex; align-items:center; gap:10px; margin:12px 0 2px; } .rulehead .name{ font-size:14.5px; font-weight:700; color:#102a43; }
+  footer{ margin-top:18px; font-size:10.5px; color:#94a3b8; border-top:1px solid var(--line); padding-top:8px; }
+  .hidden{ display:none; }
+</style></head><body><div class="wrap">
+<header>
+  <h1>eBay DE — Masterplaybook <span style="color:#1a5fb4">· Connect Car Parts</span></h1>
+  <p>Alles wat we deden en nog moeten doen, in één overzicht. Blauwe pillen = veldchips · project <b>314525</b> · eBay DE <b>152339</b> · stand 2026-07-09, live geverifieerd.</p>
+</header>
+
+<div class="nav">
+  <button class="active" onclick="show('overzicht',this)">① Overzicht</button>
+  <button onclick="show('opgelost',this)">② Opgelost</button>
+  <button onclick="show('oe',this)">③ OE → eBay</button>
+  <button onclick="show('feed',this)">④ Feed-velden</button>
+  <button onclick="show('todo',this)">⑤ Nog te doen</button>
+  <button onclick="show('regels',this)">⑥ Regelopbouw per categorie</button>
+</div>
+
+<!-- ① OVERZICHT -->
+<section id="overzicht" class="view active">
+  <div class="card"><div class="hd">Status per werkstroom <span class="spacer"></span><span class="pill p-done">af</span> <span class="pill p-doing">loopt</span> <span class="pill p-todo">te doen</span></div><div class="bd">
+    <table>
+      <tr><th>Werkstroom</th><th>Kern</th><th>Status</th></tr>
+      <tr><td class="w">Allow Countries (DE)</td><td>Magento stond op alléén NL → Duitse orders geweigerd. Oorzaak gevonden; DE toevoegen = de fix.</td><td><span class="pill p-doing">jij zet DE erbij</span></td></tr>
+      <tr><td class="w">DE storeview</td><td>Nog Enabled (niet verwijderd/uit). Niet de blocker. Besluit: live zónder storeview.</td><td><span class="pill p-done">besluit genomen</span></td></tr>
+      <tr><td class="w">Plugin-audit</td><td>Feed deelt 21→33 velden van 308. Item-updates + returns + B2B staan UIT.</td><td><span class="pill p-done">af</span></td></tr>
+      <tr><td class="w">Feed-uitbreiding 12→33</td><td>Opgeslagen. Alleen velden mét data komen door (oe_references ✓; hs_code/gewicht/bouwjaar leeg).</td><td><span class="pill p-doing">deels gevuld</span></td></tr>
+      <tr><td class="w">OE → eBay</td><td>Bron = bestaand <b>oe_list</b> (niet de JSON). Mappen naar "OE/OEM Referenznummer(n)".</td><td><span class="pill p-doing">mappen per categorie</span></td></tr>
+      <tr><td class="w">Track &amp; Trace</td><td>DPD-nr landt bewezen op de Magento-shipment. Terugkoppeling volgt zodra DE-orders importeren.</td><td><span class="pill p-doing">na order-herstel</span></td></tr>
+      <tr><td class="w">Titel + omschrijving per categorie</td><td>Remschijven &amp; Remblokken live geverifieerd; 18 overige categorieën nog bouwen (positie-veld bevestigen).</td><td><span class="pill p-todo">bouwen</span></td></tr>
+    </table>
+    <div class="note"><b>Rode draad:</b> de omgeving is niet stuk — de eBay-kant hing op één config (Allow Countries) en op ontbrekende data/mappings. Storeview blijft geparkeerd; Duitse content regelen we in Channable per kanaal.</div>
+  </div></div>
+</section>
+
+<!-- ② OPGELOST -->
+<section id="opgelost" class="view">
+  <div class="card"><div class="hd">Allow Countries — root cause DE-orders <span class="tag">Magento</span><span class="spacer"></span><span class="pill p-doing">jij zet DE erbij</span></div><div class="bd">
+    <div class="lead">Duitse eBay-orders faalden op import (<b>platform_failure</b>); NL-orders (bol) importeerden wél.</div>
+    <div class="kv">Oorzaak (live geverifieerd): <span class="chip">Allow Countries</span> = <b>alleen NL</b>; op de storeview "Duits" staat Default Country wél op DE → mismatch.</div>
+    <div class="note ok"><b>Fix (zelf, veilig):</b> Stores → Configuration → General → Country Options → <b>Allow Countries → Duitsland toevoegen</b> (NL behouden) → Save. Daarna Channable "verzend mislukte orders opnieuw".</div>
+  </div></div>
+
+  <div class="card"><div class="hd">DE storeview-incident <span class="tag">Magento</span><span class="spacer"></span><span class="pill p-done">besluit</span></div><div class="bd">
+    <div class="lead">Storeview "Duits" staat nog <b>Enabled</b> — niet verwijderd, niet uitgezet. Het bestaan ervan blokkeert de orders niet.</div>
+    <div class="note"><b>Besluit:</b> eBay DE live <b>zonder</b> DE storeview — 1 omgeving voor alle orders. Storeview geparkeerd (disable), niet verwijderen.</div>
+  </div></div>
+
+  <div class="card"><div class="hd">Channable ↔ Magento plugin-audit <span class="tag">plugin</span><span class="spacer"></span><span class="pill p-done">af</span></div><div class="bd">
+    <table>
+      <tr><th>Functie</th><th>Stand</th></tr>
+      <tr><td class="w">Feed / Order-import</td><td><span class="chip good">AAN</span> — feed deelt productdata (geen klant-PII, veilig).</td></tr>
+      <tr><td class="w">Item Updates (real-time voorraad/prijs)</td><td><span class="chip bad">UIT</span> — updates alleen via periodieke ophaal → oversell-risico.</td></tr>
+      <tr><td class="w">Returns-sync</td><td><span class="chip bad">UIT</span> — retouren handmatig.</td></tr>
+      <tr><td class="w">Business orders (B2B) / Auto-factuur</td><td><span class="chip bad">UIT</span> — geen USt-IdNr.-flow, geen automatische factuur.</td></tr>
+    </table>
+    <div class="cond">Volledige audit: <b>Channable-Magento-plugin-audit-2026-07-09.pdf</b></div>
+  </div></div>
+
+  <div class="card"><div class="hd">Feed-uitbreiding 12 → 33 velden <span class="tag">feed</span><span class="spacer"></span><span class="pill p-doing">deels gevuld</span></div><div class="bd">
+    <div class="lead">21 velden toegevoegd. <b>Belangrijk:</b> Channable toont een veld pas als het Magento-attribuut <b>gevuld</b> is.</div>
+    <div class="kv"><span class="chip good">oe_references — komt door</span> <span class="chip bad">hs_code — leeg</span> <span class="chip bad">gewicht — leeg</span> <span class="chip bad">bouwjaar — leeg</span> <span class="chip bad">tecdoc_motornummer — leeg</span></div>
+    <div class="note warn"><b>Gevolg:</b> fitment/HS/gewicht leveren pas waarde op als die attributen in Magento (via TecDoc/ABS-bron) gevuld worden. Aanzetten was correct; data ontbreekt nog.</div>
+  </div></div>
+
+  <div class="card"><div class="hd">OE-analyse <span class="tag">Channable</span><span class="spacer"></span><span class="pill p-done">bron bepaald</span></div><div class="bd">
+    <table>
+      <tr><th>Veld</th><th>Inhoud</th><th>Bruikbaar voor eBay?</th></tr>
+      <tr><td class="w">oe_references (nieuw)</td><td>JSON: [{"supplier":"AUDI","reference":"…"}]</td><td><span class="chip bad">nee — JSON</span></td></tr>
+      <tr><td class="w">oe_reference (oud)</td><td>Schone komma-string, mét dubbelen</td><td><span class="chip">ruwe bron</span></td></tr>
+      <tr><td class="w">oe_list</td><td>Bestaand, <b>gevuld</b> lijst-veld</td><td><span class="chip good">ja — dit gebruiken</span></td></tr>
+    </table>
+  </div></div>
+</section>
+
+<!-- ③ OE → eBay -->
+<section id="oe" class="view">
+  <div class="rulehead"><span class="name">OE-nummers → eBay item-specific "OE/OEM Referenznummer(n)"</span><span class="pill p-doing">te mappen</span></div>
+  <div class="card"><div class="hd">Mapping (per eBay-categorie) <span class="tag">kanaal: eBay DE</span></div><div class="bd">
+    <div class="row"><div class="lbl">Bron</div><div class="ctrls"><span class="chip good"><span class="ico">▤</span>oe_list</span><span class="txt">(gevuld lijst-veld — géén nieuwe regel nodig)</span></div></div>
+    <div class="row"><div class="lbl">Doel</div><div class="ctrls"><span class="txt">eBay item-specific</span><span class="op">OE/OEM Referenznummer(n)</span><span class="txt">als <b>meerdere waarden</b> (niet als string)</span></div></div>
+    <div class="row"><div class="lbl">Waar</div><div class="ctrls"><span class="txt">Channels → eBay (DE) → categorie-mapping → per categorie (Bremsscheiben, Bremsbeläge, Bremssattel…)</span></div></div>
+    <div class="note warn"><b>Niet doen:</b> het nieuwe <span class="chip bad">oe_references</span> (JSON) mappen → eBay toont dan objecten i.p.v. nummers. En kom niet aan de <b>SKU-selectie / kostenrem</b>.</div>
+    <div class="note ok"><b>Verifieer via preview</b> (bv. SKU 16880): losse schone nummers, elk &lt; 65 tekens. Rommel/dubbelen? → één master-actie op oe_list: <span class="chip">verwijder dubbele vermeldingen uit een lijst</span> (+ evt. <span class="chip">knip lijst</span> 1–20), dan opnieuw preview.</div>
+  </div></div>
+</section>
+
+<!-- ④ FEED-VELDEN -->
+<section id="feed" class="view">
+  <div class="card"><div class="hd">33 extra feed-velden — gevuld vs leeg <span class="tag">Magento → Channable</span></div><div class="bd">
+    <div class="lead"><b>Gevuld / komt door (o.a.):</b></div>
+    <div class="kv"><span class="chip good">oe_references</span><span class="chip good">inbouwplaats</span><span class="chip good">buitendiameter</span><span class="chip good">remschijfdikte</span><span class="chip good">minimale dikte</span><span class="chip good">steek_wielbouten</span><span class="chip good">naafdoorsnee</span><span class="chip good">centreringdiameter</span><span class="chip good">remschijftype</span><span class="chip good">materiaal</span></div>
+    <div class="lead" style="margin-top:11px"><b>Leeg in Magento → nog niet in Channable (eerst vullen):</b></div>
+    <div class="kv"><span class="chip bad">hs_code</span><span class="chip bad">gewicht</span><span class="chip bad">bouwjaar_tot/vanaf</span><span class="chip bad">voertuigtype</span><span class="chip bad">voertuiglijn</span><span class="chip bad">tecdoc_motornummer</span><span class="chip bad">country_of_manufacture*</span><span class="chip bad">remtype</span><span class="chip bad">sensortype</span><span class="chip bad">draagarmtype</span><span class="chip bad">kwaliteit</span><span class="chip bad">emissienorm</span></div>
+    <div class="cond">* country_of_manufacture-veldnaam bestaat al in het project (naast andere country-velden) — bevestigen welke gevuld is.</div>
+    <div class="note"><b>Actie:</b> deze attributen in Magento (of via TecDoc/ABS-bron) laten vullen → dan komen ze automatisch mee bij de volgende feed-ophaal en kun je ze mappen (fitment, Ursprungsland, gewicht, HS).</div>
+  </div></div>
+</section>
+
+<!-- ⑤ NOG TE DOEN -->
+<section id="todo" class="view">
+  <div class="card"><div class="hd">Actielijst — richting live &amp; daarna</div><div class="bd">
+    <ul class="clean">
+      <li class="doing"><b>Allow Countries:</b> Duitsland toevoegen in Magento → mislukte orders opnieuw versturen in Channable.</li>
+      <li class="doing"><b>OE → eBay:</b> oe_list mappen aan "OE/OEM Referenznummer(n)" per categorie + preview-check.</li>
+      <li class="todo"><b>Titel + omschrijving per categorie</b> bouwen in Channable (Remschijven/Remblokken verified; 18 overige: positie-veld in STAP 1 bevestigen).</li>
+      <li class="todo"><b>Magento-attributen vullen</b> (hs_code, gewicht, fitment/bouwjaar, tecdoc) → ontgrendelt fitment/Ursprungsland/gewicht in de feed.</li>
+      <li class="todo"><b>Storeview parkeren</b> (disable, niet verwijderen).</li>
+      <li class="todo"><b>Later:</b> Item Updates aan (real-time voorraad/prijs), Returns-sync, B2B-orders, auto-factuur.</li>
+      <li class="doing"><b>T&amp;T-keten</b> end-to-end bevestigen zodra DE-orders weer importeren (fulfillment terug in Channable → eBay).</li>
+    </ul>
+  </div></div>
+</section>
+
+<!-- ⑥ REGELOPBOUW PER CATEGORIE -->
+<section id="regels" class="view">
+  <div class="filter"><label for="cat">Categorie</label>
+    <select id="cat" onchange="showCat(this.value)">
+      <option value="remschijven">Remschijven — Bremsscheibe (verified)</option>
+      <option value="remblokken">Remblokken — Bremsbeläge (verified)</option>
+      <option value="generiek">Overige 18 categorieën — generiek patroon</option>
+    </select>
+    <span class="cond" style="font-style:normal">Titel ≤ 80 · merk uit <b>brand</b> (dynamisch) · GPSR uit <b>gpsr_manufacturer_name</b> · per kanaal (overschrijft master)</span>
+  </div>
+
+  <div id="c_remschijven" class="catblock">
+    <div class="rulehead"><span class="name">DE — Remschijven (Bremsscheibe)</span><span class="pill p-done">live geverifieerd</span></div>
+    <div class="card"><div class="hd">Sectie A — Titel <span class="tag">doelveld: ebay_title_de</span></div><div class="bd">
+      <div class="row"><div class="lbl">Als</div><div class="ctrls"><span class="drop"><span class="ico">▤</span><span class="fi">categories_clean</span></span><span class="op">bevat</span><span class="val">remschijven</span></div></div>
+      <div class="row"><div class="lbl">Dan</div><div class="ctrls"><span class="txt">neem</span><span class="drop"><span class="ico">▤</span> ebay_title_de</span><span class="txt">en</span><span class="op">combineer waarde</span></div></div>
+      <div class="combine"><span class="chip"><span class="ico">▤</span>brand</span><span class="txt">" "</span><span class="chip"><span class="ico">▤</span>sku</span><span class="txt">" Bremsscheibe "</span><span class="chip"><span class="ico">▤</span>vooras_achteras_duits</span><span class="chip"><span class="ico">▤</span>remschijftype_de</span><span class="txt">" Ø"</span><span class="chip"><span class="ico">▤</span>buitendiameter</span><span class="txt">" für u.a. "</span><span class="chip"><span class="ico">▤</span>car_brands_top1</span><span class="chip"><span class="ico">▤</span>car_models_top1</span><div class="cond">positie/type alleen indien gevuld · voertuig-deel eerst afkappen bij &gt; 80</div></div>
+    </div></div>
+    <div class="card"><div class="hd">Sectie B — Omschrijving <span class="tag">doelveld: omschrijving</span></div><div class="bd">
+      <div class="combine"><span class="chip"><span class="ico">▤</span>brand</span> <span class="chip"><span class="ico">▤</span>sku</span> <span class="txt">Bremsscheibe – Original-Qualität</span><span class="nl"></span><span class="txt">Maße: Ø</span><span class="chip"><span class="ico">▤</span>buitendiameter</span><span class="txt">, Dicke</span><span class="chip"><span class="ico">▤</span>remschijfdikte</span><span class="txt">, Mindestdicke</span><span class="chip"><span class="ico">▤</span>minimale_dikte</span><span class="txt">, Nabenbohrung</span><span class="chip"><span class="ico">▤</span>centreringdiameter</span><span class="nl"></span><span class="txt">Artikelnummer:</span><span class="chip"><span class="ico">▤</span>sku</span><span class="txt">· EAN:</span><span class="chip"><span class="ico">▤</span>ean</span><span class="nl"></span><span class="txt">OE-/OEM-Referenznummern:</span><span class="chip"><span class="ico">▤</span>oe_reference</span><span class="nl"></span><span class="txt">Passend für u.a.:</span><span class="chip"><span class="ico">▤</span>car_models_top1</span><span class="nl"></span><span class="txt">Hinweis: achsweise paarweise wechseln. Einbau nur durch eine Fachwerkstatt.</span><span class="nl"></span><span class="txt">Hersteller (GPSR):</span><span class="chip"><span class="ico">▤</span>gpsr_manufacturer_name</span></div>
+    </div></div>
+  </div>
+
+  <div id="c_remblokken" class="catblock hidden">
+    <div class="rulehead"><span class="name">DE — Remblokken (Bremsbeläge)</span><span class="pill p-done">live geverifieerd</span></div>
+    <div class="card"><div class="hd">Sectie A — Titel <span class="tag">doelveld: ebay_title_de</span></div><div class="bd">
+      <div class="row"><div class="lbl">Als</div><div class="ctrls"><span class="drop"><span class="ico">▤</span><span class="fi">categories_clean</span></span><span class="op">bevat</span><span class="val">remblokken</span></div></div>
+      <div class="row"><div class="lbl">Dan</div><div class="ctrls"><span class="txt">neem</span><span class="drop"><span class="ico">▤</span> ebay_title_de</span><span class="txt">en</span><span class="op">combineer waarde</span></div></div>
+      <div class="combine"><span class="chip"><span class="ico">▤</span>brand</span><span class="txt">" "</span><span class="chip"><span class="ico">▤</span>sku</span><span class="txt">" Bremsbeläge Bremsbelagsatz"</span><div class="cond">voertuig-chip bij blokken meestal LEEG → weglaten · titel ≤ 80</div></div>
+    </div></div>
+    <div class="card"><div class="hd">Sectie B — Omschrijving <span class="tag">doelveld: omschrijving</span></div><div class="bd">
+      <div class="combine"><span class="chip"><span class="ico">▤</span>brand</span> <span class="chip"><span class="ico">▤</span>sku</span> <span class="txt">Bremsbeläge – Original-Qualität</span><span class="nl"></span><span class="txt">Produkt: Bremsbelagsatz für Scheibenbremse</span><span class="nl"></span><span class="txt">Artikelnummer:</span><span class="chip"><span class="ico">▤</span>sku</span><span class="txt">· EAN:</span><span class="chip"><span class="ico">▤</span>ean</span><span class="nl"></span><span class="txt">OE-/OEM-Referenznummern:</span><span class="chip"><span class="ico">▤</span>oe_reference</span><span class="nl"></span><span class="txt">Bitte Passgenauigkeit anhand der OE-Nummer prüfen.</span><span class="nl"></span><span class="txt">Hinweis: achsweise komplett wechseln. Einbau nur durch eine Fachwerkstatt.</span><span class="nl"></span><span class="txt">Hersteller (GPSR):</span><span class="chip"><span class="ico">▤</span>gpsr_manufacturer_name</span><div class="cond">geen "Passend für"-blok (voertuigdata ontbreekt)</div></div>
+    </div></div>
+  </div>
+
+  <div id="c_generiek" class="catblock hidden">
+    <div class="rulehead"><span class="name">Overige 18 categorieën — generiek patroon</span><span class="pill p-todo">positie-veld bevestigen</span></div>
+    <div class="card"><div class="hd">Universeel titel-patroon <span class="tag">doelveld: ebay_title_de</span></div><div class="bd">
+      <div class="combine"><span class="chip"><span class="ico">▤</span>brand</span><span class="txt">" "</span><span class="chip"><span class="ico">▤</span>sku</span><span class="txt">" &lt;Produktart DE&gt; "</span><span class="chip bad"><span class="ico">▤</span>positie (scan)</span><span class="txt">" für u.a. "</span><span class="chip"><span class="ico">▤</span>car_brands_top1</span><span class="chip"><span class="ico">▤</span>car_models_top1</span><div class="cond">positie/voertuig alleen indien gevuld · titel ≤ 80</div></div>
+      <div class="note warn"><b>Per categorie in STAP 1 bevestigen:</b> de exacte positie-/voertuig-veldnaam uit de veldkiezer (zoals bij remschijven <span class="chip">vooras_achteras_duits</span> bleek). Vaste velden staan wél: brand, sku, ean, oe_reference, car_brands_top1, car_models_top1, gpsr_manufacturer_name.</div>
+      <div class="kv"><b>Categorieën (Produktart DE):</b> Remklauwen (Bremssattel) · Draagarmen (Querlenker) · Remtrommel (Bremstrommel) · Remslangen (Bremsschlauch) · Wielremcilinder (Radbremszylinder) · Slijtindicatoren (Warnkontakt) · Accessoiresets (Zubehörsatz) · Draagarmrubber (Lagerung Lenker) · Fuseekogel (Traggelenk) · Spoorstangeind (Spurstangenkopf) · Axiaalkogel (Axialgelenk) · Stabilisatorstangen (Koppelstange) · Wielsnelheidssensor (ABS-Sensor) · Manchette (Manschette) · Wartelmoer (Achsmutter) · Koppelingkabel (Kupplungsseilzug) · Trekkabel (Handbremsseil) · Gaskabel (Gaszug).</div>
+    </div></div>
+  </div>
+
+  <div class="note warn"><b>Kostenrem (nooit aankomen):</b> de regel "SKU-selectie" (alleen geselecteerde SKU's online) en de aantal-per-categorie-limiet zijn de money-guard. Niet dupliceren of leeghalen bij nieuwe kanalen.</div>
+</section>
+
+<footer>Bron: live Magento admin + Channable-app (project 314525) + Channable-API · 2026-07-09 · Remschijven/Remblokken velddata geverifieerd; overige categorieën positie-veld te bevestigen · CCP · connectcarparts.nl</footer>
+</div>
+<script>
+ function show(id,btn){
+   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+   document.getElementById(id).classList.add('active');
+   document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+   btn.classList.add('active');
+   window.scrollTo({top:0,behavior:'smooth'});
+ }
+ function showCat(v){
+   ['remschijven','remblokken','generiek'].forEach(c=>{
+     document.getElementById('c_'+c).classList.toggle('hidden', c!==v);
+   });
+ }
+</script>
+</body></html>

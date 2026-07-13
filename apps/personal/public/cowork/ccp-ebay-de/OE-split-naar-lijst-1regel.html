@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OE - Split naar Lijst · 1 regel, 4 secties</title>
+<style>
+  :root{ --blue:#1a5fb4; --ink:#1f2933; --mut:#5b6b7b; --line:#e2e8f0; --bg:#f4f6f9; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); padding:18px; line-height:1.5; }
+  .wrap{ max-width:860px; margin:0 auto; }
+  h1{ font-size:17px; font-weight:700; color:#102a43; }
+  .lead{ font-size:12px; color:var(--mut); margin:3px 0 8px; }
+  .rulehead{ display:flex; align-items:center; gap:10px; margin:12px 0 2px; }
+  .rulehead .name{ font-size:15px; font-weight:700; color:#102a43; }
+  .rulehead .tag{ font-size:10.5px; font-weight:700; color:#12508f; background:#e7f0fb; border:1px solid #bcd6f5; border-radius:6px; padding:2px 8px; }
+  .sec{ background:#fff; border:1px solid var(--line); border-radius:11px; margin-top:12px; overflow:hidden; box-shadow:0 1px 2px rgba(16,42,67,.04); }
+  .sec > .hd{ background:#eef2f7; border-bottom:1px solid var(--line); padding:8px 13px; font-weight:700; font-size:12.5px; color:#334155; display:flex; align-items:center; gap:8px; }
+  .sec > .hd .n{ background:#1a5fb4; color:#fff; width:18px; height:18px; border-radius:50%; font-size:10px; text-align:center; line-height:18px; }
+  .sec > .hd .goal{ margin-left:auto; font-size:10.5px; color:#8a5a00; background:#fff3e0; border:1px solid #f2d9a8; border-radius:12px; padding:1px 9px; }
+  .sec > .bd{ padding:11px 13px; }
+  .blk{ border:1px solid #e6ebf1; border-radius:9px; padding:10px 12px; margin-bottom:9px; }
+  .blk:last-child{ margin-bottom:0; }
+  .row{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+  .row + .row{ margin-top:8px; }
+  .lbl{ width:44px; font-weight:700; color:#334155; font-size:13.5px; }
+  .kw{ font-size:12.5px; color:#334155; }
+  .drop{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid #cbd5e1; border-radius:7px; padding:5px 10px; font-size:12.5px; color:#102a43; font-weight:600; }
+  .drop .fi{ color:var(--blue); font-size:11px; }
+  .drop::after{ content:"▾"; color:#94a3b8; font-size:11px; margin-left:3px; }
+  .op{ background:#f1f5f9; border:1px solid #dbe3ec; border-radius:7px; padding:5px 10px; font-size:12.5px; color:#334155; }
+  .op::after{ content:" ▾"; color:#94a3b8; font-size:11px; }
+  .val{ background:#fff; border:1px solid #cbd5e1; border-radius:7px; padding:5px 12px; font-size:12.5px; color:#102a43; min-width:60px; font-family:"Consolas",monospace; }
+  .plus{ display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid #cbd5e1; border-radius:50%; color:#1a5fb4; font-size:13px; }
+  .note{ font-size:11px; color:var(--mut); margin-top:7px; }
+  .addsec{ text-align:center; margin:12px 0; }
+  .addsec span{ font-size:12.5px; color:#1a5fb4; border:1px solid #bcd6f5; background:#fff; border-radius:8px; padding:6px 14px; font-weight:600; }
+  .map{ background:#eef5ff; border:1px solid #cfe0f7; border-left:4px solid #1a5fb4; border-radius:9px; padding:11px 13px; margin-top:14px; font-size:12.5px; color:#1c3d5f; }
+  .map b{ color:#12406e; }
+  .foot{ font-size:10.5px; color:#8aa0b6; margin-top:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>OE - Split naar Lijst <span style="font-weight:400;color:#8aa0b6;font-size:13px">· 1 regel · 4 secties</span></h1>
+  <div class="lead">Alles in één import-regel. Onder elke sectie klik je <b>+ Sectie toevoegen</b>. Veld <code>oe_list</code> = <b>lijst-veld (aan)</b>.</div>
+
+  <div class="rulehead"><span class="name">OE - Split naar Lijst</span><span class="tag">import-regel</span></div>
+
+  <!-- Sectie 1 -->
+  <div class="sec">
+    <div class="hd"><span class="n">1</span>Split naar lijst<span class="goal">transformeer tekst → lijst</span></div>
+    <div class="bd">
+      <div class="blk"><div class="row"><span class="lbl">Als</span><span class="drop"><span class="fi">▤</span> oe_reference</span><span class="op">niet leeg is</span></div></div>
+      <div class="blk"><div class="row"><span class="lbl">Dan</span><span class="kw">neem</span><span class="drop"><span class="fi">▤</span> oe_list</span><span class="kw">en</span><span class="op">transformeer tekst naar lijst</span><span class="kw">splits op</span><span class="val">,</span></div></div>
+    </div>
+  </div>
+  <div class="addsec"><span>+ Sectie toevoegen</span></div>
+
+  <!-- Sectie 2 -->
+  <div class="sec">
+    <div class="hd"><span class="n">2</span>Normaliseer formaat<span class="goal">vervang waarde (2 rijen)</span></div>
+    <div class="bd">
+      <div class="blk"><div class="row"><span class="lbl">Als</span><span class="drop"><span class="fi">▤</span> alle</span></div></div>
+      <div class="blk">
+        <div class="row"><span class="lbl">Dan</span><span class="kw">neem</span><span class="drop"><span class="fi">▤</span> oe_list</span><span class="kw">en</span><span class="op">vervang waarde</span></div>
+        <div class="row"><span class="lbl"></span><span class="val">.</span><span class="plus">+</span><span class="kw">vervang met</span><span class="val" style="min-width:90px">(leeg)</span></div>
+        <div class="row"><span class="lbl"></span><span class="val" style="min-width:60px">&nbsp; &nbsp;</span><span class="plus">+</span><span class="kw">vervang met</span><span class="val" style="min-width:90px">(leeg)</span></div>
+      </div>
+      <div class="note">Rij 1 = punt <code>.</code> weg · rij 2 = spatie <code>&nbsp;</code> weg. Zo worden "1J0.615.301D" en "1J0 615 301D" beide <b>1J0615301D</b>.</div>
+    </div>
+  </div>
+  <div class="addsec"><span>+ Sectie toevoegen</span></div>
+
+  <!-- Sectie 3 -->
+  <div class="sec">
+    <div class="hd"><span class="n">3</span>Dedupe<span class="goal">verwijder duplicaten</span></div>
+    <div class="bd">
+      <div class="blk"><div class="row"><span class="lbl">Als</span><span class="drop"><span class="fi">▤</span> alle</span></div></div>
+      <div class="blk"><div class="row"><span class="lbl">Dan</span><span class="kw">neem</span><span class="drop"><span class="fi">▤</span> oe_list</span><span class="kw">en</span><span class="op">verwijder dubbele vermeldingen uit een lijst</span></div></div>
+      <div class="note">34 items → ~10 unieke. (Niet "Verwijder dubbele items" — dat is product-dedup.)</div>
+    </div>
+  </div>
+  <div class="addsec"><span>+ Sectie toevoegen</span></div>
+
+  <!-- Sectie 4 -->
+  <div class="sec">
+    <div class="hd"><span class="n">4</span>Begrens aantal<span class="goal">knip lijst</span></div>
+    <div class="bd">
+      <div class="blk"><div class="row"><span class="lbl">Als</span><span class="drop"><span class="fi">▤</span> alle</span></div></div>
+      <div class="blk"><div class="row"><span class="lbl">Dan</span><span class="kw">neem</span><span class="drop"><span class="fi">▤</span> oe_list</span><span class="kw">en</span><span class="op">knip lijst</span><span class="kw">van</span><span class="val">1</span><span class="kw">tot</span><span class="val">10</span></div></div>
+      <div class="note">"knip lijst" = lijst inkorten (eerste 10). Veiligheidsmarge onder eBay's max aantal waarden.</div>
+    </div>
+  </div>
+
+  <div class="map">
+    <b>Daarna in het eBay DE-kanaal:</b> koppel <code>oe_list</code> als <b>meerdere waarden</b> aan item-specific <b>"OE/OEM Referenznummer(n)"</b> — niet als één string. Elk nummer wordt een aparte waarde ≤65 tekens. ✅ error weg.
+  </div>
+
+  <div class="foot">Channable 314525 · veld oe_list = lijst (aan) · acties gecheckt tegen canonieke lijst (vault: channable-acties-lijst.md): transformeer tekst naar lijst · vervang waarde · verwijder dubbele vermeldingen uit een lijst · knip lijst.</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>eBay DE testorder — diagnose & fix (A4)</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .sheet { width:210mm; min-height:297mm; padding:13mm 13mm 10mm; margin:0 auto; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:8px; margin-bottom:12px; }
+  header h1{ font-size:17px; font-weight:700; letter-spacing:-.2px; }
+  header .sub{ font-size:8.8px; color:#52606d; margin-top:4px; }
+  h2{ font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:#102a43;
+      margin:14px 0 6px; padding:3px 8px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+
+  /* flow */
+  .flow{ display:flex; align-items:stretch; margin:6px 0 2px; }
+  .node{ flex:1; border-radius:6px; padding:9px 8px; text-align:center; }
+  .node .nm{ font-size:9.5px; font-weight:700; }
+  .node .ds{ font-size:7.6px; margin-top:3px; line-height:1.3; }
+  .ok{ background:#eef7f1; border:1px solid #bfe2cd; } .ok .nm{ color:#14532d; } .ok .ds{ color:#3d6b4f; }
+  .fail{ background:#fdecec; border:1px solid #f2c4c4; } .fail .nm{ color:#8f1f1f; } .fail .ds{ color:#8a4444; }
+  .arrow{ display:flex; align-items:center; justify-content:center; width:26px; font-size:15px; font-weight:700; }
+  .arrow.g{ color:#2f9e63; } .arrow.r{ color:#d64545; }
+  .mark{ font-size:8px; font-weight:700; margin-top:4px; }
+  .mark.g{ color:#2f9e63; } .mark.r{ color:#b02a2a; }
+
+  .errbox{ margin-top:8px; background:#fdf6f6; border:1px solid #f0cccc; border-left:3px solid #d64545; border-radius:4px; padding:8px 11px; }
+  .errbox .lbl{ font-size:7.4px; text-transform:uppercase; letter-spacing:.4px; color:#b02a2a; font-weight:700; }
+  .errbox .q{ font-size:9.5px; color:#7a1f1f; font-style:italic; margin-top:2px; }
+
+  ul,ol{ margin:2px 0 0 16px; } li{ font-size:8.6px; color:#33414f; line-height:1.45; margin-bottom:3px; }
+  li b{ color:#102a43; }
+  .facts{ display:flex; gap:7px; margin:6px 0 2px; }
+  .facts .f{ flex:1; background:#f7f9fc; border:1px solid #e4e9f0; border-radius:4px; padding:6px 8px; }
+  .facts .f .k{ font-size:6.8px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; font-weight:700; }
+  .facts .f .v{ font-size:9px; color:#102a43; font-weight:700; margin-top:2px; line-height:1.2; }
+  code{ background:#f2f6fb; border:1px solid #dbe6f4; border-radius:2px; padding:0 3px; font-size:7.8px; color:#12406e; }
+  .steps{ counter-reset:s; }
+  .steps .st{ display:flex; gap:9px; padding:6px 0; border-bottom:1px solid #eef2f7; }
+  .steps .st:last-child{ border-bottom:none; }
+  .steps .st .num{ flex:none; width:17px; height:17px; border-radius:50%; background:#1a5fb4; color:#fff; font-size:9px; font-weight:700; text-align:center; line-height:17px; }
+  .steps .st .b{ font-size:8.8px; color:#33414f; line-height:1.45; }
+  .steps .st .b b{ color:#102a43; }
+  .callout{ background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid #1a5fb4; border-radius:4px; padding:8px 11px; margin-top:6px; font-size:8.6px; color:#1c3d5f; line-height:1.5; }
+  .callout b{ color:#12406e; }
+  footer{ margin-top:14px; border-top:1px solid #d9e2ec; padding-top:6px; font-size:7px; color:#829ab1;
+          display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.4px;padding:1px 8px;border-radius:8px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>eBay.de testorder — waarom hij faalt &amp; hoe je het oplost <span class="accent">· diagnose</span></h1>
+    <div class="sub">CCP × A.B.S. · 2026-07-06 · live gecheckt in Channable (proj. 314525) · order 106030924</div>
+  </header>
+
+  <h2>Waar het misgaat in de keten</h2>
+  <div class="flow">
+    <div class="node ok"><div class="nm">eBay DE</div><div class="ds">order geplaatst</div><div class="mark g">OK</div></div>
+    <div class="arrow g">&rarr;</div>
+    <div class="node ok"><div class="nm">Channable</div><div class="ds">order opgehaald</div><div class="mark g">OK</div></div>
+    <div class="arrow r">&rarr;</div>
+    <div class="node fail"><div class="nm">Magento</div><div class="ds">import geweigerd</div><div class="mark r">FOUT</div></div>
+  </div>
+  <div class="errbox">
+    <div class="lbl">Foutmelding in Channable (status-log)</div>
+    <div class="q">"Could not import order 106030924: Some addresses can't be used due to the configurations for specific countries."</div>
+  </div>
+
+  <h2>Wat ik live zag</h2>
+  <div class="facts">
+    <div class="f"><div class="k">Kanaal</div><div class="v">eBay DE</div></div>
+    <div class="f"><div class="k">Verzendland</div><div class="v">DE — Nordrhein-Westfalen</div></div>
+    <div class="f"><div class="k">Adres</div><div class="v">56821 Ellenz-Poltersdorf</div></div>
+    <div class="f"><div class="k">Patroon</div><div class="v">alle DE-orders falen · NL lukt</div></div>
+  </div>
+  <ul>
+    <li>De order komt <b>correct van eBay bij Channable</b> binnen (stappen "placed" + "retrieved" zijn groen).</li>
+    <li>Het gaat mis bij het <b>wegschrijven naar Magento</b>: Magento weigert het Duitse adres.</li>
+    <li>Oorzaak: <b>Duitsland staat niet in Magento's toegestane landen</b> (Allow Countries) voor de store waar de order in landt. Daarom lukt leverland NL wél en DE niet.</li>
+  </ul>
+
+  <h2>De fix — binnen je huidige Magento (geen nieuwe storefront nodig)</h2>
+  <div class="steps">
+    <div class="st"><div class="num">1</div><div class="b"><b>Allow Countries uitbreiden.</b> Stores → Configuration → General → General → Country Options → <code>Allow Countries</code> → <b>Duitsland</b> toevoegen. Let op de <b>scope</b> rechtsboven ("Store View") — kies de website/store view waar de Channable-koppeling in importeert, niet alleen Default.</div></div>
+    <div class="st"><div class="num">2</div><div class="b"><b>Verzendmethode op DE toestaan.</b> Bij de gebruikte shipping method: "Ship to Applicable Countries" = <i>All Allowed Countries</i>, of DE expliciet toevoegen.</div></div>
+    <div class="st"><div class="num">3</div><div class="b"><b>Opnieuw versturen.</b> In Channable → Orders → "Verzend alle mislukte orders opnieuw". De DE-testorder moet nu doorlopen naar Magento.</div></div>
+    <div class="st"><div class="num">4</div><div class="b"><b>Controle (niet blokkerend voor import).</b> DE-btw 19% / OSS en verzendtarief DE goed zetten — raakt de facturatie/marge, niet de order-import zelf.</div></div>
+  </div>
+  <div class="callout" style="margin-top:8px"><b>~5 minuten config — dit kunnen Hans of Luca zelf</b> (jullie zijn volledig admin in Magento). Geen Atvise of Niek nodig: het is een admin-instelling, geen technisch/feature-issue. Atvise pas inschakelen als het na de config alsnog technisch blijkt te haperen.</div>
+
+  <h2>Conclusie op de storefront-vraag</h2>
+  <ul>
+    <li>Een aparte <b>Duitse storefront puur om facturen te sturen is overkill.</b> De blocker is niet "geen DE-storefront", maar "DE niet in Allow Countries".</li>
+    <li>Een aparte DE-website heb je pas nodig voor een <b>DE-taal frontend, DE-tax-scope of DE-factuursjablonen in Magento zelf</b> — niet om een eBay DE-order te kunnen verwerken.</li>
+  </ul>
+
+  <h2>Facturatie — advies</h2>
+  <div class="callout">
+    Haal klantfacturatie <b>volledig weg bij Magento/ABS</b> en doe het extern op de eBay-order (<b>easybill / Billbee</b>), of stuur voor B2C niets (niet verplicht). <b>Minder koppelingen = minder faalpunten.</b> Magento/D365 blijft dan puur voor voorraad + orderadministratie/fulfilment.
+  </div>
+
+  <footer>
+    <span>Live-check: Channable (ingelogd als Luca). Magento-admin n

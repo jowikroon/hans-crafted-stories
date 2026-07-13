@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Import-regels: OE dedupe + split</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .sheet{ width:210mm; min-height:297mm; padding:13mm 13mm; margin:0 auto; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:7px; margin-bottom:10px; }
+  header h1{ font-size:16.5px; font-weight:700; }
+  header .sub{ font-size:8.8px; color:#52606d; margin-top:3px; }
+  .err{ background:#fdf0f0; border:1px solid #f0cccc; border-left:4px solid #d64545; border-radius:5px; padding:8px 11px; margin:10px 0; font-size:8.8px; color:#7a1f1f; line-height:1.45; }
+  .err b{ color:#a52222; }
+  h2{ font-size:9.8px; text-transform:uppercase; letter-spacing:.4px; color:#102a43; margin:13px 0 6px; }
+  .pipe{ display:flex; flex-direction:column; gap:0; }
+  .stepwrap{ display:flex; flex-direction:column; align-items:center; }
+  .step{ width:100%; border:1px solid #d3e2f3; border-radius:7px; overflow:hidden; }
+  .step .bar{ background:#1a5fb4; color:#fff; padding:5px 10px; display:flex; align-items:center; gap:8px; }
+  .step .bar .no{ background:#fff; color:#1a5fb4; width:16px; height:16px; border-radius:50%; font-size:9px; font-weight:700; text-align:center; line-height:16px; }
+  .step .bar .nm{ font-size:9.5px; font-weight:700; }
+  .step .bar .op{ margin-left:auto; font-size:7.4px; background:#0d3f74; padding:2px 7px; border-radius:8px; }
+  .step .bd{ padding:8px 11px; }
+  .code{ font-family:"Consolas",monospace; font-size:8.6px; line-height:1.7; color:#243b53; }
+  .code .kw{ color:#1a5fb4; font-weight:700; }
+  .code .f{ background:#eef2f7; border-radius:3px; padding:0 4px; color:#0b3d6b; font-weight:600; }
+  .code .v{ background:#e6f4ec; border-radius:3px; padding:0 4px; color:#1f7a44; }
+  .note{ font-size:7.8px; color:#52606d; margin-top:4px; line-height:1.4; }
+  .arw{ color:#1a5fb4; font-size:16px; line-height:1; padding:3px 0; }
+  .io{ display:flex; gap:9px; margin-top:12px; }
+  .io .b{ flex:1; border:1px solid #dbe4ee; border-radius:6px; padding:8px 10px; }
+  .io .b h3{ font-size:8px; text-transform:uppercase; letter-spacing:.3px; margin-bottom:4px; }
+  .io .before h3{ color:#a52222; } .io .after h3{ color:#1f7a44; }
+  .io .b .c{ font-family:"Consolas",monospace; font-size:7.8px; color:#33414f; line-height:1.5; word-break:break-all; }
+  .io .after .c b{ color:#0f5132; }
+  .foot{ margin-top:14px; border-top:1px solid #d9e2ec; padding-top:6px; font-size:7.2px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.4px;padding:2px 9px;border-radius:9px;font-weight:600;}
+  .map{ background:#eef5ff; border:1px solid #cfe0f7; border-left:4px solid #1a5fb4; border-radius:5px; padding:8px 11px; margin-top:10px; font-size:8.6px; color:#1c3d5f; line-height:1.5; }
+  .map b{ color:#12406e; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>Import-regels — OE-nummers <span class="accent">dedupe + split</span></h1>
+    <div class="sub">Fix voor eBay-error "value too long (max 65 tekens)" op OE/OEM Referenznummer(n) · veld <code>oe_reference</code> · CCP × A.B.S.</div>
+  </header>
+
+  <div class="err">
+    <b>De error:</b> Channable stuurt alle OE-nummers als <b>één waarde</b> (>65 tekens). De lijst zit vol <b>dubbelen</b> (1J0.615.301D 5×) en <b>2 formaten</b> (punt én spatie). eBay wil <b>max 65 tekens per waarde</b>.
+  </div>
+
+  <h2>Bouw deze 4 import-regels (in volgorde)</h2>
+  <div class="pipe">
+
+    <div class="stepwrap"><div class="step">
+      <div class="bar"><span class="no">1</span><span class="nm">OE — split naar lijst</span><span class="op">Split tekst → lijst</span></div>
+      <div class="bd"><div class="code">
+<span class="kw">ALS</span> <span class="f">oe_reference</span> <span class="kw">NIET LEEG IS</span><br>
+<span class="kw">DAN neem</span> <span class="f">oe_list</span> <span class="kw">— SPLIT TEKST NAAR LIJST</span> — scheiding <span class="v">, </span>
+      </div><div class="note">Zet de komma-string om in losse lijst-items.</div></div>
+    </div></div>
+    <div class="arw">▼</div>
+
+    <div class="stepwrap"><div class="step">
+      <div class="bar"><span class="no">2</span><span class="nm">OE — normaliseer formaat</span><span class="op">Zoeken &amp; vervangen</span></div>
+      <div class="bd"><div class="code">
+<span class="kw">ALS</span> <span class="kw">ALLE</span><br>
+<span class="kw">DAN neem</span> <span class="f">oe_list</span> <span class="kw">— VERVANG</span> <span class="v">"."</span> → <span class="v">""</span> &nbsp;<b>én</b>&nbsp; <span class="v">" "</span> → <span class="v">""</span>
+      </div><div class="note">Punten + spaties weg → "1J0.615.301D" en "1J0 615 301D" worden beide <b>1J0615301D</b>, zodat dubbelen matchen.</div></div>
+    </div></div>
+    <div class="arw">▼</div>
+
+    <div class="stepwrap"><div class="step">
+      <div class="bar"><span class="no">3</span><span class="nm">OE — dedupe</span><span class="op">Duplicaten verwijderen</span></div>
+      <div class="bd"><div class="code">
+<span class="kw">ALS</span> <span class="kw">ALLE</span><br>
+<span class="kw">DAN neem</span> <span class="f">oe_list</span> <span class="kw">— DUPLICATEN VERWIJDEREN</span>
+      </div><div class="note">34 items → ~10 unieke.</div></div>
+    </div></div>
+    <div class="arw">▼</div>
+
+    <div class="stepwrap"><div class="step">
+      <div class="bar"><span class="no">4</span><span class="nm">OE — begrens aantal (veiligheid)</span><span class="op">Lijst inkorten</span></div>
+      <div class="bd"><div class="code">
+<span class="kw">ALS</span> <span class="kw">ALLE</span><br>
+<span class="kw">DAN neem</span> <span class="f">oe_list</span> <span class="kw">— EERSTE</span> <span class="v">10</span> <span class="kw">ITEMS</span>
+      </div><div class="note">Blijft ruim binnen eBay's max aantal item-specific-waarden.</div></div>
+    </div></div>
+
+  </div>
+
+  <div class="map">
+    <b>Daarna in het eBay DE-kanaal (mapping):</b> koppel <b><code>oe_list</code> als méérdere waarden</b> aan item-specific <b>"OE/OEM Referenznummer(n)"</b> — niet als één string. Elk nummer (~10 tekens) is dan een aparte waarde, ruim onder 65.
+  </div>
+
+  <div class="io">
+    <div class="b before"><h3>❌ Vóór (1 waarde, >65)</h3><div class="c">1J0.615.301D, 1J0.615.301L, 6R0615301, 6R0615301C, 8Z0615301B, 8Z0615301D, JZW615301N, 1J0.615.301D, 1J0.615.301L … (34×, dubbel)</div></div>
+    <div class="b after"><h3>✅ Na (10 losse waarden ≤65)</h3><div class="c"><b>1J0615301D · 1J0615301L · 6R0615301 · 6R0615301C · 8Z0615301B · 8Z0615301D · JZW615301N · 1JE615301 · 5Z0615301B · JZW698302CB</b></div></div>
+  </div>
+
+  <div class="foot">
+    <span>Import-regels OE dedupe+split · eBay DE 65-tekens fix · Channable 314525 · tier 2: bevestig dat eBay-OE-item meerdere waarden aanneemt (standaard wel)</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </div>
+</div>
+</body>
+</html>

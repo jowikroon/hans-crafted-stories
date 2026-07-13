@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>eBay DE — CCP-scope go-live plan (A4)</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .sheet { width:210mm; min-height:297mm; padding:11mm 11mm 8mm; margin:0 auto; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:8px; }
+  header h1{ font-size:16.5px; font-weight:700; letter-spacing:-.2px; }
+  header .sub{ font-size:8.6px; color:#52606d; margin-top:3px; }
+  .banner{ font-size:8.2px; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid #1a5fb4;
+           border-radius:3px; padding:6px 9px; margin:8px 0; color:#1c3d5f; }
+  .banner b{ color:#12406e; }
+  h2{ font-size:9.8px; text-transform:uppercase; letter-spacing:.4px; color:#102a43;
+      margin:10px 0 4px; padding:2px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  h2.own{ background:#eaf6ef; border-left-color:#2f9e63; color:#14532d; }
+  h2.dep{ background:#fff5ec; border-left-color:#d98a1a; color:#7a4b0a; }
+  table{ width:100%; border-collapse:collapse; margin-top:2px; }
+  th,td{ text-align:left; font-size:8px; padding:3px 6px; border-bottom:1px solid #e4e9f0; vertical-align:top; line-height:1.3; }
+  th{ font-size:7px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  td.n{ width:5%; font-weight:700; color:#1a5fb4; } td.a{ width:40%; } td.h{ width:39%; color:#3e4c59; } td.o{ width:16%; }
+  b.k{ color:#102a43; }
+  code{ background:#f2f6fb; border:1px solid #dbe6f4; border-radius:2px; padding:0 3px; font-size:7.4px; color:#12406e; }
+  .safeguard{ border:1px solid #d3e2f3; border-radius:5px; padding:8px 10px; margin-top:3px; background:#f7fafd; }
+  .safeguard .t{ font-size:8.4px; color:#102a43; font-weight:700; margin-bottom:3px; }
+  .safeguard ol{ margin:0 0 0 15px; }
+  .safeguard li{ font-size:8px; color:#3e4c59; line-height:1.4; margin-bottom:2px; }
+  .dot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:3px; }
+  .g{background:#2f9e63;} .y{background:#e8a13a;} .r{background:#d64545;}
+  footer{ margin-top:9px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1;
+          display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.4px;padding:1px 8px;border-radius:8px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>eBay.de — wat wíj deze week afmaken <span class="accent">· doel: maandag 13-07 direct live</span></h1>
+    <div class="sub">CCP × A.B.S. · Channable proj. 314525 · eBay DE (operator group 1324011) · scope-principe: alles binnen CCP-controle deze week af; dependencies expliciet belegd, we wachten er niet op</div>
+  </header>
+
+  <div class="banner">
+    <b>Waarom de DE-testorder faalde:</b> Magento verzendt nu alleen NL en kan alleen een <b>NL-factuur</b> sturen. Een DE-order wordt pas bij ABS op adres/land beoordeeld voor factuurtaal — maar dat is dan <b>geen CCP-factuur</b>. In Channable gaat de DE-testorder goed met leverland NL; met leverland DE volgt de melding dat dit eerst in Magento aan moet (DE-storefront/verzending). Dat is een dependency (zie C) — <b>niet</b> onze Channable-scope. Wij bouwen A af, ongeacht die knop.</b>
+  </div>
+
+  <h2 class="own">A · In onze scope — deze week afmaken (Channable + content)</h2>
+  <table>
+    <tr><th>#</th><th>Actie</th><th>Hoe (concreet)</th><th>Status / eigenaar</th></tr>
+    <tr><td class="n">1</td><td class="a"><b class="k">Titels per categorie</b> — correct en compleet per productcategorie (Remschijven · Remblokken · Stuurdelen · Wiellagersets)</td><td class="h">Channel-rule <code>DE - ebay_title_de</code> + <code>ebay_title_trim</code>, per categorie gegate op <code>categories_clean_single_de</code>. Titel ≤80 tekens incl. voertuigcompatibiliteit; woordherhaling vermijden</td><td class="o"><span class="dot y"></span>Hans</td></tr>
+    <tr><td class="n">2</td><td class="a"><b class="k">Omschrijvingen per categorie</b> — Duitse basisomschrijving per categorie</td><td class="h">Rule <code>DE - ebay_desc_de</code>: sectie schijf (<code>Bremsscheibe</code>) + sectie blok (<code>Bremsbelag</code>), GPSR-blok verplicht. Preview 3 SKU (16880 · 37760 · 37770) op correct Duits, geen dubbele spaties/streepjes</td><td class="o"><span class="dot y"></span>Hans + Luca</td></tr>
+    <tr><td class="n">3</td><td class="a"><b class="k">Listing-selectie per categorie</b> — makkelijk SKU's/categorieën aan/uitzetten voor eBay. Voorkomt dat er per ongeluk ~30k producten listen (eBay rekent ~€0,04 per listing)</td><td class="h">Include-veld + channel-filter (zie B). Standaard = niets list; alleen bewust geselecteerde categorie/SKU-set gaat naar eBay</td><td class="o"><span class="dot r"></span>Hans</td></tr>
+    <tr><td class="n">4</td><td class="a"><b class="k">Categorie + item specifics</b> per categorie</td><td class="h">Bremsscheiben 33564 / Bremsbeläge 57357; schijf Ø/dikte, blok WVA/maten. Marktprijs Amazon/eBay DE ±5%</td><td class="o"><span class="dot y"></span>Hans / Luca</td></tr>
+    <tr><td class="n">5</td><td class="a"><b class="k">Preview + publiceren</b> geselecteerde set</td><td class="h">Preview op de pilot-SKU's, dan publiceren. Run-log + vault <code>log.md</code>. Daarna gecontroleerd opschalen binnen de listing-selectie</td><td class="o"><span class="dot y"></span>Hans</td></tr>
+  </table>
+
+  <h2>B · Het listing-selectie mechanisme (de €0,04-safeguard)</h2>
+  <div class="safeguard">
+    <div class="t">Zo houden we controle over exact wat er op eBay DE komt te staan</div>
+    <ol>
+      <li><b>Include-veld</b> aanmaken, bv. <code>ebay_de_include</code> — leeg/false als default voor alle ~39.684 SKU's. Niets list tenzij expliciet aangezet.</li>
+      <li><b>Zetten per categorie of per SKU:</b> een channel-rule zet <code>ebay_de_include = true</code> waar <code>categories_clean_single_de</code> in een <b>allowlist</b> staat (bv. alleen "Bremsscheibe", "Bremsbelag"), of via een handmatige SKU-lijst voor de pilot.</li>
+      <li><b>Channel-filter op eBay DE:</b> "exporteer alleen items waar <code>ebay_de_include = true</code>". Alles daarbuiten wordt niet aangeboden → geen accidentele 30k listings.</li>
+      <li><b>Uitsluiten</b> = categorie uit de allowlist halen of SKU op false. Aan/uit is één regel, direct terug te draaien.</li>
+      <li><b>Check vóór publiceren:</b> item-teller in de eBay DE-preview = exact het bedoelde aantal (bv. 20 → gecontroleerd naar 100), niet de volledige feed.</li>
+    </ol>
+  </div>
+
+  <h2 class="dep">C · Dependencies — buiten CCP-scope, wél belegd (we wachten er niet op)</h2>
+  <table>
+    <tr><th>#</th><th>Punt</th><th>Waarom / gevolg</th><th>Eigenaar</th></tr>
+    <tr><td class="n">1</td><td class="a"><b class="k">Magento Allow Countries / DE-verzending</b> aanzetten; DE-order kan pas met leverland DE door Channable</td><td class="h">Blokkeert nu de DE-testorder ("addresses can't be used ... specific countries"). Geen aparte storefront nodig — alleen config die <b>Hans/Luca zelf</b> kunnen (admin)</td><td class="o">Hans/Luca</td></tr>
+    <tr><td class="n">2</td><td class="a"><b class="k">DE-facturatie</b> — nu alleen NL-factuur uit Magento</td><td class="h">Advies: extern via tool (easybill/Billbee) i.p.v. Magento/ABS. B2C niet verplicht. Besluit factuurpad</td><td class="o">Sjoerd</td></tr>
+    <tr><td class="n">3</td><td class="a"><b class="k">ABS API → Magento T&amp;T-velden</b> — DPD-tracking uit ABS API in generieke Magento-velden</td><td class="h">ABS-kant. Daarna Channable-sync terug naar eBay (Hans)</td><td class="o">Niek (ABS)</td></tr>
+    <tr><td class="n">4</td><td class="a"><b class="k">Compliance-blockers</b> — Impressum/AGB/Widerruf, OSS-regeling, Lizenzero/VerpackG</td><td class="h">Verkoop-gate; los van onze content-scope</td><td class="o">Sjoerd</td></tr>
+  </table>
+
+  <footer>
+    <span>Bron: vault eBay-DE-Launch · Channable-D365-Integration · eBay-orders-readiness · channable-operator (proj. 314525) · update Hans 2026-07-06</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </footer>
+</div>
+</body>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Stoplicht — eBay DE order-flow · voor Dennis (Thinkyellow)</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#eef1f5; }
+  .sheet{ width:210mm; min-height:297mm; padding:11mm 11mm 8mm; margin:0 auto; background:#fff; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:9px; }
+  header h1{ font-size:16.5px; font-weight:700; letter-spacing:-.2px; }
+  header .sub{ font-size:8.7px; color:#52606d; margin-top:3px; line-height:1.35; }
+  .meta{ display:flex; gap:6px; margin:9px 0 4px; }
+  .meta .m{ flex:1; background:#f2f6fb; border:1px solid #d3e2f3; border-radius:4px; padding:5px 8px; }
+  .meta .m .n{ font-size:7px; color:#1a5fb4; font-weight:700; letter-spacing:.3px; text-transform:uppercase; }
+  .meta .m .t{ font-size:8.4px; color:#243b53; margin-top:2px; line-height:1.28; }
+
+  /* flow strip */
+  .flow{ display:flex; align-items:stretch; gap:0; margin:10px 0 2px; }
+  .flow .s{ flex:1; border:1px solid #d9e2ec; border-radius:4px; padding:6px 6px 7px; text-align:center; position:relative; }
+  .flow .s .lb{ font-size:8.2px; font-weight:700; color:#102a43; }
+  .flow .s .st{ display:block; font-size:6.9px; margin-top:3px; font-weight:700; letter-spacing:.2px; }
+  .flow .s.g{ background:#f0f8f3; border-color:#bfe4cf; }
+  .flow .s.g .st{ color:#1f7a44; }
+  .flow .s.o{ background:#fff5e9; border-color:#f0cd95; }
+  .flow .s.o .st{ color:#b26a00; }
+  .flow .s.k{ background:#f4f6f9; border-color:#d9e2ec; }
+  .flow .s.k .st{ color:#6b7a8d; }
+  .flow .arw{ align-self:center; color:#8aa0b8; font-size:13px; font-weight:700; padding:0 3px; }
+
+  h2{ font-size:9.6px; text-transform:uppercase; letter-spacing:.4px; color:#102a43;
+      margin:12px 0 5px; padding:3px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  .cols{ display:flex; gap:8px; }
+  .cols .col{ flex:1; border-radius:5px; padding:8px 9px; border:1px solid; }
+  .col.green{ background:#f0f8f3; border-color:#bfe4cf; }
+  .col.amber{ background:#fff5e9; border-color:#f0cd95; }
+  .col.grey{ background:#f4f6f9; border-color:#d9e2ec; }
+  .col h3{ font-size:9px; text-transform:uppercase; letter-spacing:.3px; margin-bottom:5px; display:flex; align-items:center; gap:5px; }
+  .col.green h3{ color:#1f7a44; }
+  .col.amber h3{ color:#b26a00; }
+  .col.grey h3{ color:#5b6b7d; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .dot.g{ background:#2f9e5f; }
+  .dot.o{ background:#e08a00; }
+  .dot.k{ background:#9aa8b6; }
+  ul{ list-style:none; }
+  ul li{ font-size:8.1px; line-height:1.42; padding-left:12px; position:relative; margin-bottom:3px; }
+  ul li::before{ content:""; position:absolute; left:1px; top:5px; width:4.5px; height:4.5px; border-radius:50%; }
+  .col.green li::before{ background:#2f9e5f; }
+  .col.amber li::before{ background:#e08a00; }
+  .col.grey li::before{ background:#9aa8b6; }
+  code{ font-family:"Consolas",monospace; font-size:7.6px; background:#eef2f7; padding:0 3px; border-radius:2px; color:#0b3d6b; }
+
+  .blocker{ margin-top:11px; border:1.4px solid #e08a00; background:#fff5e9; border-radius:5px; padding:8px 10px; }
+  .blocker h3{ font-size:9.2px; color:#b26a00; text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px; }
+  .blocker p{ font-size:8.3px; line-height:1.42; color:#3a2c12; }
+  .blocker .fix{ font-size:8.1px; margin-top:4px; color:#243b53; line-height:1.4; }
+
+  .ask{ margin-top:10px; border:1.4px solid #1a5fb4; background:#f0f6ff; border-radius:5px; padding:8px 10px; }
+  .ask h3{ font-size:9.2px; color:#1a5fb4; text-transform:uppercase; letter-spacing:.3px; margin-bottom:3px; }
+  .ask p{ font-size:8.4px; line-height:1.45; color:#12324f; }
+
+  .owners{ display:flex; gap:6px; margin-top:9px; }
+  .owners .o{ flex:1; background:#f7f9fc; border:1px solid #d9e2ec; border-radius:4px; padding:5px 7px; }
+  .owners .o .r{ font-size:6.9px; font-weight:700; color:#1a5fb4; text-transform:uppercase; letter-spacing:.3px; }
+  .owners .o .w{ font-size:7.9px; color:#243b53; margin-top:1px; line-height:1.3; }
+
+  footer{ margin-top:11px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; align-items:center; }
+  .pill{ background:#1a5fb4; color:#fff; font-size:7.4px; padding:2px 8px; border-radius:8px; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>eBay DE order-flow — stoplicht <span class="accent">· voor Dennis (Thinkyellow)</span></h1>
+    <div class="sub">Doel vandaag: één eBay DE-order end-to-end door de keten, met trackingnummer bij de koper. Live geverifieerd in Channable (proj. 314525) &amp; Magento · 07-07-2026 · CCP × A.B.S.</div>
+  </header>
+
+  <div class="meta">
+    <div class="m"><div class="n">Keten</div><div class="t">eBay DE → Channable → Magento 2 → (D365) · orders terug idem</div></div>
+    <div class="m"><div class="n">Live testorder</div><div class="t">Channable 106110610 · eBay 123456789-1936295</div></div>
+    <div class="m"><div class="n">Status nu</div><div class="t">1 blocker open (Magento verzendmethode DE), rest groen</div></div>
+  </div>
+
+  <h2>De keten, stap voor stap</h2>
+  <div class="flow">
+    <div class="s g"><div class="lb">Order eBay → Channable</div><span class="st">✔ BEWEZEN</span></div>
+    <div class="arw">→</div>
+    <div class="s g"><div class="lb">DE-adres geaccepteerd</div><span class="st">✔ BEWEZEN</span></div>
+    <div class="arw">→</div>
+    <div class="s o"><div class="lb">Import in Magento</div><span class="st">⚠ BLOKKEERT NU</span></div>
+    <div class="arw">→</div>
+    <div class="s k"><div class="lb">Verzonden-status</div><span class="st">? ONBEKEND</span></div>
+    <div class="arw">→</div>
+    <div class="s k"><div class="lb">Tracking terug op eBay</div><span class="st">? ONBEKEND</span></div>
+  </div>
+
+  <h2>Wat weten we — groen / oranje / grijs</h2>
+  <div class="cols">
+    <div class="col green">
+      <h3><span class="dot g"></span> Bewezen goed</h3>
+      <ul>
+        <li>eBay DE-order komt binnen in Channable (order-sync werkt).</li>
+        <li>Na DE toevoegen aan Allow Countries: <b>adres wordt geaccepteerd</b> (vorige fout weg).</li>
+        <li>Trackingnr. staat correct op de Magento-shipment: <code>Custom / DPD / 05112095164869</code> (14 cijfers).</li>
+        <li>Channable eBay DE-connectie = Active; <b>"Shipment updates = Enabled"</b> → stuurt tracking naar eBay.</li>
+        <li>Transporter-regel <code>tracking ≥13 → DPD</code> matcht ons nummer → carrier "DPD" naar eBay.</li>
+      </ul>
+    </div>
+    <div class="col amber">
+      <h3><span class="dot o"></span> Nog niet goed / gat</h3>
+      <ul>
+        <li><b>Verzendmethode voor DE ontbreekt</b> in Magento → import order 106110610 faalt nu.</li>
+        <li>Order-status/volgorde nog niet rond (Niek's fix loopt; status = Magento-kant, evt. Atvise).</li>
+        <li>Kleine inconsistentie: transporter-default staat op "DPD Predict" i.p.v. "DPD".</li>
+      </ul>
+    </div>
+    <div class="col grey">
+      <h3><span class="dot k"></span> Weten we (nog) niet</h3>
+      <ul>
+        <li>Of ná de verzendmethode-fix de order volledig doorloopt tot verzonden-status.</li>
+        <li>Of die status Channable's tracking-terugkoppeling daadwerkelijk triggert.</li>
+        <li>Of "DPD" bij eBay DE als klikbare, herkende carrier verschijnt bij de koper.</li>
+        <li>"Shipping waiting time = 180" — seconden of minuten (hoe snel koper tracking ziet).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="blocker">
+    <h3>⚠ De blocker van dit moment — Magento, niet Channable</h3>
+    <p><b>Fout:</b> "Could not import order 106110610: De verzendmethode ontbreekt." Geverifieerd: de Channable-connectie heeft géén eigen verzendmethode-instelling → Magento bepaalt dit. DE staat in Allow Countries, maar de <b>verzendmethode mag nog niet naar Duitsland</b> leveren.</p>
+    <p class="fix"><b>Fix (~5 min, Hans/Luca zelf — admin):</b> Stores → Configuration → Sales → Verzendmethoden → bij de gebruikte methode "Ship to Applicable Countries" = <b>All Allowed Countries</b> (of Duitsland aanvinken). Let op store-view scope. Daarna order 106110610 opnieuw versturen.</p>
+  </div>
+
+  <div class="ask">
+    <h3>→ Waar we Dennis voor vragen</h3>
+    <p>De Channable-kant staat aan; het knelpunt is de <b>Magento order-flow</b>: (1) verzendmethode DE goed zetten, en (2) zorgen dat de order een <b>verzonden-status</b> bereikt die Channable's tracking-terugkoppeling naar eBay tríggert. Kan Dennis op die twee meedenken — en meekijken bij de volgende testboeking (Niek houdt de shipment in de gaten)?</p>
+  </div>
+
+  <div class="owners">
+    <div class="o"><div class="r">Magento config (Allow Countries + verzendmethode DE, status)</div><div class="w">Hans / Luca (admin) · technisch → Atvise</div></div>
+    <div class="o"><div class="r">ABS API → T&amp;T in Magento</div><div class="w">Niek (levert al correct)</div></div>
+    <div class="o"><div class="r">Channable order-sync / tracking terug</div><div class="w">Hans · review Dennis (Thinkyellow)</div></div>
+  </div>
+
+  <footer>
+    <span>CCP × A.B.S. · eBay Duitsland order-flow · stoplicht voor Thinkyellow · live geverifieerd Channable 314525 + Magento · 07-07-2026</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </footer>
+</div>
+</body>
+</html>

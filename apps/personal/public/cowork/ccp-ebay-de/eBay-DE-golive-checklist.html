@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eBay DE — go-live checklist (afvinkbaar)</title>
+<style>
+  :root{ --blue:#1a5fb4; --ink:#1f2933; --mut:#52606d; --line:#e4e9f0; --bg:#f7f9fc; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:#fff; padding:24px 18px 60px; max-width:900px; margin:0 auto; }
+  header{ border-bottom:2px solid var(--blue); padding-bottom:12px; margin-bottom:14px; }
+  h1{ font-size:22px; font-weight:700; letter-spacing:-.3px; }
+  .sub{ font-size:12.5px; color:var(--mut); margin-top:5px; }
+  .bar-wrap{ position:sticky; top:0; background:#fff; padding:12px 0 10px; z-index:5; border-bottom:1px solid var(--line); margin-bottom:6px; }
+  .bar-top{ display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .bar{ height:10px; background:#e9eef5; border-radius:6px; overflow:hidden; }
+  .bar > i{ display:block; height:100%; width:0; background:var(--blue); transition:width .25s; }
+  .tools{ margin-top:8px; }
+  .tools button{ font:inherit; font-size:11.5px; border:1px solid #cdd8e3; background:#fff; color:var(--mut); border-radius:6px; padding:4px 10px; cursor:pointer; }
+  .tools button:hover{ background:var(--bg); }
+  section{ margin-top:20px; }
+  h2{ font-size:14px; color:#102a43; display:flex; align-items:center; gap:8px; padding:6px 10px; background:#eef2f7; border-left:4px solid var(--blue); border-radius:3px; }
+  h2 .cnt{ font-size:11px; color:var(--mut); font-weight:600; margin-left:auto; }
+  h2.crit{ border-left-color:#d64545; }
+  h2.dep{ border-left-color:#d98a1a; background:#fff5ec; color:#7a4b0a; }
+  ul{ list-style:none; margin-top:6px; }
+  li{ display:flex; align-items:flex-start; gap:10px; padding:9px 8px; border-bottom:1px solid var(--line); }
+  li:hover{ background:var(--bg); }
+  input[type=checkbox]{ width:19px; height:19px; margin-top:1px; accent-color:var(--blue); cursor:pointer; flex:none; }
+  .txt{ flex:1; }
+  .txt .t{ font-size:13.5px; line-height:1.4; }
+  .txt .m{ font-size:11.5px; color:var(--mut); margin-top:2px; line-height:1.35; }
+  label.done .t{ text-decoration:line-through; color:#9aa5b1; }
+  label.done .m{ color:#b8c1cc; }
+  li label{ display:flex; gap:10px; flex:1; cursor:pointer; }
+  .who{ font-size:10px; font-weight:700; padding:2px 7px; border-radius:9px; white-space:nowrap; flex:none; align-self:flex-start; margin-top:1px; }
+  .w-hans{ background:#e6effb; color:#12406e; } .w-luca{ background:#efe9fb; color:#4a2c7a; }
+  .w-niek{ background:#eaf6ef; color:#14532d; } .w-sjoerd{ background:#fff2e2; color:#7a4b0a; }
+  .w-atvise{ background:#e7f0f2; color:#0f4c5c; }
+  .flag{ font-size:9.5px; font-weight:700; color:#b02a2a; border:1px solid #f0c4c4; background:#fdecec; padding:1px 6px; border-radius:8px; margin-left:6px; }
+  footer{ margin-top:26px; border-top:1px solid var(--line); padding-top:10px; font-size:11px; color:#829ab1; }
+  .note{ font-size:11.5px; color:var(--mut); background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid var(--blue); border-radius:4px; padding:8px 11px; margin-top:10px; line-height:1.45; }
+</style>
+</head>
+<body>
+<header>
+  <h1>eBay.de — go-live checklist</h1>
+  <div class="sub">CCP × A.B.S. · doel: <b>maandag 13-07 direct live</b> · klik om af te vinken — je voortgang wordt lokaal onthouden · <span class="flag">rood = kritisch vóór maandag</span></div>
+</header>
+
+<div class="bar-wrap">
+  <div class="bar-top"><span>Voortgang</span><span id="pct">0%</span></div>
+  <div class="bar"><i id="fill"></i></div>
+  <div class="tools"><button onclick="resetAll()">Alles resetten</button></div>
+</div>
+
+<div class="note">
+  <b>Lees zo:</b> Fase 0–2 zijn wat wij zelf in de hand hebben en die maandag af moeten. Fase 3–5 raken order/factuur/compliance. De <b>Dependencies</b> onderaan zijn niet onze scope (Niek/ABS/Sjoerd) maar bewaken we. Klant-facing werkt maandag ook zonder de Magento-DE-storefront: eBay stuurt zelf bevestiging + trackingmail, B2C-factuur is niet verplicht.
+</div>
+
+<div id="list"></div>
+
+<footer>Bron: vault eBay-DE-Launch · Channable-D365-Integration · order-to-cash onderzoek 2026-07-06 · CCP · connectcarparts.nl</footer>
+
+<script>
+const DATA = [
+  { h:"Fase 0 · Account & policies (nu regelen)", crit:true, items:[
+    {t:"Business Policies compleet: Shipping, Payment, Return", m:"Opgeslagen én gekoppeld aan álle live listings", who:"Hans", crit:true},
+    {t:"Retourbeleid ingesteld: 30 dagen, retouradres (NL of DE-hub), retourprovider", who:"Hans", crit:true},
+    {t:"Verwerker retouren aangewezen (wie ontvangt + fiatteert refund)", who:"Sjoerd"},
+    {t:"Payout-config eBay Managed Payments: bankrekening, uitbetaalschema, valuta EUR", who:"Hans"},
+    {t:"Handling time realistisch ingesteld (≤2 dagen)", m:"Beschermt DACH Late-Shipment-Rate ≤3%", who:"Hans"},
+  ]},
+  { h:"Fase 1 · Content per categorie (Channable)", crit:true, items:[
+    {t:"Titels per categorie correct", m:"Rule DE - ebay_title_de / _trim · ≤80 tekens incl. voertuigcompat · Remschijven / Remblokken / Stuurdelen / Wiellagersets", who:"Hans", crit:true},
+    {t:"Omschrijvingen per categorie", m:"Rule DE - ebay_desc_de · sectie schijf + sectie blok, gegate op categories_clean_single_de", who:"Hans", crit:true},
+    {t:"GPSR-blok aanwezig in elke omschrijving", m:"A.B.S. All Brake Systems B.V., Tinbergenlaan 7, 3401 MT IJsselstein", who:"Hans", crit:true},
+    {t:"Categorie + item specifics gevuld", m:"Bremsscheiben 33564 / Bremsbeläge 57357 · schijf Ø/dikte, blok WVA/maten", who:"Hans"},
+    {t:"Marktprijs ±5% t.o.v. Amazon/eBay DE gecheckt", who:"Luca"},
+    {t:"Preview 3 SKU (16880 · 37760 · 37770): correct Duits, geen dubbele spaties/streepjes", who:"Hans", crit:true},
+  ]},
+  { h:"Fase 2 · Listing-selectie safeguard (Channable) — de €0,04-bescherming", crit:true, items:[
+    {t:"Include-veld ebay_de_include aangemaakt, default leeg voor alle ~39.684 SKU's", who:"Hans", crit:true},
+    {t:"Channel-rule zet include=true op allowlist-categorieën of pilot-SKU-lijst", who:"Hans", crit:true},
+    {t:"eBay DE channel-filter: exporteer alleen items waar include=true", who:"Hans", crit:true},
+    {t:"Item-teller in eBay DE-preview = exact bedoeld aantal (niet de volle feed)", m:"Voorkomt per ongeluk 30k listings à €0,04", who:"Hans", crit:true},
+    {t:"Uitsluiten getest: categorie uit allowlist → verdwijnt uit export", who:"Hans"},
+  ]},
+  { h:"Fase 3 · Order- & Track&Trace-flow", crit:true, items:[
+    {t:"Magento: Duitsland toevoegen aan Allow Countries (juiste store-view scope) + verzendmethode naar DE", m:"Blocker van de faalde DE-testorder ('addresses can't be used ... specific countries'). Hans/Luca kunnen dit zelf — jullie zijn admin", who:"Hans/Luca", crit:true},
+    {t:"eBay order-sync 'Complete' actief in Channable (order in + verzendstatus terug)", who:"Hans"},
+    {t:"DE-testorder verschijnt in Magento/administratie (na Allow-Countries-fix opnieuw versturen)", who:"Hans/Luca"},
+    {t:"ABS API vult T&T (DPD) in generieke Magento-velden bij updates", m:"Dit is Niek's stuk (ABS-kant)", who:"Niek"},
+    {t:"Trackingnr. van Magento via Channable terug naar eBay → koper ziet tracking", m:"eBay mailt de koper de tracking automatisch zodra nr. op de order staat", who:"Hans"},
+    {t:"DPD DE-label + tarief werkend (schijven >5kg marge >15%)", who:"Hans"},
+    {t:"Bevestigd op testorder: koper krijgt eBay bestelbevestiging + trackingmail", who:"Hans"},
+  ]},
+  { h:"Fase 4 · Klantfactuur (besluit + tool)", items:[
+    {t:"Besluit factuurpad", m:"B2C niet verplicht in DE · B2B wel · CCP-tool vs ABS-factuur", who:"Sjoerd"},
+    {t:"Factuurtool gekozen indien gewenst: Billbee (Bol+eBay) of easybill (eBay/DE)", who:"Hans"},
+    {t:"Tool gekoppeld aan eBay-account, DE-tarief/OSS ingesteld", who:"Hans"},
+    {t:"Test B2B-order: factuur correct gemaakt + gemaild", who:"Hans"},
+    {t:"Optioneel: nette review-uitnodiging als tekst/bijlage bij factuurmail", who:"Hans"},
+  ]},
+  { h:"Fase 5 · Compliance (jouw listing-kant)", crit:true, items:[
+    {t:"GPSR Responsible Person op elke listing + verpakking", who:"Hans", crit:true},
+    {t:"eBay Compliance Dashboard (Seller Hub): 0 geflagde listings", who:"Hans"},
+    {t:"OSS actief + 19% DE-btw op listing en factuur (bevestigen adviseur)", who:"Sjoerd"},
+    {t:"Impressum / AGB / Widerruf / Datenschutz live op shop + listings", who:"Sjoerd", crit:true},
+    {t:"Lizenzero / VerpackG contract getekend + LUCID gekoppeld", who:"Sjoerd"},
+  ]},
+  { h:"Fase 6 · Metrics & klantinteractie (na eerste orders)", items:[
+    {t:"eBay Messages reactietijd bewaakt", who:"Hans"},
+    {t:"INR (niet ontvangen) / SNAD (niet als beschreven) case-proces + eigenaar vastgelegd", who:"Hans"},
+    {t:"Verkäufer-Cockpit / seller level gecheckt (defect rate, verzendstiptheid)", who:"Hans"},
+    {t:"Out-of-stock control tegen ~5 min sync-mismatch", m:"Config: Hans/Luca; als het technisch/integratie is → Atvise", who:"Hans/Luca"},
+  ]},
+  { h:"Fase 7 · Groei (na live)", items:[
+    {t:"Promoted Listings (Anzeigen) opgezet — start 2–5% ad-rate, ná content-check", who:"Luca"},
+  ]},
+  { h:"Dependencies · buiten CCP-scope, wél bewaken", dep:true, items:[
+    {t:"Magento Allow Countries / DE-verzending config (DE-order kan pas met leverland DE door Channable)", m:"Geen aparte storefront nodig — alleen config; Hans/Luca zelf. Verplaatst naar Fase 3", who:"Hans/Luca"},
+    {t:"CCP-eigen DE-factuur — advies: extern via tool i.p.v. Magento/ABS (minder faalpunten)", who:"Sjoerd"},
+    {t:"ABS API T&T-koppeling (ABS-kant)", who:"Niek"},
+    {t:"Compliance-blockers afgerond (verkoop-gate)", who:"Sjoerd"},
+  ]},
+];
+
+const KEY = "ccp-ebay-golive-v1";
+let state = {};
+try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ state = {}; }
+
+const wcls = w => ({Hans:"w-hans",Luca:"w-luca",Niek:"w-niek",Sjoerd:"w-sjoerd",Atvise:"w-atvise"}[w]||"w-hans");
+const list = document.getElementById("list");
+let idc = 0;
+DATA.forEach(sec => {
+  const s = document.createElement("section");
+  const h = document.createElement("h2");
+  if(sec.crit) h.className="crit"; if(sec.dep) h.className="dep";
+  h.innerHTML = `<span>${sec.h}</span><span class="cnt" data-cnt></span>`;
+  s.appendChild(h);
+  const ul = document.createElement("ul");
+  sec.items.forEach(it => {
+    const id = "i"+(idc++);
+    const li = document.createElement("li");
+    const lab = document.createElement("label");
+    lab.setAttribute("for", id);
+    const cb = document.createElement("input");
+    cb.type="checkbox"; cb.id=id; cb.checked=!!state[id];
+    cb.addEventListener("change", () => { state[id]=cb.checked; save(); lab.classList.toggle("done",cb.checked); refresh(); });
+    const tx = document.createElement("div"); tx.className="txt";
+    tx.innerHTML = `<div class="t">${it.t}${it.crit?'<span class="flag">kritisch</span>':''}</div>`+(it.m?`<div class="m">${it.m}</div>`:"");
+    lab.appendChild(cb); lab.appendChild(tx);
+    if(cb.checked) lab.classList.add("done");
+    li.appendChild(lab);
+    const who = document.createElement("span"); who.className="who "+wcls(it.who); who.textContent=it.who;
+    li.appendChild(who);
+    ul.appendChild(li);
+  });
+  s.appendChild(ul); list.appendChild(s);
+});
+
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function refresh(){
+  const boxes=[...document.querySelectorAll('input[type=checkbox]')];
+  const done=boxes.filter(b=>b.checked).length, tot=boxes.length;
+  const pct = tot? Math.round(done/tot*100):0;
+  document.getElementById("fill").style.width=pct+"%";
+  document.getElementById("pct").textContent=`${done} / ${tot}  (${pct}%)`;
+  document.querySelectorAll("section").forEach(sec=>{
+    const bs=[...sec.querySelectorAll('input[type=checkbox]')];
+    const d=bs.filter(b=>b.checked).length;
+    sec.querySelector("[data-cnt]").textContent=`${d}/${bs.length}`;
+  });
+}
+function resetAll(){ if(confirm("Alle vinkjes wissen?")){ state={}; save(); document.querySelectorAll('input[type=checkbox]').forEach(b=>b.checked=false); document.querySelectorAll('label').forEach(l=>l.classList.remove('done')); refresh(); } }
+refresh();
+</script>
+</body>
+</html>

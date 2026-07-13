@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>CCP × A.B.S. — Channable/Magento setup & hulpvragen (A4)</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .sheet { width:210mm; min-height:297mm; padding:11mm 11mm 8mm; margin:0 auto; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:9px; }
+  header h1{ font-size:17px; font-weight:700; letter-spacing:-.2px; }
+  header .sub{ font-size:8.6px; color:#52606d; margin-top:3px; }
+  h2{ font-size:9.8px; text-transform:uppercase; letter-spacing:.4px; color:#102a43;
+      margin:11px 0 5px; padding:2px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+
+  /* flow diagram */
+  .flow{ display:flex; align-items:stretch; gap:0; margin:4px 0 2px; }
+  .node{ flex:1; background:#f2f6fb; border:1px solid #d3e2f3; border-radius:5px; padding:7px 6px; text-align:center; }
+  .node.src{ background:#eaf1fb; border-color:#b9d2f0; }
+  .node.hub{ background:#1a5fb4; border-color:#1a5fb4; }
+  .node.hub .nm,.node.hub .ds{ color:#fff; }
+  .node .nm{ font-size:9px; font-weight:700; color:#102a43; }
+  .node .ds{ font-size:7.2px; color:#52606d; margin-top:2px; line-height:1.25; }
+  .arrow{ display:flex; align-items:center; justify-content:center; width:22px; color:#1a5fb4; font-size:15px; font-weight:700; }
+  .backflow{ font-size:7.6px; color:#a6690a; background:#fff8ec; border:1px solid #f3d9a6;
+             border-left:3px solid #d98a1a; border-radius:3px; padding:5px 8px; margin:6px 0 2px; }
+  .backflow b{ color:#b45309; }
+
+  .facts{ display:flex; gap:6px; margin:6px 0 2px; }
+  .facts .f{ flex:1; background:#f7f9fc; border:1px solid #e4e9f0; border-radius:4px; padding:5px 7px; }
+  .facts .f .k{ font-size:6.8px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; font-weight:700; }
+  .facts .f .v{ font-size:10px; color:#102a43; font-weight:700; margin-top:1px; }
+  .facts .f .s{ font-size:7px; color:#52606d; }
+
+  /* three asks */
+  .asks{ display:flex; gap:7px; margin-top:4px; }
+  .ask{ flex:1; border:1px solid #d9e2ec; border-radius:5px; padding:7px 8px; }
+  .ask .num{ display:inline-block; width:15px; height:15px; border-radius:50%; background:#1a5fb4; color:#fff;
+             font-size:8.5px; font-weight:700; text-align:center; line-height:15px; margin-right:4px; }
+  .ask .tl{ font-size:8.6px; font-weight:700; color:#102a43; }
+  .ask p{ font-size:7.6px; color:#3e4c59; line-height:1.35; margin-top:4px; }
+  .ask .who{ font-size:7px; color:#1a5fb4; font-weight:700; margin-top:5px; }
+
+  table{ width:100%; border-collapse:collapse; margin-top:3px; }
+  th,td{ text-align:left; font-size:8px; padding:3px 6px; border-bottom:1px solid #e4e9f0; vertical-align:top; line-height:1.3; }
+  th{ font-size:7px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  td.w{ width:16%; } td.q{ width:52%; } td.t{ width:32%; color:#52606d; }
+  .note{ font-size:7.2px; color:#52606d; margin-top:8px; border-top:1px solid #eef2f7; padding-top:5px; }
+  footer{ margin-top:8px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1;
+          display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.4px;padding:1px 8px;border-radius:8px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>CCP × A.B.S. — Channable / Magento setup &amp; hulpvragen <span class="accent">· eBay DE livegang</span></h1>
+    <div class="sub">Voorbereiding voor Thinkyellow (Dennis) · 2026-07-06 · doel: orders + Track &amp; Trace live op eBay.de deze week</div>
+  </header>
+
+  <h2>Datastroom — bron van waarheid loopt van D365 naar de marketplaces</h2>
+  <div class="flow">
+    <div class="node src"><div class="nm">D365</div><div class="ds">ERP / PIM · master data, voorraad, prijs</div></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node"><div class="nm">Magento 2</div><div class="ds">webshop · productdata + verrijking</div></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node hub"><div class="nm">Channable</div><div class="ds">proj. 314525 · feed- &amp; regelbeheer</div></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node"><div class="nm">Marketplaces</div><div class="ds">Amazon DE · eBay DE · Bol.com</div></div>
+  </div>
+  <div class="backflow">
+    <b>Orders + T&amp;T terug:</b> marketplace &rarr; Channable &rarr; Magento (&rarr; D365) · sync-delay ~5 min · D365&harr;Magento vraagt nu nog handmatige CSV-validatie
+  </div>
+
+  <div class="facts">
+    <div class="f"><div class="k">SKU's in feed</div><div class="v">~39.684</div><div class="s">merk A.B.S.</div></div>
+    <div class="f"><div class="k">eBay DE</div><div class="v">20 SKU · 100/100</div><div class="s">live 11 mei · doel 100</div></div>
+    <div class="f"><div class="k">Channable</div><div class="v">proj. 314525</div><div class="s">company 101300 · ~€300-400/mnd</div></div>
+    <div class="f"><div class="k">Scope</div><div class="v">Remmen · Sturing</div><div class="s">+ wiellagersets</div></div>
+  </div>
+
+  <h2>Waar we jullie hulp bij vragen</h2>
+  <div class="asks">
+    <div class="ask">
+      <div><span class="num">1</span><span class="tl">Track &amp; Trace automatiseren</span></div>
+      <p>DPD-tracking moet automatisch in het eBay DE-account. Keten: <b>ABS API &rarr; generieke Magento-velden</b> (Niek, in bouw) &rarr; <b>Magento &rarr; Channable</b> auto-update &rarr; <b>Channable &rarr; marketplace</b> (order-sync "Complete", tracking terug). Stappen 2-3 nog niet bevestigd werkend — dat is het gat.</p>
+      <div class="who">Meedenken Channable-kant · evt. bij Niek-meeting di 11:00-11:30</div>
+    </div>
+    <div class="ask">
+      <div><span class="num">2</span><span class="tl">Image tool — main images</span></div>
+      <p>Main images lijken vierkant maar worden niet zo geëxporteerd. Voor Magento geen probleem, marketplaces eisen minimale afmetingen (rond <b>500×500</b>). Met de Channable image tool alle main images bij export op de eis krijgen.</p>
+      <div class="who">Meekijken / ondersteunen · di of wo</div>
+    </div>
+    <div class="ask">
+      <div><span class="num">3</span><span class="tl">Review hele setup</span></div>
+      <p>Feedback op de volledige inrichting: hoe opgezet, hoe het werkt, waarom bepaalde keuzes. Focus: <b>Magento SKU vs EAN matching</b> en <b>Bol alternative mapping</b>. Robuust bij opschalen, of anders inrichten?</p>
+      <div class="who">Review op robuustheid + advies</div>
+    </div>
+  </div>
+
+  <h2>Reviewpunten in detail</h2>
+  <table>
+    <tr><th>Onderwerp</th><th>Vraag</th><th>Waarom nu</th></tr>
+    <tr><td class="w"><b>SKU vs EAN matching</b></td><td class="q">Op welke sleutel matchen we producten door de keten (Magento SKU of EAN)? Robuust richting 100+ en uiteindelijk ~39.684 SKU's?</td><td class="t">Fundament onder alle kanalen; fouten schalen mee.</td></tr>
+    <tr><td class="w"><b>Bol alternative mapping</b></td><td class="q">Hoe is de Bol-kanaalmapping nu opgezet en is dat de juiste aanpak?</td><td class="t">Bol-onboarding in voorbereiding.</td></tr>
+    <tr><td class="w"><b>Rule-structuur</b></td><td class="q">Master- en channel-rules (Categories_clean, Inbouwplaats_clean, GPSR-blok, DE-omschrijvingen) — logisch en onderhoudbaar?</td><td class="t">46 rules, deels bewust gepauzeerd.</td></tr>
+    <tr><td class="w"><b>D365 → Magento</b></td><td class="q">Bestaat er een API-push-pad dat de handmatige CSV-validatie kan vervangen?</td><td class="t">Handmatige stap = bottleneck + mismatch-risico.</td></tr>
+    <tr><td class="w"><b>Image-kwaliteit</b></td><td class="q">Naast main images: ~1.185 items met lege <code>additional_imagelinks</code> (mandatory op Amazon/Kaufland).</td><td class="t">Zelfde image-strenge kanalen.</td></tr>
+  </table>
+
+  <div class="note">
+    Openstaand / te bevestigen: exacte matching-sleutel (SKU vs EAN) en de precieze Bol "alternative" mapping-config zijn niet gedocumenteerd — Hans licht die mondeling toe. Marketplace-minimum 500×500 px per kanaal nog te bevestigen.
+  </div>
+
+  <footer>
+    <span>Bron: vault eBay-DE-Launch · Channable-D365-Integration · eBay-orders-readiness · channable-operator (proj. 314525)</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </footer>
+</div>
+</body>
+</html>

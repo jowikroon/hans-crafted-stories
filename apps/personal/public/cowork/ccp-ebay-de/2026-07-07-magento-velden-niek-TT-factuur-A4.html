@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Magento-velden voor Niek — eBay DE Track&amp;Trace + Factuur</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#eef1f5; }
+  .sheet{ width:210mm; min-height:297mm; padding:11mm 11mm 8mm; margin:0 auto; background:#fff; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:9px; }
+  header h1{ font-size:16.5px; font-weight:700; letter-spacing:-.2px; }
+  header .sub{ font-size:8.6px; color:#52606d; margin-top:3px; line-height:1.35; }
+  .meta{ display:flex; gap:6px; margin:9px 0; }
+  .meta .m{ flex:1; background:#f2f6fb; border:1px solid #d3e2f3; border-radius:4px; padding:5px 8px; }
+  .meta .m .n{ font-size:7px; color:#1a5fb4; font-weight:700; letter-spacing:.3px; text-transform:uppercase; }
+  .meta .m .t{ font-size:8.4px; color:#243b53; margin-top:2px; line-height:1.28; }
+  h2{ font-size:9.6px; text-transform:uppercase; letter-spacing:.4px; color:#102a43;
+      margin:11px 0 5px; padding:3px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  .flow{ display:flex; align-items:stretch; gap:0; margin:6px 0 2px; }
+  .flow .step{ flex:1; background:#f7f9fc; border:1px solid #d9e2ec; border-radius:4px; padding:6px 7px; position:relative; }
+  .flow .step .num{ font-size:6.8px; font-weight:700; color:#1a5fb4; letter-spacing:.3px; text-transform:uppercase; }
+  .flow .step .lb{ font-size:8.5px; font-weight:700; color:#102a43; margin-top:2px; }
+  .flow .step .ds{ font-size:7.4px; color:#52606d; margin-top:2px; line-height:1.3; }
+  .flow .arw{ align-self:center; color:#1a5fb4; font-size:13px; font-weight:700; padding:0 4px; }
+  .flow .step .who{ display:inline-block; margin-top:4px; font-size:6.6px; font-weight:700; padding:1px 6px; border-radius:8px; }
+  .who.niek{ background:#1a5fb4; color:#fff; }
+  .who.hans{ background:#e4edf8; color:#1a5fb4; }
+  .who.auto{ background:#e6f4ec; color:#1f7a44; }
+  table{ width:100%; border-collapse:collapse; }
+  th,td{ text-align:left; font-size:8.3px; padding:4px 6px; border-bottom:1px solid #e4e9f0; vertical-align:top; line-height:1.32; }
+  th{ font-size:7px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; background:#f7f9fc; }
+  code{ font-family:"Consolas",monospace; font-size:8px; background:#0b3d6b; color:#fff; padding:1px 5px; border-radius:3px; }
+  code.soft{ background:#eef2f7; color:#0b3d6b; }
+  b.k{ color:#102a43; }
+  .row{ display:flex; gap:10px; }
+  .row .c{ flex:1; }
+  .box{ border:1px solid #d9e2ec; border-radius:4px; padding:7px 9px; }
+  .box h3{ font-size:8.2px; text-transform:uppercase; letter-spacing:.3px; color:#102a43; margin-bottom:4px; }
+  .box.warn{ background:#fff8ec; border-color:#f0dcb0; }
+  .box.warn h3{ color:#8a5a00; }
+  .box.ask{ background:#f0f6ff; border-color:#c5dcf6; }
+  .box.ask h3{ color:#1a5fb4; }
+  .box.ok{ background:#f0f8f3; border-color:#bfe4cf; }
+  .box.ok h3{ color:#1f7a44; }
+  ul{ list-style:none; }
+  ul li{ font-size:8.2px; line-height:1.5; padding-left:13px; position:relative; }
+  ul li::before{ content:""; position:absolute; left:2px; top:5px; width:5px; height:5px; background:#1a5fb4; border-radius:50%; }
+  .small{ font-size:7.4px; color:#52606d; line-height:1.4; }
+  .tierbar{ display:flex; gap:6px; margin-top:7px; }
+  .tierbar .tb{ flex:1; border-radius:4px; padding:5px 8px; font-size:7.6px; line-height:1.35; }
+  .tb.t1{ background:#e6f4ec; border:1px solid #bfe4cf; }
+  .tb.t2{ background:#fff8ec; border:1px solid #f0dcb0; }
+  .tb .h{ font-size:7px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; display:block; margin-bottom:2px; }
+  .tb.t1 .h{ color:#1f7a44; }
+  .tb.t2 .h{ color:#8a5a00; }
+  footer{ margin-top:11px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; align-items:center; }
+  .pill{ background:#1a5fb4; color:#fff; font-size:7.4px; padding:2px 8px; border-radius:8px; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>Magento-velden voor Niek <span class="accent">· eBay DE Track&amp;Trace + Factuur</span></h1>
+    <div class="sub">Doel: exact vastleggen in wélke <b>standaard Magento-velden</b> de DPD-tracking landt, zodat die via Channable terug naar eBay stroomt.
+    Meeting Niek + Hans · di 07-07-2026 · 11:00&ndash;11:30 · CCP × A.B.S. · Channable 314525 · keten D365 ↔ Magento 2 (Niek)</div>
+  </header>
+
+  <div class="meta">
+    <div class="m"><div class="n">Niek's scope</div><div class="t">ABS API → generieke Magento-velden (T&amp;T). Niek = <b>alleen ABS API</b>, niet Magento-config/Atvise.</div></div>
+    <div class="m"><div class="n">De kernvraag</div><div class="t">In welk <b>standaard</b> Magento-veld schrijft de ABS API het DPD-trackingnummer?</div></div>
+    <div class="m"><div class="n">Het antwoord</div><div class="t">Shipment-track: <code class="soft">carrier_code</code> · <code class="soft">title</code> · <code class="soft">track_number</code></div></div>
+  </div>
+
+  <h2>De keten in één oogopslag</h2>
+  <div class="flow">
+    <div class="step"><div class="num">1 · Bron</div><div class="lb">ABS API</div><div class="ds">DPD-trackingnr. komt binnen bij verzendupdate</div><span class="who niek">Niek</span></div>
+    <div class="arw">→</div>
+    <div class="step"><div class="num">2 · Landt in</div><div class="lb">Magento shipment</div><div class="ds">Track weggeschreven op <code class="soft">sales_shipment_track</code></div><span class="who niek">Niek (ABS API)</span></div>
+    <div class="arw">→</div>
+    <div class="step"><div class="num">3 · Leest uit</div><div class="lb">Channable</div><div class="ds">Order-sync type <b>Complete</b> pakt de track op (+€49/mnd)</div><span class="who hans">Hans</span></div>
+    <div class="arw">→</div>
+    <div class="step"><div class="num">4 · Toont</div><div class="lb">eBay DE-order</div><div class="ds">Koper ziet tracking; eBay mailt automatisch</div><span class="who auto">eBay auto</span></div>
+  </div>
+  <div class="small" style="margin-top:3px">Status per vault: stap 1&ndash;2 (ABS API → Magento) <b>in ontwikkeling bij Niek</b>; stap 3&ndash;4 nog niet bevestigd werkend — dat is het gat dat vóór livegang (ma 13-07) dicht moet. Beschermt DACH Late-Shipment-Rate ≤3%.</div>
+
+  <h2>De exacte standaard-velden (100% Magento-standaard, edition-onafhankelijk)</h2>
+  <p class="small" style="margin-bottom:3px">T&amp;T is in Magento 2 <b>géén productattribuut en géén order-header-veld</b> — het leeft op de <b>Shipment</b>. Standaardtabel <code class="soft">sales_shipment_track</code>, drie relevante velden. Via REST: <code class="soft">POST /V1/order/{orderId}/ship</code> met <code class="soft">tracks:[{track_number, title, carrier_code}]</code>.</p>
+  <table>
+    <tr><th style="width:22%">Standaard veld</th><th style="width:30%">Betekenis</th><th style="width:26%">Waarde bij DPD</th><th style="width:22%">Zichtbaar in admin</th></tr>
+    <tr><td><code>carrier_code</code></td><td>Vervoerder-sleutel</td><td><code class="soft">custom</code> (zie nuance →)</td><td>Order → Verzendingen → Tracking</td></tr>
+    <tr><td><code>title</code></td><td>Zichtbare vervoerdernaam</td><td><code class="soft">DPD</code></td><td>Order → Verzendingen → Tracking</td></tr>
+    <tr><td><code>track_number</code></td><td>Het DPD-trackingnummer</td><td>bv. <code class="soft">01234567890123</code></td><td>Order → Verzendingen → Tracking</td></tr>
+  </table>
+
+  <div class="row" style="margin-top:9px">
+    <div class="c">
+      <div class="box warn">
+        <h3>⚠ De DPD-nuance — hier gaat het vaak mis</h3>
+        <div class="small">DPD is <b>geen native Magento-carrier</b> (native = alleen custom/dhl/fedex/ups/usps). Zonder DPD-module wordt <code class="soft">carrier_code = custom</code> met <code class="soft">title = DPD</code>. Dat werkt voor de terugkoppeling, maar wil Channable/eBay een <i>herkende</i> carrier tonen, dan moet in Channable de carrier-mapping <b>custom/DPD → eBay-carrier "DPD"</b> expliciet gezet worden.</div>
+      </div>
+    </div>
+    <div class="c">
+      <div class="box ask">
+        <h3>→ Vraag deze twee dingen aan Niek</h3>
+        <ul>
+          <li>Schrijft de ABS API naar de standaard <code class="soft">sales_shipment_track</code> (shipment) — of naar een <b>custom order-attribuut</b>? Het eerste is standaard + robuust; het tweede vereist extra mapping in Channable.</li>
+          <li>Welke <code class="soft">carrier_code</code> + <code class="soft">title</code> zet hij? Bevestig <code class="soft">custom</code> / <code class="soft">DPD</code>, zodat Hans de Channable-carriermapping matcht.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h2>Tweede onderwerp: factuur-trigger</h2>
+  <table>
+    <tr><th style="width:30%">Punt</th><th>Vastgelegd besluit</th><th style="width:18%">Owner</th></tr>
+    <tr><td><b class="k">Wie factureert</b></td><td>Nu kunnen <b>Magento (Magmodules) én D365</b> factureren → dubbel-factuur-risico. Besluit = <b>Optie C hybride</b>: Magento leidend voor de pilot (bij order-status <code class="soft">Paid/Processing</code>), D365-migratie parallel binnen ~6 wk.</td><td>Sjoerd + Niek</td></tr>
+    <tr><td><b class="k">Verplicht?</b></td><td>B2C (particulier, DE): factuur <b>niet</b> wettelijk verplicht. B2B: wél, op verzoek binnen 6 mnd. Advies: klantfactuur extern via tool (easybill/Billbee), niet via Magento/ABS.</td><td>Sjoerd</td></tr>
+  </table>
+
+  <div class="row" style="margin-top:9px">
+    <div class="c">
+      <div class="box ok">
+        <h3>✔ GPSR-velden — live geverifieerd correct in de feed</h3>
+        <div class="small"><code class="soft">gpsr_manufacturer_name</code> = A.B.S. All Brake Systems B.V. · <code class="soft">gpsr_manufacturer_street</code> = <b>Tinbergenlaan 7</b> · <code class="soft">gpsr_manufacturer_postcode</code> = 3401 MT · <code class="soft">gpsr_eu_rep_*</code> idem. Let op: wiki-topic toont nog oud adres (Zeemanlaan 8) = stale; feed + memory kloppen.</div>
+      </div>
+    </div>
+    <div class="c">
+      <div class="box">
+        <h3>Verificatie-status (eerlijk)</h3>
+        <div class="small">Magento-admin (<code class="soft">/atvise/admin</code>) draait <b>Adobe Commerce</b>, maar stond op inlogscherm — geen live-check van de exacte DPD carrier-config mogelijk (§8: geen creds in chat). De 3 shipment-track velden zijn edition-onafhankelijk en dus 100% geldig. Exacte carrier_code pas te bevestigen zodra Hans ingelogd is.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tierbar">
+    <div class="tb t1"><span class="h">Tier 1 — deterministisch</span>Shipment-track velden <code class="soft">carrier_code</code>/<code class="soft">title</code>/<code class="soft">track_number</code> = vaste Magento-standaard. Klopt 100%.</div>
+    <div class="tb t2"><span class="h">Tier 2 — te verifiëren</span>Hoe ABS API precies wegschrijft (shipment vs custom attribuut) + Channable carrier-mapping. Live bevestigen met Niek/ingelogd.</div>
+  </div>
+
+  <footer>
+    <span>CCP × A.B.S. · eBay Duitsland · Magento-velden T&amp;T + factuur · voorbereiding meeting Niek 07-07-2026 · bron: vault _cowork/ccp-ebay-de/</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </footer>
+</div>
+</body>
+</html>

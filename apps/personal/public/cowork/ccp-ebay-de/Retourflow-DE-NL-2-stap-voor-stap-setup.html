@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8">
+<title>Retourflow DE→NL — stap voor stap setup</title><style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; font-size:10px; }
+  .sheet{ width:210mm; min-height:297mm; padding:12mm 13mm 10mm; margin:0 auto; page-break-after:always; }
+  .sheet:last-child{ page-break-after:auto; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:11px; }
+  header h1{ font-size:16px; font-weight:700; }
+  header .sub{ font-size:8.4px; color:#52606d; margin-top:2px; }
+  .lead{ border-left:4px solid #1a5fb4; background:#eef5ff; border-radius:7px; padding:8px 11px; margin-bottom:11px; font-size:9px; color:#1c3d5f; } .lead b{ color:#12406e; }
+  .step{ display:flex; gap:12px; margin-bottom:14px; align-items:flex-start; }
+  .n{ flex:0 0 26px; height:26px; border-radius:50%; background:#1a5fb4; color:#fff; font-weight:700; text-align:center; line-height:26px; font-size:13px; }
+  .n.g{ background:#1f7a44; }
+  .sb{ flex:1; }
+  .cap{ font-size:12px; font-weight:600; margin-bottom:6px; } .cap .b{ color:#1a5fb4; }
+  .where{ font-size:8.6px; color:#8a5a00; background:#fff8ec; border:1px solid #f2d9a8; border-radius:5px; padding:3px 8px; display:inline-block; margin-bottom:6px; }
+  .ui{ border:1px solid #dbe3ec; border-radius:8px; background:#fff; overflow:hidden; }
+  .menu{ display:flex; }
+  .rail{ flex:0 0 92px; background:#1f2733; color:#c7d0da; font-size:8.4px; padding:7px 0; }
+  .rail div{ padding:4px 10px; } .rail .on{ background:#1a5fb4; color:#fff; font-weight:700; }
+  .rail .sub{ color:#8aa0b6; font-size:7.6px; padding-left:18px; }
+  .pane{ flex:1; padding:10px 13px; }
+  .fld{ margin:6px 0; } .fld label{ display:block; font-size:8.4px; color:#52606d; margin-bottom:2px; }
+  .inp{ border:1px solid #cbd5e1; border-radius:6px; padding:5px 9px; font-size:10px; color:#102a43; background:#fff; }
+  .inp.f{ display:block; }
+  .btn{ background:#1a5fb4; color:#fff; font-size:10.5px; font-weight:700; padding:6px 14px; border-radius:6px; display:inline-block; }
+  .btn.o{ background:#f56a00; }
+  .tag{ background:#d64545; color:#fff; font-size:9px; font-weight:700; padding:1px 8px; border-radius:11px; white-space:nowrap; margin-left:7px; }
+  .toggle{ display:flex; align-items:center; gap:8px; font-size:9.5px; color:#33414f; padding:4px 0; border-bottom:1px solid #eef2f7; }
+  .sw{ width:30px; height:16px; border-radius:10px; background:#1f7a44; position:relative; flex:0 0 30px; } .sw::after{ content:""; position:absolute; right:2px; top:2px; width:12px; height:12px; border-radius:50%; background:#fff; }
+  .sw.off{ background:#cbd5e1; } .sw.off::after{ left:2px; right:auto; }
+  .note{ font-size:8.4px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid #1a5fb4; border-radius:6px; padding:6px 10px; margin-top:6px; } .note b{ color:#12508f; }
+  .foot{ margin-top:10px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7px;padding:2px 8px;border-radius:8px;font-weight:600;}
+  .crumb{ font-size:9px; color:#33414f; } .crumb b{ color:#12406e; }
+  .mini{ font-size:7.8px; color:#52606d; margin-top:3px; }
+</style></head><body>
+
+<!-- PAGINA 1 -->
+<div class="sheet">
+  <header>
+    <h1>Retourflow DE&rarr;NL &mdash; stap voor stap instellen</h1>
+    <div class="sub">CCP &#183; Channable &harr; Returnless &harr; DPD/DHL &#183; menupaden en knoppen exact uit de Returnless-handleiding &#183; 2026-07-10</div>
+  </header>
+  <div class="lead"><b>Doel:</b> de bestaande Channable order-connection koppelen aan Returnless en een DE&rarr;NL retourlabel laten maken. De schermen hieronder zijn een weergave van de interface; de <b>menupaden en knopnamen kloppen exact</b>. Rode markers = waar je klikt.</div>
+
+  <!-- STAP 1 -->
+  <div class="step"><div class="n">1</div><div class="sb">
+    <div class="cap">In <b class="b">Channable</b>: genereer een API-token</div>
+    <div class="where">Channable &rarr; linkermenu <b>Tools</b> &rarr; <b>Channable API</b></div>
+    <div class="ui menu">
+      <div class="rail"><div>Dashboard</div><div>Items</div><div>Channels</div><div class="on">Tools &#9656;</div><div class="sub">Channable API <span class="tag">&#9673; klik</span></div><div>Project settings</div></div>
+      <div class="pane">
+        <div class="crumb"><b>Channable API</b></div>
+        <div style="margin-top:8px"><span class="btn">Generate token</span> <span class="tag">&#9673; klik</span></div>
+        <div class="fld" style="margin-top:8px"><label>Company ID</label><span class="inp">101300</span></div>
+        <div class="fld"><label>Token</label><span class="inp">&bull;&bull;&bull;&bull;&bull;&bull; (noteren, niet delen)</span></div>
+        <div class="mini">Schrijf <b>Company ID</b> en <b>Token</b> op. Deze heb je in stap 3 nodig.</div>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- STAP 2 -->
+  <div class="step"><div class="n">2</div><div class="sb">
+    <div class="cap">In <b class="b">Channable</b>: noteer het Project ID</div>
+    <div class="where">Channable &rarr; project selecteren &rarr; <b>Project settings</b></div>
+    <div class="ui menu">
+      <div class="rail"><div>Dashboard</div><div>Items</div><div>Channels</div><div>Tools</div><div class="on">Project settings <span class="tag">&#9673;</span></div></div>
+      <div class="pane">
+        <div class="crumb"><b>Connect Car Parts</b> &rarr; Project settings</div>
+        <div class="fld" style="margin-top:8px"><label>Project ID</label><span class="inp">314525</span></div>
+        <div class="mini">Dit is het project dat eBay DE voedt. Noteer <b>314525</b>.</div>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- STAP 3 -->
+  <div class="step"><div class="n">3</div><div class="sb">
+    <div class="cap">In <b class="b">Returnless</b>: koppeling met Channable aanmaken</div>
+    <div class="where">Returnless &rarr; <b>Settings &rarr; Integrations</b> &rarr; <b>Add new integration</b> &rarr; Channable</div>
+    <div class="ui">
+      <div class="pane">
+        <div class="crumb">Settings &rarr; Integrations &rarr; e-commerce platform &rarr; <span class="btn" style="padding:3px 10px">+ Add new integration</span> <span class="tag">&#9673;</span> &rarr; kies <b>Channable</b></div>
+        <div class="fld" style="margin-top:8px"><label>Title</label><span class="inp f">CCP eBay DE</span></div>
+        <div class="fld"><label>Company ID</label><span class="inp f">101300</span></div>
+        <div class="fld"><label>Project ID</label><span class="inp f">314525</span></div>
+        <div class="fld"><label>API token</label><span class="inp f">&bull;&bull;&bull;&bull;&bull;&bull; (uit stap 1)</span></div>
+        <div style="margin-top:8px"><span class="btn o">Verify integration</span> <span class="tag">&#9673; klik</span></div>
+      </div>
+    </div>
+    <div class="note"><b>Kosten:</b> de Channable-API-koppeling kost &euro;49 per order-connection per maand bij Returnless.</div>
+  </div></div>
+
+  <div class="foot"><span>Menupaden exact uit Returnless product guide (Channable-integratie) + Channable Tools/API &#183; 2026-07-10</span><span class="pill">CCP &#183; pagina 1/2</span></div>
+</div>
+
+<!-- PAGINA 2 -->
+<div class="sheet">
+  <header>
+    <h1>Retourflow DE&rarr;NL &mdash; stap voor stap (vervolg)</h1>
+    <div class="sub">CCP &#183; features activeren, carrier + retouradres, landroutering, test</div>
+  </header>
+
+  <!-- STAP 4 -->
+  <div class="step"><div class="n">4</div><div class="sb">
+    <div class="cap">In <b class="b">Returnless</b>: features aanzetten op het retourformulier</div>
+    <div class="where">Returnless &rarr; <b>Settings &rarr; Return forms</b> &rarr; formulier openen &rarr; tab <b>Integrations</b></div>
+    <div class="ui"><div class="pane">
+      <div class="crumb">Return form (eBay DE) &rarr; tab <b>Integrations</b></div>
+      <div class="fld" style="margin-top:8px"><label>Default search integration</label><span class="inp f">Channable &#9662; <span class="tag">&#9673; kies</span></span></div>
+      <div style="margin-top:6px; font-size:8.6px; color:#52606d;">Channable-sectie &mdash; zet aan:</div>
+      <div class="toggle"><span class="sw"></span> Search order <span class="mini">(koper vindt order via ordernummer + e-mail/postcode)</span></div>
+      <div class="toggle"><span class="sw"></span> Return importer <span class="mini">(retouren uit Channable ophalen, elk uur)</span></div>
+      <div class="toggle"><span class="sw"></span> Finalize return <span class="mini">(retour "accepted" &rarr; Channable start refund)</span></div>
+      <div style="margin-top:8px"><span class="btn">Save</span> <span class="tag">&#9673; klik</span></div>
+    </div></div>
+    <div class="note">Voor eBay DE (eigen retourformulier) is <b>Search order</b> + <b>Finalize return</b> het belangrijkst. <b>Return importer</b> gebruik je alleen als het kanaal retouren in Channable aanmaakt (vooral bol).</div>
+  </div></div>
+
+  <!-- STAP 5 -->
+  <div class="step"><div class="n">5</div><div class="sb">
+    <div class="cap">In <b class="b">Returnless</b>: carrier + NL-retouradres instellen</div>
+    <div class="where">Returnless &rarr; <b>Shipping / Carriers</b> &rarr; carrier toevoegen</div>
+    <div class="ui"><div class="pane">
+      <div class="fld"><label>Carrier</label><span class="inp f">DPD &#9662; <span class="mini">(of DHL Paket Retoure)</span></span></div>
+      <div class="fld"><label>Tarief</label><span class="inp f">Eigen DPD-contract &#9662; <span class="mini">of tarief van Returnless</span></span></div>
+      <div class="fld"><label>Retouradres (bestemming)</label><span class="inp f">ABS NL-magazijn, Nederland</span></div>
+      <div class="mini">Je gebruikt DPD al voor uitgaande DACH-zendingen, dus DPD DE&rarr;NL sluit direct aan.</div>
+    </div></div>
+  </div></div>
+
+  <!-- STAP 6 -->
+  <div class="step"><div class="n">6</div><div class="sb">
+    <div class="cap">In <b class="b">Returnless</b>: label routeren per land</div>
+    <div class="where">Returnless &rarr; <b>Return rules / Shipping</b> &rarr; regel per land</div>
+    <div class="ui"><div class="pane">
+      <div class="crumb">Regel: <b>Als</b> land koper = <span class="inp">Duitsland (DE)</span> <b>dan</b> label = <span class="inp">DPD DE &rarr; NL</span></div>
+      <div class="crumb" style="margin-top:5px">Regel: <b>Als</b> land koper = <span class="inp">Nederland (NL)</span> <b>dan</b> label = <span class="inp">PostNL / DPD NL</span></div>
+      <div class="mini">Auto-routing: Duitse koper krijgt automatisch een Duits label naar het NL-magazijn, geen handwerk.</div>
+    </div></div>
+  </div></div>
+
+  <!-- STAP 7 -->
+  <div class="step"><div class="n g">7</div><div class="sb">
+    <div class="cap" style="color:#1f7a44">Testen: maak een testretour en controleer het label</div>
+    <div class="where">Returnless &rarr; retourformulier (testmodus) &rarr; testorder eBay DE</div>
+    <div class="ui"><div class="pane" style="background:#f0f8f3">
+      <div class="crumb">Doorloop het retourformulier met een eBay DE-testorder. Controleer:</div>
+      <div class="mini" style="margin-top:4px">&#10003; order wordt gevonden via Channable &nbsp;&#10003; label = Duits ophaalpunt &rarr; NL-adres &nbsp;&#10003; na "mark as received" volgt refund + sync</div>
+      <div class="note" style="margin-top:6px;background:#fff8ec;border-color:#f2d9a8;border-left-color:#f56a00;color:#8a5a00"><b>Let op (testmodus):</b> de Return importer draait niet in testmodus. Test de eigen-formulier-flow (model B) los.</div>
+    </div></div>
+  </div></div>
+
+  <div class="foot"><span>Open eerst een gratis Returnless-account om carriers (DPD/DHL DE&rarr;NL) + tarieven te bevestigen &#183; 2026-07-10</span><span class="pill">CCP &#183; pagina 2/2</span></div>
+</div>
+</body></html>

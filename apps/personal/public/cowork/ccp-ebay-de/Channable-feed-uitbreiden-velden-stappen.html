@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Channable-feed uitbreiden — wat toevoegen & waar</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; font-size:10px; }
+  .sheet{ width:210mm; min-height:297mm; padding:12mm 12mm 9mm; margin:0 auto; page-break-after:always; }
+  .sheet:last-child{ page-break-after:auto; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:11px; }
+  header h1{ font-size:16px; font-weight:700; }
+  header .sub{ font-size:8.4px; color:#52606d; margin-top:2px; }
+  h2{ font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:#102a43; margin:12px 0 6px; padding:3px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  .prio{ border:1px solid #e2e8f0; border-radius:9px; margin-bottom:9px; overflow:hidden; }
+  .prio .hd{ display:flex; align-items:center; gap:8px; padding:6px 11px; font-weight:700; font-size:11px; }
+  .p1 .hd{ background:#fdecec; color:#8f1f1f; } .p2 .hd{ background:#fff3e0; color:#8a5a00; } .p3 .hd{ background:#eaf3fb; color:#12508f; }
+  .prio .hd .b{ font-size:8px; font-weight:700; padding:1px 8px; border-radius:9px; background:#fff; }
+  .prio .bd{ padding:8px 11px; }
+  table{ width:100%; border-collapse:collapse; }
+  th,td{ text-align:left; font-size:8.7px; padding:4px 7px; border-bottom:1px solid #eef2f7; vertical-align:top; line-height:1.35; }
+  th{ font-size:7.2px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; }
+  td.k{ font-weight:700; color:#102a43; width:38%; }
+  .arrow{ color:#1a5fb4; font-weight:700; }
+  .lead{ border-left:4px solid #1a5fb4; background:#eef5ff; border-radius:7px; padding:8px 11px; margin-bottom:11px; font-size:9px; color:#1c3d5f; }
+  .lead b{ color:#12406e; }
+  /* stappen */
+  .step{ display:flex; gap:11px; margin-bottom:10px; align-items:flex-start; }
+  .n{ flex:0 0 24px; height:24px; border-radius:50%; background:#1a5fb4; color:#fff; font-weight:700; text-align:center; line-height:24px; font-size:12px; }
+  .ng{ background:#1f7a44; }
+  .sb{ flex:1; }
+  .cap{ font-size:11.5px; font-weight:600; margin-bottom:5px; }
+  .cap .bl{ color:#1a5fb4; }
+  .ui{ border:1px solid #dbe3ec; border-radius:7px; background:#fff; padding:8px 12px; }
+  .rail{ display:inline-block; background:#2b2b2b; color:#fff; font-size:9px; font-weight:700; padding:3px 9px; border-radius:5px; }
+  .crumb{ font-size:11px; color:#33414f; }
+  .crumb b{ color:#12406e; }
+  .tag{ background:#d64545; color:#fff; font-size:9px; font-weight:700; padding:1px 8px; border-radius:11px; white-space:nowrap; }
+  .grp{ border:1px solid #cbd5e1; border-radius:6px; overflow:hidden; }
+  .grprow{ padding:6px 10px; font-size:11px; color:#33414f; border-bottom:1px solid #eef2f7; }
+  .grprow:last-child{ border-bottom:0; }
+  .grphi{ background:#eef5ff; color:#12406e; font-weight:700; }
+  .fieldrow{ display:flex; align-items:center; gap:7px; margin-top:6px; }
+  .drop{ border:1px solid #cbd5e1; border-radius:6px; padding:4px 10px; font-size:11px; color:#102a43; background:#fff; font-weight:600; }
+  .drop.new{ border-color:#1a5fb4; background:#eef5ff; }
+  .add{ background:#eef5ff; border:1px solid #bcd6f5; color:#1a5fb4; font-weight:700; font-size:10.5px; padding:4px 12px; border-radius:6px; }
+  .savebtn{ background:#f56a00; color:#fff; font-size:11px; font-weight:700; padding:5px 13px; border-radius:5px; }
+  .warn{ font-size:8.6px; color:#8a5a00; background:#fff8ec; border:1px solid #f2d9a8; border-radius:6px; padding:6px 10px; margin-top:8px; }
+  .note{ font-size:8px; color:#52606d; margin-top:4px; }
+  .foot{ margin-top:11px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7px;padding:2px 8px;border-radius:8px;font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- PAGINA 1 : WAT TOEVOEGEN -->
+<div class="sheet">
+  <header>
+    <h1>Channable-feed uitbreiden &mdash; wat toevoegen &amp; waar</h1>
+    <div class="sub">CCP &#183; connectcarparts.nl &#183; velden die in Magento bestaan maar nog niet in de feed zitten &#183; 2026-07-09</div>
+  </header>
+
+  <div class="lead">
+    <b>Waarom:</b> de feed deelt nu 21 van 308 attributen (vooral remschijf-maten). Onderstaande velden liggen klaar in Magento en verhogen vindbaarheid, compliance en verzendlogica op eBay DE / Bol / Amazon. <b>Toevoegen is veilig</b> &mdash; het voegt alleen data toe, raakt niets aan de listing-selectie of prijsregels.
+  </div>
+
+  <div class="prio p1">
+    <div class="hd"><span class="b">PRIORITEIT 1</span> Vindbaarheid &amp; compatibiliteit</div>
+    <div class="bd"><table>
+      <tr><th>Magento-attribuut toevoegen</th><th>Vult op de marketplace</th></tr>
+      <tr><td class="k">OE References <span class="note">(+ Voor OE nummer, alternatief OE-nummer)</span></td><td>eBay item-specific <b>"OE/OEM Referenznummer(n)"</b> &mdash; grootste hefboom voor vindbaarheid via onderdeelnummer.</td></tr>
+      <tr><td class="k">Bouwjaar / Modeljaar (tot &amp; vanaf), Voertuigtype, Voertuiglijn/-variant, Uitvoeringscode</td><td>Voertuig-<b>compatibiliteit / Fahrzeug-Verwendungsliste</b> &mdash; marketplaces belonen fitment-data met betere ranking.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="prio p2">
+    <div class="hd"><span class="b">PRIORITEIT 2</span> Compliance &amp; logistiek</div>
+    <div class="bd"><table>
+      <tr><th>Magento-attribuut toevoegen</th><th>Vult op de marketplace</th></tr>
+      <tr><td class="k">Country of Manufacture</td><td>eBay <b>"Herstellungsland und -region"</b> (Ursprungsland) &mdash; was eerder "bron onbekend", bestaat dus wél.</td></tr>
+      <tr><td class="k">Harmonized System Code (HS-code)</td><td>Douane-/goederencode &mdash; DE cross-border &amp; GPSR/douane.</td></tr>
+      <tr><td class="k">Gewicht / Weight</td><td>Accurate <b>verzendkosten</b> &amp; carrier-keuze.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="prio p3">
+    <div class="hd"><span class="b">PRIORITEIT 3</span> Categorie-item-specifics (buiten remschijven)</div>
+    <div class="bd"><table>
+      <tr><th>Magento-attribuut toevoegen</th><th>Voor welke categorie</th></tr>
+      <tr><td class="k">Remtype, Remzadel uitvoering</td><td>Remklauwen / remsystemen.</td></tr>
+      <tr><td class="k">Draagarmtype</td><td>Stuur- &amp; draagarmen.</td></tr>
+      <tr><td class="k">Sensortype</td><td>ABS-sensoren / slijtage-indicatoren.</td></tr>
+      <tr><td class="k">Kwaliteit, Emissienorm</td><td>Generiek / diverse.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="note">Tier-2: bevestig eerst of OE-nummers niet al via een andere Channable-import binnenkomen &mdash; zo niet, dan is dit precies waarom OE soms in listings ontbreekt.</div>
+
+  <div class="foot"><span>Bron: Magento feed-attribuutpicker (308 opties) live afgelezen 2026-07-09</span><span class="pill">CCP &#183; pagina 1/2</span></div>
+</div>
+
+<!-- PAGINA 2 : WAAR / HOE -->
+<div class="sheet">
+  <header>
+    <h1>Waar toevoegen &mdash; klikpad in de feed-config</h1>
+    <div class="sub">CCP &#183; Magento &rarr; Channable Feed &rarr; Advanced &rarr; Extra Fields &#183; daarna mappen in Channable</div>
+  </header>
+
+  <div class="step">
+    <div class="n">1</div>
+    <div class="sb">
+      <div class="cap">Ga naar <span class="bl">Stores &rarr; Configuration &rarr; Channable &rarr; Feed</span></div>
+      <div class="ui"><span class="rail">STORES</span> &nbsp;<span class="crumb"><b>Configuration</b> &rarr; sectie <b>Channable</b> &rarr; <b>Feed</b></span></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="n">2</div>
+    <div class="sb">
+      <div class="cap">Klap de groep <span class="bl">Advanced</span> open &rarr; zoek <b>Extra Fields</b></div>
+      <div class="ui">
+        <div class="grp">
+          <div class="grprow">Data (standaardvelden)</div>
+          <div class="grprow grphi">Advanced &nbsp; <span class="tag">&#9673; open deze groep</span></div>
+          <div class="grprow">Filters &nbsp;/&nbsp; Delivery Time &nbsp;/&nbsp; Stock</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="n">3</div>
+    <div class="sb">
+      <div class="cap">Bij <b>Extra Fields</b>: klik <span class="bl">Add</span> voor elke nieuwe rij</div>
+      <div class="ui">
+        <div class="note" style="margin-top:0;margin-bottom:5px;">Huidige rijen (12): Inbouwplaats, Buitendiameter, Remschijfdikte&hellip; Centreringdiameter</div>
+        <span class="add">+ Add <span class="tag" style="margin-left:6px;">&#9673; klik per veld</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="n">4</div>
+    <div class="sb">
+      <div class="cap">Kies in de nieuwe rij het <b>attribuut</b> uit de dropdown (308 opties)</div>
+      <div class="ui">
+        <div class="fieldrow">
+          <span class="crumb" style="flex:0 0 90px;">Nieuwe rij:</span>
+          <span class="drop new">OE References &#9662; <span class="tag" style="margin-left:5px;">&#9673; kies attribuut</span></span>
+          <span class="drop">Actions &#9662;</span>
+        </div>
+        <div class="note">Herhaal per gewenst veld (OE References, Bouwjaar vanaf/tot, Country of Manufacture, Harmonized System Code, Gewicht &hellip;).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="n">5</div>
+    <div class="sb">
+      <div class="cap">Klik <span class="bl">Save Config</span> (rechtsboven)</div>
+      <div class="ui" style="text-align:right;"><span class="savebtn">Save Config</span> <span class="tag" style="margin-left:6px;">&#9673; opslaan</span></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="n ng">6</div>
+    <div class="sb">
+      <div class="cap" style="color:#1f7a44;">In <b>Channable</b>: feed opnieuw ophalen &rarr; nieuw veld <b>mappen</b> naar het kanaal-attribuut</div>
+      <div class="ui" style="background:#f0f8f3;border-color:#bfe4cf;">
+        <span class="crumb">Channable &rarr; Import verversen &rarr; in het eBay DE-kanaal koppel bv. <b>OE References</b> &rarr; item-specific <b>"OE/OEM Referenznummer(n)"</b>.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="warn"><b>Guardrail:</b> kom niet aan de <b>SKU-selectie</b> / listing-limiet (kostenrem) of prijsregels. Extra Fields toevoegen is puur data-uitbreiding en veilig &amp; omkeerbaar.</div>
+
+  <div class="foot"><span>Klikpad geverifieerd op de live feed-config (groep "advanced" &rarr; extra_fields dynamische rijen) 2026-07-09</span><span class="pill">CCP &#183; pagina 2/2</span></div>
+</div>
+
+</body>
+</html>

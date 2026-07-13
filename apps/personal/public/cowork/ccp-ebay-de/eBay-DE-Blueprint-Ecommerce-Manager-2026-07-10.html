@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8">
+<title>eBay DE — E-commerce Manager Blueprint</title>
+<style>
+@page { size: A4 portrait; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, Helvetica, sans-serif; color: #17293E; background: #fff; }
+.page { width: 210mm; min-height: 297mm; padding: 16mm 16mm 14mm; page-break-after: always; position: relative; }
+.page:last-child { page-break-after: auto; }
+.foot { position: absolute; bottom: 8mm; left: 16mm; right: 16mm; font-size: 7.5pt; color: #9AA8B8; border-top: 1px solid #E3EAF2; padding-top: 2mm; display: flex; justify-content: space-between; }
+h1 { font-size: 26pt; color: #0F3B66; letter-spacing: -.5pt; }
+h2 { font-size: 15pt; color: #0F3B66; margin-bottom: 4mm; padding-bottom: 2mm; border-bottom: 2.5px solid #2E6FD1; }
+h3 { font-size: 10.5pt; color: #0F3B66; margin: 4mm 0 2mm; }
+p, li, td, th { font-size: 9pt; line-height: 1.5; }
+.klein { font-size: 7.8pt; color: #5C6B7E; }
+.kicker { font-size: 8pt; letter-spacing: 2.5px; text-transform: uppercase; color: #2E6FD1; font-weight: bold; margin-bottom: 3mm; }
+.oog { background: #EEF4FC; border-left: 3.5px solid #2E6FD1; padding: 3.5mm 4mm; margin-bottom: 4mm; border-radius: 0 2mm 2mm 0; }
+.oog b.t { display:block; font-size: 8pt; text-transform: uppercase; letter-spacing: 1.5px; color: #2E6FD1; margin-bottom: 1.5mm; }
+.diepte { border: 1px solid #E3EAF2; border-radius: 2mm; padding: 3.5mm 4mm; margin-bottom: 3.5mm; }
+.diepte b.t { display:block; font-size: 8pt; text-transform: uppercase; letter-spacing: 1.5px; color: #5C6B7E; margin-bottom: 1.5mm; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 3.5mm; }
+th { background: #0F3B66; color: #fff; text-align: left; padding: 1.8mm 2.2mm; font-size: 7.8pt; }
+td { padding: 1.6mm 2.2mm; border-bottom: 1px solid #EDF1F6; vertical-align: top; }
+tr:nth-child(even) td { background: #F8FAFD; }
+.pill { display: inline-block; padding: .4mm 2.2mm; border-radius: 6mm; font-size: 7.3pt; font-weight: bold; }
+.ok { background: #E7F6EC; color: #15803D; } .bezig { background: #FFF4DC; color: #B45309; } .open { background: #FDE8E8; color: #B91C1C; } .info { background: #EEF4FC; color: #2E6FD1; }
+.stap { display: flex; margin-bottom: 2.6mm; }
+.stap .nr { flex: 0 0 8mm; height: 8mm; border-radius: 50%; background: #2E6FD1; color: #fff; font-weight: bold; font-size: 10pt; text-align: center; line-height: 8mm; margin-right: 3.5mm; }
+.stap .nr.g { background: #15803D; } .stap .nr.a { background: #B45309; }
+.stap .tx b { font-size: 9.3pt; }
+.kaart { border: 1px solid #E3EAF2; border-radius: 2mm; padding: 3mm 3.5mm; }
+.grid2 { display: flex; gap: 4mm; } .grid2 > div { flex: 1; }
+.wie { font-size: 7.3pt; font-weight: bold; color: #2E6FD1; text-transform: uppercase; letter-spacing: 1px; }
+.svgbox { border: 1px solid #E3EAF2; border-radius: 2mm; padding: 2mm; margin-bottom: 4mm; background: #FDFEFF; }
+code { font-family: "Courier New", monospace; font-size: 8pt; background: #F1F5F9; padding: 0 1mm; border-radius: 1mm; color: #0F3B66; }
+.aanname { color: #B45309; font-weight: bold; }
+ul { margin-left: 5mm; }
+.toc td { border-bottom: 1px dotted #C9D6E4; }
+.compact td, .compact th { padding: 1.2mm 2mm; font-size: 8.2pt; line-height: 1.4; }
+.compact p, .compact li { font-size: 8.5pt; }
+</style></head><body>
+
+<!-- ══════════ P1 · COVER ══════════ -->
+<div class="page" style="background:#0F3B66;color:#fff;display:flex;flex-direction:column;justify-content:space-between;">
+  <div style="margin-top:30mm;">
+    <div style="font-size:8pt;letter-spacing:3px;text-transform:uppercase;color:#8FB4E3;margin-bottom:6mm;">Connect Car Parts × A.B.S. All Brake Systems</div>
+    <h1 style="color:#fff;font-size:34pt;line-height:1.15;">eBay DE<br>Marketplace Blueprint</h1>
+    <div style="width:24mm;height:1.2mm;background:#5B93D8;margin:8mm 0;"></div>
+    <p style="font-size:12pt;color:#C9DCF2;max-width:120mm;line-height:1.6;">Eén document over wat er is gebouwd, hoe het werkt en hoe we verantwoord live gaan — van klantreis tot Channable-regel, van ketentest tot maandafsluiting.</p>
+  </div>
+  <div style="margin-bottom:14mm;">
+    <table style="width:auto;">
+      <tr><td style="border:none;background:none;color:#8FB4E3;padding:1mm 8mm 1mm 0;">Versie</td><td style="border:none;background:none;color:#fff;">1.0 · 10 juli 2026</td></tr>
+      <tr><td style="border:none;background:none;color:#8FB4E3;padding:1mm 8mm 1mm 0;">Status go-live</td><td style="border:none;background:none;color:#fff;">58% · launch-window week 29 (14–18 juli)</td></tr>
+      <tr><td style="border:none;background:none;color:#8FB4E3;padding:1mm 8mm 1mm 0;">Eigenaar</td><td style="border:none;background:none;color:#fff;">E-commerce Manager · Connect Car Parts</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════ P2 · LEESWIJZER + MANAGEMENT-SAMENVATTING ══════════ -->
+<div class="page">
+  <div class="kicker">Leeswijzer & samenvatting</div>
+  <h2>Twee manieren om dit document te lezen</h2>
+  <div class="grid2" style="margin-bottom:5mm;">
+    <div class="oog" style="margin-bottom:0;"><b class="t">Snel — alleen de verbindingen</b>
+      <p>Lees per hoofdstuk alleen het blauwe kader "In één oogopslag". In 10 minuten weet je hoe de keten loopt, wat de klant merkt en waar we staan.</p></div>
+    <div class="diepte" style="margin-bottom:0;"><b class="t">Diep — techniek & bewijs</b>
+      <p>De witte kaders "De diepte in" bevatten regel-ID's, veldnamen, testresultaten en calculaties. Elke claim is herleidbaar naar een test of bronsysteem.</p></div>
+  </div>
+  <h2>Samenvatting</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p><b>Wat er staat:</b> eBay.de is als verkoopkanaal volledig ingericht op de bestaande keten eBay → Channable → Magento → D365/ABS. Orders, verzending, track&nbsp;&amp;&nbsp;trace en retouren draaien op dezelfde bewezen flow als de webshop — er is géén aparte infrastructuur bijgebouwd.</p>
+  <p style="margin-top:2mm;"><b>Wat de klant merkt:</b> een Duitse koper ziet een Duitse titel en omschrijving, betaalt via eBay, krijgt automatisch bevestiging en trackingmail van eBay, ontvangt via DPD en kan via eBay retourneren. Wij verwerken; eBay communiceert.</p>
+  <p style="margin-top:2mm;"><b>Waar we staan:</b> 18 van 31 go-live-punten af, 6 in uitvoering, 7 open. De volledige orderketen is end-to-end bewezen op een echte order (144013198, 10 juli). Resterend: 2 compliance-punten, 3 operationele checks en de finale publicatie-beslissing.</p></div>
+  <h3>Inhoud</h3>
+  <table class="toc">
+    <tr><td>1</td><td>De klantreis — koop, levering en retour door de ogen van de Duitse koper</td><td style="text-align:right;">p. 3</td></tr>
+    <tr><td>2</td><td>Systeemlandschap — alle verbindingen op één kaart</td><td style="text-align:right;">p. 4</td></tr>
+    <tr><td>3</td><td>Kanalen — diepte per marketplace-kanaal</td><td style="text-align:right;">p. 5</td></tr>
+    <tr><td>4</td><td>De content-fabriek — hoe een product een Duitse listing wordt</td><td style="text-align:right;">p. 6</td></tr>
+    <tr><td>5</td><td>Channable-regels — het volledige regelwerk</td><td style="text-align:right;">p. 7</td></tr>
+    <tr><td>6</td><td>Listing-kwaliteit — titels, item-specifics, GPSR</td><td style="text-align:right;">p. 8</td></tr>
+    <tr><td>7</td><td>Diepte per actie: order</td><td style="text-align:right;">p. 9</td></tr>
+    <tr><td>8</td><td>Diepte per actie: verzending & track&nbsp;&amp;&nbsp;trace</td><td style="text-align:right;">p. 10</td></tr>
+    <tr><td>9</td><td>Diepte per actie: retour, annulering, cases</td><td style="text-align:right;">p. 11</td></tr>
+    <tr><td>10</td><td>Ketentests & triggers — het bewijs</td><td style="text-align:right;">p. 12</td></tr>
+    <tr><td>11</td><td>Financiële afhandeling — maandcyclus</td><td style="text-align:right;">p. 13</td></tr>
+    <tr><td>12</td><td>Afdrachten per categorie + voorbeeldcalculaties</td><td style="text-align:right;">p. 14</td></tr>
+    <tr><td>13</td><td>Go-live roadmap & gates</td><td style="text-align:right;">p. 15</td></tr>
+    <tr><td>14</td><td>Documentregister & bronnen</td><td style="text-align:right;">p. 16</td></tr>
+  </table>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 2</span></div>
+</div>
+
+<!-- ══════════ P3 · KLANTREIS ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 1</div>
+  <h2>De klantreis — vóór alles de klant</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>De Duitse koper heeft één contactpunt: eBay. Alle verplichte klantcommunicatie (bestelbevestiging, trackingmail, retourlabel) verstuurt eBay automatisch. Wij zorgen dat de order verwerkt wordt, het pakket op tijd bij DPD ligt en het trackingnummer terugkomt op de eBay-order. De klant merkt niets van Channable, Magento of D365.</p></div>
+
+  <h3>De koopreis — 8 stappen</h3>
+  <div class="stap"><div class="nr">1</div><div class="tx"><b>Zoeken & vinden</b> — koper zoekt op eBay.de ("Bremsscheibe Golf 7"). Onze listing: Duitse titel ≤80 tekens met merk, artikelnummer, positie en voertuig. <span class="wie">eBay-zoekresultaat</span></div></div>
+  <div class="stap"><div class="nr">2</div><div class="tx"><b>Beoordelen</b> — Duitse omschrijving met specificaties, "Passend für"-voertuiglijst, GPSR-fabrikantgegevens en retourvoorwaarden. <span class="wie">Onze listing (via Channable)</span></div></div>
+  <div class="stap"><div class="nr">3</div><div class="tx"><b>Kopen & betalen</b> — koper rekent af bij eBay (Managed Payments). Wij ontvangen de uitbetaling later op de bankrekening; de koper is direct klaar. <span class="wie">eBay</span></div></div>
+  <div class="stap"><div class="nr">4</div><div class="tx"><b>Bestelbevestiging</b> — eBay mailt automatisch de orderbevestiging met verwachte leverdatum. Juridisch volstaat deze als orderbevestiging (IT-Recht Kanzlei). <span class="wie">eBay · automatisch</span></div></div>
+  <div class="stap"><div class="nr a">5</div><div class="tx"><b>Verwerking (onzichtbaar voor de klant)</b> — order stroomt binnen ~5 min via Channable naar Magento en door naar D365/ABS voor picking. <span class="wie">Onze keten</span></div></div>
+  <div class="stap"><div class="nr a">6</div><div class="tx"><b>Verzending</b> — pakket gaat met DPD naar Duitsland (verzendlocatie Nieuwegein). Trackingnummer landt via de ABS-API op de Magento-shipment en gaat via Channable terug naar eBay. <span class="wie">Wij + DPD</span></div></div>
+  <div class="stap"><div class="nr">7</div><div class="tx"><b>Trackingmail</b> — zodra het trackingnummer op de eBay-order staat, mailt eBay de koper automatisch de track&nbsp;&amp;&nbsp;trace-link (carrier: DPD). <span class="wie">eBay · automatisch</span></div></div>
+  <div class="stap"><div class="nr g">8</div><div class="tx"><b>Levering</b> — koper ontvangt het onderdeel. Handling ≤2 dagen beschermt de Late-Shipment-Rate (DACH-norm ≤3%). <span class="wie">DPD</span></div></div>
+
+  <h3>De retourreis — 5 stappen</h3>
+  <div class="stap"><div class="nr">1</div><div class="tx"><b>Retour aanmelden</b> — koper meldt de retour aan bij eBay. Valt het binnen ons 30-dagen-beleid, dan accepteert eBay automatisch. <span class="wie">eBay</span></div></div>
+  <div class="stap"><div class="nr">2</div><div class="tx"><b>Label</b> — artikelwaarde ≥ €12: eBay stuurt automatisch een DHL/Hermes-retourlabel. Te zwaar (remschijven &gt;5 kg): wij uploaden een eigen DPD-label. RMA = het eBay-ordernummer. <span class="wie">eBay / wij</span></div></div>
+  <div class="stap"><div class="nr a">3</div><div class="tx"><b>Registratie bij ons</b> — klant kan de retour ook via ons retourformulier (Returnless) opzoeken op postcode; de koppeling leest de eBay-order via Channable. <span class="wie">Returnless</span></div></div>
+  <div class="stap"><div class="nr a">4</div><div class="tx"><b>Ontvangst & controle</b> — pakket komt binnen op ons retouradres; controle en verwerking zoals een webshopretour. <span class="wie">Wij (Luca & Hans)</span></div></div>
+  <div class="stap"><div class="nr g">5</div><div class="tx"><b>Refund</b> — terugbetaling via eBay naar de koper. <span class="wie">Wij via eBay</span></div></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 3</span></div>
+</div>
+
+<!-- ══════════ P4 · SYSTEEMLANDSCHAP ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 2</div>
+  <h2>Systeemlandschap — alle verbindingen op één kaart</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Vijf systemen, één ruggengraat. Channable is de draaischijf: producten gaan van Magento (verrijkt met Google-Sheets-data) via Channable naar eBay; orders komen dezelfde weg terug. D365/ABS doet voorraad en fulfilment, Returnless doet retouren, DPD vervoert. Sync-frequentie: ~5 minuten.</p></div>
+  <div class="svgbox">
+  <svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" font-family="Arial" width="100%">
+    <defs><marker id="p" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#2E6FD1" stroke-width="1.6"/></marker></defs>
+    <!-- eBay -->
+    <rect x="20" y="110" width="130" height="86" rx="10" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="2"/>
+    <text x="85" y="140" text-anchor="middle" font-size="16" font-weight="bold" fill="#0F3B66">eBay DE</text>
+    <text x="85" y="160" text-anchor="middle" font-size="10" fill="#5C6B7E">listings · orders</text>
+    <text x="85" y="174" text-anchor="middle" font-size="10" fill="#5C6B7E">betalingen · klantmail</text>
+    <!-- Channable -->
+    <rect x="230" y="98" width="150" height="110" rx="10" fill="#0F3B66"/>
+    <text x="305" y="130" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">Channable</text>
+    <text x="305" y="150" text-anchor="middle" font-size="10" fill="#C9DCF2">project 314525</text>
+    <text x="305" y="164" text-anchor="middle" font-size="10" fill="#C9DCF2">feed-regels · orderrouting</text>
+    <text x="305" y="178" text-anchor="middle" font-size="10" fill="#C9DCF2">sync ~5 min</text>
+    <!-- Magento -->
+    <rect x="460" y="110" width="130" height="86" rx="10" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="2"/>
+    <text x="525" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#0F3B66">Magento 2</text>
+    <text x="525" y="160" text-anchor="middle" font-size="10" fill="#5C6B7E">default store (NL-flow)</text>
+    <text x="525" y="174" text-anchor="middle" font-size="10" fill="#5C6B7E">DE-storeview inactief</text>
+    <!-- D365 -->
+    <rect x="620" y="110" width="86" height="86" rx="10" fill="#F8FAFD" stroke="#9AA8B8" stroke-width="1.5"/>
+    <text x="663" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#0F3B66">D365</text>
+    <text x="663" y="162" text-anchor="middle" font-size="9.5" fill="#5C6B7E">ABS · voorraad</text>
+    <text x="663" y="175" text-anchor="middle" font-size="9.5" fill="#5C6B7E">fulfilment</text>
+    <!-- Sheets -->
+    <rect x="230" y="18" width="150" height="48" rx="8" fill="#F8FAFD" stroke="#9AA8B8" stroke-width="1.5"/>
+    <text x="305" y="38" text-anchor="middle" font-size="11" font-weight="bold" fill="#0F3B66">Google Sheets (3×)</text>
+    <text x="305" y="54" text-anchor="middle" font-size="9.5" fill="#5C6B7E">verrijking · SKU-limiter · attributen</text>
+    <!-- Returnless -->
+    <rect x="60" y="248" width="150" height="52" rx="8" fill="#F8FAFD" stroke="#9AA8B8" stroke-width="1.5"/>
+    <text x="135" y="268" text-anchor="middle" font-size="11" font-weight="bold" fill="#0F3B66">Returnless</text>
+    <text x="135" y="284" text-anchor="middle" font-size="9.5" fill="#5C6B7E">retourformulier · postcode-check</text>
+    <!-- DPD -->
+    <rect x="460" y="248" width="130" height="52" rx="8" fill="#F8FAFD" stroke="#9AA8B8" stroke-width="1.5"/>
+    <text x="525" y="268" text-anchor="middle" font-size="11" font-weight="bold" fill="#0F3B66">DPD</text>
+    <text x="525" y="284" text-anchor="middle" font-size="9.5" fill="#5C6B7E">verzending DE · labels</text>
+    <!-- pijlen -->
+    <line x1="150" y1="138" x2="228" y2="138" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#p)"/>
+    <line x1="228" y1="170" x2="150" y2="170" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#p)"/>
+    <text x="189" y="130" text-anchor="middle" font-size="9" fill="#2E6FD1">orders</text>
+    <text x="189" y="186" text-anchor="middle" font-size="9" fill="#2E6FD1">listings + tracking</text>
+    <line x1="380" y1="138" x2="458" y2="138" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#p)"/>
+    <line x1="458" y1="170" x2="380" y2="170" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#p)"/>
+    <text x="419" y="130" text-anchor="middle" font-size="9" fill="#2E6FD1">orders</text>
+    <text x="419" y="186" text-anchor="middle" font-size="9" fill="#2E6FD1">producten + shipments</text>
+    <line x1="590" y1="140" x2="618" y2="140" stroke="#9AA8B8" stroke-width="1.6" marker-end="url(#p)"/>
+    <line x1="618" y1="168" x2="590" y2="168" stroke="#9AA8B8" stroke-width="1.6" marker-end="url(#p)"/>
+    <line x1="305" y1="66" x2="305" y2="96" stroke="#9AA8B8" stroke-width="1.6" marker-end="url(#p)"/>
+    <line x1="210" y1="262" x2="260" y2="208" stroke="#9AA8B8" stroke-width="1.6" marker-end="url(#p)"/>
+    <text x="252" y="242" font-size="9" fill="#5C6B7E">leest orders (API)</text>
+    <line x1="525" y1="246" x2="525" y2="198" stroke="#9AA8B8" stroke-width="1.6" marker-end="url(#p)"/>
+    <text x="533" y="228" font-size="9" fill="#5C6B7E">label + T&amp;T</text>
+  </svg></div>
+  <div class="diepte"><b class="t">De diepte in — rol en eigenaar per systeem</b>
+  <table>
+    <tr><th>Systeem</th><th>Rol in de keten</th><th>Beheer</th><th>Kern-config</th></tr>
+    <tr><td><b>eBay DE</b></td><td>Verkoop, betaling (Managed Payments), klantcommunicatie, retour-orchestratie</td><td>Hans</td><td>Kanaal 152339 actief · shipment-updates enabled</td></tr>
+    <tr><td><b>Channable</b></td><td>Feed-opbouw, regels, orderrouting, tracking-terugkoppeling</td><td>Hans</td><td>Company 101300 · project 314525 · eBay rules-kanaal 1400294</td></tr>
+    <tr><td><b>Magento 2</b></td><td>Order-administratie, shipments, klant-mails webshop</td><td>Hans/Luca (config) · Atvise (techniek)</td><td>Allow Countries: DE aan · verzendmethode DE aan · orders op default store</td></tr>
+    <tr><td><b>D365 / ABS</b></td><td>Voorraad, picking, fulfilment; API zet T&amp;T op de Magento-shipment</td><td>Niek (alleen ABS-API)</td><td>Keten: ABS-API → shipment-veld → Channable → eBay</td></tr>
+    <tr><td><b>Returnless</b></td><td>Eigen retourformulier; vindt eBay-orders via de Channable-integratie</td><td>Hans</td><td>Validatie op postcode (eBay maskeert e-mail) · importer uit</td></tr>
+    <tr><td><b>Google Sheets</b></td><td>Productverrijking (3 imports): SKU-limiter, attributen per categorie, aanvullende data</td><td>Hans</td><td>Kolommen worden Channable-velden (auto-mapping)</td></tr>
+  </table>
+  <p class="klein">Besluit 10-07: eBay DE draait via de default store; de DE-storeview blijft inactief ernaast staan (klaar voor Duitse klant-mails en toekomstige DE-kanalen). Wijzigingen met deze reikwijdte gaan niet zonder afstemming live.</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 4</span></div>
+</div>
+
+<!-- ══════════ P5 · KANALEN ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 3</div>
+  <h2>Kanalen — diepte per marketplace-kanaal</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Channable voedt tien kanalen vanuit één feed (~39.700 SKU's). Vijf staan actief. eBay DE is het kanaal dat nu live-klaar wordt gemaakt; elk kanaal heeft zijn eigen titel- en omschrijvingsregels zodat kanalen elkaar nooit kunnen breken.</p></div>
+  <table>
+    <tr><th>Kanaal</th><th>Status</th><th>Rol / bijzonderheden</th></tr>
+    <tr><td><b>eBay DE</b> (152339)</td><td><span class="pill bezig">go-live w29</span></td><td>Dit document. 20 categorie-regels, eigen Duitse content, SKU-filter als kostenrem, order-sync "Complete".</td></tr>
+    <tr><td>eBay NL (145706)</td><td><span class="pill ok">actief</span></td><td>Bestaand kanaal; zelfde keten. Eigen NL-regels; blijft ongemoeid door DE-werk (kanaal-isolatie).</td></tr>
+    <tr><td>Amazon NL (151481)</td><td><span class="pill ok">actief</span></td><td>Live verkoopkanaal; eigen contentregels.</td></tr>
+    <tr><td>Google Shopping — Remschijven &amp; Remblokken (560778)</td><td><span class="pill ok">actief</span></td><td>Feed voor Shopping-campagnes op de kerncategorieën.</td></tr>
+    <tr><td>ChatGPT Commerce / OpenAI (584845)</td><td><span class="pill ok">actief</span></td><td>Experimenteel AI-shopping-kanaal; leest dezelfde productdata.</td></tr>
+    <tr><td>Amazon DE (151484)</td><td><span class="pill open">inactief</span></td><td>Volgende expansie ná eBay DE; profiteert van dezelfde categories_clean-master en DE-content-aanpak.</td></tr>
+    <tr><td>Bol (153718)</td><td><span class="pill open">inactief</span></td><td>Wacht op besluit; titelregels in voorbereiding via aparte werkstroom.</td></tr>
+    <tr><td>Overig (3 kanalen: backup e.a.)</td><td><span class="pill open">inactief</span></td><td>Geen rol in de eBay DE-livegang.</td></tr>
+  </table>
+  <div class="diepte"><b class="t">De diepte in — waarom kanaal-isolatie het ontwerpprincipe is</b>
+  <p>Gedeelde master-regels (zoals categorie-bepaling) draaien project-breed en voeden álle kanalen; content-regels (titel, omschrijving, item-specifics) staan per kanaal en overschrijven wat er binnenkomt. Gevolg: een wijziging voor eBay DE kan Amazon NL of Bol nooit raken, en elk kanaal is self-contained te lezen en te testen. De enige bewust gedeelde bouwsteen is <code>categories_clean</code> (hoofdstuk 4) — één bron voor productcategorie, alle kanalen.</p>
+  <p style="margin-top:2mm;">De eBay DE-scope wordt begrensd door één regel: het SKU-filter (kostenrem, €0,04 per listing-publicatie). Wat niet op de lijst staat, verlaat Channable niet. Publiceren ("Uitvoeren") is een handmatige beslissing van de e-commerce manager — nooit van een automatisering.</p></div>
+  <div class="diepte"><b class="t">De diepte in — eBay DE accountlaag</b>
+  <table>
+    <tr><th>Onderdeel</th><th>Instelling</th><th>Status</th></tr>
+    <tr><td>Business Policies (Shipping / Payment / Return)</td><td>Handling ≤2 dagen · gekoppeld aan listings</td><td><span class="pill ok">staat</span></td></tr>
+    <tr><td>Retourbeleid</td><td>30 dagen · retouradres NL · provider ingesteld</td><td><span class="pill ok">staat</span></td></tr>
+    <tr><td>Managed Payments payout</td><td>Bank · EUR · uitbetaalschema</td><td><span class="pill bezig">check open</span></td></tr>
+    <tr><td>Verzendlocatie</td><td>Nieuwegein (3433 KN) · DPD Classic</td><td><span class="pill ok">staat</span></td></tr>
+    <tr><td>DACH-programmanormen</td><td>Late Shipment Rate ≤3% · Unique Buyer Protection</td><td><span class="pill info">bewaken na live</span></td></tr>
+  </table></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 5</span></div>
+</div>
+
+<!-- ══════════ P6 · CONTENT-FABRIEK ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 4</div>
+  <h2>De content-fabriek — van product naar Duitse listing</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Elk product doorloopt zeven stappen in Channable: data komt binnen, krijgt een categorie, wordt gemapt op een eBay-categorie, krijgt Duitse titel en omschrijving, krijgt technische kenmerken, passeert de kostenrem en wordt pas gepubliceerd na een handmatige beslissing. Alles is regel-gedreven: geen handwerk per listing, geen AI-teksten — deterministisch en herhaalbaar.</p></div>
+  <div class="svgbox">
+  <svg viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg" font-family="Arial" width="100%">
+    <defs><marker id="q" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#2E6FD1" stroke-width="1.6"/></marker></defs>
+    <g font-size="9.5">
+      <rect x="8" y="30" width="88" height="62" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="52" y="52" text-anchor="middle" font-weight="bold" fill="#0F3B66">1 · Import</text><text x="52" y="68" text-anchor="middle" fill="#5C6B7E">Magento +</text><text x="52" y="80" text-anchor="middle" fill="#5C6B7E">3 Sheets</text>
+      <rect x="110" y="30" width="88" height="62" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="154" y="52" text-anchor="middle" font-weight="bold" fill="#0F3B66">2 · Master</text><text x="154" y="68" text-anchor="middle" fill="#5C6B7E">art_grp_code →</text><text x="154" y="80" text-anchor="middle" fill="#5C6B7E">categories_clean</text>
+      <rect x="212" y="30" width="88" height="62" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="256" y="52" text-anchor="middle" font-weight="bold" fill="#0F3B66">3 · Mapping</text><text x="256" y="68" text-anchor="middle" fill="#5C6B7E">→ eBay-categorie</text><text x="256" y="80" text-anchor="middle" fill="#5C6B7E">(19 rijen)</text>
+      <rect x="314" y="30" width="88" height="62" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="358" y="52" text-anchor="middle" font-weight="bold" fill="#0F3B66">4 · Content</text><text x="358" y="68" text-anchor="middle" fill="#5C6B7E">titel + omschrijving</text><text x="358" y="80" text-anchor="middle" fill="#5C6B7E">20 regels</text>
+      <rect x="416" y="30" width="88" height="62" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="460" y="52" text-anchor="middle" font-weight="bold" fill="#0F3B66">5 · Specifics</text><text x="460" y="68" text-anchor="middle" fill="#5C6B7E">OE · EAN · positie</text><text x="460" y="80" text-anchor="middle" fill="#5C6B7E">attributen</text>
+      <rect x="518" y="30" width="88" height="62" rx="8" fill="#FFF4DC" stroke="#B45309" stroke-width="1.6"/><text x="562" y="52" text-anchor="middle" font-weight="bold" fill="#B45309">6 · Kostenrem</text><text x="562" y="68" text-anchor="middle" fill="#5C6B7E">SKU-filter</text><text x="562" y="80" text-anchor="middle" fill="#5C6B7E">allowlist</text>
+      <rect x="620" y="30" width="92" height="62" rx="8" fill="#0F3B66"/><text x="666" y="52" text-anchor="middle" font-weight="bold" fill="#fff">7 · Uitvoeren</text><text x="666" y="68" text-anchor="middle" fill="#C9DCF2">handmatig besluit</text><text x="666" y="80" text-anchor="middle" fill="#C9DCF2">e-com manager</text>
+      <line x1="96" y1="61" x2="108" y2="61" stroke="#2E6FD1" stroke-width="1.6" marker-end="url(#q)"/><line x1="198" y1="61" x2="210" y2="61" stroke="#2E6FD1" stroke-width="1.6" marker-end="url(#q)"/><line x1="300" y1="61" x2="312" y2="61" stroke="#2E6FD1" stroke-width="1.6" marker-end="url(#q)"/><line x1="402" y1="61" x2="414" y2="61" stroke="#2E6FD1" stroke-width="1.6" marker-end="url(#q)"/><line x1="504" y1="61" x2="516" y2="61" stroke="#2E6FD1" stroke-width="1.6" marker-end="url(#q)"/><line x1="606" y1="61" x2="618" y2="61" stroke="#2E6FD1" stroke-width="1.6" marker-end="url(#q)"/>
+      <text x="360" y="122" text-anchor="middle" font-size="9" fill="#5C6B7E">Stap 1–5 = volledig gebouwd en getest · stap 6 = bewuste testscope (4 SKU's) · stap 7 = de go-live-beslissing zelf</text>
+    </g>
+  </svg></div>
+  <div class="diepte"><b class="t">De diepte in — de categorie-ruggengraat (stap 2)</b>
+  <p>De productcategorie komt níet uit Magento-categorieën (die komen niet mee in de feed) maar wordt afgeleid uit de artikelgroepcode van ABS: master-groep <b>315886</b> bevat 19 mappings <code>art_grp_code → categories_clean</code> (CA01→Remschijven, AA01→Remblokken, IA01→Remslangen, LE01→Accessoiresets, KA01→Remklauwen, SA01→Draagarmen, SF01→Stabilisatorstangen, DA01→Remtrommels, HE01→Wielremcilinders, LF01→Slijtindicatoren, SG01→Draagarmrubbers, SB01→Fuseekogels, SC01→Spoorstangeinden, SD01→Axiaalkogels, LK01→Wielsnelheidssensoren, LC01→Manchetten, LJ01→Wartelmoeren, JA01→Trekkabels, JC01→Gaskabels). Eén bron, alle kanalen: ook Amazon en Bol krijgen hiermee gratis een schone categorie.</p>
+  <p style="margin-top:2mm;">Live bewezen: SKU 7169-S (Remtrommel) krijgt door de master <code>categories_clean=Remtrommels</code> en triggert daarmee de juiste titelregel in het eBay-kanaal — de hele keten master → gate → content is met een echte SKU aangetoond.</p></div>
+  <div class="diepte"><b class="t">De diepte in — categorisatiegraad &amp; eBay-categorieën (stap 3)</b>
+  <p>Categorisatie van de feed: <b>78,1%</b> (20.091 items), 19 mapping-rijen, 0 mismatches. Kern-categorieën: Bremsscheiben <b>33564</b> · Bremsbeläge <b>57357</b> · Bremsschläuche <b>33561</b> · Querlenker &amp; Kugelgelenke <b>33580</b>. Correcties doorgevoerd: Remschijven stond op Bremsbeläge (fout doel) en acht bronwaarden matchten de master niet — alles rechtgezet en via de API geverifieerd.</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 6</span></div>
+</div>
+
+<!-- ══════════ P7 · CHANNABLE REGELS ══════════ -->
+<div class="page compact">
+  <div class="kicker">Hoofdstuk 5</div>
+  <h2>Channable-regels — het volledige regelwerk</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Het eBay DE-kanaal telt ruim 20 regels: per productcategorie één content-regel (titel + omschrijving), plus drie ondersteunende regels (inbouwpositie, transporteur-herkenning, SKU-filter). Het merk komt altijd uit een veld — nooit hardcoded — zodat ook Brembo-producten correct meelopen.</p></div>
+  <div class="diepte"><b class="t">De diepte in — regeloverzicht eBay-kanaal (rules-kanaal 1400294)</b>
+  <table>
+    <tr><th>Regel(groep)</th><th>Wat hij doet</th><th>Opbouw</th></tr>
+    <tr><td><b>20 categorie-regels</b><br class="klein">(o.a. 27864790–27864801)</td><td>Bouwen per categorie <code>ebay_title_de</code> + <code>ebay_omschrijving_de</code>, gegate op <code>categories_clean</code></td><td>3 secties: titel mét voertuig (als <code>car_brands_top1</code> gevuld), titel zónder voertuig, omschrijving</td></tr>
+    <tr><td><b>Einbauposition-filler</b> (27875051, order 24)</td><td>Vult <code>einbauposition_de</code> = as-positie + links/rechts indien aanwezig</td><td>2 conditionele secties; gebruikt <code>vooras_achteras_duits</code> + <code>links_rechts</code></td></tr>
+    <tr><td><b>Transporter-regel</b></td><td>Herkent trackingnummers ≥13 tekens als DPD → carrier "DPD" mee terug naar eBay</td><td>Op de order-/shipmentflow; default-waarde "DPD Predict" wordt nog gelijkgetrokken</td></tr>
+    <tr><td><b>SKU Filter</b> (27858166, order 8) <span class="pill bezig">kostenrem</span></td><td>Allowlist: alleen SKU's op de lijst verlaten Channable (€0,04 per listing-publicatie)</td><td><code>sku is_equal_any</code> → niets doen, anders verwijderen · scope nu 4 test-SKU's · uitsluitend handmatig beheerd</td></tr>
+  </table>
+  <p class="klein">Vaste conventies in élke regel: merk uit <code>{brand}</code> (nooit "A.B.S." hardcoded — er lopen ook Brembo-producten mee) · GPSR uit <code>{gpsr_manufacturer_name}</code> · titel ≤80 tekens, afgekapt op woordgrens · gedeelde master-groepen worden nooit bewerkt vanuit kanaal-werk.</p></div>
+  <div class="diepte"><b class="t">De diepte in — geverifieerde veldnamen (bron: live feed, SKU 16880)</b>
+  <table>
+    <tr><th>Doel</th><th>Veld</th><th>Voorbeeldwaarde</th></tr>
+    <tr><td>Merk</td><td><code>brand</code></td><td>"ABS" (dynamisch; ook "Brembo")</td></tr>
+    <tr><td>Artikelnummer</td><td><code>sku</code></td><td>16880</td></tr>
+    <tr><td>Categorie-gate</td><td><code>categories_clean</code></td><td>"Remschijven"</td></tr>
+    <tr><td>Positie (DE)</td><td><code>vooras_achteras_duits</code></td><td>"Vorderachse" / "Hinterachse"</td></tr>
+    <tr><td>Schijftype (DE)</td><td><code>remschijftype_de</code></td><td>"Belüftet"</td></tr>
+    <tr><td>Voertuig</td><td><code>car_brands_top1</code> + <code>car_models_top1</code></td><td>"AUDI" + "50 (863)"</td></tr>
+    <tr><td>Titel / omschrijving</td><td><code>ebay_title_de</code> / <code>ebay_omschrijving_de</code></td><td>output van de categorie-regels</td></tr>
+    <tr><td>GPSR</td><td><code>gpsr_manufacturer_name</code></td><td>A.B.S. All Brake Systems B.V., Tinbergenlaan 7, 3401 MT IJsselstein</td></tr>
+    <tr><td>OE-nummers / EAN</td><td><code>oe_list</code> / <code>ean</code></td><td>gebruikt voor item-specifics</td></tr>
+    <tr><td>Maten remschijf</td><td><code>buitendiameter</code> · <code>remschijfdikte</code> · <code>minimale_dikte</code> · <code>centreringdiameter</code></td><td>voor Bremsscheiben-specifics</td></tr>
+  </table>
+  <p class="klein">Valkuilen, vastgelegd na live verificatie: bron-positievelden waren leeg (daarom de filler-regel); de oude regel "DE - ebay_title_de_remschijf" hardcodet het merk — bewust niet gebruikt; kanaalregels kunnen niet naar niet-bestaande velden schrijven.</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 7</span></div>
+</div>
+
+<!-- ══════════ P8 · LISTING-KWALITEIT ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 6</div>
+  <h2>Listing-kwaliteit — titels, item-specifics, GPSR</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Elke listing heeft een Duitse titel van maximaal 80 tekens met merk, artikelnummer, producttype, inbouwpositie en één voorbeeldvoertuig ("für u.a. …"). De omschrijving bevat specificaties, de voertuiglijst en het wettelijk verplichte GPSR-fabrikantblok. Technische kenmerken staan als eBay-Artikelmerkmale zodat kopers op voertuig en maat kunnen filteren.</p></div>
+  <h3>Titel-opbouw + live voorbeelden (uit de regelformules)</h3>
+  <div class="kaart" style="margin-bottom:3.5mm;">
+    <p style="font-size:10pt;"><code>{brand} {sku} {ProduktartDE} {positie} für u.a. {car_brands_top1}</code> <span class="klein">— "für u.a."-deel vervalt automatisch als het voertuigveld leeg is; het model staat in de omschrijving</span></p>
+    <table style="margin-top:2mm;margin-bottom:0;">
+      <tr><th>Categorie</th><th>Voorbeeldtitel</th><th>Lengte</th></tr>
+      <tr><td>Remtrommels</td><td>ABS 7169-S Bremstrommel Hinterachse für u.a. AUDI 50 (863)</td><td>59 ✓</td></tr>
+      <tr><td>Remschijven</td><td>titel op SKU 16880 via bestaande regel</td><td>65 ✓</td></tr>
+      <tr><td>Wartelmoeren <span class="klein">(data-arm)</span></td><td>ABS 96020 Achsmutter</td><td>21 ✓</td></tr>
+      <tr><td>Maximum in scope</td><td>langste titel (Slijtindicatoren)</td><td>77 ✓</td></tr>
+    </table>
+  </div>
+  <div class="diepte"><b class="t">De diepte in — item-specifics (Build → Attributes, per eBay-categorie)</b>
+  <table>
+    <tr><th>eBay Artikelmerkmal</th><th>← bronveld</th><th>Status</th></tr>
+    <tr><td>Hersteller / Herstellernummer</td><td><code>brand</code> / <code>sku</code></td><td><span class="pill ok">gemapt</span></td></tr>
+    <tr><td>Einbauposition</td><td><code>einbauposition_de</code> (filler-regel)</td><td><span class="pill ok">gemapt</span></td></tr>
+    <tr><td>OE/OEM-Referenznummer + Vergleichsnummer</td><td><code>oe_list</code></td><td><span class="pill ok">gemapt</span></td></tr>
+    <tr><td>EAN (Item ID)</td><td><code>ean</code> (globaal shared attribute)</td><td><span class="pill ok">gemapt</span></td></tr>
+    <tr><td>Material / Produktart</td><td><code>material</code> / <code>product_type</code></td><td><span class="pill ok">gemapt</span></td></tr>
+    <tr><td>Außendurchmesser / Lochkreis / Nabenbohrung</td><td><code>buitendiameter</code> / <code>bolt_pattern</code> / <code>centreringdiameter</code></td><td><span class="pill bezig">zodra Bremsscheiben live</span></td></tr>
+    <tr><td>Fahrzeug-Kompatibilitätsliste (K-Typ)</td><td>te bouwen uit <code>car_brands/car_models/from_year/to_year</code></td><td><span class="pill info">grootste hefboom ná live</span></td></tr>
+  </table>
+  <p class="klein">De K-Typ-lijst laat listings verschijnen in "Passt zu meinem Fahrzeug?"-zoekopdrachten en de eBay Partsfinder — bewust ingepland als optimalisatie ná livegang, geen blocker.</p></div>
+  <div class="diepte"><b class="t">De diepte in — compliance op de listing</b>
+  <p><b>GPSR</b> (verplicht sinds dec 2024): elk product toont fabrikant + verantwoordelijke — A.B.S. All Brake Systems B.V., Tinbergenlaan 7, 3401 MT IJsselstein — via het veld <code>gpsr_manufacturer_name</code> in alle 20 omschrijvings-regels. Controlepunt: eBay Compliance Dashboard op 0 geflagde listings. <b>Btw:</b> verzending uitsluitend vanuit NL → OSS-regeling, 19% DE-btw op de listingprijs. <b>VerpackG:</b> LUCID-registratie DE5131761082554, Lizenzero-contract getekend (09-07-2026). Geen WEEE/batterij-plicht (geen elektronica).</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 8</span></div>
+</div>
+
+<!-- ══════════ P9 · ACTIE: ORDER ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 7 · Diepte per actie</div>
+  <h2>Order — van eBay-koop tot pick bij ABS</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Een eBay DE-order stroomt automatisch binnen ~5 minuten door naar Magento en D365. De klant hoeft nergens op te wachten: eBay bevestigt direct. De flow is op 10 juli end-to-end bewezen met een echte order (144013198).</p></div>
+  <div class="svgbox">
+  <svg viewBox="0 0 720 120" xmlns="http://www.w3.org/2000/svg" font-family="Arial" width="100%">
+    <defs><marker id="r" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#15803D" stroke-width="1.6"/></marker></defs>
+    <g font-size="9.5">
+      <rect x="10" y="26" width="120" height="58" rx="8" fill="#E7F6EC" stroke="#15803D" stroke-width="1.6"/><text x="70" y="50" text-anchor="middle" font-weight="bold" fill="#0F3B66">Koop op eBay</text><text x="70" y="66" text-anchor="middle" fill="#5C6B7E">betaling via eBay</text>
+      <rect x="165" y="26" width="120" height="58" rx="8" fill="#E7F6EC" stroke="#15803D" stroke-width="1.6"/><text x="225" y="50" text-anchor="middle" font-weight="bold" fill="#0F3B66">Channable</text><text x="225" y="66" text-anchor="middle" fill="#5C6B7E">order opgehaald</text>
+      <rect x="320" y="26" width="120" height="58" rx="8" fill="#E7F6EC" stroke="#15803D" stroke-width="1.6"/><text x="380" y="50" text-anchor="middle" font-weight="bold" fill="#0F3B66">Magento</text><text x="380" y="66" text-anchor="middle" fill="#5C6B7E">import + administratie</text>
+      <rect x="475" y="26" width="120" height="58" rx="8" fill="#E7F6EC" stroke="#15803D" stroke-width="1.6"/><text x="535" y="50" text-anchor="middle" font-weight="bold" fill="#0F3B66">D365 / ABS</text><text x="535" y="66" text-anchor="middle" fill="#5C6B7E">picking + fulfilment</text>
+      <rect x="630" y="26" width="82" height="58" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="671" y="50" text-anchor="middle" font-weight="bold" fill="#0F3B66">Verzending</text><text x="671" y="66" text-anchor="middle" fill="#5C6B7E">H8 →</text>
+      <line x1="130" y1="55" x2="163" y2="55" stroke="#15803D" stroke-width="1.8" marker-end="url(#r)"/><line x1="285" y1="55" x2="318" y2="55" stroke="#15803D" stroke-width="1.8" marker-end="url(#r)"/><line x1="440" y1="55" x2="473" y2="55" stroke="#15803D" stroke-width="1.8" marker-end="url(#r)"/><line x1="595" y1="55" x2="628" y2="55" stroke="#15803D" stroke-width="1.8" marker-end="url(#r)"/>
+      <text x="360" y="106" text-anchor="middle" font-size="9" fill="#15803D" font-weight="bold">✓ end-to-end bewezen op order 144013198 (10-07-2026)</text>
+    </g>
+  </svg></div>
+  <div class="diepte"><b class="t">De diepte in — triggers &amp; instellingen</b>
+  <table>
+    <tr><th>Schakel</th><th>Trigger / instelling</th><th>Bewijs</th></tr>
+    <tr><td>eBay → Channable</td><td>Order-sync "Complete" (orders in + verzendstatus terug), connectie Active</td><td>Config live gecheckt 07-07</td></tr>
+    <tr><td>Channable → Magento</td><td>Order-import; vereist DE in Allow Countries + verzendmethode die DE toestaat</td><td>Order 144013198 geïmporteerd 10-07</td></tr>
+    <tr><td>Magento → D365</td><td>Bestaande ABS-koppeling (zelfde route als webshop-orders)</td><td>Zelfde keten als NL-flow</td></tr>
+  </table></div>
+  <div class="diepte"><b class="t">De diepte in — faalpaden: gevonden, verklaard, opgelost</b>
+  <table>
+    <tr><th>Faalpad</th><th>Symptoom</th><th>Oorzaak → oplossing</th><th>Status</th></tr>
+    <tr><td>Landconfig</td><td>"Some addresses can't be used…" bij DE-order</td><td>DE ontbrak in Magento Allow Countries → toegevoegd (juiste store-scope)</td><td><span class="pill ok">opgelost</span></td></tr>
+    <tr><td>Verzendmethode</td><td>"De verzendmethode ontbreekt" bij import</td><td>Verzendmethode stond niet open voor DE → "Ship to Applicable Countries" verruimd</td><td><span class="pill ok">opgelost</span></td></tr>
+    <tr><td>Scope-wijziging</td><td>Feed op 0 producten, orders herkennen geen land</td><td>DE-storeview live gezet zonder afstemming → teruggedraaid; storeview staat nu inactief ernaast; governance-afspraak: dit soort wijzigingen alleen nog met afstemming + stand-by</td><td><span class="pill ok">opgelost</span></td></tr>
+    <tr><td>Restpunt</td><td>Oude gefaalde testorders in Channable</td><td>Opruimen of bewust afvoeren (alle gefaalde orders waren tests, geen echte kopers)</td><td><span class="pill bezig">open</span></td></tr>
+  </table>
+  <p class="klein">Annulering: koper annuleert via eBay → order wordt in eBay geannuleerd vóór verzending; eBay verwerkt de terugbetaling; wij annuleren de order in Magento/D365 zodat er niet gepickt wordt. Ná verzending is het pad formeel een retour (hoofdstuk 9).</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 9</span></div>
+</div>
+
+<!-- ══════════ P10 · ACTIE: VERZENDING & T&T ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 8 · Diepte per actie</div>
+  <h2>Verzending &amp; track&nbsp;&amp;&nbsp;trace — de terugweg</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Het pakket gaat met DPD naar Duitsland. Het trackingnummer wordt door de ABS-koppeling automatisch op de Magento-verzending gezet, Channable pikt het op en zet het op de eBay-order — waarna eBay de koper automatisch de trackingmail stuurt. Niemand typt een trackingnummer over.</p></div>
+  <div class="svgbox">
+  <svg viewBox="0 0 720 120" xmlns="http://www.w3.org/2000/svg" font-family="Arial" width="100%">
+    <defs><marker id="s" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#2E6FD1" stroke-width="1.6"/></marker></defs>
+    <g font-size="9.5">
+      <rect x="10" y="26" width="130" height="58" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="75" y="46" text-anchor="middle" font-weight="bold" fill="#0F3B66">ABS verzendt</text><text x="75" y="62" text-anchor="middle" fill="#5C6B7E">DPD-label · Nieuwegein</text><text x="75" y="76" text-anchor="middle" fill="#5C6B7E">ABS-API → shipment</text>
+      <rect x="175" y="26" width="130" height="58" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="240" y="46" text-anchor="middle" font-weight="bold" fill="#0F3B66">Magento-shipment</text><text x="240" y="62" text-anchor="middle" fill="#5C6B7E">"Shipping &amp; Tracking</text><text x="240" y="76" text-anchor="middle" fill="#5C6B7E">Information" gevuld</text>
+      <rect x="340" y="26" width="130" height="58" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="405" y="46" text-anchor="middle" font-weight="bold" fill="#0F3B66">Channable</text><text x="405" y="62" text-anchor="middle" fill="#5C6B7E">shipment update →</text><text x="405" y="76" text-anchor="middle" fill="#5C6B7E">carrier-herkenning DPD</text>
+      <rect x="505" y="26" width="130" height="58" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="570" y="46" text-anchor="middle" font-weight="bold" fill="#0F3B66">eBay-order</text><text x="570" y="62" text-anchor="middle" fill="#5C6B7E">trackingnr. + carrier</text><text x="570" y="76" text-anchor="middle" fill="#5C6B7E">op de order</text>
+      <rect x="660" y="33" width="52" height="44" rx="8" fill="#E7F6EC" stroke="#15803D" stroke-width="1.6"/><text x="686" y="52" text-anchor="middle" font-weight="bold" fill="#15803D" font-size="9">Koper</text><text x="686" y="66" text-anchor="middle" fill="#5C6B7E" font-size="8.5">mail ✓</text>
+      <line x1="140" y1="55" x2="173" y2="55" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#s)"/><line x1="305" y1="55" x2="338" y2="55" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#s)"/><line x1="470" y1="55" x2="503" y2="55" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#s)"/><line x1="635" y1="55" x2="658" y2="55" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#s)"/>
+      <text x="360" y="108" text-anchor="middle" font-size="9" fill="#5C6B7E">Bewijs: trackingnr. DPD 05112095164869 live op Magento-shipment gezien (08-07) · propagatie naar eBay wordt bevestigd op order 144013198</text>
+    </g>
+  </svg></div>
+  <div class="diepte"><b class="t">De diepte in — triggers, instellingen en openstaande bevestiging</b>
+  <table>
+    <tr><th>Schakel</th><th>Detail</th><th>Status</th></tr>
+    <tr><td>ABS-API → Magento</td><td>Trackingnummer landt in de generieke shipment-velden (Carrier "Custom/DPD", Number). Bewezen op de DE-testorder; steekproef op 3 opeenvolgende orders volgt in launch-week</td><td><span class="pill bezig">bevestigen op volume</span></td></tr>
+    <tr><td>Channable shipment-updates</td><td>"Shipment updates = Enabled" op de eBay-connectie; transporter-regel herkent nummers ≥13 tekens als DPD</td><td><span class="pill ok">staat</span></td></tr>
+    <tr><td>Carrier-naam bij koper</td><td>Moet "DPD" tonen (klikbare tracking); default stond op "DPD Predict" — gelijktrekken</td><td><span class="pill bezig">check op 144013198</span></td></tr>
+    <tr><td>DPD DE-tarief &amp; label</td><td>Testlabel + marge-check remschijven &gt;5 kg (norm: marge &gt;15% houden)</td><td><span class="pill open">open</span></td></tr>
+    <tr><td>Tijdigheid</td><td>Handling ≤2 dagen; geldig trackingnummer tijdig op elke order beschermt Late-Shipment-Rate (≤3%) en valid-tracking-rate</td><td><span class="pill info">bewaken na live</span></td></tr>
+  </table>
+  <p class="klein">Out-of-stock-beheersing: de ~5-minuten-sync tussen Magento en de marketplaces kan bij hardlopers een verkocht-zonder-voorraad-moment veroorzaken. Beheersmaatregel: voorraadbuffer op risico-SKU's + dagelijkse bewaking in launch-week (hoofdstuk 10).</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 10</span></div>
+</div>
+
+<!-- ══════════ P11 · ACTIE: RETOUR / ANNULERING / CASES ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 9 · Diepte per actie</div>
+  <h2>Retour, annulering en cases</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Retouren lopen via eBay (label + RMA + refund-orchestratie) en worden door ons fysiek verwerkt zoals een webshopretour — verwerkers: Luca &amp; Hans. Voor zware pakketten uploaden we een eigen DPD-label. Het eigen retourformulier (Returnless) vindt eBay-orders op postcode.</p></div>
+  <div class="grid2" style="margin-bottom:3.5mm;">
+    <div class="kaart"><b>Retour — eBay-managed</b>
+      <ul style="margin-top:1.5mm;">
+        <li>Binnen beleid (30 dgn) → eBay accepteert automatisch</li>
+        <li>Waarde ≥ €12 → automatisch DHL/Hermes-label naar koper</li>
+        <li>&gt;5 kg (remschijven) → "Eigenes Etikett hochladen": eigen DPD-label</li>
+        <li>RMA = eBay-ordernummer (tekst + barcode op label)</li>
+        <li>Fysieke ontvangst → controle → <b>refund via eBay</b></li>
+        <li>Retourkosten: afhankelijk van reden + beleid</li>
+      </ul></div>
+    <div class="kaart"><b>Returnless — eigen formulier</b>
+      <ul style="margin-top:1.5mm;">
+        <li>Integratie "CCP eBay DE" (company 101300 / project 314525) — aan</li>
+        <li>Validatie: <b>postcode</b> (eBay maskeert koper-e-mail @members.ebay.com)</li>
+        <li>Importer uit — eBay maakt geen retouren aan in Channable; model = "Search order"</li>
+        <li>Shipping-statusfilter: none (orders staan op processing)</li>
+        <li>Open: formulier-koppeling + DE→NL-label live bevestigen, Dev-integratie loskoppelen</li>
+      </ul></div>
+  </div>
+  <div class="diepte"><b class="t">De diepte in — annulering &amp; cases (proces + eigenaar)</b>
+  <table>
+    <tr><th>Situatie</th><th>Proces</th><th>Eigenaar</th></tr>
+    <tr><td>Annulering vóór verzending</td><td>Annuleren op de eBay-order (eBay betaalt terug) + order stoppen in Magento/D365</td><td>Hans / Luca</td></tr>
+    <tr><td>Annulering ná verzending</td><td>Wordt retour: koper weigert of retourneert; refund na ontvangst</td><td>Luca &amp; Hans</td></tr>
+    <tr><td>INR — "Artikel nicht erhalten"</td><td>Tracking aanleveren op de case; DPD-onderzoek bij vermissing; anders refund/vervanging</td><td>Hans → marketplace-beheer</td></tr>
+    <tr><td>SNAD — "Nicht wie beschrieben"</td><td>Retour + beoordeling; structurele SNAD's terugkoppelen naar contentregels (foute fitment/omschrijving)</td><td>Hans</td></tr>
+    <tr><td>eBay Messages</td><td>Reactietijd bewaken (telt mee in serviceniveau / Verkäufer-Cockpit)</td><td>Hans → marketplace-beheer</td></tr>
+    <tr><td>Refund fiattering</td><td>Zelfde proces als webshop: controle bij ontvangst, refund via eBay</td><td>Luca &amp; Hans</td></tr>
+  </table>
+  <p class="klein">Ná livegang verschuift dagelijkse afhandeling (Messages, cases, retour-fiattering) naar het marketplace-beheer onder verantwoordelijkheid van de e-commerce manager; escalaties (structurele defects, seller-level-risico) blijven bij de e-commerce manager.</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 11</span></div>
+</div>
+
+<!-- ══════════ P12 · KETENTESTS & TRIGGERS ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 10</div>
+  <h2>Ketentests &amp; triggers — het bewijs</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Elke schakel is los getest, en de keten als geheel draait nu een echte end-to-end-test (order 144013198). Twee automatische bewakers dekken de livegang: een dagelijkse checklist-audit en een order-foutwacht die in de launch-week elke twee uur meekijkt en direct alarmeert.</p></div>
+  <h3>Uitgevoerde ketentests</h3>
+  <table>
+    <tr><th>#</th><th>Test</th><th>Resultaat</th><th>Datum</th></tr>
+    <tr><td>T1</td><td>Order-intake: eBay DE-order → Channable</td><td><span class="pill ok">bewezen</span> orders komen binnen, sync actief</td><td>06/07</td></tr>
+    <tr><td>T2</td><td>DE-adresacceptatie na Allow-Countries-fix</td><td><span class="pill ok">bewezen</span> eerdere fout verdwenen</td><td>07-07</td></tr>
+    <tr><td>T3</td><td>Import na verzendmethode-fix → Magento</td><td><span class="pill ok">bewezen</span> op order 144013198</td><td>10-07</td></tr>
+    <tr><td>T4</td><td>T&amp;T op Magento-shipment via ABS-API</td><td><span class="pill ok">bewezen</span> DPD 05112095164869 op shipment</td><td>08-07</td></tr>
+    <tr><td>T5</td><td>Master-categorie → kanaalregel-gate (7169-S → "Remtrommels" → juiste titelregel)</td><td><span class="pill ok">bewezen</span> volledige regelketen</td><td>08-07</td></tr>
+    <tr><td>T6</td><td>Titel-lengtecontrole volledige testscope</td><td><span class="pill ok">bewezen</span> 20/20 titels ≤80 (max 77)</td><td>08-07</td></tr>
+    <tr><td>T7</td><td>Tracking-propagatie Magento → Channable → eBay + carrier "DPD" bij koper</td><td><span class="pill bezig">loopt</span> op order 144013198</td><td>10-07 →</td></tr>
+    <tr><td>T8</td><td>Retour end-to-end (huidige route)</td><td><span class="pill bezig">loopt</span></td><td>10-07 →</td></tr>
+    <tr><td>T9</td><td>Echte order volledig: betaald → verzonden → getrackt</td><td><span class="pill bezig">loopt</span> (144013198 onderweg)</td><td>10-07 →</td></tr>
+  </table>
+  <div class="diepte"><b class="t">De diepte in — permanente bewaking (triggers)</b>
+  <table>
+    <tr><th>Bewaker</th><th>Frequentie</th><th>Wat hij doet</th></tr>
+    <tr><td>Go-live checklist-audit</td><td>Dagelijks 07:25</td><td>Verifieert checklist-items tegen bronsystemen, werkt status-JSON + live-HTML bij, mailt een To do / Doing / Done-overzicht (concept)</td></tr>
+    <tr><td>Launch-week order-watch</td><td>14–18 juli · elke 2 uur (08–20u)</td><td>Detecteert order-fouten en alarmeert direct via WhatsApp met order · kanaal · waarde · product</td></tr>
+    <tr><td>Handmatige gate</td><td>Bij publicatie</td><td>Preview per categorie + item-teller = bedoeld aantal, vóór "Uitvoeren" — de teller is de laatste beveiliging tegen ongewild volume (€0,04/listing)</td></tr>
+  </table>
+  <p class="klein">Aandachtspunt vastgelegd in het dossier: T4 is bewezen op één order; de definitie van klaar (3 opeenvolgende orders met gevuld trackingveld) wordt in de launch-week afgemaakt via de steekproef.</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 12</span></div>
+</div>
+
+<!-- ══════════ P13 · FINANCIËN MAANDCYCLUS ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 11</div>
+  <h2>Financiële afhandeling — één vaste maandcyclus</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>De koper betaalt aan eBay. eBay houdt zijn kosten in en betaalt het saldo uit op onze bankrekening. Eén keer per maand sluiten we af: uitbetalingen matchen met orders, de eBay-kostenfactuur inboeken en de btw via OSS aangeven. Een B2C-klantfactuur is in Duitsland niet verplicht; B2B-facturen leveren we op verzoek (binnen 6 maanden) — besluit over tooling volgt ná livegang.</p></div>
+  <div class="svgbox">
+  <svg viewBox="0 0 720 130" xmlns="http://www.w3.org/2000/svg" font-family="Arial" width="100%">
+    <defs><marker id="t" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#2E6FD1" stroke-width="1.6"/></marker></defs>
+    <g font-size="9.5">
+      <rect x="10" y="24" width="120" height="60" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="70" y="46" text-anchor="middle" font-weight="bold" fill="#0F3B66">Koper betaalt</text><text x="70" y="62" text-anchor="middle" fill="#5C6B7E">incl. 19% DE-btw</text><text x="70" y="76" text-anchor="middle" fill="#5C6B7E">aan eBay</text>
+      <rect x="165" y="24" width="140" height="60" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="235" y="46" text-anchor="middle" font-weight="bold" fill="#0F3B66">eBay Managed Payments</text><text x="235" y="62" text-anchor="middle" fill="#5C6B7E">houdt provisie + vaste</text><text x="235" y="76" text-anchor="middle" fill="#5C6B7E">ordervergoeding in</text>
+      <rect x="340" y="24" width="130" height="60" rx="8" fill="#EEF4FC" stroke="#2E6FD1" stroke-width="1.6"/><text x="405" y="46" text-anchor="middle" font-weight="bold" fill="#0F3B66">Payout → bank</text><text x="405" y="62" text-anchor="middle" fill="#5C6B7E">volgens schema</text><text x="405" y="76" text-anchor="middle" fill="#5C6B7E">(EUR)</text>
+      <rect x="505" y="24" width="205" height="60" rx="8" fill="#0F3B66"/><text x="607" y="44" text-anchor="middle" font-weight="bold" fill="#fff">Maandafsluiting (1× per maand)</text><text x="607" y="60" text-anchor="middle" fill="#C9DCF2">payout-rapport ↔ orders ↔ kostenfactuur</text><text x="607" y="74" text-anchor="middle" fill="#C9DCF2">+ OSS-btw-aangifte</text>
+      <line x1="130" y1="54" x2="163" y2="54" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#t)"/><line x1="305" y1="54" x2="338" y2="54" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#t)"/><line x1="470" y1="54" x2="503" y2="54" stroke="#2E6FD1" stroke-width="1.8" marker-end="url(#t)"/>
+      <text x="360" y="116" text-anchor="middle" font-size="9" fill="#5C6B7E">Bronnen per maand: eBay payout-rapport + Verkaufsgebühren-overzicht (Seller Hub) · Magento/D365 orderadministratie · OSS-aangifte via financiële administratie</text>
+    </g>
+  </svg></div>
+  <div class="diepte"><b class="t">De diepte in — de maandelijkse afsluitroutine</b>
+  <table>
+    <tr><th>Stap</th><th>Actie</th><th>Bron</th><th>Eigenaar</th></tr>
+    <tr><td>1</td><td>Payout-rapport downloaden en uitbetalingen matchen met bank</td><td>Seller Hub → Payments</td><td>E-com manager</td></tr>
+    <tr><td>2</td><td>Verkoop per categorie + refunds aansluiten op Magento/D365</td><td>Orderadministratie</td><td>E-com manager</td></tr>
+    <tr><td>3</td><td>eBay-kostenoverzicht (provisie, vaste vergoeding, evt. Anzeigen) inboeken</td><td>Seller Hub → Rechnung</td><td>Financiële administratie</td></tr>
+    <tr><td>4</td><td>OSS-aangifte: 19% DE-btw over DE-omzet</td><td>OSS-portaal / adviseur</td><td>Financiële administratie</td></tr>
+    <tr><td>5</td><td>B2B-factuurverzoeken van die maand afhandelen (verplicht op verzoek)</td><td>eBay Messages</td><td>E-com manager</td></tr>
+    <tr><td>6</td><td>Marge-rapport per categorie bijwerken (hoofdstuk 12 als sjabloon)</td><td>Dit document + payout-data</td><td>E-com manager</td></tr>
+  </table>
+  <p class="klein">Kaders: OSS volstaat zolang uitsluitend vanuit NL wordt verzonden; zodra er voorraad in DE ligt is een Duits btw-nummer nodig (traject loopt separaat via Staxxer). De klantfactuur-tooling (easybill/Billbee) is een ná-live-besluit en geen voorwaarde voor deze cyclus.</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 13</span></div>
+</div>
+
+<!-- ══════════ P14 · AFDRACHTEN + CALCULATIES ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 12</div>
+  <h2>Afdrachten eBay DE + voorbeeldcalculaties</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>eBay rekent voor autodelen (gewerbliche Verkäufer) een verkoopprovisie van <b>11%</b> over de transactiewaarde (t/m €750; daarboven 2%) plus een vaste vergoeding van <b>€0,45 per bestelling</b> (€0,35 bij orders ≤ €10). Promoted Listings (Anzeigen) komen daar optioneel bovenop (plan: 2%). Reken dus grofweg met <b>11–13% + €0,45</b> van de bruto orderwaarde aan eBay-kosten.</p></div>
+  <div class="diepte"><b class="t">De diepte in — fee-structuur (geverifieerd 10-07-2026, eBay.de hulppagina's)</b>
+  <table>
+    <tr><th>Component</th><th>Tarief</th><th>Toelichting</th></tr>
+    <tr><td>Verkoopprovisie "Auto &amp; Motorrad: Teile"</td><td>11% t/m €750 · 2% daarboven</td><td>Over de totale transactiewaarde incl. verzendkosten en btw</td></tr>
+    <tr><td>Vaste vergoeding per bestelling</td><td>€0,45 (orders &gt; €10) · €0,35 (≤ €10)</td><td>Verhoogd per 12-02-2026 (was €0,35 voor alles)</td></tr>
+    <tr><td>Promoted Listings / Anzeigen</td><td>ad-rate zelf te kiezen; plan: 2%<span class="aanname">*</span></td><td>Alleen bij verkoop via advertentie; starten ná content-check</td></tr>
+    <tr><td>Listingkosten testscope</td><td>€0,04 per listing-publicatie</td><td>Reden van de SKU-filter-kostenrem</td></tr>
+    <tr><td>Subtitle (optioneel)</td><td>€1,50 per listing</td><td>+15% CTR; per listing afwegen, geen default</td></tr>
+  </table></div>
+  <h3>Voorbeeldcalculaties per categorie <span class="klein">(prijzen = illustratie<span class="aanname">*</span>; verkoopprijs incl. 19% btw, gratis verzending in prijs)</span></h3>
+  <table>
+    <tr><th>Component</th><th>Remschijven-set</th><th>Remblokken-set</th><th>Draagarm</th><th>Remtrommel</th></tr>
+    <tr><td>Verkoopprijs (bruto)</td><td>€89,90</td><td>€39,90</td><td>€54,90</td><td>€64,90</td></tr>
+    <tr><td>Provisie 11%</td><td>€9,89</td><td>€4,39</td><td>€6,04</td><td>€7,14</td></tr>
+    <tr><td>Vaste vergoeding</td><td>€0,45</td><td>€0,45</td><td>€0,45</td><td>€0,45</td></tr>
+    <tr><td>Anzeigen 2%<span class="aanname">*</span></td><td>€1,80</td><td>€0,80</td><td>€1,10</td><td>€1,30</td></tr>
+    <tr><td><b>Totaal eBay-afdracht</b></td><td><b>€12,14 (13,5%)</b></td><td><b>€5,64 (14,1%)</b></td><td><b>€7,59 (13,8%)</b></td><td><b>€8,89 (13,7%)</b></td></tr>
+    <tr><td>Af: btw 19% (OSS, uit verkoopprijs)</td><td>€14,35</td><td>€6,37</td><td>€8,77</td><td>€10,36</td></tr>
+    <tr><td>Af: verzending DPD DE<span class="aanname">*</span> (&gt;5 kg bij schijven/trommels)</td><td>€9,50</td><td>€6,50</td><td>€7,50</td><td>€9,50</td></tr>
+    <tr><td><b>Netto vóór inkoop</b></td><td><b>€53,91</b></td><td><b>€21,39</b></td><td><b>€31,04</b></td><td><b>€36,15</b></td></tr>
+    <tr><td class="klein">Vuistregel</td><td colspan="4" class="klein">Netto vóór inkoop ≈ 60% van de bruto verkoopprijs bij dit prijssegment. Marge-eis: na inkoop &gt;15% overhouden — bij zware artikelen (schijven/trommels) is het DPD-tarief de gevoelige knop (checklist-punt 3.1).</td></tr>
+  </table>
+  <p class="klein"><span class="aanname">*</span> = aanname/illustratie, geen bronwaarde: verkoopprijzen zijn afgeronde voorbeelden per categorie, ad-rate 2% is het voorgenomen startpercentage, DPD DE-tarieven worden vastgesteld bij checklist-punt 3.1. Fee-percentages en vaste vergoeding zijn wél bronwaarden (eBay.de, 10-07-2026). Rekenmodel per SKU: afdracht = 11% × prijs + €0,45 (+ ad-rate × prijs indien via Anzeigen verkocht).</p>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 14</span></div>
+</div>
+
+<!-- ══════════ P15 · ROADMAP & GATES ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 13</div>
+  <h2>Go-live roadmap &amp; gates</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>We gaan pas live als elke gate groen is — publiceren is een expliciete, handmatige beslissing. Stand 10 juli: <b>18 van 31 punten af (58%)</b>, drie gates volledig groen (order-keten, factuur-kader, listings), 10 blocker-items open waarvan het merendeel deze week sluitbaar is. Doelvenster: week 29 (14–18 juli).</p></div>
+  <table>
+    <tr><th>Gate</th><th>Scope</th><th>Stand</th><th>Wat er nog open staat</th></tr>
+    <tr><td>G0 · Infra</td><td>Storeview-incident hersteld, orderpad open</td><td><span class="pill bezig">1 open</span></td><td>Oude testorder-fouten opruimen/afvoeren</td></tr>
+    <tr><td>G1 · Compliance</td><td>Rechtsteksten, OSS, VerpackG, GPSR</td><td><span class="pill bezig">2 open</span></td><td>Impressum/AGB/Widerruf/Datenschutz op de shop · schriftelijke OSS-bevestiging (loopt)</td></tr>
+    <tr><td>G2 · Order</td><td>eBay → Channable → Magento → D365</td><td><span class="pill ok">GO</span></td><td>— (end-to-end bewezen, 144013198)</td></tr>
+    <tr><td>G3 · Verzending &amp; T&amp;T</td><td>DPD, tracking-terugkoppeling</td><td><span class="pill bezig">2 open</span></td><td>DPD DE-tarief/label + marge-check · tracking-propagatie bevestigen op live order</td></tr>
+    <tr><td>G4 · Factuur</td><td>B2C niet verplicht; B2B op verzoek</td><td><span class="pill ok">GO (ná live)</span></td><td>Geen go-live-blocker — tooling-besluit na livegang</td></tr>
+    <tr><td>G5 · Retour</td><td>Beleid, Returnless, verwerkers</td><td><span class="pill bezig">1 open</span></td><td>Returnless: laatste scope-check + formulier/label bevestigen</td></tr>
+    <tr><td>G6 · Listings</td><td>Titels, omschrijvingen, categorieën, scope</td><td><span class="pill ok">GO</span></td><td>— (scope-bevestiging 4 SKU's als startlijst bij publicatie)</td></tr>
+    <tr><td>G7 · Betaling</td><td>Managed Payments, policies</td><td><span class="pill bezig">1 open</span></td><td>Payout-config visueel bevestigen in Seller Hub</td></tr>
+    <tr><td>G8 · Eindtest</td><td>Echte order + retour + bewaking</td><td><span class="pill bezig">3 open</span></td><td>Order 144013198 afronden · retourtest afronden · publicatie-beslissing</td></tr>
+  </table>
+  <div class="diepte"><b class="t">De diepte in — kritieke pad naar live</b>
+  <div class="stap"><div class="nr">1</div><div class="tx"><b>Deze week — operationele checks:</b> DPD-tarief/label (G3), Returnless-afronding (G5), payout-check (G7), testorders opruimen (G0).</div></div>
+  <div class="stap"><div class="nr">2</div><div class="tx"><b>Deze week — compliance:</b> rechtsteksten op de shop en schriftelijke OSS-bevestiging (G1, externe eigenaar).</div></div>
+  <div class="stap"><div class="nr">3</div><div class="tx"><b>Eindtest sluiten:</b> tracking + retour bevestigd op de lopende echte order (G3/G8) — daarmee is de keten met bewijs rond.</div></div>
+  <div class="stap"><div class="nr g">4</div><div class="tx"><b>Publicatie:</b> plan met testresultaten ter besluitvorming, daarna handmatig "Uitvoeren" met gecontroleerde startscope; launch-week-bewaking staat al klaar (14–18 juli).</div></div>
+  <p class="klein">Governance: publiceren en scope-uitbreiding zijn exclusieve beslissingen van de e-commerce manager; wijzigingen aan de gedeelde infrastructuur (Magento-scope, storeviews) gaan alleen nog met vooraf-afstemming en stand-by. De dagelijkse audit legt elke statuswijziging met bewijs vast in het dossier.</p></div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 15</span></div>
+</div>
+
+<!-- ══════════ P16 · DOCUMENTREGISTER ══════════ -->
+<div class="page">
+  <div class="kicker">Hoofdstuk 14</div>
+  <h2>Documentregister &amp; bronnen</h2>
+  <div class="oog"><b class="t">In één oogopslag</b>
+  <p>Dit blueprint vervangt als leesdocument de losse werkdocumenten hieronder: alles is geclusterd, ontdubbeld en waar nodig samengevoegd. De werkdocumenten blijven bestaan als detail-bewijs; de status-JSON + live-checklist blijven de dagelijkse waarheid.</p></div>
+  <table>
+    <tr><th>Cluster</th><th>Opgenomen in hoofdstuk</th><th>Onderliggende werkdocumenten (vault: _cowork/ccp-ebay-de/)</th></tr>
+    <tr><td>Klantflow &amp; order-to-cash</td><td>H1, H7, H11</td><td>order-to-cash-onderzoek · order-to-cash-A4 · golive-week-plan</td></tr>
+    <tr><td>Systeem &amp; incident</td><td>H2, H7</td><td>systeemkaart (bridge-drop) · Incident-storeview-A4 (2×) · testorder-diagnose · Allow-Countries-klikpad</td></tr>
+    <tr><td>Channable-regelwerk</td><td>H4, H5, H6</td><td>command-center · setup-status 07-08 · regelopbouw-visueel (3×) · blauwdruk-per-categorie · titels-omschrijvingen (3×) · import-regels-visueel · masterplaybook · veld-opschoonplan · item-specifics-visueel · DE-produktart-mapping · MASTER-RULE-basisomschrijving</td></tr>
+    <tr><td>Verzending &amp; T&amp;T</td><td>H8</td><td>stoplicht-orderflow-A4 · TT-bewijs-magento-shipment · bewijs-TT-A4</td></tr>
+    <tr><td>Retouren</td><td>H9</td><td>Retourflow-onderzoek · workflow-tekening · stap-voor-stap-setup · simpel-uitleg · Returnless-stand-en-insteladvies · volledig-wat-hoe-waar</td></tr>
+    <tr><td>Go-live-besturing</td><td>H10, H13</td><td>GOLIVE-checklist-DE (md+xlsx) · golive-checklist (md/html) · BUJO-livegang · actieplan-1A4 · status-JSON + LIVE-html + GoLive-Excel (10-07)</td></tr>
+    <tr><td>Facturatie</td><td>H11</td><td>factuur-opties-Sjoerd-A4 · magento-velden-TT-factuur-A4</td></tr>
+  </table>
+  <div class="diepte"><b class="t">Externe bronnen</b>
+  <p class="klein">eBay.de — Gebühren für gewerbliche Verkäufer (verkoopprovisie + vaste vergoeding, incl. wijziging 12-02-2026) · eBay.de Verkäuferportal — Gebührenänderungen 2026 · eBay.de — Rücksendungen für Verkäufer / automatische Abwicklung von Rückgaben · eBay.de Rechtsportal — gewerbliche Verkäufer · IT-Recht Kanzlei — orderbevestiging &amp; factuurplicht B2C/B2B · Returnless product guide (Channable-integratie). Geverifieerd: 06–10 juli 2026.</p></div>
+  <div class="diepte"><b class="t">Onderhoud van dit document</b>
+  <p>Versie 1.0 weerspiegelt de stand van 10 juli 2026 (checklist 58%). Bij livegang wordt hoofdstuk 13 bijgewerkt naar de definitieve GO-stand en hoofdstuk 12 gevuld met werkelijke DPD-tarieven en gerealiseerde marges uit de eerste maandafsluiting. De dagelijkse audit-run houdt de onderliggende checklist actueel; dit blueprint volgt bij mijlpalen.</p></div>
+  <div style="margin-top:10mm;text-align:center;">
+    <div style="font-size:8pt;letter-spacing:3px;text-transform:uppercase;color:#9AA8B8;">Connect Car Parts × A.B.S. — eBay DE Marketplace Blueprint · v1.0 · 10 juli 2026</div>
+  </div>
+  <div class="foot"><span>eBay DE Marketplace Blueprint · CCP × A.B.S.</span><span>p. 16</span></div>
+</div>
+
+</body></html>

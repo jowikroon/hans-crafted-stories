@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>eBay DE — Factuur-opties (Sjoerd)</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .sheet{ width:210mm; min-height:297mm; padding:14mm 13mm; margin:0 auto; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:7px; margin-bottom:12px; }
+  header h1{ font-size:18px; font-weight:700; letter-spacing:-.2px; }
+  header .sub{ font-size:9px; color:#52606d; margin-top:3px; }
+  .fact{ display:flex; align-items:center; gap:9px; background:#eef5ff; border:1px solid #cfe0f7; border-left:4px solid #1a5fb4; border-radius:5px; padding:9px 12px; margin:12px 0; }
+  .fact .ic{ font-size:17px; }
+  .fact .tx{ font-size:9.6px; color:#1c3d5f; line-height:1.4; }
+  .fact .tx b{ color:#12406e; }
+  h2{ font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:#102a43; margin:16px 0 7px; }
+  /* cards */
+  .cards{ display:flex; gap:9px; }
+  .card{ flex:1; border:1px solid #dbe4ee; border-radius:8px; overflow:hidden; text-align:center; }
+  .card .h{ padding:9px 6px; color:#fff; }
+  .card.b1 .h{ background:#1a5fb4; } .card.b2 .h{ background:#2f6fb0; } .card.b3 .h{ background:#5a7a99; }
+  .card .h .n{ font-size:7px; letter-spacing:.5px; text-transform:uppercase; opacity:.85; }
+  .card .h .t{ font-size:14px; font-weight:700; margin-top:2px; }
+  .card .how{ font-size:8.4px; color:#52606d; padding:8px 9px; line-height:1.4; border-bottom:1px solid #eef2f7; min-height:44px; }
+  .card .chips{ padding:8px 8px 10px; }
+  .chip{ display:inline-block; font-size:7.6px; font-weight:700; padding:2px 7px; border-radius:9px; margin:2px 2px; }
+  .cg{ background:#eaf6ef; color:#14532d; } .ca{ background:#fff3e0; color:#8a5a00; }
+  /* matrix */
+  table{ width:100%; border-collapse:collapse; margin-top:6px; }
+  th,td{ font-size:9px; padding:7px 8px; border-bottom:1px solid #e9edf2; text-align:center; }
+  th{ font-size:7.4px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; background:#f7f9fc; }
+  td:first-child, th:first-child{ text-align:left; font-weight:600; color:#33414f; }
+  .dot{ font-size:14px; } .full{ color:#2f9e63; } .part{ color:#e0952a; } .no{ color:#c94b4b; }
+  .rec{ display:flex; gap:10px; margin-top:16px; }
+  .rec .r{ flex:1; border:1px solid #bfe4cf; background:#f0f8f3; border-radius:6px; padding:9px 11px; }
+  .rec .r .q{ font-size:8px; text-transform:uppercase; letter-spacing:.3px; color:#1f7a44; font-weight:700; }
+  .rec .r .a{ font-size:11px; font-weight:700; color:#0f5132; margin-top:2px; }
+  .rec .r .why{ font-size:8px; color:#3d6b4f; margin-top:2px; }
+  .foot{ margin-top:18px; border-top:1px solid #d9e2ec; padding-top:6px; font-size:7.2px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.4px;padding:2px 9px;border-radius:9px;font-weight:600;}
+  .legend{ font-size:7.4px; color:#829ab1; margin-top:5px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>eBay DE — factuur-opties <span class="accent">· voor Sjoerd</span></h1>
+    <div class="sub">3 manieren om facturen geautomatiseerd bij de eBay-koper te krijgen · CCP × A.B.S. · 2026-07-07</div>
+  </header>
+
+  <div class="fact">
+    <div class="ic">📌</div>
+    <div class="tx"><b>Mailen kan niet:</b> eBay maskeert de koper-email en blokkeert PDF-bijlagen. De factuur moet <b>geüpload worden in de eBay-order</b> (koper downloadt daar). Alle 3 opties doen dat. <b>B2C niet verplicht · B2B wel.</b></div>
+  </div>
+
+  <div class="cards">
+    <div class="card b1"><div class="h"><div class="n">Optie 1 · tool</div><div class="t">Billbee</div></div>
+      <div class="how">Auto-factuur + auto-upload naar eBay. Ook Bol + Amazon.</div>
+      <div class="chips"><span class="chip cg">Bol + eBay</span><span class="chip cg">snelst live</span></div></div>
+    <div class="card b2"><div class="h"><div class="n">Optie 2 · tool</div><div class="t">easybill</div></div>
+      <div class="how">Auto-factuur + upload. OSS/19% DE + GoBD ingebouwd.</div>
+      <div class="chips"><span class="chip cg">DE-btw sterkst</span><span class="chip ca">eBay-focus</span></div></div>
+    <div class="card b3"><div class="h"><div class="n">Optie 3 · in-house</div><div class="t">Magento + API</div></div>
+      <div class="how">Factuur uit eigen Magento; connector pusht naar eBay.</div>
+      <div class="chips"><span class="chip cg">geen abo</span><span class="chip ca">maatwerk</span></div></div>
+  </div>
+
+  <h2>Vergelijking</h2>
+  <table>
+    <tr><th>Criterium</th><th>Billbee</th><th>easybill</th><th>Magento+API</th></tr>
+    <tr><td>Upload in eBay-portal</td><td><span class="dot full">●</span></td><td><span class="dot full">●</span></td><td><span class="dot part">◐</span></td></tr>
+    <tr><td>Bol + Amazon mee</td><td><span class="dot full">●</span></td><td><span class="dot part">◐</span></td><td><span class="dot no">○</span></td></tr>
+    <tr><td>DE-btw / OSS / GoBD</td><td><span class="dot part">◐</span></td><td><span class="dot full">●</span></td><td><span class="dot part">◐</span></td></tr>
+    <tr><td>Snel live</td><td><span class="dot full">●</span></td><td><span class="dot full">●</span></td><td><span class="dot no">○</span></td></tr>
+    <tr><td>Geen extra abonnement</td><td><span class="dot no">○</span></td><td><span class="dot no">○</span></td><td><span class="dot full">●</span></td></tr>
+    <tr><td>Geen eigen onderhoud</td><td><span class="dot full">●</span></td><td><span class="dot full">●</span></td><td><span class="dot no">○</span></td></tr>
+  </table>
+  <div class="legend">● sterk · ◐ deels · ○ zwak/nee</div>
+
+  <div class="rec">
+    <div class="r"><div class="q">Snelheid + Bol erbij</div><div class="a">Billbee</div><div class="why">1 tool voor Bol + eBay, direct live</div></div>
+    <div class="r"><div class="q">DE-btw / GoBD zwaarst</div><div class="a">easybill</div><div class="why">sterkste compliance-basis</div></div>
+    <div class="r"><div class="q">Alles in eigen huis</div><div class="a">Magento+API</div><div class="why">geen abo, maar bouwen</div></div>
+  </div>
+
+  <h2>Prijsvergelijking · minimaal pakket · totaal @ 500 orders/mnd</h2>
+  <table>
+    <tr><th>Tool</th><th>Min. pakket</th><th>Vanaf</th><th style="background:#eaf3ff;">Totaal @ 500 orders</th><th>Model</th></tr>
+    <tr><td>Billbee</td><td>All-inclusive</td><td>€9/mnd</td><td style="background:#eaf3ff;"><b style="color:#b02a2a;">€125/mnd</b></td><td>per order (schaalt mee)</td></tr>
+    <tr><td>easybill</td><td>Professional</td><td>€21–29/mnd</td><td style="background:#eaf3ff;"><b style="color:#1f7a44;">±€29/mnd</b></td><td>vast, onbeperkt docs</td></tr>
+    <tr><td>Magento + API</td><td>geen abo</td><td>eenmalig</td><td style="background:#eaf3ff;"><b style="color:#1f7a44;">€0/mnd</b></td><td>+ eenmalige bouw + onderhoud</td></tr>
+  </table>
+  <div class="legend">Bij 500 orders: Billbee rekent <b>per order</b> (€125), easybill is <b>vast</b> (€29, onbeperkt docs), Magento heeft geen recurring (wel b

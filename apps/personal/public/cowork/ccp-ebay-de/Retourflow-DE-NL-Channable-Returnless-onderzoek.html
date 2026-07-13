@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retourflow DE→NL — Channable + Returnless</title><style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; font-size:10px; }
+  .sheet{ width:210mm; min-height:297mm; padding:12mm 12mm 9mm; margin:0 auto; page-break-after:always; }
+  .sheet:last-child{ page-break-after:auto; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:11px; }
+  header h1{ font-size:17px; font-weight:700; }
+  header .sub{ font-size:8.4px; color:#52606d; margin-top:2px; }
+  h2{ font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:#102a43; margin:13px 0 6px; padding:3px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  .lead{ border-left:4px solid #1a5fb4; background:#eef5ff; border-radius:7px; padding:9px 12px; margin-bottom:11px; font-size:9.5px; color:#1c3d5f; }
+  .lead b{ color:#12406e; }
+  table{ width:100%; border-collapse:collapse; margin-top:4px; }
+  th,td{ text-align:left; font-size:8.8px; padding:5px 8px; border-bottom:1px solid #e7ecf2; vertical-align:top; line-height:1.4; }
+  th{ font-size:7.2px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  td.k{ font-weight:700; color:#102a43; width:26%; }
+  .flow{ display:flex; align-items:stretch; margin:6px 0; flex-wrap:wrap; }
+  .flow .s{ flex:1; min-width:88px; background:#f7f9fc; border:1px solid #d9e2ec; border-radius:6px; padding:7px 8px; }
+  .flow .s .t{ font-size:8.6px; font-weight:700; color:#102a43; } .flow .s .d{ font-size:7.6px; color:#52606d; margin-top:2px; line-height:1.3; }
+  .flow .a{ align-self:center; color:#1a5fb4; font-size:14px; font-weight:700; padding:0 5px; }
+  .chip{ display:inline-block; background:#e7f0fb; border:1px solid #bcd6f5; color:#12508f; font-size:8px; font-weight:700; padding:1px 7px; border-radius:9px; margin:2px 3px 0 0; }
+  .good{ background:#eaf6ef; border-color:#bfe4cf; color:#14532d; } .amb{ background:#fff3e0; border-color:#f2d9a8; color:#8a5a00; }
+  .note{ font-size:8.6px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid #1a5fb4; border-radius:7px; padding:8px 11px; margin-top:10px; } .note b{ color:#12508f; }
+  .note.warn{ color:#7a1f1f; background:#fdecec; border-color:#f0cccc; border-left-color:#d64545; } .note.warn b{ color:#a52222; }
+  .card{ border:1px solid #e2e8f0; border-radius:9px; margin-top:9px; overflow:hidden; }
+  .card .hd{ background:#eef2f7; padding:7px 11px; font-weight:700; font-size:11px; color:#102a43; display:flex; gap:8px; align-items:center; }
+  .card .hd .b{ font-size:7.6px; font-weight:700; padding:1px 8px; border-radius:9px; background:#fff; }
+  .card .bd{ padding:9px 11px; font-size:9px; color:#33414f; }
+  ul{ margin-left:15px; } li{ font-size:8.8px; line-height:1.5; }
+  .foot{ margin-top:12px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7px;padding:2px 8px;border-radius:8px;font-weight:600;}
+</style></head><body>
+
+<!-- PAGINA 1 -->
+<div class="sheet">
+  <header>
+    <h1>Retourflow DE&rarr;NL met bestaande middelen <span style="color:#1a5fb4">&#183; Channable + Returnless</span></h1>
+    <div class="sub">CCP &#183; connectcarparts.nl &#183; onderzoek retourlabel Duitsland naar NL-magazijn (ABS) &#183; 2026-07-10</div>
+  </header>
+
+  <div class="lead">
+    <b>Kan het? Ja.</b> Returnless heeft een kant-en-klare koppeling met Channable en met bol. Je haalt marketplace-orders uit de bestaande Channable order-connection en verwerkt de retouren in één portal. Voor een Duitse koper die naar NL terugstuurt genereer je een <b>eigen DE&rarr;NL retourlabel</b> via een carrier (DPD of DHL Retoure), geadresseerd aan het NL-magazijn. Dat sluit aan op de DPD-verzendflow die je al gebruikt.
+  </div>
+
+  <h2>1 &#183; Twee manieren om retouren te laten lopen (Returnless via Channable)</h2>
+  <table>
+    <tr><th>Model</th><th>Hoe</th><th>Label &amp; kosten</th><th>Wanneer</th></tr>
+    <tr><td class="k">A. Marketplace-retour importeren</td><td>eBay/bol maakt de retour + label. Returnless importeert de retourdata via Channable. "Mark as received" &rarr; auto-refund + sync terug naar het kanaal.</td><td>Label van de marketplace (goedkoop tarief van bol/eBay). Retouradres bepaald door de marketplace.</td><td>bol NL-retouren. Simpel, weinig controle.</td></tr>
+    <tr><td class="k">B. Eigen retourformulier per kanaal</td><td>Klant start retour via jouw Returnless-formulier. Returnless zoekt de bijbehorende Channable-order op, klant kiest items. Returnless maakt <b>jouw eigen label</b> via de carrier.</td><td><b>Eigen DE&rarr;NL label (DPD / DHL Retoure)</b> naar het NL-magazijn. Jij bepaalt retouradres en wie de kosten draagt.</td><td><b>eBay DE &rarr; NL.</b> Volledige controle, past bij bestaande flow.</td></tr>
+  </table>
+  <div class="note"><b>Voor CCP (NL-verkoper, Duitse kopers via eBay DE):</b> model B is de juiste. Je wilt dat de Duitse koper met een Duits ophaallabel (DPD DE of DHL Paket Retoure) terugstuurt naar het NL-magazijn. Returnless routeert het label automatisch per land: Duitse koper krijgt een Duits label, NL-koper een NL/PostNL-label.</div>
+
+  <h2>2 &#183; De flow, passend op wat je al hebt</h2>
+  <div class="flow">
+    <div class="s"><div class="t">Order eBay DE / bol</div><div class="d">koper plaatst order</div></div>
+    <div class="a">&rarr;</div>
+    <div class="s"><div class="t">Channable order-connection</div><div class="d">bestaat al (de koppeling die je voor eBay DE inzet)</div></div>
+    <div class="a">&rarr;</div>
+    <div class="s"><div class="t">Returnless</div><div class="d">koppelt op die order-connection, portal + retourformulier</div></div>
+    <div class="a">&rarr;</div>
+    <div class="s"><div class="t">Carrier DE&rarr;NL</div><div class="d">DPD of DHL Retoure label, Duits ophaalpunt &rarr; NL-adres</div></div>
+    <div class="a">&rarr;</div>
+    <div class="s"><div class="t">ABS NL-magazijn</div><div class="d">ontvangt fysiek, "mark as received" &rarr; refund + sync</div></div>
+  </div>
+  <div class="note"><b>Sluit aan op bestaande middelen:</b> dezelfde Channable order-connection die eBay DE voedt, voedt ook Returnless. Je gebruikt DPD al voor uitgaande DACH-zendingen, dus een DPD-retour DE&rarr;NL is een logische keuze. Magento hoeft er niet voor open: Returnless is de retour-laag. De Channable Returns-plugin in Magento (nu UIT) is een aparte, optionele route als je retourdata ook in Magento wilt.</div>
+
+  <h2>3 &#183; Kosten (indicatief, te bevestigen in een Returnless-proefaccount)</h2>
+  <table>
+    <tr><th>Post</th><th>Indicatie</th></tr>
+    <tr><td class="k">Returnless via Channable API</td><td>&euro;49 per order-connection per maand.</td></tr>
+    <tr><td class="k">Returnless-abonnement</td><td>Platformkosten (staffel naar retourvolume) &mdash; opvragen.</td></tr>
+    <tr><td class="k">Carrier-label DE&rarr;NL</td><td>Per retour. Eigen DPD/DHL-tarief gebruiken, of het tarief van Returnless. Zichtbaar in een gratis Returnless-account.</td></tr>
+  </table>
+
+  <div class="foot"><span>Bron: Returnless (Channable-, marketplaces-, carriers-pagina) + Channable Help + cross-border retour-praktijk &#183; 2026-07-10</span><span class="pill">CCP &#183; pagina 1/2</span></div>
+</div>
+
+<!-- PAGINA 2 -->
+<div class="sheet">
+  <header>
+    <h1>Retourflow DE&rarr;NL &mdash; per kanaal &amp; aandachtspunten</h1>
+    <div class="sub">CCP &#183; eBay DE + bol &#183; wat kan met bestaande middelen, en de randvoorwaarden</div>
+  </header>
+
+  <h2>4 &#183; Per kanaal</h2>
+  <div class="card"><div class="hd">eBay DE <span class="b" style="color:#12508f;background:#e7f0fb;">DE&rarr;NL, eigen label</span></div><div class="bd">
+    eBay's eigen managed returns geven doorgaans een Duits retouradres/label. Voor een retour naar jouw NL-magazijn wil je een <b>eigen cross-border label</b>. Via Returnless (model B): Channable levert de eBay-order, de Duitse koper vult het retourformulier in, Returnless maakt een DPD- of DHL-Retoure-label van een Duits ophaalpunt naar het NL-magazijn. Retourdata sync terug naar eBay.
+  </div></div>
+  <div class="card"><div class="hd">bol.com <span class="b" style="color:#14532d;background:#eaf6ef;">import of eigen label</span></div><div class="bd">
+    bol heeft een directe Returnless-integratie: retourdata importeren, orderdata ophalen, retour als ontvangen markeren, refund vanuit het Returnless-panel, en lage retourlabelkosten van bol. Voor bol NL-retouren is model A (bol-label importeren) het eenvoudigst. Cross-border via bol speelt hier minder.
+  </div></div>
+  <div class="card"><div class="hd">Amazon DE (later) <span class="b amb" style="background:#fff3e0;">zelfde patroon</span></div><div class="bd">
+    Amazon DE loopt straks via dezelfde Channable order-connection en kan op dezelfde manier in Returnless: eigen DE&rarr;NL label of Amazon-retour importeren. Let op Amazon's eis van een geldig retouradres om auto-refunds te voorkomen.
+  </div></div>
+
+  <h2>5 &#183; Randvoorwaarden &amp; aandachtspunten</h2>
+  <ul>
+    <li><b>Retouradres = NL-magazijn (ABS).</b> Eén vast, geldig retouradres. Marketplaces (eBay/Amazon) eisen een werkend retouradres, anders volgen auto-refunds en "keep the item".</li>
+    <li><b>Auto-routing per land.</b> Returnless kiest het label op basis van het land van de koper: Duitse koper &rarr; Duits label (DPD/DHL), NL-koper &rarr; NL-label (PostNL/DPD). Regelgebaseerd, geen handwerk.</li>
+    <li><b>Order-connection is de sleutel.</b> Returnless hangt op de bestaande Channable order-connection. Je hebt er nu &eacute;&eacute;n, ingezet voor eBay DE. Meer kanalen = meer order-connections (elk &euro;49/mnd voor de Returnless-koppeling).</li>
+    <li><b>Btw / cross-border.</b> Retour DE&rarr;NL raakt het Duitse VAT/OSS-traject (Kleve). Retourstroom fysiek naar NL is prima; de fiscale afhandeling loopt mee in de bestaande OSS-lijn.</li>
+    <li><b>Channable Returns-plugin (Magento) staat UIT.</b> Dat is een aparte route (retourdata terug in Magento). Niet nodig als Returnless de retour-laag is; wel een optie als je retouren ook in Magento/D365 wilt zien.</li>
+  </ul>
+
+  <h2>6 &#183; Advies &amp; volgende stap</h2>
+  <div class="note"><b>Kortste route met bestaande middelen:</b> koppel <b>Returnless aan de bestaande Channable order-connection</b> (model B, eigen retourformulier), met <b>DPD als carrier</b> voor DE&rarr;NL (je gebruikt DPD al), retouradres = NL-magazijn, auto-routing per land. Dan maak je met wat je hebt een Duits retourlabel naar NL aan, zonder aparte storeview of nieuwe orderkoppeling.</div>
+  <div class="note warn"><b>Eerst verifiëren (tier-2):</b> open een gratis Returnless-account en check (1) dat DPD DE&rarr;NL en/of DHL Paket Retoure in hun carrier-lijst zit met een werkbaar tarief, (2) dat eBay als bron via de Channable order-connection retourdata teruglevert, en (3) de exacte maandkosten. Dat zijn de enige open punten; de architectuur staat.</div>
+
+  <div class="foot"><span>Verify-stap: Returnless proefaccount voor carriers (DPD/DHL DE&rarr;NL) + tarieven + eBay-retoursync via Channable &#183; 2026-07-10</span><span class="pill">CCP &#183; pagina 2/2</span></div>
+</div>
+</body></html>

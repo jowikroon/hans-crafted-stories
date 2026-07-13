@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>eBay DE — Titels & Omschrijvingen per categorie + regelopbouw</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .page { width:210mm; min-height:297mm; padding:13mm 13mm 11mm; margin:0 auto; page-break-after:always; position:relative; }
+  .page:last-child{ page-break-after:auto; }
+  .accent{ color:#1a5fb4; }
+  .eyebrow{ font-size:8px; text-transform:uppercase; letter-spacing:1.2px; color:#1a5fb4; font-weight:700; }
+  h1{ font-size:19px; font-weight:700; letter-spacing:-.3px; margin-top:3px; }
+  .lead{ font-size:9.5px; color:#52606d; margin-top:5px; line-height:1.45; }
+  header.pg{ border-bottom:2px solid #1a5fb4; padding-bottom:8px; margin-bottom:12px; }
+  header.pg h1{ font-size:16px; }
+  header.pg .s{ font-size:8.6px; color:#52606d; margin-top:3px; }
+  h2{ font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:#102a43;
+      margin:13px 0 6px; padding:3px 8px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  h3{ font-size:9.5px; color:#12406e; margin:9px 0 3px; }
+  p{ font-size:9px; line-height:1.5; color:#33414f; }
+  ul,ol{ margin:3px 0 0 16px; } li{ font-size:8.8px; color:#33414f; line-height:1.45; margin-bottom:3px; }
+  li b{ color:#102a43; }
+  code{ background:#f2f6fb; border:1px solid #dbe6f4; border-radius:2px; padding:0 3px; font-size:8px; color:#12406e; }
+  table{ width:100%; border-collapse:collapse; margin-top:4px; }
+  th,td{ text-align:left; font-size:8px; padding:4px 6px; border-bottom:1px solid #e4e9f0; vertical-align:top; line-height:1.35; }
+  th{ font-size:7px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  .formula{ background:#f7fafd; border:1px solid #d3e2f3; border-radius:5px; padding:9px 11px; margin-top:4px; font-size:8.4px; color:#12406e; line-height:1.6; }
+  .formula .f{ background:#e6effb; border-radius:3px; padding:0 4px; font-weight:600; white-space:nowrap; }
+  .example{ background:#102a43; color:#eaf2fb; border-radius:5px; padding:10px 12px; margin-top:5px; font-size:10px; line-height:1.5; }
+  .example .cap{ font-size:7px; text-transform:uppercase; letter-spacing:.5px; color:#8fb3dd; display:block; margin-bottom:3px; }
+  .example b{ color:#fff; }
+  .len{ display:inline-block; font-size:7.4px; background:#1a5fb4; color:#fff; border-radius:8px; padding:1px 7px; margin-top:5px; }
+  .tmpl{ background:#fbfcfe; border:1px solid #e0e7f0; border-radius:5px; padding:10px 12px; margin-top:4px; font-family:"Consolas",monospace; font-size:8px; color:#243b53; line-height:1.55; white-space:pre-wrap; }
+  .tmpl .v{ color:#1a5fb4; font-weight:600; }
+  .two{ display:flex; gap:10px; } .two > div{ flex:1; }
+  .tag{ display:inline-block; font-size:7px; font-weight:700; padding:1px 6px; border-radius:8px; }
+  .ok{ background:#eaf6ef; color:#14532d; } .no{ background:#fdecec; color:#8f1f1f; } .part{ background:#fff3e0; color:#8a5a00; }
+  .note{ font-size:8.2px; color:#52606d; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid #1a5fb4; border-radius:4px; padding:7px 10px; margin-top:8px; line-height:1.5; }
+  .note b{ color:#12406e; }
+  .warn{ background:#fff8ec; border-color:#f3d9a6; border-left-color:#d98a1a; color:#7a4b0a; }
+  .warn b{ color:#b45309; }
+  footer{ position:absolute; bottom:7mm; left:13mm; right:13mm; border-top:1px solid #d9e2ec; padding-top:5px;
+          font-size:7px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.2px;padding:1px 8px;border-radius:8px;font-weight:600;}
+  .cat{ font-size:7.6px; font-weight:700; color:#1a5fb4; letter-spacing:.4px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="page">
+  <div class="eyebrow">CCP × A.B.S. · eBay DE · bouwvoorbereiding</div>
+  <h1>Titels &amp; omschrijvingen per categorie <span class="accent">+ regelopbouw</span></h1>
+  <p class="lead">Voor SEO-check door Luca, vóór Hans di 07-07 / wo 08-07 in Channable bouwt. Per categorie één A4 titelopbouw en één A4 omschrijving met de keuzes erachter; daarna losse regelopbouw-pagina's met de Channable-velden — welke er al zijn en welke nog niet. Kanaal eBay DE (152339, operator-group 1324011), project 314525.</p>
+
+  <h2>Aanpak in het kort</h2>
+  <ul>
+    <li><b>Titel</b> = één channel-rule <code>DE - ebay_title_de</code> per categorie, met vaste veldvolgorde en <b>harde truncatie op 80 tekens</b> (eBay-limiet, niet Amazon's 150).</li>
+    <li><b>Omschrijving</b> = één channel-rule <code>DE - ebay_desc_de</code> met twee categorie-varianten (Bremsscheibe / Bremsbeläge); compat-blok conditioneel.</li>
+    <li><b>Data-asymmetrie is leidend:</b> remschijven komen rijk binnen (maat, positie, OE, voertuig), remblokken data-arm (alleen OE). De rule degradeert netjes: blok krijgt een correcte simpele basis zonder verzonnen fitment.</li>
+    <li><b>GPSR verplicht</b> in elke omschrijving — via veld <code>gpsr_manufacturer_name</code>, niet hardcoden.</li>
+  </ul>
+
+  <h2>Legenda velden-status</h2>
+  <p><span class="tag ok">bestaat</span> veld zit in de feed &nbsp; <span class="tag part">deels</span> aanwezig maar arm/onbetrouwbaar &nbsp; <span class="tag no">ontbreekt</span> nog te bouwen/importeren</p>
+
+  <h2>Scope van deze set</h2>
+  <table>
+    <tr><th>Categorie</th><th>eBay item-specific ID</th><th>Datarijkdom</th><th>In deze set</th></tr>
+    <tr><td><b>Remschijven</b> (Bremsscheiben)</td><td>33564</td><td><span class="tag ok">rijk</span></td><td>Volledig uitgewerkt</td></tr>
+    <tr><td><b>Remblokken</b> (Bremsbeläge)</td><td>57357</td><td><span class="tag part">data-arm</span></td><td>Volledig uitgewerkt (basis)</td></tr>
+    <tr><td><b>Stuurdelen</b></td><td>te bevestigen</td><td>—</td><td>Framework (velden nog bevestigen)</td></tr>
+    <tr><td><b>Wiellagersets</b></td><td>te bevestigen</td><td>—</td><td>Framework (velden nog bevestigen)</td></tr>
+  </table>
+  <div class="note"><b>GPSR-adres bevestigd (leidend):</b> A.B.S. All Brake Systems B.V., <b>Tinbergenlaan 7, 3401 MT IJsselstein, NL</b>. De eerdere variant (Zeemanlaan 8, 3401 MV) is vervallen. Voed dit uit het veld <code>gpsr_manufacturer_name</code> (326207), niet hardcoden. Nog wél te doen: eBay-titel live verifiëren dat 80 tekens niet overschreden wordt (preview toonde 110-tekens).</div>
+
+  <footer><span>eBay DE titel- &amp; omschrijvingsopbouw · bron: vault ebay-de-omschrijvingen-plan · amazon-de-listing-blueprint · rules-state 2026-06-20</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- TITEL BREMSSCHEIBEN -->
+<div class="page">
+  <header class="pg"><div class="cat">Titel · categorie 1</div><h1>Remschijven — Bremsscheiben <span class="accent">· titelopbouw</span></h1><div class="s">Channel-rule <code>DE - ebay_title_de</code> · doelveld <code>title</code> · max 80 tekens, truncatie op woordgrens</div></header>
+
+  <h2>Veldvolgorde (vaste opbouw)</h2>
+  <div class="formula">
+    <span class="f">brand</span> + <span class="f">mpn</span> + "Bremsscheibe" + <span class="f">einbauposition_de</span> + <span class="f">remschijftype_de</span> + "Ø"<span class="f">buitendiameter</span> + <span class="f">aantal_wielbouten</span>"-Loch" + <span class="f">car_brands_top1</span> + <span class="f">car_models_top1</span> → <b>truncate ≤80 op woordgrens</b>
+  </div>
+
+  <h2>Zo ziet hij eruit (live data ABS 16880)</h2>
+  <div class="example">
+    <span class="cap">Titel eBay DE</span>
+    <b>A.B.S. 16880 Bremsscheibe Vorderachse belüftet Ø256mm 5-Loch VW Golf Audi A1</b>
+  </div>
+  <span class="len">76 tekens · binnen 80</span>
+
+  <h2>SEO-keuzes (waarom deze volgorde)</h2>
+  <ul>
+    <li><b>Merk + MPN eerst</b> — kopers en eBay-zoek matchen op A.B.S. + artikelnummer; ook uniek voor de Buy-Box/aanbod-match.</li>
+    <li><b>Onderdeel + positie + type direct erachter</b> — "Bremsscheibe Vorderachse belüftet" is de kern-zoekterm; deze staat in de mobiel-zichtbare zone.</li>
+    <li><b>Maat + gatenpatroon</b> (Ø256mm, 5-Loch) — beslissende filters voor de koper; voorkomt verkeerde aankoop → minder retouren.</li>
+    <li><b>Top-voertuigen achteraan</b> — long-tail zoekvolume (VW Golf, Audi A1) zonder de kern te verdringen; wordt als eerste getrunceerd als het te lang wordt.</li>
+  </ul>
+
+  <h2>Do / Don't</h2>
+  <div class="two">
+    <div><h3>Wel</h3><ul><li>Umlauts toegestaan in titel (belüftet, Ø).</li><li>"Ø" + mm compact schrijven (Ø256mm) om tekens te sparen.</li><li>Top-1 merk + top-1 model; rest weglaten.</li></ul></div>
+    <div><h3>Niet</h3><ul><li>Geen woordherhaling (Bremsscheibe niet 2×).</li><li>Geen !, *, € of opsmuk.</li><li>Geen modellen-blok zonder scheiding (car_models_top1 moet " · "-gescheiden zijn — bug 130870 is gefixt 2026-06-09).</li></ul></div>
+  </div>
+
+  <footer><span>Remschijven · titel · velden allemaal aanwezig in feed (rijk)</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- TITEL BREMSBELÄGE -->
+<div class="page">
+  <header class="pg"><div class="cat">Titel · categorie 2</div><h1>Remblokken — Bremsbeläge <span class="accent">· titelopbouw</span></h1><div class="s">Channel-rule <code>DE - ebay_title_de</code> · doelveld <code>title</code> · max 80 tekens · data-arm → simpeler</div></header>
+
+  <h2>Veldvolgorde (vaste opbouw)</h2>
+  <div class="formula">
+    <span class="f">brand</span> + <span class="f">mpn</span> + "Bremsbeläge" + <span class="f">einbauposition_de</span> + "Bremsbelagsatz" + <span class="f">car_brands_top1</span> + <span class="f">car_models_top1</span> → <b>truncate ≤80 op woordgrens</b>
+  </div>
+
+  <h2>Zo ziet hij eruit (live data ABS 37760)</h2>
+  <div class="example">
+    <span class="cap">Titel eBay DE</span>
+    <b>A.B.S. 37760 Bremsbeläge Vorderachse Bremsbelagsatz Renault Megane Dacia</b>
+  </div>
+  <span class="len">72 tekens · binnen 80</span>
+
+  <h2>SEO-keuzes + de datagap</h2>
+  <ul>
+    <li><b>Geen maat/type</b> in de titel — remblokken komen zonder maat/WVA binnen. We verzinnen niets; de titel steunt op merk, positie en voertuig.</li>
+    <li><b>"Bremsbelagsatz"</b> (satz = set) is de correcte DE-conventie; het bronveld <code>categories_clean_single_de</code> geeft enkelvoud "Bremsbelag" → de DE-rule zet dit om naar "Bremsbeläge / Bremsbelagsatz". <span class="tag part">open punt 3</span></li>
+    <li><b>Voertuigen als long-tail</b> — Renault Megane, Dacia dragen het zoekvolume; positie ("Vorderachse") is de belangrijkste filter.</li>
+  </ul>
+
+  <div class="note warn"><b>Open punt (Luca/Hans bevestigen):</b> levert ABS remblokken als as-set (4-teilig)? De feed heeft geen expliciet stuk-aantal-veld. Tot bevestiging schrijven we "Bremsbelagsatz" zonder aantal. <span class="tag no">stuk-aantal ontbreekt</span></div>
+
+  <footer><span>Remblokken · titel · data-arm: alleen merk/positie/voertuig betrouwbaar</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- OMSCHRIJVING BREMSSCHEIBEN -->
+<div class="page">
+  <header class="pg"><div class="cat">Omschrijving · categorie 1</div><h1>Remschijven — Bremsscheiben <span class="accent">· omschrijving</span></h1><div class="s">Channel-rule <code>DE - ebay_desc_de</code> · doelveld <code>description</code> · basisblok + maatblok + conditioneel compat-blok</div></header>
+
+  <h2>Template (Duits)</h2>
+  <div class="tmpl">A.B.S. <span class="v">{abs_ref}</span> Bremsscheibe – Original A.B.S. All Brake Systems Qualität
+
+Produkt: Bremsscheibe <span class="v">{einbauposition_de}</span> <span class="v">{remschijftype_de}</span>
+Maße: Außendurchmesser Ø <span class="v">{buitendiameter}</span>, Dicke <span class="v">{remschijfdikte}</span>, Mindestdicke <span class="v">{minimale_dikte}</span>, Nabenbohrung <span class="v">{centreringdiameter}</span>, <span class="v">{aantal_wielbouten}</span>-Loch
+Artikelnummer: <span class="v">{abs_ref}</span> · EAN: <span class="v">{ean}</span>
+OE-/OEM-Referenznummern: <span class="v">{oe_refs}</span>
+
+Passend für folgende Fahrzeuge:
+<span class="v">{compatibility_description}</span>   ← alleen tonen als gevuld
+
+Über A.B.S.: … seit 1978 nach ISO 9001 und BER 461/2010, TecDoc/KBA (36.000+ Referenzen).
+Wichtiger Hinweis: Bremsscheiben immer achsweise paarweise wechseln. Einbau nur durch eine Fachwerkstatt.
+Hersteller (GPSR): <span class="v">{gpsr_manufacturer_name}</span> → A.B.S. All Brake Systems B.V., Tinbergenlaan 7, 3401 MT IJsselstein, NL</div>
+
+  <h2>Keuzes (waarom zo)</h2>
+  <ul>
+    <li><b>Maatblok expliciet</b> — Ø, dikte, mindestdicke, naafboring, gatenpatroon zijn koop-beslissend en verlagen retouren; alle velden zijn aanwezig voor schijven.</li>
+    <li><b>Compat-blok conditioneel</b> — "Passend für folgende Fahrzeuge" alleen als <code>compatibility_description</code> gevuld is; leeg = weglaten, nooit een lege placeholder tonen.</li>
+    <li><b>Kwaliteits- + veiligheidsclaim vast</b> — ISO 9001 / BER 461/2010 en "achsweise paarweise wechseln" bouwen vertrouwen en dekken aansprakelijkheid.</li>
+    <li><b>GPSR uit veld, niet hardcoded</b> — <code>gpsr_manufacturer_name</code> zodat één bron de wettelijke fabrikantregel voedt.</li>
+    <li><b>Hygiëne</b> — dubbele spaties en losse "–" opruimen (whitespace-collapse), zoals bij de Amazon-titelfix.</li>
+  </ul>
+
+  <footer><span>Remschijven · omschrijving · rijk: maatblok + compat volledig te vullen</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- OMSCHRIJVING BREMSBELÄGE -->
+<div class="page">
+  <header class="pg"><div class="cat">Omschrijving · categorie 2</div><h1>Remblokken — Bremsbeläge <span class="accent">· omschrijving</span></h1><div class="s">Channel-rule <code>DE - ebay_desc_de</code> · doelveld <code>description</code> · data-arme basis, géén verzonnen fitment</div></header>
+
+  <h2>Template (Duits)</h2>
+  <div class="tmpl">A.B.S. <span class="v">{abs_ref}</span> Bremsbelagsatz – Original A.B.S. All Brake Systems Qualität
+
+Produkt: Bremsbelagsatz für Scheibenbremse
+Artikelnummer: <span class="v">{abs_ref}</span> · EAN: <span class="v">{ean}</span>
+OE-/OEM-Referenznummern: <span class="v">{oe_refs}</span>
+
+Bitte prüfen Sie die Passgenauigkeit anhand der OE-Nummer und Ihres Altteils – innerhalb einer Baureihe gibt es unterschiedliche Bremssysteme.
+
+Über A.B.S.: … seit 1978 nach ISO 9001 und BER 461/2010, TecDoc/KBA (36.000+ Referenzen).
+Wichtiger Hinweis: Bremsbeläge immer achsweise komplett wechseln und dabei die Bremsscheiben prüfen. Einbau nur durch eine Fachwerkstatt.
+Hersteller (GPSR): <span class="v">{gpsr_manufacturer_name}</span> → A.B.S. All Brake Systems B.V., Tinbergenlaan 7, 3401 MT IJsselstein, NL</div>
+
+  <h2>Keuzes (waarom zo)</h2>
+  <ul>
+    <li><b>Geen maatblok, geen compat</b> — die velden bestaan niet voor blokken. In plaats daarvan een expliciete <b>OE-controle-instructie</b>: de koper matcht op OE-nummer + altteil. Eerlijk en correct i.p.v. lege of verzonnen data.</li>
+    <li><b>OE-nummers prominent</b> — voor data-arme blokken zijn OE-refs dé identificatie; ze staan hoog in de tekst.</li>
+    <li><b>Zelfde kwaliteits-/GPSR-blok</b> als schijven — uniforme merkbeleving, wettelijk gedekt.</li>
+    <li><b>Bewuste keuze</b>: echte fitment-verrijking (OE/WVA→TecDoc) is een apart, groter spoor — niet nodig voor deze launch. De basis degradeert netjes.</li>
+  </ul>
+  <div class="note"><b>Groeipad (later, niet launch-blokkerend):</b> WVA-nummer + blok-afmetingen + slijtage-indicator als import-kolommen toevoegen → dan kan het blok óók een maat- en compat-blok krijgen.</div>
+
+  <footer><span>Remblokken · omschrijving · basis-template, fitment-verrijking = apart spoor</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- STUURDELEN + WIELLAGERSETS FRAMEWORK -->
+<div class="page">
+  <header class="pg"><div class="cat">Titel + omschrijving · categorie 3 &amp; 4</div><h1>Stuurdelen &amp; Wiellagersets <span class="accent">· framework</span></h1><div class="s">Zelfde rule-structuur, velden nog te bevestigen in de feed — bewust niet ingevuld met verzonnen waarden</div></header>
+
+  <div class="note warn"><b>Waarom framework en geen voorbeeld:</b> voor deze twee categorieën staan de exacte Channable-attributen niet in de vault. Ik vul geen maten/velden in die ik niet geverifieerd heb. Onderstaand de opbouw die we live tegen de feed bevestigen (scan-eerst), analoog aan schijven/blokken.</div>
+
+  <h2>Stuurdelen — titel- &amp; omschrijvingsopbouw (concept)</h2>
+  <div class="formula"><span class="f">brand</span> + <span class="f">mpn</span> + <b>{Produktart-DE}</b> (z.B. Spurstangenkopf / Traggelenk / Querlenker) + <span class="f">einbauposition</span> (links/rechts, vorne/hinten) + <span class="f">car_brands_top1</span> + <span class="f">car_models_top1</span> → ≤80</div>
+  <ul>
+    <li>Kern-zoekterm = Duitse productart per subtype (nog mappen: Spurstange, Traggelenk, Querlenker, Koppelstange…).</li>
+    <li>Positie links/rechts + vorne/hinten is hier vaak beslissend → moet als attribuut bestaan (bevestigen).</li>
+    <li>Omschrijving: basisblok (merk, art, artikelnr, EAN, OE) + OE-controle-instructie + GPSR; compat conditioneel.</li>
+  </ul>
+
+  <h2>Wiellagersets — titel- &amp; omschrijvingsopbouw (concept)</h2>
+  <div class="formula"><span class="f">brand</span> + <span class="f">mpn</span> + "Radlagersatz" + <span class="f">einbauposition</span> (Vorderachse/Hinterachse) + <b>{Ø/ABS-Sensor ja/nee}</b> + <span class="f">car_brands_top1</span> + <span class="f">car_models_top1</span> → ≤80</div>
+  <ul>
+    <li>Beslissende filters: as (voor/achter) en <b>met/zonder ABS-sensor</b> (magnetische encoder) — bevestigen of dit als veld bestaat.</li>
+    <li>Omschrijving: basisblok + "kompletter Satz pro Rad/Achse" + OE-controle + GPSR.</li>
+  </ul>
+
+  <h2>Wat er eerst moet gebeuren</h2>
+  <ol>
+    <li><b>Scan-eerst</b> de feed op de stuurdeel- en wiellager-attributen (welke velden bestaan echt).</li>
+    <li>Produktart-mapping DE per subtype vastleggen (master-rule, analoog aan Categories_clean).</li>
+    <li>Dan pas titel/omschrijving-varianten toevoegen aan dezelfde <code>DE - ebay_title_de</code> / <code>DE - ebay_desc_de</code>.</li>
+  </ol>
+
+  <footer><span>Stuurdelen &amp; wiellagersets · framework · velden bevestigen vóór bouw</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- REGELOPBOUW TITEL -->
+<div class="page">
+  <header class="pg"><div class="cat">Regelopbouw · titel</div><h1>Rule <code>DE - ebay_title_de</code> <span class="accent">· velden &amp; opbouw</span></h1><div class="s">Channel-rule op eBay DE (152339) · doelveld <code>title</code> · DE-rules leven op channel-niveau (import-niveau bewust paused)</div></header>
+
+  <h2>Veld-mapping — wat voedt de titel</h2>
+  <table>
+    <tr><th>Titel-element</th><th>Channable-veld</th><th>Status</th><th>Let op</th></tr>
+    <tr><td>Merk</td><td><code>brand</code></td><td><span class="tag ok">bestaat</span></td><td>vast "A.B.S."</td></tr>
+    <tr><td>Artikelnummer</td><td><code>mpn</code> / <code>abs_ref</code></td><td><span class="tag ok">bestaat</span></td><td>—</td></tr>
+    <tr><td>Productart</td><td><code>categories_clean_single_de</code></td><td><span class="tag ok">bestaat</span></td><td>enkelvoud; blok → "Bremsbeläge" via DE-rule</td></tr>
+    <tr><td>Positie</td><td><code>einbauposition_de</code></td><td><span class="tag ok">bestaat</span></td><td>Vorderachse/Hinterachse</td></tr>
+    <tr><td>Schijftype</td><td><code>remschijftype_de</code></td><td><span class="tag ok">bestaat</span></td><td>alleen schijf (belüftet/massiv)</td></tr>
+    <tr><td>Maat Ø</td><td><code>buitendiameter</code></td><td><span class="tag ok">bestaat</span></td><td>alleen schijf</td></tr>
+    <tr><td>Gatenpatroon</td><td><code>aantal_wielbouten</code> / <code>bolt_pattern</code></td><td><span class="tag ok">bestaat</span></td><td>alleen schijf</td></tr>
+    <tr><td>Voertuig-merk</td><td><code>car_brands_top1</code></td><td><span class="tag ok">bestaat</span></td><td>top-1</td></tr>
+    <tr><td>Voertuig-model</td><td><code>car_models_top1</code> (130870)</td><td><span class="tag ok">bestaat</span></td><td>bug " · "-scheiding <b>gefixt 2026-06-09</b></td></tr>
+    <tr><td>Stuk-aantal (Stück/Satz)</td><td>—</td><td><span class="tag no">ontbreekt</span></td><td>geen feed-veld; conditioneel op categorie of bevestigen</td></tr>
+    <tr><td>Remblok-maat/WVA</td><td>—</td><td><span class="tag no">ontbreekt</span></td><td>blok data-arm; niet in titel</td></tr>
+  </table>
+
+  <h2>Rule-logica</h2>
+  <ol>
+    <li><b>Categorie-gate</b> op <code>categories_clean_single_de</code>: contains "Bremsscheibe" → schijf-volgorde; contains "Bremsbelag" → blok-volgorde (zonder maat/type).</li>
+    <li><b>Concat</b> velden in vaste volgorde met enkele spatie; lege velden overslaan (geen dubbele spaties).</li>
+    <li><b>Truncatie ≤80</b> op woordgrens — voertuig-blok wordt als eerste ingekort.</li>
+    <li><b>Hygiëne</b>: whitespace-collapse + losse "–" opruimen.</li>
+  </ol>
+
+  <div class="note"><b>Wat al bestaat vs. bouwen:</b> de rule <code>DE - ebay_title_de</code> bestaat (id 147759) maar staat op import-niveau <b>paused</b>; DE-titel leeft op channel-niveau. <b>Bouwen morgen:</b> de channel-variant met 80-tekens-truncatie + de blok-categorie-tak. Alle voedende velden bestaan al, behalve stuk-aantal en remblok-maat.</div>
+
+  <footer><span>Regelopbouw titel · eBay DE 152339 · truncatie 80</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- REGELOPBOUW OMSCHRIJVING -->
+<div class="page">
+  <header class="pg"><div class="cat">Regelopbouw · omschrijving</div><h1>Rule <code>DE - ebay_desc_de</code> <span class="accent">· velden &amp; opbouw</span></h1><div class="s">Channel-rule op eBay DE (152339) · doelveld <code>description</code> · één rule, twee categorie-varianten, één conditioneel blok</div></header>
+
+  <h2>Veld-mapping — wat voedt de omschrijving</h2>
+  <table>
+    <tr><th>Blok</th><th>Channable-veld(en)</th><th>Status</th><th>Categorie</th></tr>
+    <tr><td>Kop + merk-claim</td><td><code>brand</code>, <code>abs_ref</code></td><td><span class="tag ok">bestaat</span></td><td>beide</td></tr>
+    <tr><td>Productart + positie + type</td><td><code>categories_clean_single_de</code>, <code>einbauposition_de</code>, <code>remschijftype_de</code></td><td><span class="tag ok">bestaat</span></td><td>schijf (type), blok (basis)</td></tr>
+    <tr><td>Maatblok</td><td><code>buitendiameter</code>, <code>remschijfdikte</code>, <code>minimale_dikte</code>, <code>centreringdiameter</code>, <code>aantal_wielbouten</code></td><td><span class="tag ok">bestaat</span></td><td>alleen schijf</td></tr>
+    <tr><td>Identificatie</td><td><code>ean</code>, <code>abs_ref</code>, <code>oe_refs</code></td><td><span class="tag ok">bestaat</span></td><td>beide</td></tr>
+    <tr><td>Compat-blok</td><td><code>compatibility_description</code> (of <code>car_models</code>)</td><td><span class="tag part">deels</span></td><td>schijf gevuld · blok leeg</td></tr>
+    <tr><td>GPSR-fabrikant</td><td><code>gpsr_manufacturer_name</code> (326207)</td><td><span class="tag ok">bestaat</span></td><td>beide · adres bevestigen</td></tr>
+    <tr><td>EU responsible person</td><td><code>eu_responsible_persons.*</code></td><td><span class="tag part">deels</span></td><td>kolom aanwezig · vullen (GPSR)</td></tr>
+    <tr><td>Remblok-maat/WVA</td><td>—</td><td><span class="tag no">ontbreekt</span></td><td>blok mist spec-velden</td></tr>
+  </table>
+
+  <h2>Rule-logica</h2>
+  <ul>
+    <li><b>Sectie 1</b> — <code>If categories_clean_single_de contains "Bremsscheibe"</code> → schijf-template (basis + maatblok).</li>
+    <li><b>Sectie 2</b> — <code>If categories_clean_single_de contains "Bremsbelag"</code> → blok-template (basis, OE-controle i.p.v. maat).</li>
+    <li><b>Sub-conditie compat</b> — <code>If compatibility_description is not empty</code> → voeg "Passend für folgende Fahrzeuge:\n{…}" toe; anders weglaten.</li>
+    <li><b>GPSR</b> uit <code>gpsr_manufacturer_name</code>; <b>niet</b> hardcoden. Whitespace-hygiëne toepassen.</li>
+    <li><b>Niet doen</b> — master "Omschrijvingen" (321808) blijft paused; bouw op één niveau (geen 3-lagen-duplicatie).</li>
+  </ul>
+
+  <h2>Bouwvolgorde morgen (±30–45 min)</h2>
+  <ol>
+    <li>Scan-eerst eBay DE (152339): bestaande desc-rule + volgorde ophalen (niets dubbel bouwen).</li>
+    <li>Bouw <code>DE - ebay_desc_de</code> met de twee categorie-secties.</li>
+    <li>Conditioneel compat-blok toevoegen.</li>
+    <li>Preview 3 SKU (16880 schijf · 37760 + 37770 blok): Duits, GPSR-regel, geen lege placeholders.</li>
+    <li>Titel-check 80 tekens live. Publiceren + run-log + vault <code>log.md</code>.</li>
+  </ol>
+
+  <footer><span>Regelopbouw omschrij

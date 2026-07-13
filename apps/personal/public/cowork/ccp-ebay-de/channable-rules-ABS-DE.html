@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Channable — Omschrijvingen · Regels (A.B.S. DE) — nabouw</title>
+<style>
+  :root{
+    --ink:#2b3440; --ink2:#3a4350; --mut:#8a93a0; --mut2:#9aa3af;
+    --line:#e5e8ec; --line2:#d5dae1; --bg:#f4f6f8; --card:#fff;
+    --blue:#2f76d6; --blue-d:#215aa8; --blue-bg:#eaf3fb; --banner:#eaf4fd; --banner-b:#cfe6fb;
+    --teal:#2bb3d6; --pillbg:#fff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:13.5px;}
+  .app{background:var(--card);min-height:100vh;}
+  /* header */
+  .hdr{display:flex;align-items:center;gap:14px;padding:12px 18px 0;}
+  .btn{border:1px solid var(--line2);background:#fff;border-radius:6px;padding:6px 12px;font-size:13px;color:var(--ink2);cursor:default;display:inline-flex;align-items:center;gap:6px;}
+  .btn.blue{color:var(--blue);border-color:#bcd6f5;}
+  .htitle{font-weight:700;font-size:15px;}
+  .tabs{display:flex;gap:22px;padding:10px 20px 0;border-bottom:1px solid var(--line);align-items:center;}
+  .tabs a{padding:8px 2px;color:var(--mut);text-decoration:none;font-size:14px;border-bottom:2px solid transparent;}
+  .tabs a.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600;}
+  .tabs .help{margin-left:auto;}
+  /* layout */
+  .grid{display:grid;grid-template-columns:322px 1fr;gap:0;}
+  .side{border-right:1px solid var(--line);padding:16px;}
+  .side .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .side .top b{font-size:14px;}
+  .selrow{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:12.5px;margin-bottom:8px;}
+  .rules{display:flex;flex-direction:column;gap:2px;}
+  .r{display:flex;align-items:center;gap:8px;padding:8px 8px;border-radius:7px;font-size:13px;color:var(--ink2);}
+  .r.sel{background:var(--blue-bg);}
+  .r .cb{width:14px;height:14px;border:1px solid #b9c1cc;border-radius:3px;flex:0 0 auto;}
+  .r .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ic{width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 auto;}
+  .ic.tag{background:var(--teal);color:#fff;}
+  .ic.pause{background:#eef1f4;color:#7b8794;font-weight:700;letter-spacing:-1px;}
+  .ic.dots{color:#9aa3af;background:transparent;}
+  .r.group{color:#556; }
+  /* main */
+  .main{padding:18px 22px 60px;max-width:1180px;}
+  .banner{display:flex;align-items:center;gap:12px;background:var(--banner);border:1px solid var(--banner-b);color:#2c4c6b;border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:16px;}
+  .banner .i{width:18px;height:18px;border-radius:50%;background:var(--blue);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-style:italic;font-weight:700;flex:0 0 auto;}
+  .banner .btn{margin-left:auto;background:#fff;}
+  .rule-panel{margin-bottom:26px;}
+  .rt{display:flex;align-items:center;gap:10px;margin:0 0 10px;}
+  .rt .n{font-size:15px;font-weight:600;color:var(--ink);}
+  .chip{background:var(--blue);color:#fff;border-radius:5px;padding:3px 9px;font-size:11.5px;font-weight:600;}
+  .chip.cat{background:#2f76d6;}
+  .rt .gear{margin-left:auto;color:#8a93a0;display:flex;gap:8px;align-items:center;}
+  .section{border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:10px;background:#fff;}
+  .shead{display:flex;align-items:center;gap:10px;background:#f7f9fb;border-bottom:1px solid var(--line);padding:9px 12px;color:#556;font-size:12.5px;}
+  .shead .link{color:var(--blue);text-decoration:underline;}
+  .shead .h{color:#9aa3af;}
+  .sbody{padding:14px 16px;}
+  /* builder rows */
+  .row{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:9px 4px;}
+  .row + .row{border-top:1px dashed #eef1f4;}
+  .kw{min-width:44px;color:var(--ink2);font-weight:700;font-size:14px;}
+  .kw.sub{color:var(--mut2);font-weight:600;font-size:13px;padding-left:14px;}
+  .lc{color:var(--mut2);font-size:12.5px;font-weight:500;}
+  .pill{display:inline-flex;align-items:center;gap:7px;background:var(--pillbg);border:1px solid var(--line2);border-radius:6px;padding:6px 9px;font-size:13px;color:var(--ink);}
+  .pill .doc{width:13px;height:15px;flex:0 0 auto;}
+  .pill .chev{color:#9aa3af;font-size:10px;margin-left:2px;}
+  .pill.op{color:#3a4350;font-weight:500;}
+  .pill.val{color:var(--blue-d);font-weight:600;}
+  .pill.fieldedit .doc{color:var(--blue);}
+  .valuebox{margin:8px 0 2px;border:1px solid var(--line2);border-radius:7px;background:#fcfdfe;padding:11px 13px;white-space:pre-wrap;line-height:1.5;font-size:13px;color:#2a3440;}
+  .valuebox.empty{color:#b0b8c2;font-style:italic;}
+  .valuebox .h{font-weight:700;}
+  .tok{display:inline-block;background:#eef4ff;color:var(--blue);border:1px solid #cfe0ff;border-radius:5px;padding:0 6px;font-family:Consolas,monospace;font-weight:700;font-size:12px;}
+  .vlabel{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#9aa3af;font-weight:700;margin:4px 0 0;}
+  .addsec{display:block;margin:8px auto 0;border:1px solid #bcd6f5;color:var(--blue);background:#fff;border-radius:7px;padding:8px 16px;font-size:13px;}
+  .hint{font-size:12px;color:var(--mut);margin:2px 4px 0;}
+  .flow{background:#f7f9fb;border:1px solid var(--line);border-radius:9px;padding:12px 15px;margin:0 0 20px;font-size:12.5px;color:#556;}
+  .flow b{color:var(--ink);}
+  .foot{color:var(--mut);font-size:11.5px;margin:22px 0 0;border-top:1px solid var(--line);padding-top:12px;}
+  .sub-in{display:inline-block;min-width:120px;border:1px solid var(--line2);border-radius:6px;padding:6px 9px;color:#b0b8c2;font-size:12.5px;background:#fff;}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- header -->
+  <div class="hdr"><span class="btn">‹ Terug</span><span class="htitle">Omschrijvingen</span></div>
+  <div class="tabs">
+    <a href="#">Instellingen</a>
+    <a href="#" class="on">Regels</a>
+    <span class="btn blue help">ⓘ Help</span>
+  </div>
+
+  <div class="grid">
+    <!-- SIDEBAR -->
+    <aside class="side">
+      <div class="top"><b>Alle regels</b><span class="btn blue">+ Regel aanmaken</span></div>
+      <div class="selrow"><span class="cb" style="width:14px;height:14px;border:1px solid #b9c1cc;border-radius:3px;display:inline-block"></span> Alles selecteren <span style="margin-left:auto">⬚ &nbsp; ⌕</span></div>
+      <div class="rules">
+        <div class="r sel"><span class="cb"></span><span class="nm">0. Omschrijving leeg maken_</span><span class="ic tag">◧</span><span class="ic pause">‖‖</span><span class="ic dots">⋮</span></div>
+        <div class="r"><span class="cb"></span><span class="nm">1. Basisopbouw omschrijving</span><span class="ic tag">◧</span><span class="ic pause">‖‖</span><span class="ic dots">⋮</span></div>
+        <div class="r"><span class="cb"></span><span class="nm">2. Fitment Block omschrijving</span><span class="ic tag">◧</span><span class="ic pause">‖‖</span><span class="ic dots">⋮</span></div>
+        <div class="r"><span class="cb"></span><span class="nm">3. OE-referenties (alleen indien…)</span><span class="ic tag">◧</span><span class="ic pause">‖‖</span><span class="ic dots">⋮</span></div>
+        <div class="r"><span class="cb"></span><span class="nm">4. Omschrijving totaal</span><span class="ic tag">◧</span><span class="ic pause">‖‖</span><span class="ic dots">⋮</span></div>
+        <div class="r group"><span class="cb"></span><span class="nm">DE Basic Omschrijvingen (Fallback)</span><span class="ic dots">⋮</span></div>
+        <div class="r group"><span class="cb"></span><span class="nm">Kwaliteit &amp; GPSR</span><span class="ic dots">⋮</span></div>
+        <div class="r group"><span class="cb"></span><span class="nm">Omschrijvingen DE opbouw basic</span><span class="ic dots">⋮</span></div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="banner"><span class="i">i</span> Deze regels zijn gepauzeerd. Je kunt ze bewerken, maar ze worden uitgesloten wanneer je je regels uitvoert. <span class="btn">▷ Hervat regel</span></div>
+
+      <div class="flow"><b>Bouwvolgorde (van boven naar beneden — Channable plakt de blokken aan elkaar):</b><br>
+        0. leeg maken (reset) → 1. Basisopbouw (per type) → 2. Fitment → 3. OE (indien ingevuld) → Kwaliteit &amp; GPSR → Fallback (indien nog leeg) → 4. totaal (naar output-veld).<br>
+        Match-veld voor de teksten = <span class="tok">categories_clean_de</span> (het Duitse categorie-veld dat je "Opschonen categorie attribuut"-regels al vullen, bv. Remblokken → <b>Bremsbelagsatz</b>). Verder: <span class="tok">omschrijving</span> (werkveld) · <span class="tok">oe_nummer</span> · <span class="tok">lieferumfang</span> + spec-velden.<br>
+        <b>Mapping (jouw categories_clean_de-waarden):</b> remblokken → Bremsbelagsatz ✓ · remschijven → Bremsscheibe · wiellager → Radlagersatz · spoorstang → Spurstange · fuseekogel → Traggelenk · draagarm → Querlenker · stabilisatorstang → Koppelstange. <b>[remmen/wiellager waarschijnlijk correct; stuurdelen-waarden = te verifiëren tegen je Opschonen-regels]</b></div>
+
+      <!-- RULE 0 -->
+      <section class="rule-panel">
+        <div class="rt"><span class="n">0. Omschrijving leeg maken_</span><span class="chip cat">Category · alle DE-categorieën</span><span class="gear">⚙ ⌄</span></div>
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">… Gekozen items_</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="pill op">leeg is <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw sub">↳ Of</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="pill op">niet leeg is <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">En</span><span class="pill"><span class="doc">▢</span> categories_clean <span class="chev">▾</span></span><span class="pill op">bevat <span class="chev">▾</span></span><span class="pill fieldedit val">✎ remschijven <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">plaats waarde <span class="chev">▾</span></span><span class="sub-in">(leeg laten)</span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox empty">— leeg — (reset het werkveld vóór opbouw, zodat een tweede run niet dubbel plakt)</div>
+            <div class="hint">Dupliceer deze sectie per categorie: bevat "remschijven", "bremsbeläge/remblokken", "stuurdelen", "wiellagersets".</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RULE 1 -->
+      <section class="rule-panel">
+        <div class="rt"><span class="n">1. Basisopbouw omschrijving</span><span class="chip cat">per categories_clean_de · voeg toe achteraan</span><span class="gear">⚙ ⌄</span></div>
+
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">Sectie · Bremsscheibe</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> categories_clean_de <span class="chev">▾</span></span><span class="pill op">bevat <span class="chev">▾</span></span><span class="pill val">✎ Bremsscheibe <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">voeg waarde toe achteraan <span class="chev">▾</span></span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox"><span class="h">Bremsscheibe von A.B.S. – geprüfte Qualität für sicheres und gleichmäßiges Bremsen.</span>
+Die Bremsscheibe überträgt die Bremskraft vom Bremsbelag auf das Rad und sorgt für eine zuverlässige Verzögerung. Als Verschleißteil sollte sie stets achsweise paarweise ersetzt werden.
+Technische Merkmale: Durchmesser <span class="tok">durchmesser</span> mm · Höhe <span class="tok">hoehe</span> mm · Dicke <span class="tok">dicke</span> mm · Lochzahl <span class="tok">lochzahl</span> · <span class="tok">belueftung</span>. Lieferumfang: <span class="tok">lieferumfang</span>.</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">Sectie · Bremsbelagsatz</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> categories_clean_de <span class="chev">▾</span></span><span class="pill op">bevat <span class="chev">▾</span></span><span class="pill val">✎ Bremsbelagsatz <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">voeg waarde toe achteraan <span class="chev">▾</span></span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox"><span class="h">Bremsbelagsatz von A.B.S. – zuverlässige Bremsleistung für Ihre Sicherheit.</span>
+Der Bremsbelagsatz presst sich gegen die Bremsscheibe und wandelt die Bewegung in Bremskraft um. Als Verschleißteil sollten die Bremsbeläge stets achsweise komplett erneuert werden.
+Technische Merkmale: Breite <span class="tok">breite</span> mm · Höhe <span class="tok">hoehe</span> mm · Dicke <span class="tok">dicke</span> mm · geprüft nach ECE R90. Lieferumfang: <span class="tok">lieferumfang</span>.</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">Sectie · Spurstange</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> categories_clean_de <span class="chev">▾</span></span><span class="pill op">bevat <span class="chev">▾</span></span><span class="pill val">✎ Spurstange <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">voeg waarde toe achteraan <span class="chev">▾</span></span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox"><span class="h">Spurstange von A.B.S. – präzise Lenkung und sichere Spurführung.</span>
+Die Spurstange verbindet das Lenkgetriebe mit dem Radträger und überträgt die Lenkbewegung auf die Räder. Verschleiß führt zu unpräzisem Lenkverhalten und erhöhtem Reifenverschleiß.
+Technische Merkmale: Einbauseite <span class="tok">einbauseite</span> · Gewinde <span class="tok">gewinde</span> · Länge <span class="tok">laenge</span> mm. Lieferumfang: <span class="tok">lieferumfang</span>.</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">Sectie · Traggelenk</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> categories_clean_de <span class="chev">▾</span></span><span class="pill op">bevat <span class="chev">▾</span></span><span class="pill val">✎ Traggelenk <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">voeg waarde toe achteraan <span class="chev">▾</span></span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox"><span class="h">Traggelenk von A.B.S. – stabile Radaufhängung und sicheres Fahrverhalten.</span>
+Das Traggelenk verbindet den Querlenker mit dem Radträger und ermöglicht die bewegliche Lagerung des Rades. Ein verschlissenes Traggelenk beeinträchtigt die Fahrsicherheit und erhöht den Reifenverschleiß.
+Technische Merkmale: Einbauseite <span class="tok">einbauseite</span> · Konus <span class="tok">konus</span> mm · Gewinde <span class="tok">gewinde</span>. Lieferumfang: <span class="tok">lieferumfang</span>.</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">Sectie · Radlagersatz</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> categories_clean_de <span class="chev">▾</span></span><span class="pill op">bevat <span class="chev">▾</span></span><span class="pill val">✎ Radlagersatz <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">voeg waarde toe achteraan <span class="chev">▾</span></span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox"><span class="h">Radlagersatz von A.B.S. – ruhiger Lauf und sichere Radführung.</span>
+Der Radlagersatz lagert das Rad und ermöglicht eine reibungsarme Drehung. Ein defektes Radlager macht sich durch Laufgeräusche bemerkbar und sollte umgehend als kompletter Satz ersetzt werden.
+Technische Merkmale: Innendurchmesser <span class="tok">innen_d</span> mm · Außendurchmesser <span class="tok">aussen_d</span> mm · Breite <span class="tok">breite</span> mm · <span class="tok">sensorring</span>. Lieferumfang: <span class="tok">lieferumfang</span>.</div>
+          </div>
+        </div>
+        <button class="addsec">+ Sectie toevoegen</button>
+      </section>
+
+      <!-- RULE 2 -->
+      <section class="rule-panel">
+        <div class="rt"><span class="n">2. Fitment Block omschrijving</span><span class="chip cat">generiek · voeg toe achteraan</span><span class="gear">⚙ ⌄</span></div>
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">… Gekozen items_</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="pill op">niet leeg is <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">voeg waarde toe achteraan <span class="chev">▾</span></span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox"><span class="h">Fahrzeugkompatibilität:</span> Bitte gleichen Sie Ihre KBA-/HSN-TSN-Nummer vor dem Kauf ab.</div>
+            <div class="hint">Alleen als er al een basistekst staat (omschrijving niet leeg) — voorkomt dat de fallback-producten dubbel fitment krijgen.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RULE 3 -->
+      <section class="rule-panel">
+        <div class="rt"><span class="n">3. OE-referenties (alleen indien ingevuld)</span><span class="chip cat">conditioneel · voeg toe achteraan</span><span class="gear">⚙ ⌄</span></div>
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">… Gekozen items_</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> oe_nummer <span class="chev">▾</span></span><span class="pill op">niet leeg is <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw sub">↳ En</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="pill op">niet leeg is <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">voeg waarde toe achteraan <span class="chev">▾</span></span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox"> Passende OE-Nummer: <span class="tok">oe_nummer</span>.</div>
+            <div class="hint">Zo krijgt een product zónder OE-nummer géén lege "OE-Nummer: ." — de conditie op oe_nummer niet-leeg vangt dat af.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KWALITEIT & GPSR -->
+      <section class="rule-panel">
+        <div class="rt"><span class="n">Kwaliteit &amp; GPSR</span><span class="chip cat">verplicht · voeg toe achteraan · 1× voor alles</span><span class="gear">⚙ ⌄</span></div>
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">… Gekozen items_</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="pill op">niet leeg is <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">voeg waarde toe achteraan <span class="chev">▾</span></span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox"> Qualität von A.B.S. – All Brake Systems, niederländischer Hersteller seit 1978. Zertifiziert nach ISO 9001 und BER 461/2010, mit über 36.000 Referenzen und einer Fahrzeugabdeckung von 99,7 % in Europa.
+Hersteller / Manufacturer: A.B.S. All Brake Systems B.V., Tinbergenlaan 7, 3401 MT IJsselstein, Niederlande. Tel. +31 30 687 8555.</div>
+            <div class="hint">Dankzij de blok-opbouw staan deze vaste teksten hier <b>één keer</b> i.p.v. in elke template. GPSR is verplicht op elke eBay.de-listing.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FALLBACK -->
+      <section class="rule-panel">
+        <div class="rt"><span class="n">DE Basic Omschrijvingen (Fallback)</span><span class="chip cat">alleen als nog leeg</span><span class="gear">⚙ ⌄</span></div>
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">… Gekozen items_</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="pill op">leeg is <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">plaats waarde <span class="chev">▾</span></span></div>
+            <div class="vlabel">waarde</div>
+            <div class="valuebox"><span class="h"><span class="tok">categories_clean_de</span> von A.B.S. – Qualitätsteil für Ihr Fahrzeug.</span>
+Dieses Ersatzteil von A.B.S. erfüllt die Anforderungen an Passform, Funktion und Sicherheit im Reparatureinsatz. Bitte prüfen Sie vor dem Einbau die Eignung für Ihr Fahrzeug.
+Qualität von A.B.S. – All Brake Systems, niederländischer Hersteller seit 1978. Zertifiziert nach ISO 9001 und BER 461/2010, mit über 36.000 Referenzen und einer Fahrzeugabdeckung von 99,7 % in Europa.
+Hersteller / Manufacturer: A.B.S. All Brake Systems B.V., Tinbergenlaan 7, 3401 MT IJsselstein, Niederlande. Tel. +31 30 687 8555.</div>
+            <div class="hint">Draait ná Basisopbouw: matchte geen producttype → omschrijving nog leeg → deze fallback vult 'm (incl. eigen GPSR-blok).</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RULE 4 -->
+      <section class="rule-panel">
+        <div class="rt"><span class="n">4. Omschrijving totaal</span><span class="chip cat">finalize → output-veld</span><span class="gear">⚙ ⌄</span></div>
+        <div class="section">
+          <div class="shead"><span class="h">≡</span> <span class="link">… Gekozen items_</span><span style="margin-left:auto">⋮</span></div>
+          <div class="sbody">
+            <div class="row"><span class="kw">Als</span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span><span class="pill op">niet leeg is <span class="chev">▾</span></span></div>
+            <div class="row"><span class="kw">Dan</span><span class="lc">neem</span><span class="pill fieldedit"><span class="doc">▢</span> beschreibung_de <span class="chev">▾</span></span><span class="lc">en</span><span class="pill op">plaats waarde <span class="chev">▾</span></span><span class="pill"><span class="doc">▢</span> omschrijving <span class="chev">▾</span></span></div>
+            <div class="hint">Kopieert het opgebouwde werkveld <span class="tok">omschrijving</span> naar het output-veld dat naar eBay.de gaat (bijv. <span class="tok">beschreibung_de</span> → description).</div>
+  

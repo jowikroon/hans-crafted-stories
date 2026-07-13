@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8">
+<title>Returnless DE→NL — wat, hoe, waar, impact, validatie</title><style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; font-size:10px; }
+  .sheet{ width:210mm; min-height:297mm; padding:12mm 13mm 10mm; margin:0 auto; page-break-after:always; }
+  .sheet:last-child{ page-break-after:auto; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:11px; }
+  header h1{ font-size:16px; font-weight:700; }
+  header .sub{ font-size:8.4px; color:#52606d; margin-top:2px; }
+  h2{ font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:#102a43; margin:13px 0 6px; padding:3px 7px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  .lead{ border-left:4px solid #1a5fb4; background:#eef5ff; border-radius:7px; padding:8px 11px; margin-bottom:11px; font-size:9px; color:#1c3d5f; } .lead b{ color:#12406e; }
+  .flow{ display:flex; align-items:stretch; margin:6px 0; flex-wrap:wrap; }
+  .flow .s{ flex:1; min-width:82px; background:#f7f9fc; border:1px solid #d9e2ec; border-radius:6px; padding:6px 7px; }
+  .flow .s .t{ font-size:8.4px; font-weight:700; color:#102a43; } .flow .s .d{ font-size:7.4px; color:#52606d; margin-top:2px; line-height:1.3; }
+  .flow .a{ align-self:center; color:#1a5fb4; font-size:13px; font-weight:700; padding:0 4px; }
+  table{ width:100%; border-collapse:collapse; margin-top:4px; }
+  th,td{ text-align:left; font-size:8.7px; padding:5px 8px; border-bottom:1px solid #e7ecf2; vertical-align:top; line-height:1.4; }
+  th{ font-size:7.2px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  td.k{ font-weight:700; color:#102a43; width:24%; }
+  .chip{ display:inline-block; font-size:7.6px; font-weight:700; padding:1px 7px; border-radius:9px; background:#e7f0fb; border:1px solid #bcd6f5; color:#12508f; }
+  .chip.g{ background:#eaf6ef; border-color:#bfe4cf; color:#14532d; } .chip.r{ background:#fdecec; border-color:#f0cccc; color:#a52222; }
+  .step{ display:flex; gap:11px; margin-bottom:12px; align-items:flex-start; }
+  .n{ flex:0 0 24px; height:24px; border-radius:50%; background:#1a5fb4; color:#fff; font-weight:700; text-align:center; line-height:24px; font-size:12px; } .n.g{ background:#1f7a44; }
+  .sb{ flex:1; }
+  .cap{ font-size:11.5px; font-weight:600; margin-bottom:5px; } .cap .b{ color:#1a5fb4; }
+  .where{ font-size:8.4px; color:#8a5a00; background:#fff8ec; border:1px solid #f2d9a8; border-radius:5px; padding:3px 8px; display:inline-block; margin-bottom:6px; }
+  .path{ font-family:"Consolas",monospace; font-size:8px; color:#12508f; background:#eef5ff; border:1px solid #cfe0f7; border-radius:4px; padding:1px 6px; }
+  .ui{ border:1px solid #dbe3ec; border-radius:7px; background:#fff; padding:8px 11px; font-size:9px; color:#33414f; }
+  .rowui{ display:flex; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid #eef2f7; } .rowui:last-child{ border-bottom:none; }
+  .btn{ background:#1a5fb4;color:#fff;font-size:9px;font-weight:700;padding:4px 10px;border-radius:5px; } .btn.r{ background:#d64545; }
+  .tag{ background:#d64545;color:#fff;font-size:8px;font-weight:700;padding:1px 7px;border-radius:10px; margin-left:6px; }
+  .note{ font-size:8.4px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid #1a5fb4; border-radius:6px; padding:6px 10px; margin-top:7px; } .note b{ color:#12508f; }
+  .note.warn{ color:#7a1f1f; background:#fdecec; border-color:#f0cccc; border-left-color:#d64545; } .note.warn b{ color:#a52222; }
+  ul.v{ list-style:none; } ul.v li{ font-size:8.8px; padding:5px 0 5px 22px; position:relative; border-bottom:1px dashed #eef2f7; color:#33414f; } ul.v li:last-child{ border-bottom:none; }
+  ul.v li::before{ content:"\2713"; position:absolute; left:2px; top:5px; color:#1f7a44; font-weight:700; }
+  .foot{ margin-top:11px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7px;padding:2px 8px;border-radius:8px;font-weight:600;}
+</style></head><body>
+
+<!-- PAGINA 1 : WAT + HOE HET WERKT -->
+<div class="sheet">
+  <header>
+    <h1>Returnless DE&rarr;NL &mdash; wat, hoe, waar</h1>
+    <div class="sub">CCP &#183; retourflow via bestaande Returnless + Magento &#183; live geverifieerd in het paneel (ingelogd als Luca) &#183; 2026-07-10</div>
+  </header>
+
+  <div class="lead"><b>Kort:</b> Returnless draait al voor CCP en haalt orders uit Magento. Een eBay DE-order komt als Magento-order (144013xxx) binnen, dus Returnless kan hem vinden en er een retour van maken. Voorwaarde: de order moet eerst schoon in Magento landen. Voor het DE&rarr;NL label voeg je een carrier toe naast de PostNL die je al gebruikt.</div>
+
+  <h2>1 &#183; Wat staat er nu (live gezien)</h2>
+  <table>
+    <tr><th>Onderdeel</th><th>Stand</th></tr>
+    <tr><td class="k">Returnless</td><td>Live in gebruik voor de webshop. Retouren lopen door (bv. RE-2026-0136, order 144013154, PostNL-retourlabel, status Opgelost).</td></tr>
+    <tr><td class="k">Order-bron</td><td>Magento. Drie koppelingen: <span class="chip">Demo</span> <span class="chip g">Magento 2 - Production (CCP)</span> <span class="chip r">Magento 2 - Development (CCP)</span></td></tr>
+    <tr><td class="k">Carrier retour</td><td>PostNL (NL-webshopretouren). DPD/DHL voor DE&rarr;NL nog toe te voegen.</td></tr>
+    <tr><td class="k">Actuele fout</td><td><span class="chip r">"could not fetch sales order: Development" (82x, 09-07)</span> + melding "bol returns not imported / sales orders not found".</td></tr>
+  </table>
+
+  <h2>2 &#183; Hoe de retour werkt (de keten)</h2>
+  <div class="flow">
+    <div class="s"><div class="t">Order eBay DE</div><div class="d">via Channable</div></div>
+    <div class="a">&rarr;</div>
+    <div class="s"><div class="t">Magento</div><div class="d">order landt als 144013xxx (Production)</div></div>
+    <div class="a">&rarr;</div>
+    <div class="s"><div class="t">Klant meldt retour</div><div class="d">Returnless-formulier, zoekt op e-mail/postcode</div></div>
+    <div class="a">&rarr;</div>
+    <div class="s"><div class="t">Returnless vindt order</div><div class="d">via Magento Production-koppeling</div></div>
+    <div class="a">&rarr;</div>
+    <div class="s"><div class="t">DE&rarr;NL label</div><div class="d">DPD/DHL, Duits ophaalpunt &rarr; NL</div></div>
+    <div class="a">&rarr;</div>
+    <div class="s"><div class="t">ABS NL + refund</div><div class="d">mark as received &rarr; terugbetaling</div></div>
+  </div>
+
+  <h2>3 &#183; Waarom de fout ontstond (de samenhang)</h2>
+  <div class="note warn"><b>De fout is een uitloper van het storeview/landcode-probleem.</b> eBay DE-orders landden door de storeview niet schoon in Magento (platform_failure, "invalid country code"). Staat de order niet in Magento Production, dan valt Returnless bij een retour terug op de secundaire koppeling <b>Magento 2 - Development</b>, die faalt. Vandaar de 82 mislukte lookups op 09-07. De label-fouten staan hier los van (sporadische carrier-hikjes, deels vóór 7 juli).</div>
+
+  <div class="foot"><span>Bron: live Returnless-paneel (integraties, retouren, meldingen) + Channable-API + Magento &#183; 2026-07-10</span><span class="pill">CCP &#183; pagina 1/3</span></div>
+</div>
+
+<!-- PAGINA 2 : WAAR / HOE INSTELLEN -->
+<div class="sheet">
+  <header>
+    <h1>Returnless DE&rarr;NL &mdash; stap voor stap instellen</h1>
+    <div class="sub">CCP &#183; exacte menupaden uit het paneel &#183; rode markers = waar je klikt</div>
+  </header>
+
+  <div class="step"><div class="n">1</div><div class="sb">
+    <div class="cap">Voorwaarde eerst: <b class="b">order-import in Magento herstellen</b></div>
+    <div class="where">Buiten Returnless &mdash; Magento + Channable</div>
+    <div class="ui">Duitsland in <b>Allow Countries</b>, landcode als ISO ("DE"/"NL") in de Channable order-connection, storeview terug. Zonder dit landt de eBay DE-order niet in Magento en kan Returnless hem niet vinden.</div>
+    <div class="note">Dit is dezelfde fix als voor de order-import zelf. De retour hangt eraan vast.</div>
+  </div></div>
+
+  <div class="step"><div class="n">2</div><div class="sb">
+    <div class="cap">Ruim de kapotte fallback op: <b class="b">Magento 2 - Development</b></div>
+    <div class="where">Returnless &rarr; Instellingen &rarr; Integraties <span class="path">/settings/integrations/platform</span></div>
+    <div class="ui">
+      <div class="rowui"><span class="chip">Demo</span> Demo integration</div>
+      <div class="rowui"><span class="chip g">Magento 2 - Production</span> CCP koppeling <span style="margin-left:auto;font-size:8px;color:#1f7a44">behouden</span></div>
+      <div class="rowui"><span class="chip r">Magento 2 - Development</span> CCP koppeling <span class="btn r" style="margin-left:auto">Verwijderen / loskoppelen</span> <span class="tag">&#9673; klik</span></div>
+    </div>
+    <div class="note warn"><b>Waarom:</b> deze Development-koppeling is de secundaire zoekbron die 82x faalde. Verwijder hem, of haal hem uit de order-lookup, zodat alleen Production wordt gebruikt. Dat stopt de foutmeldingen.</div>
+  </div></div>
+
+  <div class="step"><div class="n">3</div><div class="sb">
+    <div class="cap">Voeg de carrier voor DE&rarr;NL toe</div>
+    <div class="where">Returnless &rarr; Instellingen &rarr; Verzendcontracten <span class="path">/settings/integrations/shipping-contracts</span></div>
+    <div class="ui">
+      <div class="rowui">Carrier: <b>DPD</b> (of DHL Paket Retoure) <span class="tag" style="background:#1a5fb4">&#9673; toevoegen</span></div>
+      <div class="rowui">Tarief: eigen DPD-contract of dat van Returnless</div>
+      <div class="rowui">Retouradres (bestemming): <b>ABS NL-magazijn</b></div>
+    </div>
+    <div class="note">PostNL draait al voor NL-retouren. DPD gebruik je al voor uitgaande DACH-zendingen, dus DE&rarr;NL sluit aan.</div>
+  </div></div>
+
+  <div class="step"><div class="n">4</div><div class="sb">
+    <div class="cap">Zet de landregel: Duitse koper &rarr; Duits label naar NL</div>
+    <div class="where">Returnless &rarr; retourformulier &rarr; verzendmethoden / regels</div>
+    <div class="ui">
+      <div class="rowui"><b>Als</b> land koper = Duitsland &rarr; label = <b>DPD DE &rarr; NL</b></div>
+      <div class="rowui"><b>Als</b> land koper = Nederland &rarr; label = <b>PostNL</b></div>
+    </div>
+    <div class="note">Auto-routing per land, geen handwerk.</div>
+  </div></div>
+
+  <div class="step"><div class="n">5</div><div class="sb">
+    <div class="cap">Optioneel: Channable-integratie (alleen als nodig)</div>
+    <div class="where">Returnless &rarr; Instellingen &rarr; Integraties &rarr; Nieuwe integratie toevoegen</div>
+    <div class="ui">Omdat de eBay-order al als Magento-order binnenkomt, kan Returnless hem via de bestaande <b>Magento Production</b>-koppeling vinden (zoeken op e-mail/postcode). Een aparte Channable-integratie (&euro;49/mnd per orderkoppeling) is alleen nodig als je op het <b>marktplaats-ordernummer</b> wilt zoeken of marktplaats-retouren wilt importeren.</div>
+  </div></div>
+
+  <div class="foot"><span>Menupaden exact uit het Returnless-paneel (Integraties, Verzendcontracten, Application logs) &#183; 2026-07-10</span><span class="pill">CCP &#183; pagina 2/3</span></div>
+</div>
+
+<!-- PAGINA 3 : IMPACT + VALIDATIE -->
+<div class="sheet">
+  <header>
+    <h1>Returnless DE&rarr;NL &mdash; impact &amp; validatie</h1>
+    <div class="sub">CCP &#183; wat het oplevert, wat het risico is, en hoe je elke stap test</div>
+  </header>
+
+  <h2>Impact</h2>
+  <table>
+    <tr><th>Als je niets doet</th><th>Na de setup</th></tr>
+    <tr><td>eBay DE-orders landen niet in Magento &rarr; geen retour mogelijk (order niet vindbaar). De 82 order-fouten en de bol-import-melding blijven.</td><td>eBay DE-orders landen schoon in Magento &rarr; Returnless vindt ze &rarr; Duitse klant kan met een DPD-label terugsturen naar NL, met refund + sync.</td></tr>
+    <tr><td>De Development-fallback blijft falen en vervuilt de logs; onduidelijk welke retouren écht misgaan.</td><td>Order-lookup draait alleen op Production &rarr; schone logs, geen valse fouten.</td></tr>
+    <tr><td>Handwerk en risico op verkeerde of ontbrekende retourlabels.</td><td>Auto-routing per land, past in de bestaande PostNL/DPD-flow.</td></tr>
+  </table>
+
+  <h2>Validaties &mdash; test elke stap</h2>
+  <ul class="v">
+    <li><b>Order-import:</b> maak een eBay DE-testorder. Controleer dat hij als Magento-order (144013xxx) verschijnt, zonder platform_failure of "invalid country code".</li>
+    <li><b>Order-lookup:</b> in Returnless, zoek de order op via e-mail/postcode. De order wordt gevonden via Magento Production (niet meer via Development).</li>
+    <li><b>Fout weg:</b> check <span class="path">Instellingen &rarr; Integraties &rarr; Application logs</span>. Geen nieuwe "could not fetch sales order: Development" meer.</li>
+    <li><b>Retourlabel:</b> doorloop een testretour met een Duits adres. Het label is een DPD/DHL Duits ophaalpunt &rarr; NL-magazijn, niet PostNL.</li>
+    <li><b>Landroutering:</b> test ook een NL-retour. Die krijgt een PostNL-label. Bevestigt dat de regel per land werkt.</li>
+    <li><b>Afronden:</b> "mark as received" op de testretour &rarr; refund + sync terug naar het kanaal.</li>
+    <li><b>bol-melding:</b> controleer dat "bol returns not imported / sales orders not found" verdwijnt zodra de order-import weer schoon is.</li>
+  </ul>
+
+  <div class="note warn"><b>Nog te bevestigen (tier-2):</b> open in stap 2 de koppeling "Magento 2 - Development" om te zien of hij naar een dode dev-omgeving wijst (dan is verwijderen het advies). En bevestig in Verzendcontracten dat DPD DE&rarr;NL / DHL Paket Retoure met werkbaar tarief beschikbaar is.</div>
+
+  <div class="foot"><span>Validatiestappen op basis van de live-geverifieerde setup (Magento Production/Development, PostNL, order 144013xxx) &#183; 2026-07-10</span><span class="pill">CCP &#183; pagina 3/3</span></div>
+</div>
+</body></html>

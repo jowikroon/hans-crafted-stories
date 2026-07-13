@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Bewijs — waar komt de T&amp;T binnen in Magento</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#eef1f5; }
+  .sheet{ width:210mm; min-height:297mm; padding:12mm 12mm 9mm; margin:0 auto; background:#fff; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:7px; margin-bottom:10px; }
+  header h1{ font-size:17px; font-weight:700; letter-spacing:-.2px; }
+  header .sub{ font-size:8.8px; color:#52606d; margin-top:3px; line-height:1.4; }
+  .q{ background:#f2f6fb; border:1px solid #d3e2f3; border-radius:5px; padding:8px 11px; margin:11px 0; font-size:9.4px; color:#243b53; }
+  .q b{ color:#102a43; }
+  h2{ font-size:9.8px; text-transform:uppercase; letter-spacing:.4px; color:#102a43;
+      margin:13px 0 6px; padding:3px 8px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  .cards{ display:flex; gap:10px; }
+  .card{ flex:1; border:1px solid #d9e2ec; border-radius:6px; overflow:hidden; }
+  .card .top{ padding:6px 9px; font-size:8.4px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:#fff; }
+  .card.ok .top{ background:#1f7a44; }
+  .card.empty .top{ background:#b26a00; }
+  .card .body{ padding:9px 10px; }
+  .card .meta{ font-size:8px; color:#52606d; margin-bottom:7px; line-height:1.4; }
+  .card .meta b{ color:#243b53; }
+  table.tt{ width:100%; border-collapse:collapse; margin-top:3px; }
+  table.tt th{ font-size:6.8px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; text-align:left; padding:3px 5px; border-bottom:1px solid #cdd8e3; background:#f7f9fc; }
+  table.tt td{ font-size:8.6px; padding:5px 5px; border-bottom:1px solid #eef2f7; }
+  code{ font-family:"Consolas",monospace; font-size:8.4px; background:#0b3d6b; color:#fff; padding:1px 6px; border-radius:3px; }
+  .filled td{ background:#f0f8f3; }
+  .blank{ font-style:italic; color:#9aa8b6; }
+  .stamp{ display:inline-block; margin-top:8px; font-size:7.4px; font-weight:700; padding:2px 8px; border-radius:8px; }
+  .stamp.g{ background:#e6f4ec; color:#1f7a44; }
+  .stamp.o{ background:#fff5e9; color:#b26a00; }
+  .concl{ margin-top:12px; border:1.4px solid #1a5fb4; background:#f0f6ff; border-radius:6px; padding:9px 11px; }
+  .concl h3{ font-size:9.4px; color:#1a5fb4; text-transform:uppercase; letter-spacing:.3px; margin-bottom:4px; }
+  .concl p{ font-size:8.7px; line-height:1.5; color:#12324f; }
+  .src{ margin-top:11px; font-size:7.6px; color:#52606d; line-height:1.5; border-top:1px solid #e4e9f0; padding-top:6px; }
+  .src b{ color:#243b53; }
+  footer{ margin-top:10px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; align-items:center; }
+  .pill{ background:#1a5fb4; color:#fff; font-size:7.4px; padding:2px 8px; border-radius:8px; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>Bewijs — waar komt de Track&amp;Trace binnen in Magento <span class="accent">· CCP × A.B.S.</span></h1>
+    <div class="sub">Antwoord op de vraag: "waar haal je vandaan dat de T&amp;T in de order in Magento komt?" · live gecheckt in Magento admin (Sales → Shipments) · 08-07-2026</div>
+  </header>
+
+  <div class="q">
+    <b>Bron:</b> Niek (D365/Magento-integratie). Afgesproken keten: <b>ABS API → generieke velden op de Magento-shipment → Channable → terug naar eBay.</b> Het trackingnummer landt dus op de <b>shipment</b> in Magento, onder "Shipping and Tracking Information". Hieronder twee live-bewijzen: één order waar het gevuld is, één waar het (nog) leeg is.
+  </div>
+
+  <div class="cards">
+    <div class="card ok">
+      <div class="top">✔ Bewijs 1 — tracking gevuld (eBay DE-testorder)</div>
+      <div class="body">
+        <div class="meta">Magento-shipment · <b>eBay DE</b> · Channable ID <b>106086775</b> · door Niek gedeeld (ABS API-koppeling). Sectie "Shipping and Tracking Information":</div>
+        <table class="tt">
+          <tr><th>Carrier</th><th>Title</th><th>Number</th></tr>
+          <tr class="filled"><td>Custom Value</td><td><b>DPD</b></td><td><code>05112095164869</code></td></tr>
+        </table>
+        <span class="stamp g">Trackingnummer staat op de shipment ✔</span>
+      </div>
+    </div>
+    <div class="card empty">
+      <div class="top">⚠ Bewijs 2 — tracking leeg (reguliere order)</div>
+      <div class="body">
+        <div class="meta">Magento-shipment <b>#126101330</b> · order <b>144013171</b> (NL, H.H Slegers) · 6 jul 2026 · "Verzonden via API", klant genotificeerd. Zelfde sectie:</div>
+        <table class="tt">
+          <tr><th>Carrier</th><th>Title</th><th>Number</th></tr>
+          <tr><td class="blank">— leeg —</td><td class="blank">— leeg —</td><td class="blank">— leeg —</td></tr>
+        </table>
+        <span class="stamp o">Trackingveld nog leeg ⚠</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="concl">
+    <h3>Conclusie</h3>
+    <p>De <b>plek klopt</b>: het trackingnummer hoort in de Magento-shipment (Shipping and Tracking Information) — dat is precies waar Niek het bij de eBay DE-testorder heeft ingezet. <b>Reikwijdte-nuance:</b> tot nu toe staat het alleen op die ene eBay DE-testorder; bij de reguliere orders die live gecheckt zijn, is het veld nog leeg. De vraag is dus niet óf de plek klopt (dat is bewezen), maar of Niek's koppeling het automatisch bij álle orders vult of voorlopig alleen bij de testorder.</p>
+  </div>
+
+  <div class="src">
+    <b>Bronnen:</b> Bewijs 1 = Magento-shipment-screenshot gedeeld door Niek (eBay DE-order 106086775, shipment_id 866). Bewijs 2 = live geopend in Magento admin (connectcarparts.nl/atvise/admin → Sales → Shipments → #126101330 / order 144013171) op 08-07-2026, ingelogd als Hans. Afgesproken keten gedocumenteerd in vault <code>_cowork/ccp-ebay-de/</code> (order-to-cash onderzoek + Thinkyellow-briefing).
+  </div>
+
+  <footer>
+    <span>CCP × A.B.S. · bewijs Track&amp;Trace in Magento-shipment · voor Luca · 08-07-2026</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </footer>
+</div>
+</body>
+</html>

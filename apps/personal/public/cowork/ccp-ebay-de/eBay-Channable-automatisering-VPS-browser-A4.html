@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>eBay/Channable-automatisering via VPS-browser — geen n8n</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .sheet{ width:210mm; min-height:297mm; padding:11mm 11mm 8mm; margin:0 auto; }
+  .accent{color:#1a5fb4;}
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:5px; margin-bottom:7px; }
+  header h1{ font-size:16px; font-weight:700; letter-spacing:-.2px; }
+  header .sub{ font-size:8.4px; color:#52606d; margin-top:2px; }
+  .principle{ font-size:9px; background:#f2f6fb; border-left:3px solid #1a5fb4; border-radius:3px; padding:6px 9px; margin:8px 0; color:#1c3d5f; }
+  .principle b{ color:#12406e; }
+  h2{ font-size:9.6px; text-transform:uppercase; letter-spacing:.4px; color:#102a43;
+      margin:10px 0 4px; padding:2px 6px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  table{ width:100%; border-collapse:collapse; }
+  th,td{ text-align:left; font-size:8.2px; padding:3px 6px; border-bottom:1px solid #e4e9f0; vertical-align:top; line-height:1.32; }
+  th{ font-size:7px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  td.old{ width:38%; color:#7a4b0a; } td.new{ width:62%; }
+  b.k{color:#102a43;}
+  code{ font-family:"Consolas",monospace; font-size:7.6px; background:#eef2f7; padding:0 3px; border-radius:2px; color:#0b3d6b;}
+  ol.steps{ list-style:none; counter-reset:s; }
+  ol.steps>li{ counter-increment:s; position:relative; padding-left:19px; margin-bottom:6px; font-size:8.4px; line-height:1.34; }
+  ol.steps>li::before{ content:counter(s); position:absolute; left:0; top:0; width:13px; height:13px; background:#1a5fb4; color:#fff; border-radius:50%; font-size:8px; font-weight:700; text-align:center; line-height:13px; }
+  .row{ display:flex; gap:10px; }
+  .row .c{ flex:1; }
+  .box{ border:1px solid #d9e2ec; border-radius:4px; padding:7px 9px; font-size:8.3px; line-height:1.4; }
+  .box.arch{ background:#fbfcfe; }
+  .box h3{ font-size:8.4px; text-transform:uppercase; letter-spacing:.3px; color:#102a43; margin-bottom:4px; }
+  .box.warn{ background:#fff8ec; border-color:#f3d9a6; }
+  .box.warn h3{ color:#b45309; }
+  ul{ list-style:none; margin-top:3px; }
+  ul li{ font-size:8.2px; line-height:1.4; padding-left:12px; position:relative; }
+  ul li::before{ content:""; position:absolute; left:2px; top:5px; width:4px; height:4px; background:#1a5fb4; border-radius:50%; }
+  footer{ margin-top:9px; border-top:1px solid #d9e2ec; padding-top:4px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.4px;padding:1px 7px;border-radius:8px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>eBay / Channable-automatisering via een browser op de VPS <span class="accent">· n8n eruit</span></h1>
+    <div class="sub">vps2 = Hostinger <code>srv1411336</code> (187.124.2.66) · Channable project <b>314525</b> · doel: terugkerende eBay/Channable-taken draaien op de VPS, zonder n8n en zonder cloud-LLM</div>
+  </header>
+
+  <div class="principle">
+    <b>Kernprincipe:</b> n8n gaat eruit. De terugkerende Channable/eBay-acties draaien via een <b>browser op de VPS</b> met de al bewezen methode <code>sessie-token → Bearer → app.channable.com/api/.../projects/314525</code>. En de Duitse omschrijvingen komen uit een <b>deterministische Channable-rule</b> — dus daar is helemaal geen generatie-pipeline (n8n/Gemini) voor nodig.
+  </div>
+
+  <h2>Wat n8n deed → waar het naartoe gaat</h2>
+  <table>
+    <tr><th>n8n-taak (eruit)</th><th>Vervanger</th></tr>
+    <tr><td class="old">Basisomschrijvingen genereren (n8n/Gemini-pipeline)</td><td class="new"><b class="k">Deterministische Channable-rule</b> <code>DE - ebay_desc_de</code> (template + velden). Geen LLM, geen pipeline — de feed maakt de tekst zelf.</td></tr>
+    <tr><td class="old">Wekelijkse prijslijst-/feed-export (n8n)</td><td class="new"><b class="k">VPS-browser cron → Channable export</b> (of Channable's eigen scheduled export). Levert het bestand zonder n8n-credential die verloopt.</td></tr>
+    <tr><td class="old">Terugkerende scans / rule-checks</td><td class="new"><b class="k">VPS-browser cron → project-314525 API</b> (bestaande scan-methode: rules-state diff, publish-check).</td></tr>
+    <tr><td class="old">Eventuele verrijking / vrije tekst</td><td class="new"><b class="k">Lokale Ollama op vps2</b> (staat er al, naast OpenClaw/AnythingLLM). Blijft op de VPS, geen cloud.</td></tr>
+  </table>
+
+  <h2>Architectuur</h2>
+  <div class="row">
+    <div class="c">
+      <div class="box arch">
+        <h3>Runner op de VPS</h3>
+        <ul>
+          <li>Eén extra Docker-container <code>ccp-browser</code> op vps2, naast de bestaande (OpenClaw, Ollama, AnythingLLM, traefik).</li>
+          <li>Headless Chromium + klein script (Puppeteer/Node) dat de Channable-sessie/token vasthoudt.</li>
+          <li>Scheduler = <b>cron/systemd in de container</b> — niet Cowork /schedule, niet n8n.</li>
+          <li>Output schrijft naar <code>_connector/bridge/inbox/</code> (die inbound-route werkt al).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="c">
+      <div class="box arch">
+        <h3>Taken die de runner draait</h3>
+        <ul>
+          <li><b>Dagelijkse scan</b> → rules-state diff project 314525.</li>
+          <li><b>Rule-verify</b> → titel ≤80, <code>DE - ebay_desc_de</code> actief, categorie-mapping.</li>
+          <li><b>Publish-trigger</b> na goedkeuring.</li>
+          <li><b>eBay Seller Hub</b> (browser, geen API) → order-/tracking-check waar nodig.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h2>Concrete stappen om het neer te zetten</h2>
+  <ol class="steps">
+    <li><b>Toegang:</b> vps2 via <b>Hostinger hPanel → Browser Terminal</b> (root-shell, geen SSH-key nodig — zelfde route als de OpenClaw-recovery). Verse Terminal per keer (tokens zijn eenmalig).</li>
+    <li><b>Container:</b> <code>ccp-browser</code> aanmaken met headless Chromium + Node/Puppeteer.</li>
+    <li><b>Channable-auth:</b> het sessie-token als env op de VPS zetten (jij plaatst het, niet via de chat — §8). Script leest het en zet <code>Bearer</code>.</li>
+    <li><b>Scan-script:</b> de bestaande scan-methode porten (<code>GET /rules/import/0</code>, channels, quality) → dagelijkse diff.</li>
+    <li><b>Cron:</b> dagelijkse scan + diff → bridge/inbox. Wekelijkse export idem.</li>
+    <li><b>n8n uitzetten:</b> zodra de VPS-runner draait, de n8n-flows (o.a. prijslijst) deactiveren. Eén bron, geen dubbele/verlopen credentials.</li>
+  </ol>
+
+  <div class="box warn" style="margin-top:9px">
+    <h3>Randvoorwaarden (eerlijk)</h3>
+    <ul>
+      <li>Ik kan dit nu niet zelf op de VPS zetten: de SSH-key is niet mountbaar en de Browser Terminal vergt jouw ingelogde Hostinger-sessie. Dit is het plan; uitvoeren doen we via de Browser-Terminal-route (zoals bij de OpenClaw-recovery).</li>
+      <li>Het Channable-token is een credential → dat plaats jij op de VPS, niet via mij.</li>
+      <li>VPS-security eerst hardenen: de audit vond de OpenClaw Control-UI met losse auth-flags. Zet die dicht vóór je gevoelige flows op de VPS draait.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <span>CCP × A.B.S. · eBay/Channable-automatisering op vps2 · geen n8n · bron: openclaw-recovery, rules-state 314525, eBay-DE-actieplan</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </footer>
+</div>
+</body>
+</html>

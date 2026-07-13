@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Magento — Duitsland toevoegen aan Allow Countries (klikpad)</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .sheet{ width:210mm; min-height:297mm; padding:13mm 13mm 10mm; margin:0 auto; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:7px; margin-bottom:12px; }
+  header h1{ font-size:17px; font-weight:700; }
+  header .sub{ font-size:8.8px; color:#52606d; margin-top:3px; }
+  .lead{ border-left:4px solid #1a5fb4; background:#eef5ff; border-radius:7px; padding:9px 12px; margin-bottom:13px; }
+  .lead b{ color:#12406e; font-size:12.5px; }
+  .lead div{ font-size:10px; color:#33414f; margin-top:2px; }
+  .step{ display:flex; gap:11px; margin-bottom:11px; align-items:flex-start; }
+  .n{ flex:0 0 25px; height:25px; border-radius:50%; background:#1a5fb4; color:#fff; font-weight:700; text-align:center; line-height:25px; font-size:13px; }
+  .ng{ background:#1f7a44; }
+  .body{ flex:1; }
+  .cap{ font-size:12px; font-weight:600; margin-bottom:5px; }
+  .cap .b{ color:#1a5fb4; }
+  .ui{ border:1px solid #dbe3ec; border-radius:7px; background:#fff; overflow:hidden; }
+  .menu{ display:flex; }
+  .rail{ flex:0 0 54px; background:#2b2b2b; color:#cfcfcf; font-size:8px; padding:7px 0; text-align:center; line-height:1.95; }
+  .rail .on{ background:#1a5fb4; color:#fff; display:block; padding:2px 0; font-weight:700; }
+  .mcol{ flex:1; padding:8px 13px; }
+  .mlbl{ font-size:7px; color:#8aa0b6; text-transform:uppercase; letter-spacing:.5px; }
+  .mi{ font-size:11px; margin-top:2px; color:#33414f; }
+  .mihi{ font-size:12px; font-weight:700; color:#1a5fb4; display:inline-block; position:relative; margin-top:1px; }
+  .tag{ background:#d64545; color:#fff; font-size:9px; font-weight:700; padding:1px 7px; border-radius:11px; white-space:nowrap; margin-left:7px; }
+  .pad{ padding:9px 13px; }
+  .scope{ display:flex; align-items:center; gap:9px; }
+  .chip{ border:1px solid #1a5fb4; border-radius:6px; padding:4px 11px; font-size:11.5px; font-weight:700; color:#12406e; background:#eef5ff; }
+  .muted{ font-size:10px; color:#8aa0b6; }
+  .sec{ font-size:11px; color:#33414f; padding:3px 0; }
+  .sechi{ font-size:12px; font-weight:700; color:#1a5fb4; padding:5px 0; border-top:1px solid #eef2f7; border-bottom:1px solid #eef2f7; }
+  .sel{ display:flex; gap:12px; align-items:flex-start; }
+  .sellbl{ flex:0 0 120px; font-size:11px; color:#52606d; text-align:right; padding-top:5px; }
+  .list{ flex:1; border:1px solid #cbd5e1; border-radius:6px; overflow:hidden; font-size:11.5px; }
+  .list div{ padding:4px 9px; color:#33414f; position:relative; }
+  .list .de{ background:#1a5fb4; color:#fff; font-weight:700; }
+  .list .nl{ background:#dbe9fb; color:#12406e; font-weight:700; }
+  .warn{ font-size:10px; color:#8a5a00; background:#fff8ec; border:1px solid #f2d9a8; border-radius:6px; padding:5px 9px; margin-top:6px; }
+  .save{ text-align:right; }
+  .savebtn{ background:#f56a00; color:#fff; font-size:12px; font-weight:700; padding:6px 15px; border-radius:5px; position:relative; display:inline-block; }
+  .green{ background:#f0f8f3; border:1px solid #bfe4cf; border-radius:7px; padding:10px 13px; }
+  .green .cap{ color:#1f7a44; }
+  .green .d{ font-size:11px; color:#33414f; margin-top:2px; }
+  .foot{ margin-top:13px; border-top:1px solid #d9e2ec; padding-top:6px; font-size:7.4px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.4px;padding:2px 8px;border-radius:8px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>Duitsland toevoegen aan <span style="color:#1a5fb4;">Allow Countries</span> — Magento</h1>
+    <div class="sub">CCP × A.B.S. · eBay DE go-live · 5 klikken in Magento + 1 in Channable · veilig &amp; omkeerbaar · Atvise niet nodig</div>
+  </header>
+
+  <div class="lead">
+    <b>Waarom:</b> Duitse eBay-orders worden geweigerd op import omdat Allow Countries op alléén NL staat (Default Country DE staat al goed op de storeview "Duits"). Deze wijziging zet DE erbij.
+    <div>Geverifieerd live in de Magento-config, 2026-07-09.</div>
+  </div>
+
+  <!-- 1 -->
+  <div class="step">
+    <div class="n">1</div>
+    <div class="body">
+      <div class="cap">Open het <b class="b">Stores</b>-menu (linkerbalk) → klik <b class="b">Configuration</b></div>
+      <div class="ui menu">
+        <div class="rail">DASHBOARD<br>SALES<br>CATALOG<br><span class="on">STORES &#9679;</span>SYSTEM</div>
+        <div class="mcol">
+          <div class="mlbl">Settings</div>
+          <div class="mi">All Stores</div>
+          <div class="mihi">Configuration <span class="tag">&#9673; klik hier</span></div>
+          <div class="mi">Terms and Conditions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="step">
+    <div class="n">2</div>
+    <div class="body">
+      <div class="cap">Zet de scope linksboven op <b class="b">Default Config</b></div>
+      <div class="ui pad scope">
+        <span class="muted">Store View:</span>
+        <span class="chip">Default Config &#9662;</span>
+        <span class="muted">(niet "Duits" — juist de standaard/globale scope)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="step">
+    <div class="n">3</div>
+    <div class="body">
+      <div class="cap">Tab <b>General</b> → klap <b class="b">Country Options</b> open</div>
+      <div class="ui pad">
+        <div class="sec">Locale Options</div>
+        <div class="sechi">Country Options <span class="tag">&#9673; open deze sectie</span></div>
+        <div class="sec">State Options</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="step">
+    <div class="n">4</div>
+    <div class="body">
+      <div class="cap">Bij <b>Allow Countries</b>: houd <b>Ctrl</b> ingedrukt en klik <b class="b">Germany</b> erbij</div>
+      <div class="ui pad sel">
+        <div class="sellbl">Allow Countries</div>
+        <div class="list">
+          <div>France</div>
+          <div>Belgium</div>
+          <div class="de">Germany <span class="tag">&#9673; Ctrl+klik</span></div>
+          <div class="nl">Netherlands <span style="font-size:9px;font-weight:400;color:#52606d;">(al geselecteerd — laten staan)</span></div>
+          <div>Austria <span class="muted">(optioneel, DACH)</span></div>
+          <div>Poland</div>
+        </div>
+      </div>
+      <div class="warn">Let op: NL <b>niet</b> deselecteren. Ctrl vasthouden = DE erbij, niet vervangen.</div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="step">
+    <div class="n">5</div>
+    <div class="body">
+      <div class="cap">Klik <b>Save Config</b> rechtsboven — cache legen indien gevraagd</div>
+      <div class="ui pad save">
+        <span class="savebtn">Save Config <span class="tag" style="position:absolute;right:100%;top:6px;margin-right:7px;">&#9673; klik</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="step">
+    <div class="n ng">6</div>
+    <div class="body green" style="flex:1;">
+      <div class="cap">In Channable → Orders → <b>"Verzend alle mislukte orders opnieuw"</b></div>
+      <div class="d">De Duitse orders importeren nu wél → krijgen een Magento-ID → shipment + T&amp;T volgt → terugkoppeling naar eBay komt op gang.</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Geverifieerd live: Allow Countries = alléén NL · Default Country DE al op storeview "Duits" · bron: Magento config + Channable-API 2026-07-09</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>eBay DE — Complete blauwdruk per categorie</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; }
+  .page { width:210mm; min-height:297mm; padding:13mm 12mm 12mm; margin:0 auto; page-break-after:always; position:relative; }
+  .page:last-child{ page-break-after:auto; }
+  .accent{ color:#1a5fb4; }
+  .eyebrow{ font-size:8px; text-transform:uppercase; letter-spacing:1.2px; color:#1a5fb4; font-weight:700; }
+  h1{ font-size:19px; font-weight:700; letter-spacing:-.3px; margin-top:3px; }
+  .lead{ font-size:9.4px; color:#52606d; margin-top:5px; line-height:1.45; }
+  header.pg{ border-bottom:2px solid #1a5fb4; padding-bottom:7px; margin-bottom:10px; }
+  header.pg h1{ font-size:15px; }
+  header.pg .s{ font-size:8.4px; color:#52606d; margin-top:2px; }
+  h2{ font-size:9.6px; text-transform:uppercase; letter-spacing:.4px; color:#102a43;
+      margin:11px 0 5px; padding:3px 8px; background:#eef2f7; border-left:3px solid #1a5fb4; border-radius:2px; }
+  h3{ font-size:9.4px; color:#12406e; margin:8px 0 3px; }
+  p{ font-size:8.8px; line-height:1.5; color:#33414f; }
+  ul,ol{ margin:3px 0 0 15px; } li{ font-size:8.5px; color:#33414f; line-height:1.4; margin-bottom:2px; }
+  li b{ color:#102a43; }
+  code{ background:#f2f6fb; border:1px solid #dbe6f4; border-radius:2px; padding:0 3px; font-size:7.8px; color:#12406e; }
+  table{ width:100%; border-collapse:collapse; margin-top:4px; }
+  th,td{ text-align:left; font-size:7.7px; padding:4px 6px; border-bottom:1px solid #e4e9f0; vertical-align:top; line-height:1.3; }
+  th{ font-size:6.8px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  .de{ color:#12406e; font-weight:700; }
+  .ttl{ font-family:"Consolas",monospace; font-size:7.4px; color:#243b53; }
+  .tag{ display:inline-block; font-size:6.4px; font-weight:700; padding:1px 5px; border-radius:8px; white-space:nowrap; }
+  .ok{ background:#eaf6ef; color:#14532d; } .no{ background:#fdecec; color:#8f1f1f; } .part{ background:#fff3e0; color:#8a5a00; }
+  .formula{ background:#f7fafd; border:1px solid #d3e2f3; border-radius:5px; padding:8px 10px; margin-top:4px; font-size:8px; color:#12406e; line-height:1.7; }
+  .formula .f{ background:#e6effb; border-radius:3px; padding:0 4px; font-weight:600; }
+  .example{ background:#102a43; color:#eaf2fb; border-radius:5px; padding:9px 11px; margin-top:5px; font-size:9px; }
+  .example .cap{ font-size:6.6px; text-transform:uppercase; letter-spacing:.5px; color:#8fb3dd; display:block; margin-bottom:3px; }
+  .example b{ color:#fff; }
+  .len{ display:inline-block; font-size:7px; background:#1a5fb4; color:#fff; border-radius:8px; padding:1px 7px; margin-top:4px; }
+  .tmpl{ background:#fbfcfe; border:1px solid #e0e7f0; border-radius:5px; padding:9px 11px; margin-top:4px; font-family:"Consolas",monospace; font-size:7.6px; color:#243b53; line-height:1.5; white-space:pre-wrap; }
+  .tmpl .v{ color:#1a5fb4; font-weight:600; }
+  .note{ font-size:8px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid #1a5fb4; border-radius:4px; padding:7px 9px; margin-top:7px; line-height:1.45; }
+  .note b{ color:#12406e; }
+  .warn{ background:#fff8ec; border-color:#f3d9a6; border-left-color:#d98a1a; color:#7a4b0a; } .warn b{ color:#b45309; }
+  footer{ position:absolute; bottom:7mm; left:12mm; right:12mm; border-top:1px solid #d9e2ec; padding-top:4px;
+          font-size:6.8px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:6.8px;padding:1px 8px;border-radius:8px;font-weight:600;}
+  .two{ display:flex; gap:10px; } .two>div{ flex:1; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="page">
+  <div class="eyebrow">CCP × A.B.S. · eBay DE · project 314525 · kanaal 152339</div>
+  <h1>Complete blauwdruk per categorie <span class="accent">· eBay DE</span></h1>
+  <p class="lead">Data-gegrond op de live Channable-feed (25.851 items). Per categorie: Duitse Produktart, titel-opbouw met concreet voorbeeld (≤80 tekens), omschrijving-template, veld-inventaris (wat bestaat / ontbreekt) en de bouwtaak. Remschijven + remblokken volledig; alle overige categorieën met werkbare basis voor go-live.</p>
+
+  <h2>Universele velden — breed gevuld in de feed (live geverifieerd)</h2>
+  <table>
+    <tr><th>Veld</th><th>Status</th><th>Bron / opmerking</th></tr>
+    <tr><td><code>brand</code></td><td><span class="tag ok">bestaat</span></td><td>meestal A.B.S.; feed bevat óók andere merken (bv. Brembo) → voor eBay DE filteren op A.B.S. + SKU-selectie</td></tr>
+    <tr><td><code>sku</code> / <code>mpn</code> / <code>abs_ref</code></td><td><span class="tag ok">bestaat</span></td><td>artikelnummer</td></tr>
+    <tr><td><code>ean</code></td><td><span class="tag ok">bestaat</span></td><td>identifier</td></tr>
+    <tr><td><code>oe_refs</code></td><td><span class="tag ok">bestaat</span></td><td>kolom "3 omschrijving oe ref" gevuld</td></tr>
+    <tr><td><code>car_brands</code> / <code>car_models</code> (+ top1/top2)</td><td><span class="tag ok">bestaat</span></td><td>fitment "Geschikt voor o.a.: …" breed gevuld</td></tr>
+    <tr><td><code>vooras_achteras</code> → <code>einbauposition_de</code></td><td><span class="tag ok">bestaat</span></td><td>positie breed aanwezig (Vooras/Achteras); DE-vertaling bestaat</td></tr>
+    <tr><td>links/rechts</td><td><span class="tag part">deels</span></td><td>import-rule "links / rechts" bestaat; per stuurdeel-SKU bevestigen</td></tr>
+    <tr><td><code>categories_clean</code></td><td><span class="tag ok">bestaat</span></td><td>21 categorieën (taxonomie master "Alle categorieen")</td></tr>
+    <tr><td>Omschrijving-builder (basis/fitment/oe)</td><td><span class="tag ok">bestaat</span></td><td>rules 1–4 aanwezig voor alle items</td></tr>
+    <tr><td>Maat/afmeting (Ø, dikte, WVA)</td><td><span class="tag part">deels</span></td><td>alleen rijk voor remschijven</td></tr>
+    <tr><td><code>categories_clean_single_de</code> (Produktart DE)</td><td><span class="tag no">2/21</span></td><td>alleen Bremsscheibe + Bremsbelag → <b>hoofdbouwtaak</b></td></tr>
+  </table>
+
+  <h2>eBay.de categorie-mapping — 100% live uit Channable</h2>
+  <table>
+    <tr><th>Categorie</th><th>eBay-ID</th><th>eBay-pad</th><th>Items</th></tr>
+    <tr><td>Remschijven</td><td class="de">33564</td><td>… › Bremsen &amp; Bremsenteile › Bremsscheiben</td><td>3.016</td></tr>
+    <tr><td>Remblokken</td><td class="de">57357</td><td>… › Bremsen &amp; Bremsenteile › Bremsbeläge</td><td>2.122</td></tr>
+    <tr><td>Remklauwen</td><td class="de">83622 <span class="tag no">fout</span></td><td>… › Werkzeuge › Reparatur-Sets › Bremseninstandsetzung → hoort onder Bremssättel</td><td>1.720</td></tr>
+    <tr><td>Draagarmen</td><td class="de">33580</td><td>… › Federung &amp; Lenkung › Querlenker &amp; Kugelgelenke</td><td>1.545</td></tr>
+    <tr><td>overige ~17 categorieën</td><td class="de">—</td><td>geen eBay-categorie gekozen</td><td>0</td></tr>
+  </table>
+  <div class="note warn"><b>Kritisch gat:</b> slechts <b>32,5%</b> gecategoriseerd — 8.403 handmatig, <b>17.448 items niet-gecategoriseerd</b> (van 25.851). Alleen de 4 categorieën hierboven kunnen listen; de rest heeft nog géén eBay-categorie. <b>Remklauwen 83622</b> staat fout (reparatie-set i.p.v. Bremssättel). Verder: DE-Produktart dekt 2/21 → uitbreiden · "Wiellagers/Ankerplaat Remschijf" bestaan als extra categorie-waarden · listing-safeguard <code>SKU selectie</code> bestaat al · GPSR leidend Tinbergenlaan 7 uit <code>gpsr_manufacturer_name</code>.</div>
+
+  <footer><span>Complete blauwdruk eBay DE · live feed 314525 · 2026-07-06</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- REMSCHIJVEN FULL -->
+<div class="page">
+  <header class="pg"><div class="eyebrow">Categorie 1 · datarijk</div><h1>Remschijven — Bremsscheibe</h1><div class="s">eBay item-specific 33564 · DE-Produktart bestaat · maat/positie/OE/voertuig aanwezig</div></header>
+
+  <h2>Titel</h2>
+  <div class="formula"><span class="f">brand</span> + <span class="f">mpn</span> + "Bremsscheibe" + <span class="f">einbauposition_de</span> + <span class="f">remschijftype_de</span> + "Ø"<span class="f">buitendiameter</span> + <span class="f">aantal_wielbouten</span>"-Loch" + <span class="f">car_brands_top1</span> + <span class="f">car_models_top1</span> → truncate ≤80</div>
+  <div class="example"><span class="cap">Voorbeeld (live ABS 16880)</span><b>A.B.S. 16880 Bremsscheibe Vorderachse belüftet Ø256mm 5-Loch VW Golf Audi A1</b></div>
+  <span class="len">76 tekens</span>
+
+  <h2>Omschrijving-template</h2>
+  <div class="tmpl">A.B.S. <span class="v">{abs_ref}</span> Bremsscheibe – Original A.B.S. All Brake Systems Qualität
+Produkt: Bremsscheibe <span class="v">{einbauposition_de}</span> <span class="v">{remschijftype_de}</span>
+Maße: Ø <span class="v">{buitendiameter}</span>, Dicke <span class="v">{remschijfdikte}</span>, Mindestdicke <span class="v">{minimale_dikte}</span>, Nabenbohrung <span class="v">{centreringdiameter}</span>, <span class="v">{aantal_wielbouten}</span>-Loch
+Artikelnummer: <span class="v">{abs_ref}</span> · EAN: <span class="v">{ean}</span> · OE: <span class="v">{oe_refs}</span>
+Passend für folgende Fahrzeuge: <span class="v">{compatibility_description}</span>  (alleen als gevuld)
+Über A.B.S.: seit 1978 nach ISO 9001 / BER 461/2010, TecDoc/KBA.
+Hinweis: Bremsscheiben immer achsweise paarweise wechseln. Einbau nur durch eine Fachwerkstatt.
+Hersteller (GPSR): <span class="v">{gpsr_manufacturer_name}</span> → Tinbergenlaan 7, 3401 MT IJsselstein, NL</div>
+
+  <h2>Veld-inventaris &amp; bouwtaak</h2>
+  <div class="two">
+    <div><h3>Aanwezig</h3><ul><li>einbauposition_de, remschijftype_de, buitendiameter, remschijfdikte, minimale_dikte, centreringdiameter, aantal_wielbouten</li><li>car_brands/models, oe_refs, compatibility_description, gpsr_manufacturer_name</li></ul></div>
+    <div><h3>Bouwen / bevestigen</h3><ul><li>Bestaat al: <code>Titel DE — Bremsscheiben</code> + <code>DE - ebay_desc_de</code></li><li>Titel 80-truncatie live checken</li><li>Stuk-aantal (1 Stück) ontbreekt als veld</li></ul></div>
+  </div>
+  <footer><span>Remschijven · volledig</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- REMBLOKKEN FULL -->
+<div class="page">
+  <header class="pg"><div class="eyebrow">Categorie 2 · data-arm</div><h1>Remblokken — Bremsbeläge</h1><div class="s">eBay item-specific 57357 · DE-Produktart bestaat · alleen OE + positie + voertuig betrouwbaar</div></header>
+
+  <h2>Titel</h2>
+  <div class="formula"><span class="f">brand</span> + <span class="f">mpn</span> + "Bremsbeläge" + <span class="f">einbauposition_de</span> + "Bremsbelagsatz" + <span class="f">car_brands_top1</span> + <span class="f">car_models_top1</span> → truncate ≤80</div>
+  <div class="example"><span class="cap">Voorbeeld (live ABS 37760)</span><b>A.B.S. 37760 Bremsbeläge Vorderachse Bremsbelagsatz Renault Megane Dacia</b></div>
+  <span class="len">72 tekens</span>
+
+  <h2>Omschrijving-template</h2>
+  <div class="tmpl">A.B.S. <span class="v">{abs_ref}</span> Bremsbelagsatz – Original A.B.S. All Brake Systems Qualität
+Produkt: Bremsbelagsatz für Scheibenbremse <span class="v">{einbauposition_de}</span>
+Artikelnummer: <span class="v">{abs_ref}</span> · EAN: <span class="v">{ean}</span> · OE: <span class="v">{oe_refs}</span>
+Bitte prüfen Sie die Passgenauigkeit anhand der OE-Nummer und Ihres Altteils.
+Über A.B.S.: seit 1978 nach ISO 9001 / BER 461/2010, TecDoc/KBA.
+Hinweis: Bremsbeläge immer achsweise komplett wechseln und dabei die Bremsscheiben prüfen.
+Hersteller (GPSR): <span class="v">{gpsr_manufacturer_name}</span> → Tinbergenlaan 7, 3401 MT IJsselstein, NL</div>
+
+  <h2>Veld-inventaris &amp; bouwtaak</h2>
+  <div class="two">
+    <div><h3>Aanwezig</h3><ul><li>einbauposition_de, oe_refs, car_brands/models, ean</li></ul><h3>Ontbreekt</h3><ul><li>maat/WVA, slijtage-indicator, stuk-aantal</li></ul></div>
+    <div><h3>Bouwen / bevestigen</h3><ul><li>Categorie-tak in <code>DE - ebay_desc_de</code> (OE-controle i.p.v. maat)</li><li>"Bremsbelag" (enkelvoud) → "Bremsbeläge" via DE-rule</li><li>As-set (4-teilig)? bevestigen</li></ul></div>
+  </div>
+  <footer><span>Remblokken · volledig</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- OVERIGE REMCATEGORIEEN -->
+<div class="page">
+  <header class="pg"><div class="eyebrow">Categorieën 3–8 · rem-gerelateerd</div><h1>Overige rem-categorieën</h1><div class="s">Positie (Vooras/Achteras) breed aanwezig · DE-Produktart nog bouwen · logische basistitel voor go-live</div></header>
+  <table>
+    <tr><th>NL</th><th>DE Produktart</th><th>Titel-voorbeeld (≤80)</th><th>Positie</th><th>Omschr.</th><th>Bouwen / bevestigen</th></tr>
+    <tr><td>Remklauwen</td><td class="de">Bremssattel</td><td class="ttl">A.B.S. {sku} Bremssattel Vorderachse links für u.a. {Marke} {Modell}</td><td><span class="tag part">links/rechts?</span></td><td>generiek</td><td>eBay <b>83622 fout</b> → Bremssättel; links/rechts; Pfand?</td></tr>
+    <tr><td>Remtrommel</td><td class="de">Bremstrommel</td><td class="ttl">A.B.S. {sku} Bremstrommel Hinterachse für u.a. {Marke} {Modell}</td><td><span class="tag ok">Vooras/Achteras</span></td><td>generiek</td><td>Ø/maat in feed?; eBay-cat</td></tr>
+    <tr><td>Remslangen <span class="tag part">titelregel bestaat</span></td><td class="de">Bremsschlauch</td><td class="ttl">A.B.S. SL5595 Bremsschlauch Vorderachse für u.a. {Marke} {Modell}</td><td><span class="tag ok">Vooras/Achteras</span></td><td>generiek</td><td>"Titels Remslangen" DE of NL?; lengte?</td></tr>
+    <tr><td>Wielremcilinder</td><td class="de">Radbremszylinder</td><td class="ttl">A.B.S. {sku} Radbremszylinder Hinterachse für u.a. {Marke} {Modell}</td><td><span class="tag ok">Vooras/Achteras</span></td><td>generiek</td><td>Ø (bore)?; links/rechts?; eBay-cat</td></tr>
+    <tr><td>Slijtindicatoren</td><td class="de">Warnkontakt, Bremsbelagverschleiß</td><td class="ttl">A.B.S. {sku} Warnkontakt Bremsbelagverschleiß Vorderachse für {Marke} {Modell}</td><td><span class="tag ok">Vooras/Achteras</span></td><td>generiek</td><td>eBay-cat opzoeken</td></tr>
+    <tr><td>Accessoiresets <span class="tag part">titelregel bestaat</span></td><td class="de">Zubehörsatz, Bremsbacken</td><td class="ttl">A.B.S. 0100Q Zubehörsatz Bremsbacken Hinterachse für {Marke} {Modell}</td><td><span class="tag ok">Vooras/Achteras</span></td><td>generiek</td><td>"Titels Accessoiresets" DE of NL?; waarvoor exact?</td></tr>
+  </table>
+  <div class="note">Alle zes hebben universele velden (sku, ean, oe, fitment, positie). Hoofdtaak = Duitse Produktart toevoegen aan <code>DE - categories_clean_single_de</code> + eBay-categorie-ID per stuk. Omschrijving = generieke basistemplate (laatste pagina).</div>
+  <footer><span>Rem-categorieën 3–8</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- STUUR & OPHANGING -->
+<div class="page">
+  <header class="pg"><div class="eyebrow">Categorieën 9–15 · stuur &amp; ophanging</div><h1>Stuur- &amp; ophangingsdelen</h1><div class="s">Positie links/rechts vaak beslissend → per SKU bevestigen · DE-Produktart nog bouwen</div></header>
+  <table>
+    <tr><th>NL</th><th>DE Produktart</th><th>Titel-voorbeeld (≤80)</th><th>Positie</th><th>Bouwen / bevestigen</th></tr>
+    <tr><td>Draagarmen</td><td class="de">Querlenker</td><td class="ttl">A.B.S. {sku} Querlenker Vorderachse links für u.a. {Marke} {Modell}</td><td><span class="tag part">links/rechts + onder/boven</span></td><td>eBay <b>33580</b> ✓ (Querlenker &amp; Kugelgelenke); positie-veld bevestigen</td></tr>
+    <tr><td>Draagarmrubber</td><td class="de">Lagerung, Lenker (Querlenkerlager)</td><td class="ttl">A.B.S. {sku} Lagerung Lenker Vorderachse für {Marke} {Modell}</td><td><span class="tag part">positie?</span></td><td>eBay-cat opzoeken</td></tr>
+    <tr><td>Fuseekogel</td><td class="de">Traggelenk</td><td class="ttl">A.B.S. {sku} Traggelenk Vorderachse für u.a. {Marke} {Modell}</td><td><span class="tag part">onder/boven?</span></td><td>positie; eBay-cat</td></tr>
+    <tr><td>Spoorstangeind</td><td class="de">Spurstangenkopf</td><td class="ttl">A.B.S. {sku} Spurstangenkopf Vorderachse für u.a. {Marke} {Modell}</td><td><span class="tag part">links/rechts + außen</span></td><td>positie; eBay-cat</td></tr>
+    <tr><td>Axiaalkogel</td><td class="de">Axialgelenk (innere Spurstange)</td><td class="ttl">A.B.S. {sku} Axialgelenk innere Spurstange für {Marke} {Modell}</td><td><span class="tag part">links/rechts?</span></td><td>eBay-cat opzoeken</td></tr>
+    <tr><td>Hulpstuurarm</td><td class="de">Lenkzwischenhebel (Umlenkhebel)</td><td class="ttl">A.B.S. {sku} Lenkzwischenhebel für u.a. {Marke} {Modell}</td><td>—</td><td>eBay-cat opzoeken</td></tr>
+    <tr><td>Stabilisatorstangen</td><td class="de">Koppelstange (Pendelstütze)</td><td class="ttl">A.B.S. {sku} Koppelstange Vorderachse für u.a. {Marke} {Modell}</td><td><span class="tag part">links/rechts?</span></td><td>eBay-cat opzoeken</td></tr>
+  </table>
+  <div class="note warn"><b>Bevestigen:</b> voor stuurdelen is links/rechts vaak verplicht in de eBay item-specifics. Check of de feed dit per SKU levert (import-rule "links / rechts" bestaat) vóór publicatie — anders titel zonder zijde.</div>
+  <footer><span>Stuur &amp; ophanging 9–15</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- SENSOREN, MANCHET, MOEREN, KABELS -->
+<div class="page">
+  <header class="pg"><div class="eyebrow">Categorieën 16–21 · sensoren, manchetten, kabels</div><h1>Sensoren, bevestiging &amp; kabels</h1><div class="s">Kabels/moeren zonder positie · DE-Produktart nog bouwen</div></header>
+  <table>
+    <tr><th>NL</th><th>DE Produktart</th><th>Titel-voorbeeld (≤80)</th><th>Positie</th><th>Bouwen / bevestigen</th></tr>
+    <tr><td>Wielsnelheidssensor</td><td class="de">ABS-Sensor (Sensor, Raddrehzahl)</td><td class="ttl">A.B.S. {sku} ABS-Sensor Vorderachse links für u.a. {Marke} {Modell}</td><td><span class="tag part">links/rechts?</span></td><td>positie + kabellengte?; eBay-cat</td></tr>
+    <tr><td>Manchette</td><td class="de">Manschette <span class="tag part">subtype per SKU</span></td><td class="ttl">A.B.S. {sku} Manschette Radbremszylinder für u.a. {Marke} {Modell}</td><td>—</td><td>subtype uit SKU: Radbremszylinder / Lenkung; eBay-cat</td></tr>
+    <tr><td>Wartelmoer</td><td class="de">Achsmutter <span class="tag part">tegen SKU</span></td><td class="ttl">A.B.S. {sku} Achsmutter für u.a. {Marke} {Modell}</td><td>—</td><td>ongebruikelijke NL-term; tegen SKU bevestigen; eBay-cat</td></tr>
+    <tr><td>Koppelingkabel</td><td class="de">Kupplungsseilzug</td><td class="ttl">A.B.S. {sku} Kupplungsseilzug für u.a. {Marke} {Modell}</td><td>—</td><td>lengte?; eBay-cat</td></tr>
+    <tr><td>Trekkabel</td><td class="de">Handbremsseil (Seilzug, Feststellbremse)</td><td class="ttl">A.B.S. {sku} Handbremsseil für u.a. {Marke} {Modell}</td><td>—</td><td>= parkeerremkabel; eBay-cat</td></tr>
+    <tr><td>Gaskabel</td><td class="de">Gaszug</td><td class="ttl">A.B.S. {sku} Gaszug für u.a. {Marke} {Modell}</td><td>—</td><td>lengte?; eBay-cat</td></tr>
+  </table>
+  <div class="note">Deze categorieën hebben geen positie; basistitel = merk + Produktart + voertuig. Omschrijving = generieke basistemplate.</div>
+  <footer><span>Sensoren, manchetten, kabels 16–21</span><span class="pill">CCP · connectcarparts.nl</span></footer>
+</div>
+
+<!-- TEMPLATES + PLAN -->
+<div class="page">
+  <header class="pg"><div class="eyebrow">Templates &amp; bouwplan</div><h1>Generieke omschrijving + rule-bouwplan</h1><div class="s">Eén basistemplate voor alle niet-schijf/blok categorieën + volgorde van bouwen</div></header>
+
+  <h2>Generieke omschrijving-template (overige 19 categorieën)</h2>
+  <div class="tmpl">A.B.S. <span class="v">{abs_ref}</span> <span class="v">{Produktart_de}</span> – Original A.B.S. All Brake Systems Qualität
+Produkt: <span class="v">{Produktart_de}</span> <span class="v">{einbauposition_de}</span>
+Artikelnummer: <span class="v">{abs_ref}</span> · EAN: <span class="v">{ean}</span> · OE: <span class="v">{oe_refs}</span>
+Passend für folgende Fahrzeuge: <span class="v">{compatibility_description}</span>  (alleen als gevuld)
+Bitte prüfen Sie die Passgenauigkeit anhand der OE-Nummer und Ihres Altteils.
+Über A.B.S.: seit 1978 nach ISO 9001 / BER 461/2010, TecDoc/KBA (36.000+ Referenzen).
+Hinweis: Einbau nur durch eine Fachwerkstatt.
+Hersteller (GPSR): <span class="v">{gpsr_manufacturer_name}</span> → Tinbergenlaan 7, 3401 MT IJsselstein, NL</div>
+
+  <h2>Bouwvolgorde</h2>
+  <ol>
+    <li><b>DE-Produktart uitbreiden</b> — <code>DE - categories_clean_single_de</code>: de 19 ontbrekende categorieën toevoegen (tabellen hierboven, onzekere termen eerst bevestigen).</li>
+    <li><b>Titel</b> — generieke <code>DE - ebay_title_de</code> laten werken met de nieuwe Produktart + positie + top-voertuig; truncatie ≤80. Schijf houdt zijn eigen rijke titel.</li>
+    <li><b>Omschrijving</b> — <code>DE - ebay_desc_de</code>: schijf-tak + blok-tak + generieke tak voor de rest.</li>
+    <li><b>Listing-selectie</b> — <code>SKU selectie</code> (bestaat) vullen met de te listen A.B.S.-SKU's; brand-filter op A.B.S.</li>
+    <li><b>Per categorie</b> — eBay-categorie-ID + verplichte item-specifics opzoeken; links/rechts bevestigen voor stuurdelen.</li>
+    <li><b>Preview + publiceren</b> — steekproef per categorie (Duits, GPSR-regel, ≤80, geen lege placeholders).</li>
+  </ol>
+
+  <h2>Open vragen (bevestigen vóór/na live)</h2>
+  <ul>
+    <li><b>DE-termen: afgesloten</b> tegen TecDoc-conventie + A.B.S.-catalogus. Alleen SKU-afhankelijk: <b>Manschette</b> (subtype Radbremszylinder/Lenkung) en <b>Wartelmoer → Achsmutter</b> (ongebruikelijke NL-term, tegen SKU checken).</li>
+    <li><b>Wiellagersets</b>: bestaan A.B.S.-wiellagers in deze feed (andere naam) of niet?</li>
+    <li><b>Stuk-aantal</b> (Stück/Satz) als veld — nu niet aanwezig.</li>
+    <li><b>links/rechts</b> per stuurdeel-SKU bevestigen (import-rule bestaat).</li>
+    <li><b>Niet-A.B.S. merken</b> in de feed (Brembo e.a.) — uitsluiten van de A.B.S.-eBay-selectie.</li>
+  </ul>
+
+  <footer><span>Templates &amp; bouwplan · GPSR Tinber

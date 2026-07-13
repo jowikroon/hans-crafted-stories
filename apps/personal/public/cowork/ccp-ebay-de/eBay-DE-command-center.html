@@ -1,0 +1,220 @@
+<!DOCTYPE html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eBay DE — Channable Command Center</title>
+<style>
+  :root{ --blue:#1a5fb4; --blue2:#12508f; --chip:#e7f0fb; --chipbd:#bcd6f5; --ink:#1f2933; --mut:#5b6b7b; --line:#e6ebf1; --bg:#eef2f6;
+         --ok:#1f7a4d; --okbg:#eaf6ef; --warn:#8a5a00; --warnbg:#fff3e0; --purple:#7a3fb4; --purplebg:#f3ecfb; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; padding:16px; }
+  .wrap{ max-width:1080px; margin:0 auto; }
+  header{ background:linear-gradient(120deg,#1a5fb4,#12406e); color:#fff; border-radius:14px; padding:18px 22px; }
+  header h1{ font-size:20px; font-weight:700; }
+  header p{ font-size:12.5px; opacity:.9; margin-top:3px; }
+  .kpis{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:14px; }
+  @media(max-width:760px){ .kpis{ grid-template-columns:repeat(2,1fr);} }
+  .kpi{ background:#fff; border:1px solid var(--line); border-radius:11px; padding:11px 13px; }
+  .kpi .n{ font-size:21px; font-weight:800; color:var(--blue2); } .kpi .l{ font-size:10.5px; color:var(--mut); text-transform:uppercase; letter-spacing:.3px; margin-top:2px; }
+  .kpi.g .n{ color:var(--ok);} .kpi.o .n{ color:var(--warn);}
+  nav{ display:flex; gap:6px; flex-wrap:wrap; margin:16px 0 12px; }
+  nav button{ font:inherit; font-size:12.5px; font-weight:600; padding:8px 14px; border:1px solid #ccd6e0; background:#fff; color:#3a4a5a; border-radius:20px; cursor:pointer; }
+  nav button.on{ background:var(--blue); color:#fff; border-color:var(--blue); }
+  section.tab{ display:none; } section.tab.on{ display:block; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:15px 17px; margin-bottom:13px; }
+  .card h2{ font-size:14px; color:#102a43; margin-bottom:4px; }
+  .card p.sub{ font-size:12px; color:var(--mut); margin-bottom:9px; }
+  table{ width:100%; border-collapse:collapse; font-size:12px; }
+  th,td{ text-align:left; padding:7px 9px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ font-size:10px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; background:#f7f9fc; position:sticky; top:0; }
+  code{ font-family:"Consolas",monospace; font-size:11px; background:#eef2f7; color:#0b3d6b; padding:1px 5px; border-radius:4px; }
+  .pill{ display:inline-block; font-size:10px; font-weight:700; border-radius:20px; padding:1px 8px; white-space:nowrap; }
+  .pill.ok{ background:var(--okbg); color:var(--ok);} .pill.warn{ background:var(--warnbg); color:var(--warn);} .pill.blue{ background:var(--chip); color:var(--blue2);} .pill.pur{ background:var(--purplebg); color:var(--purple);}
+  .note{ font-size:12px; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid var(--blue); border-radius:8px; padding:9px 12px; margin-top:10px; color:#1c3d5f; }
+  .note.warn{ background:var(--warnbg); border-color:#f3d9a6; border-left-color:#d98a1a; color:#7a4b0a; }
+  .note b{ color:var(--blue2); }
+  /* pipeline */
+  .flow{ display:flex; flex-wrap:wrap; align-items:stretch; gap:8px; }
+  .step{ flex:1; min-width:130px; background:#fbfdff; border:1px solid #dbe6f4; border-radius:10px; padding:10px 11px; position:relative; }
+  .step .t{ font-size:12px; font-weight:700; color:#102a43; } .step .d{ font-size:11px; color:var(--mut); margin-top:3px; }
+  .step .st{ margin-top:6px; }
+  .arrow{ align-self:center; color:#94a3b8; font-weight:800; font-size:16px; }
+  /* filter */
+  .filterbar{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:10px; }
+  .filterbar select{ font:inherit; font-size:13px; font-weight:600; padding:6px 11px; border:1px solid #cbd5e1; border-radius:8px; color:#102a43; }
+  .titlebox{ background:#0f2233; color:#e6f0fb; border-radius:8px; padding:11px 13px; font-family:"Consolas",monospace; font-size:12.5px; margin-top:8px; }
+  .len{ font-size:11px; color:#9fb3c8; }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:9px; } @media(max-width:720px){ .two{ grid-template-columns:1fr; } }
+  .kv{ font-size:12px; } .kv b{ color:#102a43; }
+  footer{ font-size:10.5px; color:#8aa0b6; text-align:center; margin-top:14px; }
+</style></head>
+<body><div class="wrap">
+<header>
+  <h1>eBay DE — Channable Command Center</h1>
+  <p>Volledige setup van het eBay-kanaal (project 314525 · API-id 159122). Stand 2026-07-08. Klik de tabs; in "Titels" filter je per categorie. Er is niets gepubliceerd — "Uitvoeren" blijft Hans' knop.</p>
+  <div class="kpis">
+    <div class="kpi g"><div class="n">78,1%</div><div class="l">Gecategoriseerd</div></div>
+    <div class="kpi"><div class="n">20</div><div class="l">Titelregels</div></div>
+    <div class="kpi g"><div class="n">0</div><div class="l">Mapping-mismatch</div></div>
+    <div class="kpi"><div class="n">1</div><div class="l">Bron categories_clean</div></div>
+    <div class="kpi o"><div class="n">369</div><div class="l">Lege velden</div></div>
+  </div>
+</header>
+
+<nav>
+  <button class="on" onclick="tab('ov',this)">Overzicht</button>
+  <button onclick="tab('pipe',this)">Pipeline</button>
+  <button onclick="tab('cat',this)">Categorie-mapping</button>
+  <button onclick="tab('titel',this)">Titels</button>
+  <button onclick="tab('item',this)">Item-specifics</button>
+  <button onclick="tab('clean',this)">Opschoning</button>
+  <button onclick="tab('open',this)">Openstaand</button>
+</nav>
+
+<!-- OVERZICHT -->
+<section class="tab on" id="ov">
+  <div class="card"><h2>Wat er staat</h2>
+    <div class="two">
+      <div>
+        <p class="kv"><span class="pill ok">✓</span> <b>categories_clean uit één bron</b> — master-groep 315886, art_grp_code → 19 categorieën. Bereikt alle kanalen (live geverifieerd).</p><br>
+        <p class="kv"><span class="pill ok">✓</span> <b>20 per-kanaal titel+omschrijving-regels</b> — merk-dynamisch, GPSR uit veld, "für u.a. {merk}" voorwaardelijk, alle titels ≤ 80.</p><br>
+        <p class="kv"><span class="pill ok">✓</span> <b>Einbauposition-regel</b> vult <code>einbauposition_de</code> (as + Links/Rechts).</p>
+      </div>
+      <div>
+        <p class="kv"><span class="pill ok">✓</span> <b>Item-specifics gemapt</b> (Einbauposition, OE, Vergleichsnummer, EAN) voor de live categorieën.</p><br>
+        <p class="kv"><span class="pill ok">✓</span> <b>Categorie-mapping gladgestreken</b> — 47,8% → 78,1%, 19 rijen 0 mismatches, Remschijven → Bremsscheiben gecorrigeerd.</p><br>
+        <p class="kv"><span class="pill warn">•</span> <b>Kostenrem</b> = 4 test-SKU's (Hans). Niets live tot uitbreiden + Uitvoeren.</p>
+      </div>
+    </div>
+    <div class="note"><b>Grootste hefboom nog open:</b> de Fahrzeug-Kompatibilitätsliste (K-Typ) — daarmee verschijn je in "Passt zu meinem Fahrzeug?"-zoekopdrachten. Zie tab Openstaand.</div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section class="tab" id="pipe">
+  <div class="card"><h2>Hoe een product door de feed loopt</h2>
+    <p class="sub">Van bron tot eBay-output. De master zet de categorie; de kanaalregels bouwen titel/omschrijving; de kostenrem bepaalt wat live gaat.</p>
+    <div class="flow">
+      <div class="step"><div class="t">1 · Import</div><div class="d">Magento + Google-Sheets → ruwe velden (incl. <code>art_grp_code</code>)</div><div class="st"><span class="pill blue">bron</span></div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="t">2 · Master 315886</div><div class="d"><code>art_grp_code → categories_clean</code> (19). Eén bron, alle kanalen.</div><div class="st"><span class="pill pur">master</span> <span class="pill ok">nieuw</span></div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="t">3 · Categorieën</div><div class="d">categories_clean → eBay-categorie (19 rijen, 0 mismatch, 78,1%)</div><div class="st"><span class="pill ok">gefixt</span></div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="t">4 · Regels</div><div class="d">Titel <code>ebay_title_de</code> + omschrijving <code>ebay_omschrijving_de</code> per categorie</div><div class="st"><span class="pill ok">20 regels</span></div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="t">5 · Build</div><div class="d">Item-specifics (OE, EAN, Einbauposition, maten) ← bronvelden</div><div class="st"><span class="pill ok">gemapt</span></div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="t">6 · SKU Filter</div><div class="d">Allow-list (nu 4 test-SKU's) → rest wordt verwijderd</div><div class="st"><span class="pill warn">kostenrem</span></div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="t">7 · Uitvoeren</div><div class="d">Push naar eBay DE</div><div class="st"><span class="pill warn">Hans' knop</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIE-MAPPING -->
+<section class="tab" id="cat">
+  <div class="card"><h2>Categorie-mapping — 19 categorieën</h2>
+    <p class="sub">art_grp_code → categories_clean (master) → eBay-categorie. Alle rijen matchen nu.</p>
+    <div style="max-height:460px;overflow:auto"><table id="cattbl">
+      <tr><th>Categorie</th><th>art_grp</th><th>categories_clean</th><th>eBay-categorie</th></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- TITELS -->
+<section class="tab" id="titel">
+  <div class="card"><h2>Titels per categorie</h2>
+    <p class="sub">Voorbeeldtitel uit de live regelformule (merk-dynamisch, model in de omschrijving, ≤ 80 tekens).</p>
+    <div class="filterbar"><b style="font-size:12px;color:#5b6b7b">Categorie</b><select id="tfilter" onchange="renderTitle()"></select></div>
+    <div id="titleout"></div>
+  </div>
+</section>
+
+<!-- ITEM-SPECIFICS -->
+<section class="tab" id="item">
+  <div class="card"><h2>eBay Artikelmerkmale (Build)</h2>
+    <p class="sub">Item-specifics ← bestaand bronveld. Voor de live categorieën gemapt.</p>
+    <table>
+      <tr><th>eBay-veld</th><th>← bronveld</th><th>Status</th></tr>
+      <tr><td>Einbauposition</td><td><code>einbauposition_de</code></td><td><span class="pill ok">✓ via regel</span></td></tr>
+      <tr><td>OE-/OEM-Referenznummer</td><td><code>oe_list</code></td><td><span class="pill ok">✓</span></td></tr>
+      <tr><td>Vergleichsnummer</td><td><code>oe_list</code></td><td><span class="pill ok">✓</span></td></tr>
+      <tr><td>EAN (Item ID / ID type)</td><td><code>ean</code></td><td><span class="pill ok">✓ shared</span></td></tr>
+      <tr><td>Hersteller</td><td><code>brand</code></td><td><span class="pill ok">✓</span></td></tr>
+      <tr><td>Herstellernummer</td><td><code>sku</code></td><td><span class="pill ok">✓</span></td></tr>
+      <tr><td>Material / Produktart</td><td><code>material</code> / <code>product_type</code></td><td><span class="pill ok">✓</span></td></tr>
+      <tr><td>Außendurchmesser (remschijven)</td><td><code>buitendiameter</code></td><td><span class="pill warn">bij Bremsscheiben live</span></td></tr>
+      <tr><td>Lochkreis / Nabenbohrung</td><td><code>bolt_pattern</code> / <code>centreringdiameter</code></td><td><span class="pill warn">bij Bremsscheiben live</span></td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- OPSCHONING -->
+<section class="tab" id="clean">
+  <div class="card"><h2>Veld-opschoning</h2>
+    <p class="sub">Steekproef 270 items / 18 categorieën. 342 verwijder-kandidaten in batches; verwijderen doe je bron-zijdig, per batch.</p>
+    <table>
+      <tr><th>Batch</th><th>Aantal</th><th>Actie</th></tr>
+      <tr><td>Afbeeldingsslots (<code>additional_image_*</code>)</td><td>19</td><td><span class="pill warn">verwijder</span></td></tr>
+      <tr><td><code>attributes_*</code> ongebruikt</td><td>24</td><td><span class="pill warn">verwijder*</span></td></tr>
+      <tr><td>Prijs/voorraad ongebruikt</td><td>21</td><td><span class="pill warn">verwijder</span></td></tr>
+      <tr><td>API/systeem/Magento-ruis</td><td>15</td><td><span class="pill warn">verwijder</span></td></tr>
+      <tr><td>GPSR / verzending / bundle / compat ongebruikt</td><td>34</td><td><span class="pill warn">verwijder</span></td></tr>
+      <tr><td>Overige losse velden</td><td>229</td><td><span class="pill warn">verwijder na check</span></td></tr>
+    </table>
+    <div class="note">Behouden ondanks leeg: <code>ebay_title_de</code>, <code>ebay_omschrijving_de</code>, <code>einbauposition_de</code>, en de <code>amazon_*</code>/<code>bol_*</code>-velden (andere kanalen). Detail: <code>channable-veld-opschoonplan.html</code>.</div>
+  </div>
+</section>
+
+<!-- OPENSTAAND -->
+<section class="tab" id="open">
+  <div class="card"><h2>Openstaand</h2>
+    <table>
+      <tr><th>Onderwerp</th><th>Waarom / actie</th><th>Eigenaar</th></tr>
+      <tr><td><b>Fahrzeug-Kompatibilität (K-Typ)</b></td><td>Grootste hefboom — "Passt zu meinem Fahrzeug?". Bouwen uit car_brands/car_models/from_year/to_year.</td><td>Claude</td></tr>
+      <tr><td>SKU Filter uitbreiden</td><td>Nu 4 test-SKU's; meer erin = meer live. Kostenrem.</td><td>Hans</td></tr>
+      <tr><td>Maten-item-specifics</td><td>Mappen zodra Bremsscheiben-categorie items krijgt.</td><td>Claude</td></tr>
+      <tr><td>Oude paused master-regels (<code>categories</code>)</td><td>22 stuks, uit — opruimen.</td><td>Claude</td></tr>
+      <tr><td>Veld-opschoning</td><td>Per batch bij de bron (sheets/Magento).</td><td>Hans + Claude</td></tr>
+      <tr><td><b>Uitvoeren</b></td><td>Publiceren naar eBay DE — bewust nooit door mij geklikt.</td><td>Hans</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>CCP × A.B.S. · Channable project 314525 · eBay-kanaal 159122 · stand 2026-07-08 · live-data uit de Channable-API</footer>
+</div>
+<script>
+const CATS=[
+ ["Remschijven","CA01","Remschijven","Bremsscheiben (33564)","ABS 16880 Bremsscheibe Vorderachse Belüftet Ø256 mm für u.a. SEAT",65],
+ ["Remblokken","AA01","Remblokken","Bremsbeläge (57357)","ABS 37760 Bremsbeläge Bremsbelagsatz Vorderachse für u.a. RENAULT",65],
+ ["Remslangen","IA01","Remslangen","Bremsschläuche, -leitungen & Anschlüsse","ABS SL 5595 Bremsschlauch Vorderachse für u.a. SKODA",52],
+ ["Accessoiresets","LE01","Accessoiresets","Bremsbacken","ABS 0100Q Zubehörsatz Bremsbacken Hinterachse für u.a. KIA",58],
+ ["Remklauwen","KA01","Remklauwen","Bremssättel & -halterungen","ABS 630252 Bremssattel Hinterachse Rechts für u.a. VAUXHALL",59],
+ ["Draagarmen","SA01","Draagarmen","Querlenker & Kugelgelenke","ABS 210016 Querlenker Hinterachse Links für u.a. ALFA ROMEO",59],
+ ["Stabilisatorstangen","SF01","Stabilisatorstangen","Stabilisatoren, Klammern & Buchsen","ABS 261340 Koppelstange Vorderachse Rechts für u.a. JEEP",56],
+ ["Remtrommels","DA01","Remtrommels","Bremstrommeln","ABS 7169-S Bremstrommel Hinterachse für u.a. AUDI",49],
+ ["Wielremcilinders","HE01","Wielremcilinders","Radbremszylinder","ABS 72999 Radbremszylinder Hinterachse Rechts für u.a. SUZUKI",61],
+ ["Slijtindicatoren","LF01","Slijtindicatoren","Bremsbeläge (Warnkontakt)","ABS 39590 Warnkontakt Bremsbelagverschleiß Hinterachse für u.a. MERCEDES-BENZ",77],
+ ["Draagarmrubbers","SG01","Draagarmrubbers","Querlenker & Kugelgelenke (Lagerung)","ABS 271973 Lagerung Lenker Hinterachse für u.a. FORD",52],
+ ["Fuseekogels","SB01","Fuseekogels","Querlenker & Kugelgelenke","ABS 220270 Traggelenk Vorderachse für u.a. VW",45],
+ ["Spoorstangeinden","SC01","Spoorstangeinden","Spurstangen & -köpfe","ABS 230021 Spurstangenkopf Vorderachse Rechts für u.a. AUDI",59],
+ ["Axiaalkogels","SD01","Axiaalkogels","Spurstangen & -köpfe","ABS 240010 Axialgelenk Vorderachse für u.a. AUDI",48],
+ ["Wielsnelheidssensoren","LK01","Wielsnelheidssensoren","ABS-Geschwindigkeitssensor","ABS 31386 ABS-Sensor Hinterachse für u.a. FORD",46],
+ ["Manchetten","LC01","Manchetten","Achsmanschetten","ABS 3051 Manschette",19],
+ ["Wartelmoeren","LJ01","Wartelmoeren","Radmuttern","ABS 96020 Achsmutter",20],
+ ["Trekkabels","JA01","Trekkabels","Handbremshebel/-seile","ABS K18236 Handbremsseil für u.a. AUDI",38],
+ ["Gaskabels","JC01","Gaskabels","Gaszüge & Gasgestänge","ABS K37550 Gaszug für u.a. RENAULT",34]
+];
+function tab(id,btn){document.querySelectorAll('section.tab').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+// category table
+const ct=document.getElementById('cattbl');
+CATS.forEach(c=>{const tr=document.createElement('tr');tr.innerHTML=`<td><b>${c[0]}</b></td><td><code>${c[1]}</code></td><td>${c[2]}</td><td>${c[3]}</td>`;ct.appendChild(tr);});
+// title filter
+const sel=document.getElementById('tfilter');
+CATS.forEach((c,i)=>{const o=document.createElement('option');o.value=i;o.textContent=c[0];sel.appendChild(o);});
+function renderTitle(){const c=CATS[sel.value];const bad=c[5]>80;
+ document.getElementById('titleout').innerHTML=
+  `<div class="kv"><b>${c[0]}</b> &middot; art_grp <code>${c[1]}</code> &middot; eBay: ${c[3]}</div>
+   <div class="titlebox">${c[4]}</div>
+   <div class="len" style="margin-top:5px">${c[5]} tekens ${bad?'<span class="pill warn">&gt;80</span>':'<span class="pill ok">≤80 ✓</span>'} &middot; model staat in de omschrijving, niet in de titel</div>`;}
+renderTitle();
+</script>
+</body></html>

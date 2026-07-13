@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Channable regelopbouw — eBay DE (nabouw)</title>
+<style>
+  :root{ --blue:#1a5fb4; --chip:#e7f0fb; --chipbd:#bcd6f5; --chiptx:#12508f; --ink:#1f2933; --mut:#5b6b7b; --line:#e2e8f0; --bg:#f4f6f9; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); padding:18px; line-height:1.5; }
+  .wrap{ max-width:1000px; margin:0 auto; }
+  header h1{ font-size:18px; font-weight:700; }
+  header p{ font-size:12px; color:var(--mut); margin-top:3px; }
+  .filter{ display:flex; align-items:center; gap:10px; margin:14px 0; flex-wrap:wrap;
+           background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .filter label{ font-size:12px; color:var(--mut); font-weight:600; }
+  .filter select{ font:inherit; font-size:14px; padding:7px 12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#102a43; font-weight:600; }
+  .filter .hint{ font-size:11px; color:var(--mut); }
+  .rulehead{ display:flex; align-items:center; gap:10px; margin:8px 0 4px; }
+  .rulehead .dot{ width:8px;height:8px;border-radius:50%;background:#3aa76d; }
+  .rulehead .name{ font-size:15px; font-weight:700; color:#102a43; }
+  .rulehead .gate{ font-size:11px; background:#fff3e0; color:#8a5a00; border:1px solid #f2d9a8; border-radius:20px; padding:1px 9px; }
+
+  .card{ background:#fff; border:1px solid var(--line); border-radius:11px; margin-top:12px; overflow:hidden; box-shadow:0 1px 2px rgba(16,42,67,.04); }
+  .card > .hd{ background:#eef2f7; border-bottom:1px solid var(--line); padding:9px 14px; font-weight:700; font-size:13px; color:#102a43; display:flex; align-items:center; gap:8px;}
+  .card > .hd .tag{ font-size:10.5px; font-weight:700; color:#12508f; background:var(--chip); border:1px solid var(--chipbd); border-radius:6px; padding:1px 7px;}
+  .card > .bd{ padding:13px 14px; }
+  .items{ font-size:11px; color:#8aa0b6; margin-bottom:6px; }
+
+  .row{ display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px dashed #eef2f7; }
+  .row:last-child{ border-bottom:none; }
+  .lbl{ width:46px; flex:0 0 46px; font-weight:700; color:#334155; font-size:13px; padding-top:5px; }
+  .lbl.small{ font-size:11px; color:var(--mut); font-weight:600; }
+  .ctrls{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+
+  .drop{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid #cbd5e1; border-radius:7px; padding:5px 9px; font-size:12.5px; color:#102a43; }
+  .drop::after{ content:"▾"; color:#94a3b8; font-size:11px; margin-left:2px; }
+  .drop .fi{ color:var(--blue); font-size:11px; }
+  .op{ background:#f1f5f9; border:1px solid #dbe3ec; border-radius:7px; padding:5px 9px; font-size:12.5px; color:#334155; }
+  .op::after{ content:" ▾"; color:#94a3b8; font-size:11px; }
+  .val{ background:#fff; border:1px solid #cbd5e1; border-radius:7px; padding:5px 10px; font-size:12.5px; color:#102a43; min-width:120px; }
+
+  .combine{ margin-top:6px; background:#fbfdff; border:1px solid #dbe6f4; border-radius:9px; padding:11px 12px; }
+  .chip{ display:inline-flex; align-items:center; gap:5px; background:var(--chip); border:1px solid var(--chipbd); color:var(--chiptx);
+         border-radius:7px; padding:2px 8px; font-size:12.5px; font-weight:600; margin:2px 3px 2px 0; vertical-align:middle; }
+  .chip .ico{ font-size:10px; opacity:.8; }
+  .txt{ color:#243b53; font-size:12.5px; }
+  .nl{ display:block; height:7px; }
+  .cond{ color:#8a5a00; font-size:11px; font-style:italic; }
+  .note{ font-size:11.5px; color:#1c3d5f; background:#eef5ff; border:1px solid #cfe0f7; border-left:3px solid var(--blue); border-radius:7px; padding:8px 11px; margin-top:10px; }
+  .note b{ color:#12508f; }
+  .save{ display:flex; justify-content:flex-end; margin-top:12px; }
+  .save .btn{ background:var(--blue); color:#fff; font-weight:700; font-size:12.5px; border-radius:8px; padding:8px 16px; }
+  .save .btn.ghost{ background:#fff; color:#64748b; border:1px solid #cbd5e1; margin-right:8px; }
+  footer{ margin-top:16px; font-size:10.5px; color:#94a3b8; }
+  .hidden{ display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Channable regelopbouw — eBay DE <span style="color:#1a5fb4">· nabouw-mockup</span></h1>
+    <p>Zo ziet de te bouwen kanaalregel eruit in Channable. Kies bovenin de categorie; alleen die regelopbouw is zichtbaar. Blauwe pillen = veldchips (invoegen via veldkiezer), gewone tekst = platte tekst.</p>
+  </header>
+
+  <div class="filter">
+    <label for="cat">Categorie</label>
+    <select id="cat" onchange="show(this.value)">
+      <option value="schijf">Remschijven — Bremsscheibe (data-rijk)</option>
+      <option value="blok">Remblokken — Bremsbeläge (data-arm)</option>
+    </select>
+    <span class="hint">· kanaal eBay DE (152339) · project 314525 · velden live geverifieerd 2026-07-07</span>
+  </div>
+
+  <!-- ============ REMSCHIJVEN ============ -->
+  <section id="schijf">
+    <div class="rulehead"><span class="dot"></span><span class="name">DE — Remschijven (Bremsscheibe)</span><span class="gate">nieuwe kanaalregel</span></div>
+
+    <div class="card">
+      <div class="hd">Sectie A — Titel <span class="tag">doelveld: ebay_title_de</span></div>
+      <div class="bd">
+        <div class="items">Gekozen items</div>
+        <div class="row">
+          <div class="lbl">Als</div>
+          <div class="ctrls">
+            <span class="drop"><span class="ico">▤</span><span class="fi">categories_clean</span></span>
+            <span class="op">bevat</span>
+            <span class="val">remschijven</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="lbl">Dan</div>
+          <div class="ctrls">
+            <span class="txt">neem</span>
+            <span class="drop"><span class="ico">▤</span> ebay_title_de</span>
+            <span class="txt">en</span>
+            <span class="op">combineer waarde</span>
+          </div>
+        </div>
+        <div class="combine">
+          <span class="chip"><span class="ico">▤</span>brand</span>
+          <span class="txt">"&nbsp;"</span>
+          <span class="chip"><span class="ico">▤</span>sku</span>
+          <span class="txt">"&nbsp;Bremsscheibe&nbsp;"</span>
+          <span class="chip"><span class="ico">▤</span>vooras_achteras_duits</span>
+          <span class="txt">"&nbsp;"</span>
+          <span class="chip"><span class="ico">▤</span>remschijftype_de</span>
+          <span class="txt">"&nbsp;Ø"</span>
+          <span class="chip"><span class="ico">▤</span>buitendiameter</span>
+          <span class="txt">"&nbsp;für u.a.&nbsp;"</span>
+          <span class="chip"><span class="ico">▤</span>car_brands_top1</span>
+          <span class="txt">"&nbsp;"</span>
+          <span class="chip"><span class="ico">▤</span>car_models_top1</span>
+          <div class="cond" style="margin-top:8px">positie/type-chip alleen tonen indien gevuld · titel ≤ 80 tekens → voertuig-deel eerst afkappen</div>
+        </div>
+        <div class="note"><b>Voorbeeld (ABS 16880):</b> ABS 16880 Bremsscheibe Vorderachse Belüftet Ø256mm für u.a. SEAT IBIZA IV</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">Sectie B — Omschrijving <span class="tag">doelveld: omschrijving</span></div>
+      <div class="bd">
+        <div class="items">Gekozen items</div>
+        <div class="row">
+          <div class="lbl">Als</div>
+          <div class="ctrls">
+            <span class="drop"><span class="ico">▤</span><span class="fi">categories_clean</span></span>
+            <span class="op">bevat</span>
+            <span class="val">remschijven</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="lbl">Dan</div>
+          <div class="ctrls">
+            <span class="txt">neem</span>
+            <span class="drop"><span class="ico">▤</span> omschrijving</span>
+            <span class="txt">en</span>
+            <span class="op">combineer waarde</span>
+          </div>
+        </div>
+        <div class="combine">
+          <span class="chip"><span class="ico">▤</span>brand</span> <span class="chip"><span class="ico">▤</span>sku</span> <span class="txt">Bremsscheibe – Original</span> <span class="chip"><span class="ico">▤</span>brand</span> <span class="txt">Qualität</span>
+          <span class="nl"></span>
+          <span class="txt">Produkt: Bremsscheibe</span> <span class="chip"><span class="ico">▤</span>vooras_achteras_duits</span> <span class="chip"><span class="ico">▤</span>remschijftype_de</span>
+          <span class="nl"></span>
+          <span class="txt">Maße: Ø</span> <span class="chip"><span class="ico">▤</span>buitendiameter</span> <span class="txt">, Dicke</span> <span class="chip"><span class="ico">▤</span>remschijfdikte</span> <span class="txt">, Mindestdicke</span> <span class="chip"><span class="ico">▤</span>minimale_dikte</span> <span class="txt">, Nabenbohrung</span> <span class="chip"><span class="ico">▤</span>centreringdiameter</span>
+          <span class="nl"></span>
+          <span class="txt">Artikelnummer:</span> <span class="chip"><span class="ico">▤</span>sku</span> <span class="txt">· EAN:</span> <span class="chip"><span class="ico">▤</span>ean</span>
+          <span class="nl"></span>
+          <span class="txt">OE-/OEM-Referenznummern:</span> <span class="chip"><span class="ico">▤</span>oe_reference</span>
+          <span class="nl"></span>
+          <span class="txt">Passend für folgende Fahrzeuge:</span> <span class="chip"><span class="ico">▤</span>car_models_top1</span>
+          <span class="nl"></span>
+          <span class="txt">Über</span> <span class="chip"><span class="ico">▤</span>brand</span> <span class="txt">: Markenqualität nach OE-Standard, abgestimmt auf TecDoc-/KBA-Fahrzeugdaten.</span>
+          <span class="nl"></span>
+          <span class="txt">Wichtiger Hinweis: Bremsscheiben immer achsweise paarweise wechseln. Einbau nur durch eine Fachwerkstatt.</span>
+          <span class="nl"></span>
+          <span class="txt">Hersteller (GPSR):</span> <span class="chip"><span class="ico">▤</span>gpsr_manufacturer_name</span>
+          <div class="cond" style="margin-top:8px">"Maße"- en "Passend für"-regel alleen tonen als de velden gevuld zijn · deze regel overschrijft de gedeelde master voor remschijven</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REMBLOKKEN ============ -->
+  <section id="blok" class="hidden">
+    <div class="rulehead"><span class="dot"></span><span class="name">DE — Remblokken (Bremsbeläge)</span><span class="gate">nieuwe kanaalregel</span></div>
+
+    <div class="card">
+      <div class="hd">Sectie A — Titel <span class="tag">doelveld: ebay_title_de</span></div>
+      <div class="bd">
+        <div class="items">Gekozen items</div>
+        <div class="row">
+          <div class="lbl">Als</div>
+          <div class="ctrls">
+            <span class="drop"><span class="ico">▤</span><span class="fi">categories_clean</span></span>
+            <span class="op">bevat</span>
+            <span class="val">remblokken</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="lbl">Dan</div>
+          <div class="ctrls">
+            <span class="txt">neem</span>
+            <span class="drop"><span class="ico">▤</span> ebay_title_de</span>
+            <span class="txt">en</span>
+            <span class="op">combineer waarde</span>
+          </div>
+        </div>
+        <div class="combine">
+          <span class="chip"><span class="ico">▤</span>brand</span>
+          <span class="txt">"&nbsp;"</span>
+          <span class="chip"><span class="ico">▤</span>sku</span>
+          <span class="txt">"&nbsp;Bremsbeläge Bremsbelagsatz"</span>
+          <div class="cond" style="margin-top:8px">voertuig-chip (car_brands_top1 / car_models_top1) is bij blokken meestal LEEG → weglaten. Alleen toevoegen als het veld gevuld is. Titel ≤ 80.</div>
+        </div>
+        <div class="note"><b>Voorbeeld (ABS 37760, data-arm):</b> ABS 37760 Bremsbeläge Bremsbelagsatz</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">Sectie B — Omschrijving <span class="tag">doelveld: omschrijving</span></div>
+      <div class="bd">
+        <div class="items">Gekozen items</div>
+        <div class="row">
+          <div class="lbl">Als</div>
+          <div class="ctrls">
+            <span class="drop"><span class="ico">▤</span><span class="fi">categories_clean</span></span>
+            <span class="op">bevat</span>
+            <span class="val">remblokken</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="lbl">Dan</div>
+          <div class="ctrls">
+            <span class="txt">neem</span>
+            <span class="drop"><span class="ico">▤</span> omschrijving</span>
+            <span class="txt">en</span>
+            <span class="op">combineer waarde</span>
+          </div>
+        </div>
+        <div class="combine">
+          <span class="chip"><span class="ico">▤</span>brand</span> <span class="chip"><span class="ico">▤</span>sku</span> <span class="txt">Bremsbelagsatz – Original</span> <span class="chip"><span class="ico">▤</span>brand</span> <span class="txt">Qualität</span>
+          <span class="nl"></span>
+          <span class="txt">Produkt: Bremsbelagsatz für Scheibenbremse</span>
+          <span class="nl"></span>
+          <span class="txt">Artikelnummer:</span> <span class="chip"><span class="ico">▤</span>sku</span> <span class="txt">· EAN:</span> <span class="chip"><span class="ico">▤</span>ean</span>
+          <span class="nl"></span>
+          <span class="txt">OE-/OEM-Referenznummern:</span> <span class="chip"><span class="ico">▤</span>oe_reference</span>
+          <span class="nl"></span>
+          <span class="txt">Bitte prüfen Sie die Passgenauigkeit anhand der OE-Nummer und Ihres Altteils – innerhalb einer Baureihe gibt es unterschiedliche Bremssysteme.</span>
+          <span class="nl"></span>
+          <span class="txt">Über</span> <span class="chip"><span class="ico">▤</span>brand</span> <span class="txt">: Markenqualität nach OE-Standard.</span>
+          <span class="nl"></span>
+          <span class="txt">Wichtiger Hinweis: Bremsbeläge immer achsweise komplett wechseln und dabei die Bremsscheiben prüfen. Einbau nur durch eine Fachwerkstatt.</span>
+          <span class="nl"></span>
+          <span class="txt">Hersteller (GPSR):</span> <span class="chip"><span class="ico">▤</span>gpsr_manufacturer_name</span>
+          <div class="cond" style="margin-top:8px">geen "Passend für"-blok (voertuigdata ontbreekt bij blokken) · overschrijft de gedeelde master voor remblokken</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="save">
+    <span class="btn ghost">Categorieën</span>
+    <span class="btn">Regel opslaan</span>
+  </div>
+  <div class="note"><b>Guardrails bij nabouwen:</b> kom niet aan "SKU selectie" · klik niet op "Uitvoeren" (alleen "Regel opslaan") · merk uit veld <b>brand</b> (nooit "A.B.S." typen) · GPSR uit <b>gpsr_manufacturer_name</b> · check in preview: precies één, niet-lege omschrijving.</div>
+
+  <footer>Nabouw-mockup — dit is géén screenshot van Channable maar een visuele weergave van de te bouwen regel. Velden live geverifieerd op ABS 16880 (2026-07-07). CCP · eBay DE 152339.</footer>
+</div>
+
+<script>
+  function show(v){
+    document.getElementById('schijf').classList.toggle('hidden', v!=='schijf');
+    document.getElementById('blok').classList.toggle('hidden', v!=='blok');
+  }
+</script>
+</body>
+</html>

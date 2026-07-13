@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8">
+<title>Retourflow DE→NL — workflow</title><style>
+  @page{ size:A4 landscape; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; font-size:10px; }
+  .sheet{ width:297mm; min-height:210mm; padding:11mm 12mm; margin:0 auto; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:6px; margin-bottom:10px; }
+  header h1{ font-size:17px; font-weight:700; }
+  header .sub{ font-size:8.6px; color:#52606d; margin-top:2px; }
+  h2{ font-size:9.5px; text-transform:uppercase; letter-spacing:.4px; color:#102a43; margin:10px 0 6px; }
+  /* lane grid */
+  .lanes{ display:grid; grid-template-columns:120px 1fr; gap:0; border:1px solid #d9e2ec; border-radius:8px; overflow:hidden; }
+  .lane{ display:contents; }
+  .lname{ background:#eef2f7; border-bottom:1px solid #e4e9f0; border-right:2px solid #1a5fb4; padding:10px 9px; font-weight:700; font-size:9.5px; color:#12406e; display:flex; align-items:center; }
+  .ltrack{ border-bottom:1px solid #eef2f7; padding:9px 10px; position:relative; min-height:52px; display:flex; align-items:center; gap:8px; }
+  .lane:last-child .lname,.lane:last-child .ltrack{ border-bottom:none; }
+  .step{ background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:6px 9px; font-size:8.8px; color:#102a43; position:relative; box-shadow:0 1px 2px rgba(16,42,67,.05); }
+  .step .n{ position:absolute; top:-8px; left:-8px; width:17px; height:17px; border-radius:50%; background:#1a5fb4; color:#fff; font-size:9px; font-weight:700; text-align:center; line-height:17px; }
+  .step b{ color:#12406e; } .step .d{ color:#52606d; font-size:7.8px; margin-top:1px; }
+  .step.rl{ border-color:#1a5fb4; background:#eef5ff; } .step.ok{ border-color:#bfe4cf; background:#eaf6ef; }
+  .arr{ color:#1a5fb4; font-size:15px; font-weight:700; }
+  .down{ text-align:center; color:#94a3b8; font-size:13px; }
+  .legend{ display:flex; gap:14px; margin-top:12px; flex-wrap:wrap; }
+  .lg{ flex:1; min-width:250px; border:1px solid #e2e8f0; border-radius:9px; overflow:hidden; }
+  .lg .hd{ padding:6px 10px; font-weight:700; font-size:10px; color:#fff; }
+  .lg.a .hd{ background:#1f7a44; } .lg.b .hd{ background:#1a5fb4; }
+  .lg .bd{ padding:8px 10px; font-size:8.8px; color:#33414f; line-height:1.5; }
+  .foot{ margin-top:11px; border-top:1px solid #d9e2ec; padding-top:5px; font-size:7px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7px;padding:2px 8px;border-radius:8px;font-weight:600;}
+  .tag{ display:inline-block; background:#e7f0fb; border:1px solid #bcd6f5; color:#12508f; font-size:7.4px; font-weight:700; padding:1px 6px; border-radius:8px; }
+</style></head><body>
+<div class="sheet">
+  <header>
+    <h1>Retourflow Duitsland &rarr; Nederland <span style="color:#1a5fb4">&#183; volledige workflow</span></h1>
+    <div class="sub">CCP &#183; eBay DE / bol via Channable &rarr; Returnless &rarr; DPD/DHL &rarr; ABS NL-magazijn &#183; verkoopflow (grijs) en retourflow (genummerd) &#183; 2026-07-10</div>
+  </header>
+
+  <h2>Retourflow &mdash; wie doet wat, stap 1 t/m 7</h2>
+  <div class="lanes">
+    <div class="lane"><div class="lname">Koper (DE)</div><div class="ltrack">
+      <div class="step"><span class="n">1</span><b>Start retour</b><div class="d">via jouw Returnless-retourformulier, met ordernummer + e-mail/postcode</div></div>
+      <span class="arr">&nbsp;</span>
+      <div class="step"><span class="n">4</span><b>Ontvangt Duits label</b><div class="d">print / QR, brengt naar DPD- of DHL-punt in Duitsland</div></div>
+    </div></div>
+
+    <div class="lane"><div class="lname">Marketplace<br>eBay DE / bol</div><div class="ltrack">
+      <span class="tag">order-bron</span>
+      <div class="step ok" style="margin-left:auto"><span class="n">7</span><b>Refund naar koper</b><div class="d">marketplace verwerkt terugbetaling na "finalize"</div></div>
+    </div></div>
+
+    <div class="lane"><div class="lname">Channable<br>order-connection</div><div class="ltrack">
+      <div class="step"><span class="n">2</span><b>Order opgezocht</b><div class="d">Returnless vindt de bijbehorende order via de bestaande order-connection</div></div>
+      <span class="arr">&nbsp;</span>
+      <div class="step ok"><span class="n">7</span><b>Refund getriggerd</b><div class="d">"accepted" &rarr; Channable start refund via het kanaal</div></div>
+    </div></div>
+
+    <div class="lane"><div class="lname">Returnless<br>portal + formulier</div><div class="ltrack">
+      <div class="step rl"><span class="n">2</span><b>Zoekt order (Channable)</b><div class="d">klant kiest te retourneren artikelen</div></div>
+      <span class="arr">&rarr;</span>
+      <div class="step rl"><span class="n">3</span><b>Genereert DE&rarr;NL label</b><div class="d">via carrier, auto-routing per land</div></div>
+      <span class="arr">&rarr;</span>
+      <div class="step rl"><span class="n">6</span><b>Finalize return</b><div class="d">na ontvangst &rarr; refund + sync</div></div>
+    </div></div>
+
+    <div class="lane"><div class="lname">Carrier<br>DPD / DHL Retoure</div><div class="ltrack">
+      <div class="step"><span class="n">3</span><b>Retourlabel DE&rarr;NL</b><div class="d">Duits ophaalpunt &rarr; NL-adres, jouw tarief of dat van Returnless</div></div>
+      <span class="arr">&rarr;</span>
+      <div class="step"><span class="n">5</span><b>Transport naar NL</b><div class="d">levert het pakket bij het NL-magazijn</div></div>
+    </div></div>
+
+    <div class="lane"><div class="lname">ABS<br>NL-magazijn</div><div class="ltrack">
+      <div class="step ok" style="margin-left:auto"><span class="n">6</span><b>Ontvangt + scant</b><div class="d">"mark as received" in Returnless &rarr; keten sluit</div></div>
+    </div></div>
+  </div>
+
+  <h2>Twee integratiemodellen (kies per kanaal)</h2>
+  <div class="legend">
+    <div class="lg b"><div class="hd">Model B &mdash; eigen retourformulier + eigen label (eBay DE &rarr; NL)</div><div class="bd">
+      Klant start retour via jouw Returnless-formulier. Returnless zoekt de Channable-order op en maakt <b>jouw eigen DE&rarr;NL label (DPD/DHL)</b> naar het NL-magazijn. Volledige controle over retouradres en kosten. <b>Dit is de route voor eBay DE.</b>
+    </div></div>
+    <div class="lg a"><div class="hd">Model A &mdash; marketplace-retour importeren (bol NL)</div><div class="bd">
+      bol/eBay maakt de retour + label. Returnless <b>importeert de retourdata</b> (elk uur) en je verwerkt centraal. Goedkoop label van de marketplace, minder controle. Handig voor bol NL-retouren.
+    </div></div>
+  </div>
+
+  <div class="foot"><span>Architectuur op basis van Returnless-docs (Channable-, carriers-, marketplaces-integratie) &#183; sluit aan op bestaande Channable order-connection + DPD-flow</span><span class="pill">CCP &#183; workflow-tekening</span></div>
+</div>
+</body></html>

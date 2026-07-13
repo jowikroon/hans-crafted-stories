@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Incident — Magento DE store view op live</title>
+<style>
+  @page{ size:A4 portrait; margin:0; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:#1f2933; background:#fff; }
+  .sheet{ width:210mm; min-height:297mm; padding:15mm 14mm; margin:0 auto; }
+  .accent{ color:#1a5fb4; }
+  header{ border-bottom:2px solid #1a5fb4; padding-bottom:8px; margin-bottom:14px; }
+  header h1{ font-size:18px; font-weight:700; }
+  header .sub{ font-size:9px; color:#52606d; margin-top:3px; }
+  h2{ font-size:10.5px; text-transform:uppercase; letter-spacing:.5px; color:#102a43; margin:18px 0 7px; }
+  .event{ font-size:11px; background:#fdf0f0; border:1px solid #f0cccc; border-left:4px solid #d64545; border-radius:5px; padding:11px 13px; color:#7a1f1f; line-height:1.5; }
+  .event b{ color:#a52222; }
+  .cause{ font-size:11px; background:#eef5ff; border:1px solid #cfe0f7; border-left:4px solid #1a5fb4; border-radius:5px; padding:11px 13px; color:#1c3d5f; line-height:1.55; }
+  .cause b{ color:#12406e; }
+  table{ width:100%; border-collapse:collapse; }
+  th,td{ text-align:left; font-size:10px; padding:7px 9px; border-bottom:1px solid #e4e9f0; vertical-align:top; line-height:1.4; }
+  th{ font-size:7.6px; text-transform:uppercase; letter-spacing:.3px; color:#829ab1; border-bottom:1px solid #cdd8e3; }
+  td.i{ width:24%; font-weight:700; color:#102a43; } td.t{ width:16%; }
+  .tag{ display:inline-block; font-size:8px; font-weight:700; padding:2px 8px; border-radius:9px; }
+  .hi{ background:#fdecec; color:#8f1f1f; } .md{ background:#fff3e0; color:#8a5a00; } .lo{ background:#eaf6ef; color:#14532d; }
+  .who{ display:flex; gap:8px; margin-top:6px; }
+  .who .c{ flex:1; background:#f7f9fc; border:1px solid #dbe6f4; border-radius:6px; padding:8px 10px; font-size:9.5px; color:#33414f; line-height:1.4; }
+  .who .c b{ color:#1a5fb4; display:block; font-size:8px; text-transform:uppercase; letter-spacing:.3px; margin-bottom:2px; }
+  .foot{ margin-top:20px; border-top:1px solid #d9e2ec; padding-top:6px; font-size:7.6px; color:#829ab1; display:flex; justify-content:space-between; }
+  .pill{ background:#1a5fb4;color:#fff;font-size:7.6px;padding:2px 9px;border-radius:9px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>Incident &amp; impact — Magento DE store view op live</h1>
+    <div class="sub">CCP × A.B.S. · 08-07-2026 · geverifieerd via Channable-API + Magento import-overview</div>
+  </header>
+
+  <h2>Wat er gebeurde</h2>
+  <div class="event"><b>Atvise heeft overdag, zonder afstemming, een Duitse store view op de live Magento-omgeving geactiveerd.</b></div>
+
+  <h2>Impact</h2>
+  <table>
+    <tr><th>Gebied</th><th>Impact</th><th>Ernst</th></tr>
+    <tr><td class="i">Feed / marketplaces</td><td>Hele Channable-feed op <b>0 producten</b> — raakt Amazon NL, Google Shopping, Bol én eBay. (Magento-import Items = 0.)</td><td class="t"><span class="tag hi">hoog</span></td></tr>
+    <tr><td class="i">Order-verwerking</td><td>eBay-orders herkennen <b>geen land</b>, falen op import naar Magento: <b>13 orders met error</b>, blijven Processing, gaan niet naar D365.</td><td class="t"><span class="tag hi">hoog</span></td></tr>
+    <tr><td class="i">Go-live eBay DE</td><td>Op <b>één stap</b> van livegang (T&amp;T stond al op de shipment) — nu geblokkeerd; maandag in gevaar.</td><td class="t"><span class="tag md">middel</span></td></tr>
+    <tr><td class="i">Verloren tijd</td><td>Een <b>volledige werkdag</b> aan probleemoplossing i.p.v. de laatste go-live-stap.</td><td class="t"><span class="tag md">middel</span></td></tr>
+    <tr><td class="i">Webshop-omzet</td><td>Risico dat de scope-wijziging óók de <b>webshop-checkout</b> raakt — te bevestigen.</td><td class="t"><span class="tag md">te checken</span></td></tr>
+    <tr><td class="i">Klantschade</td><td><b>Geen</b> — alle gefaalde orders zijn testorders (geverifieerd), geen echte kopers.</td><td class="t"><span class="tag lo">geen</span></td></tr>
+  </table>
+
+  <h2>Oorzaak</h2>
+  <div class="cause">De live-activatie van de DE store view <b>wijzigde de Magento store/website-scope</b>. Producten vielen buiten de nieuwe scope → <b>export = 0</b> → Channable-feed = 0 op alle kanalen. Tegelijk brak de <b>land-herkenning</b> op binnenkomende orders → eBay-orders kunnen niet importeren en blijven Processing.</div>
+
+  <h2>Herstel &amp; eigenaar</h2>
+  <div class="who">
+    <div class="c"><b>Atvise</b>Magento terugzetten naar situatie vóór gisteren (scope/land)</div>
+    <div class="c"><b>Hans</b>Mislukte orders opnieuw versturen; regels + testorder afmaken</div>
+    <div class="c"><b>Niek (ABS/D365)</b>Order-sync D365 + T&amp;T-shipment bevestigen</div>
+  </div>
+
+  <div class="foot">
+    <span>Bron: Channable-API + Magento import-overview 08-07-2026 · geverifieerd: 0 producten, 13 order-errors, alle orders test</span>
+    <span class="pill">CCP · connectcarparts.nl</span>
+  </div>
+</div>
+</body>
+</html>
