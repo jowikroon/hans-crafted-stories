@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BarChart3, Package, TrendingUp, Search, Euro, Percent, Gauge, Settings2, LogIn, Lock,
-  Paperclip, FileText, Download, CalendarDays, HardDrive,
+  Paperclip, FileText, Download, CalendarDays, HardDrive, Truck, Warehouse, Home, MapPin,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +25,7 @@ const dt = (s: unknown) => (s ? new Date(String(s)).toLocaleDateString("nl-NL", 
 const SECTIONS = [
   { id: "overzicht", label: "Overzicht", icon: BarChart3 },
   { id: "attachments", label: "Attachments", icon: Paperclip },
+  { id: "shipments", label: "Shipments", icon: Truck },
   { id: "orders", label: "Orders", icon: Package },
   { id: "verkoop", label: "Verkoopresultaten", icon: TrendingUp },
   { id: "product", label: "Productinzichten", icon: Search },
@@ -95,6 +96,62 @@ const formatBytes = (bytes: number) => {
 
 const formatModified = (value: string) =>
   new Date(value).toLocaleString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+const dateMs = (value: unknown) => {
+  if (!value) return null;
+  const ms = new Date(String(value)).getTime();
+  return Number.isFinite(ms) ? ms : null;
+};
+
+const pick = (row: Row, keys: string[]) => keys.map((key) => row[key]).find((value) => value !== undefined && value !== null && String(value).trim() !== "");
+
+const isShippedLike = (row: Row) => {
+  const status = String(row.fulfillment_status ?? row.order_fulfillment_status ?? "").toLowerCase();
+  return /ship|fulfill|sent|onderweg|verzonden|complete|delivered/.test(status);
+};
+
+const isDeliveredLike = (row: Row) => {
+  const status = String(row.fulfillment_status ?? row.order_fulfillment_status ?? "").toLowerCase();
+  return /deliver|afgeleverd|complete/.test(status);
+};
+
+const shipmentStartedAt = (row: Row) =>
+  dateMs(pick(row, ["tracking_created_at", "tracking_uploaded_at", "tracking_at", "shipped_at", "shipment_date", "fulfillment_date", "last_modified_date"])) ??
+  (isShippedLike(row) ? dateMs(row.creation_date) : null);
+
+const shipmentDeliveredAt = (row: Row) =>
+  dateMs(pick(row, ["delivered_at", "delivery_date", "actual_delivery_date"])) ??
+  (isDeliveredLike(row) ? Date.now() : null);
+
+const trackingCode = (row: Row) =>
+  String(pick(row, ["tracking_number", "tracking_code", "shipment_tracking_number", "track_and_trace", "tt_code"]) ?? "");
+
+const shipmentProgress = (row: Row, now: number) => {
+  const start = shipmentStartedAt(row);
+  if (!start) return { percent: 0, stage: "Wacht op T&T", eta: null as number | null, started: false };
+
+  const hub = dateMs(pick(row, ["hub_arrived_at", "sorting_center_at", "in_transit_at"])) ?? start + 4 * 60 * 60 * 1000;
+  const delivered = shipmentDeliveredAt(row) ?? hub + 2 * 24 * 60 * 60 * 1000;
+
+  if (now >= delivered) return { percent: 100, stage: "Aangekomen bij klant", eta: delivered, started: true };
+  if (now >= hub) {
+    const pct = 50 + ((now - hub) / Math.max(delivered - hub, 1)) * 50;
+    return { percent: Math.min(99, Math.max(50, pct)), stage: "Onderweg naar klant", eta: delivered, started: true };
+  }
+  const pct = ((now - start) / Math.max(hub - start, 1)) * 50;
+  return { percent: Math.min(49, Math.max(1, pct)), stage: "Onderweg naar sorteerpunt", eta: hub, started: true };
+};
+
+const etaText = (eta: number | null, now: number) => {
+  if (!eta) return "geen ETA";
+  const diff = eta - now;
+  if (diff <= 0) return "bereikt";
+  const hours = Math.floor(diff / 36e5);
+  const minutes = Math.round((diff % 36e5) / 6e4);
+  if (hours >= 24) return `${Math.floor(hours / 24)}d ${hours % 24}u`;
+  if (hours > 0) return `${hours}u ${minutes}m`;
+  return `${minutes}m`;
+};
 
 const allAttachments = coworkAttachments as Attachment[];
 
@@ -180,6 +237,95 @@ const AttachmentsPanel = () => (
   </div>
 );
 
+const ShipmentVehicle = ({ percent, active }: { percent: number; active: boolean }) => (
+  <div
+    className="absolute top-1/2 z-10 h-7 w-12 -translate-y-1/2 transition-[left] duration-700 ease-out"
+    style={{ left: `calc(${percent}% - 24px)` }}
+    aria-hidden="true"
+  >
+    <div className={`relative h-5 rounded-sm border ${active ? "border-[#2D9255]/60 bg-[#2D9255]" : "border-[#7E7A6F]/40 bg-[#C9BFB0]"}`}>
+      <div className="absolute -right-1 top-1 h-4 w-4 rounded-r-sm border border-current bg-inherit" />
+      <div className="absolute left-2 top-1 h-1.5 w-3 rounded-[2px] bg-white/55" />
+      <div className="absolute right-1 top-1 h-1.5 w-2 rounded-[2px] bg-white/55" />
+      <span className="absolute bottom-[-6px] left-1 h-2 w-2 rounded-full border border-[#15140F]/30 bg-[#15140F]" />
+      <span className="absolute bottom-[-6px] right-1 h-2 w-2 rounded-full border border-[#15140F]/30 bg-[#15140F]" />
+    </div>
+  </div>
+);
+
+const ShipmentRoute = ({ order, now }: { order: Row; now: number }) => {
+  const progress = shipmentProgress(order, now);
+  const track = trackingCode(order);
+  const status = String(order.fulfillment_status ?? "—");
+  return (
+    <article className="rounded-lg border border-black/10 bg-[#FBF8F0] p-4 dark:border-white/10 dark:bg-white/5">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-[#15140F] dark:text-[#F5F1E6]">{String(order.order_id ?? "Order")}</p>
+          <p className="mt-0.5 text-xs text-[#7E7A6F]">{status} · {track ? `T&T ${track}` : progress.started ? "tracking actief" : "nog geen T&T"}</p>
+        </div>
+        <div className="text-right text-xs text-[#7E7A6F]">
+          <p className="font-medium text-[#15140F] dark:text-[#F5F1E6]">{progress.stage}</p>
+          <p>ETA {etaText(progress.eta, now)}</p>
+        </div>
+      </div>
+
+      <div className="relative h-16">
+        <div className="absolute left-4 right-4 top-1/2 h-px -translate-y-1/2 bg-[#C9BFB0] dark:bg-white/15" />
+        <div className="absolute left-4 top-1/2 h-px -translate-y-1/2 bg-[#2D9255]" style={{ width: `${progress.percent}%` }} />
+        <ShipmentVehicle percent={progress.percent} active={progress.started && progress.percent < 100} />
+        {[
+          { left: "0%", label: "Magazijn", icon: Warehouse },
+          { left: "50%", label: "Onderweg", icon: MapPin },
+          { left: "100%", label: "Klant", icon: Home },
+        ].map(({ left, label, icon: Icon }, index) => (
+          <div key={label} className="absolute top-1/2 flex -translate-y-1/2 -translate-x-1/2 flex-col items-center gap-1" style={{ left }}>
+            <span className={`grid h-8 w-8 place-items-center rounded-md border text-[11px] ${
+              progress.percent >= index * 50
+                ? "border-[#2D9255]/40 bg-[#2D9255]/15 text-[#2D9255]"
+                : "border-black/10 bg-[#FBF8F0] text-[#7E7A6F] dark:border-white/10 dark:bg-white/5"
+            }`}>
+              <Icon size={14} />
+            </span>
+            <span className="whitespace-nowrap text-[10px] font-medium text-[#7E7A6F]">{label}</span>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+};
+
+const ShipmentsPanel = ({ orders, now }: { orders: Row[]; now: number }) => {
+  const shipmentRows = orders
+    .filter((row) => shipmentStartedAt(row) || isShippedLike(row))
+    .sort((a, b) => (shipmentStartedAt(b) ?? 0) - (shipmentStartedAt(a) ?? 0))
+    .slice(0, 20);
+  const moving = shipmentRows.filter((row) => {
+    const pct = shipmentProgress(row, now).percent;
+    return pct > 0 && pct < 100;
+  }).length;
+  const delivered = shipmentRows.filter((row) => shipmentProgress(row, now).percent >= 100).length;
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card k="Shipments" v={shipmentRows.length} s="met T&T of verzonden status" />
+        <Card k="Onderweg" v={moving} s="busje beweegt op route" />
+        <Card k="Afgeleverd" v={delivered} />
+        <Card k="Timing" v="4u + 2d" s="magazijn · hub · klant" />
+      </div>
+
+      {shipmentRows.length ? (
+        <div className="space-y-3">
+          {shipmentRows.map((order, index) => <ShipmentRoute key={String(order.order_id ?? index)} order={order} now={now} />)}
+        </div>
+      ) : (
+        <Empty what="shipments met T&T" />
+      )}
+    </div>
+  );
+};
+
 const Dashboards = () => {
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -191,6 +337,13 @@ const Dashboards = () => {
   const [plRate, setPlRate] = useState(6);
   const [nHard, setNHard] = useState(25);
   const [opw, setOpw] = useState(2);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (section !== "shipments") return;
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, [section]);
 
   useEffect(() => {
     if (!user || !isAdmin) return;
@@ -312,9 +465,10 @@ const Dashboards = () => {
 
         {err && <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Fout bij laden: {err}</p>}
         {section === "attachments" && <AttachmentsPanel />}
+        {section === "shipments" && data && <ShipmentsPanel orders={data.orders} now={now} />}
         {section !== "attachments" && !data && !err && <p className="text-sm text-[#7E7A6F]">Laden…</p>}
 
-        {section !== "attachments" && data && agg && (
+        {section !== "attachments" && section !== "shipments" && data && agg && (
           <>
             {section === "overzicht" && (
               <div className="space-y-5">
