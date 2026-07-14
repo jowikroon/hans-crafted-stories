@@ -14,25 +14,26 @@ export interface VoiceTemplate {
   avg_paragraph_sentences: number | null;
 }
 
-export function useVoiceTemplate(category: string | null | undefined) {
+export function useVoiceTemplate(category: string | null | undefined, templateId?: string | null) {
   const [template, setTemplate] = useState<VoiceTemplate | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!category) { setTemplate(null); return; }
+    if (!category && !templateId) { setTemplate(null); return; }
     setLoading(true);
-    (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
+    let query = (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
       .from("hvl_voice_templates")
       .select("id,name,category,tone,banned_words,content_rules,seo_guidelines,max_sentence_words,passive_voice_max_pct,avg_paragraph_sentences")
-      .eq("category", category)
-      .is("archived_at", null)
-      .order("is_default", { ascending: false })
-      .limit(1)
+      .is("archived_at", null);
+    query = templateId
+      ? query.eq("id", templateId)
+      : query.eq("category", category as string).order("is_default", { ascending: false });
+    query.limit(1)
       .then(({ data }: { data: VoiceTemplate[] | null }) => {
         setTemplate(data && data.length > 0 ? data[0] : null);
         setLoading(false);
       });
-  }, [category]);
+  }, [category, templateId]);
 
   return { template, loading };
 }
