@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle, Home, ChevronRight, BarChart3 } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
+import { PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
 
 const fade = {
   initial: { opacity: 0, y: 20 } as const,
@@ -94,6 +95,8 @@ const BolComConsultant = () => {
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
+        PERSON_ENTITY,
+        PROFESSIONAL_SERVICE_ENTITY,
         {
           "@type": "WebPage",
           url: "https://hansvanleeuwen.com/bol-com-consultant",
