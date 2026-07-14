@@ -79,6 +79,26 @@ template = clearRootHtml(template);
 
 const BASE = "https://hansvanleeuwen.com";
 
+const PERSON_ENTITY = {
+  "@type": "Person",
+  "@id": `${BASE}/#person`,
+  name: "Hans van Leeuwen",
+  url: `${BASE}/about`,
+  jobTitle: "Freelance E-commerce Manager",
+};
+
+const PROFESSIONAL_SERVICE_ENTITY = {
+  "@type": ["Organization", "ProfessionalService"],
+  "@id": `${BASE}/#organization`,
+  name: "Hans van Leeuwen – Freelance E-commerce Management",
+  url: `${BASE}/`,
+  founder: { "@id": `${BASE}/#person` },
+  areaServed: [
+    { "@type": "Country", name: "Netherlands" },
+    { "@type": "Place", name: "European Union" },
+  ],
+};
+
 // Static page SEO (English, primary for prerender) — aligned with functions/[[path]].ts ROUTE_META
 const ABOUT_HEAD = {
   title: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
@@ -461,6 +481,7 @@ const SEO_PAGES = [
       title: "Amazon NL Specialist — Freelance Amazon Netherlands Account Manager | Hans van Leeuwen",
       description: "Freelance Amazon NL specialist with 10+ years managing Amazon Netherlands accounts. Listing optimization, Amazon Ads, A+ content & marketplace growth. Based in Amersfoort.",
       canonical: `${BASE}/amazon-nl-specialist`,
+      serviceName: "Amazon NL Account Management",
       intro: [
         'Hans van Leeuwen is a freelance e-commerce manager and Amazon NL specialist based in Amersfoort, the Netherlands, specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. He helps brands sell more on Amazon Netherlands through optimized listings, data-driven advertising and strategic account management — from launch to scale.',
         'The work covers product listing optimization (titles, bullets, backend keywords, images), A+ Content creation, Amazon Ads (Sponsored Products, Sponsored Brands, Sponsored Display), Buy Box strategy and pricing, catalog management and listing suppression resolution, Amazon SEO for the Dutch market, competitor benchmarking, and inventory planning with demand forecasting.',
@@ -484,6 +505,7 @@ const SEO_PAGES = [
       title: "Bol.com Consultant — Freelance Bol.com Specialist & Ads Manager | Hans van Leeuwen",
       description: "Freelance Bol.com consultant specializing in product content optimization, Bol Ads management, and marketplace growth strategy. Based in Amersfoort, Netherlands.",
       canonical: `${BASE}/bol-com-consultant`,
+      serviceName: "Bol.com Marketplace Consulting",
       intro: [
         'Hans van Leeuwen is a freelance e-commerce manager and Bol.com consultant based in Amersfoort, the Netherlands, specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. He helps brands grow on Bol.com — the Netherlands\' largest online marketplace — with a hands-on, measurable approach.',
         'Services include product content optimization, Bol Ads campaign management, catalog and assortment management, vendor-to-seller transitions, pricing and Buy Block strategy, and monthly performance reporting. Every engagement is grounded in product data quality: complete, correct and conversion-oriented listings are the foundation of Bol.com growth.',
@@ -524,6 +546,7 @@ const SEO_PAGES = [
       description:
         "Freelance AI e-commerce automation specialist. Run Amazon NL & Bol.com operations with n8n, Supabase and Claude — product data, ads reporting and content workflows automated. Amersfoort, NL/EU.",
       canonical: `${BASE}/ai-ecommerce-automation`,
+      serviceName: "AI E-commerce Automation Consulting",
       intro: [
         'Hans van Leeuwen is a freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. This page covers the AI-automation practice: pipelines that remove repetitive manual marketplace work and surface decisions faster, with a human in the loop on strategy, pricing and brand voice.',
         'A typical engagement covers four layers. Product data: feed normalization, enrichment and nightly validation across channels. Operations: stock, pricing and order sync between Amazon NL/DE, Bol.com and the webstore. Advertising: automated ROAS/ACOS reporting and budget alerts. Intelligence: competitor and ranking monitoring with weekly KPI reports generated automatically.',
@@ -544,6 +567,7 @@ const SEO_PAGES = [
       title: "Interim E-commerce Manager — Freelance Marketplace Lead (NL/EU) | Hans van Leeuwen",
       description: "Interim e-commerce manager available for freelance marketplace leadership roles. Strategy, operations & hands-on execution for Amazon, Bol.com & more. NL/EU.",
       canonical: `${BASE}/interim-ecommerce-manager`,
+      serviceName: "Interim E-commerce Management",
       intro: [
         'Hans van Leeuwen is a freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. As interim e-commerce manager he provides senior e-commerce leadership without the permanent headcount — driving marketplace strategy, managing daily operations and delivering KPI-driven growth on Amazon NL, Bol.com and beyond.',
         'Typical interim scope: owning the marketplace P&L, managing listings, advertising and pricing across channels, coordinating logistics and inventory, building reporting and automation, and upskilling internal teams. Engagements run on-site in the Netherlands or remote across the EU, from a few days per week to full coverage during recruitment, growth phases or transitions.',
@@ -591,6 +615,24 @@ for (const { route, head } of SEO_PAGES) {
       ],
     },
   ];
+  if (head.serviceName) {
+    graph.splice(1, 0,
+      PERSON_ENTITY,
+      PROFESSIONAL_SERVICE_ENTITY,
+      {
+        "@type": "Service",
+        "@id": `${head.canonical}#service`,
+        name: head.serviceName,
+        url: head.canonical,
+        provider: { "@id": `${BASE}/#organization` },
+        areaServed: [
+          { "@type": "Country", name: "Netherlands" },
+          { "@type": "Place", name: "European Union" },
+        ],
+        description: head.description,
+      },
+    );
+  }
   if (head.faq) {
     graph.push({
       "@type": "FAQPage",
