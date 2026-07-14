@@ -38,6 +38,12 @@ const content = {
       "Weekly stakeholder reporting and strategic reviews",
       "Process documentation and knowledge transfer",
     ],
+    approachHeading: "The First 30 Days",
+    approach: [
+      "The first week starts with an operational baseline: channel profitability, advertising efficiency, listing quality, stock risk, product-data health, team ownership, and the reporting cadence. Together we separate urgent revenue or availability risks from structural improvements, then turn them into a prioritized backlog with an owner and measurable outcome for every action.",
+      "During weeks two and three, I work inside the existing team and tool stack. That can mean restructuring Amazon Ads or Bol Ads, repairing catalog and feed issues, introducing a weekly trading rhythm, clarifying marketplace P&L ownership, or coordinating agencies, logistics, finance, and content. Decisions stay visible through a compact KPI dashboard and a written weekly update, so stakeholders know what changed, why it changed, and what happens next.",
+      "By week four, the goal is not dependency on an interim manager. Processes, access, decisions, and recurring checks are documented for the permanent owner. I finish with a practical handover: current performance, open risks, the next 90-day roadmap, and clear recommendations for team capacity. This makes the engagement useful both as temporary leadership and as preparation for a permanent e-commerce hire.",
+    ],
     ctaHeading: "Need an interim e-commerce lead?",
     ctaText: "Let's discuss your situation, I'll share how I can help within a 30-minute introductory call. No obligation.",
     ctaButton: "Contact me",
@@ -67,6 +73,12 @@ const content = {
       "Leverancier- en bureaurelatie management",
       "Wekelijkse stakeholder rapportage en strategische reviews",
       "Procesdocumentatie en kennisoverdracht",
+    ],
+    approachHeading: "De Eerste 30 Dagen",
+    approach: [
+      "De eerste week begint met een operationele nulmeting: kanaalrendement, advertentie-efficiëntie, listingkwaliteit, voorraadrisico, productdatakwaliteit, teameigenaarschap en rapportageritme. Samen scheiden we acute omzet- en beschikbaarheidsrisico's van structurele verbeteringen. Die vertalen we naar een geprioriteerde backlog met per actie een eigenaar en een meetbaar resultaat.",
+      "In week twee en drie werk ik binnen het bestaande team en de huidige toolstack. Dat kan betekenen: Amazon Ads of Bol Ads herstructureren, catalogus- en feedproblemen oplossen, een vast weekly trading-ritme invoeren, P&L-eigenaarschap verduidelijken of bureaus, logistiek, finance en content coördineren. Besluiten blijven zichtbaar via een compact KPI-dashboard en een schriftelijke weekupdate, zodat stakeholders weten wat er veranderde, waarom en wat de volgende stap is.",
+      "In week vier is het doel geen afhankelijkheid van een interim manager. Processen, toegang, besluiten en terugkerende controles worden vastgelegd voor de permanente eigenaar. Ik rond af met een praktische overdracht: actuele prestaties, open risico's, de roadmap voor de komende 90 dagen en heldere aanbevelingen voor teamcapaciteit. Zo werkt de opdracht zowel als tijdelijke leiding als voorbereiding op een vaste e-commerce hire.",
     ],
     ctaHeading: "Een interim e-commerce lead nodig?",
     ctaText: "Laten we je situatie bespreken, ik deel hoe ik kan helpen in een kennismakingsgesprek van 30 minuten. Vrijblijvend.",
@@ -161,6 +173,13 @@ const InterimEcommerceManager = () => {
             </li>
           ))}
         </ul>
+      </motion.div>
+
+      <motion.div {...fade} className="mb-16 max-w-3xl">
+        <h2 className="mb-6 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{t.approachHeading}</h2>
+        <div className="space-y-5 text-base leading-relaxed text-muted-foreground">
+          {t.approach.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+        </div>
       </motion.div>
 
       <motion.div {...fade} className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-8 md:p-12 text-center">
