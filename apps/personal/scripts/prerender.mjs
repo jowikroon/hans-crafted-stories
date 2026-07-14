@@ -316,7 +316,9 @@ function buildStaticPageFallback(head, extraHtml = "") {
       </header>
       <main>
         <article>
-          <h1>${escapeHtml(head.title)}</h1>
+          <!-- The real SSR render already owns the page H1. Keep the no-JS
+               fallback useful without duplicating the primary heading. -->
+          <h2>${escapeHtml(head.title)}</h2>
           <p>${escapeHtml(head.description)}</p>
           ${intro}
           ${extraHtml}
