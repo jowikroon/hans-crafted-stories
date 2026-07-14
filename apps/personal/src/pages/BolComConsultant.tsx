@@ -34,6 +34,12 @@ const content = {
       { stat: "70%", desc: "category market share (cross-marketplace, Nielsen Data)" },
       { stat: "20%", desc: "weekly sales growth from targeted Bol Ads campaigns" },
     ],
+    approachHeading: "How Bol.com Marketplace Management Works",
+    approach: [
+      "An engagement starts with a practical Bol.com baseline. I review assortment coverage, product-data completeness, content quality, findability, Buy Block performance, pricing, advertising structure, logistics, performance scores, and reporting. The outcome is a prioritized plan that separates immediate revenue leaks from structural growth opportunities, with a measurable target and owner for every action.",
+      "Execution connects content, advertising, and operations. Search and category data inform titles, descriptions, attributes, images, and Bol Ads campaigns instead of treating them as separate workstreams. A weekly trading review brings visibility, conversion, advertising efficiency, margin, availability, returns, and service performance into one view, so decisions reflect commercial impact across the whole Bol.com account.",
+      "For ongoing marketplace management, the cadence includes catalog checks, campaign optimization, pricing and Buy Block review, stock-risk monitoring, competitor changes, and a concise performance update. Vendor-to-seller transitions receive a separate migration plan for assortment, pricing, logistics, content, and measurement. Brands keep access to the decisions, data, and working documents, creating an operation an internal team can understand and continue.",
+    ],
     ctaHeading: "Ready to grow on Bol.com?",
     ctaText: "Get a free Bol.com marketplace assessment, I'll map your opportunities and quick wins within 48 hours.",
     ctaButton: "Contact me",
@@ -59,6 +65,12 @@ const content = {
       { stat: "Vendor→Seller", desc: "succesvolle kanaaltransitie met behoud van omzetgroei" },
       { stat: "70%", desc: "marktaandeel in categorie (cross-marketplace, Nielsen Data)" },
       { stat: "20%", desc: "wekelijkse omzetgroei door gerichte Bol Ads campagnes" },
+    ],
+    approachHeading: "Zo Werkt Bol.com Marketplace Management",
+    approach: [
+      "Een opdracht begint met een praktische Bol.com-nulmeting. Ik beoordeel assortimentsdekking, volledigheid van productdata, contentkwaliteit, vindbaarheid, Buy Block-prestaties, prijzen, advertentiestructuur, logistiek, prestatiescores en rapportage. Het resultaat is een geprioriteerd plan dat directe omzetlekken scheidt van structurele groeikansen, met per actie een meetbaar doel en een eigenaar.",
+      "De uitvoering verbindt content, advertising en operations. Zoek- en categoriedata sturen titels, beschrijvingen, attributen, afbeeldingen en Bol Ads-campagnes aan, in plaats van deze als losse werkstromen te behandelen. In een wekelijkse trading-review komen zichtbaarheid, conversie, advertentie-efficiëntie, marge, beschikbaarheid, retouren en serviceprestaties samen, zodat besluiten draaien om de commerciële impact van het volledige Bol.com-account.",
+      "Bij doorlopend marketplace management bestaat het ritme uit cataloguscontroles, campagne-optimalisatie, prijs- en Buy Block-review, monitoring van voorraadrisico, concurrentiewijzigingen en een compacte performance-update. Een vendor-naar-seller transitie krijgt een apart migratieplan voor assortiment, prijzen, logistiek, content en meting. Merken houden toegang tot besluiten, data en werkdocumenten, zodat het interne team de operatie begrijpt en kan voortzetten.",
     ],
     ctaHeading: "Klaar om te groeien op Bol.com?",
     ctaText: "Ontvang een gratis Bol.com marktplaats assessment, ik breng je kansen en quick wins in kaart binnen 48 uur.",
@@ -151,6 +163,13 @@ const BolComConsultant = () => {
               <p className="text-sm text-muted-foreground">{r.desc}</p>
             </div>
           ))}
+        </div>
+      </motion.div>
+
+      <motion.div {...fade} className="mb-16 max-w-3xl">
+        <h2 className="mb-6 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{t.approachHeading}</h2>
+        <div className="space-y-5 text-base leading-relaxed text-muted-foreground">
+          {t.approach.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
         </div>
       </motion.div>
 
