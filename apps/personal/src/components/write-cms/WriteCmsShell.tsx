@@ -39,7 +39,9 @@ const ICONS: Record<CmsMode, JSX.Element> = {
  */
 export default function WriteCmsShell({ postId }: { postId?: string }) {
   const [params, setParams] = useSearchParams();
-  const raw = params.get("mode");
+  // `view=voice` is the original HAN-98 deep-link contract. Keep it as a
+  // backwards-compatible alias while `mode` remains the canonical parameter.
+  const raw = params.get("mode") ?? params.get("view");
   const mode: CmsMode = postId
     ? "write"
     : raw === "write" || raw === "voice" || raw === "experience" || raw === "design" || raw === "analytics"
@@ -73,6 +75,7 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
 
   const setMode = (m: CmsMode) => {
     const next = new URLSearchParams(params);
+    next.delete("view");
     // Manage is the default landing mode, so it owns the clean (param-less) URL.
     if (m === "manage") next.delete("mode");
     else next.set("mode", m);
