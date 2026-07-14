@@ -34,6 +34,12 @@ const content = {
       { stat: "<2%", desc: "out-of-stock rate through improved demand forecasting" },
       { stat: "20%", desc: "weekly sales increase via targeted Sponsored campaigns" },
     ],
+    approachHeading: "How Amazon NL Account Management Works",
+    approach: [
+      "An engagement starts with a practical account baseline. I review catalog health, listing quality, search-term coverage, advertising structure, pricing, Buy Box performance, stock risk, account warnings, and the reporting setup. The outcome is a prioritized plan that separates urgent revenue leaks from longer-term growth opportunities, with a measurable target and owner for each action.",
+      "Execution connects content, advertising, and operations. Search-term research informs titles, bullets, backend keywords, A+ Content, and campaign structure instead of treating each area as a separate project. Weekly trading reviews bring organic visibility, conversion, advertising efficiency, margin, and availability into one view, so budget and catalog decisions are based on commercial impact rather than isolated marketplace metrics.",
+      "For ongoing account management, the cadence includes catalog checks, campaign optimization, pricing and Buy Box review, stock-risk monitoring, competitor changes, and a concise performance update. Brands keep access to the decisions, data, and working documents. The goal is a repeatable Amazon Netherlands operation that an internal team can understand and continue, not a black-box dependency on an external specialist.",
+    ],
     ctaHeading: "Ready to grow on Amazon Netherlands?",
     ctaText: "Get a free 7-point Amazon NL audit, I'll identify your top growth opportunities within 48 hours.",
     ctaButton: "Contact me",
@@ -59,6 +65,12 @@ const content = {
       { stat: "70%", desc: "marktaandeel in oordoppencategorie op Amazon NL (Nielsen Data)" },
       { stat: "<2%", desc: "out-of-stock rate dankzij verbeterde demand forecasting" },
       { stat: "20%", desc: "wekelijkse omzetstijging via gerichte Sponsored campagnes" },
+    ],
+    approachHeading: "Zo Werkt Amazon NL Accountmanagement",
+    approach: [
+      "Een opdracht begint met een praktische nulmeting van het account. Ik beoordeel catalogusgezondheid, listingkwaliteit, dekking van zoektermen, advertentiestructuur, prijzen, Buy Box-prestaties, voorraadrisico, accountwaarschuwingen en de rapportage. Het resultaat is een geprioriteerd plan dat acute omzetlekken scheidt van groeikansen voor de langere termijn, met per actie een meetbaar doel en een eigenaar.",
+      "De uitvoering verbindt content, advertising en operations. Zoektermonderzoek stuurt titels, bullets, backend keywords, A+ Content en campagnestructuur aan, in plaats van elk onderdeel als los project te behandelen. In wekelijkse trading-reviews komen organische zichtbaarheid, conversie, advertentie-efficiëntie, marge en beschikbaarheid samen, zodat budget- en catalogusbesluiten draaien om commerciële impact en niet om losse marketplace-metrics.",
+      "Bij doorlopend accountmanagement bestaat het ritme uit cataloguscontroles, campagne-optimalisatie, prijs- en Buy Box-review, monitoring van voorraadrisico, concurrentiewijzigingen en een compacte performance-update. Merken houden toegang tot besluiten, data en werkdocumenten. Het doel is een herhaalbare Amazon Nederland-operatie die een intern team begrijpt en kan voortzetten, geen black-box afhankelijkheid van een externe specialist.",
     ],
     ctaHeading: "Klaar om te groeien op Amazon Nederland?",
     ctaText: "Ontvang een gratis 7-punts Amazon NL audit, ik identificeer je grootste groeikansen binnen 48 uur.",
@@ -151,6 +163,13 @@ const AmazonNlSpecialist = () => {
               <p className="text-sm text-muted-foreground">{r.desc}</p>
             </div>
           ))}
+        </div>
+      </motion.div>
+
+      <motion.div {...fade} className="mb-16 max-w-3xl">
+        <h2 className="mb-6 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{t.approachHeading}</h2>
+        <div className="space-y-5 text-base leading-relaxed text-muted-foreground">
+          {t.approach.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
         </div>
       </motion.div>
 
