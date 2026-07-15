@@ -1,0 +1,91 @@
+{
+  "owner": "connectcarparts",
+  "targetOpenClaw": "https://openclaw-cvpd.srv1411336.hstgr.cloud/chat?session=agent%3Aconnectcarparts%3Amain",
+  "timezone": "Europe/Amsterdam",
+  "jobs": [
+    {
+      "id": "hvl-edge-health-warm",
+      "name": "HVL edge health and cache warm",
+      "schedule": {
+        "type": "cron",
+        "expression": "0 * * * *",
+        "timezone": "Europe/Amsterdam"
+      },
+      "payload": {
+        "type": "message",
+        "session": "agent:connectcarparts:main",
+        "text": "Run the hourly hansvanleeuwen.com edge health and cache warm check. Warm https://hansvanleeuwen.com and https://marketplacegrowth.nl for /, /writing, /work and /about, then POST a compact health result to the configured empire-health endpoint. Report only failures or material degradation."
+      },
+      "replaces": [
+        "workers/scheduled/wrangler.toml hvl-edge-cron"
+      ],
+      "cutover": {
+        "oldScheduler": "Cloudflare Workers scheduled trigger",
+        "disableAfterOpenClawVerification": true
+      }
+    },
+    {
+      "id": "ebay-de-launch-order-watch",
+      "name": "eBay DE launch order watch",
+      "schedule": {
+        "type": "cron",
+        "expression": "0 8-20/2 14-18 7 *",
+        "timezone": "Europe/Amsterdam"
+      },
+      "payload": {
+        "type": "message",
+        "session": "agent:connectcarparts:main",
+        "text": "Run the eBay DE launch-week order watch for ConnectCarParts. Check Channable/eBay/Magento order state, especially not_shipped, tracking, tax, and order import errors. Send a WhatsApp alert only for real customer-order failures or launch-blocking anomalies; otherwise write a concise run summary."
+      },
+      "replaces": [
+        "Cowork scheduled task ebay-de-launch-order-watch"
+      ],
+      "cutover": {
+        "oldScheduler": "Cowork scheduled-tasks registry",
+        "disableAfterOpenClawVerification": true
+      }
+    },
+    {
+      "id": "ebay-de-golive-audit",
+      "name": "eBay DE go-live checklist audit",
+      "schedule": {
+        "type": "cron",
+        "expression": "25 7 * * *",
+        "timezone": "Europe/Amsterdam"
+      },
+      "payload": {
+        "type": "message",
+        "session": "agent:connectcarparts:main",
+        "text": "Run the ConnectCarParts eBay DE go-live checklist audit. Verify the live checklist status, Channable order/config indicators, known open items, and evidence freshness. Update the dashboard artifact only when facts changed, and summarize critical blockers."
+      },
+      "replaces": [
+        "Cowork scheduled audit for eBay DE go-live checklist"
+      ],
+      "cutover": {
+        "oldScheduler": "Cowork scheduled-tasks registry",
+        "disableAfterOpenClawVerification": true
+      }
+    },
+    {
+      "id": "autoseo-weekly",
+      "name": "AutoSEO weekly run",
+      "schedule": {
+        "type": "cron",
+        "expression": "0 6 * * 1",
+        "timezone": "Europe/Amsterdam"
+      },
+      "payload": {
+        "type": "message",
+        "session": "agent:connectcarparts:main",
+        "text": "Run the weekly AutoSEO workflow through the existing webhook/orchestrator path. Keep n8n as execution engine only where credentials/workflow nodes still live; OpenClaw is now the scheduler and reporting owner. Summarize what ran, changed, or failed."
+      },
+      "replaces": [
+        "n8n scheduleTrigger in autoseo-brain-v2"
+      ],
+      "cutover": {
+        "oldScheduler": "n8n internal schedule trigger",
+        "disableAfterOpenClawVerification": true
+      }
+    }
+  ]
+}
