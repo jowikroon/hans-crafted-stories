@@ -52,6 +52,10 @@ Attempted fix, 2026-07-15:
   - Health command: `/data/workspaces/connectcarparts/scripts/health_check.py`
   - Order command: `/data/workspaces/connectcarparts/scripts/order_watch.py`
 - Live edit is blocked by OpenClaw auth: the available gateway token does not have `operator.admin` scope. `openclaw cron edit ...` returns `GatewayClientRequestError: missing scope: operator.admin`.
+- Follow-up check: gateway status reports the gateway is `admin-capable`, but the available token is not an operator token. Gateway RPC calls also fail without operator scopes:
+  - `cron.status`: `missing scope: operator.read`
+  - `devices list`: `missing scope: operator.pairing`
+- The in-app browser control path was not usable from the local Codex environment because the Node REPL browser control failed to start with a missing kernel asset path.
 - Next action: perform the edits from an OpenClaw operator/admin session or issue a scoped admin token, then run:
 
 ```sh
@@ -111,6 +115,8 @@ DNS still resolves to the expected documented VPS1 addresses:
 - AAAA: `2a02:4780:79:115d::1`
 
 Port 22 is reachable, but `ssh-keyscan` did not return an ed25519 key from this local network path. Do not bypass strict host checking until the fingerprint is verified through Hostinger/hPanel. This means the old primary n8n Cloud/VPS schedules still need verification before final cutover.
+
+Follow-up check: Hostinger MCP exposed SSH public-key management endpoints but not a VPS host-key fingerprint endpoint. Calling attached-key metadata for VM `1402218` returned `[VPS:2002] Route is not found`, so it cannot be used as fingerprint verification.
 
 ## Cutover rules
 
