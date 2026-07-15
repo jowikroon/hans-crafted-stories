@@ -6,6 +6,11 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
+const radarSyncPath = path.join(__dirname, "sync-ccp-competition-radar.mjs");
+
+if (existsSync(radarSyncPath)) {
+  execFileSync(process.execPath, [radarSyncPath], { cwd: repoRoot, stdio: "inherit" });
+}
 
 const sources = [
   "C:/Users/Malle Flappie/Documents/SecondBrainVault/_cowork/ccp-ebay-de",
