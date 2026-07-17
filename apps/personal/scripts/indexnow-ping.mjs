@@ -6,10 +6,11 @@
 const KEY = "d98bc066226cb57ba6ed643218724ada";
 const HOST = "hansvanleeuwen.com";
 const BASE = `https://${HOST}`;
+const REQUEST_TIMEOUT_MS = 10_000;
 
 const branch = process.env.CF_PAGES_BRANCH;
-if (branch && branch !== "main") {
-  console.log(`[indexnow] skip — branch ${branch} is not main`);
+if (branch !== "main") {
+  console.log(`[indexnow] skip — expected CF_PAGES_BRANCH=main, received ${branch || "unset"}`);
   process.exit(0);
 }
 
@@ -27,6 +28,7 @@ try {
   const res = await fetch("https://api.indexnow.org/indexnow", {
     method: "POST",
     headers: { "Content-Type": "application/json; charset=utf-8" },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     body: JSON.stringify({ host: HOST, key: KEY, keyLocation: `${BASE}/${KEY}.txt`, urlList: urls }),
   });
   console.log(`[indexnow] submitted ${urls.length} URLs — HTTP ${res.status}`);
