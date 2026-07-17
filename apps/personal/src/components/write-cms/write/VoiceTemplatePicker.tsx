@@ -29,6 +29,7 @@ export default function VoiceTemplatePicker({ postId, activeTemplate, assignedTe
 
   useEffect(() => {
     if (!open || templates.length > 0) return;
+    setError(null);
     setLoading(true);
     supabase
       .from("hvl_voice_templates")
@@ -101,7 +102,11 @@ export default function VoiceTemplatePicker({ postId, activeTemplate, assignedTe
     setError(null);
     const { error: saveError } = await supabase
       .from("blog_posts")
-      .update({ voice_template_id: template.id, updated_at: new Date().toISOString() })
+      .update({
+        voice_template_id: template.id,
+        voice_match_score: null,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", postId);
     setSavingId(null);
     if (saveError) {
