@@ -1,22 +1,31 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { VoiceTemplate } from "../hooks/useVoiceTemplate";
 
 interface Props {
   postId: string;
   activeTemplate: VoiceTemplate | null;
+  assignedTemplateId: string | null;
   onChanged: () => void;
+}
+
+interface PopoverPosition {
+  top: number;
+  left: number;
+  width: number;
+  maxHeight: number;
 }
 
 const SELECT = "id,name,category,tone,banned_words,content_rules,seo_guidelines,max_sentence_words,passive_voice_max_pct,avg_paragraph_sentences";
 
-export default function VoiceTemplatePicker({ postId, activeTemplate, onChanged }: Props) {
+export default function VoiceTemplatePicker({ postId, activeTemplate, assignedTemplateId, onChanged }: Props) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
   const [templates, setTemplates] = useState<VoiceTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null);
 
   useEffect(() => {
     if (!open || templates.length > 0) return;
@@ -46,8 +55,45 @@ export default function VoiceTemplatePicker({ postId, activeTemplate, onChanged 
     return () => window.removeEventListener("mousedown", close);
   }, [open]);
 
+  useLayoutEffect(() => {
+    if (!open) {
+      setPopoverPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const rect = rootRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const viewportPadding = 16;
+      const gap = 8;
+      const width = Math.min(340, window.innerWidth - viewportPadding * 2);
+      const left = Math.min(
+        Math.max(rect.left, viewportPadding),
+        window.innerWidth - viewportPadding - width,
+      );
+      const spaceBelow = window.innerHeight - rect.bottom - gap - viewportPadding;
+      const spaceAbove = rect.top - gap - viewportPadding;
+      const openAbove = spaceBelow < 160 && spaceAbove > spaceBelow;
+      const maxHeight = Math.min(360, Math.max(120, openAbove ? spaceAbove : spaceBelow));
+      const top = openAbove
+        ? Math.max(viewportPadding, rect.top - gap - maxHeight)
+        : rect.bottom + gap;
+
+      setPopoverPosition({ top, left, width, maxHeight });
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open]);
+
   const choose = async (template: VoiceTemplate) => {
-    if (template.id === activeTemplate?.id) {
+    if (template.id === assignedTemplateId) {
       setOpen(false);
       return;
     }
@@ -81,8 +127,13 @@ export default function VoiceTemplatePicker({ postId, activeTemplate, onChanged 
         <span aria-hidden>⌄</span>
       </button>
 
-      {open && (
-        <div className="voice-template-popover" role="listbox" aria-label="Voice-template kiezen">
+      {open && popoverPosition && (
+        <div
+          className="voice-template-popover"
+          role="listbox"
+          aria-label="Voice-template kiezen"
+          style={popoverPosition}
+        >
           <div className="voice-template-popover__head">
             <span>Voice-template</span>
             <small>Direct actief voor tips en banned words</small>
