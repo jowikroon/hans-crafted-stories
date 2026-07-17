@@ -169,7 +169,12 @@ export default function WriteMode({ postId }: { postId?: string }) {
               <span className="sep">·</span>
               <span>{post!.category}</span>
               <span className="sep">·</span>
-              <VoiceTemplatePicker postId={post!.id} activeTemplate={voiceTemplate} onChanged={state.refetch} />
+              <VoiceTemplatePicker
+                postId={post!.id}
+                activeTemplate={voiceTemplate}
+                assignedTemplateId={post!.voice_template_id}
+                onChanged={state.refetch}
+              />
               {post!.word_count != null && (
                 <>
                   <span className="sep">·</span>
