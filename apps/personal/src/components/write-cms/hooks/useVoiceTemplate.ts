@@ -23,11 +23,13 @@ export function useVoiceTemplate(category: string | null | undefined, templateId
     setLoading(true);
     let query = (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
       .from("hvl_voice_templates")
-      .select("id,name,category,tone,banned_words,content_rules,seo_guidelines,max_sentence_words,passive_voice_max_pct,avg_paragraph_sentences")
-      .is("archived_at", null);
+      .select("id,name,category,tone,banned_words,content_rules,seo_guidelines,max_sentence_words,passive_voice_max_pct,avg_paragraph_sentences");
     query = templateId
       ? query.eq("id", templateId)
-      : query.eq("category", category as string).order("is_default", { ascending: false });
+      : query
+          .eq("category", category as string)
+          .is("archived_at", null)
+          .order("is_default", { ascending: false });
     query.limit(1)
       .then(({ data }: { data: VoiceTemplate[] | null }) => {
         setTemplate(data && data.length > 0 ? data[0] : null);
