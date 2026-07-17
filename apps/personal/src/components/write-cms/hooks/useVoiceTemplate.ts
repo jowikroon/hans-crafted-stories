@@ -19,7 +19,13 @@ export function useVoiceTemplate(category: string | null | undefined, templateId
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!category && !templateId) { setTemplate(null); return; }
+    if (!category && !templateId) {
+      setTemplate(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
     setLoading(true);
     let query = (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
       .from("hvl_voice_templates")
@@ -32,9 +38,14 @@ export function useVoiceTemplate(category: string | null | undefined, templateId
           .order("is_default", { ascending: false });
     query.limit(1)
       .then(({ data }: { data: VoiceTemplate[] | null }) => {
+        if (cancelled) return;
         setTemplate(data && data.length > 0 ? data[0] : null);
         setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [category, templateId]);
 
   return { template, loading };
