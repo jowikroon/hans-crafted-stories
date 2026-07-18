@@ -161,7 +161,7 @@ export default function VoiceMode() {
   const defaultName = useMemo(() => rows.find((r) => r.is_default)?.name ?? "no default", [rows]);
 
   return (
-    <div className="shell">
+    <div className="shell shell--single">
       <main className="main">
         <h1 className="manage-h">Voice<em>.</em></h1>
         <p className="voice-stat">
