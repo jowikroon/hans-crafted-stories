@@ -123,14 +123,27 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
     if (!youtube.trim()) ytAnalyze.reset();
   }, [youtube]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const pasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text.trim()) setYoutube(text.trim());
+    } catch { /* clipboard geweigerd — veld blijft handmatig invulbaar */ }
+  };
+
   return (
-    <div className="source-bar">
+    <div className="source-bar action-card">
+      <div className="eyebrow">
+        <span className="pulse" />
+        <span>Begin hier · meest gebruikt</span>
+      </div>
+      <h2 className="ac-title">Plak een YouTube link<em> — ik maak er een artikel van.</em></h2>
+      <p className="copy">Ik kijk de video, haal de transcriptie eruit, match je voice template en schrijf de draft in jouw stem. Analyse toont eerst topics en invalshoeken — <strong>jij kiest de angle</strong>.</p>
       <div className="source-bar-row">
         {/* Pipeline picker, Klassiek vs Auto */}
         <label className="source-field">
           <span className="source-label">Pipeline</span>
           <select
-            className="source-input"
+            className={`source-input${pipeline === "auto" ? " source-input--auto" : ""}`}
             value={pipeline}
             onChange={(e) => setPipeline(e.target.value as "classic" | "auto")}
             disabled={busy || !!init}
@@ -149,14 +162,20 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
             YouTube URL
             {ytPreviewLoading && <SpinIcon />}
           </span>
-          <input
-            type="url"
-            className="source-input"
-            placeholder="https://youtube.com/watch?v=…"
-            value={youtube}
-            onChange={(e) => setYoutube(e.target.value)}
-            disabled={busy || !!init}
-          />
+          <span className="paste-row paste-row--compact">
+            <input
+              type="url"
+              className="source-input"
+              placeholder="https://youtube.com/watch?v=…"
+              value={youtube}
+              onChange={(e) => setYoutube(e.target.value)}
+              disabled={busy || !!init}
+            />
+            <button type="button" className="paste-btn" title="Plak vanaf klembord" onClick={pasteFromClipboard} disabled={busy || !!init}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="10" height="12" rx="1" stroke="currentColor" strokeWidth="1.4"/><path d="M6 2v1.5a.5.5 0 00.5.5h3a.5.5 0 00.5-.5V2" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>
+              Paste
+            </button>
+          </span>
         </label>
 
         {/* Topic */}

@@ -22,6 +22,7 @@ export interface UseReviewsReturn {
   status: ReviewsStatus;
   errorMessage: string | null;
   runAgents: (postId: string) => Promise<void>;
+  refetch: () => Promise<void>;
   generateImage: (postId: string) => Promise<void>;
   imageStatus: "idle" | "generating" | "done" | "error";
 }
@@ -127,5 +128,5 @@ export function useReviews(postId?: string): UseReviewsReturn {
     }
   }, []);
 
-  return { reviews, status, errorMessage, runAgents, generateImage, imageStatus };
+  return { reviews, status, errorMessage, runAgents, generateImage, imageStatus, refetch: fetchReviews };
 }
