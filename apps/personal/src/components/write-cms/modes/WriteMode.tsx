@@ -47,6 +47,11 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const pub = usePublish(() => state.refetch());
   const reviewsHook = useReviews(postId);
   const editors = useEditorsAtWork();
+  useEffect(() => {
+    // Een afgeronde Editors-run logt naar blog_cms_agent_reviews — ververs de Reviews-kaart mee.
+    if (editors.status === "done") reviewsHook.refetch();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editors.status]);
   const { template: voiceTemplate } = useVoiceTemplate(post?.category);
   const [showSchedule, setShowSchedule] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
@@ -84,7 +89,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
   // No post selected — empty state
   if (!postId || state.status === "idle") {
     return (
-      <>
+      <div className="shell">
         <main className="main">
           <section className="hero">
             <div className="hero-titleblock">
@@ -119,7 +124,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
           </div>
         </aside>
         {showLibrary && <BlogLibrary onClose={() => setShowLibrary(false)} />}
-      </>
+      </div>
     );
   }
 
@@ -161,7 +166,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const completenessScore = post!.completeness_score ?? 0;
 
   return (
-    <>
+    <div className="shell">
       <main className="main">
         <section className="hero">
           <div className="hero-titleblock">
@@ -536,6 +541,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
         </div>
       </aside>
       {showLibrary && <BlogLibrary onClose={() => setShowLibrary(false)} />}
-    </>
+    </div>
   );
 }

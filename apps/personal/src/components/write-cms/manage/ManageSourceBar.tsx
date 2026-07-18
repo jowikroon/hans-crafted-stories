@@ -143,7 +143,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
         <label className="source-field">
           <span className="source-label">Pipeline</span>
           <select
-            className="source-input"
+            className={`source-input${pipeline === "auto" ? " source-input--auto" : ""}`}
             value={pipeline}
             onChange={(e) => setPipeline(e.target.value as "classic" | "auto")}
             disabled={busy || !!init}

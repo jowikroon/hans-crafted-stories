@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import "./write-cms.css";
 import WriteMode from "./modes/WriteMode";
@@ -39,12 +39,12 @@ const ICONS: Record<CmsMode, JSX.Element> = {
  */
 export default function WriteCmsShell({ postId }: { postId?: string }) {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const raw = params.get("mode");
-  const mode: CmsMode = postId
-    ? "write"
-    : raw === "write" || raw === "voice" || raw === "experience" || raw === "design" || raw === "analytics"
-    ? raw
-    : "manage";
+  const validRaw = raw === "write" || raw === "voice" || raw === "experience" || raw === "design" || raw === "analytics" ? raw : null;
+  // Vanaf een post-URL (/write/:id) wint een expliciete ?mode= — anders bleef elke
+  // mode-klik onzichtbaar in de Write-view hangen (UX-verificatie 2026-07-18).
+  const mode: CmsMode = postId ? (validRaw && validRaw !== "write" ? validRaw : "write") : (validRaw ?? "manage");
 
   const [counts, setCounts] = useState({ drafts: 0, articles: 0, voice: 0, experience: 0 });
   useEffect(() => {
@@ -72,6 +72,11 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
   }, []);
 
   const setMode = (m: CmsMode) => {
+    if (postId && m !== "write") {
+      // Verlaat de post-route: modes als Manage/Voice horen niet bij een specifieke draft.
+      navigate(m === "manage" ? "/write" : `/write?mode=${m}`);
+      return;
+    }
     const next = new URLSearchParams(params);
     // Manage is the default landing mode, so it owns the clean (param-less) URL.
     if (m === "manage") next.delete("mode");

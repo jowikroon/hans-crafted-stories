@@ -2248,3 +2248,13 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
 .write-cms .paste-row--compact { display: flex; align-items: center; gap: 6px; }
 .write-cms .paste-row--compact .source-input { flex: 1; min-width: 0; }
 .write-cms .action-card .source-bar-row { margin-top: 4px; }
+
+
+/* UX-fixes 2026-07-18 */
+/* Sticky pipeline-keuze 'Auto' is een gedragswissel — maak hem onmisbaar zichtbaar. */
+.write-cms .source-input--auto { border-color: var(--live); background: var(--live-soft); font-weight: 600; }
+/* Voice-editor: rechterkolom kapte velden af — kolommen mogen nooit onder hun content minimum. */
+.write-cms .voice-editor .vt-cols, .write-cms .voice-editor [class*="two-col"] { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: var(--s-4); }
+.write-cms .voice-editor textarea, .write-cms .voice-editor input[type="text"] { width: 100%; min-width: 0; box-sizing: border-box; }
+/* Rail krijgt op smalle schermen zijn oude plek onder de content terug. */
+@media (max-width: 1080px) { .write-cms .shell { grid-template-columns: 1fr; } .write-cms .rail { position: static; } }
