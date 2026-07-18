@@ -2258,3 +2258,10 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
 .write-cms .voice-editor textarea, .write-cms .voice-editor input[type="text"] { width: 100%; min-width: 0; box-sizing: border-box; }
 /* Rail krijgt op smalle schermen zijn oude plek onder de content terug. */
 @media (max-width: 1080px) { .write-cms .shell { grid-template-columns: 1fr; } .write-cms .rail { position: static; } }
+
+
+/* Voice-breedte 2026-07-18: VoiceMode heeft geen rechter-rail — de lege 320px-railkolom
+   van .shell halveerde de editor. Single-kolom shell: de editor loopt nu net als het
+   linkermenu door tot de cc-frame rand (breder dan de header, by design). */
+.write-cms .shell--single { grid-template-columns: minmax(0,1fr); }
+.write-cms .shell--single .voice-grid { grid-template-columns: 264px minmax(0,1fr); }
