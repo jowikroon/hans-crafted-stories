@@ -72,6 +72,17 @@ export function useReviews(postId?: string): UseReviewsReturn {
 
       const result = await res.json().catch(() => null);
 
+      // Reviewer-uitval is GEEN kwaliteitsoordeel. De n8n-workflow antwoordt bij een
+      // LLM-fout met { success:false, total_score:0, verdict:"reject" } — dat mag nooit
+      // als afkeuring in de reviews-tabel of de kwaliteitspoort belanden.
+      const r = result as { success?: boolean; error?: unknown } | null;
+      if (!r || typeof r !== "object" || r.success === false || r.error) {
+        const reason = r && typeof r === "object" ? String(r.error ?? "onbekende fout") : "leeg antwoord";
+        setStatus("error");
+        setErrorMessage(`Reviewer niet beschikbaar — geen oordeel geveld (${reason.slice(0, 140)}). De draft is ongewijzigd; probeer later opnieuw.`);
+        return;
+      }
+
       // n8n doesn't persist to blog_cms_agent_reviews (known bug).
       // Save the response from React side if we got valid data.
       if (result && typeof result === "object") {
