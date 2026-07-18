@@ -278,7 +278,7 @@ export default function ExperienceMode() {
   });
 
   return (
-    <div className="shell">
+    <div className="shell shell--single">
       <main className="main">
         <h1 className="manage-h">Ervaringen<em>.</em></h1>
         <p className="voice-stat">
