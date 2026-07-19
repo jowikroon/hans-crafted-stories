@@ -28,6 +28,8 @@
     "lint": "npm run lint --workspace=@hans/personal && npm run lint --workspace=@hans/saas && npm run lint --workspace=@hans/thought-canvas",
     "test": "npm run test --workspace=@hans/personal && npm run test --workspace=@hans/saas && npm run test --workspace=@hans/thought-canvas",
     "typecheck": "npm run typecheck --workspace=@hans/personal && npm run typecheck --workspace=@hans/saas && npm run typecheck --workspace=@hans/thought-canvas",
+    "sync:ccp-radar": "node scripts/sync-ccp-competition-radar.mjs",
+    "sync:ccp-dashboard": "node scripts/sync-cowork-dashboard-attachments.mjs",
     "create-saas-user": "dotenv -e apps/saas/.env -- node scripts/create-saas-user.cjs"
   },
   "overrides": {

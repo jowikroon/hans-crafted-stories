@@ -1,8 +1,12 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-// Analysis runs in the Supabase edge function `blog-youtube-analyze`
-// (oEmbed metadata + transcript best-effort + Claude topic extraction + persistence).
+// Analysis runs in the Supabase edge function `blog-youtube-analyze` (v13+).
+// We call it in ASYNC mode: the function replies 202 immediately and keeps
+// working server-side (EdgeRuntime.waitUntil); progress + result land in
+// `blog_cms_youtube_sources` (status / pipeline_steps / error_message).
+// This survives long Gemini video-transcripts that used to kill the request
+// on the edge wall-clock and left the UI with a meaningless "non-2xx" error.
 
 export type YouTubeAnalyzePhase = "idle" | "analyzing" | "analyzed" | "error";
 
@@ -23,10 +27,90 @@ export function extractVideoId(url: string): string | null {
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
+/** Pull the human-readable error (+ pipeline steps) out of a FunctionsHttpError.
+ *  supabase-js only exposes "Edge Function returned a non-2xx status code" on
+ *  `.message`; the actual payload lives on `.context` (a Response). */
+export async function describeFunctionError(fnError: unknown): Promise<{ message: string; steps: string[] }> {
+  const fallback = { message: fnError instanceof Error ? fnError.message : "Analyze function failed", steps: [] as string[] };
+  const ctx = (fnError as { context?: Response })?.context;
+  if (!ctx || typeof ctx.json !== "function") return fallback;
+  try {
+    const body = await ctx.json() as { error?: string; steps?: string[] };
+    return {
+      message: body.error ? String(body.error) : fallback.message,
+      steps: Array.isArray(body.steps) ? body.steps.map(String) : [],
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+interface SourceRow {
+  id: string;
+  title: string | null;
+  channel_name: string | null;
+  thumbnail_url: string | null;
+  key_topics: string[] | null;
+  article_opportunities: string[] | null;
+  context_summary: string | null;
+  status: string | null;
+  error_message: string | null;
+  pipeline_steps: string[] | null;
+}
+
+/** Start an async analysis and poll the DB until it lands. `onSteps` receives
+ *  the live pipeline steps ("transcript via Gemini… 33k tekens" etc.). */
+export async function analyzeVideoAsync(
+  url: string,
+  videoId: string,
+  onSteps?: (steps: string[]) => void,
+  maxAttempts = 100, // × 3s ≈ 5 min — Gemini-transcripts van lange video's mogen even duren
+): Promise<YouTubeAnalysisResult> {
+  const { error: fnError } = await supabase.functions.invoke("blog-youtube-analyze", {
+    body: { url, video_id: videoId, async: true },
+  });
+  if (fnError) {
+    const { message, steps } = await describeFunctionError(fnError);
+    onSteps?.(steps);
+    throw new Error(steps.length ? `${message} — laatste stap: ${steps[steps.length - 1]}` : message);
+  }
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    await sleep(3000);
+    const { data } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
+      .from("blog_cms_youtube_sources")
+      .select("id,title,channel_name,thumbnail_url,key_topics,article_opportunities,context_summary,status,error_message,pipeline_steps")
+      .eq("video_id", videoId)
+      .maybeSingle() as { data: SourceRow | null };
+
+    if (!data) continue;
+    if (Array.isArray(data.pipeline_steps) && data.pipeline_steps.length) onSteps?.(data.pipeline_steps.map(String));
+
+    if (data.status === "analyzed") {
+      return {
+        sourceId: String(data.id),
+        title: String(data.title ?? ""),
+        channelName: String(data.channel_name ?? ""),
+        thumbnailUrl: String(data.thumbnail_url ?? ""),
+        keyTopics: Array.isArray(data.key_topics) ? data.key_topics : [],
+        articleOpportunities: Array.isArray(data.article_opportunities) ? data.article_opportunities : [],
+        contextSummary: String(data.context_summary ?? ""),
+      };
+    }
+    if (data.status === "error") {
+      const last = Array.isArray(data.pipeline_steps) && data.pipeline_steps.length ? ` — laatste stap: ${data.pipeline_steps[data.pipeline_steps.length - 1]}` : "";
+      throw new Error(`${data.error_message ?? "Analyse mislukt"}${last}`);
+    }
+    // status "processing" → keep polling
+  }
+  throw new Error("Analyse duurde langer dan 5 minuten. De video kan erg lang zijn — probeer opnieuw of check de bron in Manage.");
+}
+
 export function useYoutubeAnalyze() {
   const [phase, setPhase] = useState<YouTubeAnalyzePhase>("idle");
   const [result, setResult] = useState<YouTubeAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [steps, setSteps] = useState<string[]>([]);
 
   const analyze = useCallback(async (url: string) => {
     const videoId = extractVideoId(url);
@@ -38,81 +122,24 @@ export function useYoutubeAnalyze() {
     setPhase("analyzing");
     setError(null);
     setResult(null);
+    setSteps([]);
 
     try {
-      const { data: fnData, error: fnError } = await supabase.functions.invoke("blog-youtube-analyze", {
-        body: { url, video_id: videoId },
-      });
-      if (fnError) throw new Error(fnError.message ?? "Analyze function failed");
-      const data = (fnData ?? {}) as Record<string, unknown>;
-      if (data.error) throw new Error(String(data.error));
-
-      // n8n may return the result inline or as { source_id } for async polling
-      const sourceId = (data.source_id ?? data.id) as string | undefined;
-      if (sourceId) {
-        await pollForResult(sourceId);
-      } else {
-        // Inline result
-        setResult({
-          sourceId: String(data.stored_source_id ?? ""),
-          title: String(data.title ?? ""),
-          channelName: String(data.channel_name ?? ""),
-          thumbnailUrl: String(data.thumbnail_url ?? ""),
-          keyTopics: Array.isArray(data.key_topics) ? (data.key_topics as string[]) : [],
-          articleOpportunities: Array.isArray(data.article_opportunities) ? (data.article_opportunities as string[]) : [],
-          contextSummary: String(data.context_summary ?? ""),
-        });
-        setPhase("analyzed");
-      }
+      const res = await analyzeVideoAsync(url, videoId, setSteps);
+      setResult(res);
+      setPhase("analyzed");
     } catch (err) {
       setError(err instanceof Error ? err.message : "YouTube analyze failed");
       setPhase("error");
     }
-  // pollForResult is a function declaration scoped to the hook and only uses stable React setters.
-  // Keeping analyze stable avoids restarting consumers that subscribe to it.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function pollForResult(sourceId: string, attempts = 0): Promise<void> {
-    if (attempts > 20) {
-      setError("Analysis timed out after 60s, check n8n workflows.");
-      setPhase("error");
-      return;
-    }
-    await sleep(3000);
-    const { data } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
-      .from("blog_cms_youtube_sources")
-      .select("id,title,channel_name,thumbnail_url,key_topics,article_opportunities,context_summary,status,error_message")
-      .eq("id", sourceId)
-      .maybeSingle() as { data: Record<string, unknown> | null };
-
-    if (!data) return pollForResult(sourceId, attempts + 1);
-
-    const kTopics = Array.isArray(data.key_topics) ? (data.key_topics as string[]) : [];
-    if (data.status === "analyzed" || kTopics.length > 0) {
-      setResult({
-        sourceId: String(data.id),
-        title: String(data.title ?? ""),
-        channelName: String(data.channel_name ?? ""),
-        thumbnailUrl: String(data.thumbnail_url ?? ""),
-        keyTopics: kTopics,
-        articleOpportunities: Array.isArray(data.article_opportunities) ? (data.article_opportunities as string[]) : [],
-        contextSummary: String(data.context_summary ?? ""),
-      });
-      setPhase("analyzed");
-    } else if (data.status === "error") {
-      setError(String(data.error_message ?? "n8n analysis failed"));
-      setPhase("error");
-    } else {
-      return pollForResult(sourceId, attempts + 1);
-    }
-  }
 
   const reset = useCallback(() => {
     setPhase("idle");
     setResult(null);
     setError(null);
+    setSteps([]);
   }, []);
 
-  return { phase, result, error, analyze, reset };
+  return { phase, result, error, steps, analyze, reset };
 }

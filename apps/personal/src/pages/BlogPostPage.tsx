@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Home, ChevronRight, Link2, Linkedin, Twitter, ArrowRight, ArrowUpRight } from "lucide-react";
+import { Home, ChevronRight, Link2, Linkedin, Twitter, ArrowRight, ArrowUpRight, ArrowUp, List, Share2, X } from "lucide-react";
 import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
@@ -244,6 +244,8 @@ const BlogPostPage = () => {
   const articleRef = useRef<HTMLElement>(null);
   const progRef = useRef<HTMLDivElement>(null);
   const [figHtml, setFigHtml] = useState<string | null>(null);
+  const [showBtt, setShowBtt] = useState(false);
+  const [mtocOpen, setMtocOpen] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -321,6 +323,25 @@ const BlogPostPage = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, [post, showToc, headings, slug]);
 
+  /* ── Back-to-top visibility ── */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onScroll = () => setShowBtt(window.scrollY > 500);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* ── Close mobile TOC on ESC or route change ── */
+  useEffect(() => { setMtocOpen(false); }, [slug]);
+  useEffect(() => {
+    if (!mtocOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMtocOpen(false); };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+  }, [mtocOpen]);
+
   /* ── Inline figure "Bekijk context" modal: open + ESC/scroll-lock ── */
   useEffect(() => {
     const root = articleRef.current;
@@ -355,6 +376,25 @@ const BlogPostPage = () => {
       navigator.clipboard.writeText(currentUrl);
       toast.success(lang === "nl" ? "Link gekopieerd" : "Link copied to clipboard");
     }
+  };
+
+  const handleWebShare = async () => {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: displayTitle, url: currentUrl });
+      } catch {
+        /* user cancelled — ignore */
+      }
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleMtocClick = (e: React.MouseEvent, id: string) => {
+    scrollToHeading(e, id);
+    setMtocOpen(false);
   };
 
   if (post === undefined) {
@@ -465,6 +505,9 @@ const BlogPostPage = () => {
           <a href={shareLinkedIn} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a>
           <a href={shareTwitter} target="_blank" rel="noopener noreferrer" aria-label="X / Twitter"><Twitter size={17} /></a>
           <button type="button" onClick={handleCopyLink} aria-label={lang === "nl" ? "Kopieer link" : "Copy link"}><Link2 size={17} /></button>
+          {typeof navigator !== "undefined" && !!navigator.share && (
+            <button type="button" className="share__native" onClick={handleWebShare} aria-label={lang === "nl" ? "Delen via..." : "Share via..."}><Share2 size={20} /></button>
+          )}
         </div>
 
         {/* Conversion CTA */}
@@ -480,6 +523,43 @@ const BlogPostPage = () => {
         {/* More */}
         <MoreReading category={post.category} currentSlug={post.slug} lang={lang} />
       </article>
+
+      {/* Mobile TOC FAB */}
+      {showToc && (
+        <button
+          className="mtoc-fab"
+          onClick={() => setMtocOpen(true)}
+          aria-label={lang === "nl" ? "Inhoudsopgave" : "Table of contents"}
+        >
+          <List />
+        </button>
+      )}
+
+      {/* Mobile TOC Bottom Sheet */}
+      {showToc && mtocOpen && (
+        <div className="mtoc-sheet open" onClick={(e) => { if (e.target === e.currentTarget) setMtocOpen(false); }}>
+          <div className="mtoc-panel" role="dialog" aria-modal="true" aria-label={lang === "nl" ? "Inhoudsopgave" : "Table of contents"}>
+            <div className="mtoc-handle" />
+            <div className="mtoc-panel__hd">{lang === "nl" ? "In dit artikel" : "In this article"}</div>
+            <ol>
+              {headings.map((h) => (
+                <li key={h.id}>
+                  <a href={`#${h.id}`} onClick={(e) => handleMtocClick(e, h.id)}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      )}
+
+      {/* Back to top */}
+      <button
+        className={`btt${showBtt ? " show" : ""}`}
+        onClick={scrollToTop}
+        aria-label={lang === "nl" ? "Naar boven" : "Back to top"}
+      >
+        <ArrowUp />
+      </button>
 
       {figHtml && (
         <div className="figov" onClick={(e) => { if (e.target === e.currentTarget) setFigHtml(null); }}>

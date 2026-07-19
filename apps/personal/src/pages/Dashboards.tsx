@@ -3,11 +3,13 @@ import { Link } from "react-router-dom";
 import {
   BarChart3, Package, TrendingUp, Search, Euro, Percent, Gauge, Settings2, LogIn, Lock,
   Paperclip, FileText, Download, CalendarDays, HardDrive, Truck, Warehouse, Home, MapPin,
+  Radar,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import coworkAttachments from "@/data/coworkAttachments.json";
+import CompetitionRadarPanel from "@/components/dashboard/CompetitionRadarPanel";
 
 /* ─────────────────────────────────────────────────────────────
    /dashboards — klant-dashboards achter login (profielmenu).
@@ -25,6 +27,7 @@ const dt = (s: unknown) => (s ? new Date(String(s)).toLocaleDateString("nl-NL", 
 const SECTIONS = [
   { id: "overzicht", label: "Overzicht", icon: BarChart3 },
   { id: "attachments", label: "Attachments", icon: Paperclip },
+  { id: "concurrentie", label: "Concurrentie Radar", icon: Radar },
   { id: "shipments", label: "Shipments", icon: Truck },
   { id: "orders", label: "Orders", icon: Package },
   { id: "verkoop", label: "Verkoopresultaten", icon: TrendingUp },
@@ -69,6 +72,7 @@ const Empty = ({ what }: { what: string }) => (
 
 const attachmentCategory = (name: string) => {
   const lower = name.toLowerCase();
+  if (lower.includes("concurrentie-radar")) return "Concurrentie Radar";
   if (lower.includes("ceo") || lower.includes("rapport") || lower.includes("dossier")) return "Rapporten";
   if (lower.includes("blueprint") || lower.includes("playbook") || lower.includes("roadmap") || lower.includes("checklist")) return "Blueprints & checklists";
   if (lower.includes("returnless") || lower.includes("retour")) return "Retourflow";
@@ -461,14 +465,15 @@ const Dashboards = () => {
         <h1 className="mb-1 text-2xl font-semibold text-[#15140F] dark:text-[#F5F1E6]">
           {SECTIONS.find((s) => s.id === section)?.label}
         </h1>
-        <p className="mb-5 text-sm text-[#7E7A6F]">ConnectCarParts · eBay DE · live uit Supabase</p>
+        <p className="mb-5 text-sm text-[#7E7A6F]">ConnectCarParts · eBay DE · {section === "concurrentie" ? "wekelijkse research-sync" : "live uit Supabase"}</p>
 
         {err && <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Fout bij laden: {err}</p>}
         {section === "attachments" && <AttachmentsPanel />}
+        {section === "concurrentie" && <CompetitionRadarPanel />}
         {section === "shipments" && data && <ShipmentsPanel orders={data.orders} now={now} />}
-        {section !== "attachments" && !data && !err && <p className="text-sm text-[#7E7A6F]">Laden…</p>}
+        {section !== "attachments" && section !== "concurrentie" && !data && !err && <p className="text-sm text-[#7E7A6F]">Laden…</p>}
 
-        {section !== "attachments" && section !== "shipments" && data && agg && (
+        {section !== "attachments" && section !== "concurrentie" && section !== "shipments" && data && agg && (
           <>
             {section === "overzicht" && (
               <div className="space-y-5">
