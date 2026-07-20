@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSkin } from "@/hooks/useSkin";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { getBlogPosts, isHansSession, BlogPostRow } from "@/lib/api/content";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
@@ -66,7 +66,14 @@ const WritingV2 = () => {
   const preloadedPosts = usePreloadedBlogPosts();
   const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>(() => preloadedPosts ?? []);
   const [loading, setLoading] = useState(preloadedPosts === null);
-  const [filter, setFilter] = useState("all");
+  // Filter is URL-driven (/writing?tag=x) so article tag pills can deep-link
+  // into a filtered index. Prerender-safe: useSearchParams works under the
+  // MemoryRouter used by SSR as well.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filter = searchParams.get("tag") || "all";
+  const setFilter = (tag: string) => {
+    setSearchParams(tag === "all" ? {} : { tag }, { replace: true });
+  };
   const { skin, setSkin, skins } = useSkin();
   const [sort, setSort] = useState<SortOrder>("newest");
   const [authed, setAuthed] = useState(false);
@@ -268,6 +275,17 @@ const WritingV2 = () => {
                 {p.label}
               </button>
             ))}
+            {filter !== "all" && !FILTER_PILLS.some((p) => p.tag === filter) && (
+              <button
+                type="button"
+                className="pill on"
+                aria-pressed="true"
+                onClick={() => setFilter("all")}
+                title={lang === "nl" ? "Filter wissen" : "Clear filter"}
+              >
+                {filter} ×
+              </button>
+            )}
             {authed && (
               <button
                 type="button"
