@@ -42,6 +42,7 @@ const inlineMd = (s: string, mask?: MaskCtx) => {
   let out = esc(s);
   if (mask) out = applyMaskTokens(out, mask.cfg, mask.counters);
   return out
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\[(.+?)\]\((https?:[^)]+)\)/g, '<a href="$2" rel="noopener noreferrer">$1</a>');
 };
@@ -127,7 +128,67 @@ function buildFigure(header: string, body: string[], autoNum: number, mask?: Mas
     + `<div class="fig__modalsrc" id="figm-${num}" hidden>${modalHtml}</div></figure>`;
 }
 
-function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderResult {
+/* ── "In het kort" summary card. Authored as:
+     :::kort
+     Eerste kernpunt.
+     Tweede kernpunt.
+     Derde kernpunt.
+     :::
+   Numbered items with accent styling; ported from the Anthropic-leak
+   article prototype. Leading "1." / "-" prefixes in authored lines are
+   stripped so both list styles work. */
+function buildKort(body: string[], lang: "nl" | "en", mask?: MaskCtx): string {
+  const items = body
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => l.replace(/^(?:\d+[.)]\s*|-\s*)/, ""));
+  if (!items.length) return "";
+  const label = lang === "en" ? "IN SHORT" : "IN HET KORT";
+  return `<div class="tldr"><div class="tldr__k">${label}</div><div class="tldr__list">`
+    + items.map((it, i) => `<div class="tldr__item"><span class="tldr__n">${i + 1}.</span><span>${inlineMd(it, mask)}</span></div>`).join("")
+    + `</div></div>`;
+}
+
+/* ── Horizontal timeline figure. Authored as:
+     :::timeline title="Een week uit het leven" sub="Maart–april 2026"
+     punt feb 2025 | Eerdere, vergelijkbare source-lek | grijs
+     punt 26 mrt | CMS-fout lekt ±3.000 documenten | amber
+     punt 31 mrt | Source map ontdekt in npm | rood
+     punt +2 uur | Clean-room rewrite | blauw
+     punt dagen erna | DMCA-takedowns | ink
+     caption Twee lekken in één week.
+     :::
+   "rood" renders as the highlighted milestone (bigger dot + halo).
+   Ported from the Anthropic-leak article prototype. */
+const TL_COLORS: Record<string, string> = { grijs: "#9aa39a", amber: "#e2a93c", rood: "#d5453a", blauw: "#4a7fb5", ink: "#1b1f1c" };
+function buildTimeline(header: string, body: string[], mask?: MaskCtx): string {
+  const title = attr(header, "title");
+  const sub = attr(header, "sub");
+  let caption = "";
+  const pts: { date: string; label: string; color: string; hot: boolean }[] = [];
+  for (const raw of body) {
+    const t = raw.trim(); if (!t) continue;
+    if (t.startsWith("caption ")) { caption = t.slice(8).trim(); continue; }
+    const line = t.replace(/^(?:punt|stap|-)\s+/, "");
+    const parts = line.split("|").map((p) => p.trim());
+    if (parts.length < 2) continue;
+    const colorKey = (parts[2] || "grijs").toLowerCase();
+    pts.push({ date: parts[0], label: parts[1], color: TL_COLORS[colorKey] || TL_COLORS.grijs, hot: colorKey === "rood" });
+  }
+  if (pts.length < 2) return "";
+  const cols = pts.map((p) => `<div class="tl__item${p.hot ? " tl__item--hot" : ""}">`
+    + `<div class="tl__date">${esc(p.date)}</div>`
+    + `<div class="tl__dot" style="background:${p.color}"></div>`
+    + `<div class="tl__lab">${inlineMd(p.label, mask)}</div></div>`).join("");
+  return `<figure class="tl"${title ? "" : ' data-notitle=""'}>`
+    + (title ? `<div class="tl__t">${esc(title)}</div>` : "")
+    + (sub ? `<div class="tl__s">${esc(sub)}</div>` : "")
+    + `<div class="tl__grid" style="grid-template-columns:repeat(${pts.length},1fr)"><div class="tl__line"></div>${cols}</div>`
+    + (caption ? `<figcaption class="tl__cap">${inlineMd(caption, mask)}</figcaption>` : "")
+    + `</figure>`;
+}
+
+function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl" | "en" = "nl"): RenderResult {
   const mask: MaskCtx = { cfg: maskingCfg, counters: {} };
   const lines = md.split("\n");
   const headings: { id: string; text: string }[] = [];
@@ -195,6 +256,31 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
       for (; j < lines.length; j++) { if (lines[j].trim() === ":::") break; bodyLines.push(lines[j]); }
       i = j; // skip past closing :::
       out.push(buildFigure(header, bodyLines, ++figCount, mask));
+      continue;
+    }
+
+    // "In het kort" summary card:  :::kort ... :::
+    if (t === ":::kort" || t.startsWith(":::kort ")) {
+      flushList();
+      const bodyLines: string[] = [];
+      let j = i + 1;
+      for (; j < lines.length; j++) { if (lines[j].trim() === ":::") break; bodyLines.push(lines[j]); }
+      i = j;
+      const html = buildKort(bodyLines, lang, mask);
+      if (html) out.push(html);
+      continue;
+    }
+
+    // Horizontal timeline figure:  :::timeline ... :::
+    if (t.startsWith(":::timeline")) {
+      flushList();
+      const header = t.slice(3).trim();
+      const bodyLines: string[] = [];
+      let j = i + 1;
+      for (; j < lines.length; j++) { if (lines[j].trim() === ":::") break; bodyLines.push(lines[j]); }
+      i = j;
+      const html = buildTimeline(header, bodyLines, mask);
+      if (html) out.push(html);
       continue;
     }
 
@@ -281,8 +367,8 @@ const BlogPostPage = () => {
   const displayContent = post ? (lang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
 
   const { html: bodyHtml, headings } = useMemo(
-    () => renderArticle(displayContent || "", post?.masking),
-    [displayContent, post?.masking]
+    () => renderArticle(displayContent || "", post?.masking, lang === "nl" ? "nl" : "en"),
+    [displayContent, post?.masking, lang]
   );
   const showToc = headings.length >= 3;
 
@@ -314,9 +400,14 @@ const BlogPostPage = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       if (progRef.current) progRef.current.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
       if (!secs.length) return;
-      let cur = secs[0];
-      secs.forEach((s) => { if (s.getBoundingClientRect().top <= 140) cur = s; });
-      links.forEach((a) => a.classList.toggle("active", a.dataset.toc === cur.id));
+      let curIdx = 0;
+      secs.forEach((s, idx) => { if (s.getBoundingClientRect().top <= 140) curIdx = idx; });
+      const curId = secs[curIdx].id;
+      links.forEach((a) => {
+        const idx = headings.findIndex((h) => h.id === a.dataset.toc);
+        a.classList.toggle("active", a.dataset.toc === curId);
+        a.classList.toggle("done", idx > -1 && idx < curIdx);
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -481,9 +572,12 @@ const BlogPostPage = () => {
             <aside className="toc" aria-label={lang === "nl" ? "In dit artikel" : "In this article"}>
               <div className="toc__l">{lang === "nl" ? "In dit artikel" : "In this article"}</div>
               <ol>
-                {headings.map((h) => (
+                {headings.map((h, i) => (
                   <li key={h.id}>
-                    <a data-toc={h.id} href={`#${h.id}`} onClick={(e) => scrollToHeading(e, h.id)}>{h.text}</a>
+                    <a data-toc={h.id} href={`#${h.id}`} onClick={(e) => scrollToHeading(e, h.id)}>
+                      <span className="toc__n" aria-hidden="true"><i>{String(i + 1).padStart(2, "0")}</i><b>✓</b></span>
+                      <span>{h.text}</span>
+                    </a>
                   </li>
                 ))}
               </ol>
@@ -494,9 +588,13 @@ const BlogPostPage = () => {
           <div className="prose" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
         </div>
 
-        {/* Tags */}
+        {/* Tags — link to the filtered /writing index */}
         {post.tags.length > 0 && (
-          <div className="atags">{post.tags.map((t) => <span key={t} className="atag">{t}</span>)}</div>
+          <div className="atags">
+            {post.tags.map((t) => (
+              <Link key={t} className="atag" to={`/writing?tag=${encodeURIComponent(t)}`}>{t}</Link>
+            ))}
+          </div>
         )}
 
         {/* Share */}
