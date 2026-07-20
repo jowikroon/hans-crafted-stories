@@ -165,12 +165,12 @@
 }
 .article-v2 .toc ol { list-style: none; display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; }
 .article-v2 .toc a {
-  display: block; font-size: 13px; line-height: 1.4; color: var(--w2-muted); font-weight: 500;
-  padding: 6px 0 6px 14px; border-left: 2px solid var(--w2-hair);
-  transition: all .18s var(--w2-ease); cursor: pointer;
+  display: block; font-size: 13.5px; line-height: 1.35; color: #9A968A; font-weight: 400;
+  padding: 7px 0; letter-spacing: -.005em;
+  transition: color .18s var(--w2-ease); cursor: pointer;
 }
-.article-v2 .toc a:hover { color: var(--w2-ink); border-left-color: var(--w2-ink-2); padding-left: 18px; }
-.article-v2 .toc a.active { color: var(--w2-accent); border-left-color: var(--w2-accent); padding-left: 18px; }
+.article-v2 .toc a:hover { color: var(--w2-ink); }
+.article-v2 .toc a.active { color: var(--w2-ink); }
 
 /* ───────────────── PROSE ───────────────── */
 .article-v2 .prose { max-width: 680px; }
@@ -566,13 +566,13 @@
    Every item shows a mono number (01, 02, …); once a section is
    scrolled past, the number swaps for an accent ✓. Active item is
    ink + semibold with an accent number. */
-.article-v2 .toc a { display: flex; gap: 10px; align-items: baseline; }
-.article-v2 .toc__n { font-family: var(--w2-font-mono); font-size: 11px; letter-spacing: .04em; flex: none; color: var(--w2-hair); transition: color .18s var(--w2-ease); }
+.article-v2 .toc a { display: flex; gap: 11px; align-items: baseline; }
+.article-v2 .toc__n { font-family: var(--w2-font-mono); font-size: 11px; letter-spacing: .04em; flex: none; padding-top: 1px; color: #C3BFB2; transition: color .18s var(--w2-ease); }
 .article-v2 .toc__n b { display: none; font-weight: 500; }
 .article-v2 .toc a.active .toc__n, .article-v2 .toc a.done .toc__n { color: var(--w2-accent); }
 .article-v2 .toc a.done .toc__n i { display: none; }
 .article-v2 .toc a.done .toc__n b { display: inline; }
-.article-v2 .toc a.done { color: var(--w2-ink-2); }
+.article-v2 .toc a.done { color: #7C7869; }
 .article-v2 .toc a.active { font-weight: 600; }
 .article-v2 .toc__n i { font-style: normal; }
 
