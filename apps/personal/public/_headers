@@ -1,5 +1,9 @@
 # Default: short cache for HTML, longer for hashed assets
+# NB: article/service routes are extensionless (/writing/slug), so the
+# /*.html rule below never matched them - set no-cache on /* and let the
+# /assets/* rule further down override with immutable for hashed assets.
 /*
+  Cache-Control: public, max-age=0, must-revalidate
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
