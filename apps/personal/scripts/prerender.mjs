@@ -336,7 +336,7 @@ function buildStaticPageFallback(head, extraHtml = "") {
       </header>
       <main>
         <article>
-          <h1>${escapeHtml(head.title)}</h1>
+          <h2>${escapeHtml(head.title)}</h2>
           <p>${escapeHtml(head.description)}</p>
           ${intro}
           ${extraHtml}
