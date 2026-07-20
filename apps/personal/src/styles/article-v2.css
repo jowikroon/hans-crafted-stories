@@ -513,3 +513,69 @@
   }
   .article-v2 .share__native:hover { border-color: var(--w2-accent); background: var(--w2-accent); color: #fff; }
 }
+
+/* ───────────────── IN HET KORT (summary card) ─────────────────
+   Ported from the Anthropic-leak article prototype: white card,
+   hairline border + 3px accent left border, mono kicker, numbered
+   flex rows with accent numbers. */
+.article-v2 .prose .tldr {
+  margin: 8px 0 32px; background: var(--w2-canvas);
+  border: 1px solid var(--w2-hair); border-left: 3px solid var(--w2-accent);
+  border-radius: 14px; padding: 22px 26px;
+}
+.article-v2 .prose .tldr__k {
+  font-family: var(--w2-font-mono); font-size: 11.5px; letter-spacing: .18em;
+  color: var(--w2-accent); font-weight: 600; margin-bottom: 12px; text-transform: uppercase;
+}
+.article-v2 .prose .tldr__list { display: flex; flex-direction: column; gap: 10px; }
+.article-v2 .prose .tldr__item { display: flex; gap: 10px; font-size: 15.5px; line-height: 1.6; color: var(--w2-ink-2); }
+.article-v2 .prose .tldr__item > span:last-child { min-width: 0; }
+.article-v2 .prose .tldr__n { color: var(--w2-accent); font-weight: 700; flex: none; }
+.dark .article-v2 .prose .tldr { background: var(--w2-card); }
+
+/* ───────────────── TIMELINE FIGURE ─────────────────
+   Horizontal milestone timeline: CSS grid columns, absolute 2px
+   connector line behind the dots, red "hot" milestone gets a bigger
+   dot + halo. Stacks vertically on small screens. */
+.article-v2 .prose .tl {
+  margin: 36px 0; background: var(--w2-canvas); border: 1px solid var(--w2-hair);
+  border-radius: 20px; padding: 32px 34px; box-shadow: 0 4px 18px rgba(60, 50, 30, .05);
+}
+.article-v2 .prose .tl__t { font-weight: 700; font-size: 16.5px; color: var(--w2-ink); margin-bottom: 4px; }
+.article-v2 .prose .tl__s { font-size: 13.5px; color: var(--w2-muted); margin-bottom: 30px; }
+.article-v2 .prose .tl__grid { display: grid; gap: 8px; position: relative; }
+.article-v2 .prose .tl__line { position: absolute; top: 29px; left: 8%; right: 8%; height: 2px; background: var(--w2-hair); }
+.article-v2 .prose .tl__item { text-align: center; position: relative; }
+.article-v2 .prose .tl__date { font-size: 12px; font-weight: 600; color: var(--w2-muted); height: 20px; }
+.article-v2 .prose .tl__dot { width: 12px; height: 12px; border-radius: 50%; margin: 4px auto 10px; position: relative; }
+.article-v2 .prose .tl__lab { font-size: 12px; color: var(--w2-muted); line-height: 1.45; }
+.article-v2 .prose .tl__item--hot .tl__date { color: #b3372e; font-weight: 700; }
+.article-v2 .prose .tl__item--hot .tl__dot { width: 16px; height: 16px; margin-top: 2px; box-shadow: 0 0 0 4px #fbe3e1; }
+.article-v2 .prose .tl__cap { font-size: 12px; color: var(--w2-muted); opacity: .8; margin-top: 24px; }
+@media (max-width: 719px) {
+  .article-v2 .prose .tl { padding: 24px 20px; }
+  .article-v2 .prose .tl__grid { grid-template-columns: 1fr !important; gap: 0; }
+  .article-v2 .prose .tl__line { top: 8px; bottom: 8px; left: 7px; right: auto; width: 2px; height: auto; }
+  .article-v2 .prose .tl__item { text-align: left; padding: 8px 0 8px 28px; }
+  .article-v2 .prose .tl__date { height: auto; }
+  .article-v2 .prose .tl__dot { position: absolute; left: 2px; top: 12px; margin: 0; }
+  .article-v2 .prose .tl__item--hot .tl__dot { left: 0; }
+}
+
+/* ───────────────── TOC numbers + checkmarks ─────────────────
+   Every item shows a mono number (01, 02, …); once a section is
+   scrolled past, the number swaps for an accent ✓. Active item is
+   ink + semibold with an accent number. */
+.article-v2 .toc a { display: flex; gap: 10px; align-items: baseline; }
+.article-v2 .toc__n { font-family: var(--w2-font-mono); font-size: 11px; letter-spacing: .04em; flex: none; color: var(--w2-hair); transition: color .18s var(--w2-ease); }
+.article-v2 .toc__n b { display: none; font-weight: 500; }
+.article-v2 .toc a.active .toc__n, .article-v2 .toc a.done .toc__n { color: var(--w2-accent); }
+.article-v2 .toc a.done .toc__n i { display: none; }
+.article-v2 .toc a.done .toc__n b { display: inline; }
+.article-v2 .toc a.done { color: var(--w2-ink-2); }
+.article-v2 .toc a.active { font-weight: 600; }
+.article-v2 .toc__n i { font-style: normal; }
+
+/* ───────────────── Clickable tag pills ───────────────── */
+.article-v2 a.atag { text-decoration: none; transition: all .16s var(--w2-ease); cursor: pointer; }
+.article-v2 a.atag:hover { border-color: var(--w2-accent); color: var(--w2-accent); background: rgba(28, 122, 72, .06); }
