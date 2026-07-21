@@ -3,6 +3,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useEditOverlay, keyForElement } from "./EditOverlayProvider";
 import { createChangeRequest } from "@/lib/api/overrides";
 import { LOGOS } from "@/lib/logos";
+import { RADAR_VARIANTS, radarVariantById } from "@/lib/radar-variants";
 import { HEADERS } from "@/lib/headers";
 import { FONTS } from "@/lib/fonts";
 import { toast } from "sonner";
@@ -323,7 +324,7 @@ const WEIGHTS = ["400", "500", "600", "700", "800"];
 const ALIGNS = ["left", "center", "right"];
 
 function EditPanel() {
-  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont, logoMotion, setLogoMotion } = useEditOverlay();
+  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeRadarId, setActiveRadar, activeFontId, setActiveFont, logoMotion, setLogoMotion } = useEditOverlay();
   const current = selectedKey ? overrides.get(selectedKey) : undefined;
   const [text, setText] = useState("");
   const [instruction, setInstruction] = useState("");
@@ -439,7 +440,44 @@ function EditPanel() {
           Applies site-wide for every visitor. Add more logos in <code>src/lib/logos.ts</code>.
         </small>
       </div>
-      {/* ── Permanent: Header style switcher (site-wide) ── */}
+      {/* ── Permanent: Radar variant switcher (site-wide) — Hans van Leeuwen ── */}
+      <div style={{ margin: "16px 0 8px", padding: "12px 14px", border: "1px solid rgba(0,0,0,.08)", borderRadius: 10, background: "rgba(45,146,85,.04)" }}>
+        <p style={{ font: '600 10px "IBM Plex Mono", monospace', textTransform: "uppercase", letterSpacing: ".06em", color: "#7E7A6F", margin: "0 0 7px" }}>Radar variant</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {RADAR_VARIANTS.map((r) => {
+            const active = r.id === (activeRadarId || "clean");
+            const disabled = r.status === "coming-soon";
+            return (
+              <button
+                key={r.id}
+                type="button"
+                disabled={disabled}
+                onClick={() => !disabled && setActiveRadar(r.id)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                  padding: "8px 10px", borderRadius: 8,
+                  border: active ? "1px solid #2D9255" : "1px solid rgba(0,0,0,.1)",
+                  background: active ? "rgba(45,146,85,.08)" : "#fff",
+                  cursor: disabled ? "not-allowed" : "pointer",
+                  opacity: disabled ? 0.55 : 1,
+                  textAlign: "left",
+                }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#15140F" }}>{r.label}</span>
+                  <span style={{ fontSize: 11, color: "#7E7A6F", lineHeight: 1.35 }}>{r.description}</span>
+                </div>
+                {active && <span style={{ font: '600 10px "IBM Plex Mono", monospace', color: "#2D9255" }}>ACTIVE</span>}
+                {disabled && <span style={{ font: '600 10px "IBM Plex Mono", monospace', color: "#7E7A6F" }}>SOON</span>}
+              </button>
+            );
+          })}
+        </div>
+        <p style={{ fontSize: 11, color: "#7E7A6F", margin: "8px 0 0" }}>
+          Kies welk Artist Radar-design de pagina toont. Site-breed, blijft bewaard tot je iets anders kiest. Actief: <strong>{radarVariantById(activeRadarId).label}</strong>.
+        </p>
+      </div>
+            {/* ── Permanent: Header style switcher (site-wide) ── */}
       <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(0,0,0,.10)" }}>
         <p style={{ font: '600 10px "IBM Plex Mono", monospace', textTransform: "uppercase", letterSpacing: ".06em", color: "#7E7A6F", margin: "0 0 7px" }}>Header style</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
