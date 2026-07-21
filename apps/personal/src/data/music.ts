@@ -180,11 +180,11 @@ export const songs: Song[] = [
     listenUrl: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
     links: {
       spotify: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
-      youtube: "https://youtube.com/shorts/dpOHLmNUpCE",
+      youtube: "https://youtube.com/shorts/95_c0K98HCY",
       suno: "https://suno.com/@jowikroon",
     },
     videoFile: "/media/final_neon_beat_drop.mp4",
-    videoUrl: "https://youtube.com/shorts/dpOHLmNUpCE",
+    videoUrl: "https://youtube.com/shorts/95_c0K98HCY",
     detail: {
       category: "Electronic · Single",
       facts: [
