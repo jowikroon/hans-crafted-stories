@@ -603,5 +603,112 @@
       "Run-log C:\\AI onbereikbaar vanuit deze sessie (buiten connected folders) — START/DONE-regels niet geschreven; genoteerd hier als vervanging.",
       "Cadence: hersteld — deze run volgt exact 1 week op 01-07. Gat 17/24-06 blijft onverklaard (watchdog-check staat open)."
     ]
+  },
+  {
+    "run": "2026-07-15",
+    "delivered": "2026-07-15",
+    "sourceFile": "concurrentie-radar-amazon-de-all-2026-07-15.md",
+    "kpi": {
+      "autodocRevenue": 484.9,
+      "autodocB2b": 42.4,
+      "fbaNet": -0.27,
+      "euro7Days": 137,
+      "openQuestions": 9
+    },
+    "summary": [
+      "Amazon schaft het tweestaps Buy Box-kwalificatiesysteem af: seller-performance wordt van toegangsfilter een directe ranking-factor, rollout start deze maand en is eind 2026 wereldwijd afgerond — het veld concurrenten per listing wordt groter (bron: Seller Forum via Onlinehändler News, 09-07).",
+      "FBM-regime DE verscherpt per vandaag (15-07): OTDR ≥90% verplicht, standaard handling time nog maar 0/1 dag; handhaving met listing-deactivering vanaf 01-09 — FBA-first strategie van CCP wordt hierdoor extra bevestigd.",
+      "AUTODOC schrapt opnieuw IT/R&D-banen (Kyiv/Odessa, 14-07) met \"AI-implementatie\" als motivering — tweede ontslagronde, een week na de €530 mln schuldgefinancierde Apollo buy-out."
+    ],
+    "changes": [
+      {
+        "domain": "Buy Box-mechanisme",
+        "change": "Nieuw: kwalificatie-gate vervalt. Verkäufer-/Händlerleistung verschuift van toegangsvoorwaarde naar directe ranking-factor naast prijs en leversnelheid. Rollout start juli 2026, wereldwijd afgerond eind 2026. Weging niet gepubliceerd.",
+        "source": "Onlinehändler News, 09-07-2026; Amazon Seller Forum"
+      },
+      {
+        "domain": "FBM-regime DE",
+        "change": "Nieuw: verscherping in fasen. Per 15-07: OTDR ≥90% + handling time account-default 0/1 dag. Per 01-09: deactivering listings onder norm + auto-verkorting handling time per SKU. Per 30-09: B2B-zustelling ≥90% binnen kantoortijden. OTDR telt per unit, niet per zending.",
+        "source": "Onlinehändler News, 30-06/01-07-2026; Seller Central"
+      },
+      {
+        "domain": "EU-douane",
+        "change": "Nieuw sinds 01-07: zollfreigrenze ≤€150 vervallen; €3 per douanepositie voor non-EU→EU zendingen (FBA én FBM). Intra-EU zendingen uitgezonderd.",
+        "source": "Onlinehändler News, 22-06-2026; Seller Central"
+      },
+      {
+        "domain": "AUTODOC",
+        "change": "Nieuw: tweede ontslagronde IT/R&D Oekraïne (developers, testers, PM's), aangekondigd via CTO-meeting + mail, 2 mnd compensatie; motivering: transformatie + \"implementatie van AI\".",
+        "source": "dev.ua, 14-07-2026"
+      },
+      {
+        "domain": "Brembo",
+        "change": "#1 Aftermarket Power Rankings juli (69 pt, +1 op NRS Brakes) op kracht van het Automechanika-programma (kopervrij + Greenance). Inhoudelijk geen nieuw productnieuws sinds 08-07.",
+        "source": "The Brake Report, 02-07-2026"
+      },
+      {
+        "domain": "febi bilstein",
+        "change": "Nieuw-op-radar (gepubliceerd 25-06): +290 art.nrs (217 febi Car, 56 Truck, 17 Blue Print waarvan 9 remmen). Kleiner en minder rem-gericht dan het mei-offensief (+897).",
+        "source": "Garage Wire Europe, 25-06-2026"
+      },
+      {
+        "domain": "Frictie-consolidatie VS",
+        "change": "Nieuw: Raybestos → Friction One (29-06), Centric/StopTech → Motorcar Parts of America (30-06), beide uit First Brands Chapter 11-afwikkeling. IP/catalogi only, geen operatie.",
+        "source": "The Brake Report, 29/30-06-2026"
+      },
+      {
+        "domain": "LKQ",
+        "change": "Stabiel. Q2-earnings 30-07 blijft eerstvolgende checkpoint; geen nieuws deze week.",
+        "source": "GlobeNewswire, 02-07-2026"
+      },
+      {
+        "domain": "Top-10 competitor-set",
+        "change": "Stabiel (8e run op rij). Geen listing-data, dus geen rank-diffs — set ongewijzigd aangehouden.",
+        "source": "werkdefinitie watchlist"
+      },
+      {
+        "domain": "Ahrefs Brand Radar",
+        "change": "`Insufficient plan` — carry-over #9.",
+        "source": "live API-call 15-07-2026"
+      },
+      {
+        "domain": "Titel-monitor",
+        "change": "Amazon.de bestseller-fetch levert lege respons — carry-over, 5e run; infra-besluit blijft open.",
+        "source": "web_fetch 15-07-2026"
+      }
+    ],
+    "actions": [
+      {
+        "title": "Buy Box-impactcheck CCP-listings (nieuw, urgent):",
+        "detail": "inventariseer per actieve ASIN wie er meebiedt en welke performance-metrics nu ranking-factor worden; zet OTDR/leversnelheid-monitoring klaar vóór de DE-rollout landt. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Titel-monitor infra-besluit (5e run zonder listing-data, nu gekoppeld aan actie 1):",
+        "detail": "n8n-scraper of Bright Data — zonder listing-data is het Buy Box-effect straks niet meetbaar. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Low-dust mid-segment positie claimen vóór Automechanika (~8 wk, carry-over):",
+        "detail": "Brembo's programma is publiek en bekroond (#1 ranking); het mid-segment onder Brembo-prijspunt blijft onbezet. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "AUTODOC PRO benchmark (carry-over, opnieuw urgenter):",
+        "detail": "levertijd + prijs B2B t.o.v. ABS-kanaal; tweede ontslagronde bevestigt margeverdedigings-patroon dat aan prijsagressie voorafgaat. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Ahrefs plan-besluit (carry-over #9):",
+        "detail": "upgraden of SOV/AI-mentions formeel uit de radar schrappen — 9 runs geblokkeerd is een besluit op zich. Impact: middel. Effort: laag."
+      }
+    ],
+    "openQuestions": [
+      "Buy Box-weging: Amazon publiceert de ranking-formule niet; onduidelijk of off-Amazon prijzen meetellen en wanneer DE precies aan de beurt is. Volgende runs: Seller Forum + PPC Land monitoren.",
+      "AUTODOC ontslag-omvang: aantallen niet gepubliceerd; bron is Telegram-kanaal via dev.ua — richting bevestigd, schaal [unverified].",
+      "febi rem-aandeel juni-batch: 9 rem-referenties via Blue Print geteld uit het persbericht; febi-Car breakdown per categorie niet gepubliceerd.",
+      "Brembo Greenance op Amazon.de: nog steeds niet via search gevonden; zonder listing-toegang niet uitsluitbaar — [unverified].",
+      "ABS directe Amazon.de-presence: carry-over sinds 14-05, onbevestigd.",
+      "LKQ 30-07: Q2-call is het checkpoint — run 29-07/05-08 expliciet checken.",
+      "Run-log C:\\AI onbereikbaar vanuit deze sessie (buiten connected folders) — START/DONE-regels niet geschreven; genoteerd hier als vervanging.",
+      "Context-files (`/context/competitor-watchlist.md`, `/context/ccp-amazon-de-strategy.md`) niet aanwezig in de projectmap — watchlist uit de skill-bundel gebruikt als baseline.",
+      "Premium A+ Content gratis (17-06, via gerelateerd artikel OHN) — kans voor CCP-listingcontent, nog niet geverifieerd in Seller Central; meenemen bij catalogus-werk [unverified]."
+    ]
   }
 ]
