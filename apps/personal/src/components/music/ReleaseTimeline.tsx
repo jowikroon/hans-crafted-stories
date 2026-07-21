@@ -12,6 +12,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { songs } from "@/data/music";
 
 type ReleaseType = "Single" | "EP" | "Album";
 
@@ -38,6 +40,7 @@ const BASE_RELEASES: Release[] = [
   { id: "hanging-on", date: "2025-11-01", title: "Hanging On (Remastered)", type: "Single", genre: "Electronic" },
   { id: "teacher-leave", date: "2025-12-01", title: "Teacher Leave (Remastered x2)", type: "Single", genre: "Electronic" },
   { id: "beat-drop", date: "2026-01-01", title: "Beat Drop", type: "Single", genre: "Electronic", video: true, note: "The first official single — out on Spotify as Jowikroon." },
+  { id: "neon-house-of-glass", date: "2026-07-03", title: "Neon House of Glass", type: "Single", genre: "Electronic", dur: "4:46", note: "Second official single, out on Spotify." },
 ];
 
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -212,7 +215,13 @@ const ReleaseTimeline = () => {
                       <span className="dot" /><span className="mn-rel__genre">{r.genre}</span>
                       {sub && <><span className="dot" /><span>{sub}</span></>}
                     </div>
-                    <div className="mn-rel__title">{r.title}{r.type === "EP" ? " — EP" : ""}</div>
+                    {(() => {
+                      const match = songs.find((sg) => sg.slug === r.id || sg.title.toLowerCase() === r.title.toLowerCase());
+                      const label = <>{r.title}{r.type === "EP" ? " — EP" : ""}</>;
+                      return match
+                        ? <Link to={`/music/${match.slug}`} className="mn-rel__title" data-cursor aria-label={`Open ${match.title} track page`}>{label}</Link>
+                        : <div className="mn-rel__title">{label}</div>;
+                    })()}
                     {r.note && <div className="mn-rel__note">{r.note}</div>}
                     {(i === 0 || r.type !== "Single" || r.user) && (
                       <div className="mn-rel__badges">

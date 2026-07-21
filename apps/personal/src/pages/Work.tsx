@@ -142,14 +142,14 @@ const Work = () => {
 
   if (loading) {
     return (
-      <section className="section-container pt-28">
+      <section className="mx-auto max-w-6xl px-6 pt-6">
         <p className="text-muted-foreground">{getValue("work_loading_text", tw.loading)}</p>
       </section>
     );
   }
 
   return (
-    <section className="section-container pt-28 pb-20">
+    <section className="mx-auto max-w-6xl px-6 pt-6 pb-20">
       {isVisible("breadcrumb") && (
         <motion.nav
           initial={{ opacity: 0, y: -8 }}

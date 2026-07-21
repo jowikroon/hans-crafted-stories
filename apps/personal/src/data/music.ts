@@ -115,11 +115,21 @@ export interface Release {
   embedHeight: number;
 }
 
-/** Featured "Nightline — EP" release card, ported from Music.html. */
+/** Featured release + previous official — both shown at the top of /music. */
 export const featuredRelease: Release = {
   kicker: "Latest release",
+  title: "Neon House of Glass",
+  sub: "My second official single, out now on Spotify — released as Jowikroon. The tracks below are concept versions (around 90% done) you can already hear on SoundCloud.",
+  chips: ["2026", "Electronic", "Single"],
+  embed: "https://open.spotify.com/embed/album/2JAngR51N6h1mTUI43MHge?utm_source=generator",
+  embedHeight: 352,
+};
+
+/** Previous official single — shown next to the featured release. */
+export const previousRelease: Release = {
+  kicker: "Also on Spotify",
   title: "Beat Drop",
-  sub: "My first official single, out now on Spotify — released as Jowikroon. The tracks below are concept versions (around 90% done) you can already hear on SoundCloud.",
+  sub: "My first official single, also live on Spotify as Jowikroon.",
   chips: ["2026", "Electronic", "Single"],
   embed: "https://open.spotify.com/embed/album/7gHaf9f1kcQaOtg9sMzPlo?utm_source=generator",
   embedHeight: 352,
@@ -166,6 +176,39 @@ function conceptDetail(opts: { category: string; released: string; length: strin
 /** Real catalogue: Beat Drop (Spotify) + 4 SoundCloud concept tracks. */
 export const songs: Song[] = [
   {
+    title: "Neon House of Glass",
+    slug: "neon-house-of-glass",
+    artist: "Jowikroon",
+    provider: "spotify",
+    tags: ["electronic"],
+    genre: "Electronic",
+    date: "2026-07-03",
+    duration: "4:46",
+    cover: "https://i.scdn.co/image/ab67616d0000b27331d1dc7e59bd437f979191c7",
+    embed: "https://open.spotify.com/embed/album/2JAngR51N6h1mTUI43MHge?utm_source=generator",
+    embedHeight: 352,
+    listenUrl: "https://open.spotify.com/album/2JAngR51N6h1mTUI43MHge",
+    links: { spotify: "https://open.spotify.com/track/5ubWiujjSERZhUzxLeqwzM" },
+    detail: {
+      category: "Electronic · Single",
+      facts: [
+        { label: "Released", value: "Jul 3, 2026" },
+        { label: "Length", value: "4:46" },
+        { label: "Label", value: "Jowikroon (self-released)" },
+      ],
+      session: [
+        { label: "Artist", value: "Jowikroon" },
+        { label: "Format", value: "Single" },
+        { label: "Platforms", value: "Spotify" },
+      ],
+      gear: [],
+      prose: [
+        { type: "lead", text: "Second official single. Live on Spotify as of July 3, 2026." },
+      ],
+      lyrics: [],
+    },
+  },
+  {
     title: "Beat Drop",
     slug: "beat-drop",
     artist: "Jowikroon",
@@ -180,11 +223,11 @@ export const songs: Song[] = [
     listenUrl: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
     links: {
       spotify: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
-      youtube: "https://youtube.com/shorts/dpOHLmNUpCE",
+      youtube: "https://youtube.com/shorts/95_c0K98HCY",
       suno: "https://suno.com/@jowikroon",
     },
     videoFile: "/media/final_neon_beat_drop.mp4",
-    videoUrl: "https://youtube.com/shorts/dpOHLmNUpCE",
+    videoUrl: "https://youtube.com/shorts/95_c0K98HCY",
     detail: {
       category: "Electronic · Single",
       facts: [

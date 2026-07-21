@@ -33,7 +33,7 @@ const Hero = () => {
     <main>
       {/* Hero Section */}
       <section
-        className="section-container flex min-h-[85vh] flex-col justify-center pt-28"
+        className="section-container flex min-h-[78vh] flex-col justify-center pt-10"
         aria-label="Introduction"
       >
         <motion.div

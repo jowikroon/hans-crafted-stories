@@ -155,12 +155,11 @@ const Navbar = (_props: NavbarProps) => {
   const SiteLink = ({ to, label, active }: { to: string; label: string; active: boolean }) => (
     <Link
       to={to}
-      className={`relative px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${
-        active ? barInk : `${barMut} ${barHovInk}`
+      className={`px-3.5 py-2 text-sm font-medium rounded-full transition-all ${
+        active ? `${barChip} ${barInk}` : `${barMut} ${barHovInk} ${barHovBg}`
       }`}
     >
       {label}
-      {active && <span className="absolute left-3.5 right-3.5 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
     </Link>
   );
 
@@ -289,24 +288,20 @@ const Navbar = (_props: NavbarProps) => {
 
             {/* Centre nav — plain links (Work hover dropdown removed) */}
             <div className="hidden md:flex items-center gap-1 justify-self-center">
-                {siteLinks.map((l) =>
-                  l.to === "/music" ? (
-                    <MusicNav key={l.to} label={l.label} />
-                  ) : (
-                    <SiteLink
-                      key={l.to}
-                      to={l.to}
-                      label={l.label}
-                      active={
-                        l.to === "/work"
-                          ? isWorkActive
-                          : (l as { cc?: boolean }).cc
-                          ? isCommandCenter
-                          : isActive(l.to)
-                      }
-                    />
-                  )
-                )}
+                {siteLinks.map((l) => (
+                  <SiteLink
+                    key={l.to}
+                    to={l.to}
+                    label={l.label}
+                    active={
+                      l.to === "/work"
+                        ? isWorkActive
+                        : (l as { cc?: boolean }).cc
+                        ? isCommandCenter
+                        : isActive(l.to)
+                    }
+                  />
+                ))}
               </div>
 
             {/* Right cluster */}
@@ -380,15 +375,7 @@ const Navbar = (_props: NavbarProps) => {
                   const cc = (l as { cc?: boolean }).cc;
                   const active = cc ? isCommandCenter : isActive(l.to);
                   return (
-                    <div key={l.to} className="flex flex-col">
-                      <Link to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : `${barChip} ${barInk}`) : `${barMut} ${barHovBg} ${barHovInk}`}`}>{l.label}</Link>
-                      {l.to === "/music" && (
-                        <>
-                          <Link to="/muziek/artist-radar" onClick={() => setMobileOpen(false)} className={`ml-3 rounded-lg px-3 py-2 text-sm block ${barMut} ${barHovBg} ${barHovInk}`}>Artist Radar</Link>
-                          <Link to="/music#songs" onClick={() => setMobileOpen(false)} className={`ml-3 rounded-lg px-3 py-2 text-sm block ${barMut} ${barHovBg} ${barHovInk}`}>Songs &amp; Production Notes</Link>
-                        </>
-                      )}
-                    </div>
+                    <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : `${barChip} ${barInk}`) : `${barMut} ${barHovBg} ${barHovInk}`}`}>{l.label}</Link>
                   );
                 })}
 
