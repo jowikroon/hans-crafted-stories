@@ -9,6 +9,7 @@ import { useEditOverlay } from "@/components/edit-overlay/EditOverlayProvider";
 import { radarVariantById, DEFAULT_RADAR_ID } from "@/lib/radar-variants";
 import RadarClean from "./RadarClean";
 import RadarMaster from "./RadarMaster";
+import RadarCompass from "./RadarCompass";
 
 export default function ArtistRadar() {
   const { activeRadarId } = useEditOverlay();
@@ -16,5 +17,6 @@ export default function ArtistRadar() {
   // 'compass' is coming-soon → fall back to clean until its port ships
   const id = chosen.status === "live" ? chosen.id : DEFAULT_RADAR_ID;
   if (id === "master") return <RadarMaster />;
+  if (id === "compass") return <RadarCompass />;
   return <RadarClean />;
 }
