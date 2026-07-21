@@ -309,6 +309,9 @@
     <link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/" />
     <link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/" />
 
+    <!-- Sitemap reference (SEO audit 2026-07-21) -->
+    <link rel="sitemap" type="application/xml" href="https://hansvanleeuwen.com/sitemap.xml" />
+
     <!-- Fonts: preconnect + async load with display=swap. Switzer (display/body) + JetBrains Mono via Fontshare, Newsreader (serif, blog skins) via Google Fonts. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -317,8 +320,7 @@
     <noscript><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&f[]=jetbrains-mono@400,500&display=swap" /></noscript>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" /></noscript>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" /></noscript>
+    <!-- Bricolage / IBM Plex Mono / Atkinson preload removed (SEO audit 2026-07-21): Atkinson unused site-wide; Bricolage + IBM Plex Mono load on demand only where rendered (/write via write-cms.css, edit overlay injects them). Kills 3 wasteful cross-origin requests on marketing pages. -->
     <!-- Archivo/IBM Plex removed: site standardized on Switzer (articles-page standard) -->
     <!-- CMS / editor fonts (Bricolage Grotesque, IBM Plex Mono, Fraunces, JetBrains Mono) are
          no longer loaded here. They are scoped to where they're used: the /write CMS loads them
@@ -371,7 +373,7 @@
       </header>
       <main>
         <section>
-          <h2>Hans van Leeuwen – Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h2>
+          <h1>Hans van Leeuwen – Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h1>
           <p>Available for freelance &amp; interim e-commerce roles — Amazon &amp; Bol.com specialist (NL/EU)</p>
           <p>I'm Hans van Leeuwen — a freelance e-commerce manager based in Amersfoort, Netherlands, specializing in <a href="/amazon-nl-specialist">Amazon marketplace management</a>, <a href="/bol-com-consultant">Bol.com optimization</a>, marketplace growth, product data optimization, and AI-assisted e-commerce operations. As an experienced <a href="/interim-ecommerce-manager">interim e-commerce manager in the Netherlands</a>, I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
           <p>Based in Amersfoort, Netherlands. Available for NL &amp; EU projects.</p>

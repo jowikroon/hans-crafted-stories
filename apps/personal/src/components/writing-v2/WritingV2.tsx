@@ -223,7 +223,7 @@ const WritingV2 = () => {
         {/* Masthead */}
         <section className="masthead">
           <span className="eyebrow">Insights &amp; Essays</span>
-          <h1 className="title">{lang === "nl" ? "Gedachten & essays" : "Thoughts & Essays"}</h1>
+          <h1 className="title">{lang === "nl" ? "E-commerce inzichten & marketplace-optimalisatie" : "E-commerce Insights & Marketplace Optimization"}</h1>
           <p className="lede">
             {lang === "nl" ? (
               <>
@@ -265,15 +265,15 @@ const WritingV2 = () => {
         <div className="toolbar" ref={toolbarRef}>
           <div className="filters" role="group" aria-label="Filter by topic">
             {FILTER_PILLS.map((p) => (
-              <button
+              <a
                 key={p.tag}
-                type="button"
+                href={p.tag === "all" ? "/writing" : `/writing?tag=${p.tag}`}
                 className={`pill ${filter === p.tag ? "on" : ""}`}
                 aria-pressed={filter === p.tag}
-                onClick={() => setFilter(p.tag)}
+                onClick={(e) => { e.preventDefault(); setFilter(p.tag); }}
               >
                 {p.label}
-              </button>
+              </a>
             ))}
             {filter !== "all" && !FILTER_PILLS.some((p) => p.tag === filter) && (
               <button
@@ -395,6 +395,7 @@ const WritingV2 = () => {
                           width={1200}
                           height={800}
                           loading="eager"
+                          fetchPriority="high"
                           decoding="async"
                         />
                       </div>

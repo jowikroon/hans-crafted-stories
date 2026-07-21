@@ -498,7 +498,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "10+ years growing Amazon NL & Bol.com revenue. Listings, ads, CRO & forecasting. Based in Amersfoort, NL/EU. Available for freelance and interim marketplace work.",
+      homeDescription: "10+ years growing Amazon NL & Bol.com revenue: listings, ads, CRO & forecasting. Amersfoort, NL/EU. Book a free 7-point marketplace audit.",
       writingTitle: "E-commerce Insights for Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
       workTitle: "Portfolio — UX & E-commerce Design | Hans van Leeuwen",
