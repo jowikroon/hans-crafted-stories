@@ -16,6 +16,7 @@ import {
 } from "@/lib/api/overrides";
 import { DEFAULT_LOGO_ID, LOGO_SETTING_KEY } from "@/lib/logos";
 import { DEFAULT_HEADER_ID, HEADER_SETTING_KEY } from "@/lib/headers";
+import { DEFAULT_RADAR_ID, RADAR_SETTING_KEY } from "@/lib/radar-variants";
 import { DEFAULT_FONT_ID, FONT_SETTING_KEY, fontById } from "@/lib/fonts";
 import { LogoProvider } from "@/contexts/LogoContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
@@ -78,6 +79,8 @@ interface EditOverlayValue {
   /** Active header style id (site-wide setting). */
   activeHeaderId: string;
   setActiveHeader: (id: string) => Promise<void>;
+  activeRadarId: string;
+  setActiveRadar: (id: string) => Promise<void>;
   /** Active font style id (site-wide setting). */
   activeFontId: string;
   setActiveFont: (id: string) => Promise<void>;
@@ -301,6 +304,24 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     [upsertLocal]
   );
 
+  const activeRadarId = overrides.get(RADAR_SETTING_KEY)?.text_override || DEFAULT_RADAR_ID;
+
+  const setActiveRadar = useCallback(
+    async (id: string) => {
+      const row: PageOverride = {
+        element_key: RADAR_SETTING_KEY,
+        selector: null,
+        page_path: "*",
+        label: "Radar variant",
+        text_override: id,
+        style: {},
+      };
+      upsertLocal(row);
+      await apiSave(row);
+    },
+    [upsertLocal]
+  );
+
   const activeFontId = overrides.get(FONT_SETTING_KEY)?.text_override || DEFAULT_FONT_ID;
 
   const setActiveFont = useCallback(
@@ -396,6 +417,8 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       setActiveLogo,
       activeHeaderId,
       setActiveHeader,
+      activeRadarId,
+      setActiveRadar,
       activeFontId,
       setActiveFont,
       navItems,
@@ -403,7 +426,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       logoMotion,
       setLogoMotion,
     }),
-    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, undoLast, undoCount, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeFontId, setActiveFont, navItems, setNavItems, logoMotion, setLogoMotion]
+    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, undoLast, undoCount, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeRadarId, setActiveRadar, activeFontId, setActiveFont, navItems, setNavItems, logoMotion, setLogoMotion]
   );
 
   return (
