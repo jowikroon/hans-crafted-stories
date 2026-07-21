@@ -1,22 +1,30 @@
 /**
  * ArtistRadar.tsx — thin chooser that renders the active radar design.
  *
- * The actual radar UI lives in one component per variant (RadarClean, RadarMaster,
- * …). Which one renders is controlled site-wide by the edit-overlay's activeRadarId
- * (persisted in page_overrides with element_key RADAR_SETTING_KEY). Default: 'clean'.
+ * The actual radar UI lives in one component per variant. Which one renders is
+ * controlled site-wide by the edit-overlay's activeRadarId (persisted in
+ * page_overrides with element_key RADAR_SETTING_KEY). Default: 'clean'.
+ *
+ * The COMPONENTS map (not a switch/if-chain) is important: Rollup treats
+ * dictionary property reads as opaque, so all three imports stay in the bundle
+ * even when the string key only becomes known at runtime.
  */
 import { useEditOverlay } from "@/components/edit-overlay/EditOverlayProvider";
-import { radarVariantById, DEFAULT_RADAR_ID } from "@/lib/radar-variants";
+import { DEFAULT_RADAR_ID, radarVariantById } from "@/lib/radar-variants";
 import RadarClean from "./RadarClean";
 import RadarMaster from "./RadarMaster";
 import RadarCompass from "./RadarCompass";
 
+const COMPONENTS: Record<string, () => JSX.Element> = {
+  clean: RadarClean,
+  master: RadarMaster,
+  compass: RadarCompass,
+};
+
 export default function ArtistRadar() {
   const { activeRadarId } = useEditOverlay();
   const chosen = radarVariantById(activeRadarId || DEFAULT_RADAR_ID);
-  // 'compass' is coming-soon → fall back to clean until its port ships
   const id = chosen.status === "live" ? chosen.id : DEFAULT_RADAR_ID;
-  if (id === "master") return <RadarMaster />;
-  if (id === "compass") return <RadarCompass />;
-  return <RadarClean />;
+  const Radar = COMPONENTS[id] ?? RadarClean;
+  return <Radar />;
 }
