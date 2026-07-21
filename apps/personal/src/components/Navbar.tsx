@@ -276,10 +276,10 @@ const Navbar = (_props: NavbarProps) => {
           style={{ width: "calc(100% - 36px)" }}
         >
             {/* Brand */}
-            <Link to="/" aria-label="Hans van Leeuwen — home" className={`group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight ${barInk}`}>
+            <Link to="/" aria-label="Hans van Leeuwen, home" className={`group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight ${barInk}`}>
               <img
                 src={logoSrc}
-                alt="Hans van Leeuwen — Freelance E-commerce Manager"
+                alt="Hans van Leeuwen, Freelance E-commerce Manager"
                 width={30}
                 height={30}
                 className={`h-[30px] w-[30px] rounded-md object-contain${logoMotion ? " transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" : ""}`}
