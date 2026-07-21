@@ -155,12 +155,11 @@ const Navbar = (_props: NavbarProps) => {
   const SiteLink = ({ to, label, active }: { to: string; label: string; active: boolean }) => (
     <Link
       to={to}
-      className={`relative px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${
-        active ? barInk : `${barMut} ${barHovInk}`
+      className={`px-3.5 py-2 text-sm font-medium rounded-full transition-all ${
+        active ? `${barChip} ${barInk}` : `${barMut} ${barHovInk} ${barHovBg}`
       }`}
     >
       {label}
-      {active && <span className="absolute left-3.5 right-3.5 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
     </Link>
   );
 

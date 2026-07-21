@@ -52,7 +52,6 @@ interface AppShellProps {
  */
 const mainBackgroundFor = (pathname: string): string | undefined => {
   if (pathname === "/music") return "#08080A";        // .music-neon (After Hours)
-  if (pathname === "/muziek/artist-radar") return "#151210"; // Artist Radar (dark)
   if (pathname === "/release-set") return "#07080C";  // Release Set studio
   if (pathname === "/god-structure") return "hsl(220, 20%, 6%)";
   if (pathname === "/samantha") return "#0A0A0C";     // Samantha immersive
