@@ -1,11 +1,11 @@
 /**
- * Music.tsx — /music "After Hours" neon page.
+ * Music.tsx, /music "After Hours" neon page.
  *
  * Pixel-port of the claude.ai/design prototype project/Music - Neon.html,
  * rendered with the scoped .music-neon stylesheet. Dark, near-black canvas
  * with one acid-neon accent, an ambient cursor-lit grid, numbered track rows
  * with lazy inline Spotify/SoundCloud playback, a live Amersfoort clock, and
- * — folded in at the bottom — the Music Studio release timeline.
+ *, folded in at the bottom, the Music Studio release timeline.
  *
  * Data comes from the live src/data/music.ts (real catalogue: Beat Drop +
  * SoundCloud concepts). The permanent site Navbar renders above this in its
@@ -22,7 +22,7 @@ import { songs, featuredRelease, previousRelease, type Song } from "@/data/music
 import ReleaseTimeline from "@/components/music/ReleaseTimeline";
 import "@/styles/music-neon.css";
 
-/* deterministic waveform bars — stable across SSR/CSR (no Math.random) */
+/* deterministic waveform bars, stable across SSR/CSR (no Math.random) */
 function waveBars(key: string, n: number): number[] {
   let seed = 0;
   for (let i = 0; i < key.length; i++) seed = (seed * 31 + key.charCodeAt(i)) >>> 0;
@@ -55,7 +55,7 @@ const ArrowRight = () => (
 );
 
 function fmtDate(iso: string): string {
-  if (!iso || iso === "—") return "";
+  if (!iso || iso === "-") return "";
   const d = new Date(iso);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
@@ -66,7 +66,7 @@ function TrackRow({ song, index, playing, onToggle }: { song: Song; index: numbe
     <article className={`mn-track${playing ? " playing" : ""}`}>
       <span className="mn-track__idx">{String(index + 1).padStart(2, "0")}</span>
       <div className="mn-track__cover">
-        {song.cover && <img src={song.cover} alt={`Cover — ${song.title}`} loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
+        {song.cover && <img src={song.cover} alt={`Cover, ${song.title}`} loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
         <button className="mn-track__play" type="button" aria-label={playing ? `Pause ${song.title}` : `Play ${song.title}`} aria-pressed={playing} onClick={() => onToggle(song.slug)}>
           <span className="ico">{playing ? <PauseIcon /> : <PlayIcon />}</span>
         </button>
@@ -88,7 +88,7 @@ function TrackRow({ song, index, playing, onToggle }: { song: Song; index: numbe
       {playing && (
         <div className="mn-track__embed">
           <iframe
-            title={`Player — ${song.title}`}
+            title={`Player, ${song.title}`}
             src={song.embed}
             height={song.embedHeight}
             loading="lazy"
@@ -106,7 +106,7 @@ const Music = () => {
   // see Spotify releases only.
   const visibleSongs = songs.filter((sg) => sg.provider !== "soundcloud" || !!user);
 
-  // Hero genre menu — a real, animated filter over the track list. "All" plus
+  // Hero genre menu, a real, animated filter over the track list. "All" plus
   // the genres actually present in the visible catalogue. Clicking a chip
   // filters the tracks and glides the neon highlight (framer layoutId).
   const [genre, setGenre] = useState<string>("All");
@@ -114,8 +114,8 @@ const Music = () => {
   const shownSongs = genre === "All" ? visibleSongs : visibleSongs.filter((sg) => sg.genre === genre);
 
   useSEO({
-    title: "Music — After Hours | Hans van Leeuwen",
-    description: "Tracks recorded after midnight — a tape machine, soft synths, and whatever the night left behind. Press play, and read the notes for every song.",
+    title: "Music: After Hours | Hans van Leeuwen",
+    description: "Tracks recorded after midnight, a tape machine, soft synths, and whatever the night left behind. Press play, and read the notes for every song.",
     url: "https://hansvanleeuwen.com/music",
     type: "music.playlist",
     hreflang: [
@@ -226,7 +226,7 @@ const Music = () => {
       <section className="mn-wrap mn-hero">
         <span className="mn-kicker"><span className="mn-live" />Now playing <span className="mn-sep">/</span> made after midnight</span>
         <h1 className="mn-hero__title">Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</h1>
-        <p className="mn-hero__lede">No singles chasing a playlist. Just a handful of <b>tracks</b>, a tape machine, and whatever the night left behind. Press play — and if you want to stay a while, every song keeps the notes: the gear, the mistakes, the lyrics.</p>
+        <p className="mn-hero__lede">No singles chasing a playlist. Just a handful of <b>tracks</b>, a tape machine, and whatever the night left behind. Press play, and if you want to stay a while, every song keeps the notes: the gear, the mistakes, the lyrics.</p>
         <div className="mn-hero__cues" role="tablist" aria-label="Filter tracks by genre">
           {genres.map((g) => {
             const active = genre === g;
@@ -275,7 +275,7 @@ const Music = () => {
             </div>
           </div>
           <div className="mn-release__player">
-            <iframe title={`Spotify — ${featuredRelease.title}`} src={featuredRelease.embed} width="100%" height={featuredRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+            <iframe title={`Spotify, ${featuredRelease.title}`} src={featuredRelease.embed} width="100%" height={featuredRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
           </div>
         </div>
         <div className="mn-release" style={{ marginTop: "clamp(20px,3vh,32px)" }}>
@@ -291,7 +291,7 @@ const Music = () => {
             </div>
           </div>
           <div className="mn-release__player">
-            <iframe title={`Spotify — ${previousRelease.title}`} src={previousRelease.embed} width="100%" height={previousRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+            <iframe title={`Spotify, ${previousRelease.title}`} src={previousRelease.embed} width="100%" height={previousRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
           </div>
         </div>
       </section>
@@ -304,7 +304,7 @@ const Music = () => {
             <TrackRow key={song.slug} song={song} index={i} playing={playingSlug === song.slug} onToggle={toggle} />
           ))}
           {shownSongs.length === 0 && (
-            <p className="mn-tracks__empty">No tracks in <b>{genre}</b> yet — <button type="button" className="mn-tracks__reset" onClick={() => setGenre("All")}>show all</button>.</p>
+            <p className="mn-tracks__empty">No tracks in <b>{genre}</b> yet, <button type="button" className="mn-tracks__reset" onClick={() => setGenre("All")}>show all</button>.</p>
           )}
         </div>
       </section>
@@ -316,7 +316,7 @@ const Music = () => {
           <div className="mn-release__body">
             <span className="mn-release__kicker"><span className="mn-live" />Gratis alert-service</span>
             <h2 className="mn-release__title">Mis nooit meer een show van je favoriete artiest</h2>
-            <p className="mn-release__sub">Kies je artiesten — je krijgt een mail bij geruchten, aankondigingen en zodra tickets in Nederland of België in de verkoop gaan.</p>
+            <p className="mn-release__sub">Kies je artiesten, je krijgt een mail bij geruchten, aankondigingen en zodra tickets in Nederland of België in de verkoop gaan.</p>
             <div className="mn-release__meta">
               <span className="mn-chip">Geruchten</span>
               <span className="mn-chip">Aankondigingen</span>
@@ -346,7 +346,7 @@ const Music = () => {
 
       {/* outro */}
       <section className="mn-wrap mn-outro mn-rv">
-        <p className="mn-outro__line">That&apos;s the record so far. <em>No encore</em> — just press play again, or follow along for whatever the next late night turns into.</p>
+        <p className="mn-outro__line">That&apos;s the record so far. <em>No encore</em>, just press play again, or follow along for whatever the next late night turns into.</p>
         <a href={featuredRelease.embed.includes("album/") ? "https://open.spotify.com/album/7gHaf9f1kcQaOtg9sMzPlo" : "#"} className="mn-outro__cta" target="_blank" rel="noopener noreferrer" data-cursor>
           Follow on Spotify <ArrowRight />
         </a>

@@ -1,5 +1,5 @@
 /**
- * music.ts — typed Song data for the /music section.
+ * music.ts, typed Song data for the /music section.
  *
  * Ported 1:1 from the claude.ai/design handoff bundle:
  *   _redesign-handoff/project/Music.html  (songs grid + featured release)
@@ -8,7 +8,7 @@
  * The prototype shipped ONE filled-in detail template (Nightline) and three
  * stub cards. For v1 every track therefore reuses the Nightline production
  * notes / gear / lyrics as demo content, lightly varied per track. Real
- * per-song copy is expected to replace `detail` later — see TODO markers.
+ * per-song copy is expected to replace `detail` later, see TODO markers.
  *
  * Copy is intentionally English (the prototype is English). No translation
  * keys are added here; if/when Music goes bilingual, mirror the writing-v2
@@ -46,7 +46,7 @@ export interface ProseBlock {
   kicker?: string;
   /**
    * Text. May contain a small whitelist of inline HTML (<strong>) which the
-   * renderer injects via dangerouslySetInnerHTML — content is author-trusted,
+   * renderer injects via dangerouslySetInnerHTML, content is author-trusted,
    * never user input.
    */
   text: string;
@@ -78,13 +78,13 @@ export interface Song {
   artist: string;
   /** Which platform hosts the embed/player. */
   provider: Provider;
-  /** Concept / work-in-progress track (≈90%) — shown with a "Concept" badge. */
+  /** Concept / work-in-progress track (≈90%), shown with a "Concept" badge. */
   concept?: boolean;
   /** Genre filter tags (first one is also the primary genre label source). */
   tags: GenreTag[];
   /** Human label shown in the meta row, e.g. "Lo-fi". */
   genre: string;
-  /** ISO date (YYYY-MM-DD) — used for sort + display. */
+  /** ISO date (YYYY-MM-DD), used for sort + display. */
   date: string;
   /** Track length, e.g. "3:42". */
   duration: string;
@@ -100,7 +100,7 @@ export interface Song {
   links?: { spotify?: string; soundcloud?: string; youtube?: string; appleMusic?: string; suno?: string };
   /** Optional self-hosted video file (served from R2 via /media/...). Preferred over videoUrl. */
   videoFile?: string;
-  /** Optional YouTube watch link (official video) — secondary link / fallback. */
+  /** Optional YouTube watch link (official video), secondary link / fallback. */
   videoUrl?: string;
   detail: SongDetail;
 }
@@ -115,17 +115,17 @@ export interface Release {
   embedHeight: number;
 }
 
-/** Featured release + previous official — both shown at the top of /music. */
+/** Featured release + previous official, both shown at the top of /music. */
 export const featuredRelease: Release = {
   kicker: "Latest release",
   title: "Neon House of Glass",
-  sub: "My second official single, out now on Spotify — released as Jowikroon. The tracks below are concept versions (around 90% done) you can already hear on SoundCloud.",
+  sub: "My second official single, out now on Spotify, released as Jowikroon. The tracks below are concept versions (around 90% done) you can already hear on SoundCloud.",
   chips: ["2026", "Electronic", "Single"],
   embed: "https://open.spotify.com/embed/album/2JAngR51N6h1mTUI43MHge?utm_source=generator",
   embedHeight: 352,
 };
 
-/** Previous official single — shown next to the featured release. */
+/** Previous official single, shown next to the featured release. */
 export const previousRelease: Release = {
   kicker: "Also on Spotify",
   title: "Beat Drop",
@@ -141,7 +141,7 @@ function scEmbed(trackUrl: string): string {
   return `https://w.soundcloud.com/player/?url=${u}&color=%231C6B45&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false`;
 }
 
-/** Lighter detail for the concept tracks — honest, no fabricated studio specs. */
+/** Lighter detail for the concept tracks, honest, no fabricated studio specs. */
 function conceptDetail(opts: { category: string; released: string; length: string; note: string }): SongDetail {
   return {
     category: opts.category,
@@ -161,7 +161,7 @@ function conceptDetail(opts: { category: string; released: string; length: strin
       { type: "lead", text: opts.note },
       {
         type: "p",
-        text: "This is a concept version — roughly 90% finished and already worth a listen. The mix, arrangement and a final master are still being polished before it goes to streaming platforms.",
+        text: "This is a concept version, roughly 90% finished and already worth a listen. The mix, arrangement and a final master are still being polished before it goes to streaming platforms.",
       },
       {
         type: "callout",
@@ -256,9 +256,9 @@ export const songs: Song[] = [
         { type: "p", text: "An energetic electronic track with an official video. Press play above to listen, or open it on Spotify." },
         { type: "h2", id: "style", text: "Sound & style" },
         { type: "p", text: "Mellow, mid-tempo groove around 124 BPM, blending minimal techno with a warm, funk-infused house feel. The mix is ultra-clean and precise: a tight, punchy kick locks in with a rounded, rubbery sub bass, while crisp offbeat hi-hats and soft, filtered claps create a steady, hypnotic pulse." },
-        { type: "p", text: "Instead of dense layering, a few carefully chosen elements carry the track — an arpeggiated synth pattern loops with subtle variation, interacting with a bright, syncopated piano riff that adds a human, \"player\" touch. Analog-style pads bloom slowly in the background, filling space without crowding the groove." },
-        { type: "p", text: "The arrangement evolves through gradual filtering, muting, and reintroducing parts, with occasional restrained risers for tension. The focus stays on repetition, groove and tonal clarity — a smooth, hypnotic flow that feels both mechanical and soulful, built for understated but uplifting movement on the dancefloor." },
-        { type: "callout", kicker: "Out now", text: "Released as Jowikroon — the artist alias of Hans van Leeuwen. Also on Suno." },
+        { type: "p", text: "Instead of dense layering, a few carefully chosen elements carry the track, an arpeggiated synth pattern loops with subtle variation, interacting with a bright, syncopated piano riff that adds a human, \"player\" touch. Analog-style pads bloom slowly in the background, filling space without crowding the groove." },
+        { type: "p", text: "The arrangement evolves through gradual filtering, muting, and reintroducing parts, with occasional restrained risers for tension. The focus stays on repetition, groove and tonal clarity, a smooth, hypnotic flow that feels both mechanical and soulful, built for understated but uplifting movement on the dancefloor." },
+        { type: "callout", kicker: "Out now", text: "Released as Jowikroon, the artist alias of Hans van Leeuwen. Also on Suno." },
       ],
       lyrics: [
         { tag: "Verse 1", lines: ["Clock ticks", "Time flies", "Neon whispers", "Behind my eyes", "A new sound grows", "A rhythm takes hold"] },
@@ -279,7 +279,7 @@ export const songs: Song[] = [
     tags: ["electronic"],
     genre: "Electronic",
     date: "2025-12-01",
-    duration: "—",
+    duration: "-",
     cover: "https://i1.sndcdn.com/avatars-CRNs7sDBulfbcqSz-QEQetg-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/teacher-leave-remastered-x2-2"),
     embedHeight: 166,
@@ -288,8 +288,8 @@ export const songs: Song[] = [
     detail: conceptDetail({
       category: "Electronic · Concept",
       released: "Concept · 2025",
-      length: "—",
-      note: "Teacher Leave — a remastered concept version, already most of the way there.",
+      length: "-",
+      note: "Teacher Leave, a remastered concept version, already most of the way there.",
     }),
   },
   {
@@ -301,7 +301,7 @@ export const songs: Song[] = [
     tags: ["electronic", "pop"],
     genre: "Electronic",
     date: "2025-11-01",
-    duration: "—",
+    duration: "-",
     cover: "https://i1.sndcdn.com/avatars-CRNs7sDBulfbcqSz-QEQetg-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/hanging-on-remastered"),
     embedHeight: 166,
@@ -310,8 +310,8 @@ export const songs: Song[] = [
     detail: conceptDetail({
       category: "Electronic · Concept",
       released: "Concept · 2025",
-      length: "—",
-      note: "Hanging On — a remastered concept, in the final stretch before release.",
+      length: "-",
+      note: "Hanging On, a remastered concept, in the final stretch before release.",
     }),
   },
   {
@@ -323,7 +323,7 @@ export const songs: Song[] = [
     tags: ["electronic"],
     genre: "Mashup",
     date: "2025-10-01",
-    duration: "—",
+    duration: "-",
     cover: "https://i1.sndcdn.com/avatars-CRNs7sDBulfbcqSz-QEQetg-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/beat-between-our-years"),
     embedHeight: 166,
@@ -332,8 +332,8 @@ export const songs: Song[] = [
     detail: conceptDetail({
       category: "Mashup · Concept",
       released: "Concept · 2025",
-      length: "—",
-      note: "A mashup concept — Beat Between Our Years (remastered) blended with Layer Cake Universe.",
+      length: "-",
+      note: "A mashup concept, Beat Between Our Years (remastered) blended with Layer Cake Universe.",
     }),
   },
   {
@@ -345,7 +345,7 @@ export const songs: Song[] = [
     tags: ["electronic"],
     genre: "Electronic",
     date: "2025-09-01",
-    duration: "—",
+    duration: "-",
     cover: "https://i1.sndcdn.com/avatars-CRNs7sDBulfbcqSz-QEQetg-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/new-level-main-menu/s-GOSTK3LpU7S"),
     embedHeight: 166,
@@ -354,8 +354,8 @@ export const songs: Song[] = [
     detail: conceptDetail({
       category: "Electronic · Concept",
       released: "Concept · 2025",
-      length: "—",
-      note: "New Level (Main Menu) — a concept track, private SoundCloud share.",
+      length: "-",
+      note: "New Level (Main Menu), a concept track, private SoundCloud share.",
     }),
   },
 ];
