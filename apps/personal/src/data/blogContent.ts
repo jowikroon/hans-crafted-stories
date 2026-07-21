@@ -1,15 +1,15 @@
 export const blogContent: Record<string, string> = {
   "hidden-cost-dark-patterns": `
-Dark patterns are everywhere in e-commerce. From misleading countdown timers to hidden fees at checkout, these manipulative design tactics might boost short-term conversions — but at what cost?
+Dark patterns are everywhere in e-commerce. From misleading countdown timers to hidden fees at checkout, these manipulative design tactics might boost short-term conversions, but at what cost?
 
 ## The Illusion of Success
 
 When you trick users into clicking, subscribing, or purchasing, the numbers look good on a dashboard. But the reality underneath tells a different story:
 
-- **Higher return rates** — users who feel deceived return products more often
-- **Increased support tickets** — confusion breeds complaints
-- **Brand erosion** — trust, once lost, is nearly impossible to rebuild
-- **Regulatory risk** — the EU is actively cracking down on deceptive design
+- **Higher return rates**: users who feel deceived return products more often
+- **Increased support tickets**: confusion breeds complaints
+- **Brand erosion**: trust, once lost, is nearly impossible to rebuild
+- **Regulatory risk**: the EU is actively cracking down on deceptive design
 
 ## What Works Instead
 
@@ -29,7 +29,7 @@ Making it easy to leave makes people more likely to stay. This counterintuitive 
 Dark patterns are a tax on your future self. Every shortcut today creates a trust deficit tomorrow. Build for the long game.
   `,
   "designing-with-llms": `
-Large language models are changing how we design digital products — but "just add AI" is a fast way to ship confusing, fragile experiences. Good LLM UX isn't a magic box; it's a set of deliberate choices about what the model should do, how confident it is, and how humans stay in control.
+Large language models are changing how we design digital products, but "just add AI" is a fast way to ship confusing, fragile experiences. Good LLM UX isn't a magic box; it's a set of deliberate choices about what the model should do, how confident it is, and how humans stay in control.
 
 In this article I share a practical framework for designing LLM-powered products: how to define confidence boundaries, keep humans in the loop, design for failure instead of pretending it won't happen, and gradually reveal capabilities as users build trust.
 
@@ -37,8 +37,8 @@ In this article I share a practical framework for designing LLM-powered products
 
 Most AI integrations I've seen fall into one of two traps:
 
-1. **The Magic Box** — users don't understand what the AI can or can't do
-2. **The Replacement** — AI replaces human workflows without considering what's lost
+1. **The Magic Box**: users don't understand what the AI can or can't do
+2. **The Replacement**: AI replaces human workflows without considering what's lost
 
 ## A Framework for LLM-Powered UX
 
@@ -61,7 +61,7 @@ Don't dump all AI capabilities on users at once. Start with the most reliable, m
 We're still in the early days of LLM-powered products. The teams that invest in thoughtful UX now will have a significant advantage as the technology matures.
   `,
   "cycling-dutch-countryside": `
-There's something about cycling through the Dutch countryside that resets my brain. The flat horizon, the windmills, the endless green — it's meditation in motion.
+There's something about cycling through the Dutch countryside that resets my brain. The flat horizon, the windmills, the endless green, it's meditation in motion.
 
 ## The Route
 
@@ -73,7 +73,7 @@ When you're on a bike, you notice things you'd never see from a car. The way lig
 
 ## The Connection to Work
 
-I've had some of my best ideas while cycling. There's research suggesting that low-level physical activity combined with changing scenery creates ideal conditions for creative thinking. The Dutch call it "uitwaaien" — to walk or cycle in the wind to clear your head.
+I've had some of my best ideas while cycling. There's research suggesting that low-level physical activity combined with changing scenery creates ideal conditions for creative thinking. The Dutch call it "uitwaaien", to walk or cycle in the wind to clear your head.
 
 ## Slow Down to Speed Up
 
@@ -96,10 +96,10 @@ The most powerful CRO lever is understanding user intent. Why did someone come t
 
 ### The Intent-Friction Framework
 
-1. **Map user intent** — what do they want to achieve?
-2. **Identify friction points** — what's stopping them?
-3. **Reduce friction** — remove unnecessary steps, clarify confusing elements
-4. **Validate with data** — measure the impact of your changes
+1. **Map user intent**: what do they want to achieve?
+2. **Identify friction points**: what's stopping them?
+3. **Reduce friction**: remove unnecessary steps, clarify confusing elements
+4. **Validate with data**: measure the impact of your changes
 
 ## Design-First CRO in Practice
 
@@ -129,7 +129,7 @@ We implemented a semantic search engine that understood natural language queries
 ## The Surprises
 
 ### 1. Users Don't Trust Magic
-When search results were too good, users got suspicious. They wondered if we were just showing them what we wanted to sell. We had to add transparency — showing why each result was relevant.
+When search results were too good, users got suspicious. They wondered if we were just showing them what we wanted to sell. We had to add transparency, showing why each result was relevant.
 
 ### 2. Speed Beats Accuracy
 A slightly less accurate result delivered in 200ms outperformed a perfect result delivered in 2 seconds. Users interpreted speed as competence.
@@ -152,30 +152,30 @@ Every year I try to read a mix of professional and personal books. Here's what s
 
 ## Design & Technology
 
-**"Refactoring UI" by Adam Wathan & Steve Schoger** — The most practical design book I've ever read. Every page has actionable advice.
+**"Refactoring UI" by Adam Wathan & Steve Schoger**: The most practical design book I've ever read. Every page has actionable advice.
 
-**"The Design of Everyday Things" by Don Norman** — A re-read, but it hits different after years of real-world design experience.
+**"The Design of Everyday Things" by Don Norman**: A re-read, but it hits different after years of real-world design experience.
 
-**"AI 2041" by Kai-Fu Lee & Chen Qiufan** — Science fiction meets AI prediction. Thought-provoking scenarios of how AI might reshape society.
+**"AI 2041" by Kai-Fu Lee & Chen Qiufan**: Science fiction meets AI prediction. Thought-provoking scenarios of how AI might reshape society.
 
 ## Business & Strategy
 
-**"Working Backwards" by Colin Bryar & Bill Carr** — Inside Amazon's culture and decision-making. Invaluable for anyone working in e-commerce.
+**"Working Backwards" by Colin Bryar & Bill Carr**: Inside Amazon's culture and decision-making. Invaluable for anyone working in e-commerce.
 
-**"Amp It Up" by Frank Slootman** — Intense leadership philosophy. Not for everyone, but the core message about raising standards resonated.
+**"Amp It Up" by Frank Slootman**: Intense leadership philosophy. Not for everyone, but the core message about raising standards resonated.
 
 ## Fiction & Personal
 
-**"Klara and the Sun" by Kazuo Ishiguro** — A beautiful, melancholic novel about AI and love. Made me think differently about what it means to observe and understand.
+**"Klara and the Sun" by Kazuo Ishiguro**: A beautiful, melancholic novel about AI and love. Made me think differently about what it means to observe and understand.
 
-**"De Avonden" by Gerard Reve** — A Dutch classic I finally got around to reading. Bleak, funny, and strangely comforting.
+**"De Avonden" by Gerard Reve**: A Dutch classic I finally got around to reading. Bleak, funny, and strangely comforting.
 
 ## The Pattern
 
-Looking at this list, I see a thread: observation. Every book I gravitated toward was about seeing the world more clearly — whether through design, data, or fiction.
+Looking at this list, I see a thread: observation. Every book I gravitated toward was about seeing the world more clearly, whether through design, data, or fiction.
   `,
   "ux-unit-economics": `
-As UX designers, we love talking about user needs. But there's a language we often avoid: the language of business metrics. Understanding unit economics isn't selling out — it's leveling up.
+As UX designers, we love talking about user needs. But there's a language we often avoid: the language of business metrics. Understanding unit economics isn't selling out, it's leveling up.
 
 ## Why This Matters
 
@@ -189,7 +189,7 @@ If you can't articulate these impacts, someone else will make those decisions fo
 How much does it cost to acquire a new customer? Your onboarding design directly affects this. A better onboarding experience = lower CAC through better conversion and word-of-mouth.
 
 ### Lifetime Value (LTV)
-How much revenue does a customer generate over their lifetime? Your retention design — the features that keep people coming back — drives this number.
+How much revenue does a customer generate over their lifetime? Your retention design, the features that keep people coming back, drives this number.
 
 ### The LTV:CAC Ratio
 The golden ratio. Aim for 3:1 or higher. If your ratio is below 1:1, you're literally paying people to use your product.
@@ -211,7 +211,7 @@ I started making sourdough during the pandemic, like everyone else. But unlike m
 
 ## The Parallel
 
-Sourdough is an exercise in patience. You mix flour and water, and then you wait. You fold the dough, and then you wait. You shape it, and then you wait. The bread tells you when it's ready — you don't get to decide.
+Sourdough is an exercise in patience. You mix flour and water, and then you wait. You fold the dough, and then you wait. You shape it, and then you wait. The bread tells you when it's ready, you don't get to decide.
 
 Product design works the same way. You can't rush good design. You iterate, you test, you listen to users, and you iterate again. The product tells you when it's ready.
 
@@ -221,7 +221,7 @@ Product design works the same way. You can't rush good design. You iterate, you 
 Sourdough behaves differently in summer versus winter, in dry air versus humid air. Products behave differently in different contexts too. What works on desktop might fail on mobile. What works in the Netherlands might confuse users in Japan.
 
 ### 2. Small Changes Compound
-Adjusting hydration by 2% changes everything about the bread. In products, small UX changes — a word here, a color there — compound into dramatically different experiences.
+Adjusting hydration by 2% changes everything about the bread. In products, small UX changes, a word here, a color there, compound into dramatically different experiences.
 
 ### 3. Failure Is Data
 My first 20 loaves were terrible. But each failure taught me something. Each failed product feature teaches you something too, if you're paying attention.
