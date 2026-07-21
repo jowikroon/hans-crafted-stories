@@ -19,7 +19,7 @@ export const RADAR_SETTING_KEY = "__site__:radar-variant";
 export const RADAR_VARIANTS: RadarVariant[] = [
   { id: "clean",   label: "Radar Clean",   description: "Kompas + hartslag, warm koper, event-dots per artiest. Default.", status: "live" },
   { id: "master",  label: "Radar Master",  description: "Rijkere layout met hero, Fogg-flow, signaal-niveaus.",           status: "live" },
-  { id: "compass", label: "Radar Compass", description: "Editorial hero-variant, lichter en rustiger. Nu beschikbaar.", status: "live" },
+  { id: "compass", label: "Radar Compass", description: "Zelfde radar-animatie in koel blauw/leisteen — een derde look-and-feel.", status: "live" },
 ];
 
 export function radarVariantById(id?: string | null): RadarVariant {
