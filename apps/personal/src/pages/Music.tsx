@@ -18,7 +18,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
-import { songs, featuredRelease, type Song } from "@/data/music";
+import { songs, featuredRelease, previousRelease, type Song } from "@/data/music";
 import ReleaseTimeline from "@/components/music/ReleaseTimeline";
 import "@/styles/music-neon.css";
 
@@ -269,13 +269,29 @@ const Music = () => {
             <p className="mn-release__sub">{featuredRelease.sub}</p>
             <div className="mn-release__meta">{featuredRelease.chips.map((c) => <span key={c} className="mn-chip">{c}</span>)}</div>
             <div className="mn-release__cta-row">
-              <Link to="/music/beat-drop" className="mn-release__cta" data-cursor aria-label={`Open the ${featuredRelease.title} track page`}>
+              <Link to="/music/neon-house-of-glass" className="mn-release__cta" data-cursor aria-label={`Open the ${featuredRelease.title} track page`}>
                 <RhythmIcon /> Rhythm
               </Link>
             </div>
           </div>
           <div className="mn-release__player">
             <iframe title={`Spotify — ${featuredRelease.title}`} src={featuredRelease.embed} width="100%" height={featuredRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+          </div>
+        </div>
+        <div className="mn-release" style={{ marginTop: "clamp(20px,3vh,32px)" }}>
+          <div className="mn-release__body">
+            <span className="mn-release__kicker">{previousRelease.kicker}</span>
+            <h2 className="mn-release__title">{previousRelease.title}</h2>
+            <p className="mn-release__sub">{previousRelease.sub}</p>
+            <div className="mn-release__meta">{previousRelease.chips.map((c) => <span key={c} className="mn-chip">{c}</span>)}</div>
+            <div className="mn-release__cta-row">
+              <Link to="/music/beat-drop" className="mn-release__cta" data-cursor aria-label={`Open the ${previousRelease.title} track page`}>
+                <RhythmIcon /> Rhythm
+              </Link>
+            </div>
+          </div>
+          <div className="mn-release__player">
+            <iframe title={`Spotify — ${previousRelease.title}`} src={previousRelease.embed} width="100%" height={previousRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
           </div>
         </div>
       </section>
