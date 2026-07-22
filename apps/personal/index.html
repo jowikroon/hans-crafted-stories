@@ -328,8 +328,8 @@
          pages from fetching fonts they never render. -->
     <style>
       /* Critical font-display fallback so text is visible while fonts load */
-      body { font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; }
-      .font-display { font-family: 'Archivo', system-ui, sans-serif; }
+      body { font-family: 'Switzer', 'Inter', system-ui, -apple-system, sans-serif; }
+      .font-display { font-family: 'Switzer', 'Inter', system-ui, sans-serif; }
     </style>
 
     <!-- Favicon set -->
@@ -341,6 +341,17 @@
     <meta name="theme-color" content="#ffffff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="format-detection" content="telephone=no" />
+    <script>
+      /* Language guard — pick the visitor's language before first paint so React's
+         first render matches (no en<->nl flicker for the detected language).
+         Only sets nl when the browser prefers Dutch; defaults to en (canonical). */
+      (function(){
+        try{
+          var l = (navigator.language || navigator.userLanguage || 'en');
+          if (/^nl\b/i.test(l)) document.documentElement.lang = 'nl';
+        }catch(e){}
+      })();
+    </script>
     <script>
       /* Theme guard, paints light/dark before first render (no flash).
          Kept in sync with src/hooks/useTheme.tsx (key "site_theme"). */
