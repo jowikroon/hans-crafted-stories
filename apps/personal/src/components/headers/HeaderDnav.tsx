@@ -107,7 +107,7 @@ const HeaderDnav = (_props: NavbarProps) => {
         type="button"
         className="dnav__login"
         onClick={() => { signOut(); onNavigate?.(); }}
-        aria-label={`${firstName} — ${t.workspace.signOut}`}
+        aria-label={`${firstName}, ${t.workspace.signOut}`}
       >
         <LoginArrow />
         {firstName} · {t.workspace.signOut}
@@ -122,7 +122,7 @@ const HeaderDnav = (_props: NavbarProps) => {
   return (
     <header className={`dnav${scrolled ? " is-scrolled" : ""}${open ? " is-open" : ""}`} id="dnav">
       <div className="dnav__inner">
-        <Link to="/" className="dnav__brand" aria-label="Hans van Leeuwen — home" onClick={() => setOpen(false)}>
+        <Link to="/" className="dnav__brand" aria-label="Hans van Leeuwen, home" onClick={() => setOpen(false)}>
           <span className="dnav__mark">
             {logo?.src
               ? <img src={logo.src} alt={logo.label || "Hans van Leeuwen"} className="dnav__logo" />

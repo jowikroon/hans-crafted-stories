@@ -88,7 +88,7 @@ export const blogPosts: BlogPost[] = [
   {
     id: "1",
     title: "The Hidden Cost of Dark Patterns in E-commerce",
-    excerpt: "Why manipulative design ultimately hurts conversion rates and brand trust — and what to do instead.",
+    excerpt: "Why manipulative design ultimately hurts conversion rates and brand trust, and what to do instead.",
     category: "professional",
     tags: ["E-commerce", "UX"],
     date: "2025-02-10",
@@ -148,7 +148,7 @@ export const blogPosts: BlogPost[] = [
   {
     id: "7",
     title: "Why Every UX Designer Should Understand Unit Economics",
-    excerpt: "The business metrics that should inform your design decisions — and how to talk about them.",
+    excerpt: "The business metrics that should inform your design decisions, and how to talk about them.",
     category: "professional",
     tags: ["UX", "E-commerce"],
     date: "2024-10-15",
