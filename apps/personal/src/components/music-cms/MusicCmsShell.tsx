@@ -6,11 +6,13 @@ import "../write-cms/write-cms.css";
 import "./music-cms.css";
 import { VOICE_TEMPLATES } from "./voiceTemplates";
 import { listSongs } from "./lib/songStore";
+import { listReleases } from "./lib/releaseStore";
 import SongsMode from "./modes/SongsMode";
+import ReleasesMode from "./modes/ReleasesMode";
 import SongwriterMode from "./modes/SongwriterMode";
 import VoicesMode from "./modes/VoicesMode";
 
-type CmsMode = "songs" | "write" | "voices";
+type CmsMode = "songs" | "write" | "voices" | "releases";
 
 const ICONS: Record<CmsMode, JSX.Element> = {
   songs: (
@@ -21,6 +23,9 @@ const ICONS: Record<CmsMode, JSX.Element> = {
   ),
   voices: (
     <svg viewBox="0 0 16 16" fill="none"><rect x="6" y="1.5" width="4" height="8" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M3.5 7a4.5 4.5 0 0 0 9 0M8 11.5V14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+  ),
+  releases: (
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.25" stroke="currentColor" strokeWidth="1.5" /><circle cx="8" cy="8" r="1.5" stroke="currentColor" strokeWidth="1.5" /></svg>
   ),
 };
 
@@ -36,15 +41,22 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
   const [params, setParams] = useSearchParams();
   const { user, loading, signInWithGoogle } = useAuth();
   const raw = params.get("mode");
-  const mode: CmsMode = songId ? "write" : raw === "write" || raw === "voices" ? raw : "songs";
+  const mode: CmsMode = songId ? "write" : raw === "write" || raw === "voices" || raw === "releases" ? raw : "songs";
 
   const [songCount, setSongCount] = useState<number | null>(null);
+  const [releaseCount, setReleaseCount] = useState<number | null>(null);
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const songs = await listSongs();
         if (!cancelled) setSongCount(songs.length);
+      } catch {
+        /* count is decoratief */
+      }
+      try {
+        const rels = await listReleases();
+        if (!cancelled) setReleaseCount(rels.length);
       } catch {
         /* count is decoratief */
       }
@@ -66,6 +78,7 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
     { id: "songs", label: "Songs", count: songCount != null ? String(songCount) : "–" },
     { id: "write", label: "Schrijven", count: "werkblad" },
     { id: "voices", label: "Voices", count: `${VOICE_TEMPLATES.length} tpl` },
+    { id: "releases", label: "Releases", count: releaseCount != null ? String(releaseCount) : "–" },
   ];
 
   const gated = !loading && !user;
@@ -116,6 +129,7 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
               {mode === "songs" && <SongsMode />}
               {mode === "write" && <SongwriterMode songId={songId} />}
               {mode === "voices" && <VoicesMode />}
+              {mode === "releases" && <ReleasesMode />}
             </>
           )}
         </div>

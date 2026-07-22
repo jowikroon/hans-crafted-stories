@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { songs } from "@/data/music";
+import { listVisibleReleases } from "@/components/music-cms/lib/releaseStore";
 
 type ReleaseType = "Single" | "EP" | "Album";
 
@@ -62,6 +63,9 @@ const XIcon = () => (
 
 const ReleaseTimeline = () => {
   const [userReleases, setUserReleases] = useState<Release[]>([]);
+  // Canonical timeline from Supabase (visible releases). null = not loaded yet →
+  // fall back to BASE_RELEASES so SSR/prerender and offline still render.
+  const [dbReleases, setDbReleases] = useState<Release[] | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [form, setForm] = useState({ title: "", type: "Single" as ReleaseType, date: "", genre: "" });
@@ -76,17 +80,43 @@ const ReleaseTimeline = () => {
     try { const raw = localStorage.getItem(LS_KEY); if (raw) setUserReleases(JSON.parse(raw)); } catch { /* ignore */ }
   }, []);
 
+  /* pull the canonical release timeline from Supabase (visible only); on empty
+     or failure we keep the BASE_RELEASES fallback so the page never goes blank. */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const rows = await listVisibleReleases();
+        if (cancelled || rows.length === 0) return;
+        setDbReleases(rows.map((r) => ({
+          id: r.slug || r.id,
+          date: r.release_date,
+          title: r.title,
+          type: r.type,
+          genre: r.genre,
+          cover: r.cover ?? undefined,
+          dur: r.dur ?? undefined,
+          tracks: r.tracks ?? undefined,
+          video: r.video,
+          note: r.note ?? undefined,
+        })));
+      } catch { /* keep BASE_RELEASES fallback */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const persist = useCallback((list: Release[]) => {
     setUserReleases(list);
     try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch { /* ignore */ }
   }, []);
 
   const merged = useMemo(() => {
-    return [...BASE_RELEASES, ...userReleases].slice().sort((a, b) => {
+    const base = dbReleases ?? BASE_RELEASES;
+    return [...base, ...userReleases].slice().sort((a, b) => {
       if (a.date === b.date) return (a.type === "Single" ? 0 : 1) - (b.type === "Single" ? 0 : 1);
       return a.date < b.date ? -1 : 1;
     });
-  }, [userReleases]);
+  }, [dbReleases, userReleases]);
 
   const stats = useMemo(() => ({
     total: merged.length,

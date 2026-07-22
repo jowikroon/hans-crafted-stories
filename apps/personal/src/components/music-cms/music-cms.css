@@ -223,3 +223,75 @@
   .music-cms .mode.mc-mode:hover,
   .music-cms .mode.mc-mode:active { transform: none; }
 }
+
+/* ── Releases mode — visible/hidden toggle + editor modal ── */
+.write-cms.music-cms .mc-switch {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 4px 10px 4px 5px; background: var(--bg-2, #f2f0ea);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em;
+  color: var(--ink-2); cursor: pointer; transition: all var(--t-fast, .15s);
+}
+.write-cms.music-cms .mc-switch:hover { border-color: var(--ink-3); }
+.write-cms.music-cms .mc-switch__dot {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--ink-3);
+  transition: background var(--t-fast, .15s), box-shadow var(--t-fast, .15s);
+}
+.write-cms.music-cms .mc-switch.on {
+  background: var(--live-soft, #e7f3ea); color: var(--live, #1f7a44); border-color: var(--live, #1f7a44);
+}
+.write-cms.music-cms .mc-switch.on .mc-switch__dot {
+  background: var(--live, #1f7a44); box-shadow: 0 0 0 3px color-mix(in srgb, var(--live, #1f7a44) 20%, transparent);
+}
+
+/* editor modal */
+.write-cms.music-cms .mc-editor-scrim {
+  position: fixed; inset: 0; z-index: 60;
+  background: color-mix(in srgb, #000 34%, transparent);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 6vh 16px; overflow-y: auto; backdrop-filter: blur(2px);
+}
+.write-cms.music-cms .mc-editor {
+  width: 100%; max-width: 640px; background: var(--paper, #fff);
+  border: 1px solid var(--ink-0); border-radius: 12px;
+  box-shadow: 8px 8px 0 var(--ink-0); overflow: hidden;
+}
+.write-cms.music-cms .mc-editor__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; border-bottom: 1px solid var(--line);
+}
+.write-cms.music-cms .mc-editor__head h2 {
+  font-size: 16px; font-weight: 650; margin: 0; color: var(--ink-0);
+}
+.write-cms.music-cms .mc-editor__x {
+  border: none; background: none; cursor: pointer; font-size: 15px;
+  color: var(--ink-3); line-height: 1; padding: 4px;
+}
+.write-cms.music-cms .mc-editor__x:hover { color: var(--ink-0); }
+.write-cms.music-cms .mc-editor__grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 18px;
+}
+.write-cms.music-cms .mc-fld { display: grid; gap: 5px; }
+.write-cms.music-cms .mc-fld--wide { grid-column: 1 / -1; }
+.write-cms.music-cms .mc-fld--row {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+}
+.write-cms.music-cms .mc-label small { color: var(--ink-3); font-weight: 400; }
+.write-cms.music-cms .mc-input {
+  width: 100%; border: 1px solid var(--line); border-radius: 7px;
+  padding: 9px 11px; font: inherit; font-size: 13px; color: var(--ink-0);
+  background: var(--bg-1, #fff); transition: border-color var(--t-fast, .15s);
+}
+.write-cms.music-cms .mc-input:focus { outline: none; border-color: var(--ink-0); }
+.write-cms.music-cms .mc-input--area { resize: vertical; min-height: 46px; line-height: 1.5; }
+.write-cms.music-cms .mc-check {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--ink-2); cursor: pointer;
+}
+.write-cms.music-cms .mc-editor__foot {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 18px; border-top: 1px solid var(--line); background: var(--bg-2, #f7f5f0);
+}
+@media (max-width: 560px) {
+  .write-cms.music-cms .mc-editor__grid { grid-template-columns: 1fr; }
+}
