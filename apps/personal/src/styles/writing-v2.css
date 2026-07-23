@@ -5,7 +5,6 @@
    ============================================================ */
 
 /* Fonts via Fontshare — only loaded when /writing is mounted */
-@import url("https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&f[]=general-sans@400,500,600,700&f[]=jetbrains-mono@400,500&display=swap");
 
 .writing-v2 {
   --w2-font-display: 'Switzer', 'Inter', system-ui, sans-serif;

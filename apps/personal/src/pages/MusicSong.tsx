@@ -20,6 +20,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
 import "@/styles/music-v2.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 
 /** Turn a YouTube watch/Shorts/youtu.be URL into an embeddable /embed/<id> URL. */
 function youtubeEmbedUrl(url?: string): string | null {
@@ -113,6 +114,7 @@ function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
 }
 
 export default function MusicSong() {
+  useEffect(() => { ensureFontCss("fonts-music-v2", FONT_CSS.musicV2); }, []);
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const resolved = getSongBySlug(slug);

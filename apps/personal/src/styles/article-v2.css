@@ -12,7 +12,6 @@
    ============================================================ */
 
 /* Fonts via Fontshare + Newsreader (serif) — only when an article is mounted */
-@import url("https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&f[]=jetbrains-mono@400,500&display=swap");
 
 .article-v2 {
   --w2-font-display: 'Switzer', 'Inter', system-ui, sans-serif;
