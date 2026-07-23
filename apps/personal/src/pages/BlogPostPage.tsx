@@ -43,7 +43,7 @@ type MaskCtx = { cfg: MaskingConfig | null | undefined; counters: Record<string,
    /blog/<slug> hrefs are normalised to /writing/<slug> (a /blog route never
    shipped on this site). External links open in a new tab; unsafe schemes
    (javascript: etc.) render as plain text. Bare URLs are autolinked. */
-const SAFE_HREF_RE = /^(https?:\/\/|\/(?![\/\\])|#|mailto:)/i;
+const SAFE_HREF_RE = /^(https?:\/\/|\/(?![/\\])|#|mailto:)/i;
 const normalizeHref = (href: string): string => {
   const h = href.trim();
   if (h === "/blog" || h === "/blog/") return "/writing";
