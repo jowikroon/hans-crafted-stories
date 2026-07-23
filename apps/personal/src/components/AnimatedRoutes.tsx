@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate, useParams } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense, type ComponentType } from "react";
 import PageTransition from "./PageTransition";
@@ -53,6 +53,14 @@ const BlogCMSToWriteRedirect = () => {
   return <BlogCMSFallback />;
 };
 
+/* Legacy /blog/<slug> URLs still occur in older article content and external
+   references; the canonical article path is /writing/<slug>. */
+const LegacyBlogRedirect = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const { search, hash } = useLocation();
+  return <Navigate to={`/writing/${slug ?? ""}${search}${hash}`} replace />;
+};
+
 const AnimatedRoutes = () => {
   const location = useLocation();
 
@@ -65,6 +73,8 @@ const AnimatedRoutes = () => {
         <Route path="/work/connect-car-parts" element={<PageTransition><CaseStudyDetail /></PageTransition>} />
         <Route path="/writing" element={<PageTransition><Writing /></PageTransition>} />
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
+        <Route path="/blog" element={<Navigate to="/writing" replace />} />
+        <Route path="/blog/:slug" element={<LegacyBlogRedirect />} />
         <Route path="/music" element={<PageTransition><Music /></PageTransition>} />
         <Route path="/music/:slug" element={<PageTransition><MusicSong /></PageTransition>} />
         <Route path="/muziek/artist-radar" element={<PageTransition><ArtistRadar /></PageTransition>} />
