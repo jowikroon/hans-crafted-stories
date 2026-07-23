@@ -135,10 +135,14 @@ const Music = () => {
         {
           "@type": "ItemList",
           name: "Original songs by Hans van Leeuwen",
-          numberOfItems: songs.length,
-          itemListElement: songs.map((sg, i) => {
-            const [mm, ss] = (sg.duration || "0:00").split(":").map((v) => Number(v) || 0);
-            const iso = `PT${mm}M${ss}S`;
+          // Codex review PR #266: schema describes ONLY publicly visible songs
+          // (no gated SoundCloud concepts / private share URLs), omits unknown
+          // durations, and uses `sameAs` for platform landing pages instead of
+          // MediaObject.contentUrl (listen pages are HTML, not media bytes).
+          numberOfItems: visibleSongs.length,
+          itemListElement: visibleSongs.map((sg, i) => {
+            const durMatch = /^(\d+):(\d{2})$/.exec(sg.duration || "");
+            const iso = durMatch ? `PT${Number(durMatch[1])}M${Number(durMatch[2])}S` : undefined;
             return {
               "@type": "ListItem",
               position: i + 1,
@@ -149,10 +153,10 @@ const Music = () => {
                 url: `https://hansvanleeuwen.com/music/${sg.slug}`,
                 image: sg.cover,
                 genre: sg.genre,
-                duration: iso,
+                ...(iso ? { duration: iso } : {}),
                 datePublished: sg.date,
                 byArtist: { "@id": "https://hansvanleeuwen.com/music#artist" },
-                associatedMedia: { "@type": "MediaObject", contentUrl: sg.listenUrl },
+                sameAs: sg.listenUrl,
               },
             };
           }),

@@ -37,36 +37,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://hansvanleeuwen.com/music/beat-drop</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://hansvanleeuwen.com/music/teacher-leave</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://hansvanleeuwen.com/music/hanging-on</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://hansvanleeuwen.com/music/beat-between-our-years</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://hansvanleeuwen.com/music/new-level</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://hansvanleeuwen.com/amazon-nl-specialist</loc>
     <lastmod>2026-07-23</lastmod>
     <changefreq>monthly</changefreq>
@@ -95,5 +65,23 @@
     <lastmod>2026-07-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/freelance-e-commerce-manager-inhuren</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/designing-with-llms</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>
