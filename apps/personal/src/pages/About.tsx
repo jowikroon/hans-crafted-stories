@@ -206,6 +206,12 @@ const About = () => {
                     <Download size={14} /> {getValue("about_cv_nl_label", t.downloadCvNl)}
                     <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
+                </div>
+              )}
+
+              {/* Book-a-call CTA: own visibility flag, decoupled from cv_downloads (Codex PR #275) */}
+              {isVisible("book_call_cta", true) && (
+                <div className="mt-3 flex flex-wrap gap-3">
                   <a
                     href="https://calendly.com/hansvl3/30min"
                     target="_blank"
