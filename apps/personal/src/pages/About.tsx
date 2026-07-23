@@ -138,7 +138,7 @@ const About = () => {
               <div className="relative">
                 <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-primary/10 via-transparent to-primary/5 blur-sm" />
                 <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted ring-1 ring-border/50">
-                  <img src={hansProfile} alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands" width={600} height={800} loading="lazy" decoding="async" className="h-full w-full object-cover object-top" />
+                  <img src={hansProfile} alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands" width={600} height={800} loading="eager" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-top" />
                   <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background/40 to-transparent" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 flex items-center gap-0.5 rounded-full border border-primary/20 bg-background px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-primary shadow-sm">
@@ -155,9 +155,12 @@ const About = () => {
                 <div className="h-px w-8 bg-primary/60" />
                 <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{getValue("about_label", t.about)}</p>
               </div>
-              <h1 className="mb-6 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                {getValue("about_name", "Hans van Leeuwen")}
+              <h1 className="mb-2 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
+                {getValue("about_h1", "Freelance E-commerce Manager & Marketplace Specialist (Amazon & Bol.com)")}
               </h1>
+              <p className="mb-6 font-display text-lg font-medium text-muted-foreground md:text-xl">
+                {getValue("about_name", "Hans van Leeuwen")} · {getValue("about_location", "Amersfoort, NL")}
+              </p>
 
               {isVisible("bio_section") && (
               <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
