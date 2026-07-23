@@ -44,7 +44,9 @@ export default function EditLayer() {
   // The editor UI uses Bricolage Grotesque + IBM Plex Mono. These are no longer in
   // the global <head> (kept off marketing pages), so load them on demand for admins.
   useEffect(() => {
-    if (!isAdmin || typeof document === "undefined") return;
+    // 2026-07-23: also gated on `editing` — admins browsing the site normally
+    // no longer download the editor UI fonts on every page view.
+    if (!isAdmin || !editing || typeof document === "undefined") return;
     const id = "edit-overlay-fonts";
     if (document.getElementById(id)) return;
     const link = document.createElement("link");
@@ -53,7 +55,7 @@ export default function EditLayer() {
     link.href =
       "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
     document.head.appendChild(link);
-  }, [isAdmin]);
+  }, [isAdmin, editing]);
 
   // Load every font-style's webfont for the switcher swatches — but ONLY once
   // the admin actually starts editing. Before 2026-07-23 this ran on every
