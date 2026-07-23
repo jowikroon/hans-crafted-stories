@@ -417,16 +417,21 @@ const BlogPostPage = () => {
     // content marker and re-assert for the first seconds after mount — any
     // write that isn't ours loses. Content or language changes update the
     // marker via the dependency and re-run the guard.
-    const mark = String(bodyHtml.length);
+    // Marker = the browser-normalised length of OUR html. Any write by another
+    // actor (a racing commit with an older snapshot, a transition remnant, …)
+    // yields a different normalised length and is overwritten on the next tick.
+    let mark = -1;
     const heal = () => {
       const el = articleRef.current?.querySelector<HTMLElement>(".prose");
       if (!el || !el.isConnected) return;
-      if (el.dataset.h !== mark) { el.innerHTML = bodyHtml; el.dataset.h = mark; }
+      if (el.innerHTML.length !== mark) {
+        el.innerHTML = bodyHtml;          // write our version
+        mark = el.innerHTML.length;        // remember its normalised form
+      }
     };
     heal();
-    const iv = window.setInterval(heal, 400);
-    const stop = window.setTimeout(() => window.clearInterval(iv), 6000);
-    return () => { window.clearInterval(iv); window.clearTimeout(stop); };
+    const iv = window.setInterval(heal, 500); // cheap: one length check per tick
+    return () => window.clearInterval(iv);
   }, [bodyHtml]);
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
