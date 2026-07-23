@@ -263,15 +263,15 @@ const WritingV2 = () => {
           <p className="lede">
             {lang === "nl" ? (
               <>
-                Field notes van <strong>Hans van Leeuwen</strong>, freelance e-commerce manager en Amazon en Bol.com
-                marketplace-specialist, gevestigd in Amersfoort. Praktische essays over marketplace-strategie,
-                listing-optimalisatie en e-commerce groei door NL en EU, geschreven vanuit hands-on klantwerk.
+                <strong>E-commerce inzichten en marketplace-optimalisatie</strong> door <strong>Hans van Leeuwen</strong>, freelance
+                e-commerce manager en Amazon- en Bol.com-specialist in Amersfoort. Praktische essays over listing-optimalisatie,
+                Amazon Ads en Bol Ads, AI-automatisering en marketplace-groei in NL en de EU, geschreven vanuit hands-on klantwerk.
               </>
             ) : (
               <>
-                Field notes from <strong>Hans van Leeuwen</strong>, a freelance e-commerce manager and Amazon and Bol.com
-                marketplace specialist based in Amersfoort, Netherlands. Practical writing on marketplace strategy,
-                listing optimization, and marketplace growth across the NL and EU, drawn from hands-on client work.
+                <strong>E-commerce insights and marketplace optimization</strong> by <strong>Hans van Leeuwen</strong>, a freelance
+                e-commerce manager and Amazon and Bol.com specialist based in Amersfoort. Practical essays on listing optimization,
+                Amazon Ads and Bol Ads, AI automation and marketplace growth across the NL and EU, drawn from hands-on client work.
               </>
             )}
           </p>
@@ -300,17 +300,26 @@ const WritingV2 = () => {
         {/* Toolbar */}
         <div className="toolbar" ref={toolbarRef}>
           <div className="filters" role="group" aria-label="Filter by topic">
-            {FILTER_PILLS.map((p) => (
-              <a
-                key={p.tag}
-                href={p.tag === "all" ? "/writing" : `/writing?tag=${p.tag}`}
-                className={`pill ${filter === p.tag ? "on" : ""}`}
-                aria-pressed={filter === p.tag}
-                onClick={(e) => { e.preventDefault(); setFilter(p.tag); }}
-              >
-                {p.label}
-              </a>
-            ))}
+            {FILTER_PILLS.map((p) => {
+              const pillCount = p.tag === "all"
+                ? mappedPosts.length
+                : mappedPosts.filter((post) => {
+                    const allTags = [post.category, ...(post.tags || [])].map((tag) => (tag || "").toLowerCase());
+                    return allTags.some((tag) => tag.includes(p.tag.toLowerCase()));
+                  }).length;
+              return (
+                <a
+                  key={p.tag}
+                  href={p.tag === "all" ? "/writing" : `/writing?tag=${p.tag}`}
+                  className={`pill ${filter === p.tag ? "on" : ""}`}
+                  aria-pressed={filter === p.tag}
+                  aria-label={`${p.label} (${pillCount})`}
+                  onClick={(e) => { e.preventDefault(); setFilter(p.tag); }}
+                >
+                  {p.label} <span className="pill__count">({pillCount})</span>
+                </a>
+              );
+            })}
             {filter !== "all" && !FILTER_PILLS.some((p) => p.tag === filter) && (
               <button
                 type="button"
@@ -320,6 +329,17 @@ const WritingV2 = () => {
                 title={lang === "nl" ? "Filter wissen" : "Clear filter"}
               >
                 {filter} ×
+              </button>
+            )}
+            {filter !== "all" && (
+              <button
+                type="button"
+                className="pill pill--clear"
+                onClick={() => setFilter("all")}
+                aria-label={lang === "nl" ? "Filter wissen" : "Clear filters"}
+                title={lang === "nl" ? "Filter wissen" : "Clear filters"}
+              >
+                {lang === "nl" ? "Filter wissen" : "Clear filters"} ×
               </button>
             )}
             {authed && (
