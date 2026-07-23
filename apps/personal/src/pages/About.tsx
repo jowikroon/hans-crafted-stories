@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home } from "lucide-react";
+import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home, Calendar } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
 import { Link } from "react-router-dom";
@@ -204,6 +204,17 @@ const About = () => {
                   </a>
                   <a href="/Cv_HvL_-_Ecommerce.pdf" download onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "download_cv", label: "nl" }); }} className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:border-primary/20">
                     <Download size={14} /> {getValue("about_cv_nl_label", t.downloadCvNl)}
+                    <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                  </a>
+                  <a
+                    href="https://calendly.com/hansvl3/30min"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "book_call", label: "calendly_30min" }); }}
+                    className="group inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/5 px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-primary/10 hover:border-primary"
+                    aria-label={lang === "nl" ? "Plan een gesprek van 30 minuten via Calendly" : "Book a 30-minute call via Calendly"}
+                  >
+                    <Calendar size={14} /> {getValue("about_book_call_label", lang === "nl" ? "Plan 30-min gesprek" : "Book a 30-min call")}
                     <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
                 </div>
