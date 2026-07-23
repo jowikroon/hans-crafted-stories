@@ -78,6 +78,16 @@ const About = () => {
             { "@type": "ListItem", position: 2, name: "About", item: "https://hansvanleeuwen.com/about" },
           ],
         },
+        {
+          "@type": "FAQPage",
+          mainEntity: [
+            { "@type": "Question", name: "What does a freelance e-commerce manager do?", acceptedAnswer: { "@type": "Answer", text: "Temporarily leads the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." } },
+            { "@type": "Question", name: "How much does marketplace management cost?", acceptedAnswer: { "@type": "Answer", text: "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. A 30-min intake produces a written quote within one working day." } },
+            { "@type": "Question", name: "Bol.com — vendor or seller?", acceptedAnswer: { "@type": "Answer", text: "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. Both routes are modeled on EBITDA, not just revenue." } },
+            { "@type": "Question", name: "How do you reduce out-of-stock rates?", acceptedAnswer: { "@type": "Answer", text: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2 percent OOS." } },
+            { "@type": "Question", name: "Do you manage Amazon Ads and Bol Ads?", acceptedAnswer: { "@type": "Answer", text: "Yes. Sponsored Products, Sponsored Brands, Display and Bol Ads with weekly bid steering and negative harvesting; ACOS and TACOS as primary KPIs." } },
+          ],
+        },
       ],
     },
   });
@@ -188,11 +198,11 @@ const About = () => {
 
               {isVisible("cv_downloads") && (
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <a href="/Hans_CV_-_e-commerce_manager.pdf" download className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-all hover:opacity-80 hover:shadow-lg hover:shadow-foreground/10">
+                  <a href="/Hans_CV_-_e-commerce_manager.pdf" download onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "download_cv", label: "en" }); }} className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-all hover:opacity-80 hover:shadow-lg hover:shadow-foreground/10">
                     <Download size={14} /> {getValue("about_cv_en_label", t.downloadCvEn)}
                     <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
-                  <a href="/Cv_HvL_-_Ecommerce.pdf" download className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:border-primary/20">
+                  <a href="/Cv_HvL_-_Ecommerce.pdf" download onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "download_cv", label: "nl" }); }} className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:border-primary/20">
                     <Download size={14} /> {getValue("about_cv_nl_label", t.downloadCvNl)}
                     <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
@@ -201,6 +211,76 @@ const About = () => {
             </motion.div>
           </div>
         </div>
+
+        {/* Methodology (P2-7) */}
+        {isVisible("methodology_section", true) && (
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-20">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <h2 className="font-display text-2xl font-medium text-foreground">
+                {getValue("about_methodology_heading", lang === "nl" ? "Werkwijze" : "How I work")}
+              </h2>
+            </div>
+            <p className="mb-6 max-w-3xl text-base leading-relaxed text-muted-foreground">
+              {getValue("about_methodology_intro", lang === "nl"
+                ? "Elke opdracht doorloopt vier fases. Compact en meetbaar, geen abstract framework, maar exact wat er per week gebeurt en welke KPI’s bewegen."
+                : "Every engagement runs through four phases. Compact and measurable, no abstract framework — just what happens each week and which KPIs move.")}
+            </p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[
+                { k: "discovery", label: lang === "nl" ? "Ontdekken" : "Discovery",
+                  copy: lang === "nl" ? "Audit van marketplace-presence, snel te winnen en structurele groeihefbomen." : "Audit current marketplace presence, identify quick wins and structural growth levers." },
+                { k: "strategy", label: lang === "nl" ? "Strategie" : "Strategy",
+                  copy: lang === "nl" ? "Actieplan met KPI’s, tijdlijn en eigenaarschap per hefboom." : "Action plan with KPIs, timelines and clear ownership per lever." },
+                { k: "execution", label: lang === "nl" ? "Executie" : "Execution",
+                  copy: lang === "nl" ? "Hands-on: listings, A+ content, Amazon Ads en Bol Ads, met wekelijkse check-ins." : "Hands-on: listings, A+ content, Amazon Ads and Bol Ads, with weekly check-ins." },
+                { k: "scale", label: lang === "nl" ? "Schalen" : "Scale",
+                  copy: lang === "nl" ? "Itereren op data, nieuwe kanalen (DE, FR) en compound results." : "Iterate based on data, expand to new channels (DE, FR) and compound results." },
+              ].map((step, i) => (
+                <div key={step.k} className="rounded-xl border border-border/40 bg-card p-4">
+                  <div className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">{i + 1}</div>
+                  <h3 className="mb-1 text-sm font-semibold text-foreground">{step.label}</h3>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{step.copy}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* FAQ (P2-7) */}
+        {isVisible("about_faq_section", true) && (
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-20">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <h2 className="font-display text-2xl font-medium text-foreground">
+                {getValue("about_faq_heading", lang === "nl" ? "Veelgestelde vragen" : "Frequently Asked Questions")}
+              </h2>
+            </div>
+            <dl className="space-y-2 max-w-3xl">
+              {[
+                { q: lang === "nl" ? "Wat doet een freelance e-commerce manager?" : "What does a freelance e-commerce manager do?",
+                  a: lang === "nl" ? "Ik neem tijdelijk de e-commerce operatie over: marketplace-strategie, listings, advertising, pricing, forecasting en rapportages. Ik werk hands-on binnen jullie team en tool-stack." : "I temporarily lead the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." },
+                { q: lang === "nl" ? "Wat kost freelance marketplace-management?" : "How much does marketplace management cost?",
+                  a: lang === "nl" ? "Retainer voor doorlopend Amazon/Bol-beheer, projectprijs voor een audit of lancering, dagtarief voor interim. Exact bedrag hangt af van scope en channel-mix; een 30-min intake geeft binnen 1 werkdag een schriftelijke offerte." : "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. Actual number depends on scope; a 30-min intake produces a written quote within one working day." },
+                { q: lang === "nl" ? "Vendor of Seller op Bol.com — wat past beter?" : "Bol.com — vendor or seller?",
+                  a: lang === "nl" ? "Seller houdt marge en controle maar vraagt actief accountwerk. Vendor bespaart operatie maar levert marge en pricing-controle in. Ik help beide modellen te modelleren op EBITDA, niet alleen omzet." : "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. I model both routes on EBITDA, not just revenue." },
+                { q: lang === "nl" ? "Hoe verlaag je out-of-stock rates?" : "How do you reduce out-of-stock rates?",
+                  a: lang === "nl" ? "Een demand-forecasting model op recente sell-through, seizoen en promotie-lift, gekoppeld aan supplier lead-times. In bestaande cases OOS onder 2%." : "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2% OOS." },
+                { q: lang === "nl" ? "Doe je ook Amazon Ads en Bol Ads?" : "Do you manage Amazon Ads and Bol Ads?",
+                  a: lang === "nl" ? "Ja. Sponsored Products, Sponsored Brands, Display en Bol Ads met wekelijkse bidsturing en negative harvesting; ACOS/TACOS als primaire KPI’s." : "Yes. Sponsored Products, Sponsored Brands, Display and Bol Ads with weekly bid steering and negative harvesting; ACOS/TACOS as primary KPIs." },
+              ].map((qa) => (
+                <details key={qa.q} className="rounded-xl border border-border/40 bg-card p-4">
+                  <summary className="cursor-pointer text-sm font-semibold text-foreground">{qa.q}</summary>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{qa.a}</p>
+                </details>
+              ))}
+            </dl>
+          </motion.div>
+        )}
 
         {/* Skills */}
         {isVisible("skills_section") && (
