@@ -48,7 +48,7 @@ const removeMeta = (name: string, attr = "name") => {
   document.querySelector(`meta[${attr}="${name}"]`)?.remove();
 };
 
-export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd, noindex = false, robots }: SEOConfig) => {
+export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd, noindex = false, robots, imageAlt }: SEOConfig) => {
   useEffect(() => {
     if (!enabled) return;
 
@@ -135,5 +135,5 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
         "og:image:alt",
       ].forEach((name) => removeMeta(name, "property"));
     };
-  }, [enabled, title, description, url, type, hreflang, jsonLd, noindex, robots]);
+  }, [enabled, title, description, url, type, hreflang, jsonLd, noindex, robots, imageAlt]);
 };
