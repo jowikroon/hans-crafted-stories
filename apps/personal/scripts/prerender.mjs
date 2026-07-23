@@ -433,10 +433,9 @@ for (const [slug, blogPost] of postBySlug) {
           </ul>
           <p>More marketplace results: 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. See also <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.</p>`;
   const workFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml, "h1");
-  const workNoscriptFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml);
   let page = template.replace('<div id="root"></div>', `<div id="root">${workFallbackHtml}</div>`);
   page = setHead(page, WORK_HEAD);
-  page = replaceSsrFallbackHtml(page, workNoscriptFallbackHtml);
+  page = replaceSsrFallbackHtml(page, "");
   page = page.replace(
     /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(WORK_JSONLD)}\n    </script>`
