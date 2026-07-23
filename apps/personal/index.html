@@ -104,6 +104,10 @@
           "isPartOf": { "@id": "https://hansvanleeuwen.com/#website" },
           "about": { "@id": "https://hansvanleeuwen.com/#person" },
           "inLanguage": "en",
+          "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": ["h1", "[aria-label=\"Introduction\"] p:first-of-type", "dl dt"]
+          },
           "primaryImageOfPage": {
             "@type": "ImageObject",
             "url": "https://hansvanleeuwen.com/og-image.png",
@@ -297,6 +301,30 @@
                 "@type": "Answer",
                 "text": "Hans is based in Amersfoort, Netherlands and available for e-commerce management roles, consulting, and freelance marketplace projects. Contact via LinkedIn or email for availability."
               }
+            },
+            {
+              "@type": "Question",
+              "name": "What does a freelance e-commerce manager cost?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Engagements are priced per model: retainer for ongoing Amazon and Bol.com management, project pricing for defined scopes such as an audit or launch, and a daily rate for interim work. Actual numbers depend on scope and channel mix; a 30-minute intake typically produces a written quote within one working day."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How long until I see results on Amazon NL or Bol.com?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Listing and A+ content fixes tend to shift conversion within 2-4 weeks. Sponsored Products and Bol Ads restructures usually show meaningful ACOS improvement within one advertising cycle (4-6 weeks). Structural share and stockout improvements are a 3-6 month arc because they depend on catalog quality, ad efficiency and forecasting compounding."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does Hans work on Amazon DE and Amazon FR as well?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. In addition to Amazon NL and Bol.com, engagements regularly cover Amazon DE and Amazon FR for brands expanding across the EU. The setup uses the same operating model per marketplace: listing quality, advertising, pricing, catalog and reporting. Cross-border logistics and VAT are coordinated with the brand's existing partners (for example Staxxer for German VAT)."
+              }
             }
           ]
         }
@@ -358,6 +386,23 @@
           if (m) m.setAttribute("content", t === "dark" ? "#08080A" : "#FAF8F2");
         } catch (e) {}
       })();
+    </script>
+    <script type="speculationrules">
+      {
+        "prerender": [{
+          "urls": [
+            "/work",
+            "/writing",
+            "/about",
+            "/music",
+            "/amazon-nl-specialist",
+            "/bol-com-consultant",
+            "/interim-ecommerce-manager",
+            "/ai-ecommerce-automation"
+          ],
+          "eagerness": "moderate"
+        }]
+      }
     </script>
 </head>
 
