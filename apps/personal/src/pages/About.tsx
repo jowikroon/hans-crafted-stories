@@ -57,9 +57,7 @@ const About = () => {
           description: "Freelance e-commerce manager & UX designer with 10+ years of experience in marketplace strategy, Amazon, Bol.com, AI-assisted automation, and digital commerce.",
           image: {
             "@type": "ImageObject",
-            url: "https://hansvanleeuwen.com/og-image.png",
-            width: 1200,
-            height: 630,
+            url: `https://hansvanleeuwen.com${hansProfile}`,
             caption: "Hans van Leeuwen – Freelance E-commerce Manager",
           },
           knowsAbout: ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Interaction design", "AI-assisted e-commerce automation", "Conversion optimization", "Digital commerce", "SEO", "Amazon Ads", "Bol Ads"],
