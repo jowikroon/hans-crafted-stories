@@ -922,10 +922,16 @@
   position: absolute;
   inset: 0;
   border-radius: 14px;
+  /* Codex P1 (PR #268): .feat__media is a later position:relative sibling and
+     painted above an auto-stacked pseudo — z-index keeps the overlay the top
+     hit-target so the whole featured card stays clickable. */
+  z-index: 2;
 }
 .writing-v2 .post__title-link:focus-visible::after {
+  /* Inset outline: .post--featured clips overflow, so an outside outline was
+     invisible (Codex PR #268). Inset ring stays inside the clipping area. */
   outline: 2px solid var(--w2-accent);
-  outline-offset: 3px;
+  outline-offset: -3px;
 }
 
 /* Per-pill count + clear-filters (2026-07-23) */

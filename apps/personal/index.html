@@ -106,7 +106,7 @@
           "inLanguage": "en",
           "speakable": {
             "@type": "SpeakableSpecification",
-            "cssSelector": ["h1", "[aria-label=\"Introduction\"] p:first-of-type", "dl dt"]
+            "cssSelector": ["h1", "[aria-label=\"Introduction\"] p.text-lg", "dl dd"]
           },
           "primaryImageOfPage": {
             "@type": "ImageObject",
@@ -392,23 +392,7 @@
         } catch (e) {}
       })();
     </script>
-    <script type="speculationrules">
-      {
-        "prerender": [{
-          "urls": [
-            "/work",
-            "/writing",
-            "/about",
-            "/music",
-            "/amazon-nl-specialist",
-            "/bol-com-consultant",
-            "/interim-ecommerce-manager",
-            "/ai-ecommerce-automation"
-          ],
-          "eagerness": "moderate"
-        }]
-      }
-    </script>
+    <!-- speculationrules removed (Codex PR #271): React Router intercepts clicks (no document navigation), so speculative prerenders were downloaded and discarded — pure waste. -->
 </head>
 
   <body>
@@ -478,6 +462,12 @@
             <dd>Hans provides marketplace management, conversion rate optimization (CRO), UX design for e-commerce, SEO &amp; content strategy, data-driven analytics, and digital commerce consulting for brands across the Netherlands and EU.</dd>
             <dt><strong>Is Hans van Leeuwen available for freelance or contract work?</strong></dt>
             <dd>Hans is based in Amersfoort, Netherlands and available for e-commerce management roles, consulting, and freelance marketplace projects. Contact via LinkedIn or email for availability.</dd>
+            <dt><strong>What does a freelance e-commerce manager cost?</strong></dt>
+            <dd>Engagements are priced per model: retainer for ongoing Amazon and Bol.com management, project pricing for defined scopes such as an audit or launch, and a daily rate for interim work. A 30-minute intake typically produces a written quote within one working day.</dd>
+            <dt><strong>How long until I see results on Amazon NL or Bol.com?</strong></dt>
+            <dd>Listing and A+ content fixes tend to shift conversion within 2-4 weeks. Sponsored Products and Bol Ads restructures usually show meaningful ACOS improvement within one advertising cycle (4-6 weeks). Structural share and stockout improvements are a 3-6 month arc.</dd>
+            <dt><strong>Does Hans work on Amazon DE and Amazon FR as well?</strong></dt>
+            <dd>Yes. In addition to Amazon NL and Bol.com, engagements regularly cover Amazon DE and Amazon FR for brands expanding across the EU, using the same operating model per marketplace.</dd>
           </dl>
         </section>
       </main>

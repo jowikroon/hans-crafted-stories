@@ -304,11 +304,15 @@ const WritingV2 = () => {
         <div className="toolbar" ref={toolbarRef}>
           <div className="filters" role="group" aria-label="Filter by topic">
             {FILTER_PILLS.map((p) => {
+              // Counts follow the same scope as the visible list (Codex PR #273):
+              // published-only toggle filters drafts, and tags are normalised so
+              // "e-commerce" (CMS default) matches the "ecommerce" pill.
+              const countable = authed && publishedOnly ? mappedPosts.filter((post) => post.isPublic) : mappedPosts;
               const pillCount = p.tag === "all"
-                ? mappedPosts.length
-                : mappedPosts.filter((post) => {
-                    const allTags = [post.category, ...(post.tags || [])].map((tag) => (tag || "").toLowerCase());
-                    return allTags.some((tag) => tag.includes(p.tag.toLowerCase()));
+                ? countable.length
+                : countable.filter((post) => {
+                    const allTags = [post.category, ...(post.tags || [])].map((tag) => (tag || "").toLowerCase().replace(/[^a-z0-9]/g, ""));
+                    return allTags.some((tag) => tag.includes(p.tag.toLowerCase().replace(/[^a-z0-9]/g, "")));
                   }).length;
               return (
                 <a
