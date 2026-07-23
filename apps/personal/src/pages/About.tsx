@@ -29,6 +29,33 @@ const About = () => {
 
   const seo = t.seo;
 
+  // Single source for the About FAQ: rendered UI and FAQPage JSON-LD read the
+  // SAME localized array, so schema always matches visible content (Codex
+  // review on PR #272).
+  const aboutFaq = lang === "nl" ? [
+    { q: "Wat doet een freelance e-commerce manager?",
+      a: "Ik neem tijdelijk de e-commerce operatie over: marketplace-strategie, listings, advertising, pricing, forecasting en rapportages. Ik werk hands-on binnen jullie team en tool-stack." },
+    { q: "Wat kost freelance marketplace-management?",
+      a: "Retainer voor doorlopend Amazon/Bol-beheer, projectprijs voor een audit of lancering, dagtarief voor interim. Exact bedrag hangt af van scope en channel-mix; een 30-min intake geeft binnen 1 werkdag een schriftelijke offerte." },
+    { q: "Vendor of Seller op Bol.com — wat past beter?",
+      a: "Seller houdt marge en controle maar vraagt actief accountwerk. Vendor bespaart operatie maar levert marge en pricing-controle in. Ik help beide modellen te modelleren op EBITDA, niet alleen omzet." },
+    { q: "Hoe verlaag je out-of-stock rates?",
+      a: "Een demand-forecasting model op recente sell-through, seizoen en promotie-lift, gekoppeld aan supplier lead-times. In bestaande cases OOS onder 2%." },
+    { q: "Doe je ook Amazon Ads en Bol Ads?",
+      a: "Ja. Sponsored Products, Sponsored Brands, Display en Bol Ads met wekelijkse bidsturing en negative harvesting; ACOS/TACOS als primaire KPI\u2019s." },
+  ] : [
+    { q: "What does a freelance e-commerce manager do?",
+      a: "I temporarily lead the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." },
+    { q: "How much does marketplace management cost?",
+      a: "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. Actual number depends on scope; a 30-min intake produces a written quote within one working day." },
+    { q: "Bol.com — vendor or seller?",
+      a: "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. I model both routes on EBITDA, not just revenue." },
+    { q: "How do you reduce out-of-stock rates?",
+      a: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2% OOS." },
+    { q: "Do you manage Amazon Ads and Bol Ads?",
+      a: "Yes. Sponsored Products, Sponsored Brands, Display and Bol Ads with weekly bid steering and negative harvesting; ACOS/TACOS as primary KPIs." },
+  ];
+
   useSEO({
     title: seo.aboutTitle,
     description: seo.aboutDescription,
@@ -80,13 +107,11 @@ const About = () => {
         },
         {
           "@type": "FAQPage",
-          mainEntity: [
-            { "@type": "Question", name: "What does a freelance e-commerce manager do?", acceptedAnswer: { "@type": "Answer", text: "Temporarily leads the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." } },
-            { "@type": "Question", name: "How much does marketplace management cost?", acceptedAnswer: { "@type": "Answer", text: "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. A 30-min intake produces a written quote within one working day." } },
-            { "@type": "Question", name: "Bol.com — vendor or seller?", acceptedAnswer: { "@type": "Answer", text: "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. Both routes are modeled on EBITDA, not just revenue." } },
-            { "@type": "Question", name: "How do you reduce out-of-stock rates?", acceptedAnswer: { "@type": "Answer", text: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2 percent OOS." } },
-            { "@type": "Question", name: "Do you manage Amazon Ads and Bol Ads?", acceptedAnswer: { "@type": "Answer", text: "Yes. Sponsored Products, Sponsored Brands, Display and Bol Ads with weekly bid steering and negative harvesting; ACOS and TACOS as primary KPIs." } },
-          ],
+          mainEntity: aboutFaq.map((qa) => ({
+            "@type": "Question",
+            name: qa.q,
+            acceptedAnswer: { "@type": "Answer", text: qa.a },
+          })),
         },
       ],
     },
@@ -166,7 +191,7 @@ const About = () => {
                 <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{getValue("about_label", t.about)}</p>
               </div>
               <h1 className="mb-2 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                {getValue("about_h1", "Freelance E-commerce Manager & Marketplace Specialist (Amazon & Bol.com)")}
+                {getValue("about_h1", lang === "nl" ? "Freelance E-commerce Manager & Marketplace-specialist (Amazon & Bol.com)" : "Freelance E-commerce Manager & Marketplace Specialist (Amazon & Bol.com)")}
               </h1>
               <p className="mb-6 font-display text-lg font-medium text-muted-foreground md:text-xl">
                 {getValue("about_name", "Hans van Leeuwen")} · {getValue("about_location", "Amersfoort, NL")}
@@ -240,50 +265,7 @@ const About = () => {
                 : "Every engagement runs through four phases. Compact and measurable, no abstract framework — just what happens each week and which KPIs move.")}
             </p>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {[
-                { k: "discovery", label: lang === "nl" ? "Ontdekken" : "Discovery",
-                  copy: lang === "nl" ? "Audit van marketplace-presence, snel te winnen en structurele groeihefbomen." : "Audit current marketplace presence, identify quick wins and structural growth levers." },
-                { k: "strategy", label: lang === "nl" ? "Strategie" : "Strategy",
-                  copy: lang === "nl" ? "Actieplan met KPI’s, tijdlijn en eigenaarschap per hefboom." : "Action plan with KPIs, timelines and clear ownership per lever." },
-                { k: "execution", label: lang === "nl" ? "Executie" : "Execution",
-                  copy: lang === "nl" ? "Hands-on: listings, A+ content, Amazon Ads en Bol Ads, met wekelijkse check-ins." : "Hands-on: listings, A+ content, Amazon Ads and Bol Ads, with weekly check-ins." },
-                { k: "scale", label: lang === "nl" ? "Schalen" : "Scale",
-                  copy: lang === "nl" ? "Itereren op data, nieuwe kanalen (DE, FR) en compound results." : "Iterate based on data, expand to new channels (DE, FR) and compound results." },
-              ].map((step, i) => (
-                <div key={step.k} className="rounded-xl border border-border/40 bg-card p-4">
-                  <div className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">{i + 1}</div>
-                  <h3 className="mb-1 text-sm font-semibold text-foreground">{step.label}</h3>
-                  <p className="text-xs leading-relaxed text-muted-foreground">{step.copy}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* FAQ (P2-7) */}
-        {isVisible("about_faq_section", true) && (
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-20">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-              </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">
-                {getValue("about_faq_heading", lang === "nl" ? "Veelgestelde vragen" : "Frequently Asked Questions")}
-              </h2>
-            </div>
-            <dl className="space-y-2 max-w-3xl">
-              {[
-                { q: lang === "nl" ? "Wat doet een freelance e-commerce manager?" : "What does a freelance e-commerce manager do?",
-                  a: lang === "nl" ? "Ik neem tijdelijk de e-commerce operatie over: marketplace-strategie, listings, advertising, pricing, forecasting en rapportages. Ik werk hands-on binnen jullie team en tool-stack." : "I temporarily lead the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." },
-                { q: lang === "nl" ? "Wat kost freelance marketplace-management?" : "How much does marketplace management cost?",
-                  a: lang === "nl" ? "Retainer voor doorlopend Amazon/Bol-beheer, projectprijs voor een audit of lancering, dagtarief voor interim. Exact bedrag hangt af van scope en channel-mix; een 30-min intake geeft binnen 1 werkdag een schriftelijke offerte." : "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. Actual number depends on scope; a 30-min intake produces a written quote within one working day." },
-                { q: lang === "nl" ? "Vendor of Seller op Bol.com — wat past beter?" : "Bol.com — vendor or seller?",
-                  a: lang === "nl" ? "Seller houdt marge en controle maar vraagt actief accountwerk. Vendor bespaart operatie maar levert marge en pricing-controle in. Ik help beide modellen te modelleren op EBITDA, niet alleen omzet." : "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. I model both routes on EBITDA, not just revenue." },
-                { q: lang === "nl" ? "Hoe verlaag je out-of-stock rates?" : "How do you reduce out-of-stock rates?",
-                  a: lang === "nl" ? "Een demand-forecasting model op recente sell-through, seizoen en promotie-lift, gekoppeld aan supplier lead-times. In bestaande cases OOS onder 2%." : "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2% OOS." },
-                { q: lang === "nl" ? "Doe je ook Amazon Ads en Bol Ads?" : "Do you manage Amazon Ads and Bol Ads?",
-                  a: lang === "nl" ? "Ja. Sponsored Products, Sponsored Brands, Display en Bol Ads met wekelijkse bidsturing en negative harvesting; ACOS/TACOS als primaire KPI’s." : "Yes. Sponsored Products, Sponsored Brands, Display and Bol Ads with weekly bid steering and negative harvesting; ACOS/TACOS as primary KPIs." },
-              ].map((qa) => (
+              {aboutFaq.map((qa) => (
                 <details key={qa.q} className="rounded-xl border border-border/40 bg-card p-4">
                   <summary className="cursor-pointer text-sm font-semibold text-foreground">{qa.q}</summary>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{qa.a}</p>
