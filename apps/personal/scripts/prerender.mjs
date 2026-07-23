@@ -147,7 +147,7 @@ const ABOUT_JSONLD = {
         "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
       image: {
         "@type": "ImageObject",
-        url: `${BASE}/hans-profile.jpg`,
+        url: `${BASE}/og-image.png`,
         width: 1200,
         height: 630,
         caption: "Hans van Leeuwen – Freelance E-commerce Manager",
@@ -245,7 +245,7 @@ function renderQuietly(...args) {
   }
 }
 
-function setHead(html, { title, description, canonical }) {
+function setHead(html, { title, description, canonical, ogImageAlt }) {
   let out = html;
   out = out.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(title)}</title>`);
   out = out.replace(
@@ -280,6 +280,16 @@ function setHead(html, { title, description, canonical }) {
     /<meta name="twitter:description" content="[^"]*"/,
     `<meta name="twitter:description" content="${escapeHtml(description)}"`
   );
+  if (ogImageAlt) {
+    out = out.replace(
+      /<meta property="og:image:alt" content="[^"]*"/,
+      `<meta property="og:image:alt" content="${escapeHtml(ogImageAlt)}"`
+    );
+    out = out.replace(
+      /<meta name="twitter:image:alt" content="[^"]*"/,
+      `<meta name="twitter:image:alt" content="${escapeHtml(ogImageAlt)}"`
+    );
+  }
   return out;
 }
 
@@ -544,6 +554,7 @@ const SEO_PAGES = [
       title: "Music: Songs & Production Notes | Hans van Leeuwen",
       description: "Original songs by Hans van Leeuwen, listen on Spotify and read the production notes behind each track: how it was made, the gear, and the lyrics.",
       canonical: `${BASE}/music`,
+      ogImageAlt: "Hans van Leeuwen music: original songs and production notes (Lo-fi, Electronic, Ambient)",
     },
   },
   {
