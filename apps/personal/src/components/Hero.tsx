@@ -46,7 +46,7 @@ const Hero = () => {
           </p>
           <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
             {isNl
-              ? <>Freelance E-commerce Manager &amp; Amazon/Bol.com <em className="text-primary">Specialist</em></>
+              ? <>Freelance E-commerce Manager (Amazon &amp; Bol.com): <em className="text-primary">strategie</em>, groei &amp; design</>
               : <>Freelance E-commerce Manager (Amazon &amp; Bol.com): <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; design</>
             }
           </h1>
