@@ -410,10 +410,15 @@ const BlogPostPage = () => {
      stale server-language DOM — without the client's anchors — on first paint.
      After mount (and on every recompute) force the DOM to match bodyHtml. */
   useEffect(() => {
-    const root = articleRef.current;
-    if (!root) return;
-    const el = root.querySelector<HTMLElement>(".prose");
-    if (el && bodyHtml && el.innerHTML !== bodyHtml) el.innerHTML = bodyHtml;
+    if (!bodyHtml) return;
+    const heal = () => {
+      const el = articleRef.current?.querySelector<HTMLElement>(".prose");
+      if (el && el.isConnected && el.innerHTML !== bodyHtml) el.innerHTML = bodyHtml;
+    };
+    heal(); // immediately after commit
+    const t1 = window.setTimeout(heal, 250); // after hydration recovery races
+    const t2 = window.setTimeout(heal, 1200); // after late refetch/paint
+    return () => { window.clearTimeout(t1); window.clearTimeout(t2); };
   }, [bodyHtml]);
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -629,7 +634,7 @@ const BlogPostPage = () => {
           ) : (
             <div aria-hidden />
           )}
-          <div className="prose" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+          <div className="prose" key={`prose-${lang}-${bodyHtml.length}`} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
         </div>
 
         {/* Tags — link to the filtered /writing index */}
