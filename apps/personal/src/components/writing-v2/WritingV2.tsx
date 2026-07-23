@@ -379,12 +379,8 @@ const WritingV2 = () => {
             <>
               {/* Featured post (first item) */}
               {featured && (
-                <Link
-                  to={`/writing/${featured.slug}`}
-                  className="post post--featured rv"
-                  aria-label={`Featured essay: ${featTitle}`}
-                >
-                  <article className={`feat__grid${featured.imageUrl ? "" : " feat__grid--solo"}`}>
+                <article className="post post--featured rv">
+                  <div className={`feat__grid${featured.imageUrl ? "" : " feat__grid--solo"}`}>
                     <div className="feat__body">
                       <span className="feat__kicker">
                         {featured.isDraft
@@ -416,7 +412,15 @@ const WritingV2 = () => {
                           </>
                         )}
                       </div>
-                      <h2 className="post__title">{featTitle}</h2>
+                      <h2 className="post__title">
+                        <Link
+                          to={`/writing/${featured.slug}`}
+                          className="post__title-link"
+                          aria-label={`Featured essay: ${featTitle}`}
+                        >
+                          {featTitle}
+                        </Link>
+                      </h2>
                       <p className="post__excerpt">{featExcerpt}</p>
                       <span className="feat__cta">
                         {lang === "nl" ? "Lees het essay" : "Read the essay"}
@@ -436,8 +440,8 @@ const WritingV2 = () => {
                         />
                       </div>
                     )}
-                  </article>
-                </Link>
+                  </div>
+                </article>
               )}
 
               {/* Rest of posts */}
@@ -445,7 +449,7 @@ const WritingV2 = () => {
                 const title = lang === "nl" && post.titleNl ? post.titleNl : post.title;
                 const excerpt = lang === "nl" && post.excerptNl ? post.excerptNl : post.excerpt;
                 return (
-                  <Link key={post.id} to={`/writing/${post.slug}`} className="post rv">
+                  <article key={post.id} className="post rv">
                     <div className="post__thumb">
                       {post.imageUrl ? (
                         <img
@@ -480,13 +484,17 @@ const WritingV2 = () => {
                           </>
                         )}
                       </div>
-                      <h2 className="post__title">{title}</h2>
+                      <h2 className="post__title">
+                        <Link to={`/writing/${post.slug}`} className="post__title-link">
+                          {title}
+                        </Link>
+                      </h2>
                       <p className="post__excerpt">{excerpt}</p>
                     </div>
                     <span className="post__go" aria-hidden="true">
                       <ArrowIcon />
                     </span>
-                  </Link>
+                  </article>
                 );
               })}
             </>
