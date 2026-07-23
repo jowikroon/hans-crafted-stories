@@ -427,7 +427,7 @@ for (const [slug, blogPost] of postBySlug) {
 {
   const route = "/work";
   const workFallbackExtraHtml = `
-          <h2>Featured case studies</h2>
+          <h2>Amazon NL, DE &amp; Bol.com Growth Case Studies</h2>
           <ul>
             <li><a href="/work/connect-car-parts">Connect Car Parts, automotive parts e-commerce: Amazon DE, eBay DE &amp; Magento operations</a></li>
           </ul>
