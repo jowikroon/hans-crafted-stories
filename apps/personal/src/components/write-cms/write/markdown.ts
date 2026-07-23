@@ -25,7 +25,7 @@ export function mdToHtml(md: string): string {
       const h = href.startsWith("/blog/") ? "/writing/" + href.slice("/blog/".length) : href;
       // Same safety contract as the live article renderer: only http(s),
       // site-relative, #anchor and mailto; anything else stays literal text.
-      if (!/^(https?:\/\/|\/(?![\/\\])|#|mailto:)/i.test(h)) return m;
+      if (!/^(https?:\/\/|\/(?![/\\])|#|mailto:)/i.test(h)) return m;
       const ext = /^https?:\/\//i.test(h);
       return `<a href="${h.replace(/"/g, "&quot;")}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ""}>${label}</a>`;
     })
