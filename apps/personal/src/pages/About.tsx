@@ -265,13 +265,45 @@ const About = () => {
                 : "Every engagement runs through four phases. Compact and measurable, no abstract framework — just what happens each week and which KPIs move.")}
             </p>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[
+                { k: "discovery", label: lang === "nl" ? "Ontdekken" : "Discovery",
+                  copy: lang === "nl" ? "Audit van marketplace-presence, snel te winnen en structurele groeihefbomen." : "Audit current marketplace presence, identify quick wins and structural growth levers." },
+                { k: "strategy", label: lang === "nl" ? "Strategie" : "Strategy",
+                  copy: lang === "nl" ? "Actieplan met KPI\u2019s, tijdlijn en eigenaarschap per hefboom." : "Action plan with KPIs, timelines and clear ownership per lever." },
+                { k: "execution", label: lang === "nl" ? "Executie" : "Execution",
+                  copy: lang === "nl" ? "Hands-on: listings, A+ content, Amazon Ads en Bol Ads, met wekelijkse check-ins." : "Hands-on: listings, A+ content, Amazon Ads and Bol Ads, with weekly check-ins." },
+                { k: "scale", label: lang === "nl" ? "Schalen" : "Scale",
+                  copy: lang === "nl" ? "Itereren op data, nieuwe kanalen (DE, FR) en compound results." : "Iterate based on data, expand to new channels (DE, FR) and compound results." },
+              ].map((step, i) => (
+                <div key={step.k} className="rounded-xl border border-border/40 bg-card p-4">
+                  <div className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">{i + 1}</div>
+                  <h3 className="mb-1 text-sm font-semibold text-foreground">{step.label}</h3>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{step.copy}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* FAQ (P2-7) — UI en JSON-LD lezen dezelfde aboutFaq array */}
+        {isVisible("about_faq_section", true) && (
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-20">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <h2 className="font-display text-2xl font-medium text-foreground">
+                {getValue("about_faq_heading", lang === "nl" ? "Veelgestelde vragen" : "Frequently Asked Questions")}
+              </h2>
+            </div>
+            <div className="max-w-3xl space-y-2">
               {aboutFaq.map((qa) => (
                 <details key={qa.q} className="rounded-xl border border-border/40 bg-card p-4">
                   <summary className="cursor-pointer text-sm font-semibold text-foreground">{qa.q}</summary>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{qa.a}</p>
                 </details>
               ))}
-            </dl>
+            </div>
           </motion.div>
         )}
 
