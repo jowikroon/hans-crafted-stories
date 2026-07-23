@@ -116,6 +116,7 @@ const Music = () => {
   useSEO({
     title: "Music: After Hours | Hans van Leeuwen",
     description: "Tracks recorded after midnight, a tape machine, soft synths, and whatever the night left behind. Press play, and read the notes for every song.",
+    imageAlt: "Hans van Leeuwen music: original songs and production notes (Lo-fi, Electronic, Ambient)",
     url: "https://hansvanleeuwen.com/music",
     type: "music.playlist",
     hreflang: [
@@ -130,7 +131,32 @@ const Music = () => {
           { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
           { "@type": "ListItem", position: 2, name: "Music", item: "https://hansvanleeuwen.com/music" },
         ] },
-        { "@type": "MusicGroup", name: "Hans van Leeuwen", url: "https://hansvanleeuwen.com/music", genre: ["Lo-fi", "Electronic", "Ambient"] },
+        { "@type": "MusicGroup", "@id": "https://hansvanleeuwen.com/music#artist", name: "Hans van Leeuwen", alternateName: "Jowikroon", url: "https://hansvanleeuwen.com/music", genre: ["Lo-fi", "Electronic", "Ambient"] },
+        {
+          "@type": "ItemList",
+          name: "Original songs by Hans van Leeuwen",
+          numberOfItems: songs.length,
+          itemListElement: songs.map((sg, i) => {
+            const [mm, ss] = (sg.duration || "0:00").split(":").map((v) => Number(v) || 0);
+            const iso = `PT${mm}M${ss}S`;
+            return {
+              "@type": "ListItem",
+              position: i + 1,
+              item: {
+                "@type": "MusicRecording",
+                "@id": `https://hansvanleeuwen.com/music/${sg.slug}#recording`,
+                name: sg.title,
+                url: `https://hansvanleeuwen.com/music/${sg.slug}`,
+                image: sg.cover,
+                genre: sg.genre,
+                duration: iso,
+                datePublished: sg.date,
+                byArtist: { "@id": "https://hansvanleeuwen.com/music#artist" },
+                associatedMedia: { "@type": "MediaObject", contentUrl: sg.listenUrl },
+              },
+            };
+          }),
+        },
       ],
     },
   });
