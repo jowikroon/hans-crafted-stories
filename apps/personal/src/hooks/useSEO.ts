@@ -9,6 +9,8 @@ interface SEOConfig {
   enabled?: boolean;
   title: string;
   description: string;
+  /** Optional page-specific alt text for og:image / twitter:image. Falls back to title. */
+  imageAlt?: string;
   url: string;
   type?: string;
   hreflang?: HreflangEntry[];
@@ -46,7 +48,7 @@ const removeMeta = (name: string, attr = "name") => {
   document.querySelector(`meta[${attr}="${name}"]`)?.remove();
 };
 
-export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd, noindex = false, robots }: SEOConfig) => {
+export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd, noindex = false, robots, imageAlt }: SEOConfig) => {
   useEffect(() => {
     if (!enabled) return;
 
@@ -67,12 +69,12 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
     setMeta("og:image:type", DEFAULT_OG_IMAGE_TYPE, "property");
     setMeta("og:image:width", DEFAULT_OG_IMAGE_WIDTH, "property");
     setMeta("og:image:height", DEFAULT_OG_IMAGE_HEIGHT, "property");
-    setMeta("og:image:alt", title, "property");
+    setMeta("og:image:alt", imageAlt || title, "property");
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", title);
     setMeta("twitter:image", DEFAULT_OG_IMAGE);
     setMeta("twitter:description", description);
-    setMeta("twitter:image:alt", title);
+    setMeta("twitter:image:alt", imageAlt || title);
 
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canonical) {
@@ -133,5 +135,5 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
         "og:image:alt",
       ].forEach((name) => removeMeta(name, "property"));
     };
-  }, [enabled, title, description, url, type, hreflang, jsonLd, noindex, robots]);
+  }, [enabled, title, description, url, type, hreflang, jsonLd, noindex, robots, imageAlt]);
 };
