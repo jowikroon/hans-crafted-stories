@@ -17,9 +17,9 @@ describe("CompetitionRadarPanel history", () => {
 
   it("keeps the latest structured signals available", () => {
     const latest = history.at(-1);
-    expect(latest?.run).toBe("2026-07-08");
+    expect(latest?.run).toBe("2026-07-15");
     expect(latest?.summary).toHaveLength(3);
     expect(latest?.actions.length).toBeGreaterThanOrEqual(4);
-    expect(latest?.kpi.euro7Days).toBe(144);
+    expect(latest?.kpi.euro7Days).toBe(137);
   });
 });
