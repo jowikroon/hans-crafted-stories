@@ -49,6 +49,17 @@ export async function onRequest(context) {
     return Response.redirect("https://hansvanleeuwen.com/writing", 301);
   }
 
+  // Legacy /blog/<slug> → canonical /writing/<slug> (301). A /blog route never
+  // shipped; article content and old external links still point at it.
+  // Note: /blog-cms starts with "/blog-" and is intentionally not matched here.
+  if (reqPath === "/blog" || reqPath === "/blog/" || reqPath.indexOf("/blog/") === 0) {
+    var blogTarget = reqPath === "/blog" || reqPath === "/blog/"
+      ? "/writing"
+      : "/writing/" + reqPath.slice("/blog/".length);
+    var blogSearch = new URL(context.request.url).search || "";
+    return Response.redirect("https://hansvanleeuwen.com" + blogTarget + blogSearch, 301);
+  }
+
   // HAN-118: true 404 for unknown routes. Cloudflare Pages serves the SPA index.html
   // fallback (HTTP 200) for any unmatched path, producing soft-404s (e.g. /untitled-3).
   // We resolve the response, and if an HTML path is not a known route and not a real
