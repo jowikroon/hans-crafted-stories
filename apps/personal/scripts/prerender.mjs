@@ -313,7 +313,7 @@ function buildBlogPostFallback(post, head) {
       </header>
       <main>
         <article>
-          <h2>${escapeHtml(post.title)}</h2>
+          <h1>${escapeHtml(post.title)}</h1>
           <p>${escapeHtml(head.description)}</p>
           ${body || "<p>Full article coming soon.</p>"}
         </article>
@@ -336,7 +336,7 @@ function buildStaticPageFallback(head, extraHtml = "") {
       </header>
       <main>
         <article>
-          <h2>${escapeHtml(head.title)}</h2>
+          <h1>${escapeHtml(head.title)}</h1>
           <p>${escapeHtml(head.description)}</p>
           ${intro}
           ${extraHtml}
