@@ -23,6 +23,7 @@ export interface SeoAudit {
   technical_audit: string;
   content_audit: string;
   audited_by: string;
+  category?: string | null;
   created_at: string;
 }
 
@@ -34,6 +35,19 @@ export function extractDomain(url: string): string {
   } catch {
     return url.split("/")[0].replace(/^www\./, "");
   }
+}
+
+/** Categorize a page path for domain-level grouping (homepage/blog/product/…) */
+export function categorizePath(path: string): string {
+  const p = (path || "/").toLowerCase();
+  if (p === "/" || p === "") return "homepage";
+  if (/\/(blog|writing|articles?|news|insights|kennisbank)(\/|$)/.test(p)) return "blog";
+  if (/\/(products?|shop|store|items?|p)(\/|$)/.test(p)) return "product";
+  if (/\/(categor(y|ies)|collections?|c)(\/|$)/.test(p)) return "category";
+  if (/\/(about|over-ons|over|team|company|work|portfolio|cases?)(\/|$)/.test(p)) return "about";
+  if (/\/(contact|support|help|faq)(\/|$)/.test(p)) return "contact";
+  if (/\/(privacy|terms|cookies?|imprint|impressum|legal|voorwaarden|disclaimer)(\/|$)/.test(p)) return "legal";
+  return "other";
 }
 
 /** Extract path from a URL string */
