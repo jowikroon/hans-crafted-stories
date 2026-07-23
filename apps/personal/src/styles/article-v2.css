@@ -180,7 +180,7 @@
   letter-spacing: -.003em; text-wrap: pretty;
 }
 .article-v2 .prose strong { color: var(--w2-ink); font-weight: 600; }
-.article-v2 .prose a { color: var(--w2-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--w2-accent) 45%, transparent); transition: text-decoration-color .15s; }
+.article-v2 .prose a { color: var(--w2-accent); overflow-wrap: anywhere; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--w2-accent) 45%, transparent); transition: text-decoration-color .15s; }
 .article-v2 .prose a:hover { text-decoration-color: var(--w2-accent); }
 .article-v2 .prose code { font-family: var(--w2-font-mono); font-size: 0.82em; background: rgba(28,122,72,0.09); color: #155E39; padding: 2px 7px; border-radius: 5px; }
 .dark .article-v2 .prose code { background: rgba(28,122,72,0.2); color: #62CE91; }

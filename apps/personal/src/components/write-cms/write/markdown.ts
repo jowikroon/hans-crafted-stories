@@ -21,7 +21,14 @@ export function mdToHtml(md: string): string {
       `<pre><code class="language-${lang || "plaintext"}">${code.replace(/</g, "&lt;")}</code></pre>`)
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (m, label, href) => {
+      const h = href.startsWith("/blog/") ? "/writing/" + href.slice("/blog/".length) : href;
+      // Same safety contract as the live article renderer: only http(s),
+      // site-relative, #anchor and mailto; anything else stays literal text.
+      if (!/^(https?:\/\/|\/(?![\/\\])|#|mailto:)/i.test(h)) return m;
+      const ext = /^https?:\/\//i.test(h);
+      return `<a href="${h.replace(/"/g, "&quot;")}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ""}>${label}</a>`;
+    })
     .replace(/^### (.+)$/gm, "<h3>$1</h3>")
     .replace(/^## (.+)$/gm, "<h2>$1</h2>")
     .replace(/^# (.+)$/gm, "<h1>$1</h1>")

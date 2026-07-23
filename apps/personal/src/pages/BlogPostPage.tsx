@@ -38,13 +38,45 @@ import { applyMaskTokens, type MaskingConfig } from "@/lib/masking";
    Output trust model is unchanged — content originates from the CMS. */
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 type MaskCtx = { cfg: MaskingConfig | null | undefined; counters: Record<string, number> };
+/* Links: support every destination the CMS can produce — external https?://,
+   site-relative (/writing/…, /work/…), in-page #anchors and mailto:. Legacy
+   /blog/<slug> hrefs are normalised to /writing/<slug> (a /blog route never
+   shipped on this site). External links open in a new tab; unsafe schemes
+   (javascript: etc.) render as plain text. Bare URLs are autolinked. */
+const SAFE_HREF_RE = /^(https?:\/\/|\/(?![\/\\])|#|mailto:)/i;
+const normalizeHref = (href: string): string => {
+  const h = href.trim();
+  if (h === "/blog" || h === "/blog/") return "/writing";
+  if (h.startsWith("/blog/")) return "/writing/" + h.slice("/blog/".length);
+  return h;
+};
+const anchorHtml = (rawHref: string, label: string): string | null => {
+  const href = normalizeHref(rawHref);
+  if (!SAFE_HREF_RE.test(href)) return null;
+  const attrs = /^https?:\/\//i.test(href) ? ' target="_blank" rel="noopener noreferrer"' : "";
+  return `<a href="${href.replace(/"/g, "&quot;")}"${attrs}>${label}</a>`;
+};
+const AUTOLINK_RE = /(^|[\s(])((?:https?:\/\/|www\.)[^\s<>"')]*[^\s<>"').,;:!?])/g;
 const inlineMd = (s: string, mask?: MaskCtx) => {
   let out = esc(s);
   if (mask) out = applyMaskTokens(out, mask.cfg, mask.counters);
-  return out
+  out = out
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\[(.+?)\]\((https?:[^)]+)\)/g, '<a href="$2" rel="noopener noreferrer">$1</a>');
+    .replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (m, label: string, href: string) => anchorHtml(href, label) ?? m);
+  // Autolink bare URLs, but never inside an <a>…</a> that already exists —
+  // split on anchor segments and only transform the text between them.
+  return out
+    .split(/(<a\b[^>]*>[\s\S]*?<\/a>)/g)
+    .map((seg, i) =>
+      i % 2 === 1
+        ? seg
+        : seg.replace(AUTOLINK_RE, (_m, pre: string, url: string) => {
+            const href = /^www\./i.test(url) ? `https://${url}` : url;
+            return `${pre}<a href="${href.replace(/"/g, "&quot;")}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+          })
+    )
+    .join("");
 };
 
 interface RenderResult { html: string; headings: { id: string; text: string }[]; }
@@ -371,6 +403,18 @@ const BlogPostPage = () => {
     [displayContent, post?.masking, lang]
   );
   const showToc = headings.length >= 3;
+
+  /* Hydration self-heal: the prerendered/SSR HTML is built for one language,
+     but the client can mount in the other (useLang). React does not reconcile
+     children inside dangerouslySetInnerHTML during hydration, which left the
+     stale server-language DOM — without the client's anchors — on first paint.
+     After mount (and on every recompute) force the DOM to match bodyHtml. */
+  useEffect(() => {
+    const root = articleRef.current;
+    if (!root) return;
+    const el = root.querySelector<HTMLElement>(".prose");
+    if (el && bodyHtml && el.innerHTML !== bodyHtml) el.innerHTML = bodyHtml;
+  }, [bodyHtml]);
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const seoHead = post ? getBlogPostHead(post) : null;
