@@ -411,14 +411,22 @@ const BlogPostPage = () => {
      After mount (and on every recompute) force the DOM to match bodyHtml. */
   useEffect(() => {
     if (!bodyHtml) return;
+    // Marker-based guard: some page loads intermittently end up with a stale
+    // article DOM even though React's props hold the correct html (observed
+    // live; root cause is a mount/transition race). Stamp every write with a
+    // content marker and re-assert for the first seconds after mount — any
+    // write that isn't ours loses. Content or language changes update the
+    // marker via the dependency and re-run the guard.
+    const mark = String(bodyHtml.length);
     const heal = () => {
       const el = articleRef.current?.querySelector<HTMLElement>(".prose");
-      if (el && el.isConnected && el.innerHTML !== bodyHtml) el.innerHTML = bodyHtml;
+      if (!el || !el.isConnected) return;
+      if (el.dataset.h !== mark) { el.innerHTML = bodyHtml; el.dataset.h = mark; }
     };
-    heal(); // immediately after commit
-    const t1 = window.setTimeout(heal, 250); // after hydration recovery races
-    const t2 = window.setTimeout(heal, 1200); // after late refetch/paint
-    return () => { window.clearTimeout(t1); window.clearTimeout(t2); };
+    heal();
+    const iv = window.setInterval(heal, 400);
+    const stop = window.setTimeout(() => window.clearInterval(iv), 6000);
+    return () => { window.clearInterval(iv); window.clearTimeout(stop); };
   }, [bodyHtml]);
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
