@@ -90,7 +90,7 @@ const PERSON_ENTITY = {
 const PROFESSIONAL_SERVICE_ENTITY = {
   "@type": ["Organization", "ProfessionalService"],
   "@id": `${BASE}/#organization`,
-  name: "Hans van Leeuwen â€“ Freelance E-commerce Management",
+  name: "Hans van Leeuwen – Freelance E-commerce Management",
   url: `${BASE}/`,
   founder: { "@id": `${BASE}/#person` },
   areaServed: [
@@ -101,7 +101,7 @@ const PROFESSIONAL_SERVICE_ENTITY = {
 
 // Static page SEO (English, primary for prerender), aligned with functions/[[path]].ts ROUTE_META
 const ABOUT_HEAD = {
-  title: "About Hans van Leeuwen â€“ E-commerce Manager | 10+ Years Experience",
+  title: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
   description:
     "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and digital commerce. Based in Amersfoort, NL.",
   canonical: `${BASE}/about`,
@@ -150,7 +150,7 @@ const ABOUT_JSONLD = {
         url: `${BASE}/hans-profile.jpg`,
         width: 1200,
         height: 630,
-        caption: "Hans van Leeuwen â€“ Freelance E-commerce Manager",
+        caption: "Hans van Leeuwen – Freelance E-commerce Manager",
       },
       knowsAbout: [
         "E-commerce",
@@ -191,7 +191,7 @@ const WORK_JSONLD = {
     {
       "@type": "CollectionPage",
       "@id": `${BASE}/work#page`,
-      name: "Design Portfolio & Case Studies â€“ E-commerce, 3D & UX | Hans van Leeuwen",
+      name: "Design Portfolio & Case Studies – E-commerce, 3D & UX | Hans van Leeuwen",
       description: WORK_HEAD.description,
       url: `${BASE}/work`,
       isPartOf: { "@id": `${BASE}/#website` },
@@ -429,8 +429,6 @@ for (const [slug, blogPost] of postBySlug) {
   const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, WORK_HEAD);
-  // /work's server render can hide its CMS-controlled page header. Keep one
-  // crawlable H1 in the no-JS fallback when the rendered root has none.
   page = replaceSsrFallbackHtml(page, buildStaticPageFallback(WORK_HEAD, `
           <h2>Featured case studies</h2>
           <ul>
@@ -477,7 +475,26 @@ for (const [slug, blogPost] of postBySlug) {
   page = page.replace("</body>", `${writingPreloadScript}\n  </body>`);
   const outDir = path.join(distDir, "writing");
   fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, "index.html…761 tokens truncated…href="/interim-ecommerce-manager">interim e-commerce management</a>.',
+  fs.writeFileSync(path.join(outDir, "index.html"), page, "utf8");
+  console.log(`[prerender] ${route} -> ${path.join(outDir, "index.html")}`);
+}
+
+// Prerender SEO landing pages
+const SEO_PAGES = [
+  {
+    route: "/amazon-nl-specialist",
+    head: {
+      title: "Amazon NL Specialist: Freelance Amazon Netherlands Account Manager | Hans van Leeuwen",
+      description: "Freelance Amazon NL specialist with 10+ years managing Amazon Netherlands accounts. Listing optimization, Amazon Ads, A+ content & marketplace growth. Based in Amersfoort.",
+      canonical: `${BASE}/amazon-nl-specialist`,
+      serviceName: "Amazon NL Account Management",
+      intro: [
+        'Hans van Leeuwen is a freelance e-commerce manager and Amazon NL specialist based in Amersfoort, the Netherlands, specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. He helps brands sell more on Amazon Netherlands through optimized listings, data-driven advertising and strategic account management, from launch to scale.',
+        'The work covers product listing optimization (titles, bullets, backend keywords, images), A+ Content creation, Amazon Ads (Sponsored Products, Sponsored Brands, Sponsored Display), Buy Box strategy and pricing, catalog management and listing suppression resolution, Amazon SEO for the Dutch market, competitor benchmarking, and inventory planning with demand forecasting.',
+        'An engagement starts with a practical account baseline covering catalog health, listing quality, search-term coverage, advertising structure, pricing, Buy Box performance, stock risk, account warnings and reporting. The resulting plan separates urgent revenue leaks from longer-term growth opportunities, with a measurable target and owner for every action.',
+        'Execution connects content, advertising and operations. Search-term research informs titles, bullets, backend keywords, A+ Content and campaign structure instead of treating each area as a separate project. Weekly trading reviews bring organic visibility, conversion, advertising efficiency, margin and availability into one view, so budget and catalog decisions are based on commercial impact rather than isolated marketplace metrics.',
+        'For ongoing account management, the cadence includes catalog checks, campaign optimization, pricing and Buy Box review, stock-risk monitoring, competitor changes and a concise performance update. Brands retain access to the decisions, data and working documents. The goal is a repeatable Amazon Netherlands operation that an internal team can understand and continue, not a black-box dependency on an external specialist.',
+        'Proven results include 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. Start with a free 7-point Amazon NL audit, top growth opportunities identified within 48 hours. Also see <a href="/bol-com-consultant">Bol.com consulting</a> and <a href="/interim-ecommerce-manager">interim e-commerce management</a>.',
       ],
       faq: [
         { q: "What does a freelance Amazon NL specialist do?", a: "A freelance Amazon NL specialist manages and grows a brand's presence on Amazon Netherlands: optimizing product listings (titles, bullets, backend keywords, images), creating A+ Content, running Amazon Ads campaigns (Sponsored Products, Brands and Display), managing the Buy Box and pricing, resolving listing suppressions, and planning inventory with demand forecasting." },
@@ -702,4 +719,3 @@ for (const { route, head } of SEO_PAGES) {
 
 console.log("[prerender] Done.");
 process.exit(0);
-
