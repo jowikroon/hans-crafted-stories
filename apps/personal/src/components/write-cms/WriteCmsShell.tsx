@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import "./write-cms.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 import WriteMode from "./modes/WriteMode";
 import ManageMode from "./modes/ManageMode";
 import AnalyticsMode from "./modes/AnalyticsMode";
@@ -38,6 +39,7 @@ const ICONS: Record<CmsMode, JSX.Element> = {
  * so the "Command Center" nav item and deep links resolve correctly.
  */
 export default function WriteCmsShell({ postId }: { postId?: string }) {
+  useEffect(() => { ensureFontCss("fonts-write-cms", FONT_CSS.writeCms); }, []);
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const raw = params.get("mode");

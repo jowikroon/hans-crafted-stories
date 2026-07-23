@@ -9,6 +9,8 @@ import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
 import "@/styles/article-v2.css";
+import "@/styles/blog.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 import { applyMaskTokens, type MaskingConfig } from "@/lib/masking";
 
 /* ────────────────────────────────────────────────────────────
@@ -353,6 +355,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl"
 }
 
 const BlogPostPage = () => {
+  useEffect(() => { ensureFontCss("fonts-article-v2", FONT_CSS.articleV2); ensureFontCss("fonts-newsreader", FONT_CSS.newsreader); }, []);
   const { slug } = useParams<{ slug: string }>();
   const preloaded = usePreloadedBlogPost(slug);
   const [rawPost, setRawPost] = useState<BlogPostRow | null | undefined>(

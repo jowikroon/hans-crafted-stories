@@ -55,9 +55,12 @@ export default function EditLayer() {
     document.head.appendChild(link);
   }, [isAdmin]);
 
-  // Preload every font-style's webfont so the switcher swatches preview accurately.
+  // Load every font-style's webfont for the switcher swatches — but ONLY once
+  // the admin actually starts editing. Before 2026-07-23 this ran on every
+  // page view for a logged-in admin, downloading the ENTIRE font library
+  // (103 font faces) on marketing pages: the "random fonts loading" bug.
   useEffect(() => {
-    if (!isAdmin || typeof document === "undefined") return;
+    if (!isAdmin || !editing || typeof document === "undefined") return;
     FONTS.forEach((f) =>
       (f.hrefs || []).forEach((href, i) => {
         const id = `edit-font-preview-${f.id}-${i}`;
@@ -69,7 +72,7 @@ export default function EditLayer() {
         document.head.appendChild(link);
       })
     );
-  }, [isAdmin]);
+  }, [isAdmin, editing]);
 
   // hover + click capture while editing
   useEffect(() => {

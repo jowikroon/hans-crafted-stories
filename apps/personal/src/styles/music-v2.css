@@ -10,7 +10,6 @@
    ============================================================ */
 
 /* Fonts via Fontshare — only loaded when /music is mounted. */
-@import url("https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&f[]=general-sans@400,500,600,700&f[]=cabinet-grotesk@500,700,800&f[]=jetbrains-mono@400,500&display=swap");
 
 .music-v2 {
   /* Base tokens (ported from site.css :root, humanist font set as in the

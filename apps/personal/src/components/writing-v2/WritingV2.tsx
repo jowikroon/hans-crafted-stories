@@ -7,6 +7,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePreloadedBlogPosts } from "@/contexts/PreloadedDataContext";
 import "@/styles/writing-v2.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 
 type SortOrder = "newest" | "oldest";
 
@@ -63,6 +64,8 @@ function ChevronRight() {
 }
 
 const WritingV2 = () => {
+  // Fonts: loaded per-route, not via CSS @import (see fontCss.ts)
+  useEffect(() => { ensureFontCss("fonts-writing", FONT_CSS.writing); ensureFontCss("fonts-newsreader", FONT_CSS.newsreader); }, []);
   const preloadedPosts = usePreloadedBlogPosts();
   const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>(() => preloadedPosts ?? []);
   const [loading, setLoading] = useState(preloadedPosts === null);

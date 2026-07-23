@@ -18,7 +18,8 @@ import CookieConsent from "./components/CookieConsent";
 import TrackingScriptInjector from "./components/TrackingScriptInjector";
 import { EditOverlayProvider } from "./components/edit-overlay/EditOverlayProvider";
 import EditLayer from "./components/edit-overlay/EditLayer";
-import './styles/blog.css';
+// blog.css moved to BlogPostPage.tsx (2026-07-23): article-page CSS was
+// leaking fonts + styles site-wide from the global bundle.
 
 const queryClient = new QueryClient({
   defaultOptions: {
