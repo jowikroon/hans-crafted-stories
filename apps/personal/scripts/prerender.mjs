@@ -426,15 +426,17 @@ for (const [slug, blogPost] of postBySlug) {
 // Prerender /work for indexable content and correct meta/schema
 {
   const route = "/work";
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
-  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
-  page = setHead(page, WORK_HEAD);
-  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(WORK_HEAD, `
+  const workFallbackExtraHtml = `
           <h2>Featured case studies</h2>
           <ul>
             <li><a href="/work/connect-car-parts">Connect Car Parts, automotive parts e-commerce: Amazon DE, eBay DE &amp; Magento operations</a></li>
           </ul>
-          <p>More marketplace results: 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. See also <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.</p>`, "h1"));
+          <p>More marketplace results: 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. See also <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.</p>`;
+  const workFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml, "h1");
+  const workNoscriptFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml);
+  let page = template.replace('<div id="root"></div>', `<div id="root">${workFallbackHtml}</div>`);
+  page = setHead(page, WORK_HEAD);
+  page = replaceSsrFallbackHtml(page, workNoscriptFallbackHtml);
   page = page.replace(
     /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(WORK_JSONLD)}\n    </script>`
