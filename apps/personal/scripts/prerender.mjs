@@ -112,6 +112,12 @@ const WORK_HEAD = {
   description:
     "Real marketplace results: Amazon NL & DE, Bol.com and e-commerce operations case studies by freelance e-commerce manager Hans van Leeuwen, including Connect Car Parts.",
   canonical: `${BASE}/work`,
+  intro: [
+    "This portfolio brings together practical marketplace and e-commerce work by Hans van Leeuwen, a freelance e-commerce manager based in Amersfoort. The case studies focus on the operating work behind growth: improving product data, marketplace listings, advertising, inventory planning, reporting and automation across Amazon, Bol.com, eBay and owned webshops. Each case is intended to show the starting point, the intervention and the measurable commercial or operational result instead of presenting a gallery without context.",
+    "The featured Connect Car Parts case covers a Dutch automotive-parts operation selling A.B.S. brake components through Magento, Amazon DE and eBay DE. The work combines catalog quality, vehicle-fitment data, marketplace feed management through Channable, listing optimization, advertising and recurring performance reviews. It is a useful example of how technical product data and daily commercial decisions need to work together when a large assortment is distributed across several channels and countries.",
+    "Other documented marketplace results on this site include 70% market share in an Amazon NL earplug category based on Nielsen data, out-of-stock rates below 2% after improving demand forecasting, and 20% weekly sales growth through targeted Sponsored campaigns. These figures describe specific engagements and are not generic promises. The related service pages explain the working method for Amazon NL account management, Bol.com consulting and interim e-commerce leadership, while the writing section provides deeper articles about marketplace operations and AI-assisted automation.",
+    "A typical engagement starts with a baseline of catalog health, content quality, search visibility, advertising efficiency, pricing, stock risk and reporting. The resulting backlog separates urgent revenue leaks from structural improvements, assigns an owner and defines a measurable outcome. Weekly reviews then connect organic visibility, conversion, advertising, margin and availability so that decisions are based on their combined commercial impact. The goal is a transparent operation that an internal team can understand, continue and improve.",
+  ],
 };
 
 const WRITING_HEAD = {
@@ -321,7 +327,7 @@ function buildBlogPostFallback(post, head) {
 }
 
 
-function buildStaticPageFallback(head, extraHtml = "") {
+function buildStaticPageFallback(head, extraHtml = "", headingTag = "h2") {
   const intro = (head.intro || [])
     .map((para) => `<p>${para}</p>`)
     .join("\n          ");
@@ -336,7 +342,7 @@ function buildStaticPageFallback(head, extraHtml = "") {
       </header>
       <main>
         <article>
-          <h1>${escapeHtml(head.title)}</h1>
+          <${headingTag}>${escapeHtml(head.title)}</${headingTag}>
           <p>${escapeHtml(head.description)}</p>
           ${intro}
           ${extraHtml}
@@ -420,15 +426,16 @@ for (const [slug, blogPost] of postBySlug) {
 // Prerender /work for indexable content and correct meta/schema
 {
   const route = "/work";
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
-  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
-  page = setHead(page, WORK_HEAD);
-  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(WORK_HEAD, `
+  const workFallbackExtraHtml = `
           <h2>Featured case studies</h2>
           <ul>
             <li><a href="/work/connect-car-parts">Connect Car Parts, automotive parts e-commerce: Amazon DE, eBay DE &amp; Magento operations</a></li>
           </ul>
-          <p>More marketplace results: 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. See also <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.</p>`));
+          <p>More marketplace results: 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. See also <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.</p>`;
+  const workFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml, "h1");
+  let page = template.replace('<div id="root"></div>', `<div id="root">${workFallbackHtml}</div>`);
+  page = setHead(page, WORK_HEAD);
+  page = replaceSsrFallbackHtml(page, "");
   page = page.replace(
     /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(WORK_JSONLD)}\n    </script>`
