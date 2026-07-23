@@ -277,6 +277,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  text-decoration: none;
   min-height: 38px;
   padding: 8px 14px;
   font-family: inherit;

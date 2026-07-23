@@ -83,36 +83,72 @@ const WritingV2 = () => {
   const seo = translations[lang].seo;
   const toolbarRef = useRef<HTMLDivElement>(null);
 
+  // Filtered/sorted/draft views are near-duplicates of /writing -> keep them out
+  // of the index but let link equity flow (noindex,follow). Canonical already
+  // points at the clean /writing URL below.
+  const isFilteredView = filter !== "all" || sort !== "newest" || publishedOnly;
+
+  // Public posts drive an ItemList of BlogPosting entities (rich results).
+  const publicPostsForLd = useMemo(
+    () => blogPosts.filter((p) => p.published === true && p.status === "published"),
+    [blogPosts],
+  );
+
+  const writingJsonLd = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": "https://hansvanleeuwen.com/writing#page",
+        name: t.heading,
+        description: seo.writingDescription,
+        url: "https://hansvanleeuwen.com/writing",
+        isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
+        author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+          { "@type": "ListItem", position: 2, name: t.label, item: "https://hansvanleeuwen.com/writing" },
+        ],
+      },
+      ...(publicPostsForLd.length
+        ? [{
+            "@type": "ItemList",
+            "@id": "https://hansvanleeuwen.com/writing#articles",
+            itemListElement: publicPostsForLd.slice(0, 20).map((p, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              item: {
+                "@type": "BlogPosting",
+                "@id": `https://hansvanleeuwen.com/writing/${p.slug}#post`,
+                headline: p.title,
+                url: `https://hansvanleeuwen.com/writing/${p.slug}`,
+                datePublished: p.created_at,
+                dateModified: p.updated_at,
+                ...(p.image_url ? { image: p.image_url } : {}),
+                description: p.meta_description || p.excerpt || undefined,
+                author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+                publisher: { "@id": "https://hansvanleeuwen.com/#person" },
+              },
+            })),
+          }]
+        : []),
+    ],
+  }), [publicPostsForLd, t.heading, t.label, seo.writingDescription]);
+
   useSEO({
     title: seo.writingTitle,
     description: seo.writingDescription,
     url: "https://hansvanleeuwen.com/writing",
+    robots: isFilteredView ? "noindex,follow" : undefined,
     hreflang: [
       { lang: "en", href: "https://hansvanleeuwen.com/writing" },
       { lang: "nl", href: "https://hansvanleeuwen.com/writing" },
       { lang: "x-default", href: "https://hansvanleeuwen.com/writing" },
     ],
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "CollectionPage",
-          "@id": "https://hansvanleeuwen.com/writing#page",
-          name: t.heading,
-          description: seo.writingDescription,
-          url: "https://hansvanleeuwen.com/writing",
-          isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
-          author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
-        },
-        {
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-            { "@type": "ListItem", position: 2, name: t.label, item: "https://hansvanleeuwen.com/writing" },
-          ],
-        },
-      ],
-    },
+    jsonLd: writingJsonLd,
   });
 
   useEffect(() => {
@@ -223,7 +259,7 @@ const WritingV2 = () => {
         {/* Masthead */}
         <section className="masthead">
           <span className="eyebrow">Insights &amp; Essays</span>
-          <h1 className="title">{lang === "nl" ? "Gedachten & essays" : "Thoughts & Essays"}</h1>
+          <h1 className="title">{lang === "nl" ? "E-commerce inzichten & marketplace-optimalisatie" : "E-commerce Insights & Marketplace Optimization"}</h1>
           <p className="lede">
             {lang === "nl" ? (
               <>
@@ -265,15 +301,15 @@ const WritingV2 = () => {
         <div className="toolbar" ref={toolbarRef}>
           <div className="filters" role="group" aria-label="Filter by topic">
             {FILTER_PILLS.map((p) => (
-              <button
+              <a
                 key={p.tag}
-                type="button"
+                href={p.tag === "all" ? "/writing" : `/writing?tag=${p.tag}`}
                 className={`pill ${filter === p.tag ? "on" : ""}`}
                 aria-pressed={filter === p.tag}
-                onClick={() => setFilter(p.tag)}
+                onClick={(e) => { e.preventDefault(); setFilter(p.tag); }}
               >
                 {p.label}
-              </button>
+              </a>
             ))}
             {filter !== "all" && !FILTER_PILLS.some((p) => p.tag === filter) && (
               <button
@@ -395,6 +431,7 @@ const WritingV2 = () => {
                           width={1200}
                           height={800}
                           loading="eager"
+                          fetchPriority="high"
                           decoding="async"
                         />
                       </div>

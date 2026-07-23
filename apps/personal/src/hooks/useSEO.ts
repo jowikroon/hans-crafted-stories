@@ -19,6 +19,11 @@ interface SEOConfig {
    * to Hans only.
    */
   noindex?: boolean;
+  /**
+   * Explicit robots directive (e.g. "noindex,follow" for filtered/sorted
+   * views). Takes precedence over noindex. Omit to index normally.
+   */
+  robots?: string;
 }
 
 const DEFAULT_TITLE = "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen";
@@ -41,13 +46,15 @@ const removeMeta = (name: string, attr = "name") => {
   document.querySelector(`meta[${attr}="${name}"]`)?.remove();
 };
 
-export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd, noindex = false }: SEOConfig) => {
+export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd, noindex = false, robots }: SEOConfig) => {
   useEffect(() => {
     if (!enabled) return;
 
     document.title = title;
     setMeta("description", description);
-    if (noindex) {
+    if (robots) {
+      setMeta("robots", robots);
+    } else if (noindex) {
       setMeta("robots", "noindex,nofollow");
     } else {
       removeMeta("robots");
@@ -126,5 +133,5 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
         "og:image:alt",
       ].forEach((name) => removeMeta(name, "property"));
     };
-  }, [enabled, title, description, url, type, hreflang, jsonLd, noindex]);
+  }, [enabled, title, description, url, type, hreflang, jsonLd, noindex, robots]);
 };

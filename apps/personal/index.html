@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <!-- Skin preset init — set data-skin on <html> before paint to avoid FOUC.
+    <!-- Skin preset init, set data-skin on <html> before paint to avoid FOUC.
          Source of truth = localStorage 'writing_skin'. Default 'editorial-light' (base). -->
     <script>
       (function(){
@@ -15,7 +15,7 @@
     <!-- Tracking audit: only GTM loads in head. GA4, Hotjar, and other scripts are configured inside GTM or loaded deferred via TrackingScriptInjector (after first user interaction) to reduce CWV impact. -->
     <!-- dataLayer init (must be before GTM) -->
     <script>
-      // Consent Mode v2 default — MUST run synchronously here, BEFORE GTM loads,
+      // Consent Mode v2 default, MUST run synchronously here, BEFORE GTM loads,
       // so Google tags boot with consent state already set. Previously the default
       // was pushed from a React component after mount (too late) -> analytics_storage
       // stayed denied and GA4 collected almost nothing ("0% granted").
@@ -39,14 +39,14 @@
         }
       })();
     </script>
-    <!-- Google Tag Manager — single source of truth; GA4 configured inside GTM (no standalone gtag.js) -->
+    <!-- Google Tag Manager, single source of truth; GA4 configured inside GTM (no standalone gtag.js) -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-K22B6627');</script>
     <!-- End Google Tag Manager -->
-    <!-- Note: GA4 (G-6E713E94JW) is configured inside GTM — no standalone gtag.js needed -->
+    <!-- Note: GA4 (G-6E713E94JW) is configured inside GTM, no standalone gtag.js needed -->
     <!-- Hotjar (hjid:6659262) is loaded via TrackingScriptInjector after first user interaction -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="content-language" content="en" />
@@ -54,7 +54,7 @@
 
     <!-- Primary Meta Tags -->
     <title>Freelance E-commerce Manager (Amazon &amp; Bol.com) | Hans van Leeuwen</title>
-    <meta name="description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Based in Amersfoort — NL/EU. Get a 7-point marketplace audit." />
+    <meta name="description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Amersfoort, NL/EU. Book a free 7-point marketplace audit." />
     <meta name="author" content="Hans van Leeuwen" />
     <link rel="canonical" href="https://hansvanleeuwen.com/" />
 
@@ -63,7 +63,7 @@
     <meta property="og:url" content="https://hansvanleeuwen.com/" />
     <meta property="og:site_name" content="Hans van Leeuwen" />
     <meta property="og:title" content="Freelance E-commerce Manager (Amazon &amp; Bol.com) | Hans van Leeuwen" />
-    <meta property="og:description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Based in Amersfoort — NL/EU. Get a 7-point marketplace audit." />
+    <meta property="og:description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Amersfoort, NL/EU. Book a free 7-point marketplace audit." />
     <meta property="og:image" content="https://hansvanleeuwen.com/og-image.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
@@ -78,7 +78,7 @@
     <meta name="twitter:creator" content="@hansvl3" />
     <meta name="twitter:url" content="https://hansvanleeuwen.com/" />
     <meta name="twitter:title" content="Freelance E-commerce Manager (Amazon &amp; Bol.com) | Hans van Leeuwen" />
-    <meta name="twitter:description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Based in Amersfoort — NL/EU." />
+    <meta name="twitter:description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Amersfoort, NL/EU." />
     <meta name="twitter:image" content="https://hansvanleeuwen.com/og-image.png" />
     <meta name="twitter:image:alt" content="Hans van Leeuwen – E-commerce Manager &amp; Marketplace Specialist" />
 
@@ -263,7 +263,7 @@
             {
               "@type": "HowToStep",
               "name": "Execution",
-              "text": "Hands-on implementation — from listing optimization to ad campaigns — with weekly check-ins."
+              "text": "Hands-on implementation, from listing optimization to ad campaigns, with weekly check-ins."
             },
             {
               "@type": "HowToStep",
@@ -309,16 +309,20 @@
     <link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/" />
     <link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/" />
 
+    <!-- Sitemap reference (SEO audit 2026-07-21) -->
+    <link rel="sitemap" type="application/xml" href="https://hansvanleeuwen.com/sitemap.xml" />
+
     <!-- Fonts: preconnect + async load with display=swap. Switzer (display/body) + JetBrains Mono via Fontshare, Newsreader (serif, blog skins) via Google Fonts. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <!-- Blog/article images are served from Supabase Storage; preconnect cuts first-image latency (SEO audit 2026-07-22) -->
+    <link rel="preconnect" href="https://pesfakewujjwkyybwaom.supabase.co" crossorigin />
     <link rel="preload" href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&f[]=jetbrains-mono@400,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&f[]=jetbrains-mono@400,500&display=swap" /></noscript>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" /></noscript>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" /></noscript>
+    <!-- Bricolage / IBM Plex Mono / Atkinson preload removed (SEO audit 2026-07-21): Atkinson unused site-wide; Bricolage + IBM Plex Mono load on demand only where rendered (/write via write-cms.css, edit overlay injects them). Kills 3 wasteful cross-origin requests on marketing pages. -->
     <!-- Archivo/IBM Plex removed: site standardized on Switzer (articles-page standard) -->
     <!-- CMS / editor fonts (Bricolage Grotesque, IBM Plex Mono, Fraunces, JetBrains Mono) are
          no longer loaded here. They are scoped to where they're used: the /write CMS loads them
@@ -326,8 +330,8 @@
          pages from fetching fonts they never render. -->
     <style>
       /* Critical font-display fallback so text is visible while fonts load */
-      body { font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif; }
-      .font-display { font-family: 'Archivo', system-ui, sans-serif; }
+      body { font-family: 'Switzer', 'Inter', system-ui, -apple-system, sans-serif; }
+      .font-display { font-family: 'Switzer', 'Inter', system-ui, sans-serif; }
     </style>
 
     <!-- Favicon set -->
@@ -340,7 +344,18 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="format-detection" content="telephone=no" />
     <script>
-      /* Theme guard — paints light/dark before first render (no flash).
+      /* Language guard — pick the visitor's language before first paint so React's
+         first render matches (no en<->nl flicker for the detected language).
+         Only sets nl when the browser prefers Dutch; defaults to en (canonical). */
+      (function(){
+        try{
+          var l = (navigator.language || navigator.userLanguage || 'en');
+          if (/^nl\b/i.test(l)) document.documentElement.lang = 'nl';
+        }catch(e){}
+      })();
+    </script>
+    <script>
+      /* Theme guard, paints light/dark before first render (no flash).
          Kept in sync with src/hooks/useTheme.tsx (key "site_theme"). */
       (function () {
         try {
@@ -364,16 +379,16 @@
       <header>
         <nav aria-label="Primary navigation">
           <a href="/">Home</a> |
-          <a href="/work">Portfolio — UX &amp; E-commerce Design</a> |
+          <a href="/work">Portfolio: UX &amp; E-commerce Design</a> |
           <a href="/writing">E-commerce Insights &amp; Articles</a> |
           <a href="/about">About Hans van Leeuwen</a>
         </nav>
       </header>
       <main>
         <section>
-          <h2>Hans van Leeuwen – Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h2>
-          <p>Available for freelance &amp; interim e-commerce roles — Amazon &amp; Bol.com specialist (NL/EU)</p>
-          <p>I'm Hans van Leeuwen — a freelance e-commerce manager based in Amersfoort, Netherlands, specializing in <a href="/amazon-nl-specialist">Amazon marketplace management</a>, <a href="/bol-com-consultant">Bol.com optimization</a>, marketplace growth, product data optimization, and AI-assisted e-commerce operations. As an experienced <a href="/interim-ecommerce-manager">interim e-commerce manager in the Netherlands</a>, I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
+          <h1>Hans van Leeuwen – Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h1>
+          <p>Available for freelance &amp; interim e-commerce roles, Amazon &amp; Bol.com specialist (NL/EU)</p>
+          <p>I'm Hans van Leeuwen, a freelance e-commerce manager based in Amersfoort, Netherlands, specializing in <a href="/amazon-nl-specialist">Amazon marketplace management</a>, <a href="/bol-com-consultant">Bol.com optimization</a>, marketplace growth, product data optimization, and AI-assisted e-commerce operations. As an experienced <a href="/interim-ecommerce-manager">interim e-commerce manager in the Netherlands</a>, I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
           <p>Based in Amersfoort, Netherlands. Available for NL &amp; EU projects.</p>
           <p><a href="/about#contact">Request a 7-point Amazon NL &amp; Bol.com marketplace audit</a> | <a href="/work">Amazon &amp; Bol.com case studies</a> | <a href="https://www.linkedin.com/in/hansvl3" rel="noopener noreferrer">Connect on LinkedIn</a></p>
           <h3>Proven Results</h3>
@@ -386,10 +401,10 @@
         <section>
           <h2>Amazon &amp; Bol.com Marketplace Management (NL/EU)</h2>
           <ul>
-            <li><strong>Amazon Marketplace Management</strong> — Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations.</li>
-            <li><strong>Bol.com Optimization</strong> — Content optimization, Bol Ads management, catalog management, and performance analytics on the Netherlands' largest marketplace.</li>
-            <li><strong>Marketplace CRO &amp; Growth</strong> — Data-driven conversion rate optimization, A/B testing, and revenue scaling for e-commerce businesses.</li>
-            <li><strong>SEO &amp; Content Strategy</strong> — Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction.</li>
+            <li><strong>Amazon Marketplace Management</strong>: Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations.</li>
+            <li><strong>Bol.com Optimization</strong>: Content optimization, Bol Ads management, catalog management, and performance analytics on the Netherlands' largest marketplace.</li>
+            <li><strong>Marketplace CRO &amp; Growth</strong>: Data-driven conversion rate optimization, A/B testing, and revenue scaling for e-commerce businesses.</li>
+            <li><strong>SEO &amp; Content Strategy</strong>: Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction.</li>
           </ul>
         </section>
         <section>
@@ -406,10 +421,10 @@
         <section>
           <h2>Engagement Model</h2>
           <ol>
-            <li><strong>Discovery</strong> — Audit your current marketplace presence, identify quick wins and long-term growth levers.</li>
-            <li><strong>Strategy</strong> — Build a tailored action plan with KPIs, timelines, and clear ownership.</li>
-            <li><strong>Execution</strong> — Hands-on implementation from listing optimization to ad campaigns with weekly check-ins.</li>
-            <li><strong>Scale</strong> — Iterate based on data, expand to new channels, and compound results over time.</li>
+            <li><strong>Discovery</strong>: Audit your current marketplace presence, identify quick wins and long-term growth levers.</li>
+            <li><strong>Strategy</strong>: Build a tailored action plan with KPIs, timelines, and clear ownership.</li>
+            <li><strong>Execution</strong>: Hands-on implementation from listing optimization to ad campaigns with weekly check-ins.</li>
+            <li><strong>Scale</strong>: Iterate based on data, expand to new channels, and compound results over time.</li>
           </ol>
         </section>
         <section>

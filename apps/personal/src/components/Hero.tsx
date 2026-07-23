@@ -47,7 +47,7 @@ const Hero = () => {
           <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
             {isNl
               ? <>Freelance E-commerce Manager &amp; Amazon/Bol.com <em className="text-primary">Specialist</em></>
-              : <>Freelance E-commerce Manager: <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; design</>
+              : <>Freelance E-commerce Manager (Amazon &amp; Bol.com): <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; design</>
             }
           </h1>
           <p className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
@@ -100,7 +100,7 @@ const Hero = () => {
         </motion.div>
       </section>
 
-      {/* Results / Proof Section — enriched mini case studies */}
+      {/* Results / Proof Section, enriched mini case studies */}
       <section
         className="section-container pb-8 pt-2"
         aria-label={getValue("hero_results_label", t.resultsLabel)}
@@ -246,7 +246,7 @@ const Hero = () => {
           ))}
         </div>
 
-        {/* Quick links — keyword-rich anchors */}
+        {/* Quick links, keyword-rich anchors */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -278,10 +278,10 @@ const Hero = () => {
         </motion.div>
       </section>
 
-      {/* Service Details — deliverables, engagement model, industries */}
+      {/* Service Details, deliverables, engagement model, industries */}
       <ServiceDetails />
 
-      {/* FAQ Section — matches FAQPage schema for parity */}
+      {/* FAQ Section, matches FAQPage schema for parity */}
       <HomeFAQ />
 
       {/* Featured Articles */}

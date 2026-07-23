@@ -1,7 +1,7 @@
 import WritingV2 from "@/components/writing-v2/WritingV2";
 
 /**
- * Writing.tsx — entry point for /writing route.
+ * Writing.tsx, entry point for /writing route.
  *
  * 2026-06-13: redesign v2 actief. Originele implementatie verplaatst naar
  * components/writing-v2/WritingV2.tsx. Behouden vanuit eerdere /writing:
