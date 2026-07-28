@@ -28,6 +28,33 @@ const faqs = [
     answerNl:
       "Hans is gevestigd in Amersfoort, Nederland en beschikbaar voor e-commerce managementrollen, consultancy en freelance marktplaatsprojecten. Neem contact op via LinkedIn of e-mail voor beschikbaarheid.",
   },
+  // +3 (2026-07-23): visible counterparts of the JSON-LD questions added in
+  // PR #271 — FAQPage schema is only rich-result-eligible when every marked-up
+  // Q&A also exists on the page (Codex review).
+  {
+    question: "What does a freelance e-commerce manager cost?",
+    questionNl: "Wat kost een freelance e-commerce manager?",
+    answer:
+      "Engagements are priced per model: retainer for ongoing Amazon and Bol.com management, project pricing for defined scopes such as an audit or launch, and a daily rate for interim work. Actual numbers depend on scope and channel mix; a 30-minute intake typically produces a written quote within one working day.",
+    answerNl:
+      "Opdrachten worden per model geprijsd: retainer voor doorlopend Amazon- en Bol.com-beheer, projectprijs voor afgebakende scopes zoals een audit of lancering, en een dagtarief voor interim. Het exacte bedrag hangt af van scope en kanaalmix; een intake van 30 minuten levert doorgaans binnen één werkdag een schriftelijke offerte op.",
+  },
+  {
+    question: "How long until I see results on Amazon NL or Bol.com?",
+    questionNl: "Hoe lang duurt het voordat ik resultaat zie op Amazon NL of Bol.com?",
+    answer:
+      "Listing and A+ content fixes tend to shift conversion within 2-4 weeks. Sponsored Products and Bol Ads restructures usually show meaningful ACOS improvement within one advertising cycle (4-6 weeks). Structural share and stockout improvements are a 3-6 month arc.",
+    answerNl:
+      "Listing- en A+-contentverbeteringen bewegen conversie meestal binnen 2-4 weken. Herstructurering van Sponsored Products en Bol Ads laat doorgaans binnen één advertentiecyclus (4-6 weken) duidelijke ACOS-verbetering zien. Structurele verbeteringen in marktaandeel en stockouts zijn een traject van 3-6 maanden.",
+  },
+  {
+    question: "Does Hans work on Amazon DE and Amazon FR as well?",
+    questionNl: "Werkt Hans ook op Amazon DE en Amazon FR?",
+    answer:
+      "Yes. In addition to Amazon NL and Bol.com, engagements regularly cover Amazon DE and Amazon FR for brands expanding across the EU, using the same operating model per marketplace: listing quality, advertising, pricing, catalog and reporting.",
+    answerNl:
+      "Ja. Naast Amazon NL en Bol.com omvatten opdrachten regelmatig Amazon DE en Amazon FR voor merken die uitbreiden in de EU, met hetzelfde operationele model per marktplaats: listingkwaliteit, advertising, pricing, catalogus en rapportage.",
+  },
 ];
 
 const HomeFAQ = () => {

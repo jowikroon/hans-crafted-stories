@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import "../write-cms/write-cms.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 import "./music-cms.css";
 import { VOICE_TEMPLATES } from "./voiceTemplates";
 import { listSongs } from "./lib/songStore";
@@ -33,6 +34,7 @@ const ICONS: Record<CmsMode, JSX.Element> = {
  * Supabase RLS; zonder sessie tonen we de Google sign-in van de app.
  */
 export default function MusicCmsShell({ songId }: { songId?: string }) {
+  useEffect(() => { ensureFontCss("fonts-write-cms", FONT_CSS.writeCms); }, []);
   const [params, setParams] = useSearchParams();
   const { user, loading, signInWithGoogle } = useAuth();
   const raw = params.get("mode");

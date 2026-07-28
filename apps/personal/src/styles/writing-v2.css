@@ -5,7 +5,6 @@
    ============================================================ */
 
 /* Fonts via Fontshare — only loaded when /writing is mounted */
-@import url("https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&f[]=general-sans@400,500,600,700&f[]=jetbrains-mono@400,500&display=swap");
 
 .writing-v2 {
   --w2-font-display: 'Switzer', 'Inter', system-ui, sans-serif;
@@ -277,6 +276,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  text-decoration: none;
   min-height: 38px;
   padding: 8px 14px;
   font-family: inherit;
@@ -785,7 +785,18 @@
   }
 
   .writing-v2 .toolbar__right {
+    gap: 8px;
+  }
+
+  .writing-v2 .count {
     display: none;
+  }
+
+  .writing-v2 .sort select,
+  .writing-v2 .skinpick select {
+    font-size: 13px;
+    min-height: 40px;
+    padding: 6px 8px;
   }
 
   .writing-v2 .list .post:not(.post--featured) {
@@ -814,6 +825,80 @@
   }
 }
 
+/* ── Filter pill scroll-fade ── */
+.writing-v2 .filters-wrap {
+  position: relative;
+}
+
+.writing-v2 .filters-wrap::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--w2-paper));
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+@media (max-width: 860px) {
+  .writing-v2 .filters-wrap::after {
+    opacity: 1;
+  }
+  .writing-v2 .filters-wrap.scrolled-end::after {
+    opacity: 0;
+  }
+}
+
+/* ── Skeleton loading ── */
+.writing-v2 .skel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 26px 0;
+}
+
+.writing-v2 .skel__row {
+  display: grid;
+  grid-template-columns: 216px 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.writing-v2 .skel__thumb,
+.writing-v2 .skel__line {
+  background: var(--w2-hair-2);
+  border-radius: 8px;
+  animation: w2-shimmer 1.4s ease-in-out infinite;
+}
+
+.writing-v2 .skel__thumb {
+  aspect-ratio: 3 / 2;
+}
+
+.writing-v2 .skel__line {
+  height: 18px;
+  width: 80%;
+}
+
+.writing-v2 .skel__line:nth-child(2) {
+  width: 55%;
+  margin-top: 8px;
+}
+
+@keyframes w2-shimmer {
+  0%, 100% { opacity: .4; }
+  50% { opacity: .8; }
+}
+
+@media (max-width: 860px) {
+  .writing-v2 .skel__row {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .writing-v2 *,
@@ -823,3 +908,40 @@
     transition-duration: .01ms !important;
   }
 }
+
+/* Card anchor overlay (2026-07-23): title-only <a> with an absolute
+   ::after that overlays the whole card, so we keep the entire card
+   clickable without wrapping block content in an <a>. */
+.writing-v2 .post__title-link {
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+}
+.writing-v2 .post__title-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  /* Codex P1 (PR #268): .feat__media is a later position:relative sibling and
+     painted above an auto-stacked pseudo — z-index keeps the overlay the top
+     hit-target so the whole featured card stays clickable. */
+  z-index: 2;
+}
+.writing-v2 .post__title-link:focus-visible::after {
+  /* Inset outline: .post--featured clips overflow, so an outside outline was
+     invisible (Codex PR #268). Inset ring stays inside the clipping area. */
+  outline: 2px solid var(--w2-accent);
+  outline-offset: -3px;
+}
+
+/* Per-pill count + clear-filters (2026-07-23) */
+.writing-v2 .pill .pill__count {
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.65;
+}
+.writing-v2 .pill--clear {
+  border-style: dashed;
+  opacity: 0.75;
+}
+.writing-v2 .pill--clear:hover { opacity: 1; }

@@ -3,11 +3,14 @@ import { Link } from "react-router-dom";
 import {
   BarChart3, Package, TrendingUp, Search, Euro, Percent, Gauge, Settings2, LogIn, Lock,
   Paperclip, FileText, Download, CalendarDays, HardDrive, Truck, Warehouse, Home, MapPin,
+  Radar, RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import coworkAttachments from "@/data/coworkAttachments.json";
+import CompetitionRadarPanel from "@/components/dashboard/CompetitionRadarPanel";
+import { useChannable, channableStatusNL } from "@/hooks/useChannable";
 
 /* ─────────────────────────────────────────────────────────────
    /dashboards — klant-dashboards achter login (profielmenu).
@@ -25,6 +28,7 @@ const dt = (s: unknown) => (s ? new Date(String(s)).toLocaleDateString("nl-NL", 
 const SECTIONS = [
   { id: "overzicht", label: "Overzicht", icon: BarChart3 },
   { id: "attachments", label: "Attachments", icon: Paperclip },
+  { id: "concurrentie", label: "Concurrentie Radar", icon: Radar },
   { id: "shipments", label: "Shipments", icon: Truck },
   { id: "orders", label: "Orders", icon: Package },
   { id: "verkoop", label: "Verkoopresultaten", icon: TrendingUp },
@@ -69,6 +73,7 @@ const Empty = ({ what }: { what: string }) => (
 
 const attachmentCategory = (name: string) => {
   const lower = name.toLowerCase();
+  if (lower.includes("concurrentie-radar")) return "Concurrentie Radar";
   if (lower.includes("ceo") || lower.includes("rapport") || lower.includes("dossier")) return "Rapporten";
   if (lower.includes("blueprint") || lower.includes("playbook") || lower.includes("roadmap") || lower.includes("checklist")) return "Blueprints & checklists";
   if (lower.includes("returnless") || lower.includes("retour")) return "Retourflow";
@@ -326,6 +331,132 @@ const ShipmentsPanel = ({ orders, now }: { orders: Row[]; now: number }) => {
   );
 };
 
+/* ── Channable live data (edge function ccp-dashboard-data) ─── */
+type ChannableHook = ReturnType<typeof useChannable>;
+
+const ChannableStrip = ({ ch }: { ch: ChannableHook }) => {
+  const d = ch.data;
+  const stamp = d?.fetched_at ?? d?.generated_at;
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <p className="flex items-center gap-2 text-sm font-semibold text-[#15140F] dark:text-[#F5F1E6]">
+        Live marketplace-data
+        <span className="rounded bg-[#2D9255]/15 px-1.5 py-0.5 text-[10px] font-medium text-[#2D9255]">Channable</span>
+      </p>
+      <div className="flex items-center gap-2 text-[11px] text-[#7E7A6F]">
+        {stamp && (
+          <span>
+            bijgewerkt {new Date(String(stamp)).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}
+            {d?.cached ? " · cache" : ""}
+          </span>
+        )}
+        <button
+          onClick={() => void ch.refresh()}
+          disabled={ch.loading}
+          className="inline-flex items-center gap-1 rounded-full border border-black/10 px-2.5 py-1 font-medium text-[#15140F] transition-colors hover:bg-[#E5DFCE] disabled:opacity-50 dark:border-white/15 dark:text-[#F5F1E6] dark:hover:bg-white/10"
+        >
+          <RefreshCw size={11} className={ch.loading ? "animate-spin" : ""} /> Ververs
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ChannableOverview = ({ ch }: { ch: ChannableHook }) => {
+  const d = ch.data;
+  if (ch.loading && !d) return <p className="text-sm text-[#7E7A6F]">Channable laden…</p>;
+  if (!d?.totals) {
+    return ch.error ? (
+      <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+        Channable niet bereikbaar: {ch.error}
+      </p>
+    ) : null;
+  }
+  const t = d.totals;
+  const days = d.per_day ?? [];
+  const maxRev = Math.max(...days.map((x) => x.revenue), 1);
+  return (
+    <div className="space-y-3 rounded-xl border border-black/10 bg-[#FBF8F0] p-4 dark:border-white/10 dark:bg-white/5">
+      <ChannableStrip ch={ch} />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card k="Orders 30 dagen" v={t.orders_30d} s="alle kanalen" />
+        <Card k="Omzet 30 dagen" v={eur2(t.revenue_30d)} s={`AOV ${eur2(t.aov)}`} />
+        <Card k="Verzonden / handmatig" v={`${t.shipped} / ${t.manual}`} s={`${t.not_shipped} open · ${t.cancelled} geannuleerd`} />
+        <Card k="Retouren" v={t.returns_available ? t.returns : "—"} s={`${t.problems} actieve orderfouten`} />
+      </div>
+      {days.length > 0 && (
+        <div>
+          <p className="mb-1 text-[11px] uppercase tracking-wide text-[#7E7A6F]">Omzet per dag (30 dagen)</p>
+          <div className="flex h-16 items-end gap-1">
+            {days.map((x) => (
+              <div
+                key={x.date}
+                title={`${x.date} · ${x.orders} orders · ${eur2(x.revenue)}`}
+                className="min-w-[6px] flex-1 rounded-t bg-[#2D9255]/70 transition-colors hover:bg-[#2D9255]"
+                style={{ height: `${Math.max(8, (x.revenue / maxRev) * 100)}%` }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      {(d.per_channel?.length ?? 0) > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {(d.per_channel ?? []).map((c) => (
+            <span key={c.channel} className="rounded-full border border-black/10 bg-white/60 px-2.5 py-1 text-xs text-[#4B4842] dark:border-white/10 dark:bg-white/10 dark:text-[#C9BFB0]">
+              <span className="font-semibold text-[#15140F] dark:text-[#F5F1E6]">{c.channel}</span> · {c.orders} orders · {eur2(c.revenue)}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ChannableOrders = ({ ch }: { ch: ChannableHook }) => {
+  const d = ch.data;
+  if (!d?.recent_orders?.length) return null;
+  return (
+    <div className="space-y-3">
+      <ChannableStrip ch={ch} />
+      <Tbl
+        head={["Order", "Datum", "Kanaal", "Status", "Categorie", "Bedrag"]}
+        rows={d.recent_orders.map((o) => [o.id, dt(o.created), o.channel, channableStatusNL(o.status), o.category, eur2(o.total)])}
+      />
+      {(d.problem_orders?.length ?? 0) > 0 && (
+        <div>
+          <h2 className="mb-2 text-sm font-semibold text-[#15140F] dark:text-[#F5F1E6]">Actieve orderfouten (Channable)</h2>
+          <Tbl head={["Order", "Kanaal", "Fout"]} rows={(d.problem_orders ?? []).map((o) => [o.id, o.channel, o.reason])} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ChannableVerkoop = ({ ch }: { ch: ChannableHook }) => {
+  const d = ch.data;
+  if (!d?.totals) return null;
+  const cats = Object.entries(d.category_breakdown ?? {}).sort((a, b) => b[1] - a[1]);
+  return (
+    <div className="space-y-3">
+      <ChannableStrip ch={ch} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div>
+          <p className="mb-1 text-[11px] uppercase tracking-wide text-[#7E7A6F]">Per kanaal (30 dagen)</p>
+          <Tbl head={["Kanaal", "Orders", "Omzet"]} rows={(d.per_channel ?? []).map((c) => [c.channel, c.orders, eur2(c.revenue)])} />
+        </div>
+        <div>
+          <p className="mb-1 text-[11px] uppercase tracking-wide text-[#7E7A6F]">Per categorie (30 dagen)</p>
+          {cats.length ? (
+            <Tbl head={["Categorie", "Orders"]} rows={cats.map(([k, v]) => [k, v])} />
+          ) : (
+            <p className="text-sm text-[#7E7A6F]">Nog geen categorie-data.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Dashboards = () => {
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -338,6 +469,7 @@ const Dashboards = () => {
   const [nHard, setNHard] = useState(25);
   const [opw, setOpw] = useState(2);
   const [now, setNow] = useState(() => Date.now());
+  const ch = useChannable(Boolean(user && isAdmin));
 
   useEffect(() => {
     if (section !== "shipments") return;
@@ -461,17 +593,19 @@ const Dashboards = () => {
         <h1 className="mb-1 text-2xl font-semibold text-[#15140F] dark:text-[#F5F1E6]">
           {SECTIONS.find((s) => s.id === section)?.label}
         </h1>
-        <p className="mb-5 text-sm text-[#7E7A6F]">ConnectCarParts · eBay DE · live uit Supabase</p>
+        <p className="mb-5 text-sm text-[#7E7A6F]">ConnectCarParts · eBay DE · {section === "concurrentie" ? "wekelijkse research-sync" : "live uit Supabase"}</p>
 
         {err && <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Fout bij laden: {err}</p>}
         {section === "attachments" && <AttachmentsPanel />}
+        {section === "concurrentie" && <CompetitionRadarPanel />}
         {section === "shipments" && data && <ShipmentsPanel orders={data.orders} now={now} />}
-        {section !== "attachments" && !data && !err && <p className="text-sm text-[#7E7A6F]">Laden…</p>}
+        {section !== "attachments" && section !== "concurrentie" && !data && !err && <p className="text-sm text-[#7E7A6F]">Laden…</p>}
 
-        {section !== "attachments" && section !== "shipments" && data && agg && (
+        {section !== "attachments" && section !== "concurrentie" && section !== "shipments" && data && agg && (
           <>
             {section === "overzicht" && (
               <div className="space-y-5">
+                <ChannableOverview ch={ch} />
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                   <Card k="Omzet 7 dagen" v={eur(agg.rev7)} s={`${agg.o7.length} orders · AOV ${eur2(aov7)}`} />
                   <Card k="Omzet 30 dagen" v={eur(agg.rev30)} s={`${agg.o30.length} orders`} />
@@ -484,6 +618,7 @@ const Dashboards = () => {
 
             {section === "orders" && (
               <div className="space-y-6">
+                <ChannableOrders ch={ch} />
                 {data.orders.length ? (
                   <Tbl head={["Order", "Datum", "Bedrag", "Fulfilment", "Betaling"]}
                     rows={data.orders.slice(0, 25).map((r) => [String(r.order_id), dt(r.creation_date), eur2(num(r.total_value)), String(r.fulfillment_status ?? "—"), String(r.payment_status ?? "—")])} />
@@ -499,10 +634,13 @@ const Dashboards = () => {
             )}
 
             {section === "verkoop" && (
-              agg.topSkus.length ? (
-                <Tbl head={["SKU", "Product", "Stuks", "Omzet"]}
-                  rows={agg.topSkus.map((r) => [r.sku, r.title.slice(0, 60), r.qty, eur2(r.rev)])} />
-              ) : <Empty what="verkochte producten" />
+              <div className="space-y-6">
+                <ChannableVerkoop ch={ch} />
+                {agg.topSkus.length ? (
+                  <Tbl head={["SKU", "Product", "Stuks", "Omzet"]}
+                    rows={agg.topSkus.map((r) => [r.sku, r.title.slice(0, 60), r.qty, eur2(r.rev)])} />
+                ) : <Empty what="verkochte producten (eBay sync)" />}
+              </div>
             )}
 
             {section === "product" && (
@@ -572,6 +710,8 @@ const Dashboards = () => {
                   ["eBay traffic", data.traffic.length ? "ACTIEF" : "WACHT", `${data.traffic.length} rijen`],
                   ["Order-fout monitor", "ACTIEF", `${data.alerts.length} alerts historisch`],
                   ["Categorie-economics", data.econ.length ? "ACTIEF" : "WACHT", `${data.econ.length} rijen`],
+                  ["Channable orders-feed", ch.data?.ok ? "ACTIEF" : ch.error ? "FOUT" : "WACHT", ch.data?.totals ? `${ch.data.totals.orders_30d} orders 30d · ${ch.data.cached ? "cache" : "live"}` : (ch.error ?? "—")],
+                  ["Channable retouren-feed", ch.data?.totals?.returns_available ? "ACTIEF" : "WACHT", ch.data?.totals?.returns_available ? `${ch.data.totals.returns} retouren` : "endpoint niet beschikbaar"],
                 ]} />
             )}
           </>

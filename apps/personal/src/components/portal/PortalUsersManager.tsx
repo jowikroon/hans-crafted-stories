@@ -14,6 +14,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
+import PortalInvitesSection from "./PortalInvitesSection";
+import PortalLoginAttemptsSection from "./PortalLoginAttemptsSection";
 
 interface PortalUsersManagerProps {
   adminUserId: string;
@@ -390,6 +392,10 @@ const PortalUsersManager = ({ adminUserId, subFilter }: PortalUsersManagerProps)
           <UserPlus size={13} /> Add User
         </Button>
       </div>
+
+      {/* Google invites + login attempts */}
+      <PortalInvitesSection adminUserId={adminUserId} />
+      <PortalLoginAttemptsSection />
 
       {/* Select-all row + bulk action bar */}
       {profiles.length > 0 && (

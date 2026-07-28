@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { portalApi, SiteAuditResult } from "@/lib/api/portal";
 import {
-  SeoAudit, saveAudit, getAuditDomains, getAuditsByDomain,
-  deleteAudit, extractDomain, extractPath, computeSeoScore,
+  SeoAudit, saveAudit, getAuditDomains, getAuditsByDomain, getAuditHistory,
+  deleteAudit, extractDomain, extractPath, computeSeoScore, categorizePath,
 } from "@/lib/api/seoAudits";
 import { useToast } from "@/hooks/use-toast";
 
@@ -46,6 +46,7 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SiteAuditResult | null>(null);
   const [savedAudit, setSavedAudit] = useState<SeoAudit | null>(null);
+  const [prevAudit, setPrevAudit] = useState<SeoAudit | null>(null);
   const { toast } = useToast();
 
   const [view, setView] = useState<View>("audit");
@@ -94,7 +95,7 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
-    setLoading(true); setResult(null); setSavedAudit(null);
+    setLoading(true); setResult(null); setSavedAudit(null); setPrevAudit(null);
     try {
       const res = await portalApi.runSiteAudit(url);
       if (res.success && res.data) {
@@ -113,8 +114,13 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
             issues: res.data.issues || [], seo_score: scores.score,
             critical_count: scores.critical, warning_count: scores.warning, passed_count: scores.passed,
             technical_audit: "", content_audit: "", audited_by: "portal",
+            category: categorizePath(path),
           });
           setSavedAudit(saved);
+          try {
+            const hist = await getAuditHistory(domain, path);
+            setPrevAudit(hist.find((h) => h.id !== saved.id) ?? null);
+          } catch { /* silent — diff is a bonus */ }
           loadDomains();
           toast({ title: "Audit saved", description: `Stored under ${domain}` });
         } catch (saveErr: unknown) { console.error("Failed to save audit:", saveErr); }
@@ -179,6 +185,26 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
                       <span className="text-muted-foreground/50">{savedAudit.critical_count} critical · {savedAudit.warning_count} warnings · {savedAudit.passed_count} passed</span>
                     </div>
                   )}
+
+                  {savedAudit && prevAudit && (() => {
+                    const delta = savedAudit.seo_score - prevAudit.seo_score;
+                    const prevIssues = (prevAudit.issues || []) as string[];
+                    const curIssues = (savedAudit.issues || []) as string[];
+                    const resolved = prevIssues.filter((i) => !curIssues.includes(i)).length;
+                    const added = curIssues.filter((i) => !prevIssues.includes(i)).length;
+                    return (
+                      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs">
+                        <History size={13} className="text-muted-foreground" />
+                        <span className="font-medium text-foreground">vs previous scan ({relTime(prevAudit.created_at)})</span>
+                        <span className={`font-semibold tabular-nums ${delta > 0 ? "text-emerald-500" : delta < 0 ? "text-red-500" : "text-muted-foreground"}`}>
+                          {delta > 0 ? "+" : ""}{delta} score
+                        </span>
+                        {resolved > 0 && <span className="text-emerald-500">{resolved} issue{resolved !== 1 ? "s" : ""} resolved</span>}
+                        {added > 0 && <span className="text-red-500">{added} new issue{added !== 1 ? "s" : ""}</span>}
+                        {resolved === 0 && added === 0 && <span className="text-muted-foreground/60">same issues as before</span>}
+                      </div>
+                    );
+                  })()}
 
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {[{ label: "Words", value: result.wordCount }, { label: "Links", value: result.totalLinks }, { label: "Images", value: result.totalImages }, { label: "Issues", value: result.issues.length }].map((s) => (
@@ -281,6 +307,7 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
                             <ScoreBadge score={a.seo_score} />
                             <div className="min-w-0 flex-1">
                               <code className="truncate text-xs font-mono text-foreground/80">{a.path}</code>
+                              {a.category && <Badge variant="secondary" className="ml-2 align-middle text-[9px] capitalize">{a.category}</Badge>}
                               <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground/50">
                                 <Clock size={9} /><span>{new Date(a.created_at).toLocaleString()}</span>
                                 <span>·</span><span>{a.word_count} words</span>

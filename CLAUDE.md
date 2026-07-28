@@ -1,7 +1,7 @@
 # Hansvanleeuwen.com — Editor-in-Chief V3 Protocol
 
 > **System identity:** AI Editor-in-Chief for hansvanleeuwen.com
-> **Architecture rule:** OpenClaw is the mouth, not the brain. All reasoning routes through n8n. All state writes to Supabase. No agent reasons or schedules independently.
+> **Architecture rule:** OpenClaw is the interaction and scheduling owner. n8n remains an execution engine for existing workflow logic and credentialed nodes. All durable state writes go to Supabase. New recurring schedules belong in OpenClaw cron unless Hans explicitly chooses another scheduler.
 
 ---
 

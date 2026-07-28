@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useVoiceProposal, buildContext, type VoiceSignal, type VoiceTemplate } from "./useVoiceProposal";
+import { analyzeVideoAsync, extractVideoId, describeFunctionError } from "./useYoutubeAnalyze";
 
 // ─── 4-stage YouTube → Article modal (design contract #14 + #15) ──────────────
 //   Stage 1 ANALYZE  — edge fn blog-youtube-analyze → minimalist summary card
 //   Stage 2 VOICE    — ALWAYS proposes a voice (templates + post history + signal)
-//   Stage 3 GHOST    — n8n blog-ghost-write (~40s, animated stage ticker)
+//   Stage 3 GHOST    — edge fn blog-ghostwrite (multi-provider, geen n8n-dependency)
 //   Stage 4 DONE     — draft card + gates + review score + open-in-editor
 
 const N8N = "https://n8n.srv1402218.hstgr.cloud";
@@ -42,15 +43,15 @@ interface GhostResult {
   review_scores?: { hoofdredacteur?: number | null };
   linkedin_post_nl?: string;
   seo?: { meta_title?: string; meta_description?: string };
+  provider?: string;
   error?: string;
 }
 
 const GHOST_TICKER = [
-  "Transcript ophalen (Gemini)…",
-  "Editorial brief bouwen (Claude Haiku)…",
-  "Skeleton draft schrijven in jouw stem (Claude Sonnet)…",
-  "Hoofdredacteur-review…",
-  "Anti-detectie pass + SEO-metadata…",
+  "Transcript ophalen of hergebruiken…",
+  "Editorial brief bouwen…",
+  "Draft schrijven in jouw stem…",
+  "SEO-metadata…",
   "Draft opslaan…",
 ];
 
@@ -60,6 +61,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
 
   // Stage 1 — structured analysis (never a raw blank terminal)
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [aSteps, setASteps] = useState<string[]>([]);
   const analysisDone = analysis !== null;
 
   // Stage 2 — voice
@@ -86,9 +88,9 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
         topics: [],
         angle: angle.trim(),
         summary: "",
-        note: "Analyse duurde te lang (netwerk?). Je kunt door, de ghost-writer haalt het transcript zelf op.",
+        note: "Analyse duurde te lang. Je kunt door, de ghost-writer hergebruikt wat er al is.",
       });
-    }, 25000);
+    }, 240000);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [analysisDone]);
@@ -111,23 +113,20 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
         return;
       }
       try {
-        const { data, error: fnErr } = await supabase.functions.invoke("blog-youtube-analyze", {
-          body: { url: youtube.trim() },
-        });
+        const videoId = extractVideoId(youtube.trim());
+        if (!videoId) throw new Error("Geen geldig YouTube video-id in de URL");
+        // Async + poll: de edge function antwoordt direct (202) en werkt door;
+        // voortgang komt live uit blog_cms_youtube_sources.pipeline_steps.
+        const r = await analyzeVideoAsync(youtube.trim(), videoId, (s) => { if (!cancelled) setASteps(s); });
         if (cancelled) return;
-        if (fnErr) throw new Error(fnErr.message);
-        const d = (data ?? {}) as Record<string, unknown>;
-        if (d.error) throw new Error(String(d.error));
-        const topics = Array.isArray(d.key_topics) ? (d.key_topics as string[]).filter(Boolean) : [];
-        const opps = Array.isArray(d.article_opportunities) ? (d.article_opportunities as string[]).filter(Boolean) : [];
         setAnalysis({
           isVideo: true,
-          title: String(d.title ?? "").trim() || "Onbekende video",
-          channel: String(d.channel_name ?? "").trim(),
-          transcriptFound: !!d.transcript_found,
-          topics,
-          angle: (opps[0] ?? angle.trim() ?? "").toString(),
-          summary: String(d.context_summary ?? "").trim(),
+          title: r.title || "Onbekende video",
+          channel: r.channelName,
+          transcriptFound: r.keyTopics.length > 0 || !!r.contextSummary,
+          topics: r.keyTopics,
+          angle: (r.articleOpportunities[0] ?? angle.trim() ?? "").toString(),
+          summary: r.contextSummary,
         });
       } catch (e) {
         if (!cancelled) {
@@ -208,29 +207,44 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
         if (parts.length) dnaSuffix = `\n\n--- VOICE DNA (${tpl.name} · ${tpl.tone}) ---\n${parts.join("\n")}`;
       }
 
-      const res = await fetch(`${N8N}/webhook/blog-ghost-write`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: source,
+      // Edge function blog-ghostwrite: multi-provider (Anthropic -> Gemini -> OpenClaw),
+      // hergebruikt het transcript uit de analyse, en faalt nooit met een lege non-2xx:
+      // fouten komen terug als { ok:false, failed_stage, error, steps }.
+      const { data: gw, error: gwErr } = await supabase.functions.invoke("blog-ghostwrite", {
+        body: {
+          mode: isYoutube ? "youtube" : "topic",
+          url: isYoutube ? youtube.trim() : "",
+          topic: source,
+          angle: signal.angle,
+          article_type: "informatief-kort",
           language: "nl",
-          category: tpl?.category || category || "general",
-          cluster: "autoriteit",
-          proposed_angle: signal.angle,
-          brand_voice_context: voiceText + dnaSuffix,
+          voice_context: voiceText + dnaSuffix,
           voice_template_id: tpl?.id ?? null,
-          narrative_history: "",
           source: "blog-cms-stage-modal",
-          timestamp: new Date().toISOString(),
-        }),
+        },
       });
-      if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        throw new Error(`ghost-write HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ""}`);
+      if (gwErr) {
+        const fe = await describeFunctionError(gwErr);
+        throw new Error(fe.steps.length ? `${fe.message} — laatste stap: ${fe.steps[fe.steps.length - 1]}` : fe.message);
       }
-      const d = (await res.json()) as GhostResult;
-      if (d.error) throw new Error(String(d.error));
-      setGhost(d);
+      const d = (gw ?? {}) as {
+        ok?: boolean; failed_stage?: string; error?: string; steps?: string[]; provider_used?: string;
+        post?: { id: string; slug: string; status: string; title?: string; word_count?: number; read_time?: string; editorial_stage?: string };
+      };
+      if (!d.ok || !d.post) {
+        const last = d.steps?.length ? ` — laatste stap: ${d.steps[d.steps.length - 1]}` : "";
+        throw new Error(`${d.failed_stage ? `[${d.failed_stage}] ` : ""}${d.error ?? "Ghost-write mislukt"}${last}`);
+      }
+      setGhost({
+        post_id: d.post.id,
+        title: d.post.title ?? "Draft opgeslagen",
+        word_count: d.post.word_count,
+        reading_time: d.post.read_time,
+        gaps_count: 0,
+        editorial_stage: d.post.editorial_stage ?? d.post.status,
+        provider: d.provider_used,
+        review_scores: {},
+      });
       setStage(4);
       onDone();
     } catch (e) {
@@ -265,7 +279,8 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
               {!analysisDone ? (
                 <div className="analyze-skeleton">
                   <span className="spinner" />
-                  <span>{isYoutube ? "Video analyseren…" : "Bron voorbereiden…"}</span>
+                  <span>{aSteps.length ? aSteps[aSteps.length - 1] : (isYoutube ? "Video analyseren…" : "Bron voorbereiden…")}</span>
+                  {aSteps.length > 1 && <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, opacity: 0.6 }}>stap {aSteps.length}</span>}
                 </div>
               ) : (
                 <div className="analyze-summary">
@@ -393,7 +408,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
                   ))}
                 </ul>
               </div>
-              <p className="stage-note stage-note--dim">5-staps pipeline draait (~40-60s). Niet wegklikken.</p>
+              <p className="stage-note stage-note--dim">Pipeline draait (~20-60s; langer bij verse transcripts). Niet wegklikken.</p>
             </>
           )}
 
@@ -406,6 +421,7 @@ export default function YouTubeStageModal({ youtube, topic, angle, category, onC
                 <div className="done-meta">
                   {ghost.word_count ?? "—"} woorden · {ghost.reading_time ?? "—"} · {ghost.gaps_count ?? 0} [HANS:] gates om in te vullen
                   {ghost.review_scores?.hoofdredacteur != null && <> · review {ghost.review_scores.hoofdredacteur}/100</>}
+                  {ghost.provider && <> · via {ghost.provider}</>}
                 </div>
                 {ghost.seo?.meta_title && <div className="done-seo">SEO: {ghost.seo.meta_title}</div>}
               </div>

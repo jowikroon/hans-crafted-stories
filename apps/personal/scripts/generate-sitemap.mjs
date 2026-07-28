@@ -33,11 +33,12 @@ const STATIC_ROUTES = [
   { loc: `${BASE}/writing`, changefreq: "weekly", priority: "0.8" },
   { loc: `${BASE}/about`, changefreq: "monthly", priority: "0.8" },
   { loc: `${BASE}/music`, changefreq: "monthly", priority: "0.7" },
-  { loc: `${BASE}/music/beat-drop`, changefreq: "monthly", priority: "0.6" },
-  { loc: `${BASE}/music/teacher-leave`, changefreq: "yearly", priority: "0.5" },
-  { loc: `${BASE}/music/hanging-on`, changefreq: "yearly", priority: "0.5" },
-  { loc: `${BASE}/music/beat-between-our-years`, changefreq: "yearly", priority: "0.5" },
-  { loc: `${BASE}/music/new-level`, changefreq: "yearly", priority: "0.5" },
+  // Music sub-routes intentionally NOT in the sitemap (Codex review PR #264):
+  // - teacher-leave / hanging-on / beat-between-our-years / new-level are
+  //   login-gated SoundCloud concepts -> render "Track not found" + noindex
+  //   for crawlers, so advertising them poisons crawl budget.
+  // - beat-drop is public but not prerendered; direct fetches serve the
+  //   homepage shell until prerender support lands. Re-add once prerendered.
   { loc: `${BASE}/amazon-nl-specialist`, changefreq: "monthly", priority: "0.9" },
   { loc: `${BASE}/bol-com-consultant`, changefreq: "monthly", priority: "0.9" },
   { loc: `${BASE}/interim-ecommerce-manager`, changefreq: "monthly", priority: "0.9" },

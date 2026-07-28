@@ -155,12 +155,11 @@ const Navbar = (_props: NavbarProps) => {
   const SiteLink = ({ to, label, active }: { to: string; label: string; active: boolean }) => (
     <Link
       to={to}
-      className={`relative px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${
-        active ? barInk : `${barMut} ${barHovInk}`
+      className={`px-3.5 py-2 text-sm font-medium rounded-full transition-all ${
+        active ? `${barChip} ${barInk}` : `${barMut} ${barHovInk} ${barHovBg}`
       }`}
     >
       {label}
-      {active && <span className="absolute left-3.5 right-3.5 bottom-0.5 h-[2px] rounded-full bg-[#2D9255]" />}
     </Link>
   );
 
@@ -277,10 +276,10 @@ const Navbar = (_props: NavbarProps) => {
           style={{ width: "calc(100% - 36px)" }}
         >
             {/* Brand */}
-            <Link to="/" aria-label="Hans van Leeuwen — home" className={`group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight ${barInk}`}>
+            <Link to="/" aria-label="Hans van Leeuwen, home" className={`group justify-self-start flex items-center gap-2.5 text-base font-semibold tracking-tight ${barInk}`}>
               <img
                 src={logoSrc}
-                alt="Hans van Leeuwen — Freelance E-commerce Manager"
+                alt="Hans van Leeuwen, Freelance E-commerce Manager"
                 width={30}
                 height={30}
                 className={`h-[30px] w-[30px] rounded-md object-contain${logoMotion ? " transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" : ""}`}
@@ -289,24 +288,20 @@ const Navbar = (_props: NavbarProps) => {
 
             {/* Centre nav — plain links (Work hover dropdown removed) */}
             <div className="hidden md:flex items-center gap-1 justify-self-center">
-                {siteLinks.map((l) =>
-                  l.to === "/music" ? (
-                    <MusicNav key={l.to} label={l.label} />
-                  ) : (
-                    <SiteLink
-                      key={l.to}
-                      to={l.to}
-                      label={l.label}
-                      active={
-                        l.to === "/work"
-                          ? isWorkActive
-                          : (l as { cc?: boolean }).cc
-                          ? isCommandCenter
-                          : isActive(l.to)
-                      }
-                    />
-                  )
-                )}
+                {siteLinks.map((l) => (
+                  <SiteLink
+                    key={l.to}
+                    to={l.to}
+                    label={l.label}
+                    active={
+                      l.to === "/work"
+                        ? isWorkActive
+                        : (l as { cc?: boolean }).cc
+                        ? isCommandCenter
+                        : isActive(l.to)
+                    }
+                  />
+                ))}
               </div>
 
             {/* Right cluster */}
@@ -342,11 +337,11 @@ const Navbar = (_props: NavbarProps) => {
                           </div>
                           <p className="px-4 pt-2.5 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F]">{t.workspace.label}</p>
                           <div className="pb-1">
-                            <Link to="/write" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><PenLine size={15} /> {t.workspace.blogCms}</Link>
-                            <Link to="/release-set" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Disc3 size={15} /> Release Set</Link>
-                            <Link to="/samantha" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Sparkles size={15} /> {t.workspace.samantha}<span className="ml-auto text-[9px] font-mono text-[#7E7A6F]">⌘J</span></Link>
+                            {isAdmin && <Link to="/write" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><PenLine size={15} /> {t.workspace.blogCms}</Link>}
+                            {isAdmin && <Link to="/release-set" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Disc3 size={15} /> Release Set</Link>}
+                            {isAdmin && <Link to="/samantha" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Sparkles size={15} /> {t.workspace.samantha}<span className="ml-auto text-[9px] font-mono text-[#7E7A6F]">⌘J</span></Link>}
                             <Link to="/portal" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><LayoutDashboard size={15} /> {t.workspace.portal}</Link>
-                            <Link to="/wiki" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BookOpen size={15} /> {t.workspace.docs}</Link>
+                            {isAdmin && <Link to="/wiki" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BookOpen size={15} /> {t.workspace.docs}</Link>}
                             {isAdmin && <Link to="/god-structure" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Network size={15} /> {t.workspace.dashboard}</Link>}
                             {isAdmin && <Link to="/dashboards" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BarChart3 size={15} /> Dashboards</Link>}
                           </div>
@@ -380,15 +375,7 @@ const Navbar = (_props: NavbarProps) => {
                   const cc = (l as { cc?: boolean }).cc;
                   const active = cc ? isCommandCenter : isActive(l.to);
                   return (
-                    <div key={l.to} className="flex flex-col">
-                      <Link to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : `${barChip} ${barInk}`) : `${barMut} ${barHovBg} ${barHovInk}`}`}>{l.label}</Link>
-                      {l.to === "/music" && (
-                        <>
-                          <Link to="/muziek/artist-radar" onClick={() => setMobileOpen(false)} className={`ml-3 rounded-lg px-3 py-2 text-sm block ${barMut} ${barHovBg} ${barHovInk}`}>Artist Radar</Link>
-                          <Link to="/music#songs" onClick={() => setMobileOpen(false)} className={`ml-3 rounded-lg px-3 py-2 text-sm block ${barMut} ${barHovBg} ${barHovInk}`}>Songs &amp; Production Notes</Link>
-                        </>
-                      )}
-                    </div>
+                    <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : `${barChip} ${barInk}`) : `${barMut} ${barHovBg} ${barHovInk}`}`}>{l.label}</Link>
                   );
                 })}
 
@@ -402,11 +389,11 @@ const Navbar = (_props: NavbarProps) => {
                 {user ? (
                   <>
                     <p className={`px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold ${barMut}`}>{t.workspace.label}</p>
-                    <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><PenLine size={14} /> {t.workspace.blogCms}</Link>
-                    <Link to="/release-set" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Disc3 size={14} /> Release Set</Link>
-                    <Link to="/samantha" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Sparkles size={14} /> {t.workspace.samantha}</Link>
+                    {isAdmin && <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><PenLine size={14} /> {t.workspace.blogCms}</Link>}
+                    {isAdmin && <Link to="/release-set" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Disc3 size={14} /> Release Set</Link>}
+                    {isAdmin && <Link to="/samantha" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Sparkles size={14} /> {t.workspace.samantha}</Link>}
                     <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><LayoutDashboard size={14} /> {t.workspace.portal}</Link>
-                    <Link to="/wiki" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BookOpen size={14} /> {t.workspace.docs}</Link>
+                    {isAdmin && <Link to="/wiki" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BookOpen size={14} /> {t.workspace.docs}</Link>}
                     {isAdmin && <Link to="/god-structure" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Network size={14} /> {t.workspace.dashboard}</Link>}
                     {isAdmin && <Link to="/dashboards" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BarChart3 size={14} /> Dashboards</Link>}
                     <button onClick={() => { signOut(); setMobileOpen(false); }} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#C2410C] hover:bg-[#C2410C]/10 w-full text-left"><LogOut size={14} /> {t.workspace.signOut}</button>
