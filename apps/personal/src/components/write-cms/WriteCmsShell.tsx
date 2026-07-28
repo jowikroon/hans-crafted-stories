@@ -42,7 +42,9 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
   useEffect(() => { ensureFontCss("fonts-write-cms", FONT_CSS.writeCms); }, []);
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const raw = params.get("mode");
+  // `view=voice` is the original HAN-98 deep-link contract. Keep it as a
+  // backwards-compatible alias while `mode` remains the canonical parameter.
+  const raw = params.get("mode") ?? params.get("view");
   const validRaw = raw === "write" || raw === "voice" || raw === "experience" || raw === "design" || raw === "analytics" ? raw : null;
   // Vanaf een post-URL (/write/:id) wint een expliciete ?mode= — anders bleef elke
   // mode-klik onzichtbaar in de Write-view hangen (UX-verificatie 2026-07-18).
@@ -80,6 +82,7 @@ export default function WriteCmsShell({ postId }: { postId?: string }) {
       return;
     }
     const next = new URLSearchParams(params);
+    next.delete("view");
     // Manage is the default landing mode, so it owns the clean (param-less) URL.
     if (m === "manage") next.delete("mode");
     else next.set("mode", m);
