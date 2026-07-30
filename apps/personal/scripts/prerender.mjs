@@ -662,6 +662,7 @@ for (const { route, head } of SEO_PAGES) {
       inLanguage: "en",
     },
     WEBSITE_ENTITY,
+    PERSON_ENTITY,
     {
       "@type": "BreadcrumbList",
       itemListElement: [
@@ -672,7 +673,6 @@ for (const { route, head } of SEO_PAGES) {
   ];
   if (head.serviceName) {
     graph.splice(1, 0,
-      PERSON_ENTITY,
       PROFESSIONAL_SERVICE_ENTITY,
       {
         "@type": "Service",
