@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useForcedTheme } from "@/hooks/useTheme";
 import { useAdmin } from "@/hooks/useAdmin";
 import coworkAttachments from "@/data/coworkAttachments.json";
 import CompetitionRadarPanel from "@/components/dashboard/CompetitionRadarPanel";
@@ -458,6 +459,8 @@ const ChannableVerkoop = ({ ch }: { ch: ChannableHook }) => {
 };
 
 const Dashboards = () => {
+  // Backend surface: always light, consistent with /portal and /write.
+  useForcedTheme("light");
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [section, setSection] = useState<SectionId>("overzicht");

@@ -23,7 +23,7 @@ const Wiki = () => {
   const { isAdmin, loading: adminLoading } = useAdmin();
 
   /* Dark-only immersive page: forced without touching the visitor's saved theme. */
-  useForcedTheme("dark");
+  useForcedTheme("light"); // backend surface: always light, consistent with /portal and /write
 
   useEffect(() => {
     document.title = "Wiki — System Documentation";
