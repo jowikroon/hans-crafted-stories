@@ -101,9 +101,18 @@ const Navbar = (_props: NavbarProps) => {
 
   const isCommandCenter = location.pathname.startsWith("/write");
 
+  /* Backend surfaces are always light (/write, /music-cms, /portal, /wiki,
+     /dashboards force or hardcode the light theme), so the bar must stay
+     light there too — never inherit the visitor's dark toggle. */
+  const isLightSurface =
+    isCommandCenter ||
+    ["/music-cms", "/portal", "/wiki", "/dashboards", "/blog-cms"].some((p) =>
+      location.pathname.startsWith(p)
+    );
+
   /* Bar theme — follows the global dark toggle so header items stay visible in
-     dark designs, but stays light on /write to match the always-light CMS. */
-  const barDark = siteTheme === "dark" && !isCommandCenter;
+     dark designs, but stays light on always-light backend surfaces. */
+  const barDark = siteTheme === "dark" && !isLightSurface;
   const barInk = barDark ? "text-[#F5F1E6]" : "text-[#15140F]";
   const barMut = barDark ? "text-[#B4AE9F]" : "text-[#7E7A6F]";
   const barHovInk = barDark ? "hover:text-white" : "hover:text-[#15140F]";
