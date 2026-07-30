@@ -85,6 +85,14 @@ const PERSON_ENTITY = {
   name: "Hans van Leeuwen",
   url: `${BASE}/about`,
   jobTitle: "Freelance E-commerce Manager",
+  description:
+    "Hans van Leeuwen is a freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. 10+ years of experience. Based in Amersfoort, NL.",
+  address: { "@type": "PostalAddress", addressLocality: "Amersfoort", addressRegion: "Utrecht", addressCountry: "NL" },
+  sameAs: [
+    "https://www.linkedin.com/in/hansvl3",
+    "https://twitter.com/hansvl3",
+    "https://github.com/jowikroon",
+  ],
 };
 
 const PROFESSIONAL_SERVICE_ENTITY = {
@@ -93,6 +101,10 @@ const PROFESSIONAL_SERVICE_ENTITY = {
   name: "Hans van Leeuwen – Freelance E-commerce Management",
   url: `${BASE}/`,
   founder: { "@id": `${BASE}/#person` },
+  sameAs: [
+    "https://www.linkedin.com/in/hansvl3",
+    "https://github.com/jowikroon",
+  ],
   areaServed: [
     { "@type": "Country", name: "Netherlands" },
     { "@type": "Place", name: "European Union" },
