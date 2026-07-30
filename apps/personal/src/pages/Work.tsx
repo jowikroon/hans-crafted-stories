@@ -55,7 +55,7 @@ const Work = () => {
         {
           "@type": "CollectionPage",
           "@id": "https://hansvanleeuwen.com/work#page",
-          name: tw.heading,
+          name: seo.workTitle,
           description: seo.workDescription,
           url: "https://hansvanleeuwen.com/work",
           isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },

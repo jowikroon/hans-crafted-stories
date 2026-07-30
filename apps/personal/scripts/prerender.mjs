@@ -101,9 +101,9 @@ const PROFESSIONAL_SERVICE_ENTITY = {
 
 // Static page SEO (English, primary for prerender), aligned with functions/[[path]].ts ROUTE_META
 const ABOUT_HEAD = {
-  title: "About Hans van Leeuwen – E-commerce Manager | 10+ Years Experience",
+  title: "About Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
   description:
-    "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and digital commerce. Based in Amersfoort, NL.",
+    "Interim e-commerce manager and marketplace specialist with 10+ years of experience in Amazon, Bol.com, marketplace strategy and digital commerce. Based in Amersfoort, NL.",
   canonical: `${BASE}/about`,
 };
 
@@ -201,7 +201,7 @@ const WORK_JSONLD = {
     {
       "@type": "CollectionPage",
       "@id": `${BASE}/work#page`,
-      name: "Design Portfolio & Case Studies – E-commerce, 3D & UX | Hans van Leeuwen",
+      name: WORK_HEAD.title,
       description: WORK_HEAD.description,
       url: `${BASE}/work`,
       isPartOf: { "@id": `${BASE}/#website` },
