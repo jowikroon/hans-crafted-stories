@@ -95,6 +95,15 @@ const PERSON_ENTITY = {
   ],
 };
 
+const WEBSITE_ENTITY = {
+  "@type": "WebSite",
+  "@id": `${BASE}/#website`,
+  name: "Hans van Leeuwen",
+  url: `${BASE}/`,
+  inLanguage: "en",
+  publisher: { "@id": `${BASE}/#person` },
+};
+
 const PROFESSIONAL_SERVICE_ENTITY = {
   "@type": ["Organization", "ProfessionalService"],
   "@id": `${BASE}/#organization`,
@@ -149,6 +158,7 @@ const ABOUT_JSONLD = {
       url: `${BASE}/about`,
       isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
     },
+    WEBSITE_ENTITY,
     {
       "@type": "Person",
       "@id": "https://hansvanleeuwen.com/#person",
@@ -220,6 +230,8 @@ const WORK_JSONLD = {
       about: { "@type": "Person", "@id": `${BASE}/#person` },
       author: { "@type": "Person", "@id": `${BASE}/#person`, name: "Hans van Leeuwen" },
     },
+    WEBSITE_ENTITY,
+    PERSON_ENTITY,
     {
       "@type": "BreadcrumbList",
       itemListElement: [
@@ -243,6 +255,8 @@ const WRITING_JSONLD = {
       about: { "@type": "Person", "@id": `${BASE}/#person` },
       author: { "@type": "Person", "@id": `${BASE}/#person`, name: "Hans van Leeuwen" },
     },
+    WEBSITE_ENTITY,
+    PERSON_ENTITY,
     {
       "@type": "BreadcrumbList",
       itemListElement: [
@@ -647,6 +661,7 @@ for (const { route, head } of SEO_PAGES) {
       about: { "@id": `${BASE}/#person` },
       inLanguage: "en",
     },
+    WEBSITE_ENTITY,
     {
       "@type": "BreadcrumbList",
       itemListElement: [
