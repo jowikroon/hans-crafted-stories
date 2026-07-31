@@ -80,7 +80,8 @@ const About = () => {
           "@id": "https://hansvanleeuwen.com/#person",
           name: "Hans van Leeuwen",
           url: "https://hansvanleeuwen.com/about",
-          jobTitle: "Freelance E-commerce Manager & UX Designer",
+          jobTitle: "Freelance & Interim E-commerce Manager",
+          alternateName: "Jowikroon",
           description: "Freelance e-commerce manager & UX designer with 10+ years of experience in marketplace strategy, Amazon, Bol.com, AI-assisted automation, and digital commerce.",
           image: {
             "@type": "ImageObject",
@@ -191,7 +192,7 @@ const About = () => {
                 <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{getValue("about_label", t.about)}</p>
               </div>
               <h1 className="mb-2 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                {getValue("about_h1", lang === "nl" ? "Freelance E-commerce Manager & Marketplace-specialist (Amazon & Bol.com)" : "Freelance E-commerce Manager & Marketplace Specialist (Amazon & Bol.com)")}
+                {getValue("about_h1", lang === "nl" ? "Interim E-commerce Manager & Marketplace-specialist (Amazon & Bol.com)" : "Interim E-commerce Manager & Marketplace Specialist (Amazon & Bol.com)")}
               </h1>
               <p className="mb-6 font-display text-lg font-medium text-muted-foreground md:text-xl">
                 {getValue("about_name", "Hans van Leeuwen")} · {getValue("about_location", "Amersfoort, NL")}

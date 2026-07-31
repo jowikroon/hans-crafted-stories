@@ -498,7 +498,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "Amazon NL specialist & Bol.com consultant. 10+ years growing marketplace revenue: listings, ads, CRO & forecasting. Amersfoort, NL/EU. Book a free 7-point marketplace audit.",
+      homeDescription: "Freelance e-commerce manager, Amazon NL specialist & Bol.com consultant. 10+ years growing marketplace revenue: listings, ads, CRO & forecasting. Amersfoort, NL/EU.",
       writingTitle: "E-commerce Insights for Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
       workTitle: "Amazon & Bol.com Case Studies: Marketplace Growth Portfolio | Hans van Leeuwen",
@@ -829,7 +829,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "Amazon NL-specialist & Bol.com-consultant. 10+ jaar groei op marketplaces: listings, ads, CRO & forecasting. Gevestigd in Amersfoort, NL/EU. Beschikbaar voor freelance en interim werk.",
+      homeDescription: "Freelance e-commerce manager, Amazon NL-specialist & Bol.com-consultant. 10+ jaar groei op marketplaces: listings, ads, CRO & forecasting. Amersfoort, NL/EU. Beschikbaar voor freelance en interim werk.",
       writingTitle: "E-commerce Inzichten voor Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
       workTitle: "Amazon & Bol.com Case Studies: Marketplace Growth Portfolio | Hans van Leeuwen",

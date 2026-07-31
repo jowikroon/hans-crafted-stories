@@ -254,8 +254,8 @@ const Music = () => {
 
       {/* hero */}
       <section className="mn-wrap mn-hero">
-        <span className="mn-kicker"><span className="mn-live" />Now playing <span className="mn-sep">/</span> made after midnight</span>
-        <h1 className="mn-hero__title">Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</h1>
+        <h1 className="mn-kicker" style={{ display: "inline-flex", margin: "0 0 30px" }}><span className="mn-live" />Hans van Leeuwen Music <span className="mn-sep">/</span> Jowikroon</h1>
+        <p className="mn-hero__title" style={{ margin: 0 }}>Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</p>
         <p className="mn-hero__lede">No singles chasing a playlist. Just a handful of <b>tracks</b>, a tape machine, and whatever the night left behind. Press play, and if you want to stay a while, every song keeps the notes: the gear, the mistakes, the lyrics.</p>
         <div className="mn-hero__cues" role="tablist" aria-label="Filter tracks by genre">
           {genres.map((g) => {

@@ -84,7 +84,8 @@ const PERSON_ENTITY = {
   "@id": `${BASE}/#person`,
   name: "Hans van Leeuwen",
   url: `${BASE}/about`,
-  jobTitle: "Freelance E-commerce Manager",
+  jobTitle: "Freelance & Interim E-commerce Manager",
+  alternateName: "Jowikroon",
   description:
     "Hans van Leeuwen is a freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. 10+ years of experience. Based in Amersfoort, NL.",
   address: { "@type": "PostalAddress", addressLocality: "Amersfoort", addressRegion: "Utrecht", addressCountry: "NL" },
@@ -164,7 +165,8 @@ const ABOUT_JSONLD = {
       "@id": "https://hansvanleeuwen.com/#person",
       name: "Hans van Leeuwen",
       url: `${BASE}/about`,
-      jobTitle: "Freelance E-commerce Manager",
+      jobTitle: "Freelance & Interim E-commerce Manager",
+      alternateName: "Jowikroon",
       description:
         "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
       image: {
