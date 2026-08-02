@@ -344,17 +344,17 @@ const Music = () => {
         <p className="mn-slabel" style={{ marginTop: "clamp(54px,8vh,90px)" }}><span className="n">03</span> Artist Radar</p>
         <div className="mn-release">
           <div className="mn-release__body">
-            <span className="mn-release__kicker"><span className="mn-live" />Gratis alert-service</span>
-            <h2 className="mn-release__title">Mis nooit meer een show van je favoriete artiest</h2>
-            <p className="mn-release__sub">Kies je artiesten, je krijgt een mail bij geruchten, aankondigingen en zodra tickets in Nederland of België in de verkoop gaan.</p>
+            <span className="mn-release__kicker"><span className="mn-live" />Free alert service</span>
+            <h2 className="mn-release__title">Never miss a show from your favorite artist</h2>
+            <p className="mn-release__sub">Pick your artists and get an email on rumors, announcements, and the moment tickets go on sale in the Netherlands or Belgium.</p>
             <div className="mn-release__meta">
-              <span className="mn-chip">Geruchten</span>
-              <span className="mn-chip">Aankondigingen</span>
-              <span className="mn-chip">Ticketverkoop NL/BE</span>
+              <span className="mn-chip">Rumors</span>
+              <span className="mn-chip">Announcements</span>
+              <span className="mn-chip">Ticket sales NL/BE</span>
             </div>
             <div className="mn-release__cta-row">
               <Link to="/muziek/artist-radar" className="mn-release__cta" data-cursor aria-label="Open the Artist Radar and put artists on your radar">
-                <RadarIcon /> Zet artiesten op je radar
+                <RadarIcon /> Put artists on your radar
               </Link>
             </div>
           </div>
