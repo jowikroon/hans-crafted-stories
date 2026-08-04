@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCP Command · Connect Car Parts</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#fff; --ink:#0d1117; --ink2:#5a6473; --ink3:#8b95a5;
+  --line:#e4e8ee; --line2:#eef1f5;
+  --blue:#1863dc; --blue-soft:#eaf1fe;
+  --ok:#16a34a; --ok-soft:#e8f7ee;
+  --warn:#c2810a; --warn-soft:#fdf4e3;
+  --fail:#d92d20; --fail-soft:#fdeceb;
+  --skip:#8b95a5; --skip-soft:#f1f3f6;
+  --r:12px;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1360px;margin:0 auto;padding:0 28px 72px}
+
+/* header */
+header{background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+.hin{max-width:1360px;margin:0 auto;padding:16px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px}
+.mark{width:30px;height:30px;border-radius:8px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;letter-spacing:-.4px}
+.brand h1{font-size:16px;font-weight:650;letter-spacing:-.2px}
+.brand span{display:block;font-size:11.5px;color:var(--ink3);font-weight:450;letter-spacing:.02em}
+.hspacer{flex:1}
+.pulse{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ink3)}
+.dot.live{background:var(--ok);box-shadow:0 0 0 0 rgba(22,163,74,.5);animation:pulse 2.4s infinite}
+.dot.err{background:var(--fail)}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+.btn{padding:8px 15px;border-radius:9px;background:var(--blue);color:#fff;font-size:13.5px;font-weight:550;
+  transition:.15s;white-space:nowrap}
+.btn:hover{background:#1352bb}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--line2)}
+.btn.sm{padding:6px 12px;font-size:12.5px}
+
+/* nav */
+nav{background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:63px;z-index:49}
+.nin{max-width:1360px;margin:0 auto;padding:0 28px;display:flex;gap:2px;overflow-x:auto}
+.tab{padding:12px 15px;font-size:13.5px;color:var(--ink2);border-bottom:2px solid transparent;
+  white-space:nowrap;font-weight:500;transition:.15s}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.tab .cnt{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:20px;background:var(--line2);
+  font-size:11px;font-weight:600;color:var(--ink2);font-variant-numeric:tabular-nums}
+.tab.on .cnt{background:var(--blue-soft);color:var(--blue)}
+
+section{display:none;padding-top:28px}
+section.on{display:block}
+
+/* primitives */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.card-h{padding:15px 19px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.card-h h3{font-size:14px;font-weight:620;letter-spacing:-.1px}
+.card-h p{font-size:12.5px;color:var(--ink3)}
+.card-b{padding:19px}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:1080px){.g4{grid-template-columns:repeat(2,1fr)}.g3,.g2{grid-template-columns:1fr}}
+@media(max-width:640px){.g4{grid-template-columns:1fr}.wrap,.hin,.nin{padding-left:16px;padding-right:16px}}
+.mb{margin-bottom:16px}.mb24{margin-bottom:24px}
+h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink3);
+  font-weight:650;margin:26px 0 12px}
+h2.sec:first-child{margin-top:0}
+
+/* kpi */
+.kpi{padding:17px 19px}
+.kpi .lab{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:600}
+.kpi .val{font-size:29px;font-weight:660;letter-spacing:-1px;margin:6px 0 3px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12.5px;color:var(--ink2);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.delta{font-weight:600;font-variant-numeric:tabular-nums}
+.delta.up{color:var(--ok)}.delta.dn{color:var(--fail)}.delta.flat{color:var(--ink3)}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;
+  font-size:11.5px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.fail{background:var(--fail-soft);color:var(--fail)}
+.pill.skip{background:var(--skip-soft);color:var(--skip)}
+.pill.info{background:var(--blue-soft);color:var(--blue)}
+.pill i{width:6px;height:6px;border-radius:50%;background:currentColor;display:block}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--ink3);font-weight:650;border-bottom:1px solid var(--line);white-space:nowrap;background:#fbfcfd}
+td{padding:10px 12px;border-bottom:1px solid var(--line2);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fbfcfd}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono);font-size:12px}
+.muted{color:var(--ink3)}
+.tscroll{overflow-x:auto}
+
+/* health steps */
+.step{display:grid;grid-template-columns:34px 1fr auto;gap:14px;padding:13px 19px;
+  border-bottom:1px solid var(--line2);align-items:start}
+.step:last-child{border-bottom:0}
+.step .n{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:660;
+  font-variant-numeric:tabular-nums}
+.step.ok .n{background:var(--ok-soft);color:var(--ok)}
+.step.warn .n{background:var(--warn-soft);color:var(--warn)}
+.step.fail .n{background:var(--fail-soft);color:var(--fail)}
+.step.skip .n{background:var(--skip-soft);color:var(--skip)}
+.step .ttl{font-size:13.5px;font-weight:560;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.step .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:650}
+.step .det{font-size:12.5px;color:var(--ink2);margin-top:3px;line-height:1.5}
+.step .ms{font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:3px}
+
+/* stage rail */
+.rail{display:flex;align-items:center;gap:0}
+.node{width:11px;height:11px;border-radius:50%;border:2px solid var(--line);background:var(--panel);flex:none}
+.node.done{background:var(--blue);border-color:var(--blue)}
+.node.blind{border-style:dashed;border-color:var(--ink3)}
+.link{height:2px;width:20px;background:var(--line);flex:none}
+.link.done{background:var(--blue)}
+
+/* progress */
+.bar{height:7px;border-radius:20px;background:var(--line2);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--blue);border-radius:20px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.bar.ok>i{background:var(--ok)}
+.mini{height:4px}
+
+/* forms */
+label.f{display:block;margin-bottom:14px}
+label.f .lb{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;margin-bottom:5px;flex-wrap:wrap}
+label.f .hp{font-size:11.5px;color:var(--ink3);font-weight:450}
+input[type=text],input[type=password],input[type=number]{width:100%;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;font:13px var(--mono);background:var(--panel);color:var(--ink);transition:.15s}
+input:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+input::placeholder{color:var(--ink3);font-family:inherit}
+.note{padding:13px 15px;border-radius:10px;font-size:12.5px;line-height:1.6}
+.note.warn{background:var(--warn-soft);color:#7a5206;border:1px solid #f5e2bb}
+.note.info{background:var(--blue-soft);color:#0f4694;border:1px solid #cfe0fc}
+.note.fail{background:var(--fail-soft);color:#8f1d13;border:1px solid #f8ccc7}
+.note b{font-weight:650}
+.note code{font-family:var(--mono);font-size:11.5px;background:rgba(0,0,0,.055);padding:1px 5px;border-radius:4px}
+
+/* chart */
+canvas{display:block;width:100%}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--ink2);margin-top:10px;flex-wrap:wrap}
+.legend b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+.skel{background:linear-gradient(90deg,var(--line2) 25%,#f7f9fb 50%,var(--line2) 75%);
+  background-size:200% 100%;animation:sh 1.3s infinite;border-radius:6px;height:13px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.empty{padding:44px 20px;text-align:center;color:var(--ink3);font-size:13.5px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sw{position:relative;display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;user-select:none}
+.sw input{position:absolute;opacity:0;pointer-events:none}
+.sw .tr{width:36px;height:20px;border-radius:20px;background:var(--line);transition:.2s;flex:none;position:relative}
+.sw .tr::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+  background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw input:checked+.tr{background:var(--blue)}
+.sw input:checked+.tr::after{transform:translateX(16px)}
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hin">
+    <div class="brand">
+      <div class="mark">CCP</div>
+      <div>
+        <h1>Command Dashboard</h1>
+        <span>connectcarparts.nl · eBay DE · Bol · Magento</span>
+      </div>
+    </div>
+    <div class="hspacer"></div>
+    <div class="pulse"><span class="dot" id="hdot"></span><span id="hstat">verbinden…</span></div>
+    <button class="btn ghost sm" id="btnFlow">Package Flow ↗</button>
+    <button class="btn" id="btnRefresh">Ververs alles</button>
+  </div>
+</header>
+
+<nav><div class="nin">
+  <button class="tab on" data-t="ov">Overzicht</button>
+  <button class="tab" data-t="flow">Orderflow<span class="cnt" id="cFlow">–</span></button>
+  <button class="tab" data-t="sys">Systeem-check<span class="cnt" id="cSys">–</span></button>
+  <button class="tab" data-t="mg">Magento<span class="cnt" id="cMg">–</span></button>
+  <button class="tab" data-t="acc">Toegang &amp; sleutels</button>
+</div></nav>
+
+<div id="gate" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(246,247,249,.97);
+  backdrop-filter:blur(6px);place-items:center;padding:24px">
+  <div class="card" style="max-width:460px;width:100%">
+    <div class="card-h"><h3>Dashboard ontgrendelen</h3><p>eenmalig per browser</p></div>
+    <div class="card-b">
+      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:15px">
+        Orderdata, klantwoonplaats en Magento-cijfers zitten achter een slot. Vul je beheer-PIN in;
+        deze browser onthoudt daarna een <b>kijker-token</b> en vraagt het nooit meer.
+        Dat token kan geen sleutels lezen en je kunt het per apparaat intrekken.
+      </p>
+      <label class="f"><span class="lb">Beheer-PIN</span>
+        <input type="password" id="gatePin" placeholder="PIN" autocomplete="off"></label>
+      <div class="row">
+        <button class="btn" id="gateGo">Ontgrendelen</button>
+        <span id="gateMsg" style="font-size:12.5px"></span>
+      </div>
+      <div class="note warn" style="margin-top:15px" id="gateNote">
+        Nog geen PIN ingesteld? Eenmalig in de Supabase SQL Editor — niet via dit scherm, niet via een chat:
+        <code>insert into cms_secrets(name,value) values ('ccp_dashboard_pin_hash',
+        encode(extensions.digest('JOUW-PIN','sha256'),'hex')) on conflict (name) do update set value=excluded.value;</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ══════════ OVERZICHT ══════════ -->
+<section id="ov" class="on">
+  <div id="alerts" class="mb24"></div>
+
+  <h2 class="sec">Verkoop · laatste 30 dagen</h2>
+  <div class="grid g4 mb24" id="kpis">
+    <div class="card kpi"><div class="lab">Omzet 30d</div><div class="val skel" style="width:70%">&nbsp;</div><div class="sub">&nbsp;</div></div>
+    <div class="card kpi"><div class="lab">Orders 30d</div><div class="val skel" style="width:50%">&nbsp;</div><div class="sub">&nbsp;</div></div>
+    <div class="card kpi"><div class="lab">Gem. orderwaarde</div><div class="val skel" style="width:60%">&nbsp;</div><div class="sub">&nbsp;</div></div>
+    <div class="card kpi"><div class="lab">Marketplace-fee</div><div class="val skel" style="width:55%">&nbsp;</div><div class="sub">&nbsp;</div></div>
+  </div>
+
+  <div class="grid g2 mb24" style="grid-template-columns:1.55fr 1fr">
+    <div class="card">
+      <div class="card-h">
+        <h3>Omzet &amp; orders per dag</h3><p>30-daags venster, geannuleerd uitgesloten</p>
+        <div class="hspacer" style="flex:1"></div>
+        <label class="sw"><input type="checkbox" id="swTest"><span class="tr"></span>testorders meetellen</label>
+      </div>
+      <div class="card-b">
+        <canvas id="chart" height="230"></canvas>
+        <div class="legend">
+          <span><b style="background:var(--blue)"></b>Omzet (€)</span>
+          <span><b style="background:#c3d6f8"></b>Orders</span>
+          <span class="muted" id="chartNote"></span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Per verkoopkanaal</h3><p>30d</p></div>
+      <div id="chanBox"><div class="empty">laden…</div></div>
+    </div>
+  </div>
+
+  <div class="grid g2 mb24">
+    <div class="card">
+      <div class="card-h"><h3>Weg naar €100K</h3><p>YTD-doel 2026</p></div>
+      <div class="card-b" id="goalBox"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Doorlooptijd per schakel</h3><p>mediaan, echte orders</p></div>
+      <div id="lagBox"><div class="empty">laden…</div></div>
+    </div>
+  </div>
+
+  <h2 class="sec">Bestverkochte artikelen · 30d</h2>
+  <div class="card"><div class="tscroll"><table id="skuTbl">
+    <thead><tr><th>SKU</th><th>Artikel</th><th>Kanaal</th><th class="num">Stuks</th><th class="num">Omzet</th></tr></thead>
+    <tbody><tr><td colspan="5" class="empty">laden…</td></tr></tbody>
+  </table></div></div>
+</section>
+
+<!-- ══════════ ORDERFLOW ══════════ -->
+<section id="flow">
+  <div class="grid g4 mb24" id="funnel"></div>
+  <div class="card mb24">
+    <div class="card-h">
+      <h3>Orders door de keten</h3>
+      <p id="flowSub">bron → Channable → Magento → verzonden → T&amp;T</p>
+      <div style="flex:1"></div>
+      <label class="sw"><input type="checkbox" id="swTest2"><span class="tr"></span>testorders tonen</label>
+      <button class="btn ghost sm" id="btnFlowReload">Herlaad</button>
+    </div>
+    <div class="tscroll"><table id="flowTbl">
+      <thead><tr>
+        <th>Order</th><th>Kanaal</th><th>Artikel</th><th>Land</th>
+        <th class="num">Waarde</th><th>Keten</th><th>Magento</th><th>T&amp;T</th><th>Status</th>
+      </tr></thead>
+      <tbody><tr><td colspan="9" class="empty">laden…</td></tr></tbody>
+    </table></div>
+  </div>
+  <div id="linkDiag"></div>
+</section>
+
+<!-- ══════════ SYSTEEM ══════════ -->
+<section id="sys">
+  <div class="card mb24">
+    <div class="card-h">
+      <h3>Lineaire keten-run</h3>
+      <p>elke stap wordt echt uitgevoerd tegen de live API — read-only</p>
+      <div style="flex:1"></div>
+      <span id="sysSum"></span>
+      <button class="btn" id="btnRun">Run opnieuw</button>
+    </div>
+    <div id="steps"><div class="empty">nog niet gedraaid</div></div>
+  </div>
+  <div class="note info">
+    <b>Hoe je dit leest.</b> De run gaat strikt op volgorde. Een stap die faalt zet alles wat er logisch achter zit op
+    <span class="pill skip"><i></i>skip</span> — zo zie je meteen de éérste oorzaak in plaats van tien gevolgen.
+    <span class="pill skip"><i></i>skip</span> betekent ook: sleutel nog niet ingevuld (tab Toegang).
+  </div>
+</section>
+
+<!-- ══════════ MAGENTO ══════════ -->
+<section id="mg">
+  <div class="card mb24">
+    <div class="card-h">
+      <h3>Magento onderdeel-health</h3>
+      <p id="mgBase">read-only · uitsluitend GET, nooit een schrijfactie</p>
+      <div style="flex:1"></div>
+      <span id="mgSum"></span>
+      <button class="btn ghost sm" id="btnMg">Herlaad</button>
+    </div>
+    <div class="tscroll"><table id="mgTbl">
+      <thead><tr><th>Onderdeel</th><th>Endpoint</th><th class="num">Records</th><th class="num">Respons</th><th>Status</th></tr></thead>
+      <tbody><tr><td colspan="5" class="empty">laden…</td></tr></tbody>
+    </table></div>
+  </div>
+  <div class="note info"><b>Read-only garantie.</b> De backend accepteert voor Magento uitsluitend <code>GET</code>.
+    Prijzen, voorraad en orders worden nooit vanuit dit dashboard aangepast — Channable blijft eigenaar van prijs en voorraad.</div>
+</section>
+
+<!-- ══════════ TOEGANG ══════════ -->
+<section id="acc">
+  <div class="note info mb24">
+    <b>Twee soorten toegang, bewust gescheiden.</b><br>
+    <b>1 · API-sleutels</b> worden server-side bewaard in Supabase <code>cms_secrets</code> — daar staan
+    <code>channable_api_token</code> en <code>magento_token</code> al. Ze komen nooit in de browser terug: je ziet
+    alleen of ze gevuld zijn en de laatste vier tekens. Automatiseringen (edge functions, n8n) gebruiken dezelfde bron.<br>
+    <b>2 · Login-wachtwoorden</b> (eBay/Bol/ABS-portal) gaan hier <i>niet</i> naar Supabase. Dat is jouw eigen §8-regel.
+    Ze blijven op deze machine en produceren een <code>.env</code>-regel plus een kant-en-klare Chrome-login-opdracht.
+  </div>
+
+  <div class="card mb24" id="lockCard">
+    <div class="card-b">
+      <div class="row">
+        <label class="f" style="max-width:320px;margin:0">
+          <span class="lb">Beheer-PIN <span class="hp">sleutelnamen en beheer zijn afgeschermd</span></span>
+          <input type="password" id="pin" placeholder="PIN" autocomplete="off">
+        </label>
+        <button class="btn" id="btnUnlock" style="margin-top:20px">Ontgrendelen</button>
+        <span id="lockMsg" style="font-size:12.5px;margin-top:20px"></span>
+      </div>
+      <div class="note warn" style="margin-top:14px" id="lockNote">
+        Na <b>5</b> mislukte pogingen binnen 15 minuten wordt beheer geblokkeerd; elke poging staat in het audit-log.
+        Nog geen PIN? Zet die eenmalig in de Supabase SQL Editor — niet via dit scherm, en niet via een chat:
+        <code>insert into cms_secrets(name,value) values ('ccp_dashboard_pin_hash',
+        encode(extensions.digest('JOUW-PIN','sha256'),'hex')) on conflict (name) do update set value=excluded.value;</code>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec">1 · API-sleutels — server-side</h2>
+  <div class="card mb24">
+    <div class="card-h">
+      <h3>Sleutelbeheer</h3><p>opslaan of wijzigen; leeg laten = ongewijzigd</p>
+      <div style="flex:1"></div><span id="pinState"></span>
+    </div>
+    <div class="card-b">
+      <div id="slots"><div class="empty">vergrendeld — vul je PIN in en klik Ontgrendelen</div></div>
+      <div style="border-top:1px solid var(--line2);margin-top:18px;padding-top:18px">
+        <div class="row">
+          <button class="btn" id="btnSave">Sleutels opslaan</button>
+          <button class="btn ghost" id="btnCheck">Direct testen na opslaan</button>
+          <span id="saveMsg" style="font-size:12.5px"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec">2 · Login-kluis — alleen deze machine</h2>
+  <div class="card mb24">
+    <div class="card-h"><h3>Portal-logins voor browser-automatisering</h3><p>nooit naar Supabase, nooit in een chat</p></div>
+    <div class="card-b">
+      <div class="grid g2" id="logins"></div>
+      <div class="row" style="margin-top:16px">
+        <label class="sw"><input type="checkbox" id="swLocal"><span class="tr"></span>bewaar op deze machine (browser-opslag)</label>
+        <div style="flex:1"></div>
+        <button class="btn ghost" id="btnEnv">Kopieer .env-regels</button>
+        <button class="btn ghost" id="btnPrompt">Kopieer Chrome-login-opdracht</button>
+        <button class="btn ghost" id="btnWipe">Wis lokaal</button>
+        <span id="locMsg" style="font-size:12.5px"></span>
+      </div>
+      <div class="note warn" style="margin-top:16px">
+        <b>Let op.</b> Browser-opslag is niet versleuteld. Aanrader blijft: wachtwoorden in je password manager en in
+        <code>_skill/adapters/.env</code>; hier alleen invullen op het moment dat je een browser-flow start.
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec">3 · Sleutelkaart — één bron, veel lezers</h2>
+  <div class="card mb24">
+    <div class="card-h">
+      <h3>Wat er bestaat en wie het mag lezen</h3>
+      <p>geen enkele waarde — alleen naam, leeftijd en lezers</p>
+      <div style="flex:1"></div><span id="mapSum"></span>
+      <button class="btn ghost sm" id="btnMap">Herlaad</button>
+    </div>
+    <div class="tscroll"><table id="mapTbl">
+      <thead><tr><th>Sleutel</th><th>Status</th><th class="num">Laatst gewijzigd</th><th>Rotatie</th><th>Lezers</th></tr></thead>
+      <tbody><tr><td colspan="5" class="empty">laden…</td></tr></tbody>
+    </table></div>
+  </div>
+
+  <div class="card mb24">
+    <div class="card-h">
+      <h3>Consumenten</h3><p>elke afnemer een eigen token met een eigen scope</p>
+      <div style="flex:1"></div>
+      <button class="btn ghost sm" id="btnAudit">Toon audit</button>
+    </div>
+    <div class="card-b">
+      <div class="tscroll"><table id="consTbl">
+        <thead><tr><th>Naam</th><th>Scope</th><th class="num">Gebruikt</th><th class="num">Laatst</th><th>Status</th><th></th></tr></thead>
+        <tbody><tr><td colspan="6" class="empty">vul je PIN in en klik Herlaad</td></tr></tbody>
+      </table></div>
+
+      <div style="border-top:1px solid var(--line2);margin-top:18px;padding-top:18px">
+        <div class="grid g3">
+          <label class="f"><span class="lb">Naam <span class="hp">bv. openclaw, codex, n8n</span></span>
+            <input type="text" id="cName" placeholder="openclaw" autocomplete="off"></label>
+          <label class="f"><span class="lb">Scope <span class="hp">komma-gescheiden · <code>*</code> als joker</span></span>
+            <input type="text" id="cScope" placeholder="channable_*, magento_token" autocomplete="off"></label>
+          <label class="f"><span class="lb">Omschrijving</span>
+            <input type="text" id="cDesc" placeholder="VPS-automatisering" autocomplete="off"></label>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnCons">Consument aanmaken</button>
+          <button class="btn ghost" id="btnConsList">Herlaad lijst</button>
+          <span id="consMsg" style="font-size:12.5px"></span>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <span class="muted" style="font-size:12px">Snel:</span>
+          <button class="btn ghost sm" data-preset="openclaw|channable_*, magento_token, n8n_*">openclaw</button>
+          <button class="btn ghost sm" data-preset="codex|channable_*, magento_base_url">codex</button>
+          <button class="btn ghost sm" data-preset="n8n|channable_*, magento_token">n8n</button>
+          <button class="btn ghost sm" data-preset="vps-harvest|magento_token, magento_base_url">vps-harvest</button>
+        </div>
+      </div>
+      <div id="tokenBox"></div>
+      <div id="auditBox"></div>
+      <div class="note info" style="margin-top:16px">
+        <b>Waarom dit geen kopieën maakt.</b> De waarde blijft in <code>cms_secrets</code>. Een consument haalt hem per run
+        op met zijn eigen token en bewaart hem niet. Rotatie doe je op één plek; elke afnemer heeft de volgende run
+        automatisch de nieuwe waarde. Elke uitgifte én elke weigering staat in het audit-log.
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec">4 · Doel bijwerken</h2>
+  <div class="card"><div class="card-b">
+    <div class="grid g3">
+      <label class="f"><span class="lb">YTD-omzet (€)</span><input type="number" id="gYtd" step="1"></label>
+      <label class="f"><span class="lb">Jaardoel (€)</span><input type="number" id="gGoal" step="1"></label>
+      <label class="f"><span class="lb">Peildatum</span><input type="text" id="gAsOf" placeholder="2026-05-11 (W19)"></label>
+    </div>
+    <button class="btn" id="btnGoal">Doel opslaan</button>
+    <span id="goalMsg" style="font-size:12.5px;margin-left:10px"></span>
+  </div></div>
+</section>
+
+<footer>
+  <span>CCP Command Dashboard · gebouwd op Supabase edge functions <code style="font-family:var(--mono)">ccp-ops-api</code> + <code style="font-family:var(--mono)">ccp-ops-link</code></span>
+  <span id="foot"></span>
+</footer>
+</div>
+
+<script>
+/* ───────────────────────── config ───────────────────────── */
+const SUPA = "https://pesfakewujjwkyybwaom.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlc2Zha2V3dWpqd2t5eWJ3YW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzcyNzQsImV4cCI6MjA4NzQ1MzI3NH0.6jTLT1MbeTKhxVW5ATtDnkRa02N-X5zlt3zGgFVA3iU";
+const API    = SUPA + "/functions/v1/ccp-ops-api";
+const LINK   = SUPA + "/functions/v1/ccp-ops-link";
+const BROKER = SUPA + "/functions/v1/ccp-secrets-broker";
+
+const LOGIN_FIELDS = [
+  {k:"EBAY_USER", l:"eBay DE gebruiker", u:"https://www.ebay.de/sh/ovw"},
+  {k:"EBAY_PASS", l:"eBay DE wachtwoord", p:1},
+  {k:"BOL_USER",  l:"Bol partner gebruiker", u:"https://partner.bol.com"},
+  {k:"BOL_PASS",  l:"Bol partner wachtwoord", p:1},
+  {k:"ABS_PORTAL_USER", l:"ABS portal gebruiker", u:"https://abs-bv.shop/en/portal"},
+  {k:"ABS_PORTAL_PASS", l:"ABS portal wachtwoord", p:1},
+  {k:"MAGENTO_ADMIN_USER", l:"Magento admin gebruiker", u:"https://www.connectcarparts.nl/atvise/admin"},
+  {k:"MAGENTO_ADMIN_PASS", l:"Magento admin wachtwoord", p:1}
+];
+
+/* ───────────────────────── helpers ───────────────────────── */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const eur = n => "€" + (n||0).toLocaleString("nl-NL",{minimumFractionDigits:0,maximumFractionDigits:0});
+const eur2= n => "€" + (n||0).toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
+const int = n => (n||0).toLocaleString("nl-NL");
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dt  = s => s ? new Date(s).toLocaleString("nl-NL",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}) : "–";
+function dur(m){ if(m==null) return "–"; if(m<60) return m+" min";
+  const h=m/60; if(h<48) return h.toFixed(h<10?1:0)+" u"; return (h/24).toFixed(1)+" d"; }
+function store(k,v){ try{ v===undefined?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function copy(t,el,msg){ navigator.clipboard.writeText(t).then(()=>{ if(el){el.textContent=msg||"gekopieerd";
+  el.style.color="var(--ok)"; setTimeout(()=>el.textContent="",2600);} }); }
+
+/* Kijker-token: eenmalig opgehaald met de beheer-PIN, daarna onthouden door déze browser.
+   Het staat niet in dit bestand — wie de HTML kopieert krijgt geen toegang. */
+const viewer = {
+  get: () => load("ccp.viewer", null),
+  set: v => store("ccp.viewer", v),
+  clear: () => store("ccp.viewer", undefined),
+};
+
+async function call(url, payload){
+  const v = viewer.get();
+  const r = await fetch(url, {method:"POST",
+    headers:{
+      "Authorization":"Bearer "+ANON, "Content-Type":"application/json",
+      ...(payload.pin ? {"x-ccp-pin":payload.pin} : {}),
+      ...(v?.token ? {"x-ccp-viewer":v.token} : {}),
+    },
+    body: JSON.stringify(payload)});
+  const t = await r.text();
+  try { return JSON.parse(t); } catch(e){ return {ok:false, error:"HTTP "+r.status+": "+t.slice(0,200)}; }
+}
+
+/* ───────────────────────── tabs ───────────────────────── */
+$$(".tab").forEach(b=>b.onclick=()=>{
+  $$(".tab").forEach(x=>x.classList.toggle("on",x===b));
+  $$("section").forEach(s=>s.classList.toggle("on", s.id===b.dataset.t));
+  if(b.dataset.t==="sys" && !state.health) runHealth();
+  if(b.dataset.t==="mg"  && !state.mg) loadMagento();
+  if(b.dataset.t==="acc" && !state.creds) loadCreds();
+});
+
+const state = { link:null, linkTest:null, health:null, mg:null, creds:null, showTest:false };
+
+/* ───────────────────────── overzicht ───────────────────────── */
+function activeLink(){ return state.showTest ? (state.linkTest||state.link) : state.link; }
+
+function renderOverview(){
+  const d = activeLink(); if(!d || !d.ok) return;
+  const s = d.sales, w = s.d30, w7 = s.d7;
+  const real = d.counts.total;
+
+  $("#kpis").innerHTML = [
+    kpi("Omzet 30d", eur2(w.revenue), `${int(w.units)} stuks · 7d ${eur2(w7.revenue)}`),
+    kpi("Orders 30d", int(w.orders), `7d ${int(w7.orders)} · ${state.showTest?"incl.":"excl."} testorders`),
+    kpi("Gem. orderwaarde", eur2(w.aov), `mediaan doorloop ${dur(d.median_lags_min.to_shipped)} tot verzending`),
+    kpi("Marketplace-fee", eur2(w.commission), w.revenue>0 ? `${(w.commission/w.revenue*100).toFixed(1)}% van de omzet` : "geen omzet in venster")
+  ].join("");
+
+  drawChart(s.per_day);
+  $("#chartNote").textContent = `${real} orders in beeld · ${d.test_orders_filtered} testorders gefilterd`;
+
+  // kanalen
+  const tot = s.per_channel.reduce((a,c)=>a+c.revenue,0)||1;
+  $("#chanBox").innerHTML = s.per_channel.length ? `<div class="card-b">${
+    s.per_channel.map(c=>`
+      <div style="margin-bottom:15px">
+        <div class="row" style="justify-content:space-between;margin-bottom:6px">
+          <span style="font-weight:600;font-size:13.5px;text-transform:capitalize">${esc(c.key)}</span>
+          <span class="num" style="font-size:13px">${eur2(c.revenue)}</span>
+        </div>
+        <div class="bar"><i style="width:${(c.revenue/tot*100).toFixed(1)}%"></i></div>
+        <div class="muted" style="font-size:11.5px;margin-top:5px">${int(c.orders)} orders · ${int(c.units)} stuks</div>
+      </div>`).join("")}</div>` : `<div class="empty">geen orders in dit venster</div>`;
+
+  // doorlooptijd
+  const L = d.median_lags_min;
+  const legs = [
+    ["Marketplace → Channable", L.to_channable, "Channable haalt de order op"],
+    ["Channable → Magento", L.to_magento, "order landt in de webshop-administratie"],
+    ["Magento → verzonden", L.to_shipped, "picken, pakken, label"],
+    ["Verzonden → T&T bij koper", L.to_track, "trackingnummer terug op de listing"]
+  ];
+  const mx = Math.max(...legs.map(l=>l[1]||0), 1);
+  $("#lagBox").innerHTML = `<div class="card-b">${legs.map(([n,v,h])=>`
+    <div style="margin-bottom:14px">
+      <div class="row" style="justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:13px;font-weight:550">${n}</span>
+        <span class="num mono" style="color:${v==null?'var(--fail)':'var(--ink)'}">${v==null?"geen data":dur(v)}</span>
+      </div>
+      <div class="bar mini"><i style="width:${v==null?0:(v/mx*100).toFixed(1)}%;background:${v==null?'var(--fail)':'var(--blue)'}"></i></div>
+      <div class="muted" style="font-size:11.5px;margin-top:4px">${h}</div>
+    </div>`).join("")}</div>`;
+
+  renderGoal(w.revenue);
+  renderSkus(d.orders);
+  renderAlerts(d);
+  $("#cFlow").textContent = real;
+}
+function kpi(lab,val,sub,delta){
+  return `<div class="card kpi"><div class="lab">${lab}</div><div class="val">${val}</div>
+    <div class="sub">${delta||""}${sub?`<span>${sub}</span>`:""}</div></div>`;
+}
+
+function renderGoal(rev30){
+  const g = load("ccp.goal", {ytd:18947, goal:100000, asOf:"2026-05-11 (W19)"});
+  $("#gYtd").value=g.ytd; $("#gGoal").value=g.goal; $("#gAsOf").value=g.asOf;
+  const pct = Math.min(100, g.ytd/g.goal*100);
+  const left = g.goal-g.ytd;
+  const wksLeft = Math.max(1, Math.round((new Date(new Date().getFullYear(),11,31)-new Date())/6048e5));
+  $("#goalBox").innerHTML = `
+    <div class="row" style="justify-content:space-between;margin-bottom:9px">
+      <span style="font-size:26px;font-weight:660;letter-spacing:-.8px">${eur(g.ytd)}</span>
+      <span class="muted" style="font-size:13px">van ${eur(g.goal)}</span>
+    </div>
+    <div class="bar" style="height:10px"><i style="width:${pct.toFixed(1)}%"></i></div>
+    <div class="row" style="justify-content:space-between;margin-top:11px;font-size:12.5px">
+      <span class="muted">${pct.toFixed(1)}% gehaald</span>
+      <span class="muted">nog ${eur(left)} in ~${wksLeft} weken</span>
+    </div>
+    <div class="note warn" style="margin-top:14px">
+      Handmatige stand per <b>${esc(g.asOf)}</b> — dit cijfer komt <b>niet</b> uit Channable (die ziet alleen
+      marketplace-orders, niet de D365/webshop-omzet). Werk het bij op het tabblad Toegang.
+      Benodigd tempo: <b>${eur(Math.round(left/wksLeft))}/week</b>.
+    </div>`;
+}
+
+function renderSkus(orders){
+  const m = new Map();
+  for(const o of orders){
+    if(!o.sku) continue;
+    const k = o.sku;
+    const e = m.get(k) || {sku:k, title:o.title, ch:o.channel, units:0, rev:0};
+    e.units += o.units; e.rev += o.total; m.set(k,e);
+  }
+  const rows = [...m.values()].sort((a,b)=>b.rev-a.rev).slice(0,12);
+  $("#skuTbl tbody").innerHTML = rows.length ? rows.map(r=>`<tr>
+    <td class="mono">${esc(r.sku)}</td>
+    <td>${esc(r.title)||'<span class="muted">–</span>'}</td>
+    <td><span class="pill info"><i></i>${esc(r.ch)}</span></td>
+    <td class="num">${int(r.units)}</td>
+    <td class="num">${eur2(r.rev)}</td></tr>`).join("")
+    : `<tr><td colspan="5" class="empty">geen artikelen in dit venster</td></tr>`;
+}
+
+function renderAlerts(d){
+  const a = [];
+  if(d.counts.track === 0 && d.counts.shipped > 0)
+    a.push(["fail","Track &amp; trace bereikt geen enkele koper",
+      `${d.counts.shipped} orders staan op verzonden, maar <b>0</b> hebben een trackingnummer in Magento.
+       De <code>magento_track_queue</code> is leeg: de push-kant is klaar en werkt, de ABS-harvest levert niets aan.
+       Dit is de openstaande bouwstap uit het T&amp;T-dossier van 21-07.`]);
+  if(d.magento_with_ext_id === 0 && d.magento_orders_scanned > 0)
+    a.push(["warn","Magento bewaart geen marketplace-ordernummer",
+      `Alle ${int(d.magento_orders_scanned)} gescande Magento-orders hebben <code>ext_order_id = null</code>.
+       Daardoor is er geen harde sleutel tussen marketplace-order en webshop-order; dit dashboard matcht daarom op
+       <b>e-mailadres + bedrag</b> (${d.counts.magento}/${d.counts.total} gelukt). Een vaste sleutel in
+       <code>ext_order_id</code> maakt de keten sluitend.`]);
+  const orph = d.counts.total - d.counts.magento;
+  if(orph > 0)
+    a.push(["warn",`${orph} marketplace-orders zonder aantoonbare Magento-order`,
+      `Kan twee dingen zijn: de order is er wel maar niet te matchen (zie punt hierboven), óf hij is nooit
+       aangemaakt. Controleer een steekproef op het tabblad Orderflow.`]);
+  if(!a.length)
+    a.push(["ok","Keten sluit", "Elke marketplace-order is terug te vinden in Magento en heeft een trackingnummer."]);
+
+  $("#alerts").innerHTML = a.map(([t,h,b])=>`<div class="note ${t==='ok'?'info':t}" style="margin-bottom:10px">
+    <b>${h}</b><br>${b}</div>`).join("");
+}
+
+/* ───────────────── canvas chart (geen externe libs) ───────────────── */
+function drawChart(days){
+  const c = $("#chart"), dpr = window.devicePixelRatio||1;
+  const W = c.clientWidth, H = 230;
+  c.width = W*dpr; c.height = H*dpr;
+  const x = c.getContext("2d"); x.scale(dpr,dpr); x.clearRect(0,0,W,H);
+  const padL=46, padR=14, padT=14, padB=26;
+  const iw = W-padL-padR, ih = H-padT-padB;
+  const maxR = Math.max(...days.map(d=>d.revenue), 1);
+  const maxO = Math.max(...days.map(d=>d.orders), 1);
+  const nice = v => { const p = Math.pow(10, Math.floor(Math.log10(v))); return Math.ceil(v/p)*p; };
+  const top = nice(maxR);
+
+  x.strokeStyle="#eef1f5"; x.lineWidth=1; x.font="10.5px ui-sans-serif,system-ui"; x.fillStyle="#8b95a5";
+  for(let i=0;i<=4;i++){
+    const y = padT + ih - (ih*i/4);
+    x.beginPath(); x.moveTo(padL,y+.5); x.lineTo(W-padR,y+.5); x.stroke();
+    x.textAlign="right"; x.fillText("€"+Math.round(top*i/4).toLocaleString("nl-NL"), padL-8, y+3.5);
+  }
+  const bw = Math.max(3, iw/days.length*0.52);
+  days.forEach((d,i)=>{
+    const cx = padL + iw*(i+.5)/days.length;
+    const ho = ih * (d.orders/maxO) * .82;
+    x.fillStyle="#c3d6f8";
+    x.fillRect(cx-bw/2, padT+ih-ho, bw, ho);
+  });
+  x.beginPath(); x.lineWidth=2.2; x.strokeStyle="#1863dc"; x.lineJoin="round";
+  days.forEach((d,i)=>{
+    const cx = padL + iw*(i+.5)/days.length;
+    const cy = padT + ih - ih*(d.revenue/top);
+    i ? x.lineTo(cx,cy) : x.moveTo(cx,cy);
+  });
+  x.stroke();
+  days.forEach((d,i)=>{
+    if(d.revenue<=0) return;
+    const cx = padL + iw*(i+.5)/days.length;
+    const cy = padT + ih - ih*(d.revenue/top);
+    x.beginPath(); x.arc(cx,cy,3,0,7); x.fillStyle="#1863dc"; x.fill();
+    x.beginPath(); x.arc(cx,cy,1.3,0,7); x.fillStyle="#fff"; x.fill();
+  });
+  x.fillStyle="#8b95a5"; x.textAlign="center";
+  days.forEach((d,i)=>{
+    if(i%5 && i!==days.length-1) return;
+    const cx = padL + iw*(i+.5)/days.length;
+    x.fillText(d.date.slice(8)+"/"+d.date.slice(5,7), cx, H-8);
+  });
+}
+
+/* ───────────────────────── orderflow ───────────────────────── */
+function renderFlow(){
+  const d = activeLink(); if(!d||!d.ok) return;
+  const c = d.counts;
+  const stg = [
+    ["Marketplace", c.source, "koop geplaatst"],
+    ["Channable", c.channable, "order opgehaald"],
+    ["Magento", c.magento, "order aangemaakt"],
+    ["Verzonden", c.shipped, "fulfilment gemeld"],
+    ["T&amp;T bij koper", c.track, "trackingnummer terug"]
+  ];
+  $("#funnel").innerHTML = stg.map(([n,v,h],i)=>{
+    const pct = c.source ? v/c.source*100 : 0;
+    const bad = v===0 && i>0;
+    return `<div class="card kpi"><div class="lab">${i+1} · ${n}</div>
+      <div class="val" style="${bad?'color:var(--fail)':''}">${int(v)}</div>
+      <div class="bar mini" style="margin:7px 0"><i style="width:${pct.toFixed(0)}%;background:${bad?'var(--fail)':'var(--blue)'}"></i></div>
+      <div class="sub"><span>${pct.toFixed(0)}% · ${h}</span></div></div>`;
+  }).join("");
+
+  const rail = o => {
+    let h = "";
+    o.stages.forEach((s,i)=>{
+      if(i) h += `<span class="link ${s.done?'done':''}"></span>`;
+      h += `<span class="node ${s.done?'done':''} ${s.blind?'blind':''}" title="${esc(s.label)}${s.at?' · '+dt(s.at):' · niet bereikt'}"></span>`;
+    });
+    return `<div class="rail">${h}</div>`;
+  };
+  const P = {shipped:"ok",manual:"ok",partial:"warn",not_shipped:"warn",cancelled:"fail"};
+  $("#flowTbl tbody").innerHTML = d.orders.length ? d.orders.map(o=>`<tr>
+    <td><div class="mono">${esc(o.id)}</div><div class="muted" style="font-size:11px">${dt(o.created)}</div></td>
+    <td><span class="pill info"><i></i>${esc(o.channel)}</span>${o.is_test?' <span class="pill skip"><i></i>test</span>':''}</td>
+    <td><div style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.title)||'–'}</div>
+        <div class="muted mono" style="font-size:11px">${esc(o.sku)||'geen sku'}</div></td>
+    <td>${esc(o.country)||'–'}<div class="muted" style="font-size:11px">${esc(o.city)}</div></td>
+    <td class="num">${eur2(o.total)}<div class="muted" style="font-size:11px">fee ${eur2(o.commission)}</div></td>
+    <td>${rail(o)}<div class="muted" style="font-size:10.5px;margin-top:3px">${dur(o.lags.to_shipped)} tot verzending</div></td>
+    <td>${o.magento_increment_id
+        ? `<span class="mono">${esc(o.magento_increment_id)}</span><div class="muted" style="font-size:10.5px">via ${esc(o.match_strategy)}</div>`
+        : `<span class="pill warn"><i></i>niet gekoppeld</span>`}</td>
+    <td>${o.track_number ? `<span class="mono">${esc(o.track_number)}</span>` : `<span class="pill fail"><i></i>geen</span>`}</td>
+    <td><span class="pill ${P[o.status]||'skip'}"><i></i>${esc(o.status)}</span>
+        ${o.error?`<div class="muted" style="font-size:10.5px">${esc(o.error_reason)}</div>`:''}</td>
+  </tr>`).join("") : `<tr><td colspan="9" class="empty">geen orders</td></tr>`;
+
+  $("#flowSub").textContent =
+    `${d.counts.total} orders · ${d.test_orders_filtered} testorders gefilterd · Magento-scan ${int(d.magento_orders_scanned)} orders`;
+
+  const ms = Object.entries(d.match_strategies||{}).map(([k,v])=>`${k}: ${v}`).join(" · ");
+  $("#linkDiag").innerHTML = `<div class="note ${d.counts.magento===d.counts.total?'info':'warn'}">
+    <b>Koppel-diagnose.</b> Matchstrategie — ${esc(ms)}.
+    Magento-orders met een gevuld <code>ext_order_id</code>: <b>${int(d.magento_with_ext_id)}</b> van ${int(d.magento_orders_scanned)}.
+    Zolang dat 0 is, blijft de koppeling een gok op e-mail + bedrag. Structurele fix: laat de Channable-Magento-plugin
+    (of D365) het marketplace-ordernummer in <code>ext_order_id</code> schrijven — dan is de keten hard sluitend.</div>`;
+}
+
+/* ───────────────────────── systeem-run ───────────────────────── */
+async function runHealth(){
+  $("#btnRun").disabled = true;
+  $("#steps").innerHTML = `<div class="empty">run loopt…</div>`;
+  const d = await call(API, {action:"health"});
+  $("#btnRun").disabled = false;
+  state.health = d;
+  if(!d.ok && !d.steps){ $("#steps").innerHTML = `<div class="note fail" style="margin:19px">${esc(d.error)}</div>`; return; }
+  $("#steps").innerHTML = d.steps.map(s=>`
+    <div class="step ${s.status}">
+      <div class="n">${s.n}</div>
+      <div>
+        <div class="ttl"><span class="grp">${esc(s.group)}</span>${esc(s.label)}
+          <span class="pill ${s.status}"><i></i>${s.status}</span></div>
+        <div class="det">${esc(s.detail)}</div>
+      </div>
+      <div class="ms">${s.ms?s.ms+" ms":""}</div>
+    </div>`).join("");
+  const su = d.summary||{};
+  $("#sysSum").innerHTML = ["ok","warn","fail","skip"].filter(k=>su[k])
+    .map(k=>`<span class="pill ${k}" style="margin-right:5px"><i></i>${su[k]} ${k}</span>`).join("")
+    + `<span class="muted" style="font-size:12px;margin-left:6px">${d.duration_ms} ms</span>`;
+  $("#cSys").textContent = (su.fail||0) ? `${su.fail}✕` : (su.warn||0) ? `${su.warn}!` : "ok";
+  const bad = (su.fail||0)>0;
+  $("#hdot").className = "dot " + (bad?"err":"live");
+  $("#hstat").textContent = bad ? `${su.fail} blokker(s)` : "keten groen";
+  $("#foot").textContent = "laatste run " + dt(d.ran_at);
+}
+
+/* ───────────────────────── magento ───────────────────────── */
+async function loadMagento(){
+  $("#btnMg").disabled = true;
+  const d = await call(API, {action:"magento_health"});
+  $("#btnMg").disabled = false;
+  state.mg = d;
+  if(d.error && !d.checks?.length){ $("#mgTbl tbody").innerHTML = `<tr><td colspan="5"><div class="note fail">${esc(d.error)}</div></td></tr>`; return; }
+  $("#mgBase").textContent = "read-only · " + d.base;
+  $("#mgSum").innerHTML = `<span class="pill ${d.ok?'ok':'warn'}"><i></i>${d.passed}/${d.total} bereikbaar</span>`;
+  $("#cMg").textContent = `${d.passed}/${d.total}`;
+  $("#mgTbl tbody").innerHTML = d.checks.map(c=>`<tr>
+    <td><b style="font-weight:580">${esc(c.label)}</b>${c.critical?' <span class="pill info"><i></i>kritiek</span>':''}</td>
+    <td class="mono muted">${esc(c.endpoint)}</td>
+    <td class="num">${c.total!=null?int(c.total):'<span class="muted">–</span>'}</td>
+    <td class="num muted">${c.ms} ms</td>
+    <td><span class="pill ${c.status}"><i></i>${c.status==='ok'?'bereikbaar':'fout'}</span>
+      ${c.status!=='ok'?`<div class="muted" style="font-size:11px">${esc(c.detail)}</div>`:''}</td>
+  </tr>`).join("");
+}
+
+/* ───────────────────────── credentials ───────────────────────── */
+async function loadCreds(){
+  renderLogins();
+  const pin = pinVal();
+  if(!pin){
+    const st = await call(API, {action:"pin_status"});
+    $("#pinState").innerHTML = st.pin_set
+      ? `<span class="pill warn"><i></i>vergrendeld</span>`
+      : `<span class="pill fail"><i></i>nog geen PIN ingesteld — zie het blok hierboven</span>`;
+    $("#slots").innerHTML = `<div class="empty">vergrendeld — vul je PIN in en klik Ontgrendelen</div>`;
+    loadMap();
+    return;
+  }
+  const d = await call(API, {action:"credentials_status", pin});
+  state.creds = d;
+  if(!d.ok){
+    $("#pinState").innerHTML = `<span class="pill fail"><i></i>vergrendeld</span>`;
+    $("#slots").innerHTML = `<div class="note fail">${esc(d.error)}</div>`;
+    return;
+  }
+  $("#pinState").innerHTML = `<span class="pill ok"><i></i>ontgrendeld</span>`;
+  const groups = {};
+  d.slots.forEach(s => (groups[s.group] = groups[s.group]||[]).push(s));
+  $("#slots").innerHTML = Object.entries(groups).map(([g,items])=>`
+    <div style="margin-bottom:22px">
+      <h2 class="sec" style="margin:0 0 10px">${esc(g)}</h2>
+      <div class="grid g2">${items.map(s=>`
+        <label class="f">
+          <span class="lb">${esc(s.label)}
+            ${s.configured?`<span class="pill ok"><i></i>${esc(s.hint)}</span>`:`<span class="pill warn"><i></i>leeg</span>`}
+          </span>
+          <input type="${s.secretish?'password':'text'}" data-slot="${esc(s.name)}"
+                 placeholder="${s.configured?'ongewijzigd laten — of nieuwe waarde plakken':esc(s.help)}" autocomplete="off">
+          <span class="hp">${esc(s.help)}</span>
+        </label>`).join("")}</div>
+    </div>`).join("");
+  loadMap();
+  loadConsumers();
+}
+
+$("#btnUnlock").onclick = async () => {
+  const m = $("#lockMsg");
+  if(!pinVal()){ m.textContent="vul eerst je PIN in"; m.style.color="var(--warn)"; return; }
+  m.textContent="controleren…"; m.style.color="var(--ink2)";
+  await loadCreds();
+  const ok = state.creds?.ok;
+  m.textContent = ok ? "ontgrendeld" : "geweigerd";
+  m.style.color = ok ? "var(--ok)" : "var(--fail)";
+  setTimeout(()=>m.textContent="",3000);
+};
+$("#pin").addEventListener("keydown", e => { if(e.key==="Enter") $("#btnUnlock").click(); });
+
+function renderLogins(){
+  const saved = load("ccp.logins", {});
+  $("#swLocal").checked = load("ccp.loginsOn", false);
+  $("#logins").innerHTML = LOGIN_FIELDS.map(f=>`
+    <label class="f"><span class="lb">${esc(f.l)}
+      ${f.u?`<a href="${f.u}" target="_blank" rel="noopener" class="hp">open portal ↗</a>`:''}</span>
+      <input type="${f.p?'password':'text'}" data-login="${f.k}" value="${esc(saved[f.k]||"")}" autocomplete="off"
+             placeholder="${f.p?'wachtwoord':'gebruikersnaam / e-mail'}"></label>`).join("");
+}
+function collectLogins(){
+  const o = {};
+  $$("[data-login]").forEach(i=>{ if(i.value.trim()) o[i.dataset.login]=i.value.trim(); });
+  return o;
+}
+
+/* ───────────────── sleutelkaart + consumenten ───────────────── */
+const ROT = {vers:["ok","vers"], bijna:["warn","bijna toe aan rotatie"], verlopen:["fail","rotatie nodig"], onbekend:["skip","onbekend"]};
+const cleanHint = h => String(h||"").replace(/[^\w•]/g,"").slice(0,8) || "••••";
+
+/* Geen PIN? Dan NIET aanroepen — een lege poging telt mee voor de lockout. */
+const pinVal = () => $("#pin").value.trim();
+
+async function loadMap(){
+  const pin = pinVal();
+  const d = await call(BROKER, pin ? {action:"map", pin} : {action:"map"});
+  if(!d.ok){ $("#mapTbl tbody").innerHTML = `<tr><td colspan="5"><div class="note fail">${esc(d.error)}</div></td></tr>`; return; }
+  $("#mapSum").innerHTML = `<span class="pill ${d.needs_rotation?'warn':'ok'}"><i></i>${d.configured}/${d.total} gevuld`
+    + (d.needs_rotation?` · ${d.needs_rotation} te oud`:``) + `</span>`;
+  if(!d.detail){
+    $("#mapTbl tbody").innerHTML = `<tr><td colspan="5"><div class="note info">
+      <b>${d.configured} van ${d.total} sleutels gevuld · ${d.consumers_active} actieve consument(en).</b><br>
+      Sleutelnamen en rotatiestatus zijn afgeschermd. Ontgrendel hierboven met je PIN.</div></td></tr>`;
+    return;
+  }
+  $("#mapTbl tbody").innerHTML = d.keys.map(k=>{
+    const [cls,lbl] = ROT[k.rotation] || ROT.onbekend;
+    return `<tr>
+      <td class="mono">${esc(k.name)}${k.owner?`<div class="muted" style="font-size:11px">${esc(k.owner)}</div>`:''}</td>
+      <td>${k.configured?`<span class="pill ok"><i></i>${cleanHint(k.hint)}</span>`:`<span class="pill warn"><i></i>leeg</span>`}</td>
+      <td class="num muted">${k.age_days!=null?k.age_days+" d geleden":"–"}</td>
+      <td><span class="pill ${cls}"><i></i>${lbl}</span><div class="muted" style="font-size:10.5px">limiet ${k.rotate_days} d</div></td>
+      <td>${k.readers.length
+        ? k.readers.map(r=>`<span class="pill info" style="margin-right:4px"><i></i>${esc(r)}</span>`).join("")
+        : `<span class="muted" style="font-size:12px">nog geen consument</span>`}</td>
+    </tr>`;
+  }).join("");
+}
+
+async function loadConsumers(){
+  const pin = $("#pin").value.trim();
+  if(!pin){ $("#consTbl tbody").innerHTML = `<tr><td colspan="6" class="empty">vul je beheer-PIN in bij Sleutelbeheer hierboven</td></tr>`; return; }
+  const d = await call(BROKER, {action:"consumers_list", pin});
+  if(!d.ok){ $("#consTbl tbody").innerHTML = `<tr><td colspan="6"><div class="note fail">${esc(d.error)}</div></td></tr>`; return; }
+  $("#consTbl tbody").innerHTML = d.consumers.length ? d.consumers.map(c=>`<tr>
+    <td><b style="font-weight:580">${esc(c.name)}</b>
+        <div class="muted" style="font-size:11px">${esc(c.description||"")} · ${esc(c.token_hint||"")}</div></td>
+    <td>${(c.scope||[]).map(s=>`<span class="pill info" style="margin-right:4px"><i></i>${esc(s)}</span>`).join("")}</td>
+    <td class="num">${int(c.use_count)}</td>
+    <td class="num muted">${c.last_used_at?dt(c.last_used_at):"nooit"}</td>
+    <td>${c.active&&!c.revoked_at?`<span class="pill ok"><i></i>actief</span>`:`<span class="pill fail"><i></i>ingetrokken</span>`}</td>
+    <td>${c.active&&!c.revoked_at?`<button class="btn ghost sm" data-revoke="${esc(c.name)}">Intrekken</button>`:""}</td>
+  </tr>`).join("") : `<tr><td colspan="6" class="empty">nog geen consumenten</td></tr>`;
+}
+
+$("#btnMap").onclick = loadMap;
+$("#btnConsList").onclick = loadConsumers;
+
+$("#btnCons").onclick = async () => {
+  const pin = $("#pin").value.trim(), m = $("#consMsg");
+  const name = $("#cName").value.trim();
+  const scope = $("#cScope").value.split(",").map(s=>s.trim()).filter(Boolean);
+  if(!pin){ m.textContent="beheer-PIN nodig (veld hierboven)"; m.style.color="var(--fail)"; return; }
+  if(!name || !scope.length){ m.textContent="naam en scope zijn verplicht"; m.style.color="var(--fail)"; return; }
+  $("#btnCons").disabled = true; m.textContent="aanmaken…"; m.style.color="var(--ink2)";
+  const r = await call(BROKER, {action:"consumer_create", pin, name, scope, description:$("#cDesc").value.trim()});
+  $("#btnCons").disabled = false;
+  if(!r.ok){ m.textContent = r.error; m.style.color="var(--fail)"; return; }
+  m.textContent = "aangemaakt"; m.style.color="var(--ok)";
+  $("#tokenBox").innerHTML = `<div class="note warn" style="margin-top:16px">
+    <b>Token voor '${esc(r.name)}' — wordt niet nogmaals getoond.</b><br>
+    <input type="text" id="tokOut" readonly value="${esc(r.token)}" style="margin:9px 0;font-size:12px">
+    <div class="row">
+      <button class="btn sm" id="btnTokCopy">Kopieer token</button>
+      <button class="btn ghost sm" id="btnTokHide">Verbergen</button>
+      <span class="muted" style="font-size:11.5px">scope: ${(r.scope||[]).join(", ")}</span>
+    </div>
+    Bewaar hem in je password manager of zet hem direct op de doelmachine. Plak hem nergens in een chat.
+  </div>`;
+  $("#btnTokCopy").onclick = () => copy(r.token, $("#consMsg"), "token gekopieerd");
+  $("#btnTokHide").onclick = () => { $("#tokenBox").innerHTML=""; };
+  $("#cName").value = $("#cScope").value = $("#cDesc").value = "";
+  loadConsumers(); loadMap();
+};
+
+$$("[data-preset]").forEach(b => b.onclick = () => {
+  const [n,s] = b.dataset.preset.split("|");
+  $("#cName").value = n; $("#cScope").value = s;
+  $("#cDesc").value = "automatisering " + n;
+});
+
+document.addEventListener("click", async e => {
+  const name = e.target.dataset?.revoke;
+  if(!name) return;
+  const pin = $("#pin").value.trim();
+  if(!pin){ $("#consMsg").textContent="beheer-PIN nodig"; $("#consMsg").style.color="var(--fail)"; return; }
+  e.target.disabled = true;
+  const r = await call(BROKER, {action:"consumer_revoke", pin, name});
+  $("#consMsg").textContent = r.ok ? `'${name}' ingetrokken` : r.error;
+  $("#consMsg").style.color = r.ok ? "var(--ok)" : "var(--fail)";
+  loadConsumers(); loadMap();
+});
+
+$("#btnAudit").onclick = async () => {
+  const pin = $("#pin").value.trim();
+  if(!pin){ $("#auditBox").innerHTML = `<div class="note warn" style="margin-top:16px">Beheer-PIN nodig om het audit-log te zien.</div>`; return; }
+  const d = await call(BROKER, {action:"audit", pin, limit:40});
+  if(!d.ok){ $("#auditBox").innerHTML = `<div class="note fail" style="margin-top:16px">${esc(d.error)}</div>`; return; }
+  $("#auditBox").innerHTML = `<div class="tscroll" style="margin-top:16px"><table>
+    <thead><tr><th>Wanneer</th><th>Consument</th><th>Sleutel</th><th>Uitkomst</th><th>Reden</th></tr></thead>
+    <tbody>${d.entries.map(a=>`<tr>
+      <td class="muted mono">${dt(a.at)}</td>
+      <td>${esc(a.consumer||"—")}</td>
+      <td class="mono">${esc(a.secret_name||"—")}</td>
+      <td><span class="pill ${a.granted?'ok':'fail'}"><i></i>${a.granted?'toegekend':'geweigerd'}</span></td>
+      <td class="muted">${esc(a.reason||"")}</td></tr>`).join("")}</tbody></table></div>`;
+};
+
+/* ───────────────────────── acties ───────────────────────── */
+$("#btnSave").onclick = async () => {
+  const pin = $("#pin").value.trim();
+  const entries = $$("[data-slot]").filter(i=>i.value.trim()).map(i=>({name:i.dataset.slot, value:i.value.trim()}));
+  const m = $("#saveMsg");
+  if(!entries.length){ m.textContent="niets ingevuld om op te slaan"; m.style.color="var(--warn)"; return; }
+  if(pin.length<6){ m.textContent="PIN van minimaal 6 tekens nodig"; m.style.color="var(--fail)"; return; }
+  $("#btnSave").disabled = true; m.textContent="opslaan…"; m.style.color="var(--ink2)";
+  const r = await call(API, {action:"credentials_save", pin, entries});
+  $("#btnSave").disabled = false;
+  if(r.ok){ m.textContent = `${r.saved.length} sleutel(s) opgeslagen`; m.style.color="var(--ok)";
+    $$("[data-slot]").forEach(i=>i.value=""); loadCreds(); }
+  else { m.textContent = r.error; m.style.color="var(--fail)"; }
+};
+$("#btnCheck").onclick = () => { $$(".tab").find(t=>t.dataset.t==="sys").click(); runHealth(); };
+
+$("#swLocal").onchange = e => {
+  store("ccp.loginsOn", e.target.checked);
+  if(e.target.checked) store("ccp.logins", collectLogins());
+  else store("ccp.logins", undefined);
+  $("#locMsg").textContent = e.target.checked ? "lokaal bewaren aan" : "lokale kopie gewist";
+  $("#locMsg").style.color = e.target.checked ? "var(--warn)" : "var(--ok)";
+  setTimeout(()=>$("#locMsg").textContent="",2600);
+};
+document.addEventListener("input", e => {
+  if(e.target.dataset?.login && $("#swLocal").checked) store("ccp.logins", collectLogins());
+});
+$("#btnEnv").onclick = () => {
+  const l = collectLogins();
+  const t = ["# CCP portal-logins — plak in _skill/adapters/.env (niet committen)",
+    ...LOGIN_FIELDS.map(f=>`${f.k}=${l[f.k]||""}`)].join("\n");
+  copy(t, $("#locMsg"), ".env-regels gekopieerd");
+};
+$("#btnPrompt").onclick = () => {
+  const l = collectLogins();
+  const t = `Log in op het opgegeven portal en meld terug wat je ziet. Gebruik Claude in Chrome.
+
+eBay DE      https://www.ebay.de/sh/ovw            gebruiker: ${l.EBAY_USER||"<invullen>"}
+Bol partner  https://partner.bol.com               gebruiker: ${l.BOL_USER||"<invullen>"}
+ABS portal   https://abs-bv.shop/en/portal         gebruiker: ${l.ABS_PORTAL_USER||"<invullen>"}
+Magento      https://www.connectcarparts.nl/atvise/admin  gebruiker: ${l.MAGENTO_ADMIN_USER||"<invullen>"}
+
+Wachtwoorden staan in _skill/adapters/.env — lees ze daar, plak ze nooit in de chat.
+Regels: alleen lezen, niets opslaan, niets publiceren, geen prijzen of voorraad aanpassen.`;
+  copy(t, $("#locMsg"), "opdracht gekopieerd");
+};
+$("#btnWipe").onclick = () => {
+  store("ccp.logins", undefined); store("ccp.loginsOn", false);
+  $("#swLocal").checked=false; renderLogins();
+  $("#locMsg").textContent="lokale kopie gewist"; $("#locMsg").style.color="var(--ok)";
+  setTimeout(()=>$("#locMsg").textContent="",2600);
+};
+$("#btnGoal").onclick = () => {
+  store("ccp.goal", {ytd:+$("#gYtd").value||0, goal:+$("#gGoal").value||100000, asOf:$("#gAsOf").value||""});
+  renderGoal(); $("#goalMsg").textContent="opgeslagen"; $("#goalMsg").style.color="var(--ok)";
+  setTimeout(()=>$("#goalMsg").textContent="",2400);
+};
+$("#btnFlow").onclick = () => window.open("CCP-Package-Flow.html","_blank");
+$("#btnRefresh").onclick = () => boot(true);
+$("#btnFlowReload").onclick = () => boot(true);
+$("#btnRun").onclick = runHealth;
+$("#btnMg").onclick = loadMagento;
+const syncTest = v => { state.showTest=v; $("#swTest").checked=v; $("#swTest2").checked=v; loadLink().then(()=>{renderOverview();renderFlow();}); };
+$("#swTest").onchange  = e => syncTest(e.target.checked);
+$("#swTest2").onchange = e => syncTest(e.target.checked);
+window.addEventListener("resize", () => { const d=activeLink(); if(d?.sales) drawChart(d.sales.per_day); });
+
+/* ───────────────────────── boot ───────────────────────── */
+async function loadLink(){
+  const key = state.showTest ? "linkTest" : "link";
+  if(state[key]) return state[key];
+  const d = await call(LINK, {action:"pipeline", limit:120, exclude_test: !state.showTest});
+  state[key] = d; return d;
+}
+/* ── ontgrendelpoort ── */
+function showGate(msg){
+  $("#gate").style.display = "grid";
+  if(msg){ $("#gateMsg").textContent = msg; $("#gateMsg").style.color = "var(--fail)"; }
+  $("#hdot").className = "dot"; $("#hstat").textContent = "vergrendeld";
+}
+$("#gateGo").onclick = async () => {
+  const pin = $("#gatePin").value.trim(), m = $("#gateMsg");
+  if(!pin){ m.textContent="vul je PIN in"; m.style.color="var(--warn)"; return; }
+  $("#gateGo").disabled = true; m.textContent="ontgrendelen…"; m.style.color="var(--ink2)";
+  const name = "viewer-" + Math.random().toString(36).slice(2,8);
+  const r = await call(BROKER, {action:"consumer_create", pin, name,
+    scope:["__viewer__"], description:"dashboard-kijker (" + navigator.platform + ")"});
+  $("#gateGo").disabled = false;
+  if(!r.ok){ m.textContent = r.error; m.style.color="var(--fail)"; return; }
+  viewer.set({name:r.name, token:r.token, at:new Date().toISOString()});
+  $("#gatePin").value = "";
+  $("#gate").style.display = "none";
+  boot(true);
+};
+$("#gatePin").addEventListener("keydown", e => { if(e.key==="Enter") $("#gateGo").click(); });
+
+async function boot(force){
+  if(force){ state.link=state.linkTest=state.health=state.mg=state.creds=null; }
+  if(!viewer.get()?.token){ showGate(); return; }
+  $("#hdot").className="dot"; $("#hstat").textContent="ophalen…";
+  const d = await loadLink();
+  if(d.needs_unlock){ viewer.clear(); showGate("kijker-token verlopen of ingetrokken — ontgrendel opnieuw"); return; }
+  if(!d.ok){
+    $("#hdot").className="dot err"; $("#hstat").textContent="fout";
+    $("#alerts").innerHTML = `<div class="note fail"><b>Kan de data niet ophalen.</b> ${esc(d.error)}</div>`;
+    return;
+  }
+  renderOverview(); renderFlow();
+  $("#hdot").className="dot live"; $("#hstat").textContent="data live · " + dt(d.ran_at);
+  $("#foot").textContent = "opgehaald " + dt(d.ran_at);
+  if($("#sys").classList.contains("on")) runHealth();
+}
+boot();
+</script>
+</body>
+</html>
