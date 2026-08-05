@@ -37,6 +37,9 @@ const ReleaseSet = lazy(() => import(/* webpackChunkName: "release-set" */ "@/pa
 /* Dashboards — klant-dashboards (ConnectCarParts) achter login, via profielmenu. */
 const Dashboards = lazy(() => import(/* webpackChunkName: "dashboards" */ "@/pages/Dashboards"));
 
+/* PiDashboard — Raspberry Pi 5 (CasaOS via Cloudflare Tunnel) achter login, via profielmenu. */
+const PiDashboard = lazy(() => import(/* webpackChunkName: "pi-dashboard" */ "@/pages/PiDashboard"));
+
 /* BlogCMS is lazy-loaded and excluded from the SSR bundle.
    During prerender (typeof window === "undefined"), the fallback renders instead. */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
@@ -90,6 +93,7 @@ const AnimatedRoutes = () => {
         <Route path="/music-cms/:id" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
         <Route path="/release-set" element={<Suspense fallback={<BlogCMSFallback />}><ReleaseSet /></Suspense>} />
         <Route path="/dashboards" element={<Suspense fallback={<BlogCMSFallback />}><Dashboards /></Suspense>} />
+        <Route path="/pi" element={<Suspense fallback={<BlogCMSFallback />}><PiDashboard /></Suspense>} />
         <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
         <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
