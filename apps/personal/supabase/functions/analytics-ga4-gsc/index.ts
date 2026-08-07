@@ -181,6 +181,67 @@ async function fetchGSC(token: string) {
   };
 }
 
+// Index coverage — submitted vs indexed page counts, sourced from the sitemaps
+// GSC has on file for the property (HAN-93: "indexed pages count").
+async function fetchSitemapCoverage(token: string, site: string) {
+  const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/sitemaps`;
+  const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  const d = await r.json();
+  if (!r.ok) throw new Error(`gsc sitemaps: ${JSON.stringify(d)}`);
+  const entries: AnyRow[] = d.sitemap ?? [];
+  let submitted = 0;
+  let indexed = 0;
+  const sitemaps = entries.map((s: AnyRow) => {
+    const contents = (s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [];
+    let subForSitemap = 0;
+    let idxForSitemap = 0;
+    for (const c of contents) {
+      subForSitemap += Number(c.submitted ?? 0);
+      idxForSitemap += Number(c.indexed ?? 0);
+    }
+    submitted += subForSitemap;
+    indexed += idxForSitemap;
+    return {
+      path: s.path as string,
+      submitted: subForSitemap,
+      indexed: idxForSitemap,
+      warnings: Number(s.warnings ?? 0),
+      errors: Number(s.errors ?? 0),
+      last_downloaded: (s.lastDownloaded as string) ?? null,
+    };
+  });
+  return { indexed_pages: indexed, submitted_pages: submitted, sitemaps };
+}
+
+// Per-URL indexing issues via the URL Inspection API, sampled over the site's
+// most-recently-updated published posts plus core static pages (HAN-93:
+// "indexing issues are surfaced automatically"). Bounded to stay well under
+// the API's per-minute quota.
+async function fetchIndexingIssues(token: string, site: string, sampleUrls: string[]) {
+  const inspectUrl = "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect";
+  const issues: { url: string; verdict: string; coverage_state: string | null; last_crawl: string | null }[] = [];
+  for (const url of sampleUrls) {
+    const r = await fetch(inspectUrl, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ inspectionUrl: url, siteUrl: site }),
+    });
+    const d = await r.json();
+    if (!r.ok) continue; // skip URLs the API can't inspect rather than failing the whole batch
+    const idx = d.inspectionResult?.indexStatusResult ?? {};
+    const verdict = (idx.verdict as string) ?? "UNKNOWN";
+    if (verdict !== "PASS") {
+      issues.push({
+        url,
+        verdict,
+        coverage_state: (idx.coverageState as string) ?? null,
+        last_crawl: (idx.lastCrawlTime as string) ?? null,
+      });
+    }
+  }
+  return { checked: sampleUrls.length, issues };
+}
+
 // ---------- cache (PostgREST, service-role) ----------
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SB_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -203,6 +264,27 @@ async function writeCache(data: unknown) {
     },
     body: JSON.stringify({ key: CACHE_KEY, data, fetched_at: new Date().toISOString() }),
   });
+}
+
+const SITE_ORIGIN = "https://hansvanleeuwen.com";
+const INDEXING_SAMPLE_SIZE = 15;
+
+// Sample of URLs to run through the URL Inspection API: core static pages
+// plus the most recently updated published posts (most likely to still be
+// mid-crawl, so most likely to surface a real coverage issue).
+async function sampleUrlsForInspection(): Promise<string[]> {
+  const staticUrls = [`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/writing`, `${SITE_ORIGIN}/about`, `${SITE_ORIGIN}/work`];
+  try {
+    const r = await fetch(
+      `${SB_URL}/rest/v1/blog_posts?select=slug&status=eq.published&published=eq.true&order=updated_at.desc&limit=${INDEXING_SAMPLE_SIZE - staticUrls.length}`,
+      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
+    );
+    if (!r.ok) return staticUrls;
+    const rows: { slug: string }[] = await r.json();
+    return [...staticUrls, ...rows.map((p) => `${SITE_ORIGIN}/writing/${p.slug}`)];
+  } catch {
+    return staticUrls;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -236,7 +318,22 @@ Deno.serve(async (req) => {
     const sa = JSON.parse(saRaw);
     const token = await getAccessToken(sa);
     try { payload.ga4 = await fetchGA4(token); } catch (e) { payload.errors.ga4 = String(e); }
-    try { payload.gsc = await fetchGSC(token); } catch (e) { payload.errors.gsc = String(e); }
+    try {
+      const gsc = await fetchGSC(token) as Record<string, unknown>;
+      try {
+        const coverage = await fetchSitemapCoverage(token, gsc.site as string);
+        gsc.indexed_pages = coverage.indexed_pages;
+        gsc.submitted_pages = coverage.submitted_pages;
+        gsc.sitemaps = coverage.sitemaps;
+      } catch (e) { (payload.errors as Record<string, string>).sitemaps = String(e); }
+      try {
+        const sampleUrls = await sampleUrlsForInspection();
+        const { checked, issues } = await fetchIndexingIssues(token, gsc.site as string, sampleUrls);
+        gsc.indexing_checked = checked;
+        gsc.indexing_issues = issues;
+      } catch (e) { (payload.errors as Record<string, string>).indexing = String(e); }
+      payload.gsc = gsc;
+    } catch (e) { payload.errors.gsc = String(e); }
     await writeCache(payload);
     return json({ ...payload, cached: false });
   } catch (e) {

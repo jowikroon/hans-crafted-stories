@@ -18,13 +18,20 @@ interface PostMetric {
 interface SeriesPoint { date: string; value: number; }
 interface TopPage { path: string; title: string; sessions: number; }
 interface Query { query: string; clicks: number; impressions: number; ctr: number | null; position: number | null; }
+interface Sitemap { path: string; submitted: number; indexed: number; warnings: number; errors: number; last_downloaded: string | null; }
+interface IndexingIssue { url: string; verdict: string; coverage_state: string | null; last_crawl: string | null; }
 interface Dashboard {
   configured?: boolean;
   generated_at?: string;
   fetched_at?: string;
   ga4?: { sessions_30d: number; sessions_prev_30d: number; sessions_change_pct: number | null; series: SeriesPoint[]; top_pages: TopPage[] };
-  gsc?: { site: string; clicks: number; impressions: number; ctr: number | null; position: number | null; pages_with_traffic: number; queries: Query[] };
-  errors?: { ga4?: string; gsc?: string };
+  gsc?: {
+    site: string; clicks: number; impressions: number; ctr: number | null; position: number | null;
+    pages_with_traffic: number; queries: Query[];
+    indexed_pages?: number; submitted_pages?: number; sitemaps?: Sitemap[];
+    indexing_checked?: number; indexing_issues?: IndexingIssue[];
+  };
+  errors?: { ga4?: string; gsc?: string; sitemaps?: string; indexing?: string };
 }
 
 export default function AnalyticsMode() {
@@ -130,6 +137,7 @@ export default function AnalyticsMode() {
           { k: "Avg. position", v: gsc?.position != null ? gsc.position.toFixed(1) : "–", sub: "Search Console" },
           { k: "Avg. CTR", v: gsc?.ctr != null ? `${gsc.ctr}%` : "–", sub: "Search Console" },
           { k: "Clicks · 28d", v: num(gsc?.clicks), sub: gsc?.impressions != null ? `${num(gsc.impressions)} impr.` : undefined },
+          { k: "Indexed pages", v: num(gsc?.indexed_pages), sub: gsc?.submitted_pages != null ? `of ${num(gsc.submitted_pages)} submitted` : "Search Console" },
         ].map((m) => (
           <div key={m.k} className="metric-cell">
             <div className="k">{m.k}</div>
@@ -217,12 +225,40 @@ export default function AnalyticsMode() {
         </div>
       )}
 
-      {dash?.errors && (dash.errors.ga4 || dash.errors.gsc) && (
+      {/* Indexing issues, surfaced automatically from URL Inspection API sampling (HAN-93) */}
+      {gsc?.indexing_checked != null && (
+        <div className="chart-card">
+          <h3>
+            Indexing issues{" "}
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>
+              {gsc.indexing_issues?.length ? `${gsc.indexing_issues.length} flagged` : "none flagged"} · {gsc.indexing_checked} pages checked
+            </span>
+          </h3>
+          {gsc.indexing_issues && gsc.indexing_issues.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "var(--s-3) 0" }}>
+              {gsc.indexing_issues.map((iss) => (
+                <div key={iss.url} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "4px 0", borderBottom: "1px solid var(--bg-1)" }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }} title={iss.url}>{iss.url}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>{iss.coverage_state ?? iss.verdict}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)", padding: "var(--s-3) 0" }}>
+              All sampled pages are indexed.
+            </div>
+          )}
+        </div>
+      )}
+
+      {dash?.errors && (dash.errors.ga4 || dash.errors.gsc || dash.errors.sitemaps || dash.errors.indexing) && (
         <div className="chart-card" style={{ borderColor: "var(--bg-1)" }}>
           <h3>Connection notes</h3>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)", whiteSpace: "pre-wrap" }}>
             {dash.errors.ga4 && <div>GA4: {dash.errors.ga4}</div>}
             {dash.errors.gsc && <div>GSC: {dash.errors.gsc}</div>}
+            {dash.errors.sitemaps && <div>Sitemaps: {dash.errors.sitemaps}</div>}
+            {dash.errors.indexing && <div>Indexing: {dash.errors.indexing}</div>}
           </div>
         </div>
       )}
