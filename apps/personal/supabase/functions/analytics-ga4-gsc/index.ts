@@ -183,6 +183,11 @@ async function fetchGSC(token: string) {
 
 // Index coverage — submitted vs indexed page counts, sourced from the sitemaps
 // GSC has on file for the property (HAN-93: "indexed pages count").
+//
+// `SitemapContent.indexed` is a deprecated field in the Sitemaps API and may
+// be omitted entirely from the response; treat "absent" as "unavailable"
+// (null) rather than folding it into the sum as zero, which would otherwise
+// misreport a fully-indexed site as having zero indexed pages.
 async function fetchSitemapCoverage(token: string, site: string) {
   const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/sitemaps`;
   const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
@@ -191,35 +196,50 @@ async function fetchSitemapCoverage(token: string, site: string) {
   const entries: AnyRow[] = d.sitemap ?? [];
   let submitted = 0;
   let indexed = 0;
+  let indexedAvailable = false;
   const sitemaps = entries.map((s: AnyRow) => {
     const contents = (s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [];
     let subForSitemap = 0;
     let idxForSitemap = 0;
+    let idxKnown = false;
     for (const c of contents) {
       subForSitemap += Number(c.submitted ?? 0);
-      idxForSitemap += Number(c.indexed ?? 0);
+      if (c.indexed != null) {
+        idxForSitemap += Number(c.indexed);
+        idxKnown = true;
+      }
     }
     submitted += subForSitemap;
-    indexed += idxForSitemap;
+    if (idxKnown) {
+      indexed += idxForSitemap;
+      indexedAvailable = true;
+    }
     return {
       path: s.path as string,
       submitted: subForSitemap,
-      indexed: idxForSitemap,
+      indexed: idxKnown ? idxForSitemap : null,
       warnings: Number(s.warnings ?? 0),
       errors: Number(s.errors ?? 0),
       last_downloaded: (s.lastDownloaded as string) ?? null,
     };
   });
-  return { indexed_pages: indexed, submitted_pages: submitted, sitemaps };
+  return { indexed_pages: indexedAvailable ? indexed : null, submitted_pages: submitted, sitemaps };
 }
 
 // Per-URL indexing issues via the URL Inspection API, sampled over the site's
 // most-recently-updated published posts plus core static pages (HAN-93:
 // "indexing issues are surfaced automatically"). Bounded to stay well under
 // the API's per-minute quota.
+//
+// A request that errors (403/429/etc.) is not evidence the page is indexed —
+// it's evidence we couldn't check. `checked` only counts URLs we actually got
+// a verdict for, and if every request in the sample failed we throw instead
+// of returning a "checked: N, 0 issues" result that would read as "all clean".
 async function fetchIndexingIssues(token: string, site: string, sampleUrls: string[]) {
   const inspectUrl = "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect";
   const issues: { url: string; verdict: string; coverage_state: string | null; last_crawl: string | null }[] = [];
+  let succeeded = 0;
+  let failed = 0;
   for (const url of sampleUrls) {
     const r = await fetch(inspectUrl, {
       method: "POST",
@@ -227,7 +247,8 @@ async function fetchIndexingIssues(token: string, site: string, sampleUrls: stri
       body: JSON.stringify({ inspectionUrl: url, siteUrl: site }),
     });
     const d = await r.json();
-    if (!r.ok) continue; // skip URLs the API can't inspect rather than failing the whole batch
+    if (!r.ok) { failed++; continue; } // couldn't inspect this URL — not the same as "indexed"
+    succeeded++;
     const idx = d.inspectionResult?.indexStatusResult ?? {};
     const verdict = (idx.verdict as string) ?? "UNKNOWN";
     if (verdict !== "PASS") {
@@ -239,7 +260,10 @@ async function fetchIndexingIssues(token: string, site: string, sampleUrls: stri
       });
     }
   }
-  return { checked: sampleUrls.length, issues };
+  if (sampleUrls.length > 0 && succeeded === 0) {
+    throw new Error(`url inspection: all ${failed} sampled requests failed`);
+  }
+  return { checked: succeeded, skipped: failed, issues };
 }
 
 // ---------- cache (PostgREST, service-role) ----------
@@ -272,16 +296,23 @@ const INDEXING_SAMPLE_SIZE = 15;
 // Sample of URLs to run through the URL Inspection API: core static pages
 // plus the most recently updated published posts (most likely to still be
 // mid-crawl, so most likely to surface a real coverage issue).
+//
+// Posts with an external canonical_url are deliberately excluded — same rule
+// as scripts/generate-sitemap.mjs — since their /writing/<slug> copy is
+// intentionally not the canonical URL and would falsely report as a
+// "not indexed" issue when GSC (correctly) indexes the external canonical
+// instead.
 async function sampleUrlsForInspection(): Promise<string[]> {
   const staticUrls = [`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/writing`, `${SITE_ORIGIN}/about`, `${SITE_ORIGIN}/work`];
   try {
     const r = await fetch(
-      `${SB_URL}/rest/v1/blog_posts?select=slug&status=eq.published&published=eq.true&order=updated_at.desc&limit=${INDEXING_SAMPLE_SIZE - staticUrls.length}`,
+      `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${INDEXING_SAMPLE_SIZE - staticUrls.length}`,
       { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
     );
     if (!r.ok) return staticUrls;
-    const rows: { slug: string }[] = await r.json();
-    return [...staticUrls, ...rows.map((p) => `${SITE_ORIGIN}/writing/${p.slug}`)];
+    const rows: { slug: string; canonical_url: string | null }[] = await r.json();
+    const selfCanonical = rows.filter((p) => !p.canonical_url || p.canonical_url.startsWith(SITE_ORIGIN));
+    return [...staticUrls, ...selfCanonical.map((p) => `${SITE_ORIGIN}/writing/${p.slug}`)];
   } catch {
     return staticUrls;
   }
@@ -328,8 +359,9 @@ Deno.serve(async (req) => {
       } catch (e) { (payload.errors as Record<string, string>).sitemaps = String(e); }
       try {
         const sampleUrls = await sampleUrlsForInspection();
-        const { checked, issues } = await fetchIndexingIssues(token, gsc.site as string, sampleUrls);
+        const { checked, skipped, issues } = await fetchIndexingIssues(token, gsc.site as string, sampleUrls);
         gsc.indexing_checked = checked;
+        gsc.indexing_skipped = skipped;
         gsc.indexing_issues = issues;
       } catch (e) { (payload.errors as Record<string, string>).indexing = String(e); }
       payload.gsc = gsc;

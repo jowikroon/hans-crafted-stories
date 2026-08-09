@@ -18,7 +18,7 @@ interface PostMetric {
 interface SeriesPoint { date: string; value: number; }
 interface TopPage { path: string; title: string; sessions: number; }
 interface Query { query: string; clicks: number; impressions: number; ctr: number | null; position: number | null; }
-interface Sitemap { path: string; submitted: number; indexed: number; warnings: number; errors: number; last_downloaded: string | null; }
+interface Sitemap { path: string; submitted: number; indexed: number | null; warnings: number; errors: number; last_downloaded: string | null; }
 interface IndexingIssue { url: string; verdict: string; coverage_state: string | null; last_crawl: string | null; }
 interface Dashboard {
   configured?: boolean;
@@ -28,8 +28,8 @@ interface Dashboard {
   gsc?: {
     site: string; clicks: number; impressions: number; ctr: number | null; position: number | null;
     pages_with_traffic: number; queries: Query[];
-    indexed_pages?: number; submitted_pages?: number; sitemaps?: Sitemap[];
-    indexing_checked?: number; indexing_issues?: IndexingIssue[];
+    indexed_pages?: number | null; submitted_pages?: number; sitemaps?: Sitemap[];
+    indexing_checked?: number; indexing_skipped?: number; indexing_issues?: IndexingIssue[];
   };
   errors?: { ga4?: string; gsc?: string; sitemaps?: string; indexing?: string };
 }
@@ -232,6 +232,7 @@ export default function AnalyticsMode() {
             Indexing issues{" "}
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>
               {gsc.indexing_issues?.length ? `${gsc.indexing_issues.length} flagged` : "none flagged"} · {gsc.indexing_checked} pages checked
+              {gsc.indexing_skipped ? ` · ${gsc.indexing_skipped} unreachable` : ""}
             </span>
           </h3>
           {gsc.indexing_issues && gsc.indexing_issues.length > 0 ? (
