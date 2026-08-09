@@ -403,11 +403,13 @@ async function sampleUrlsForInspection(): Promise<string[]> {
   const PAGE_SIZE = target * 4;
   const MAX_PAGES = 5; // bounds worst case to PAGE_SIZE * MAX_PAGES rows scanned
 
-  // Page through published posts, filtering out externally-canonical ones,
-  // until `target` self-canonical posts are collected or posts run out. A
-  // single fixed-size overfetch would still collapse the sample to nothing
-  // if that whole window happened to be externally canonical; paginating
-  // instead backfills from older posts rather than giving up after one page.
+  // Page through published posts, filtering out externally-canonical ones
+  // and deduping resolved URLs (several posts can legitimately share one
+  // canonical — a syndicated series pointing at a hub page), until `target`
+  // UNIQUE self-canonical URLs are collected or posts run out. Pagination
+  // must stop on the unique-URL count, not the raw row count: a page full
+  // of posts that resolve to the same handful of canonicals would otherwise
+  // look "full" and end pagination while the actual sample stayed tiny.
   //
   // If the very first page fails, we have zero real post data — throwing
   // (rather than quietly falling back to the 4 static URLs) keeps that
@@ -415,8 +417,9 @@ async function sampleUrlsForInspection(): Promise<string[]> {
   // post sample masquerade as "4 pages checked, all clean." A failure on a
   // later page keeps whatever posts were already gathered — `checked`
   // already reports the smaller real count, so it isn't misleading.
-  const selfCanonical: { slug: string; canonical_url: string | null }[] = [];
-  for (let page = 0; page < MAX_PAGES && selfCanonical.length < target; page++) {
+  const seenUrls = new Set<string>();
+  const uniqueUrls: string[] = [];
+  for (let page = 0; page < MAX_PAGES && uniqueUrls.length < target; page++) {
     const r = await fetch(
       `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`,
       { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
@@ -426,17 +429,19 @@ async function sampleUrlsForInspection(): Promise<string[]> {
       break;
     }
     const rows: { slug: string; canonical_url: string | null }[] = await r.json();
-    selfCanonical.push(...rows.filter((p) => isSelfCanonical(p.canonical_url)));
+    for (const p of rows) {
+      if (!isSelfCanonical(p.canonical_url)) continue;
+      // Prefer the post's own same-origin canonical_url when it differs
+      // from the slug URL (e.g. /writing/custom-canonical) — inspecting
+      // the slug URL instead would report a false issue for a page GSC
+      // correctly treats as an alternate of its declared canonical.
+      const url = p.canonical_url || `${SITE_ORIGIN}/writing/${p.slug}`;
+      if (seenUrls.has(url)) continue;
+      seenUrls.add(url);
+      uniqueUrls.push(url);
+    }
     if (rows.length < PAGE_SIZE) break; // reached the end of the table
   }
-  // Prefer the post's own same-origin canonical_url when it differs from the
-  // slug URL (e.g. /writing/custom-canonical) — inspecting the slug URL
-  // instead would report a false issue for a page GSC correctly treats as an
-  // alternate of its declared canonical. Dedupe first — several posts can
-  // legitimately share one canonical (a syndicated series pointing at a hub
-  // page) and each occurrence would otherwise burn a separate inspection
-  // call on the same URL while crowding out coverage of other posts.
-  const uniqueUrls = [...new Set(selfCanonical.map((p) => p.canonical_url || `${SITE_ORIGIN}/writing/${p.slug}`))];
   return [...staticUrls, ...uniqueUrls.slice(0, target)];
 }
 
