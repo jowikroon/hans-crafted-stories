@@ -185,9 +185,11 @@ async function fetchGSC(token: string) {
 // GSC has on file for the property (HAN-93: "indexed pages count").
 //
 // `SitemapContent.indexed` is a deprecated field in the Sitemaps API and may
-// be omitted entirely from the response; treat "absent" as "unavailable"
-// (null) rather than folding it into the sum as zero, which would otherwise
-// misreport a fully-indexed site as having zero indexed pages.
+// be omitted entirely from the response — either for every content entry, or
+// just some of them (mixed responses happen). Only report the site-wide
+// total when EVERY content entry across every sitemap carries a known
+// `indexed` value; a partial sum would quietly under-report the real count,
+// which is worse than admitting the total is unavailable.
 async function fetchSitemapCoverage(token: string, site: string) {
   const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/sitemaps`;
   const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
@@ -196,24 +198,25 @@ async function fetchSitemapCoverage(token: string, site: string) {
   const entries: AnyRow[] = d.sitemap ?? [];
   let submitted = 0;
   let indexed = 0;
-  let indexedAvailable = false;
+  let contentEntryCount = 0;
+  let allIndexedKnown = true;
   const sitemaps = entries.map((s: AnyRow) => {
     const contents = (s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [];
     let subForSitemap = 0;
     let idxForSitemap = 0;
-    let idxKnown = false;
+    let idxKnown = contents.length > 0;
     for (const c of contents) {
       subForSitemap += Number(c.submitted ?? 0);
+      contentEntryCount++;
       if (c.indexed != null) {
         idxForSitemap += Number(c.indexed);
-        idxKnown = true;
+      } else {
+        idxKnown = false;
+        allIndexedKnown = false;
       }
     }
     submitted += subForSitemap;
-    if (idxKnown) {
-      indexed += idxForSitemap;
-      indexedAvailable = true;
-    }
+    indexed += idxForSitemap;
     return {
       path: s.path as string,
       submitted: subForSitemap,
@@ -223,6 +226,7 @@ async function fetchSitemapCoverage(token: string, site: string) {
       last_downloaded: (s.lastDownloaded as string) ?? null,
     };
   });
+  const indexedAvailable = contentEntryCount > 0 && allIndexedKnown;
   return { indexed_pages: indexedAvailable ? indexed : null, submitted_pages: submitted, sitemaps };
 }
 
@@ -316,15 +320,24 @@ function isSelfCanonical(canonicalUrl: string | null): boolean {
 
 async function sampleUrlsForInspection(): Promise<string[]> {
   const staticUrls = [`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/writing`, `${SITE_ORIGIN}/about`, `${SITE_ORIGIN}/work`];
+  const target = INDEXING_SAMPLE_SIZE - staticUrls.length;
   try {
+    // Overfetch candidates before filtering out externally-canonical posts —
+    // filtering post-limit would silently shrink the sample (or skip recent
+    // posts entirely) whenever recently-updated posts happen to be
+    // externally canonical, instead of backfilling from older ones.
     const r = await fetch(
-      `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${INDEXING_SAMPLE_SIZE - staticUrls.length}`,
+      `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${target * 4}`,
       { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
     );
     if (!r.ok) return staticUrls;
     const rows: { slug: string; canonical_url: string | null }[] = await r.json();
-    const selfCanonical = rows.filter((p) => isSelfCanonical(p.canonical_url));
-    return [...staticUrls, ...selfCanonical.map((p) => `${SITE_ORIGIN}/writing/${p.slug}`)];
+    const selfCanonical = rows.filter((p) => isSelfCanonical(p.canonical_url)).slice(0, target);
+    // Prefer the post's own same-origin canonical_url when it differs from
+    // the slug URL (e.g. /writing/custom-canonical) — inspecting the slug
+    // URL instead would report a false issue for a page GSC correctly
+    // treats as an alternate of its declared canonical.
+    return [...staticUrls, ...selfCanonical.map((p) => p.canonical_url || `${SITE_ORIGIN}/writing/${p.slug}`)];
   } catch {
     return staticUrls;
   }

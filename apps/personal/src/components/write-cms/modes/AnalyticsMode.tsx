@@ -246,7 +246,9 @@ export default function AnalyticsMode() {
             </div>
           ) : (
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)", padding: "var(--s-3) 0" }}>
-              All sampled pages are indexed.
+              {gsc.indexing_skipped
+                ? `All ${gsc.indexing_checked} successfully checked pages are indexed (${gsc.indexing_skipped} could not be checked).`
+                : "All sampled pages are indexed."}
             </div>
           )}
         </div>
