@@ -1,10 +1,10 @@
-import {
-  AudioLines, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
   ChevronDown, Network, Sparkles, PenLine, Disc3, BarChart3,
+  AudioLines,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
