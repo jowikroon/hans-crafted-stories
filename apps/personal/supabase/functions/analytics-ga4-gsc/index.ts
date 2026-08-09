@@ -194,17 +194,23 @@ async function fetchGSC(token: string) {
 //    than admitting it's unavailable.
 // 2. A sitemap-index entry's counts describe the aggregate of its child
 //    sitemaps — summing an index alongside its own children double-counts
-//    the same pages. But when a property has ONLY submitted an index and
-//    GSC hasn't (yet) listed its children as separate entries, the index's
-//    own totals are the only signal available at all, and excluding it
-//    unconditionally would report "zero submitted, unavailable" for a
-//    perfectly normal single-sitemap-index setup. So: aggregate leaf
-//    (non-index) entries when any exist; fall back to index entries only
-//    when the response contains no leaves whatsoever. (This still doesn't
-//    protect against a different overlap — two unrelated sitemaps that
-//    happen to list the same URLs — which isn't detectable from this
-//    endpoint's per-sitemap aggregate counts; only per-URL data would allow
-//    deduping that case.)
+//    the same pages. Index entries are therefore always excluded from the
+//    sum. An earlier version of this function tried to fall back to
+//    aggregating index entries when the response contained no separately-
+//    listed leaves (to handle an index-only submission), but that fallback
+//    couldn't be made safe: this endpoint gives no parent/child linkage, so
+//    there's no way to tell "an index with no listed children" apart from
+//    "an index alongside an unrelated leaf sitemap" (e.g. the main sitemap
+//    index plus a separately-submitted RSS feed) — and guessing wrong in
+//    the second case double-counts. A property whose only submitted sitemap
+//    is an index that GSC hasn't (yet) expanded into separate child entries
+//    will report indexed_pages as unavailable (null) rather than a number
+//    that might silently be wrong; that trade favors correctness over
+//    coverage, consistent with every other null-vs-guess decision here.
+//    (This also doesn't protect against a different overlap — two unrelated
+//    leaf sitemaps that happen to list the same URLs — which isn't
+//    detectable from this endpoint's per-sitemap aggregate counts either;
+//    only per-URL data would allow deduping that case.)
 // 3. `contents` breaks counts down by type (web pages, images, video, news
 //    …). Only the "web" entries represent pages — summing every type would
 //    inflate the page count with image/video/news URLs from the same
@@ -215,25 +221,23 @@ async function fetchSitemapCoverage(token: string, site: string) {
   const d = await r.json();
   if (!r.ok) throw new Error(`gsc sitemaps: ${JSON.stringify(d)}`);
   const entries: AnyRow[] = d.sitemap ?? [];
-  const hasLeaves = entries.some((s: AnyRow) => !s.isSitemapsIndex);
 
   let submitted = 0;
   let indexed = 0;
-  let usedEntryCount = 0;
+  let leafCount = 0;
   let allIndexedKnown = true;
   let sitemapWarnings = 0;
   let sitemapErrors = 0;
   const sitemaps = entries.map((s: AnyRow) => {
     const isIndex = !!s.isSitemapsIndex;
-    const useForTotal = hasLeaves ? !isIndex : true;
     const webContents = ((s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [])
       .filter((c) => c.type === "web");
     let subForSitemap = 0;
     let idxForSitemap = 0;
     let idxKnown = webContents.length > 0;
-    if (useForTotal) {
-      usedEntryCount++;
-      if (webContents.length === 0) allIndexedKnown = false; // pending/failed, or no page-type breakdown yet
+    if (!isIndex) {
+      leafCount++;
+      if (webContents.length === 0) allIndexedKnown = false; // pending/failed leaf sitemap — total is unknown
     }
     for (const c of webContents) {
       subForSitemap += Number(c.submitted ?? 0);
@@ -241,14 +245,14 @@ async function fetchSitemapCoverage(token: string, site: string) {
         idxForSitemap += Number(c.indexed);
       } else {
         idxKnown = false;
-        if (useForTotal) allIndexedKnown = false;
+        if (!isIndex) allIndexedKnown = false;
       }
     }
     const warnings = Number(s.warnings ?? 0);
     const errors = Number(s.errors ?? 0);
     sitemapWarnings += warnings;
     sitemapErrors += errors;
-    if (useForTotal) {
+    if (!isIndex) {
       submitted += subForSitemap;
       indexed += idxForSitemap;
     }
@@ -262,7 +266,7 @@ async function fetchSitemapCoverage(token: string, site: string) {
       last_downloaded: (s.lastDownloaded as string) ?? null,
     };
   });
-  const indexedAvailable = usedEntryCount > 0 && allIndexedKnown;
+  const indexedAvailable = leafCount > 0 && allIndexedKnown;
   return {
     indexed_pages: indexedAvailable ? indexed : null,
     submitted_pages: submitted,
@@ -362,21 +366,31 @@ function isSelfCanonical(canonicalUrl: string | null): boolean {
 
 // Forced refreshes re-run the full GA4 + GSC + Sitemaps + URL Inspection
 // sweep, bypassing the 6h cache. URL Inspection in particular has a small
-// daily quota, and the anon key is public in the client bundle — an
-// unauthenticated caller hammering force:true could exhaust that quota and
-// make indexing checks unavailable for the real site owner. Only honor
-// force for a caller presenting a valid, non-anonymous Supabase session.
-async function isAuthenticatedCaller(req: Request): Promise<boolean> {
+// daily quota, and the anon key is public in the client bundle — any
+// authenticated-but-non-admin account hammering force:true could still
+// exhaust that quota and make indexing checks unavailable for the real
+// site owner. Mirrors the admin-role check in supabase/functions/
+// trigger-webhook/index.ts: resolve the caller via /auth/v1/user, then
+// require has_role(user, 'admin') — being logged in is not enough.
+async function isAuthorizedForForce(req: Request): Promise<boolean> {
   const authHeader = req.headers.get("Authorization") ?? "";
   const token = authHeader.replace(/^Bearer\s+/i, "").trim();
   if (!token) return false;
   try {
-    const r = await fetch(`${SB_URL}/auth/v1/user`, {
+    const ur = await fetch(`${SB_URL}/auth/v1/user`, {
       headers: { apikey: SB_KEY, Authorization: `Bearer ${token}` },
     });
-    if (!r.ok) return false;
-    const user = await r.json();
-    return !!user?.id && !user?.is_anonymous;
+    if (!ur.ok) return false;
+    const user = await ur.json();
+    if (!user?.id || user?.is_anonymous) return false;
+
+    const rr = await fetch(`${SB_URL}/rest/v1/rpc/has_role`, {
+      method: "POST",
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ _user_id: user.id, _role: "admin" }),
+    });
+    if (!rr.ok) return false;
+    return (await rr.json()) === true;
   } catch {
     return false;
   }
@@ -385,26 +399,34 @@ async function isAuthenticatedCaller(req: Request): Promise<boolean> {
 async function sampleUrlsForInspection(): Promise<string[]> {
   const staticUrls = [`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/writing`, `${SITE_ORIGIN}/about`, `${SITE_ORIGIN}/work`];
   const target = INDEXING_SAMPLE_SIZE - staticUrls.length;
+  const PAGE_SIZE = target * 4;
+  const MAX_PAGES = 5; // bounds worst case to PAGE_SIZE * MAX_PAGES rows scanned
+
+  // Page through published posts, filtering out externally-canonical ones,
+  // until `target` self-canonical posts are collected or posts run out. A
+  // single fixed-size overfetch would still collapse the sample to nothing
+  // if that whole window happened to be externally canonical; paginating
+  // instead backfills from older posts rather than giving up after one page.
+  const selfCanonical: { slug: string; canonical_url: string | null }[] = [];
   try {
-    // Overfetch candidates before filtering out externally-canonical posts —
-    // filtering post-limit would silently shrink the sample (or skip recent
-    // posts entirely) whenever recently-updated posts happen to be
-    // externally canonical, instead of backfilling from older ones.
-    const r = await fetch(
-      `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${target * 4}`,
-      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
-    );
-    if (!r.ok) return staticUrls;
-    const rows: { slug: string; canonical_url: string | null }[] = await r.json();
-    const selfCanonical = rows.filter((p) => isSelfCanonical(p.canonical_url)).slice(0, target);
-    // Prefer the post's own same-origin canonical_url when it differs from
-    // the slug URL (e.g. /writing/custom-canonical) — inspecting the slug
-    // URL instead would report a false issue for a page GSC correctly
-    // treats as an alternate of its declared canonical.
-    return [...staticUrls, ...selfCanonical.map((p) => p.canonical_url || `${SITE_ORIGIN}/writing/${p.slug}`)];
+    for (let page = 0; page < MAX_PAGES && selfCanonical.length < target; page++) {
+      const r = await fetch(
+        `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`,
+        { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
+      );
+      if (!r.ok) break;
+      const rows: { slug: string; canonical_url: string | null }[] = await r.json();
+      selfCanonical.push(...rows.filter((p) => isSelfCanonical(p.canonical_url)));
+      if (rows.length < PAGE_SIZE) break; // reached the end of the table
+    }
   } catch {
-    return staticUrls;
+    // fall through with whatever was gathered before the failure
   }
+  // Prefer the post's own same-origin canonical_url when it differs from the
+  // slug URL (e.g. /writing/custom-canonical) — inspecting the slug URL
+  // instead would report a false issue for a page GSC correctly treats as an
+  // alternate of its declared canonical.
+  return [...staticUrls, ...selfCanonical.slice(0, target).map((p) => p.canonical_url || `${SITE_ORIGIN}/writing/${p.slug}`)];
 }
 
 Deno.serve(async (req) => {
@@ -419,8 +441,8 @@ Deno.serve(async (req) => {
     }
   } catch (_) { /* ignore */ }
 
-  if (force && !(await isAuthenticatedCaller(req))) {
-    return json({ ok: false, error: "force refresh requires authentication" }, 403);
+  if (force && !(await isAuthorizedForForce(req))) {
+    return json({ ok: false, error: "force refresh requires admin role" }, 403);
   }
 
   // Serve fresh cache unless forced.
