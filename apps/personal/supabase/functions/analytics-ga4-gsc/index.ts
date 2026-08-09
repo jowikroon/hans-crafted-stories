@@ -364,15 +364,16 @@ function isSelfCanonical(canonicalUrl: string | null): boolean {
   }
 }
 
-// Forced refreshes re-run the full GA4 + GSC + Sitemaps + URL Inspection
-// sweep, bypassing the 6h cache. URL Inspection in particular has a small
-// daily quota, and the anon key is public in the client bundle — any
-// authenticated-but-non-admin account hammering force:true could still
-// exhaust that quota and make indexing checks unavailable for the real
-// site owner. Mirrors the admin-role check in supabase/functions/
-// trigger-webhook/index.ts: resolve the caller via /auth/v1/user, then
-// require has_role(user, 'admin') — being logged in is not enough.
-async function isAuthorizedForForce(req: Request): Promise<boolean> {
+// Any live recompute (explicit force, or the cache simply being stale/
+// missing) re-runs the full GA4 + GSC + Sitemaps + URL Inspection sweep.
+// URL Inspection in particular has a small daily quota, and the anon key is
+// public in the client bundle — an authenticated-but-non-admin account (or
+// no account at all) could otherwise exhaust that quota and make indexing
+// checks unavailable for the real site owner. Mirrors the admin-role check
+// in supabase/functions/trigger-webhook/index.ts: resolve the caller via
+// /auth/v1/user, then require has_role(user, 'admin') — being logged in is
+// not enough.
+async function isAuthorizedCaller(req: Request): Promise<boolean> {
   const authHeader = req.headers.get("Authorization") ?? "";
   const token = authHeader.replace(/^Bearer\s+/i, "").trim();
   if (!token) return false;
@@ -407,26 +408,36 @@ async function sampleUrlsForInspection(): Promise<string[]> {
   // single fixed-size overfetch would still collapse the sample to nothing
   // if that whole window happened to be externally canonical; paginating
   // instead backfills from older posts rather than giving up after one page.
+  //
+  // If the very first page fails, we have zero real post data — throwing
+  // (rather than quietly falling back to the 4 static URLs) keeps that
+  // failure visible via errors.indexing instead of letting a fully-failed
+  // post sample masquerade as "4 pages checked, all clean." A failure on a
+  // later page keeps whatever posts were already gathered — `checked`
+  // already reports the smaller real count, so it isn't misleading.
   const selfCanonical: { slug: string; canonical_url: string | null }[] = [];
-  try {
-    for (let page = 0; page < MAX_PAGES && selfCanonical.length < target; page++) {
-      const r = await fetch(
-        `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`,
-        { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
-      );
-      if (!r.ok) break;
-      const rows: { slug: string; canonical_url: string | null }[] = await r.json();
-      selfCanonical.push(...rows.filter((p) => isSelfCanonical(p.canonical_url)));
-      if (rows.length < PAGE_SIZE) break; // reached the end of the table
+  for (let page = 0; page < MAX_PAGES && selfCanonical.length < target; page++) {
+    const r = await fetch(
+      `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`,
+      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
+    );
+    if (!r.ok) {
+      if (page === 0) throw new Error(`blog_posts sample: HTTP ${r.status}`);
+      break;
     }
-  } catch {
-    // fall through with whatever was gathered before the failure
+    const rows: { slug: string; canonical_url: string | null }[] = await r.json();
+    selfCanonical.push(...rows.filter((p) => isSelfCanonical(p.canonical_url)));
+    if (rows.length < PAGE_SIZE) break; // reached the end of the table
   }
   // Prefer the post's own same-origin canonical_url when it differs from the
   // slug URL (e.g. /writing/custom-canonical) — inspecting the slug URL
   // instead would report a false issue for a page GSC correctly treats as an
-  // alternate of its declared canonical.
-  return [...staticUrls, ...selfCanonical.slice(0, target).map((p) => p.canonical_url || `${SITE_ORIGIN}/writing/${p.slug}`)];
+  // alternate of its declared canonical. Dedupe first — several posts can
+  // legitimately share one canonical (a syndicated series pointing at a hub
+  // page) and each occurrence would otherwise burn a separate inspection
+  // call on the same URL while crowding out coverage of other posts.
+  const uniqueUrls = [...new Set(selfCanonical.map((p) => p.canonical_url || `${SITE_ORIGIN}/writing/${p.slug}`))];
+  return [...staticUrls, ...uniqueUrls.slice(0, target)];
 }
 
 Deno.serve(async (req) => {
@@ -441,16 +452,26 @@ Deno.serve(async (req) => {
     }
   } catch (_) { /* ignore */ }
 
-  if (force && !(await isAuthorizedForForce(req))) {
-    return json({ ok: false, error: "force refresh requires admin role" }, 403);
+  const cached = await readCache();
+  const cacheFresh = !!cached && Date.now() - new Date(cached.fetched_at).getTime() < TTL_MS;
+
+  if (cacheFresh && !force) {
+    return json({ ...cached.data, cached: true, fetched_at: cached.fetched_at });
   }
 
-  // Serve fresh cache unless forced.
-  if (!force) {
-    const cached = await readCache();
-    if (cached && Date.now() - new Date(cached.fetched_at).getTime() < TTL_MS) {
-      return json({ ...cached.data, cached: true, fetched_at: cached.fetched_at });
-    }
+  // Beyond this point every path does a live Google API sweep — GA4 + GSC +
+  // Sitemaps + URL Inspection — whether the caller explicitly asked for one
+  // (force) or the cache is simply stale/missing. Gating only the explicit
+  // force flag left the "just wait for the cache to go stale, then hit the
+  // endpoint" path (or a burst of concurrent requests at that boundary) wide
+  // open to anyone holding the public anon key, each one independently
+  // burning the URL Inspection quota. Require the same admin check for
+  // both; an unauthorized caller gets the stale cache back (harmless — it's
+  // already-public dashboard data) instead of triggering a recompute, or a
+  // 403 if there's nothing cached yet at all.
+  if (!(await isAuthorizedCaller(req))) {
+    if (cached) return json({ ...cached.data, cached: true, stale: true, fetched_at: cached.fetched_at });
+    return json({ ok: false, error: "admin role required" }, 403);
   }
 
   const saRaw = Deno.env.get("GOOGLE_SA_KEY");
