@@ -10,8 +10,9 @@ import { listSongs } from "./lib/songStore";
 import SongsMode from "./modes/SongsMode";
 import SongwriterMode from "./modes/SongwriterMode";
 import VoicesMode from "./modes/VoicesMode";
+import ProductionMode from "./modes/ProductionMode";
 
-type CmsMode = "songs" | "write" | "voices";
+type CmsMode = "songs" | "write" | "voices" | "productie";
 
 const ICONS: Record<CmsMode, JSX.Element> = {
   songs: (
@@ -22,6 +23,9 @@ const ICONS: Record<CmsMode, JSX.Element> = {
   ),
   voices: (
     <svg viewBox="0 0 16 16" fill="none"><rect x="6" y="1.5" width="4" height="8" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M3.5 7a4.5 4.5 0 0 0 9 0M8 11.5V14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+  ),
+  productie: (
+    <svg viewBox="0 0 16 16" fill="none"><path d="M2 8h2l1.5-4 2.5 8 2-6 1.5 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
   ),
 };
 
@@ -38,7 +42,7 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
   const [params, setParams] = useSearchParams();
   const { user, loading, signInWithGoogle } = useAuth();
   const raw = params.get("mode");
-  const mode: CmsMode = songId ? "write" : raw === "write" || raw === "voices" ? raw : "songs";
+  const mode: CmsMode = songId ? "write" : raw === "write" || raw === "voices" || raw === "productie" ? raw : "songs";
 
   const [songCount, setSongCount] = useState<number | null>(null);
   useEffect(() => {
@@ -68,6 +72,7 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
     { id: "songs", label: "Songs", count: songCount != null ? String(songCount) : "–" },
     { id: "write", label: "Schrijven", count: "werkblad" },
     { id: "voices", label: "Voices", count: `${VOICE_TEMPLATES.length} tpl` },
+    { id: "productie", label: "Productie", count: "catalogus" },
   ];
 
   const gated = !loading && !user;
@@ -118,6 +123,7 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
               {mode === "songs" && <SongsMode />}
               {mode === "write" && <SongwriterMode songId={songId} />}
               {mode === "voices" && <VoicesMode />}
+              {mode === "productie" && <ProductionMode />}
             </>
           )}
         </div>

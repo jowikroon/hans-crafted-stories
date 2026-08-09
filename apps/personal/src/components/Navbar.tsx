@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import {
+  AudioLines, useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
@@ -348,6 +349,7 @@ const Navbar = (_props: NavbarProps) => {
                           <div className="pb-1">
                             {isAdmin && <Link to="/write" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><PenLine size={15} /> {t.workspace.blogCms}</Link>}
                             {isAdmin && <Link to="/release-set" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Disc3 size={15} /> Release Set</Link>}
+                            {isAdmin && <Link to="/music-cms?mode=productie" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><AudioLines size={15} /> Muziek Productie</Link>}
                             {isAdmin && <Link to="/samantha" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Sparkles size={15} /> {t.workspace.samantha}<span className="ml-auto text-[9px] font-mono text-[#7E7A6F]">⌘J</span></Link>}
                             <Link to="/portal" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><LayoutDashboard size={15} /> {t.workspace.portal}</Link>
                             {isAdmin && <Link to="/wiki" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BookOpen size={15} /> {t.workspace.docs}</Link>}
@@ -400,6 +402,7 @@ const Navbar = (_props: NavbarProps) => {
                     <p className={`px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold ${barMut}`}>{t.workspace.label}</p>
                     {isAdmin && <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><PenLine size={14} /> {t.workspace.blogCms}</Link>}
                     {isAdmin && <Link to="/release-set" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Disc3 size={14} /> Release Set</Link>}
+                    {isAdmin && <Link to="/music-cms?mode=productie" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><AudioLines size={14} /> Muziek Productie</Link>}
                     {isAdmin && <Link to="/samantha" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Sparkles size={14} /> {t.workspace.samantha}</Link>}
                     <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><LayoutDashboard size={14} /> {t.workspace.portal}</Link>
                     {isAdmin && <Link to="/wiki" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BookOpen size={14} /> {t.workspace.docs}</Link>}
