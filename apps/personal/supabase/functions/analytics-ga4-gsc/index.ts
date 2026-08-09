@@ -417,7 +417,10 @@ async function sampleUrlsForInspection(): Promise<string[]> {
   // post sample masquerade as "4 pages checked, all clean." A failure on a
   // later page keeps whatever posts were already gathered — `checked`
   // already reports the smaller real count, so it isn't misleading.
-  const seenUrls = new Set<string>();
+  // Seed with the static URLs so a post that happens to declare one of them
+  // as its own canonical (e.g. a post canonicalizing to /writing) doesn't
+  // get counted as a second, duplicate inspection of the same page.
+  const seenUrls = new Set<string>(staticUrls);
   const uniqueUrls: string[] = [];
   for (let page = 0; page < MAX_PAGES && uniqueUrls.length < target; page++) {
     const r = await fetch(
