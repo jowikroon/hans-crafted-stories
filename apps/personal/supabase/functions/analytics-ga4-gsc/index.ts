@@ -184,12 +184,23 @@ async function fetchGSC(token: string) {
 // Index coverage — submitted vs indexed page counts, sourced from the sitemaps
 // GSC has on file for the property (HAN-93: "indexed pages count").
 //
-// `SitemapContent.indexed` is a deprecated field in the Sitemaps API and may
-// be omitted entirely from the response — either for every content entry, or
-// just some of them (mixed responses happen). Only report the site-wide
-// total when EVERY content entry across every sitemap carries a known
-// `indexed` value; a partial sum would quietly under-report the real count,
-// which is worse than admitting the total is unavailable.
+// Two accuracy hazards in this API's response shape, both handled below:
+//
+// 1. `SitemapContent.indexed` is deprecated and may be omitted — for every
+//    content entry, for just some of them, or (for a pending/failed leaf
+//    sitemap) by having no `contents` at all. Only report a site-wide total
+//    when every LEAF sitemap's count is known; a partial sum would quietly
+//    under-report the real count, which is worse than admitting it's
+//    unavailable. (Sitemap-index entries are expected to have no `contents`
+//    of their own — see #2 — so an empty array there doesn't count against
+//    this.)
+// 2. A sitemap-index entry's counts describe the aggregate of its child
+//    sitemaps. Summing an index alongside its own children double-counts
+//    the same pages, so index entries are excluded from the sum entirely —
+//    only leaf sitemaps are aggregated. (This does not protect against a
+//    different overlap — two unrelated sitemaps that happen to list the
+//    same URLs — which isn't detectable from this endpoint's per-sitemap
+//    aggregate counts; only per-URL data would allow deduping that case.)
 async function fetchSitemapCoverage(token: string, site: string) {
   const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/sitemaps`;
   const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
@@ -198,36 +209,55 @@ async function fetchSitemapCoverage(token: string, site: string) {
   const entries: AnyRow[] = d.sitemap ?? [];
   let submitted = 0;
   let indexed = 0;
-  let contentEntryCount = 0;
+  let leafCount = 0;
   let allIndexedKnown = true;
+  let sitemapWarnings = 0;
+  let sitemapErrors = 0;
   const sitemaps = entries.map((s: AnyRow) => {
+    const isIndex = !!s.isSitemapsIndex;
     const contents = (s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [];
     let subForSitemap = 0;
     let idxForSitemap = 0;
     let idxKnown = contents.length > 0;
+    if (!isIndex) {
+      leafCount++;
+      if (contents.length === 0) allIndexedKnown = false; // pending/failed leaf sitemap — total is unknown
+    }
     for (const c of contents) {
       subForSitemap += Number(c.submitted ?? 0);
-      contentEntryCount++;
       if (c.indexed != null) {
         idxForSitemap += Number(c.indexed);
       } else {
         idxKnown = false;
-        allIndexedKnown = false;
+        if (!isIndex) allIndexedKnown = false;
       }
     }
-    submitted += subForSitemap;
-    indexed += idxForSitemap;
+    const warnings = Number(s.warnings ?? 0);
+    const errors = Number(s.errors ?? 0);
+    sitemapWarnings += warnings;
+    sitemapErrors += errors;
+    if (!isIndex) {
+      submitted += subForSitemap;
+      indexed += idxForSitemap;
+    }
     return {
       path: s.path as string,
+      is_index: isIndex,
       submitted: subForSitemap,
       indexed: idxKnown ? idxForSitemap : null,
-      warnings: Number(s.warnings ?? 0),
-      errors: Number(s.errors ?? 0),
+      warnings,
+      errors,
       last_downloaded: (s.lastDownloaded as string) ?? null,
     };
   });
-  const indexedAvailable = contentEntryCount > 0 && allIndexedKnown;
-  return { indexed_pages: indexedAvailable ? indexed : null, submitted_pages: submitted, sitemaps };
+  const indexedAvailable = leafCount > 0 && allIndexedKnown;
+  return {
+    indexed_pages: indexedAvailable ? indexed : null,
+    submitted_pages: submitted,
+    sitemap_warnings: sitemapWarnings,
+    sitemap_errors: sitemapErrors,
+    sitemaps,
+  };
 }
 
 // Per-URL indexing issues via the URL Inspection API, sampled over the site's
@@ -318,6 +348,28 @@ function isSelfCanonical(canonicalUrl: string | null): boolean {
   }
 }
 
+// Forced refreshes re-run the full GA4 + GSC + Sitemaps + URL Inspection
+// sweep, bypassing the 6h cache. URL Inspection in particular has a small
+// daily quota, and the anon key is public in the client bundle — an
+// unauthenticated caller hammering force:true could exhaust that quota and
+// make indexing checks unavailable for the real site owner. Only honor
+// force for a caller presenting a valid, non-anonymous Supabase session.
+async function isAuthenticatedCaller(req: Request): Promise<boolean> {
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!token) return false;
+  try {
+    const r = await fetch(`${SB_URL}/auth/v1/user`, {
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${token}` },
+    });
+    if (!r.ok) return false;
+    const user = await r.json();
+    return !!user?.id && !user?.is_anonymous;
+  } catch {
+    return false;
+  }
+}
+
 async function sampleUrlsForInspection(): Promise<string[]> {
   const staticUrls = [`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/writing`, `${SITE_ORIGIN}/about`, `${SITE_ORIGIN}/work`];
   const target = INDEXING_SAMPLE_SIZE - staticUrls.length;
@@ -355,6 +407,10 @@ Deno.serve(async (req) => {
     }
   } catch (_) { /* ignore */ }
 
+  if (force && !(await isAuthenticatedCaller(req))) {
+    return json({ ok: false, error: "force refresh requires authentication" }, 403);
+  }
+
   // Serve fresh cache unless forced.
   if (!force) {
     const cached = await readCache();
@@ -380,6 +436,8 @@ Deno.serve(async (req) => {
         const coverage = await fetchSitemapCoverage(token, gsc.site as string);
         gsc.indexed_pages = coverage.indexed_pages;
         gsc.submitted_pages = coverage.submitted_pages;
+        gsc.sitemap_warnings = coverage.sitemap_warnings;
+        gsc.sitemap_errors = coverage.sitemap_errors;
         gsc.sitemaps = coverage.sitemaps;
       } catch (e) { (payload.errors as Record<string, string>).sitemaps = String(e); }
       try {

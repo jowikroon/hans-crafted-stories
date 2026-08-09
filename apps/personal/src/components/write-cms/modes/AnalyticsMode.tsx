@@ -18,7 +18,7 @@ interface PostMetric {
 interface SeriesPoint { date: string; value: number; }
 interface TopPage { path: string; title: string; sessions: number; }
 interface Query { query: string; clicks: number; impressions: number; ctr: number | null; position: number | null; }
-interface Sitemap { path: string; submitted: number; indexed: number | null; warnings: number; errors: number; last_downloaded: string | null; }
+interface Sitemap { path: string; is_index?: boolean; submitted: number; indexed: number | null; warnings: number; errors: number; last_downloaded: string | null; }
 interface IndexingIssue { url: string; verdict: string; coverage_state: string | null; last_crawl: string | null; }
 interface Dashboard {
   configured?: boolean;
@@ -29,6 +29,7 @@ interface Dashboard {
     site: string; clicks: number; impressions: number; ctr: number | null; position: number | null;
     pages_with_traffic: number; queries: Query[];
     indexed_pages?: number | null; submitted_pages?: number; sitemaps?: Sitemap[];
+    sitemap_warnings?: number; sitemap_errors?: number;
     indexing_checked?: number; indexing_skipped?: number; indexing_issues?: IndexingIssue[];
   };
   errors?: { ga4?: string; gsc?: string; sitemaps?: string; indexing?: string };
@@ -225,16 +226,24 @@ export default function AnalyticsMode() {
         </div>
       )}
 
-      {/* Indexing issues, surfaced automatically from URL Inspection API sampling (HAN-93) */}
-      {gsc?.indexing_checked != null && (
+      {/* Indexing issues, surfaced automatically from URL Inspection sampling +
+          sitemap health (HAN-93) */}
+      {(gsc?.indexing_checked != null || gsc?.sitemap_warnings || gsc?.sitemap_errors) && (
         <div className="chart-card">
           <h3>
             Indexing issues{" "}
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>
-              {gsc.indexing_issues?.length ? `${gsc.indexing_issues.length} flagged` : "none flagged"} · {gsc.indexing_checked} pages checked
-              {gsc.indexing_skipped ? ` · ${gsc.indexing_skipped} unreachable` : ""}
-            </span>
+            {gsc.indexing_checked != null && (
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>
+                {gsc.indexing_issues?.length ? `${gsc.indexing_issues.length} flagged` : "none flagged"} · {gsc.indexing_checked} pages checked
+                {gsc.indexing_skipped ? ` · ${gsc.indexing_skipped} unreachable` : ""}
+              </span>
+            )}
           </h3>
+          {(gsc.sitemap_errors || gsc.sitemap_warnings) ? (
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--warn, #b45309)", padding: "4px 0" }}>
+              Sitemap: {gsc.sitemap_errors ?? 0} errors, {gsc.sitemap_warnings ?? 0} warnings reported by Search Console.
+            </div>
+          ) : null}
           {gsc.indexing_issues && gsc.indexing_issues.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "var(--s-3) 0" }}>
               {gsc.indexing_issues.map((iss) => (
@@ -244,13 +253,13 @@ export default function AnalyticsMode() {
                 </div>
               ))}
             </div>
-          ) : (
+          ) : gsc.indexing_checked != null ? (
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)", padding: "var(--s-3) 0" }}>
               {gsc.indexing_skipped
                 ? `All ${gsc.indexing_checked} successfully checked pages are indexed (${gsc.indexing_skipped} could not be checked).`
                 : "All sampled pages are indexed."}
             </div>
-          )}
+          ) : null}
         </div>
       )}
 
