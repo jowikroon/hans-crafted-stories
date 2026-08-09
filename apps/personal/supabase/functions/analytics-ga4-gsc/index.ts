@@ -302,6 +302,18 @@ const INDEXING_SAMPLE_SIZE = 15;
 // intentionally not the canonical URL and would falsely report as a
 // "not indexed" issue when GSC (correctly) indexes the external canonical
 // instead.
+// `startsWith(SITE_ORIGIN)` would be a substring-sanitization bug — a
+// canonical_url like "https://hansvanleeuwen.com.evil.example/x" passes a
+// prefix check but is not this origin. Compare parsed origins instead.
+function isSelfCanonical(canonicalUrl: string | null): boolean {
+  if (!canonicalUrl) return true;
+  try {
+    return new URL(canonicalUrl).origin === new URL(SITE_ORIGIN).origin;
+  } catch {
+    return false;
+  }
+}
+
 async function sampleUrlsForInspection(): Promise<string[]> {
   const staticUrls = [`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/writing`, `${SITE_ORIGIN}/about`, `${SITE_ORIGIN}/work`];
   try {
@@ -311,7 +323,7 @@ async function sampleUrlsForInspection(): Promise<string[]> {
     );
     if (!r.ok) return staticUrls;
     const rows: { slug: string; canonical_url: string | null }[] = await r.json();
-    const selfCanonical = rows.filter((p) => !p.canonical_url || p.canonical_url.startsWith(SITE_ORIGIN));
+    const selfCanonical = rows.filter((p) => isSelfCanonical(p.canonical_url));
     return [...staticUrls, ...selfCanonical.map((p) => `${SITE_ORIGIN}/writing/${p.slug}`)];
   } catch {
     return staticUrls;
