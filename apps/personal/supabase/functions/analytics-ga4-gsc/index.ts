@@ -184,59 +184,71 @@ async function fetchGSC(token: string) {
 // Index coverage — submitted vs indexed page counts, sourced from the sitemaps
 // GSC has on file for the property (HAN-93: "indexed pages count").
 //
-// Two accuracy hazards in this API's response shape, both handled below:
+// Accuracy hazards in this API's response shape, all handled below:
 //
 // 1. `SitemapContent.indexed` is deprecated and may be omitted — for every
-//    content entry, for just some of them, or (for a pending/failed leaf
+//    content entry, for just some of them, or (for a pending/failed
 //    sitemap) by having no `contents` at all. Only report a site-wide total
-//    when every LEAF sitemap's count is known; a partial sum would quietly
-//    under-report the real count, which is worse than admitting it's
-//    unavailable. (Sitemap-index entries are expected to have no `contents`
-//    of their own — see #2 — so an empty array there doesn't count against
-//    this.)
+//    when every entry actually used for the total has a known count; a
+//    partial sum would quietly under-report the real count, which is worse
+//    than admitting it's unavailable.
 // 2. A sitemap-index entry's counts describe the aggregate of its child
-//    sitemaps. Summing an index alongside its own children double-counts
-//    the same pages, so index entries are excluded from the sum entirely —
-//    only leaf sitemaps are aggregated. (This does not protect against a
-//    different overlap — two unrelated sitemaps that happen to list the
-//    same URLs — which isn't detectable from this endpoint's per-sitemap
-//    aggregate counts; only per-URL data would allow deduping that case.)
+//    sitemaps — summing an index alongside its own children double-counts
+//    the same pages. But when a property has ONLY submitted an index and
+//    GSC hasn't (yet) listed its children as separate entries, the index's
+//    own totals are the only signal available at all, and excluding it
+//    unconditionally would report "zero submitted, unavailable" for a
+//    perfectly normal single-sitemap-index setup. So: aggregate leaf
+//    (non-index) entries when any exist; fall back to index entries only
+//    when the response contains no leaves whatsoever. (This still doesn't
+//    protect against a different overlap — two unrelated sitemaps that
+//    happen to list the same URLs — which isn't detectable from this
+//    endpoint's per-sitemap aggregate counts; only per-URL data would allow
+//    deduping that case.)
+// 3. `contents` breaks counts down by type (web pages, images, video, news
+//    …). Only the "web" entries represent pages — summing every type would
+//    inflate the page count with image/video/news URLs from the same
+//    sitemap.
 async function fetchSitemapCoverage(token: string, site: string) {
   const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/sitemaps`;
   const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   const d = await r.json();
   if (!r.ok) throw new Error(`gsc sitemaps: ${JSON.stringify(d)}`);
   const entries: AnyRow[] = d.sitemap ?? [];
+  const hasLeaves = entries.some((s: AnyRow) => !s.isSitemapsIndex);
+
   let submitted = 0;
   let indexed = 0;
-  let leafCount = 0;
+  let usedEntryCount = 0;
   let allIndexedKnown = true;
   let sitemapWarnings = 0;
   let sitemapErrors = 0;
   const sitemaps = entries.map((s: AnyRow) => {
     const isIndex = !!s.isSitemapsIndex;
-    const contents = (s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [];
+    const useForTotal = hasLeaves ? !isIndex : true;
+    const webContents = ((s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [])
+      .filter((c) => c.type === "web");
     let subForSitemap = 0;
     let idxForSitemap = 0;
-    let idxKnown = contents.length > 0;
-    if (!isIndex) {
-      leafCount++;
-      if (contents.length === 0) allIndexedKnown = false; // pending/failed leaf sitemap — total is unknown
+    let idxKnown = webContents.length > 0;
+    if (useForTotal) {
+      usedEntryCount++;
+      if (webContents.length === 0) allIndexedKnown = false; // pending/failed, or no page-type breakdown yet
     }
-    for (const c of contents) {
+    for (const c of webContents) {
       subForSitemap += Number(c.submitted ?? 0);
       if (c.indexed != null) {
         idxForSitemap += Number(c.indexed);
       } else {
         idxKnown = false;
-        if (!isIndex) allIndexedKnown = false;
+        if (useForTotal) allIndexedKnown = false;
       }
     }
     const warnings = Number(s.warnings ?? 0);
     const errors = Number(s.errors ?? 0);
     sitemapWarnings += warnings;
     sitemapErrors += errors;
-    if (!isIndex) {
+    if (useForTotal) {
       submitted += subForSitemap;
       indexed += idxForSitemap;
     }
@@ -250,7 +262,7 @@ async function fetchSitemapCoverage(token: string, site: string) {
       last_downloaded: (s.lastDownloaded as string) ?? null,
     };
   });
-  const indexedAvailable = leafCount > 0 && allIndexedKnown;
+  const indexedAvailable = usedEntryCount > 0 && allIndexedKnown;
   return {
     indexed_pages: indexedAvailable ? indexed : null,
     submitted_pages: submitted,
