@@ -17,6 +17,10 @@ export interface Track {
   first_seen_at: string | null;
   duration_seconds: number | null;
   bpm: number | null;
+  musical_key: string | null;
+  lufs: number | null;
+  format: string | null;
+  content_key: string | null;
   file_size_bytes: number | null;
   suno_url: string | null;
   soundcloud_url: string | null;
@@ -43,7 +47,7 @@ export type TrackUrlField = "neuralanalog_url" | "suno_url" | "soundcloud_url" |
 const db = supabase as unknown as SupabaseClient;
 const TABLE = "music_tracks";
 const SELECT =
-  "id, song_title, file_name, file_path, folder, variant_label, track_kind, status, source, first_seen_at, duration_seconds, bpm, file_size_bytes, suno_url, soundcloud_url, spotify_url, neuralanalog_url, external_url, storage_provider, cluster_confidence, favorite";
+  "id, song_title, file_name, file_path, folder, variant_label, track_kind, status, source, first_seen_at, duration_seconds, bpm, musical_key, lufs, format, content_key, file_size_bytes, suno_url, soundcloud_url, spotify_url, neuralanalog_url, external_url, storage_provider, cluster_confidence, favorite";
 
 /** Alleen http(s) doorlaten. Beschermt tegen opgeslagen `javascript:`-links
  *  die React niet blokkeert (audit 2026-08-10). */
@@ -101,4 +105,10 @@ export async function listLyrics(songTitle: string): Promise<LyricVersion[]> {
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return ((data as unknown[] | null) ?? []) as LyricVersion[];
+}
+
+/** Zet de status van een versie (o.a. 'uitzoeken' -> 'alternative' als het klopt). */
+export async function setTrackStatus(id: string, status: string): Promise<void> {
+  const { error } = await db.from(TABLE).update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) throw new Error(error.message);
 }
