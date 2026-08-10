@@ -12,8 +12,11 @@
 //  - groeperen op exacte string (nu genormaliseerde sleutel)
 import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Check, Copy, Download, FileText, Star, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Check, Copy, Download, FileText, HelpCircle, Star, X } from "lucide-react";
 import PlatformLinks from "./PlatformLinks";
+import ColumnPicker from "./ColumnPicker";
+import { COLUMNS, COLUMN_BY_ID, sortTracks } from "../lib/trackColumns";
+import { DEFAULT_PREFS, loadPrefs, savePrefs, type DashboardPrefs, type SortDir } from "../lib/dashboardPrefs";
 import {
   confirmCluster,
   listLyrics,
@@ -21,6 +24,7 @@ import {
   reassignSong,
   safeHttpUrl,
   setFavorite,
+  setTrackStatus,
   setTrackUrl,
   type LyricVersion,
   type Track,
@@ -29,7 +33,7 @@ import {
 
 const NABEWERKT_BYTES = 100 * 1024 * 1024; // >100MB = 100% NeuralAnalog-nabewerkt
 
-type TopFilter = "alle" | "favorieten" | "review";
+type TopFilter = "alle" | "favorieten" | "uitzoeken";
 
 interface SongGroup {
   key: string;
@@ -38,9 +42,10 @@ interface SongGroup {
   favorites: Track[];
   processed: Track[];
   concepts: Track[];
+  unresolved: Track[];
   firstSeen: string | null;
   latestSeen: string | null;
-  reviewCount: number;
+  unresolvedCount: number;
   suno: string | null;
   soundcloud: string | null;
   spotify: string | null;
@@ -75,13 +80,13 @@ function groupSongs(tracks: Track[]): SongGroup[] {
   }
   const groups: SongGroup[] = [];
   for (const [k, list] of map) {
-    const favorites = list.filter((t) => t.favorite).sort(bySizeDesc);
-    const processed = list
-      .filter((t) => !t.favorite && (t.file_size_bytes ?? 0) > NABEWERKT_BYTES)
-      .sort(bySizeDesc);
-    const concepts = list
-      .filter((t) => !t.favorite && (t.file_size_bytes ?? 0) <= NABEWERKT_BYTES)
-      .sort((a, b) => (b.first_seen_at ?? "").localeCompare(a.first_seen_at ?? ""));
+    const isOpen = (t: Track) => t.status === "uitzoeken";
+    const favorites = list.filter((t) => t.favorite);
+    const rest = list.filter((t) => !t.favorite);
+    const unresolved = rest.filter(isOpen);
+    const settled = rest.filter((t) => !isOpen(t));
+    const processed = settled.filter((t) => (t.file_size_bytes ?? 0) > NABEWERKT_BYTES);
+    const concepts = settled.filter((t) => (t.file_size_bytes ?? 0) <= NABEWERKT_BYTES);
     const seen = list.map((t) => t.first_seen_at).filter((d): d is string => d != null).sort();
     const firstUrl = (f: (t: Track) => string | null): string | null => {
       for (const t of list) {
@@ -97,9 +102,10 @@ function groupSongs(tracks: Track[]): SongGroup[] {
       favorites,
       processed,
       concepts,
+      unresolved,
       firstSeen: seen[0] ?? null,
       latestSeen: seen[seen.length - 1] ?? null,
-      reviewCount: list.filter((t) => t.cluster_confidence === "review").length,
+      unresolvedCount: unresolved.length,
       suno: firstUrl((t) => t.suno_url),
       soundcloud: firstUrl((t) => t.soundcloud_url),
       spotify: firstUrl((t) => t.spotify_url),
@@ -119,19 +125,23 @@ function groupSongs(tracks: Track[]): SongGroup[] {
 interface RowProps {
   track: Track;
   titles: string[];
+  columns: string[];
   onToggleFavorite: (t: Track) => void;
   onSaveUrl: (t: Track, field: TrackUrlField, value: string | null) => void;
   onReassign: (t: Track, title: string) => void;
   onConfirm: (t: Track) => void;
+  onResolve: (t: Track) => void;
 }
 
 const TrackRow = memo(function TrackRow({
   track: t,
   titles,
+  columns,
   onToggleFavorite,
   onSaveUrl,
   onReassign,
   onConfirm,
+  onResolve,
 }: RowProps) {
   const [reassign, setReassign] = useState(false);
   const [reassignDraft, setReassignDraft] = useState("");
@@ -140,7 +150,7 @@ const TrackRow = memo(function TrackRow({
   const download = safeHttpUrl(t.external_url);
 
   return (
-    <div className="mp-row" data-review={t.cluster_confidence === "review" || undefined}>
+    <div className="mp-row" data-review={t.status === "uitzoeken" || undefined}>
       <button
         type="button"
         className="mp-star"
@@ -154,11 +164,18 @@ const TrackRow = memo(function TrackRow({
       <div className="mp-row-main">
         <span className="mp-row-name" title={t.file_path}>{t.variant_label}</span>
         <span className="mp-row-meta">
-          {fmtDur(t.duration_seconds)} · {t.bpm != null ? `${Math.round(t.bpm)} BPM` : "BPM —"}
-          {t.musical_key ? ` · ${t.musical_key}` : ""} ·{" "}
-          <em data-big={isProcessed || undefined}>{fmtMb(t.file_size_bytes)}</em> · {fmtDate(t.first_seen_at)}
+          {columns.map((cid) => {
+            const col = COLUMN_BY_ID.get(cid);
+            if (!col || cid === "name") return null;
+            const isSize = cid === "size";
+            return (
+              <span key={cid} className="mp-cell" data-col={cid}>
+                {isSize ? <em data-big={isProcessed || undefined}>{col.render(t)}</em> : col.render(t)}
+              </span>
+            );
+          })}
           {isProcessed && <span className="mp-chip mp-chip--na">nabewerkt</span>}
-          {t.cluster_confidence === "review" && <span className="mp-chip mp-chip--warn">review</span>}
+          {t.status === "uitzoeken" && <span className="mp-chip mp-chip--warn">uitzoeken</span>}
         </span>
       </div>
       <div className="mp-row-links">
@@ -194,18 +211,29 @@ const TrackRow = memo(function TrackRow({
             <Download size={14} aria-hidden="true" />
           </button>
         )}
-        {t.cluster_confidence === "review" && (
+        {t.status === "uitzoeken" && (
           <button
             type="button"
             className="mp-icon-btn mp-icon-btn--warn"
-            aria-label="Restpunt: cluster controleren"
-            title="Restpunt: cluster controleren"
+            aria-label="Uitzoeken: hoort dit bij het juiste nummer?"
+            title="Uitzoeken: hoort dit bij het juiste nummer?"
             onClick={() => {
               setReassign((v) => !v);
               setReassignDraft(t.song_title);
             }}
           >
             <AlertTriangle size={14} aria-hidden="true" />
+          </button>
+        )}
+        {t.status === "uitzoeken" && (
+          <button
+            type="button"
+            className="mp-icon-btn mp-icon-btn--ok"
+            aria-label="Uitgezocht — dit klopt"
+            title="Uitgezocht: haal uit Uitzoeken"
+            onClick={() => onResolve(t)}
+          >
+            <Check size={14} aria-hidden="true" />
           </button>
         )}
       </div>
@@ -241,6 +269,10 @@ interface CardProps {
   group: SongGroup;
   expanded: boolean;
   titles: string[];
+  columns: string[];
+  sortBy: string;
+  sortDir: SortDir;
+  onSort: (columnId: string) => void;
   onToggle: (key: string) => void;
   onOpenLyrics: (title: string, opener: HTMLElement) => void;
   onToggleFavorite: (t: Track) => void;
@@ -248,12 +280,17 @@ interface CardProps {
   onSongSaveUrl: (g: SongGroup, field: TrackUrlField, value: string | null) => void;
   onReassign: (t: Track, title: string) => void;
   onConfirm: (t: Track) => void;
+  onResolve: (t: Track) => void;
 }
 
 const SongCard = memo(function SongCard({
   group: g,
   expanded,
   titles,
+  columns,
+  sortBy,
+  sortDir,
+  onSort,
   onToggle,
   onOpenLyrics,
   onToggleFavorite,
@@ -261,21 +298,24 @@ const SongCard = memo(function SongCard({
   onSongSaveUrl,
   onReassign,
   onConfirm,
+  onResolve,
 }: CardProps) {
   // Filter is lokaal: typen in song A hertekent niet meer song B t/m Z.
   const [filter, setFilter] = useState("");
   const bodyId = `mp-body-${g.key.replace(/[^a-z0-9]/g, "-")}`;
 
-  const rowProps = { titles, onToggleFavorite, onSaveUrl, onReassign, onConfirm };
+  const rowProps = { titles, columns, onToggleFavorite, onSaveUrl, onReassign, onConfirm, onResolve };
 
-  const segment = (label: string, list: Track[], filterable = false) => {
+  const segment = (label: string, list: Track[], filterable = false, hint?: string) => {
     if (list.length === 0) return null;
     const f = filter.toLowerCase();
-    const shown = filterable && f ? list.filter((t) => t.variant_label.toLowerCase().includes(f)) : list;
+    const filtered = filterable && f ? list.filter((t) => t.variant_label.toLowerCase().includes(f)) : list;
+    const shown = sortTracks(filtered, sortBy, sortDir);
     return (
       <section className="mp-seg">
         <header className="mp-seg-h">
           <span>{label}</span>
+          {hint && <span className="mp-seg-hint">{hint}</span>}
           <span className="mp-seg-c">
             {shown.length}
             {shown.length !== list.length ? ` / ${list.length}` : ""}
@@ -293,7 +333,35 @@ const SongCard = memo(function SongCard({
         {shown.length === 0 ? (
           <p className="mp-dim">Geen versies die aan het filter voldoen.</p>
         ) : (
-          shown.map((t) => <TrackRow key={t.id} track={t} {...rowProps} />)
+          <>
+            <div className="mp-colhead" role="row">
+              <span className="mp-colhead-spacer" aria-hidden="true" />
+              {["name", ...columns.filter((c) => c !== "name")].map((cid) => {
+                const col = COLUMN_BY_ID.get(cid);
+                if (!col) return null;
+                const active = sortBy === cid;
+                const nextDir: SortDir = active ? (sortDir === "asc" ? "desc" : "asc") : col.defaultDir;
+                return (
+                  <button
+                    key={cid}
+                    type="button"
+                    className="mp-colhead-btn"
+                    data-col={cid}
+                    data-active={active || undefined}
+                    aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+                    title={`Sorteer op ${col.label} — ${nextDir === "asc" ? col.ascLabel : col.descLabel}`}
+                    onClick={() => onSort(cid)}
+                  >
+                    {col.short}
+                    {active && (sortDir === "asc"
+                      ? <ArrowUp size={10} aria-hidden="true" />
+                      : <ArrowDown size={10} aria-hidden="true" />)}
+                  </button>
+                );
+              })}
+            </div>
+            {shown.map((t) => <TrackRow key={t.id} track={t} {...rowProps} />)}
+          </>
         )}
       </section>
     );
@@ -313,7 +381,11 @@ const SongCard = memo(function SongCard({
           <span className="mp-song-title">
             {g.title}
             {g.favorites.length > 0 && <Star size={13} className="mp-song-fav" fill="currentColor" aria-hidden="true" />}
-            {g.reviewCount > 0 && <span className="mp-chip mp-chip--warn">{g.reviewCount} review</span>}
+            {g.unresolvedCount > 0 && (
+              <span className="mp-chip mp-chip--warn">
+                <HelpCircle size={10} aria-hidden="true" /> {g.unresolvedCount} uitzoeken
+              </span>
+            )}
           </span>
           <span className="mp-song-meta">
             {g.tracks.length} versies · eerste {fmtDate(g.firstSeen)}
@@ -365,6 +437,7 @@ const SongCard = memo(function SongCard({
               {segment("Favorieten", g.favorites)}
               {segment("Nabewerkt", g.processed, true)}
               {segment("Concepten", g.concepts)}
+              {segment("Uitzoeken", g.unresolved, false, "onzeker — titel of audio klopt mogelijk niet")}
             </div>
           </motion.div>
         )}
@@ -382,7 +455,9 @@ export default function ProductionMode() {
   const [writeError, setWriteError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
-  const [topFilter, setTopFilter] = useState<TopFilter>("alle");
+  const [prefs, setPrefs] = useState<DashboardPrefs>(DEFAULT_PREFS);
+  const [prefsSaving, setPrefsSaving] = useState(false);
+  const topFilter = prefs.filter as TopFilter;
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [lyricsFor, setLyricsFor] = useState<string | null>(null);
   const [lyrics, setLyrics] = useState<LyricVersion[]>([]);
@@ -408,6 +483,43 @@ export default function ProductionMode() {
 
   useEffect(() => { refresh(); }, [refresh]);
 
+  // Voorkeuren komen van het account, niet uit de browser.
+  useEffect(() => {
+    let cancelled = false;
+    loadPrefs("music-production")
+      .then((p) => { if (!cancelled) setPrefs(p); })
+      .catch(() => { /* val terug op defaults */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  /** Wijzig voorkeuren: direct zichtbaar, daarna opslaan bij het account. */
+  const updatePrefs = useCallback((patch: Partial<DashboardPrefs>) => {
+    setPrefs((cur) => {
+      const next = { ...cur, ...patch };
+      setPrefsSaving(true);
+      savePrefs("music-production", next)
+        .then(() => setWriteError(null))
+        .catch((e) => setWriteError(`Voorkeuren niet opgeslagen: ${e instanceof Error ? e.message : "onbekende fout"}`))
+        .finally(() => setPrefsSaving(false));
+      return next;
+    });
+  }, []);
+
+  /** Klik op een kolomkop: eerste klik = de logische richting voor dat type,
+   *  nogmaals klikken draait om. */
+  const onSort = useCallback((columnId: string) => {
+    setPrefs((cur) => {
+      const col = COLUMN_BY_ID.get(columnId);
+      const dir: SortDir = cur.sortBy === columnId
+        ? (cur.sortDir === "asc" ? "desc" : "asc")
+        : (col?.defaultDir ?? "desc");
+      const next = { ...cur, sortBy: columnId, sortDir: dir };
+      setPrefsSaving(true);
+      savePrefs("music-production", next).catch(() => undefined).finally(() => setPrefsSaving(false));
+      return next;
+    });
+  }, []);
+
   const groups = useMemo(() => groupSongs(tracks), [tracks]);
   const allTitles = useMemo(
     () => Array.from(new Set(groups.map((g) => g.title))).sort(),
@@ -418,7 +530,7 @@ export default function ProductionMode() {
     const q = deferredSearch.trim().toLowerCase();
     return groups.filter((g) => {
       if (topFilter === "favorieten" && g.favorites.length === 0) return false;
-      if (topFilter === "review" && g.reviewCount === 0) return false;
+      if (topFilter === "uitzoeken" && g.unresolvedCount === 0) return false;
       if (q) {
         // Zoekt ook in bestandsnamen, niet alleen in de songtitel.
         return (
@@ -433,7 +545,7 @@ export default function ProductionMode() {
   const stats = useMemo(() => {
     const fav = tracks.filter((t) => t.favorite).length;
     const proc = tracks.filter((t) => (t.file_size_bytes ?? 0) > NABEWERKT_BYTES).length;
-    const rev = tracks.filter((t) => t.cluster_confidence === "review").length;
+    const rev = tracks.filter((t) => t.status === "uitzoeken").length;
     return { songs: groups.length, versies: tracks.length, fav, proc, rev };
   }, [tracks, groups]);
 
@@ -541,6 +653,22 @@ export default function ProductionMode() {
     [mutate, patchTrack],
   );
 
+  /** "Uitgezocht": haal de versie uit de Uitzoeken-categorie. */
+  const doResolve = useCallback(
+    (t: Track) => {
+      const prev = t.status;
+      const target = (t.file_size_bytes ?? 0) > NABEWERKT_BYTES ? "alternative" : "alternative";
+      void mutate(
+        `status:${t.id}`,
+        () => patchTrack(t.id, { status: target, cluster_confidence: "confirmed" }),
+        () => patchTrack(t.id, { status: prev }),
+        () => setTrackStatus(t.id, target),
+        "Status",
+      );
+    },
+    [mutate, patchTrack],
+  );
+
   const toggleOpen = useCallback((key: string): void => {
     setOpen((prev) => {
       const next = new Set(prev);
@@ -612,23 +740,28 @@ export default function ProductionMode() {
           <h1 className="manage-h">Productie<em>.</em></h1>
           <p className="mp-dim">
             {stats.songs} nummers · {stats.versies} versies · {stats.fav} favoriet · {stats.proc} nabewerkt ·{" "}
-            {stats.rev > 0 ? <strong>{stats.rev} restpunten</strong> : "0 restpunten"}
+            {stats.rev > 0 ? <strong>{stats.rev} uitzoeken</strong> : "0 uitzoeken"}
           </p>
         </div>
         <div className="mp-controls">
           <div className="mp-tabs">
-            {(["alle", "favorieten", "review"] as TopFilter[]).map((f) => (
+            {(["alle", "favorieten", "uitzoeken"] as TopFilter[]).map((f) => (
               <button
                 key={f}
                 type="button"
                 aria-pressed={topFilter === f}
                 data-active={topFilter === f || undefined}
-                onClick={() => setTopFilter(f)}
+                onClick={() => updatePrefs({ filter: f })}
               >
-                {f === "alle" ? "Alle" : f === "favorieten" ? "Favorieten" : `Restpunten${stats.rev ? ` (${stats.rev})` : ""}`}
+                {f === "alle" ? "Alle" : f === "favorieten" ? "Favorieten" : `Uitzoeken${stats.rev ? ` (${stats.rev})` : ""}`}
               </button>
             ))}
           </div>
+          <ColumnPicker
+            visible={prefs.columns}
+            saving={prefsSaving}
+            onChange={(cols) => updatePrefs({ columns: cols })}
+          />
           <input
             className="mp-search"
             aria-label="Zoek nummer of bestandsnaam"
@@ -657,6 +790,10 @@ export default function ProductionMode() {
             group={g}
             expanded={open.has(g.key)}
             titles={allTitles}
+            columns={prefs.columns}
+            sortBy={prefs.sortBy}
+            sortDir={prefs.sortDir}
+            onSort={onSort}
             onToggle={toggleOpen}
             onOpenLyrics={openLyrics}
             onToggleFavorite={toggleFavorite}
@@ -664,6 +801,7 @@ export default function ProductionMode() {
             onSongSaveUrl={saveSongUrl}
             onReassign={doReassign}
             onConfirm={doConfirm}
+            onResolve={doResolve}
           />
         ))}
         {visible.length === 0 && (

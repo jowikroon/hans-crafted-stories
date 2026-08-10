@@ -415,3 +415,61 @@
   .write-cms.music-cms .mp-plat-glow { animation: none; }
   .write-cms.music-cms .mp-plat-btn { transition: none; }
 }
+
+/* ── Kolomkiezer (opgeslagen bij het account) ────────────────────────────── */
+.write-cms.music-cms .mp-colpick { position: relative; }
+.write-cms.music-cms .mp-colpick-menu {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+  min-width: 210px; padding: 8px; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--paper, #fff);
+  box-shadow: 0 12px 34px rgba(0,0,0,.12);
+}
+.write-cms.music-cms .mp-colpick-hint {
+  font-size: 11px; color: var(--ink-3); padding: 2px 6px 8px;
+  border-bottom: 1px solid var(--line); margin-bottom: 6px; line-height: 1.4;
+}
+.write-cms.music-cms .mp-colpick-item {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 6px 8px; border: none; border-radius: 6px; background: none;
+  font: inherit; font-size: 13px; color: var(--ink-1); cursor: pointer; text-align: left;
+}
+.write-cms.music-cms .mp-colpick-item:hover { background: var(--paper-2, #faf9f6); }
+.write-cms.music-cms .mp-colpick-box {
+  width: 15px; height: 15px; border: 1px solid var(--line); border-radius: 4px;
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  color: var(--paper, #fff);
+}
+.write-cms.music-cms .mp-colpick-box[data-on] { background: var(--ink-1, #15140F); border-color: var(--ink-1, #15140F); }
+.write-cms.music-cms .mp-spin { animation: mp-spin 1s linear infinite; }
+@keyframes mp-spin { to { transform: rotate(360deg); } }
+
+/* ── Sorteerbare kolomkoppen ─────────────────────────────────────────────── */
+.write-cms.music-cms .mp-colhead {
+  display: flex; align-items: center; gap: 10px; padding: 2px 8px 5px;
+  border-bottom: 1px solid var(--line); margin-bottom: 3px;
+}
+.write-cms.music-cms .mp-colhead-spacer { width: 24px; flex: none; }
+.write-cms.music-cms .mp-colhead-btn {
+  display: inline-flex; align-items: center; gap: 3px;
+  border: none; background: none; cursor: pointer; padding: 2px 4px;
+  border-radius: 5px;
+  font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--ink-3);
+}
+.write-cms.music-cms .mp-colhead-btn:first-of-type { flex: 1; justify-content: flex-start; }
+.write-cms.music-cms .mp-colhead-btn:hover { color: var(--ink-1); background: var(--paper-2, #faf9f6); }
+.write-cms.music-cms .mp-colhead-btn[data-active] { color: var(--ink-1); font-weight: 600; }
+.write-cms.music-cms .mp-colhead-btn:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 1px; }
+
+/* cellen in de meta-regel, uitgelijnd met de koppen */
+.write-cms.music-cms .mp-cell { display: inline-flex; align-items: center; }
+.write-cms.music-cms .mp-cell + .mp-cell::before { content: "·"; margin: 0 5px; color: var(--ink-3); opacity: .6; }
+
+/* ── Uitzoeken ───────────────────────────────────────────────────────────── */
+.write-cms.music-cms .mp-seg-hint {
+  font-family: var(--font-sans, inherit); text-transform: none; letter-spacing: 0;
+  font-size: 11px; color: var(--ink-3); font-style: italic;
+}
+.write-cms.music-cms .mp-chip--warn { display: inline-flex; align-items: center; gap: 3px; }
+.write-cms.music-cms .mp-icon-btn--ok { border-color: #15803d; color: #15803d; }
+.write-cms.music-cms .mp-icon-btn--ok:hover { background: #15803d0d; }
