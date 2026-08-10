@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import "../write-cms/write-cms.css";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
@@ -39,7 +39,8 @@ const ICONS: Record<CmsMode, JSX.Element> = {
  */
 export default function MusicCmsShell({ songId }: { songId?: string }) {
   useEffect(() => { ensureFontCss("fonts-write-cms", FONT_CSS.writeCms); }, []);
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
   const { user, loading, signInWithGoogle } = useAuth();
   const raw = params.get("mode");
   const mode: CmsMode = songId ? "write" : raw === "write" || raw === "voices" || raw === "productie" ? raw : "songs";
@@ -61,11 +62,11 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
   }, [mode]);
 
   const setMode = (m: CmsMode) => {
-    const next = new URLSearchParams(params);
-    // Songs is de default landing mode en bezit de schone (param-loze) URL.
-    if (m === "songs") next.delete("mode");
-    else next.set("mode", m);
-    setParams(next, { replace: false });
+    // Altijd via een absoluut pad navigeren. Anders blijft een /music-cms/:id
+    // songwerkblad-pad staan en dwingt songId de mode terug naar "write" —
+    // waardoor de menu-rail dood lijkt tot een full reload. navigate() reset
+    // het pad naar /music-cms zodat elke mode-wissel betrouwbaar werkt.
+    navigate(m === "songs" ? "/music-cms" : `/music-cms?mode=${m}`);
   };
 
   const RAIL: { id: CmsMode; label: string; count: string }[] = [
