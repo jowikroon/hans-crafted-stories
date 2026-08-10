@@ -21,6 +21,7 @@ import Navbar from "./Navbar";
 
 /** Canonical sitemap — keep in sync with AnimatedRoutes.tsx. */
 const APP_ROUTES = [
+  "/dashboards", "/dashboards/ccp", "/dashboards/hvl", "/dashboards/mpg",
   "/", "/work", "/work/connect-car-parts", "/writing", "/writing/:slug", "/about",
   "/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager",
   "/portal", "/write", "/write/:id", "/blog-cms", "/blog-cms/voice/:id",
@@ -30,6 +31,7 @@ const APP_ROUTES = [
 
 /** Nav-link targets surfaced by Navbar (public + the logged-in Command Center). */
 const NAV_TARGETS = [
+  "/dashboards", "/dashboards/ccp", "/dashboards/hvl", "/dashboards/mpg",
   "/", "/work", "/work/connect-car-parts", "/amazon-nl-specialist",
   "/bol-com-consultant", "/interim-ecommerce-manager", "/writing", "/about",
   "/write", "/samantha", "/portal", "/wiki", "/god-structure",

@@ -46,10 +46,14 @@ const Navbar = (_props: NavbarProps) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [musicOpen, setMusicOpen] = useState(false);
+  const [dashOpen, setDashOpen] = useState(false);
+  const isCoarsePointer = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const musicCloseTimer = useRef<number | null>(null);
+  /* Eigen timer: hergebruik van musicCloseTimer laat twee menu's om dezelfde handle vechten. */
+  const dashCloseTimer = useRef<number | null>(null);
   const prefersReduced = useReducedMotion();
 
   /* Theme toggle still controls page-content dark mode; the bar stays light.
@@ -193,6 +197,23 @@ const Navbar = (_props: NavbarProps) => {
   const musicItemV = prefersReduced
     ? { hidden: { opacity: 0 }, show: { opacity: 1 } }
     : { hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.26, ease: [0.22, 1, 0.36, 1] as const } } };
+  /* Dashboards-submenu. Inline uitklap, geen absolute flyout: het profielpaneel
+     heeft overflow-hidden en zou een flyout afknippen. */
+  const DASHBOARD_LINKS = [
+    { to: "/dashboards/ccp", label: t.workspace.dashCcp, hint: "eBay DE · Channable · Magento" },
+    { to: "/dashboards/hvl", label: t.workspace.dashHvl, hint: "zichtbaarheid & content" },
+    { to: "/dashboards/mpg", label: t.workspace.dashMpg, hint: "advisory & roadmap" },
+  ];
+  const openDash = () => {
+    if (dashCloseTimer.current) { window.clearTimeout(dashCloseTimer.current); dashCloseTimer.current = null; }
+    setDashOpen(true);
+  };
+  const closeDashSoon = () => {
+    if (dashCloseTimer.current) window.clearTimeout(dashCloseTimer.current);
+    dashCloseTimer.current = window.setTimeout(() => setDashOpen(false), 300);
+  };
+  const closeProfile = () => { setDashOpen(false); setProfileOpen(false); };
+
   const musicItemCls = "block px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 rounded-lg transition-colors dark:text-[#C9BFB0] dark:hover:text-white dark:hover:bg-white/5";
   const MusicNav = ({ label }: { label: string }) => (
     <div
@@ -339,7 +360,7 @@ const Navbar = (_props: NavbarProps) => {
                   <AnimatePresence>
                     {profileOpen && (
                       <>
-                        <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                        <div className="fixed inset-0 z-40" onClick={closeProfile} />
                         <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-2 z-50 w-60 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl overflow-hidden">
                           <div className="px-4 py-3 border-b border-black/[0.07]">
                             <p className="text-sm font-medium truncate text-[#15140F]">{user.user_metadata?.full_name || "User"}</p>
@@ -354,7 +375,53 @@ const Navbar = (_props: NavbarProps) => {
                             <Link to="/portal" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><LayoutDashboard size={15} /> {t.workspace.portal}</Link>
                             {isAdmin && <Link to="/wiki" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BookOpen size={15} /> {t.workspace.docs}</Link>}
                             {isAdmin && <Link to="/god-structure" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Network size={15} /> {t.workspace.dashboard}</Link>}
-                            {isAdmin && <Link to="/dashboards" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BarChart3 size={15} /> Dashboards</Link>}
+                            {isAdmin && (
+                              <div
+                                onMouseEnter={openDash}
+                                onMouseLeave={closeDashSoon}
+                                onFocusCapture={openDash}
+                                onBlurCapture={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) closeDashSoon(); }}
+                                onKeyDown={(e) => { if (e.key === "Escape") { setDashOpen(false); (e.currentTarget.querySelector("a") as HTMLElement | null)?.focus(); } }}
+                              >
+                                <Link
+                                  to="/dashboards"
+                                  role="menuitem"
+                                  aria-haspopup="true"
+                                  aria-expanded={dashOpen}
+                                  onClick={(e) => { if (!dashOpen && isCoarsePointer) { e.preventDefault(); openDash(); return; } closeProfile(); }}
+                                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"
+                                >
+                                  <BarChart3 size={15} /> {t.workspace.dashboards}
+                                  <ChevronDown size={12} className={`ml-auto transition-transform duration-200 ${dashOpen ? "rotate-180" : ""}`} />
+                                </Link>
+                                <AnimatePresence initial={false}>
+                                  {dashOpen && (
+                                    <motion.div
+                                      role="menu"
+                                      aria-label={t.workspace.dashboards}
+                                      initial={prefersReduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                                      animate={prefersReduced ? { opacity: 1 } : { opacity: 1, height: "auto" }}
+                                      exit={prefersReduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                                      transition={{ duration: prefersReduced ? 0.12 : 0.18, ease: [0.22, 1, 0.36, 1] }}
+                                      className="overflow-hidden bg-[#F4EFE2]/60"
+                                    >
+                                      {DASHBOARD_LINKS.map((d) => (
+                                        <Link
+                                          key={d.to}
+                                          role="menuitem"
+                                          to={d.to}
+                                          onClick={closeProfile}
+                                          className="flex flex-col gap-0.5 py-2 pl-11 pr-4 text-sm text-[#4B4842] hover:bg-[#E5DFCE]/70 hover:text-[#15140F] transition-colors"
+                                        >
+                                          <span>{d.label}</span>
+                                          <span className="text-[11px] text-[#7E7A6F]">{d.hint}</span>
+                                        </Link>
+                                      ))}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            )}
                           </div>
                           <div className="border-t border-black/[0.07] py-1">
                             <button onClick={() => { signOut(); setProfileOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#C2410C] hover:bg-[#C2410C]/10 transition-colors"><LogOut size={15} /> {t.workspace.signOut}</button>
@@ -407,7 +474,10 @@ const Navbar = (_props: NavbarProps) => {
                     <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><LayoutDashboard size={14} /> {t.workspace.portal}</Link>
                     {isAdmin && <Link to="/wiki" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BookOpen size={14} /> {t.workspace.docs}</Link>}
                     {isAdmin && <Link to="/god-structure" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Network size={14} /> {t.workspace.dashboard}</Link>}
-                    {isAdmin && <Link to="/dashboards" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BarChart3 size={14} /> Dashboards</Link>}
+                    {isAdmin && <Link to="/dashboards" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BarChart3 size={14} /> {t.workspace.dashboards}</Link>}
+                    {isAdmin && DASHBOARD_LINKS.map((d) => (
+                      <Link key={d.to} to={d.to} onClick={() => setMobileOpen(false)} className={`rounded-lg py-2 pl-9 pr-3 text-sm ${barMut} ${barHovBg} ${barHovInk}`}>{d.label}</Link>
+                    ))}
                     <button onClick={() => { signOut(); setMobileOpen(false); }} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#C2410C] hover:bg-[#C2410C]/10 w-full text-left"><LogOut size={14} /> {t.workspace.signOut}</button>
                   </>
                 ) : (
