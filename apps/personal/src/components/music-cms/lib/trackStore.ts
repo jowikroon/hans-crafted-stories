@@ -45,6 +45,18 @@ const TABLE = "music_tracks";
 const SELECT =
   "id, song_title, file_name, file_path, folder, variant_label, track_kind, status, source, first_seen_at, duration_seconds, bpm, file_size_bytes, suno_url, soundcloud_url, spotify_url, neuralanalog_url, external_url, storage_provider, cluster_confidence, favorite";
 
+/** Alleen http(s) doorlaten. Beschermt tegen opgeslagen `javascript:`-links
+ *  die React niet blokkeert (audit 2026-08-10). */
+export function safeHttpUrl(v: string | null | undefined): string | null {
+  if (!v) return null;
+  try {
+    const u = new URL(v);
+    return u.protocol === "https:" || u.protocol === "http:" ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function listTracks(): Promise<Track[]> {
   const { data, error } = await db.from(TABLE).select(SELECT).order("first_seen_at", { ascending: true }).limit(2000);
   if (error) throw new Error(error.message);
@@ -57,6 +69,9 @@ export async function setFavorite(id: string, favorite: boolean): Promise<void> 
 }
 
 export async function setTrackUrl(id: string, field: TrackUrlField, value: string | null): Promise<void> {
+  if (value !== null && safeHttpUrl(value) === null) {
+    throw new Error("Alleen http(s)-links zijn toegestaan");
+  }
   const { error } = await db.from(TABLE).update({ [field]: value, updated_at: new Date().toISOString() }).eq("id", id);
   if (error) throw new Error(error.message);
 }
