@@ -12,7 +12,8 @@
 //  - groeperen op exacte string (nu genormaliseerde sleutel)
 import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Check, Copy, Download, FileText, Pencil, Star, X } from "lucide-react";
+import { AlertTriangle, Check, Copy, Download, FileText, Star, X } from "lucide-react";
+import PlatformLinks from "./PlatformLinks";
 import {
   confirmCluster,
   listLyrics,
@@ -23,6 +24,7 @@ import {
   setTrackUrl,
   type LyricVersion,
   type Track,
+  type TrackUrlField,
 } from "../lib/trackStore";
 
 const NABEWERKT_BYTES = 100 * 1024 * 1024; // >100MB = 100% NeuralAnalog-nabewerkt
@@ -118,7 +120,7 @@ interface RowProps {
   track: Track;
   titles: string[];
   onToggleFavorite: (t: Track) => void;
-  onSaveUrl: (t: Track, value: string) => void;
+  onSaveUrl: (t: Track, field: TrackUrlField, value: string | null) => void;
   onReassign: (t: Track, title: string) => void;
   onConfirm: (t: Track) => void;
 }
@@ -131,18 +133,10 @@ const TrackRow = memo(function TrackRow({
   onReassign,
   onConfirm,
 }: RowProps) {
-  const [editUrl, setEditUrl] = useState(false);
-  const [urlDraft, setUrlDraft] = useState("");
   const [reassign, setReassign] = useState(false);
   const [reassignDraft, setReassignDraft] = useState("");
   const isProcessed = (t.file_size_bytes ?? 0) > NABEWERKT_BYTES;
 
-  const links: { url: string | null; label: string; title: string }[] = [
-    { url: safeHttpUrl(t.suno_url), label: "Suno", title: "Suno — de start" },
-    { url: safeHttpUrl(t.soundcloud_url), label: "SC", title: "SoundCloud — verwerkte versie" },
-    { url: safeHttpUrl(t.spotify_url), label: "Spotify", title: "Spotify — uitgebracht" },
-    { url: safeHttpUrl(t.neuralanalog_url), label: "NA", title: "NeuralAnalog" },
-  ];
   const download = safeHttpUrl(t.external_url);
 
   return (
@@ -168,25 +162,16 @@ const TrackRow = memo(function TrackRow({
         </span>
       </div>
       <div className="mp-row-links">
-        {links.map((l) =>
-          l.url ? (
-            <a key={l.label} className="mp-chip" href={l.url} target="_blank" rel="noreferrer" title={l.title}>
-              {l.label}
-            </a>
-          ) : null,
-        )}
-        <button
-          type="button"
-          className="mp-icon-btn"
-          aria-label="NeuralAnalog-link invoeren of aanpassen"
-          title="NeuralAnalog-link invoeren/aanpassen"
-          onClick={() => {
-            setEditUrl((v) => !v);
-            setUrlDraft(t.neuralanalog_url ?? "");
+        <PlatformLinks
+          compact
+          urls={{
+            spotify_url: t.spotify_url,
+            soundcloud_url: t.soundcloud_url,
+            suno_url: t.suno_url,
+            neuralanalog_url: t.neuralanalog_url,
           }}
-        >
-          <Pencil size={13} aria-hidden="true" />
-        </button>
+          onSave={(field, value) => onSaveUrl(t, field, value)}
+        />
         {download ? (
           <a
             className="mp-icon-btn mp-icon-btn--dl"
@@ -224,23 +209,6 @@ const TrackRow = memo(function TrackRow({
           </button>
         )}
       </div>
-      {editUrl && (
-        <div className="mp-inline-edit">
-          <input
-            aria-label="NeuralAnalog-link"
-            value={urlDraft}
-            onChange={(e) => setUrlDraft(e.target.value)}
-            placeholder="https://neuralanalog… (leeg = verwijderen)"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") { onSaveUrl(t, urlDraft); setEditUrl(false); }
-              if (e.key === "Escape") setEditUrl(false);
-            }}
-          />
-          <button type="button" className="mp-mini-btn" onClick={() => { onSaveUrl(t, urlDraft); setEditUrl(false); }}>
-            <Check size={13} aria-hidden="true" /> Opslaan
-          </button>
-        </div>
-      )}
       {reassign && (
         <div className="mp-inline-edit">
           <input
@@ -276,7 +244,8 @@ interface CardProps {
   onToggle: (key: string) => void;
   onOpenLyrics: (title: string, opener: HTMLElement) => void;
   onToggleFavorite: (t: Track) => void;
-  onSaveUrl: (t: Track, value: string) => void;
+  onSaveUrl: (t: Track, field: TrackUrlField, value: string | null) => void;
+  onSongSaveUrl: (g: SongGroup, field: TrackUrlField, value: string | null) => void;
   onReassign: (t: Track, title: string) => void;
   onConfirm: (t: Track) => void;
 }
@@ -289,6 +258,7 @@ const SongCard = memo(function SongCard({
   onOpenLyrics,
   onToggleFavorite,
   onSaveUrl,
+  onSongSaveUrl,
   onReassign,
   onConfirm,
 }: CardProps) {
@@ -350,10 +320,16 @@ const SongCard = memo(function SongCard({
           </span>
         </button>
         <div className="mp-song-actions">
-          {g.suno && <a className="mp-chip" href={g.suno} target="_blank" rel="noreferrer">Suno</a>}
-          {g.soundcloud && <a className="mp-chip" href={g.soundcloud} target="_blank" rel="noreferrer">SC</a>}
-          {g.spotify && <a className="mp-chip" href={g.spotify} target="_blank" rel="noreferrer">Spotify</a>}
-          {g.neuralanalog && <a className="mp-chip" href={g.neuralanalog} target="_blank" rel="noreferrer">NA</a>}
+          <PlatformLinks
+            compact
+            urls={{
+              spotify_url: g.spotify,
+              soundcloud_url: g.soundcloud,
+              suno_url: g.suno,
+              neuralanalog_url: g.neuralanalog,
+            }}
+            onSave={(field, value) => onSongSaveUrl(g, field, value)}
+          />
           <button
             type="button"
             className="mp-icon-btn"
@@ -376,6 +352,16 @@ const SongCard = memo(function SongCard({
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
           >
             <div className="mp-song-inner">
+              <PlatformLinks
+                label="Platforms"
+                urls={{
+                  spotify_url: g.spotify,
+                  soundcloud_url: g.soundcloud,
+                  suno_url: g.suno,
+                  neuralanalog_url: g.neuralanalog,
+                }}
+                onSave={(field, value) => onSongSaveUrl(g, field, value)}
+              />
               {segment("Favorieten", g.favorites)}
               {segment("Nabewerkt", g.processed, true)}
               {segment("Concepten", g.concepts)}
@@ -490,18 +476,34 @@ export default function ProductionMode() {
   );
 
   const saveUrl = useCallback(
-    (t: Track, draft: string) => {
-      const value = draft.trim() || null;
-      const prev = t.neuralanalog_url;
+    (t: Track, field: TrackUrlField, value: string | null) => {
+      const prev = (t[field] ?? null) as string | null;
       void mutate(
-        `url:${t.id}`,
-        () => patchTrack(t.id, { neuralanalog_url: value }),
-        () => patchTrack(t.id, { neuralanalog_url: prev }),
-        () => setTrackUrl(t.id, "neuralanalog_url", value),
-        "NeuralAnalog-link",
+        `url:${t.id}:${field}`,
+        () => patchTrack(t.id, { [field]: value } as Partial<Track>),
+        () => patchTrack(t.id, { [field]: prev } as Partial<Track>),
+        () => setTrackUrl(t.id, field, value),
+        "Link",
       );
     },
     [mutate, patchTrack],
+  );
+
+  /** Een platformlink hoort bij het NUMMER, niet bij één bestand: schrijf 'm
+   *  daarom naar alle versies van dat nummer in één keer. */
+  const saveSongUrl = useCallback(
+    (g: SongGroup, field: TrackUrlField, value: string | null) => {
+      const ids = g.tracks.map((t) => t.id);
+      const prev = new Map(g.tracks.map((t) => [t.id, (t[field] ?? null) as string | null]));
+      void mutate(
+        `songurl:${g.key}:${field}`,
+        () => setTracks((cur) => cur.map((t) => (ids.includes(t.id) ? { ...t, [field]: value } : t))),
+        () => setTracks((cur) => cur.map((t) => (prev.has(t.id) ? { ...t, [field]: prev.get(t.id) ?? null } : t))),
+        async () => { for (const id of ids) await setTrackUrl(id, field, value); },
+        "Platformlink",
+      );
+    },
+    [mutate],
   );
 
   const doReassign = useCallback(
@@ -659,6 +661,7 @@ export default function ProductionMode() {
             onOpenLyrics={openLyrics}
             onToggleFavorite={toggleFavorite}
             onSaveUrl={saveUrl}
+            onSongSaveUrl={saveSongUrl}
             onReassign={doReassign}
             onConfirm={doConfirm}
           />
