@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { HoverChart, InsightCards, DrilldownDrawer, type DrillPost } from "./AnalyticsExtras";
+import InfraStatusCard from "../infra/InfraStatusCard";
 
 interface PostMetric {
   id: string;
@@ -226,6 +227,9 @@ export default function AnalyticsMode() {
           </div>
         </div>
       )}
+
+      {/* Infra heartbeat status (pi5 e.a.) */}
+      <InfraStatusCard />
 
       {/* Editorial layer (always available) */}
       <div className="manage-stats" style={{ marginTop: "var(--s-5, 24px)" }}>
