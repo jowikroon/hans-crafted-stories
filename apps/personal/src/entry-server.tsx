@@ -8,7 +8,7 @@ import App from "./App";
 import type { BlogPostRow } from "@/lib/api/content";
 import { getBlogPosts } from "@/lib/api/content";
 import { getHeroPost, getHeroPostHead, HERO_SLUGS } from "@/data/heroPosts";
-import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
+import { getBlogPostHead, getBlogPostJsonLd, detectBlogPostLang } from "@/lib/seo/blogPostHead";
 import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "@/lib/seo/staticHtml";
 
 export interface RenderOptions {
@@ -43,6 +43,7 @@ export {
   getBlogPosts,
   getBlogPostHead,
   getBlogPostJsonLd,
+  detectBlogPostLang,
   clearRootHtml,
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,

@@ -59,6 +59,7 @@ const {
   clearRootHtml,
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
+  detectBlogPostLang,
 } = await import(
   pathToFileURL(entryPath).href
 );
@@ -84,10 +85,26 @@ const PERSON_ENTITY = {
   "@id": `${BASE}/#person`,
   name: "Hans van Leeuwen",
   url: `${BASE}/about`,
-  jobTitle: "Freelance & Interim E-commerce Manager",
+  jobTitle: "E-commerce & Marketplace Manager",
   alternateName: "Jowikroon",
   description:
-    "Hans van Leeuwen is a freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. 10+ years of experience. Based in Amersfoort, NL.",
+    "Hans van Leeuwen is an e-commerce and marketplace manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. 10+ years of experience across in-house, interim and freelance roles. Based in Amersfoort, NL.",
+  knowsAbout: [
+    "E-commerce management",
+    "Marketplace management",
+    "Amazon Seller & Vendor management",
+    "Bol.com",
+    "Amazon Ads",
+    "Bol Ads",
+    "Product data & feed management (Channable)",
+    "Demand forecasting",
+    "AI-assisted e-commerce operations",
+    "Marketplace automation (n8n)",
+    "LLM content workflows (Claude)",
+    "Marketplace SEO",
+    "Magento",
+    "eBay",
+  ],
   address: { "@type": "PostalAddress", addressLocality: "Amersfoort", addressRegion: "Utrecht", addressCountry: "NL" },
   sameAs: [
     "https://www.linkedin.com/in/hansvl3",
@@ -108,7 +125,7 @@ const WEBSITE_ENTITY = {
 const PROFESSIONAL_SERVICE_ENTITY = {
   "@type": ["Organization", "ProfessionalService"],
   "@id": `${BASE}/#organization`,
-  name: "Hans van Leeuwen – Freelance E-commerce Management",
+  name: "Hans van Leeuwen – E-commerce & Marketplace Management",
   url: `${BASE}/`,
   founder: { "@id": `${BASE}/#person` },
   sameAs: [
@@ -123,19 +140,19 @@ const PROFESSIONAL_SERVICE_ENTITY = {
 
 // Static page SEO (English, primary for prerender), aligned with functions/[[path]].ts ROUTE_META
 const ABOUT_HEAD = {
-  title: "About Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
+  title: "About Hans van Leeuwen – E-commerce & Marketplace Manager (Amazon, Bol.com & AI)",
   description:
-    "Interim e-commerce manager and marketplace specialist with 10+ years of experience in Amazon, Bol.com, marketplace strategy and digital commerce. Based in Amersfoort, NL.",
+    "E-commerce and marketplace manager with 10+ years across Amazon, Bol.com and AI-assisted operations (n8n, Channable, Claude). Documented results: 70% category share (Nielsen), OOS under 2%. Amersfoort, NL.",
   canonical: `${BASE}/about`,
 };
 
 const WORK_HEAD = {
   title: "Amazon & Bol.com Case Studies: Marketplace Growth Portfolio | Hans van Leeuwen",
   description:
-    "Real marketplace results: Amazon NL & DE, Bol.com and e-commerce operations case studies by freelance e-commerce manager Hans van Leeuwen, including Connect Car Parts.",
+    "Real marketplace results: Amazon NL & DE, Bol.com and e-commerce operations case studies by e-commerce & marketplace manager Hans van Leeuwen, including Connect Car Parts.",
   canonical: `${BASE}/work`,
   intro: [
-    "This portfolio brings together practical marketplace and e-commerce work by Hans van Leeuwen, a freelance e-commerce manager based in Amersfoort. The case studies focus on the operating work behind growth: improving product data, marketplace listings, advertising, inventory planning, reporting and automation across Amazon, Bol.com, eBay and owned webshops. Each case is intended to show the starting point, the intervention and the measurable commercial or operational result instead of presenting a gallery without context.",
+    "This portfolio brings together practical marketplace and e-commerce work by Hans van Leeuwen, an e-commerce & marketplace manager based in Amersfoort. The case studies focus on the operating work behind growth: improving product data, marketplace listings, advertising, inventory planning, reporting and automation across Amazon, Bol.com, eBay and owned webshops. Each case is intended to show the starting point, the intervention and the measurable commercial or operational result instead of presenting a gallery without context.",
     "The featured Connect Car Parts case covers a Dutch automotive-parts operation selling A.B.S. brake components through Magento, Amazon DE and eBay DE. The work combines catalog quality, vehicle-fitment data, marketplace feed management through Channable, listing optimization, advertising and recurring performance reviews. It is a useful example of how technical product data and daily commercial decisions need to work together when a large assortment is distributed across several channels and countries.",
     "Other documented marketplace results on this site include 70% market share in an Amazon NL earplug category based on Nielsen data, out-of-stock rates below 2% after improving demand forecasting, and 20% weekly sales growth through targeted Sponsored campaigns. These figures describe specific engagements and are not generic promises. The related service pages explain the working method for Amazon NL account management, Bol.com consulting and interim e-commerce leadership, while the writing section provides deeper articles about marketplace operations and AI-assisted automation.",
     "A typical engagement starts with a baseline of catalog health, content quality, search visibility, advertising efficiency, pricing, stock risk and reporting. The resulting backlog separates urgent revenue leaks from structural improvements, assigns an owner and defines a measurable outcome. Weekly reviews then connect organic visibility, conversion, advertising, margin and availability so that decisions are based on their combined commercial impact. The goal is a transparent operation that an internal team can understand, continue and improve.",
@@ -165,10 +182,10 @@ const ABOUT_JSONLD = {
       "@id": "https://hansvanleeuwen.com/#person",
       name: "Hans van Leeuwen",
       url: `${BASE}/about`,
-      jobTitle: "Freelance & Interim E-commerce Manager",
+      jobTitle: "E-commerce & Marketplace Manager",
       alternateName: "Jowikroon",
       description:
-        "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
+        "E-commerce and marketplace manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com and AI-assisted e-commerce operations.",
       image: {
         "@type": "ImageObject",
         url: `${BASE}/og-image.png`,
@@ -187,6 +204,11 @@ const ABOUT_JSONLD = {
         "SEO",
         "Amazon Ads",
         "Bol Ads",
+        "AI-assisted e-commerce operations",
+        "Marketplace automation (n8n)",
+        "Product data & feed management (Channable)",
+        "LLM content workflows (Claude)",
+        "Demand forecasting",
       ],
       address: {
         "@type": "PostalAddress",
@@ -367,7 +389,7 @@ function buildBlogPostFallback(post, head) {
       </header>
       <main>
         <article>
-          <h1>${escapeHtml(post.title)}</h1>
+          <h2>${escapeHtml(post.title)}</h2>
           <p>${escapeHtml(head.description)}</p>
           ${body || "<p>Full article coming soon.</p>"}
         </article>
@@ -424,7 +446,20 @@ for (const [slug, blogPost] of postBySlug) {
   const { html } = renderQuietly(route, blogPost);
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
-  page = setJsonLd(page, getBlogPostJsonLd(blogPost));
+  // HAN-159: zelfstandige graph per artikel — volledige Person/WebSite/Organization
+  // nodes naast de BlogPosting, zodat @id-referenties in dit document resolven.
+  const { "@context": _articleCtx, ...articleNode } = getBlogPostJsonLd(blogPost);
+  page = setJsonLd(page, {
+    "@context": "https://schema.org",
+    "@graph": [articleNode, PERSON_ENTITY, WEBSITE_ENTITY, PROFESSIONAL_SERVICE_ENTITY],
+  });
+  // HAN-158: taalsignaal per artikel uit de contenttaal.
+  const postLang = detectBlogPostLang(blogPost);
+  if (postLang === "nl") {
+    page = page.replace('<html lang="en"', '<html lang="nl"');
+    page = page.replace('<meta http-equiv="content-language" content="en" />', '<meta http-equiv="content-language" content="nl" />');
+    page = page.replace('<meta property="og:locale" content="en_US" />', '<meta property="og:locale" content="nl_NL" />');
+  }
   page = replaceSsrFallbackHtml(page, buildBlogPostFallback(blogPost, head));
 
   page = page.replace(
@@ -721,12 +756,13 @@ for (const { route, head } of SEO_PAGES) {
   const head = {
     title: "Connect Car Parts Case Study: Automotive Parts E-commerce (Amazon DE, eBay & Magento) | Hans van Leeuwen",
     description:
-      "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: A.B.S. brake parts on Amazon DE and eBay DE, Magento storefront, product data and feed automation.",
+      "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: a ~400-SKU A.B.S. brake-parts catalogue on Amazon DE, eBay DE and Magento — product data, Channable feeds, n8n order monitoring and AI-assisted listing operations.",
     canonical: `${BASE}/work/connect-car-parts`,
     intro: [
-      'Connect Car Parts is a Dutch automotive parts e-commerce operation selling A.B.S. brake parts, discs, pads, hoses and wheel-bearing kits, through its own Magento storefront and on marketplaces including Amazon DE and eBay DE.',
-      'Hans van Leeuwen, freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations, manages the marketplace side of the business: catalog and product data quality, feed management via Channable, listing optimization, marketplace advertising and the operational reporting loop.',
-      'The case combines large-catalog product data work (vehicle-fitment data, OE references), multi-channel feed automation, and the day-to-day commercial operation of a parts brand across the Dutch and German markets.',
+      'Connect Car Parts is a Dutch automotive parts e-commerce operation selling A.B.S. brake parts, discs, pads, hoses and wheel-bearing kits, through its own Magento storefront and on marketplaces including Amazon DE and eBay DE. The active catalogue covers roughly 400 SKUs of brake components with vehicle-fitment data (K-types) and OE cross-references.',
+      'Hans van Leeuwen, e-commerce & marketplace manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted operations, runs the marketplace side of the business end to end: catalog and product-data quality, feed management via Channable, listing optimization, marketplace advertising and the operational reporting loop across the Dutch and German markets.',
+      'The operation is deliberately automation-first. Orders are monitored every 30 minutes through an n8n pipeline with automated failure alerts; a daily automated radar checks Channable feed quality and marketplace rule changes; listing titles and content are generated through an AI-assisted pipeline (Claude) with human review on pricing, brand voice and compliance; and weekly competitor scans track pricing and assortment movements on Amazon DE and eBay DE.',
+      'Current expansion work includes preparing the Amazon DE catalogue launch, including German VAT registration, and rolling the full A.B.S. assortment out to eBay DE and Bol.com with marketplace-specific content rules. The case shows how one operator can run a multi-channel parts business by combining structured product data, feed automation and AI-assisted workflows with human commercial judgment.',
     ],
   };
   const { html } = renderQuietly(route, null, { initialLang: "en" });
@@ -748,6 +784,9 @@ for (const { route, head } of SEO_PAGES) {
         author: { "@type": "Person", "@id": `${BASE}/#person`, name: "Hans van Leeuwen" },
         inLanguage: "en",
       },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+      PROFESSIONAL_SERVICE_ENTITY,
       {
         "@type": "BreadcrumbList",
         itemListElement: [
