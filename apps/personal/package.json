@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/check-og-image.cjs && vite build && node scripts/inject-static-content.cjs && node scripts/build-ssr.cjs && node scripts/prerender.mjs && node scripts/generate-sitemap.mjs && node scripts/indexnow-ping.mjs",
+    "build": "node scripts/check-og-image.cjs && vite build && node scripts/inject-static-content.cjs && node scripts/build-ssr.cjs && node scripts/prerender.mjs && node scripts/seo-guard.mjs && node scripts/generate-sitemap.mjs && node scripts/indexnow-ping.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -116,4 +116,4 @@
     "vite": "^8.0.16",
     "vitest": "^4.1.8"
   }
-}
+}\n
