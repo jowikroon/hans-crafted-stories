@@ -1,8 +1,8 @@
 // InfraStatusCard — heartbeat-kaart voor het Command Center (Analytics-mode).
 //
 // KERNREGEL — leeftijd is waarheid: age = now − reported_at.
-//   age < 5 min  → gemelde status tonen (up/degraded/down, kleurtoken-dot)
-//   age ≥ 5 min  → status negeren, grijs "offline" met "laatst gezien Xm geleden"
+//   age < 40 min  → gemelde status tonen (up/degraded/down, kleurtoken-dot)
+//   age ≥ 40 min  → status negeren, grijs "offline" met "laatst gezien Xm geleden"
 // Een host waarvan ALLE rijen stale zijn krijgt een offline-band. Nooit nep-groen.
 //
 // De `_host`-service is de kopregel van de hostgroep (mem/disk/temp compact).
@@ -12,7 +12,7 @@
 import { useMemo } from "react";
 import { useInfraHeartbeats, type HeartbeatDetail, type HeartbeatRow } from "./useInfraHeartbeats";
 
-const STALE_MS = 5 * 60_000;
+const STALE_MS = 40 * 60_000;
 
 type EffectiveStatus = "up" | "degraded" | "down" | "offline";
 
