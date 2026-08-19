@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "workflow-orchestrator": {
+      "command": "node",
+      "args": [".claude/mcp/workflow-orchestrator/index.js"]
+    },
+    "health-guardian": {
+      "command": "node",
+      "args": [".claude/mcp/health-guardian/index.js"]
+    }
+  }
+}

@@ -7,6 +7,10 @@
 >
 > Visuele versie (netwerktekening + validatiematrix): https://claude.ai/code/artifact/bcc15b53-3fe6-47d0-9f0c-b4782fa78b76
 
+> **Update 2026-08-19, na reparatie:** F2, F3 en F4 zijn opgelost en geverifieerd — zie
+> [`docs/mcp-registry.md`](./mcp-registry.md) en sectie 7 onderaan. F1 is opgelost binnen de
+> MCP-laag; buiten de MCP-laag staat de dode URL nog in de frontend en twee edge functions.
+
 ---
 
 ## 0. Methode en grenzen
@@ -279,3 +283,68 @@ Gestippelde lijnen zijn verbindingen die stuk of onbevestigd zijn. Wat opvalt aa
 de drie hosts praten alleen via Supabase met elkaar, en geen enkele client heeft een werkende
 MCP-verbinding naar de eigen infrastructuur — de enige werkende self-hosted MCP (n8n op VPS1) staat
 op het account als "needs auth".
+
+---
+
+## 7. Wat er is gerepareerd (2026-08-19)
+
+De diagnose hierboven bleef staan; dit is wat er daarna is gebouwd en aangetoond.
+
+### Het mechanisme
+
+| Nieuw | Rol |
+|---|---|
+| `ops/mcp/registry.json` | Canonieke lijst: welke MCP-servers bestaan, en welk device hoort ze te kennen. Inclusief `retired` en `unverified`. |
+| `.mcp.json` (repo-root) | De registratie die Claude Code daadwerkelijk laadt en die met `git clone` meereist. |
+| `scripts/mcp-setup.mjs` — `npm run mcp:setup` | Installeert de dependencies van de repo-servers. |
+| `scripts/mcp-audit.mjs` — `npm run mcp:audit` | Bewijst per device dat het klopt. Exitcode 1 bij drift. |
+| `docs/mcp-registry.md` | Runbook: device aansluiten, server toevoegen, server afvoeren. |
+
+De audit doet geen bestandscontrole maar een echte MCP-handshake: hij start elke stdio-server
+en draait `initialize` → `notifications/initialized` → `tools/list`, en vergelijkt de
+tool-namen met `expectedTools`. HTTP-endpoints krijgen een echte JSON-RPC `initialize`-POST.
+
+### Bewijs uit deze sessie
+
+```
+$ npm run mcp:setup
+→ workflow-orchestrator: npm install in .claude/mcp/workflow-orchestrator
+✓ workflow-orchestrator: klaar
+→ health-guardian: npm install in .claude/mcp/health-guardian
+✓ health-guardian: klaar
+
+$ npm run mcp:audit
+SERVER                  HIER NODIG  STATUS              DETAIL
+workflow-orchestrator   ja          ✓ ok                7 tools
+health-guardian         ja          ✓ ok                7 tools
+n8n-hostinger           nee         ✓ ok                HTTP 401 (auth vereist, endpoint leeft)
+supabase                nee         ✓ ok                HTTP 401 (auth vereist, endpoint leeft)
+cloudflare-bindings     nee         ✓ ok                HTTP 401 (auth vereist, endpoint leeft)
+monday                  nee         ✓ ok                HTTP 401 (auth vereist, endpoint leeft)
+
+Geen drift op dit device.
+```
+
+Diezelfde twee servers gaven vóór deze wijziging `ERR_MODULE_NOT_FOUND`.
+
+### Devices elkaar laten zien
+
+`npm run mcp:audit -- --report` schrijft per server een rij naar `infra_service_heartbeats`
+met `host = <device>` en `service = mcp:<id>` — dezelfde tabel waar pi5, vps1 en vps2 al elk
+kwartier in melden. Daarmee wordt "kent ieder device dezelfde servers?" een query in plaats
+van een onderzoek. Zonder `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` doet de vlag niets.
+**Nog niet uitgevoerd tegen productie** — dat is een schrijfactie op de live tabel en wacht
+op Hans' akkoord.
+
+### Status per bevinding
+
+| | Status |
+|---|---|
+| **F1** n8n Cloud hardcoded | **Deels opgelost.** Beide MCP-servers wijzen nu naar `n8n.srv1402218.hstgr.cloud` (200 op `/healthz`). De audit waarschuwt als de dode host terugkeert als default. Nog open in `apps/personal/src/lib/config/infrastructure.ts`, `WorkflowViewerModal.tsx`, `supabase/functions/_shared/workflows.ts`, `empire-health` en `.env.production` — dat raakt productie-edge-functions en de site-UI en hoort in een eigen change. Bijgehouden in `retired[].stillReferencedIn`. |
+| **F2** servers starten niet | **Opgelost en aangetoond.** `npm run mcp:setup` + handshake met 7 tools per server. |
+| **F3** registratie werd niet gelezen | **Opgelost.** Verhuisd van `.claude/settings.local.json` naar `.mcp.json`. |
+| **F4** geen gedeelde bron van waarheid | **Opgelost.** `ops/mcp/registry.json` + audit + optionele heartbeat-publicatie. |
+| **F5** `infrastructure_services` stil | **Open.** Databewerking, aparte beslissing (opruimen of afvoeren). |
+| **F6** Docker MCP Gateway afwezig | **Vastgelegd.** Staat als `retired` in de registry zodat hij niet opnieuw als bestaand wordt aangenomen. |
+| **F7** heartbeat-versheid | **Open.** Zit in de dashboardlogica, niet in de MCP-laag. |
+| **F8** Supabase-projectmismatch | **Open.** Niet vanaf deze sessie te beslissen; ongewijzigd gelaten in plaats van gegokt. |
