@@ -26,7 +26,7 @@ hans-crafted-stories/
 │   │   ├── index.html
 │   │   ├── vite.config.ts
 │   │   ├── tailwind.config.ts
-│   │   ├── vercel.json             # deploy config (or Cloudflare Pages)
+│   │   ├── vercel.json             # deploy config (Vercel leest deze, niet de repo-root)
 │   │   └── package.json            # @hans/personal
 │   │
 │   ├── thought-canvas/             → hansvanleeuwen.com/blogs (blog / thought-canvas)
@@ -133,7 +133,7 @@ hans-crafted-stories/
 
 ## Deployments
 
-- **Personal:** Cloudflare Pages project `hansvanleeuwen`, production branch `main`, build command `npm run build --workspace=@hans/personal`, output `apps/personal/dist` -> domain hansvanleeuwen.com. Keep this as the full workspace build, not `cd apps/personal && npx vite build`, because the full build runs static content injection, SSR bundling, and blog prerendering for SEO.
+- **Personal:** Vercel-project `hansvanleeuwen`, root directory `apps/personal`, production branch `main`, build command `cd ../.. && npm run build:personal` (uit `apps/personal/vercel.json`), output `dist` -> domain hansvanleeuwen.com. Cloudflare doet de DNS en bouwt een Pages-kopie mee die geen bezoekersverkeer serveert; zie `docs/hosting-context.md`. Keep this as the full workspace build, not `cd apps/personal && npx vite build`, because the full build runs static content injection, SSR bundling, and blog prerendering for SEO.
 - **Thought-canvas (blogs):** Separate project, build `npm run build:thought-canvas`, output `apps/thought-canvas/dist` → hansvanleeuwen.com/blogs (via rewrite or subdomain).
 - **SaaS:** Separate project on the same host, build `npm run build:saas`, output `apps/saas/dist` → domain marketplacegrowth.nl.
 
