@@ -1,6 +1,8 @@
 # hansvanleeuwen.com — Domain & DNS (Cloudflare Pages)
 
-**DNS is managed in Cloudflare.** The site is hosted on **Cloudflare Pages**, built from `jowikroon/hans-crafted-stories` on GitHub.
+**DNS is managed in Cloudflare. De site zelf draait op Vercel**, gebouwd uit
+`jowikroon/hans-crafted-stories` op GitHub. Cloudflare levert alleen de nameservers — de
+records staan DNS-only en wijzen naar Vercel.
 
 ---
 
@@ -18,7 +20,9 @@ Cursor  ──push──►  GitHub (jowikroon/hans-crafted-stories)  ◄──p
                    hansvanleeuwen.com  (Cloudflare DNS)
 ```
 
-Both **Cursor** and **Lovable** push to the same GitHub repo. Cloudflare Pages builds and deploys automatically on every push to `main`.
+Both **Cursor** and **Lovable** push to the same GitHub repo. **Vercel** builds and deploys
+the live site on every push to `main`; Cloudflare Pages bouwt parallel mee maar serveert geen
+bezoekersverkeer. Zie [`hosting-context.md`](./hosting-context.md).
 
 ---
 
@@ -26,14 +30,30 @@ Both **Cursor** and **Lovable** push to the same GitHub repo. Cloudflare Pages b
 
 Managed at [dash.cloudflare.com](https://dash.cloudflare.com) → **Websites** → **hansvanleeuwen.com** → **DNS** → **Records**.
 
-| Type      | Name  | Content / Target       | Proxy status | TTL  |
-|-----------|-------|------------------------|--------------|------|
-| **A**     | `@`   | `185.158.133.1`        | Proxied      | Auto |
-| **CNAME** | `www` | `<project>.pages.dev`  | Proxied      | Auto |
+> **Let op — dit stond hier fout tot 24-08-2026.** De tabel beschreef records die naar
+> Cloudflare Pages wijzen, proxied. Zo staat het niet ingesteld en zo hoort het ook niet:
+> wie die records "herstelt", haalt de live site van Vercel af. Hieronder staat wat er
+> daadwerkelijk in de zone staat, gemeten op 24-08-2026.
 
-- **A record `@`**: apex domain (hansvanleeuwen.com) pointing to Cloudflare Pages.
-- **CNAME `www`**: replace `<project>` with your Cloudflare Pages project subdomain (visible in Workers & Pages → your project).
-- **Proxy status**: use **Proxied** (orange cloud) for both records so Cloudflare handles SSL and caching.
+| Type      | Name  | Content / Target                        | Proxy status      | TTL  |
+|-----------|-------|-----------------------------------------|-------------------|------|
+| **A**     | `@`   | `76.76.21.241` (+ `66.33.60.193`)       | DNS only (grijs)  | Auto |
+| **CNAME** | `www` | Vercel                                   | DNS only (grijs)  | Auto |
+
+- **De apex wijst naar Vercel**, niet naar Cloudflare Pages. Vercel serveert het verkeer en
+  regelt het certificaat.
+- **Proxy status is DNS only (grijze wolk)**, niet proxied. Bij een oranje wolk zou
+  `curl -sI https://hansvanleeuwen.com` `server: cloudflare` teruggeven en Cloudflare-IP's
+  tonen; hij geeft `server: Vercel` en Vercel-IP's.
+- **`www` doet een 308 naar de apex**, geregeld in `apps/personal/vercel.json` (HAN-136).
+- Cloudflare blijft de DNS-provider — alleen de nameservers, niet de proxy of de hosting.
+
+Controleren:
+
+```sh
+getent hosts hansvanleeuwen.com                          # -> Vercel-IP's
+curl -sI https://hansvanleeuwen.com | grep -i '^server'  # -> server: Vercel
+```
 
 ---
 
