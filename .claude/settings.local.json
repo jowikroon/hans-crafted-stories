@@ -26,17 +26,5 @@
       "Bash(npm run *)",
       "Bash(node *)"
     ]
-  },
-  "mcpServers": {
-    "workflow-orchestrator": {
-      "command": "node",
-      "args": [".claude/mcp/workflow-orchestrator/index.js"],
-      "env": {}
-    },
-    "health-guardian": {
-      "command": "node",
-      "args": [".claude/mcp/health-guardian/index.js"],
-      "env": {}
-    }
   }
 }

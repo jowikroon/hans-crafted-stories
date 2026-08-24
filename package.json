@@ -30,7 +30,9 @@
     "typecheck": "npm run typecheck --workspace=@hans/personal && npm run typecheck --workspace=@hans/saas && npm run typecheck --workspace=@hans/thought-canvas",
     "sync:ccp-radar": "node scripts/sync-ccp-competition-radar.mjs",
     "sync:ccp-dashboard": "node scripts/sync-cowork-dashboard-attachments.mjs",
-    "create-saas-user": "dotenv -e apps/saas/.env -- node scripts/create-saas-user.cjs"
+    "create-saas-user": "dotenv -e apps/saas/.env -- node scripts/create-saas-user.cjs",
+    "mcp:setup": "node scripts/mcp-setup.mjs",
+    "mcp:audit": "node scripts/mcp-audit.mjs"
   },
   "overrides": {
     "@tiptap/core": "3.20.2",
