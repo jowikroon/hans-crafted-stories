@@ -81,7 +81,7 @@ const AnimatedRoutes = () => {
         <Route path="/muziek/artist-radar" element={<PageTransition><ArtistRadar /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/amazon-nl-specialist" element={<PageTransition><AmazonNlSpecialist /></PageTransition>} />
-        <Route path="/webshopbeheerder-inhuren" element={<WebshopbeheerderInhuren />} />
+        <Route path="/webshopbeheerder-inhuren" element={<PageTransition><WebshopbeheerderInhuren /></PageTransition>} />
         <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/ai-ecommerce-automation" element={<PageTransition><AiEcommerceAutomation /></PageTransition>} />
