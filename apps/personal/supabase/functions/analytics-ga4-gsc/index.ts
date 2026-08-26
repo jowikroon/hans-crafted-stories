@@ -314,18 +314,21 @@ async function fetchIndexingIssues(token: string, site: string, sampleUrls: stri
   let succeeded = 0;
   let failed = 0;
   for (const url of sampleUrls) {
-    const r = await fetch(inspectUrl, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ inspectionUrl: url, siteUrl: site }),
-    });
-    // Check status BEFORE parsing: Google's frontend returns HTML (not JSON)
-    // for 502/503, so parsing first made one transient error throw a
-    // SyntaxError out of this loop, discarding every URL already inspected
-    // and every URL still queued. A per-URL failure must stay per-URL.
-    if (!r.ok) { failed++; continue; } // couldn't inspect this URL — not the same as "indexed"
+    // Every way a single URL can fail must stay scoped to that URL: a rejected
+    // fetch (connection reset, DNS, TLS), a non-2xx status, and an unparseable
+    // body all count as one skipped URL. Anything escaping this block would
+    // discard every verdict already collected plus every URL still queued —
+    // so the fetch belongs inside the try, not just the parse. Google's
+    // frontend also serves HTML for 502/503, hence checking status before
+    // parsing rather than letting a SyntaxError decide.
     let d: { inspectionResult?: { indexStatusResult?: Record<string, unknown> } };
     try {
+      const r = await fetch(inspectUrl, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ inspectionUrl: url, siteUrl: site }),
+      });
+      if (!r.ok) { failed++; continue; } // couldn't inspect — not the same as "indexed"
       d = await r.json();
     } catch {
       failed++;
