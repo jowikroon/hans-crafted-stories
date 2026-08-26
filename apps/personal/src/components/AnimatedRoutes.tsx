@@ -35,6 +35,7 @@ const MusicCMS = lazy(() => import(/* webpackChunkName: "music-cms" */ "@/pages/
 const ReleaseSet = lazy(() => import(/* webpackChunkName: "release-set" */ "@/pages/ReleaseSet"));
 
 /* Dashboards — klant-dashboards (ConnectCarParts) achter login, via profielmenu. */
+const DashboardsVandaag = lazy(() => import(/* webpackChunkName: "dashboards-vandaag" */ "@/pages/dashboards/Vandaag"));
 const Dashboards = lazy(() => import(/* webpackChunkName: "dashboards" */ "@/pages/Dashboards"));
 const DashboardsCcp = lazy(() => import(/* webpackChunkName: "dashboards-ccp" */ "@/pages/dashboards/DashboardsCcp"));
 const DashboardsHvl = lazy(() => import(/* webpackChunkName: "dashboards-hvl" */ "@/pages/dashboards/DashboardsHvl"));
@@ -92,7 +93,8 @@ const AnimatedRoutes = () => {
         <Route path="/music-cms" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
         <Route path="/music-cms/:id" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
         <Route path="/release-set" element={<Suspense fallback={<BlogCMSFallback />}><ReleaseSet /></Suspense>} />
-        <Route path="/dashboards" element={<Suspense fallback={<BlogCMSFallback />}><Dashboards /></Suspense>} />
+        <Route path="/dashboards" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsVandaag /></Suspense>} />
+        <Route path="/dashboards/operatie" element={<Suspense fallback={<BlogCMSFallback />}><Dashboards /></Suspense>} />
         <Route path="/dashboards/ccp" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsCcp /></Suspense>} />
         <Route path="/dashboards/hvl" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsHvl /></Suspense>} />
         <Route path="/dashboards/mpg" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsMpg /></Suspense>} />
