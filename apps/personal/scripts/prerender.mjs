@@ -567,6 +567,9 @@ for (const [slug, blogPost] of postBySlug) {
 const SEO_PAGES = [
     {
     route: "/webshopbeheerder-inhuren",
+    // Doelquery is Nederlands. Zonder dit veld pint de loop hieronder op "en"
+    // en krijg je Engelse React-content onder Nederlandse statische tekst.
+    lang: "nl",
     head: {
       title: "Webshopbeheerder Inhuren: Freelance Senior Webshop Manager | Hans van Leeuwen",
       description: "Webshopbeheerder inhuren zonder tussenpartij. 10+ jaar Amazon NL, bol.com en Magento. 70% marktaandeel (Nielsen), voorraadtekorten onder 2%. Amersfoort, Nederland.",
@@ -701,14 +704,20 @@ const SEO_PAGES = [
   },
 ];
 
-for (const { route, head } of SEO_PAGES) {
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
+for (const { route, head, lang = "en" } of SEO_PAGES) {
+  const { html } = renderQuietly(route, null, { initialLang: lang });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
   const faqHtml = head.faq
-    ? `\n          <h2>Frequently Asked Questions</h2>\n` +
+    ? `\n          <h2>${lang === "nl" ? "Veelgestelde vragen" : "Frequently Asked Questions"}</h2>\n` +
       head.faq.map((f) => `          <h3>${escapeHtml(f.q)}</h3>\n          <p>${escapeHtml(f.a)}</p>`).join("\n")
     : "";
+  // Taalsignaal moet de content volgen, net als bij de blogposts (HAN-158).
+  if (lang === "nl") {
+    page = page.replace('<html lang="en"', '<html lang="nl"');
+    page = page.replace('<meta http-equiv="content-language" content="en" />', '<meta http-equiv="content-language" content="nl" />');
+    page = page.replace('<meta property="og:locale" content="en_US" />', '<meta property="og:locale" content="nl_NL" />');
+  }
   page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, faqHtml));
   const graph = [
     {
@@ -719,7 +728,7 @@ for (const { route, head } of SEO_PAGES) {
       description: head.description,
       isPartOf: { "@id": `${BASE}/#website` },
       about: { "@id": `${BASE}/#person` },
-      inLanguage: "en",
+      inLanguage: lang,
     },
     WEBSITE_ENTITY,
     PERSON_ENTITY,
