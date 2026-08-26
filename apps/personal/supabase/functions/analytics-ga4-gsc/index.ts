@@ -248,6 +248,23 @@ async function fetchSitemapCoverage(token: string, site: string) {
         if (!isIndex) allIndexedKnown = false;
       }
     }
+    // Google documents `SitemapContent.indexed` as "Deprecated; do not use",
+    // and real sitemaps.list responses now zero-fill it rather than omitting
+    // it — e.g. {"type":"web","submitted":"890","indexed":"0"} for a sitemap
+    // whose URLs are in fact indexed. Taking that at face value would render
+    // a confident "0 indexed of 890 submitted" on the dashboard's headline
+    // tile, which is a far more damaging lie than "unknown" (it reads as a
+    // deindexing emergency). So a zero indexed count sitting next to a
+    // positive submitted count is treated as unavailable.
+    //
+    // The trade: a sitemap that is genuinely 0-indexed also reports unknown.
+    // That is the right way to be wrong here — the Indexing issues card below
+    // is driven by live URL Inspection verdicts and still surfaces real
+    // coverage problems, so nothing is hidden by this.
+    if (idxKnown && idxForSitemap === 0 && subForSitemap > 0) {
+      idxKnown = false;
+      if (!isIndex) allIndexedKnown = false;
+    }
     const warnings = Number(s.warnings ?? 0);
     const errors = Number(s.errors ?? 0);
     sitemapWarnings += warnings;
@@ -296,8 +313,18 @@ async function fetchIndexingIssues(token: string, site: string, sampleUrls: stri
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ inspectionUrl: url, siteUrl: site }),
     });
-    const d = await r.json();
+    // Check status BEFORE parsing: Google's frontend returns HTML (not JSON)
+    // for 502/503, so parsing first made one transient error throw a
+    // SyntaxError out of this loop, discarding every URL already inspected
+    // and every URL still queued. A per-URL failure must stay per-URL.
     if (!r.ok) { failed++; continue; } // couldn't inspect this URL — not the same as "indexed"
+    let d: { inspectionResult?: { indexStatusResult?: Record<string, unknown> } };
+    try {
+      d = await r.json();
+    } catch {
+      failed++;
+      continue;
+    }
     succeeded++;
     const idx = d.inspectionResult?.indexStatusResult ?? {};
     const verdict = (idx.verdict as string) ?? "UNKNOWN";

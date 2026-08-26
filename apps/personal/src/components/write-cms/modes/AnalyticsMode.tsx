@@ -138,7 +138,9 @@ export default function AnalyticsMode() {
           { k: "Avg. position", v: gsc?.position != null ? gsc.position.toFixed(1) : "–", sub: "Search Console" },
           { k: "Avg. CTR", v: gsc?.ctr != null ? `${gsc.ctr}%` : "–", sub: "Search Console" },
           { k: "Clicks · 28d", v: num(gsc?.clicks), sub: gsc?.impressions != null ? `${num(gsc.impressions)} impr.` : undefined },
-          { k: "Indexed pages", v: num(gsc?.indexed_pages), sub: gsc?.submitted_pages != null ? `of ${num(gsc.submitted_pages)} submitted` : "Search Console" },
+          // submitted_pages is always a number, so `!= null` was always true and
+          // asserted "of 0 submitted" whenever no sitemap counts were resolved.
+          { k: "Indexed pages", v: num(gsc?.indexed_pages), sub: gsc?.submitted_pages ? `of ${num(gsc.submitted_pages)} submitted` : "Search Console" },
         ].map((m) => (
           <div key={m.k} className="metric-cell">
             <div className="k">{m.k}</div>
@@ -228,7 +230,9 @@ export default function AnalyticsMode() {
 
       {/* Indexing issues, surfaced automatically from URL Inspection sampling +
           sitemap health (HAN-93) */}
-      {(gsc?.indexing_checked != null || gsc?.sitemap_warnings || gsc?.sitemap_errors) && (
+      {/* Each operand must be a boolean: `a != null || 0 || 0` evaluates to the
+          last operand (0), and `0 && <jsx>` renders a literal "0" text node. */}
+      {(gsc?.indexing_checked != null || !!gsc?.sitemap_warnings || !!gsc?.sitemap_errors) && (
         <div className="chart-card">
           <h3>
             Indexing issues{" "}
