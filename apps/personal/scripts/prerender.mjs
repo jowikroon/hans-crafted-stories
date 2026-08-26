@@ -565,7 +565,21 @@ for (const [slug, blogPost] of postBySlug) {
 
 // Prerender SEO landing pages
 const SEO_PAGES = [
-  {
+    {
+    route: "/webshopbeheerder-inhuren",
+    title: "Webshopbeheerder Inhuren — Freelance, Senior, Direct Inzetbaar",
+    description:
+      "Webshopbeheerder inhuren zonder tussenpartij. 10+ jaar Amazon NL, bol.com en Magento. 70% marktaandeel (Nielsen), voorraadtekorten onder 2%. Amersfoort, NL/EU.",
+    canonical: `${BASE}/webshopbeheerder-inhuren`,
+    h1: "Webshopbeheerder inhuren",
+    body:
+      "Freelance en senior, geen bureau en geen tussenpartij. Webshopbeheer omvat productdata en content, voorraad en forecasting, prijs en marge, marketplace-listings en advertenties op Amazon NL, bol.com en eBay, feeds en koppelingen via Channable en Magento, orders en retouren, en wekelijkse rapportage. " +
+      "Freelancetarieven voor webshopbeheer liggen in Nederland doorgaans tussen €40 en €95 per uur, afhankelijk van seniority en scope. Dat verschil zit zelden in snelheid en bijna altijd in oordeel. " +
+      "Bewezen resultaten: 70% marktaandeel in de oordoppencategorie op Amazon NL (Nielsen-data), uit-voorraadpercentage onder 2% door betere forecasting, en 20% wekelijkse omzetstijging via gerichte campagnes. " +
+      "Inhuren past bij de tussenfase: te veel werk voor de eigenaar, te weinig voor een vaste kracht. Behandel het als tijdelijk — de operatie wordt opgezet, gedocumenteerd en overgedragen. " +
+      'Zie ook <a href="/interim-ecommerce-manager">interim e-commerce management</a>, <a href="/amazon-nl-specialist">Amazon NL specialist</a> en <a href="/bol-com-consultant">bol.com consultancy</a>.',
+  },
+{
     route: "/amazon-nl-specialist",
     head: {
       title: "Amazon NL Specialist: Freelance Amazon Netherlands Account Manager | Hans van Leeuwen",
