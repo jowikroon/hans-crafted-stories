@@ -40,6 +40,7 @@ const STATIC_ROUTES = [
   // - beat-drop is public but not prerendered; direct fetches serve the
   //   homepage shell until prerender support lands. Re-add once prerendered.
   { loc: `${BASE}/amazon-nl-specialist`, changefreq: "monthly", priority: "0.9" },
+  { loc: `${BASE}/webshopbeheerder-inhuren`, changefreq: "monthly", priority: "0.9" },
   { loc: `${BASE}/bol-com-consultant`, changefreq: "monthly", priority: "0.9" },
   { loc: `${BASE}/interim-ecommerce-manager`, changefreq: "monthly", priority: "0.9" },
   { loc: `${BASE}/ai-ecommerce-automation`, changefreq: "monthly", priority: "0.9" },

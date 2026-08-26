@@ -354,9 +354,12 @@ function setHead(html, { title, description, canonical, ogImageAlt }) {
 }
 
 function setJsonLd(html, jsonLd) {
+  // id "page-jsonld" is wat useSEO client-side opzoekt. Zonder dit id vindt de hook
+  // het prerendered script niet, maakt hij een tweede aan, en heeft elke landingspagina
+  // na hydratie dubbele JSON-LD (op de nieuwe pagina zelfs FAQPage twee keer).
   return html.replace(
-    /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-    `<script type="application/ld+json">\n${serializeJsonForHtmlScript(jsonLd)}\n    </script>`
+    /<script( id="page-jsonld")? type="application\/ld\+json">[\s\S]*?<\/script>/,
+    `<script id="page-jsonld" type="application/ld+json">\n${serializeJsonForHtmlScript(jsonLd)}\n    </script>`
   );
 }
 
@@ -565,6 +568,32 @@ for (const [slug, blogPost] of postBySlug) {
 
 // Prerender SEO landing pages
 const SEO_PAGES = [
+    {
+    route: "/webshopbeheerder-inhuren",
+    // Doelquery is Nederlands. Zonder dit veld pint de loop hieronder op "en"
+    // en krijg je Engelse React-content onder Nederlandse statische tekst.
+    lang: "nl",
+    head: {
+      title: "Webshopbeheerder Inhuren: Freelance Senior Webshop Manager | Hans van Leeuwen",
+      description: "Webshopbeheerder inhuren zonder tussenpartij. 10+ jaar Amazon NL, bol.com en Magento. 70% marktaandeel (Nielsen), voorraadtekorten onder 2%. Amersfoort, Nederland.",
+      canonical: `${BASE}/webshopbeheerder-inhuren`,
+      serviceName: "Freelance Webshopbeheer",
+      intro: [
+        'Hans van Leeuwen is een freelance webshopbeheerder en e-commerce manager uit Amersfoort, met meer dan tien jaar ervaring op Amazon NL, bol.com, eBay en Magento. Hij werkt als operator: zelf in Seller Central, in het feedplatform en in de cijfers, en aanspreekbaar op wat eruit komt. Geen bureau en geen tussenpartij.',
+        'Webshopbeheer omvat productdata en content, voorraad en forecasting, prijs en marge, marketplace-listings en advertenties, feeds en koppelingen via Channable en Magento, orders en retouren, en wekelijkse rapportage. Bij grotere webshops komt daar het automatiseren van terugkerend handwerk bij met n8n en AI-workflows.',
+        'Freelancetarieven voor webshopbeheer lopen in Nederland grofweg van €40 tot €95 per uur (marktindicatie, medio 2026) en variëren met seniority en scope. Dat verschil zit zelden in snelheid en bijna altijd in oordeel: weten wanneer je een listing niet moet aanpassen, welke voorraadmelding ertoe doet, en welke campagne je laat lopen ondanks een slechte week.',
+        'Bewezen resultaten: 70% marktaandeel in de oordoppencategorie op Amazon NL volgens Nielsen-data, een uit-voorraadpercentage onder 2% door betere forecasting, en 20% wekelijkse omzetstijging via gerichte campagnes.',
+        'Inhuren past bij de tussenfase: te veel werk voor de eigenaar erbij, te weinig voor een vaste kracht van veertig uur. Behandel het als tijdelijk, want dan wordt de operatie opgezet, gedocumenteerd en overgedragen. Wordt het een permanente afhankelijkheid, dan is aannemen op termijn goedkoper. Zie ook <a href="/interim-ecommerce-manager">interim e-commerce management</a>, <a href="/amazon-nl-specialist">Amazon NL specialist</a> en <a href="/bol-com-consultant">bol.com consultancy</a>.',
+      ],
+      faq: [
+        { q: "Wat kost het inhuren van een webshopbeheerder?", a: "Als marktindicatie (medio 2026) lopen freelancetarieven voor webshopbeheer in Nederland grofweg van €40 tot €95 per uur, variërend met seniority en scope. Daarnaast zijn een maandelijkse basis voor doorlopend beheer en een dagtarief voor interim-invulling gebruikelijk. Het verschil in tarief zit zelden in snelheid en bijna altijd in oordeel." },
+        { q: "Wat doet een webshopbeheerder precies?", a: "Productdata en content, voorraad en forecasting, prijs en marge, marketplace-listings en advertenties, feeds en koppelingen, orders en retouren, en wekelijkse rapportage. Bij grotere webshops komt daar automatisering van terugkerend handwerk bij." },
+        { q: "Is inhuren beter dan iemand aannemen?", a: "Inhuren past bij de tussenfase: te veel werk voor de eigenaar, te weinig voor een vaste kracht. Behandel het als tijdelijk, want dan wordt de operatie opgezet, gedocumenteerd en overgedragen. Wordt het een permanente afhankelijkheid, dan is aannemen op termijn goedkoper." },
+        { q: "Op welke platformen werkt Hans?", a: "Amazon NL en DE, bol.com, eBay, Magento en Shopify, met feedbeheer via Channable. Voor platformen daarbuiten is hij zelden de juiste keuze." },
+        { q: "Hoe start een samenwerking?", a: "Met een gesprek van dertig minuten zonder verplichting. Hans kijkt mee naar de huidige situatie en zegt eerlijk of inhuren de juiste oplossing is. Binnen \u00e9\u00e9n werkdag volgt een schriftelijk voorstel." },
+      ],
+    },
+  },
   {
     route: "/amazon-nl-specialist",
     head: {
@@ -678,14 +707,20 @@ const SEO_PAGES = [
   },
 ];
 
-for (const { route, head } of SEO_PAGES) {
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
+for (const { route, head, lang = "en" } of SEO_PAGES) {
+  const { html } = renderQuietly(route, null, { initialLang: lang });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
   const faqHtml = head.faq
-    ? `\n          <h2>Frequently Asked Questions</h2>\n` +
+    ? `\n          <h2>${lang === "nl" ? "Veelgestelde vragen" : "Frequently Asked Questions"}</h2>\n` +
       head.faq.map((f) => `          <h3>${escapeHtml(f.q)}</h3>\n          <p>${escapeHtml(f.a)}</p>`).join("\n")
     : "";
+  // Taalsignaal moet de content volgen, net als bij de blogposts (HAN-158).
+  if (lang === "nl") {
+    page = page.replace('<html lang="en"', '<html lang="nl"');
+    page = page.replace('<meta http-equiv="content-language" content="en" />', '<meta http-equiv="content-language" content="nl" />');
+    page = page.replace('<meta property="og:locale" content="en_US" />', '<meta property="og:locale" content="nl_NL" />');
+  }
   page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, faqHtml));
   const graph = [
     {
@@ -696,7 +731,7 @@ for (const { route, head } of SEO_PAGES) {
       description: head.description,
       isPartOf: { "@id": `${BASE}/#website` },
       about: { "@id": `${BASE}/#person` },
-      inLanguage: "en",
+      inLanguage: lang,
     },
     WEBSITE_ENTITY,
     PERSON_ENTITY,
