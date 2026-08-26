@@ -225,6 +225,7 @@ async function fetchSitemapCoverage(token: string, site: string) {
   let submitted = 0;
   let indexed = 0;
   let leafCount = 0;
+  let sawWebContent = false;
   let allIndexedKnown = true;
   let sitemapWarnings = 0;
   let sitemapErrors = 0;
@@ -243,6 +244,7 @@ async function fetchSitemapCoverage(token: string, site: string) {
     let idxKnown = rawContents.length > 0;
     if (!isIndex) {
       leafCount++;
+      if (webContents.length > 0) sawWebContent = true;
       if (rawContents.length === 0) allIndexedKnown = false; // unprocessed leaf sitemap — total is unknown
     }
     for (const c of webContents) {
@@ -289,7 +291,11 @@ async function fetchSitemapCoverage(token: string, site: string) {
       last_downloaded: (s.lastDownloaded as string) ?? null,
     };
   });
-  const indexedAvailable = leafCount > 0 && allIndexedKnown;
+  // A positive leafCount is not enough: if every submitted leaf is an
+  // image/video/news sitemap, no web content entry ever contributed a count,
+  // and `indexed` would be an authoritative 0 that actually means "we never
+  // looked at a web sitemap". Require at least one web entry to have spoken.
+  const indexedAvailable = leafCount > 0 && allIndexedKnown && sawWebContent;
   return {
     indexed_pages: indexedAvailable ? indexed : null,
     submitted_pages: submitted,
@@ -377,6 +383,12 @@ async function writeCache(data: unknown) {
 }
 
 const SITE_ORIGIN = "https://hansvanleeuwen.com";
+// Mirrors the allowlist in src/hooks/useAdmin.tsx, including its built-in
+// fallback, so the server and the CMS agree on who is an admin.
+const ADMIN_EMAILS = (Deno.env.get("ADMIN_EMAILS") || "hansvl3@gmail.com")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 const INDEXING_SAMPLE_SIZE = 15;
 
 // Sample of URLs to run through the URL Inspection API: core static pages
@@ -391,12 +403,21 @@ const INDEXING_SAMPLE_SIZE = 15;
 // `startsWith(SITE_ORIGIN)` would be a substring-sanitization bug — a
 // canonical_url like "https://hansvanleeuwen.com.evil.example/x" passes a
 // prefix check but is not this origin. Compare parsed origins instead.
-function isSelfCanonical(canonicalUrl: string | null): boolean {
-  if (!canonicalUrl) return true;
+// Returns the NORMALIZED absolute URL to inspect, or null when the post's
+// canonical points off-site and the post should be skipped entirely.
+// Returning the parsed .href rather than the raw column matters: the CMS form
+// stores canonical_url without trimming, and `new URL()` tolerates surrounding
+// whitespace — so a value like " https://…/x " passes the origin check but,
+// sent verbatim, is rejected by URL Inspection and counted as unreachable.
+// Normalizing here also makes the dedup key canonical (host case, default
+// ports), so two spellings of one page can't consume two inspection slots.
+function selfCanonicalUrl(canonicalUrl: string | null, slug: string): string | null {
+  if (!canonicalUrl) return `${SITE_ORIGIN}/writing/${slug}`;
   try {
-    return new URL(canonicalUrl).origin === new URL(SITE_ORIGIN).origin;
+    const u = new URL(canonicalUrl);
+    return u.origin === new URL(SITE_ORIGIN).origin ? u.href : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -420,6 +441,16 @@ async function isAuthorizedCaller(req: Request): Promise<boolean> {
     if (!ur.ok) return false;
     const user = await ur.json();
     if (!user?.id || user?.is_anonymous) return false;
+
+    // The CMS admits admins two ways (src/hooks/useAdmin.tsx): an email
+    // allowlist checked FIRST, then has_role. Checking only has_role here
+    // meant an allowlisted account — including the built-in hansvl3@gmail.com
+    // fallback, which exists precisely because the DB role may not be
+    // provisioned — sees an admin UI whose refresh button 403s, leaving the
+    // dashboard permanently stale. Same two sources, same order, server-side.
+    // The email is read from the verified session, never from the request.
+    const email = String(user.email ?? "").trim().toLowerCase();
+    if (email && ADMIN_EMAILS.includes(email)) return true;
 
     const rr = await fetch(`${SB_URL}/rest/v1/rpc/has_role`, {
       method: "POST",
@@ -476,12 +507,13 @@ async function sampleUrlsForInspection(): Promise<string[]> {
       break; // keep the partial sample already collected
     }
     for (const p of rows) {
-      if (!isSelfCanonical(p.canonical_url)) continue;
-      // Prefer the post's own same-origin canonical_url when it differs
-      // from the slug URL (e.g. /writing/custom-canonical) — inspecting
-      // the slug URL instead would report a false issue for a page GSC
-      // correctly treats as an alternate of its declared canonical.
-      const url = p.canonical_url || `${SITE_ORIGIN}/writing/${p.slug}`;
+      // Prefers the post's own same-origin canonical when it differs from the
+      // slug URL (e.g. /writing/custom-canonical) — inspecting the slug URL
+      // instead would report a false issue for a page GSC correctly treats as
+      // an alternate of its declared canonical — and returns null for posts
+      // canonicalized off-site, which are skipped.
+      const url = selfCanonicalUrl(p.canonical_url, p.slug);
+      if (!url) continue;
       if (seenUrls.has(url)) continue;
       seenUrls.add(url);
       uniqueUrls.push(url);
@@ -503,7 +535,17 @@ Deno.serve(async (req) => {
     }
   } catch (_) { /* ignore */ }
 
-  const cached = await readCache();
+  // The cache read is now unconditional (it also feeds the stale-copy fallback
+  // for unauthorized callers), so it must not be able to take the whole
+  // function down: a rejected fetch or unparseable row would otherwise 500 the
+  // request and leave even an admin's force:true unable to rebuild the cache —
+  // exactly when rebuilding matters most. A failed read is just a cache miss.
+  let cached: { data: Record<string, unknown>; fetched_at: string } | null = null;
+  try {
+    cached = await readCache();
+  } catch {
+    cached = null;
+  }
   const cacheFresh = !!cached && Date.now() - new Date(cached.fetched_at).getTime() < TTL_MS;
 
   if (cacheFresh && !force) {
