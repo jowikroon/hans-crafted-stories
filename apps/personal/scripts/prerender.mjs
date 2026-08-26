@@ -567,19 +567,28 @@ for (const [slug, blogPost] of postBySlug) {
 const SEO_PAGES = [
     {
     route: "/webshopbeheerder-inhuren",
-    title: "Webshopbeheerder Inhuren — Freelance, Senior, Direct Inzetbaar",
-    description:
-      "Webshopbeheerder inhuren zonder tussenpartij. 10+ jaar Amazon NL, bol.com en Magento. 70% marktaandeel (Nielsen), voorraadtekorten onder 2%. Amersfoort, NL/EU.",
-    canonical: `${BASE}/webshopbeheerder-inhuren`,
-    h1: "Webshopbeheerder inhuren",
-    body:
-      "Freelance en senior, geen bureau en geen tussenpartij. Webshopbeheer omvat productdata en content, voorraad en forecasting, prijs en marge, marketplace-listings en advertenties op Amazon NL, bol.com en eBay, feeds en koppelingen via Channable en Magento, orders en retouren, en wekelijkse rapportage. " +
-      "Freelancetarieven voor webshopbeheer liggen in Nederland doorgaans tussen €40 en €95 per uur, afhankelijk van seniority en scope. Dat verschil zit zelden in snelheid en bijna altijd in oordeel. " +
-      "Bewezen resultaten: 70% marktaandeel in de oordoppencategorie op Amazon NL (Nielsen-data), uit-voorraadpercentage onder 2% door betere forecasting, en 20% wekelijkse omzetstijging via gerichte campagnes. " +
-      "Inhuren past bij de tussenfase: te veel werk voor de eigenaar, te weinig voor een vaste kracht. Behandel het als tijdelijk — de operatie wordt opgezet, gedocumenteerd en overgedragen. " +
-      'Zie ook <a href="/interim-ecommerce-manager">interim e-commerce management</a>, <a href="/amazon-nl-specialist">Amazon NL specialist</a> en <a href="/bol-com-consultant">bol.com consultancy</a>.',
+    head: {
+      title: "Webshopbeheerder Inhuren: Freelance Senior Webshop Manager | Hans van Leeuwen",
+      description: "Webshopbeheerder inhuren zonder tussenpartij. 10+ jaar Amazon NL, bol.com en Magento. 70% marktaandeel (Nielsen), voorraadtekorten onder 2%. Amersfoort, Nederland.",
+      canonical: `${BASE}/webshopbeheerder-inhuren`,
+      serviceName: "Freelance Webshopbeheer",
+      intro: [
+        'Hans van Leeuwen is een freelance webshopbeheerder en e-commerce manager uit Amersfoort, met meer dan tien jaar ervaring op Amazon NL, bol.com, eBay en Magento. Hij werkt als operator: zelf in Seller Central, in het feedplatform en in de cijfers, en aanspreekbaar op wat eruit komt. Geen bureau en geen tussenpartij.',
+        'Webshopbeheer omvat productdata en content, voorraad en forecasting, prijs en marge, marketplace-listings en advertenties, feeds en koppelingen via Channable en Magento, orders en retouren, en wekelijkse rapportage. Bij grotere webshops komt daar het automatiseren van terugkerend handwerk bij met n8n en AI-workflows.',
+        'Freelancetarieven voor webshopbeheer liggen in Nederland doorgaans tussen €40 en €95 per uur, afhankelijk van seniority en scope. Dat verschil zit zelden in snelheid en bijna altijd in oordeel: weten wanneer je een listing niet moet aanpassen, welke voorraadmelding ertoe doet, en welke campagne je laat lopen ondanks een slechte week.',
+        'Bewezen resultaten: 70% marktaandeel in de oordoppencategorie op Amazon NL volgens Nielsen-data, een uit-voorraadpercentage onder 2% door betere forecasting, en 20% wekelijkse omzetstijging via gerichte campagnes.',
+        'Inhuren past bij de tussenfase: te veel werk voor de eigenaar erbij, te weinig voor een vaste kracht van veertig uur. Behandel het als tijdelijk, want dan wordt de operatie opgezet, gedocumenteerd en overgedragen. Wordt het een permanente afhankelijkheid, dan is aannemen op termijn goedkoper. Zie ook <a href="/interim-ecommerce-manager">interim e-commerce management</a>, <a href="/amazon-nl-specialist">Amazon NL specialist</a> en <a href="/bol-com-consultant">bol.com consultancy</a>.',
+      ],
+      faq: [
+        { q: "Wat kost het inhuren van een webshopbeheerder?", a: "Freelancetarieven voor webshopbeheer liggen in Nederland doorgaans tussen €40 en €95 per uur, afhankelijk van seniority en scope. Daarnaast zijn een maandelijkse basis voor doorlopend beheer en een dagtarief voor interim-invulling gebruikelijk. Het verschil in tarief zit zelden in snelheid en bijna altijd in oordeel." },
+        { q: "Wat doet een webshopbeheerder precies?", a: "Productdata en content, voorraad en forecasting, prijs en marge, marketplace-listings en advertenties, feeds en koppelingen, orders en retouren, en wekelijkse rapportage. Bij grotere webshops komt daar automatisering van terugkerend handwerk bij." },
+        { q: "Is inhuren beter dan iemand aannemen?", a: "Inhuren past bij de tussenfase: te veel werk voor de eigenaar, te weinig voor een vaste kracht. Behandel het als tijdelijk, want dan wordt de operatie opgezet, gedocumenteerd en overgedragen. Wordt het een permanente afhankelijkheid, dan is aannemen op termijn goedkoper." },
+        { q: "Op welke platformen werkt Hans?", a: "Amazon NL en DE, bol.com, eBay, Magento en Shopify, met feedbeheer via Channable. Voor platformen daarbuiten is hij zelden de juiste keuze." },
+        { q: "Hoe start een samenwerking?", a: "Met een gesprek van dertig minuten zonder verplichting. Hans kijkt mee naar de huidige situatie en zegt eerlijk of inhuren de juiste oplossing is. Binnen \u00e9\u00e9n werkdag volgt een schriftelijk voorstel." },
+      ],
+    },
   },
-{
+  {
     route: "/amazon-nl-specialist",
     head: {
       title: "Amazon NL Specialist: Freelance Amazon Netherlands Account Manager | Hans van Leeuwen",
