@@ -42,7 +42,7 @@ const content = {
     approachHeading: "Inhuren of aannemen — de afweging die je echt maakt",
     approach: [
       "De meeste webshops die een beheerder zoeken, zitten in een tussenfase. Te veel werk voor de eigenaar erbij, te weinig voor een vaste kracht van veertig uur. Inhuren lost dat op zolang je het als tijdelijk ziet: iemand zet de operatie neer, documenteert hem, en draagt hem over aan wie er daarna zit. Wordt het een permanente afhankelijkheid, dan is aannemen op termijn goedkoper.",
-      "Marktbreed liggen freelancetarieven voor webshopbeheer tussen ongeveer €40 en €95 per uur, afhankelijk van seniority en scope. Dat verschil zit zelden in snelheid en bijna altijd in oordeel: weten wanneer je een listing níet moet aanpassen, welke voorraadmelding er wel toe doet, en welke advertentie je laat lopen ondanks een slechte week. Vraag daarom niet naar het uurtarief maar naar wat er in maand drie anders is.",
+      "Als marktindicatie (medio 2026): freelancetarieven voor webshopbeheer lopen grofweg van €40 tot €95 per uur, variërend met seniority en scope. Dat verschil zit zelden in snelheid en bijna altijd in oordeel: weten wanneer je een listing níet moet aanpassen, welke voorraadmelding er wel toe doet, en welke advertentie je laat lopen ondanks een slechte week. Vraag daarom niet naar het uurtarief maar naar wat er in maand drie anders is.",
       "Zelf werk ik in drie vormen: een afgebakende opdracht met een vast resultaat, een maandelijkse basis voor doorlopend beheer, of een dagtarief voor interim-invulling. Wat de vorm ook is, de afspraak is dezelfde — jij houdt toegang tot alle accounts, data en werkdocumenten. Als ik wegga, gaat er niets met me mee.",
     ],
     honestHeading: "Wanneer ik niet de juiste keuze ben",
@@ -85,7 +85,7 @@ const content = {
     approachHeading: "Hiring vs. employing — the choice you're actually making",
     approach: [
       "Most webshops looking for a manager are in an in-between phase. Too much work for the owner to absorb, not enough for a full-time hire. Freelance solves that as long as you treat it as temporary: someone builds the operation, documents it, and hands it over to whoever comes next. If it becomes a permanent dependency, employing is cheaper in the long run.",
-      "Across the Dutch market, freelance rates for webshop management run roughly €40 to €95 per hour depending on seniority and scope. That gap is rarely about speed and almost always about judgement: knowing when not to touch a listing, which stock alert actually matters, and which campaign to leave running despite a bad week. So don't ask about the hourly rate — ask what will be different in month three.",
+      "As a market indication (mid-2026), freelance rates for webshop management in the Netherlands run roughly €40 to €95 per hour, varying with seniority and scope. That gap is rarely about speed and almost always about judgement: knowing when not to touch a listing, which stock alert actually matters, and which campaign to leave running despite a bad week. So don't ask about the hourly rate — ask what will be different in month three.",
       "I work in three shapes: a scoped project with a fixed outcome, a monthly retainer for ongoing management, or a day rate for interim cover. Whatever the shape, the arrangement is the same — you keep access to every account, dataset and working document. When I leave, nothing leaves with me.",
     ],
     honestHeading: "When I'm not the right choice",
@@ -141,8 +141,8 @@ const WebshopbeheerderInhuren = () => {
                 "@type": "Answer",
                 text:
                   lang === "nl"
-                    ? "Freelancetarieven voor webshopbeheer liggen in Nederland doorgaans tussen €40 en €95 per uur, afhankelijk van seniority en scope. Daarnaast zijn een maandelijkse basis voor doorlopend beheer en een dagtarief voor interim-invulling gebruikelijk. Het verschil in tarief zit zelden in snelheid en bijna altijd in oordeel."
-                    : "Freelance rates for webshop management in the Netherlands typically run between €40 and €95 per hour, depending on seniority and scope. Monthly retainers for ongoing management and day rates for interim cover are also common. The difference in rate is rarely about speed and almost always about judgement.",
+                    ? "Als marktindicatie (medio 2026) lopen freelancetarieven voor webshopbeheer in Nederland grofweg van €40 tot €95 per uur, variërend met seniority en scope. Daarnaast zijn een maandelijkse basis voor doorlopend beheer en een dagtarief voor interim-invulling gebruikelijk. Het verschil in tarief zit zelden in snelheid en bijna altijd in oordeel."
+                    : "As a market indication (mid-2026), freelance rates for webshop management in the Netherlands run roughly €40 to €95 per hour, varying with seniority and scope. Monthly retainers for ongoing management and day rates for interim cover are also common. The difference in rate is rarely about speed and almost always about judgement.",
               },
             },
             {
