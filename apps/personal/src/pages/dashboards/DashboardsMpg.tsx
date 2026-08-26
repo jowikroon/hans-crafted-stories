@@ -1,150 +1,231 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useDashboardPeriod } from "@/hooks/useDashboardPeriod";
-import PeriodFilter from "@/components/dashboard/PeriodFilter";
-import DashboardKpi from "@/components/dashboard/DashboardKpi";
 import EmptyWidget from "@/components/dashboard/EmptyWidget";
 import DashboardShell from "./DashboardShell";
 
-interface Counts { [k: string]: number }
+/**
+ * MPG is geen advisory-tak meer maar een SaaS in ontwikkeling. Dit dashboard stuurt
+ * daarom op bouwvoortgang, niet op omzet.
+ *
+ * Alles komt uit de edge function `mpg-build-status`, die het afleidt uit GitHub:
+ * de SHA van de laatste productie-deployment tegenover die van de default branch.
+ * Geen handmatige vinkjes — een statusdashboard dat je zelf vult, liegt binnen twee weken.
+ *
+ * Er staat bewust geen periodefilter op deze pagina. "Laatste 14 dagen" betekent niets
+ * voor een roadmap.
+ */
 
+interface BuildStatus {
+  ok: boolean;
+  configured: boolean;
+  reason?: string;
+  error?: string;
+  repo?: { full_name: string; default_branch: string; pushed_at: string; dormant_days: number; language: string };
+  release?: {
+    main_sha: string; prod_sha: string | null; prod_date: string | null;
+    days_since_prod: number | null; drift: boolean | null;
+    not_deployed: string[]; deployed_count: number;
+  };
+  capabilities?: { edge_functions: string[]; routes: string[]; hollow_routes: string[] };
+  prs?: { open: { n: number; title: string; since: string; age_days: number }[]; open_count: number };
+  branches?: { stray: string[]; count: number };
+  deploys?: { date: string; sha: string; age_days: number }[];
+  next_step?: { headline: string; why: string; rule: string };
+  generated_at?: string;
+  cached?: boolean;
+}
+
+const card = "rounded-xl border border-[#E5DFCE] bg-white/60 p-4";
+const label = "text-[11px] font-semibold uppercase tracking-wide text-[#7E7A6F]";
+const heading = "mb-2 mt-6 text-[11px] font-semibold uppercase tracking-[0.09em] text-[#7E7A6F]";
 const nf = (n: number) => n.toLocaleString("nl-NL");
-const eur = (n: number) => `€${n.toLocaleString("nl-NL", { maximumFractionDigits: 0 })}`;
 
 export default function DashboardsMpg() {
-  const { period, setPreset, setRange, setCompare } = useDashboardPeriod("mpg");
-  const [c, setC] = useState<Counts>({});
-  const [profit, setProfit] = useState<{ current: number; previous: number } | null>(null);
-  const [workflows, setWorkflows] = useState<{ ok: number; failed: number }>({ ok: 0, failed: 0 });
-  const [llmCost, setLlmCost] = useState<{ current: number; previous: number }>({ current: 0, previous: 0 });
+  const [d, setD] = useState<BuildStatus | null>(null);
   const [busy, setBusy] = useState(true);
 
   useEffect(() => {
     (async () => {
       setBusy(true);
-      const inPeriod = (d?: string | null) => !!d && d.slice(0, 10) >= period.from && d.slice(0, 10) <= period.to;
-      const inPrev = (d?: string | null) =>
-        !!d && !!period.prevFrom && d.slice(0, 10) >= period.prevFrom && d.slice(0, 10) <= period.prevTo!;
-
-      const [prospects, meetings, offers, services, clients, brands, ws, subs, snaps, runs, llm] = await Promise.all([
-        supabase.from("consultancy_prospects").select("id,created_at"),
-        supabase.from("consultancy_meetings").select("id,created_at"),
-        supabase.from("consultancy_offers").select("id,created_at"),
-        supabase.from("consultancy_services").select("id"),
-        supabase.from("clients").select("id"),
-        supabase.from("brands").select("id"),
-        supabase.from("workspaces").select("id"),
-        supabase.from("subscriptions").select("id,status"),
-        supabase.from("profit_snapshots").select("*").limit(200),
-        supabase.from("workflow_runs").select("status,created_at").limit(500),
-        supabase.from("ops_llm_runs").select("cost_usd,created_at").limit(1000),
-      ]);
-
-      const rows = <T,>(r: { data: T[] | null }) => r.data ?? [];
-      setC({
-        prospects: rows(prospects).filter((p) => inPeriod((p as { created_at?: string }).created_at)).length,
-        prospectsTotal: rows(prospects).length,
-        meetings: rows(meetings).filter((m) => inPeriod((m as { created_at?: string }).created_at)).length,
-        meetingsTotal: rows(meetings).length,
-        offers: rows(offers).filter((o) => inPeriod((o as { created_at?: string }).created_at)).length,
-        offersTotal: rows(offers).length,
-        services: rows(services).length,
-        clients: rows(clients).length,
-        brands: rows(brands).length,
-        workspaces: rows(ws).length,
-        subs: rows(subs).filter((s) => (s as { status?: string }).status === "active").length,
-      });
-
-      const snapRows = rows(snaps) as Record<string, unknown>[];
-      if (snapRows.length) {
-        const dateOf = (r: Record<string, unknown>) => String(r.snapshot_date ?? r.date ?? r.created_at ?? "");
-        const valOf = (r: Record<string, unknown>) => Number(r.profit ?? r.net_profit ?? r.revenue ?? 0);
-        setProfit({
-          current: snapRows.filter((r) => inPeriod(dateOf(r))).reduce((a, r) => a + valOf(r), 0),
-          previous: snapRows.filter((r) => inPrev(dateOf(r))).reduce((a, r) => a + valOf(r), 0),
-        });
-      } else setProfit(null);
-
-      const runRows = rows(runs) as { status?: string; created_at?: string }[];
-      const inWin = runRows.filter((r) => inPeriod(r.created_at));
-      setWorkflows({
-        ok: inWin.filter((r) => (r.status ?? "").toLowerCase() === "success").length,
-        failed: inWin.filter((r) => ["error", "failed"].includes((r.status ?? "").toLowerCase())).length,
-      });
-
-      const llmRows = rows(llm) as { cost_usd?: number; created_at?: string }[];
-      setLlmCost({
-        current: llmRows.filter((r) => inPeriod(r.created_at)).reduce((a, r) => a + Number(r.cost_usd ?? 0), 0),
-        previous: llmRows.filter((r) => inPrev(r.created_at)).reduce((a, r) => a + Number(r.cost_usd ?? 0), 0),
-      });
-
+      const { data, error } = await supabase.functions.invoke("mpg-build-status", { body: {} });
+      setD(error ? { ok: false, configured: false, reason: error.message } : (data as BuildStatus));
       setBusy(false);
     })();
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [period.from, period.to, period.compare]);
+  }, []);
 
-  const funnel = [
-    { label: "Prospects", inPeriod: c.prospects ?? 0, total: c.prospectsTotal ?? 0 },
-    { label: "Gesprekken", inPeriod: c.meetings ?? 0, total: c.meetingsTotal ?? 0 },
-    { label: "Offertes", inPeriod: c.offers ?? 0, total: c.offersTotal ?? 0 },
-  ];
+  if (busy) {
+    return (
+      <DashboardShell domain="marketplacegrowth.nl" title="Bouwstatus">
+        <p className="mt-6 text-[11px] text-[#7E7A6F]">Bouwstatus ophalen uit GitHub…</p>
+      </DashboardShell>
+    );
+  }
+
+  if (!d?.ok) {
+    return (
+      <DashboardShell domain="marketplacegrowth.nl" title="Bouwstatus">
+        <EmptyWidget
+          title="Bouwstatus niet beschikbaar"
+          pipeline="mpg-build-status → GitHub API"
+          detail={d?.reason ?? d?.error ?? "Onbekende fout bij het ophalen van de bouwstatus."}
+        />
+      </DashboardShell>
+    );
+  }
+
+  const rel = d.release!;
+  const repo = d.repo!;
+  const dormant = repo.dormant_days;
+  const stale = dormant > 21;
+  const drift = rel.drift === true && rel.not_deployed.length > 0;
+  const hollow = d.capabilities?.hollow_routes ?? [];
 
   return (
-    <DashboardShell domain="marketplacegrowth.nl" title="Advisory & roadmap">
-      <PeriodFilter period={period} onPreset={setPreset} onRange={setRange} onCompare={setCompare} />
-
-      <h2 className="mb-2 mt-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-[#7E7A6F]">Pijplijn</h2>
-      <div className="mb-6 grid gap-3 sm:grid-cols-3">
-        {funnel.map((f) => (
-          <div key={f.label} className="rounded-xl border border-[#E5DFCE] bg-white/60 p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7E7A6F]">{f.label}</p>
-            <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[#15140F]">{nf(f.inPeriod)}</p>
-            <p className="mt-1 text-xs text-[#7E7A6F]">nieuw in periode · {nf(f.total)} totaal</p>
-          </div>
-        ))}
-      </div>
-
-      <h2 className="mb-2 mt-6 text-[11px] font-semibold uppercase tracking-[0.09em] text-[#7E7A6F]">Portefeuille</h2>
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {[
-          ["Klanten", c.clients], ["Merken", c.brands], ["Workspaces", c.workspaces],
-          ["Actieve abonnementen", c.subs], ["Diensten", c.services],
-        ].map(([l, v]) => (
-          <div key={String(l)} className="rounded-xl border border-[#E5DFCE] bg-white/60 p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7E7A6F]">{l as string}</p>
-            <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[#15140F]">{nf((v as number) ?? 0)}</p>
-            <p className="mt-1 text-xs text-[#7E7A6F]">momentopname</p>
-          </div>
-        ))}
-      </div>
-
-      <h2 className="mb-2 mt-6 text-[11px] font-semibold uppercase tracking-[0.09em] text-[#7E7A6F]">Marge & automatisering</h2>
-      <div className="mb-6 grid gap-3 sm:grid-cols-3">
-        {profit ? (
-          <DashboardKpi label="Marge in periode" value={eur(profit.current)} current={profit.current} previous={profit.previous} />
-        ) : (
-          <EmptyWidget title="Marge" pipeline="compute-profit-snapshots → profit_snapshots"
-            detail="De job draait maar levert 0 rijen; eerst uitzoeken waarom de bron leeg is." />
-        )}
-        <div className="rounded-xl border border-[#E5DFCE] bg-white/60 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7E7A6F]">Workflow-runs</p>
-          <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[#15140F]">{nf(workflows.ok)}</p>
+    <DashboardShell domain="marketplacegrowth.nl" title="Bouwstatus">
+      {/* Wat er te weten valt vóór je scrollt. */}
+      <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={card}>
+          <p className={label}>Repo ligt stil</p>
+          <p className={`mt-1.5 text-2xl font-semibold tabular-nums ${stale ? "text-[#B4483C]" : "text-[#15140F]"}`}>
+            {nf(dormant)} <span className="text-base font-normal">dgn</span>
+          </p>
+          <p className="mt-1 text-xs text-[#7E7A6F]">laatste push {repo.pushed_at}</p>
+        </div>
+        <div className={card}>
+          <p className={label}>Uitgerold</p>
+          <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[#15140F]">{nf(rel.deployed_count)}</p>
+          <p className="mt-1 text-xs text-[#7E7A6F]">edge functions in productie</p>
+        </div>
+        <div className={card}>
+          <p className={label}>Ongereleased</p>
+          <p className={`mt-1.5 text-2xl font-semibold tabular-nums ${drift ? "text-[#B4483C]" : "text-[#15140F]"}`}>
+            {nf(rel.not_deployed.length)}
+          </p>
           <p className="mt-1 text-xs text-[#7E7A6F]">
-            geslaagd{workflows.failed > 0 && <span className="text-[#B4483C]"> · {workflows.failed} mislukt</span>}
+            {drift ? "staat klaar op " + repo.default_branch : `${repo.default_branch} = productie`}
           </p>
         </div>
-        <DashboardKpi label="AI-kosten" value={`$${llmCost.current.toFixed(2)}`}
-          current={llmCost.current} previous={llmCost.previous} sub="ops_llm_runs" invert />
+        <div className={card}>
+          <p className={label}>Openstaande PR's</p>
+          <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[#15140F]">{nf(d.prs?.open_count ?? 0)}</p>
+          <p className="mt-1 text-xs text-[#7E7A6F]">{nf(d.branches?.count ?? 0)} losse branches</p>
+        </div>
       </div>
 
-      <h2 className="mb-2 mt-6 text-[11px] font-semibold uppercase tracking-[0.09em] text-[#7E7A6F]">Roadmap & status</h2>
-      <EmptyWidget
-        title="Roadmap uit de Second Brain Vault"
-        pipeline="vault-sync (classifier-gated) → Supabase"
-        detail="De site kan de lokale vault niet lezen; de syncjob die wiki/domains/MPG.md en de roadmap-artefacten wegschrijft moet nog gebouwd worden."
-      />
+      {/* De SHA-vergelijking is de kern. Toon hem, want hij is het bewijs. */}
+      <div className={`mt-3 ${card}`}>
+        <p className="font-mono text-xs text-[#15140F]">
+          {repo.default_branch} {rel.main_sha}
+          {" "}{rel.prod_sha && rel.main_sha === rel.prod_sha ? "=" : "≠"}{" "}
+          productie {rel.prod_sha ?? "onbekend"}
+        </p>
+        <p className="mt-1 text-xs text-[#7E7A6F]">
+          {drift
+            ? `Er staat werk klaar dat niet live is: ${rel.not_deployed.join(", ")}.`
+            : "Er staat niets ongereleased — alles wat gebouwd is, draait."}
+          {rel.prod_date && ` Laatste productie-deploy ${rel.prod_date}.`}
+        </p>
+      </div>
 
-      {busy && <p className="mt-6 text-[11px] text-[#7E7A6F]">Laden…</p>}
+      {stale && !drift && (
+        <div className="mt-3 rounded-xl border border-[#E3C6C1] bg-[#FBF1EF] p-4">
+          <p className="text-sm text-[#B4483C]">
+            {nf(dormant)} dagen geen enkele commit, en niets ongereleased. Dit is geen release-
+            of bouwprobleem — het werk is gestopt.
+          </p>
+        </div>
+      )}
+
+      {d.next_step && (
+        <>
+          <h2 className={heading}>Exacte volgende stap</h2>
+          <div className="rounded-xl border border-[#D8CFA8] bg-[#FAF7EC] p-5">
+            <p className="text-base font-semibold text-[#15140F]">{d.next_step.headline}</p>
+            <p className="mt-2 text-sm leading-relaxed text-[#4A4740]">{d.next_step.why}</p>
+            <p className="mt-3 text-xs text-[#7E7A6F]">
+              <span className="font-semibold">Beslisregel:</span> {d.next_step.rule}
+            </p>
+          </div>
+        </>
+      )}
+
+      <h2 className={heading}>Wat er draait</h2>
+      <div className={card}>
+        <p className="text-xs text-[#7E7A6F]">
+          {nf(d.capabilities?.edge_functions.length ?? 0)} edge functions ·{" "}
+          {nf(d.capabilities?.routes.length ?? 0)} routes
+        </p>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {(d.capabilities?.edge_functions ?? []).map((f) => (
+            <span
+              key={f}
+              className={`rounded px-1.5 py-0.5 font-mono text-[10px] ${
+                rel.not_deployed.includes(f)
+                  ? "bg-[#FBF1EF] text-[#B4483C]"
+                  : "bg-[#F2EFE4] text-[#4A4740]"
+              }`}
+            >
+              {f}
+            </span>
+          ))}
+        </div>
+        {rel.not_deployed.length > 0 && (
+          <p className="mt-2 text-[11px] text-[#B4483C]">Rood = op {repo.default_branch}, niet in de productie-deploy.</p>
+        )}
+      </div>
+
+      {hollow.length > 0 && (
+        <div className={`mt-3 ${card}`}>
+          <p className={label}>Routes zonder implementatie</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {hollow.map((r) => (
+              <span key={r} className="rounded bg-[#F2EFE4] px-1.5 py-0.5 font-mono text-[10px] text-[#7E7A6F]">/{r}</span>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] text-[#7E7A6F]">
+            Een route bestaat, maar er is geen edge function die erbij hoort. Geparkeerd of vergeten.
+          </p>
+        </div>
+      )}
+
+      {(d.prs?.open.length ?? 0) > 0 && (
+        <>
+          <h2 className={heading}>Wat blijft liggen</h2>
+          <div className={card}>
+            {d.prs!.open.map((p) => (
+              <div key={p.n} className="flex items-baseline gap-2 border-b border-[#EFEADC] py-1.5 last:border-0">
+                <span className="shrink-0 font-mono text-xs text-[#7E7A6F]">#{p.n}</span>
+                <span className="truncate text-sm text-[#15140F]">{p.title}</span>
+                <span className={`ml-auto shrink-0 text-xs tabular-nums ${p.age_days > 60 ? "text-[#B4483C]" : "text-[#7E7A6F]"}`}>
+                  {nf(p.age_days)}d
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {(d.deploys?.length ?? 0) > 0 && (
+        <>
+          <h2 className={heading}>Uitrolgeschiedenis</h2>
+          <div className={card}>
+            {d.deploys!.map((x, i) => (
+              <div key={x.sha + i} className="flex items-baseline gap-3 border-b border-[#EFEADC] py-1.5 last:border-0">
+                <span className="font-mono text-xs text-[#7E7A6F]">{x.sha}</span>
+                <span className="text-sm text-[#15140F]">{x.date}</span>
+                <span className="ml-auto text-xs tabular-nums text-[#7E7A6F]">{nf(x.age_days)} dagen geleden</span>
+                {i === 0 && <span className="rounded bg-[#EAF2E6] px-1.5 py-0.5 text-[10px] text-[#4A6B3A]">nu live</span>}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <p className="mt-6 text-[11px] text-[#7E7A6F]">
+        {repo.full_name} · afgeleid uit de GitHub API, niet uit handmatige invoer
+        {d.cached && " · uit cache"}
+        {d.generated_at && ` · ${d.generated_at.slice(0, 16).replace("T", " ")}`}
+      </p>
     </DashboardShell>
   );
 }
