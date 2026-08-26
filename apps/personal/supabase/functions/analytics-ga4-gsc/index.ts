@@ -226,6 +226,7 @@ async function fetchSitemapCoverage(token: string, site: string) {
   let indexed = 0;
   let leafCount = 0;
   let sawWebContent = false;
+  let allSubmittedKnown = true;
   let allIndexedKnown = true;
   let sitemapWarnings = 0;
   let sitemapErrors = 0;
@@ -245,7 +246,14 @@ async function fetchSitemapCoverage(token: string, site: string) {
     if (!isIndex) {
       leafCount++;
       if (webContents.length > 0) sawWebContent = true;
-      if (rawContents.length === 0) allIndexedKnown = false; // unprocessed leaf sitemap — total is unknown
+      // An unprocessed leaf makes BOTH totals partial: its pages are missing
+      // from the submitted sum just as much as from the indexed sum, so
+      // reporting "of N submitted" as a site-wide figure would silently omit
+      // every page it contains.
+      if (rawContents.length === 0) {
+        allIndexedKnown = false;
+        allSubmittedKnown = false;
+      }
     }
     for (const c of webContents) {
       subForSitemap += Number(c.submitted ?? 0);
@@ -298,7 +306,7 @@ async function fetchSitemapCoverage(token: string, site: string) {
   const indexedAvailable = leafCount > 0 && allIndexedKnown && sawWebContent;
   return {
     indexed_pages: indexedAvailable ? indexed : null,
-    submitted_pages: submitted,
+    submitted_pages: leafCount > 0 && allSubmittedKnown ? submitted : null,
     sitemap_warnings: sitemapWarnings,
     sitemap_errors: sitemapErrors,
     sitemaps,
@@ -385,8 +393,17 @@ async function writeCache(data: unknown) {
 const SITE_ORIGIN = "https://hansvanleeuwen.com";
 // Mirrors the allowlist in src/hooks/useAdmin.tsx, including its built-in
 // fallback, so the server and the CMS agree on who is an admin.
-const ADMIN_EMAILS = (Deno.env.get("ADMIN_EMAILS") || "hansvl3@gmail.com")
-  .split(",")
+// The CMS reads VITE_ADMIN_EMAILS (a Vite build-time var baked into the
+// client bundle); an edge function can only read Supabase secrets, so the two
+// cannot literally share one variable. Accept BOTH names so setting either
+// works, and keep the same always-included fallback as useAdmin.tsx —
+// otherwise an admin added via VITE_ADMIN_EMAILS passes the CMS and is denied
+// here, which is the exact frontend/backend split this was meant to close.
+const ADMIN_EMAILS = [
+  ...(Deno.env.get("ADMIN_EMAILS") || "").split(","),
+  ...(Deno.env.get("VITE_ADMIN_EMAILS") || "").split(","),
+  "hansvl3@gmail.com",
+]
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 const INDEXING_SAMPLE_SIZE = 15;
@@ -412,9 +429,15 @@ const INDEXING_SAMPLE_SIZE = 15;
 // Normalizing here also makes the dedup key canonical (host case, default
 // ports), so two spellings of one page can't consume two inspection slots.
 function selfCanonicalUrl(canonicalUrl: string | null, slug: string): string | null {
-  if (!canonicalUrl) return `${SITE_ORIGIN}/writing/${slug}`;
+  // Trim before the emptiness test: the CMS form persists canonical_url raw,
+  // so a whitespace-only value is truthy here while getBlogPostCanonical()
+  // trims it away and emits the ordinary /writing/<slug> canonical. Without
+  // the trim, new URL() throws and the live canonical page is silently
+  // dropped from the sample.
+  const raw = (canonicalUrl ?? "").trim();
+  if (!raw) return `${SITE_ORIGIN}/writing/${slug}`;
   try {
-    const u = new URL(canonicalUrl);
+    const u = new URL(raw);
     return u.origin === new URL(SITE_ORIGIN).origin ? u.href : null;
   } catch {
     return null;

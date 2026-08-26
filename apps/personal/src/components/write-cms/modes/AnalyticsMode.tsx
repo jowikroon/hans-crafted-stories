@@ -28,7 +28,7 @@ interface Dashboard {
   gsc?: {
     site: string; clicks: number; impressions: number; ctr: number | null; position: number | null;
     pages_with_traffic: number; queries: Query[];
-    indexed_pages?: number | null; submitted_pages?: number; sitemaps?: Sitemap[];
+    indexed_pages?: number | null; submitted_pages?: number | null; sitemaps?: Sitemap[];
     sitemap_warnings?: number; sitemap_errors?: number;
     indexing_checked?: number; indexing_skipped?: number; indexing_issues?: IndexingIssue[];
   };
