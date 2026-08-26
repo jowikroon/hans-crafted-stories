@@ -36,7 +36,7 @@ type TranslationStrings = {
     login: string;
     portal: string;
     workMenu: { allCases: string; services: string; amazon: string; bol: string; interim: string };
-    workspace: { label: string; blogCms: string; samantha: string; portal: string; docs: string; dashboard: string; signOut: string };
+    workspace: { label: string; blogCms: string; samantha: string; portal: string; docs: string; dashboard: string; signOut: string; dashboards: string; dashCcp: string; dashHvl: string; dashMpg: string };
     cms: { write: string; manage: string; analytics: string };
   };
 
@@ -303,7 +303,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       login: "Login",
       portal: "Portal",
       workMenu: { allCases: "Full portfolio", services: "Services", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
-      workspace: { label: "Workspace", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Sign out" },
+      workspace: { label: "Workspace", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Sign out", dashboards: "Dashboards", dashCcp: "Connect Car Parts", dashHvl: "Hans van Leeuwen", dashMpg: "Marketplace Growth" },
       cms: { write: "Write", manage: "Manage", analytics: "Analytics" },
     },
 
@@ -634,7 +634,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       login: "Inloggen",
       portal: "Portal",
       workMenu: { allCases: "Volledig portfolio", services: "Diensten", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
-      workspace: { label: "Werkruimte", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Uitloggen" },
+      workspace: { label: "Werkruimte", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Uitloggen", dashboards: "Dashboards", dashCcp: "Connect Car Parts", dashHvl: "Hans van Leeuwen", dashMpg: "Marketplace Growth" },
       cms: { write: "Schrijven", manage: "Beheren", analytics: "Analytics" },
     },
 
