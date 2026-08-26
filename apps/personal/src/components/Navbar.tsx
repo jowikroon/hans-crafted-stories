@@ -4,8 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
   ChevronDown, Network, Sparkles, PenLine, Disc3, BarChart3,
-  AudioLines,
-} from "lucide-react";
+  AudioLines, Activity } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLang } from "@/hooks/useLang";
@@ -107,7 +106,7 @@ const Navbar = (_props: NavbarProps) => {
      light there too — never inherit the visitor's dark toggle. */
   const isLightSurface =
     isCommandCenter ||
-    ["/music-cms", "/portal", "/wiki", "/dashboards", "/blog-cms"].some((p) =>
+    ["/music-cms", "/portal", "/wiki", "/dashboards", "/blog-cms", "/status"].some((p) =>
       location.pathname.startsWith(p)
     );
 
@@ -355,6 +354,7 @@ const Navbar = (_props: NavbarProps) => {
                             {isAdmin && <Link to="/wiki" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BookOpen size={15} /> {t.workspace.docs}</Link>}
                             {isAdmin && <Link to="/god-structure" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Network size={15} /> {t.workspace.dashboard}</Link>}
                             {isAdmin && <Link to="/dashboards" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BarChart3 size={15} /> Dashboards</Link>}
+                            {isAdmin && <Link to="/status" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Activity size={15} /> Status</Link>}
                           </div>
                           <div className="border-t border-black/[0.07] py-1">
                             <button onClick={() => { signOut(); setProfileOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#C2410C] hover:bg-[#C2410C]/10 transition-colors"><LogOut size={15} /> {t.workspace.signOut}</button>
@@ -408,6 +408,7 @@ const Navbar = (_props: NavbarProps) => {
                     {isAdmin && <Link to="/wiki" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BookOpen size={14} /> {t.workspace.docs}</Link>}
                     {isAdmin && <Link to="/god-structure" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Network size={14} /> {t.workspace.dashboard}</Link>}
                     {isAdmin && <Link to="/dashboards" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BarChart3 size={14} /> Dashboards</Link>}
+                    {isAdmin && <Link to="/status" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Activity size={14} /> Status</Link>}
                     <button onClick={() => { signOut(); setMobileOpen(false); }} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#C2410C] hover:bg-[#C2410C]/10 w-full text-left"><LogOut size={14} /> {t.workspace.signOut}</button>
                   </>
                 ) : (
