@@ -230,14 +230,20 @@ async function fetchSitemapCoverage(token: string, site: string) {
   let sitemapErrors = 0;
   const sitemaps = entries.map((s: AnyRow) => {
     const isIndex = !!s.isSitemapsIndex;
-    const webContents = ((s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [])
-      .filter((c) => c.type === "web");
+    const rawContents = (s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [];
+    const webContents = rawContents.filter((c) => c.type === "web");
     let subForSitemap = 0;
     let idxForSitemap = 0;
-    let idxKnown = webContents.length > 0;
+    // Distinguish "not processed yet" from "processed, but holds no web pages".
+    // An absent/empty `contents` means GSC hasn't crawled this sitemap, so its
+    // counts are genuinely unknown. A non-empty `contents` with no web entries
+    // is a processed image/video/news-only sitemap that legitimately
+    // contributes zero web pages — treating that as unknown would let one
+    // image sitemap null out the whole site's indexed total.
+    let idxKnown = rawContents.length > 0;
     if (!isIndex) {
       leafCount++;
-      if (webContents.length === 0) allIndexedKnown = false; // pending/failed leaf sitemap — total is unknown
+      if (rawContents.length === 0) allIndexedKnown = false; // unprocessed leaf sitemap — total is unknown
     }
     for (const c of webContents) {
       subForSitemap += Number(c.submitted ?? 0);
@@ -450,15 +456,22 @@ async function sampleUrlsForInspection(): Promise<string[]> {
   const seenUrls = new Set<string>(staticUrls);
   const uniqueUrls: string[] = [];
   for (let page = 0; page < MAX_PAGES && uniqueUrls.length < target; page++) {
-    const r = await fetch(
-      `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`,
-      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
-    );
-    if (!r.ok) {
-      if (page === 0) throw new Error(`blog_posts sample: HTTP ${r.status}`);
-      break;
+    // A rejected fetch or an unparseable body has to be handled here, not just
+    // a non-2xx status: without this catch a page-2 network blip propagates out
+    // of the whole function and cancels the inspection entirely, contradicting
+    // the "later pages keep what we gathered" rule above.
+    let rows: { slug: string; canonical_url: string | null }[];
+    try {
+      const r = await fetch(
+        `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`,
+        { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
+      );
+      if (!r.ok) throw new Error(`blog_posts sample: HTTP ${r.status}`);
+      rows = await r.json();
+    } catch (e) {
+      if (page === 0) throw e; // no real post data at all — surface via errors.indexing
+      break; // keep the partial sample already collected
     }
-    const rows: { slug: string; canonical_url: string | null }[] = await r.json();
     for (const p of rows) {
       if (!isSelfCanonical(p.canonical_url)) continue;
       // Prefer the post's own same-origin canonical_url when it differs
