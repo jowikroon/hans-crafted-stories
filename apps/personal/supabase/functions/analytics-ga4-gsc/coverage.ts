@@ -154,8 +154,16 @@ export function summarizeSitemaps(entries: SitemapEntry[]): SitemapSummary {
 export function selfCanonicalUrl(canonicalUrl: string | null | undefined, slug: string): string | null {
   const raw = (canonicalUrl ?? "").trim();
   if (!raw) return `${SITE_ORIGIN}/writing/${slug}`;
+  // A leading-slash canonical ("/writing/custom") is valid and is emitted
+  // verbatim by getBlogPostCanonical(), so resolve it against the site
+  // origin rather than letting new URL() throw and silently drop the post.
+  // Only leading-slash values get a base: arbitrary text must still fail to
+  // parse rather than be coerced into a same-origin URL that nothing serves.
+  // Protocol-relative values ("//other.example/x") also take the base and are
+  // then correctly rejected by the origin comparison below.
+  const base = raw.startsWith("/") ? SITE_ORIGIN : undefined;
   try {
-    const u = new URL(raw);
+    const u = base ? new URL(raw, base) : new URL(raw);
     return u.origin === new URL(SITE_ORIGIN).origin ? u.href : null;
   } catch {
     return null;

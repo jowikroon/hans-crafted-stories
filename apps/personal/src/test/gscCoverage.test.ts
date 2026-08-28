@@ -144,6 +144,17 @@ describe("selfCanonicalUrl", () => {
     );
   });
 
+  it("resolves a root-relative canonical against the site origin", () => {
+    // getBlogPostCanonical() emits canonical_url verbatim and the CMS field
+    // accepts relative values, so "/writing/custom" is a valid same-origin
+    // canonical the page really serves — it must not be dropped.
+    expect(selfCanonicalUrl("/writing/custom", "slug")).toBe(`${SITE_ORIGIN}/writing/custom`);
+  });
+
+  it("rejects a protocol-relative canonical pointing at another host", () => {
+    expect(selfCanonicalUrl("//evil.example/x", "slug")).toBeNull();
+  });
+
   it("skips posts canonicalized off-site", () => {
     expect(selfCanonicalUrl("https://medium.com/@hans/post", "slug")).toBeNull();
   });
