@@ -26,6 +26,28 @@ import { NAV_SETTING_KEY, parseNavSetting, serializeNavSetting, type NavMenuItem
 
 const STYLE_TAG_ID = "page-overrides-style";
 
+/** Guardrail (2026-08-26 incident): een style-override met een structurele
+ * selector ("body > div > div", "#root > div", ...) raakt tientallen elementen
+ * site-breed — één zo'n rij verborg maandenlang de cookie-banner (en daarmee
+ * elke consent-grant). Structurele selectors zijn nooit een geldige
+ * edit-overlay-target; weiger ze bij het injecteren. */
+const STRUCTURAL_SELECTOR = /^\s*(html|body|#root)\s*(>\s*(div|main|section|span)\s*){0,3}$/i;
+function isUnsafeStyleSelector(sel: string | null | undefined): boolean {
+  if (!sel) return false;
+  const t = sel.trim();
+  if (t === "" || t.endsWith(">")) return true; // kapotte selector zoals "body > "
+  return STRUCTURAL_SELECTOR.test(t);
+}
+
+/** Overrides zijn per pagina opgeslagen; pas ze alleen toe op die pagina.
+ * (Voorheen werden alle rijen site-breed geïnjecteerd.) Rijen zonder
+ * page_path blijven site-breed voor terugwaartse compatibiliteit. */
+function overrideAppliesHere(pagePath: string | null | undefined): boolean {
+  if (!pagePath || pagePath === "*") return true;
+  if (typeof window === "undefined") return true;
+  return window.location.pathname === pagePath || window.location.pathname === pagePath.replace(/\/$/, "");
+}
+
 function camelToKebab(s: string) {
   return s.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
 }
@@ -141,6 +163,8 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     const css: string[] = [];
     overrides.forEach((o) => {
       if (o.element_key.startsWith("__site__:")) return; // site settings, not DOM styles
+      if (!overrideAppliesHere(o.page_path)) return;
+      if (isUnsafeStyleSelector(o.selector)) return;
       const decls = Object.entries(o.style || {})
         .filter(([, v]) => v != null && v !== "")
         .map(([k, v]) => `${camelToKebab(k)}:${v} !important`)
@@ -156,6 +180,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     const applyText = () => {
       overrides.forEach((o) => {
         if (o.element_key.startsWith("__site__:")) return; // site settings, not DOM text
+        if (!overrideAppliesHere(o.page_path)) return;
         if (o.text_override == null || o.text_override === "") return;
         const sel = o.selector || `[data-lov-id="${o.element_key}"]`;
         document.querySelectorAll(sel).forEach((el) => {
