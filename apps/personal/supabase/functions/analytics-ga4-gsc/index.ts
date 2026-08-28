@@ -11,6 +11,12 @@
 //   GA4_PROPERTY_ID = "395015361"
 //   GSC_SITE_URL    = "" (auto-detected via sites.list when empty)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {
+  SITE_ORIGIN,
+  collectInspectionUrls,
+  summarizeSitemaps,
+  type SitemapEntry,
+} from "./coverage.ts";
 
 const GA4_PROPERTY_ID = Deno.env.get("GA4_PROPERTY_ID") || "395015361";
 const GSC_SITE_OVERRIDE = Deno.env.get("GSC_SITE_URL") || "";
@@ -220,97 +226,9 @@ async function fetchSitemapCoverage(token: string, site: string) {
   const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   const d = await r.json();
   if (!r.ok) throw new Error(`gsc sitemaps: ${JSON.stringify(d)}`);
-  const entries: AnyRow[] = d.sitemap ?? [];
-
-  let submitted = 0;
-  let indexed = 0;
-  let leafCount = 0;
-  let sawWebContent = false;
-  let allSubmittedKnown = true;
-  let allIndexedKnown = true;
-  let sitemapWarnings = 0;
-  let sitemapErrors = 0;
-  const sitemaps = entries.map((s: AnyRow) => {
-    const isIndex = !!s.isSitemapsIndex;
-    const rawContents = (s.contents as { type?: string; submitted?: string | number; indexed?: string | number }[]) ?? [];
-    const webContents = rawContents.filter((c) => c.type === "web");
-    let subForSitemap = 0;
-    let idxForSitemap = 0;
-    // Distinguish "not processed yet" from "processed, but holds no web pages".
-    // An absent/empty `contents` means GSC hasn't crawled this sitemap, so its
-    // counts are genuinely unknown. A non-empty `contents` with no web entries
-    // is a processed image/video/news-only sitemap that legitimately
-    // contributes zero web pages — treating that as unknown would let one
-    // image sitemap null out the whole site's indexed total.
-    let idxKnown = rawContents.length > 0;
-    if (!isIndex) {
-      leafCount++;
-      if (webContents.length > 0) sawWebContent = true;
-      // An unprocessed leaf makes BOTH totals partial: its pages are missing
-      // from the submitted sum just as much as from the indexed sum, so
-      // reporting "of N submitted" as a site-wide figure would silently omit
-      // every page it contains.
-      if (rawContents.length === 0) {
-        allIndexedKnown = false;
-        allSubmittedKnown = false;
-      }
-    }
-    for (const c of webContents) {
-      subForSitemap += Number(c.submitted ?? 0);
-      if (c.indexed != null) {
-        idxForSitemap += Number(c.indexed);
-      } else {
-        idxKnown = false;
-        if (!isIndex) allIndexedKnown = false;
-      }
-    }
-    // Google documents `SitemapContent.indexed` as "Deprecated; do not use",
-    // and real sitemaps.list responses now zero-fill it rather than omitting
-    // it — e.g. {"type":"web","submitted":"890","indexed":"0"} for a sitemap
-    // whose URLs are in fact indexed. Taking that at face value would render
-    // a confident "0 indexed of 890 submitted" on the dashboard's headline
-    // tile, which is a far more damaging lie than "unknown" (it reads as a
-    // deindexing emergency). So a zero indexed count sitting next to a
-    // positive submitted count is treated as unavailable.
-    //
-    // The trade: a sitemap that is genuinely 0-indexed also reports unknown.
-    // That is the right way to be wrong here — the Indexing issues card below
-    // is driven by live URL Inspection verdicts and still surfaces real
-    // coverage problems, so nothing is hidden by this.
-    if (idxKnown && idxForSitemap === 0 && subForSitemap > 0) {
-      idxKnown = false;
-      if (!isIndex) allIndexedKnown = false;
-    }
-    const warnings = Number(s.warnings ?? 0);
-    const errors = Number(s.errors ?? 0);
-    sitemapWarnings += warnings;
-    sitemapErrors += errors;
-    if (!isIndex) {
-      submitted += subForSitemap;
-      indexed += idxForSitemap;
-    }
-    return {
-      path: s.path as string,
-      is_index: isIndex,
-      submitted: subForSitemap,
-      indexed: idxKnown ? idxForSitemap : null,
-      warnings,
-      errors,
-      last_downloaded: (s.lastDownloaded as string) ?? null,
-    };
-  });
-  // A positive leafCount is not enough: if every submitted leaf is an
-  // image/video/news sitemap, no web content entry ever contributed a count,
-  // and `indexed` would be an authoritative 0 that actually means "we never
-  // looked at a web sitemap". Require at least one web entry to have spoken.
-  const indexedAvailable = leafCount > 0 && allIndexedKnown && sawWebContent;
-  return {
-    indexed_pages: indexedAvailable ? indexed : null,
-    submitted_pages: leafCount > 0 && allSubmittedKnown ? submitted : null,
-    sitemap_warnings: sitemapWarnings,
-    sitemap_errors: sitemapErrors,
-    sitemaps,
-  };
+  // All the reduction rules (and the reasoning behind them) live in
+  // coverage.ts so they are unit-tested — see src/test/gscCoverage.test.ts.
+  return summarizeSitemaps((d.sitemap ?? []) as SitemapEntry[]);
 }
 
 // Per-URL indexing issues via the URL Inspection API, sampled over the site's
@@ -390,7 +308,6 @@ async function writeCache(data: unknown) {
   });
 }
 
-const SITE_ORIGIN = "https://hansvanleeuwen.com";
 // Mirrors the allowlist in src/hooks/useAdmin.tsx, including its built-in
 // fallback, so the server and the CMS agree on who is an admin.
 // The CMS reads VITE_ADMIN_EMAILS (a Vite build-time var baked into the
@@ -420,29 +337,6 @@ const INDEXING_SAMPLE_SIZE = 15;
 // `startsWith(SITE_ORIGIN)` would be a substring-sanitization bug — a
 // canonical_url like "https://hansvanleeuwen.com.evil.example/x" passes a
 // prefix check but is not this origin. Compare parsed origins instead.
-// Returns the NORMALIZED absolute URL to inspect, or null when the post's
-// canonical points off-site and the post should be skipped entirely.
-// Returning the parsed .href rather than the raw column matters: the CMS form
-// stores canonical_url without trimming, and `new URL()` tolerates surrounding
-// whitespace — so a value like " https://…/x " passes the origin check but,
-// sent verbatim, is rejected by URL Inspection and counted as unreachable.
-// Normalizing here also makes the dedup key canonical (host case, default
-// ports), so two spellings of one page can't consume two inspection slots.
-function selfCanonicalUrl(canonicalUrl: string | null, slug: string): string | null {
-  // Trim before the emptiness test: the CMS form persists canonical_url raw,
-  // so a whitespace-only value is truthy here while getBlogPostCanonical()
-  // trims it away and emits the ordinary /writing/<slug> canonical. Without
-  // the trim, new URL() throws and the live canonical page is silently
-  // dropped from the sample.
-  const raw = (canonicalUrl ?? "").trim();
-  if (!raw) return `${SITE_ORIGIN}/writing/${slug}`;
-  try {
-    const u = new URL(raw);
-    return u.origin === new URL(SITE_ORIGIN).origin ? u.href : null;
-  } catch {
-    return null;
-  }
-}
 
 // Any live recompute (explicit force, or the cache simply being stale/
 // missing) re-runs the full GA4 + GSC + Sitemaps + URL Inspection sweep.
@@ -529,18 +423,9 @@ async function sampleUrlsForInspection(): Promise<string[]> {
       if (page === 0) throw e; // no real post data at all — surface via errors.indexing
       break; // keep the partial sample already collected
     }
-    for (const p of rows) {
-      // Prefers the post's own same-origin canonical when it differs from the
-      // slug URL (e.g. /writing/custom-canonical) — inspecting the slug URL
-      // instead would report a false issue for a page GSC correctly treats as
-      // an alternate of its declared canonical — and returns null for posts
-      // canonicalized off-site, which are skipped.
-      const url = selfCanonicalUrl(p.canonical_url, p.slug);
-      if (!url) continue;
-      if (seenUrls.has(url)) continue;
-      seenUrls.add(url);
-      uniqueUrls.push(url);
-    }
+    // Canonical resolution, off-site exclusion and dedup all live in
+    // coverage.ts so they are unit-tested — see src/test/gscCoverage.test.ts.
+    collectInspectionUrls(rows, seenUrls, uniqueUrls);
     if (rows.length < PAGE_SIZE) break; // reached the end of the table
   }
   return [...staticUrls, ...uniqueUrls.slice(0, target)];
