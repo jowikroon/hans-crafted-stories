@@ -95,7 +95,14 @@ export function summarizeSitemaps(entries: SitemapEntry[]): SitemapSummary {
     }
 
     for (const c of webContents) {
-      subForSitemap += Number(c.submitted ?? 0);
+      // `submitted` is optional in this response shape too, so folding a
+      // missing count in as zero would under-report the site total exactly
+      // the way a missing `indexed` would.
+      if (c.submitted != null) {
+        subForSitemap += Number(c.submitted);
+      } else if (!isIndex) {
+        allSubmittedKnown = false;
+      }
       if (c.indexed != null) {
         idxForSitemap += Number(c.indexed);
       } else {
@@ -152,18 +159,24 @@ export function summarizeSitemaps(entries: SitemapEntry[]): SitemapSummary {
  * dedup key (host case, default ports).
  */
 export function selfCanonicalUrl(canonicalUrl: string | null | undefined, slug: string): string | null {
+  const postUrl = `${SITE_ORIGIN}/writing/${slug}`;
   const raw = (canonicalUrl ?? "").trim();
-  if (!raw) return `${SITE_ORIGIN}/writing/${slug}`;
-  // A leading-slash canonical ("/writing/custom") is valid and is emitted
-  // verbatim by getBlogPostCanonical(), so resolve it against the site
-  // origin rather than letting new URL() throw and silently drop the post.
-  // Only leading-slash values get a base: arbitrary text must still fail to
-  // parse rather than be coerced into a same-origin URL that nothing serves.
-  // Protocol-relative values ("//other.example/x") also take the base and are
-  // then correctly rejected by the origin comparison below.
-  const base = raw.startsWith("/") ? SITE_ORIGIN : undefined;
+  if (!raw) return postUrl;
+  // Resolve against the POST URL, which is what actually happens in the wild:
+  // useSEO assigns canonical_url straight to HTMLLinkElement.href, so the
+  // browser — and Google — resolve any relative reference against the page it
+  // appears on. Using the post URL as the base therefore covers root-relative
+  // ("/writing/x"), path-relative ("custom"), and absolute values with one
+  // rule, and matches the canonical the page genuinely declares.
+  //
+  // A malformed value resolves to some same-origin URL rather than being
+  // dropped. That is deliberate: the page declares it, Google resolves it the
+  // same way, and reporting that URL as un-indexed is a true signal about a
+  // real editor mistake — quietly excluding the post would hide it.
+  // Off-origin, protocol-relative ("//other.example/x") and non-http scheme
+  // values all still fall out via the origin comparison below.
   try {
-    const u = base ? new URL(raw, base) : new URL(raw);
+    const u = new URL(raw, postUrl);
     return u.origin === new URL(SITE_ORIGIN).origin ? u.href : null;
   } catch {
     return null;

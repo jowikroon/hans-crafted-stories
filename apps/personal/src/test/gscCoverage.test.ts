@@ -75,6 +75,17 @@ describe("summarizeSitemaps", () => {
     expect(s.indexed_pages).toBeNull();
   });
 
+  it("makes the submitted total unknown when a web entry omits `submitted`", () => {
+    // SitemapContentEntry marks `submitted` optional, so `?? 0` would fold a
+    // missing count into the sum as zero — the same dishonesty the `indexed`
+    // handling already guards against.
+    const s = summarizeSitemaps([
+      { path: "/a.xml", contents: [web(50, 30)] },
+      { path: "/b.xml", contents: [{ type: "web", indexed: "5" }] },
+    ]);
+    expect(s.submitted_pages).toBeNull();
+  });
+
   it("makes BOTH totals unknown when a leaf is still unprocessed", () => {
     // An empty `contents` means GSC hasn't crawled it; its pages are missing
     // from the submitted sum just as much as from the indexed sum.
@@ -164,8 +175,22 @@ describe("selfCanonicalUrl", () => {
     expect(selfCanonicalUrl("https://hansvanleeuwen.com.evil.example/x", "slug")).toBeNull();
   });
 
-  it("skips an unparseable canonical", () => {
-    expect(selfCanonicalUrl("not a url", "slug")).toBeNull();
+  it("resolves a path-relative canonical against the post URL, as a browser does", () => {
+    // useSEO assigns canonical_url straight to HTMLLinkElement.href, so the
+    // browser (and Google) resolve a bare "custom" against the post URL —
+    // /writing/my-post + "custom" -> /writing/custom.
+    expect(selfCanonicalUrl("custom", "my-post")).toBe(`${SITE_ORIGIN}/writing/custom`);
+  });
+
+  it("inspects whatever a malformed canonical actually resolves to", () => {
+    // The page declares this verbatim, so Google resolves it the same way.
+    // Surfacing the resulting URL as un-indexed is a true signal about a real
+    // editor mistake — better than silently dropping the post.
+    expect(selfCanonicalUrl("not a url", "slug")).toBe(`${SITE_ORIGIN}/writing/not%20a%20url`);
+  });
+
+  it("still rejects a non-http scheme", () => {
+    expect(selfCanonicalUrl("mailto:hans@example.com", "slug")).toBeNull();
   });
 });
 
