@@ -138,9 +138,11 @@ export default function AnalyticsMode() {
           { k: "Avg. position", v: gsc?.position != null ? gsc.position.toFixed(1) : "–", sub: "Search Console" },
           { k: "Avg. CTR", v: gsc?.ctr != null ? `${gsc.ctr}%` : "–", sub: "Search Console" },
           { k: "Clicks · 28d", v: num(gsc?.clicks), sub: gsc?.impressions != null ? `${num(gsc.impressions)} impr.` : undefined },
-          // submitted_pages is always a number, so `!= null` was always true and
-          // asserted "of 0 submitted" whenever no sitemap counts were resolved.
-          { k: "Indexed pages", v: num(gsc?.indexed_pages), sub: gsc?.submitted_pages ? `of ${num(gsc.submitted_pages)} submitted` : "Search Console" },
+          // Provenance matters here: the only site-wide indexed count Google
+          // exposes by API is the sitemap-reported one, which is deprecated
+          // and approximate. Say where it comes from rather than presenting
+          // it as an exact figure.
+          { k: "Indexed pages", v: num(gsc?.indexed_pages), sub: gsc?.submitted_pages ? `of ${num(gsc.submitted_pages)} in sitemaps` : "Search Console · sitemap-reported" },
         ].map((m) => (
           <div key={m.k} className="metric-cell">
             <div className="k">{m.k}</div>
@@ -239,7 +241,10 @@ export default function AnalyticsMode() {
             {gsc.indexing_checked != null && (
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>
                 {gsc.indexing_issues?.length ? `${gsc.indexing_issues.length} flagged` : "none flagged"} · {gsc.indexing_checked} pages checked
-                {gsc.indexing_skipped ? ` · ${gsc.indexing_skipped} unreachable` : ""}
+                {/* These are failed inspection REQUESTS (quota, auth, 5xx,
+                    network) — they say nothing about whether the page is
+                    reachable, so don't report them as a page-health problem. */}
+                {gsc.indexing_skipped ? ` · ${gsc.indexing_skipped} not checked` : ""}
               </span>
             )}
           </h3>
