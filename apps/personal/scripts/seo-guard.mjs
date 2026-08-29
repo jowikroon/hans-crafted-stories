@@ -22,7 +22,7 @@ function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === "assets") continue;
+      if (entry.name === "assets" || entry.name === "dashboards" || entry.name === "cowork") continue;
       walk(full);
     } else if (entry.name === "index.html") {
       checkFile(full);

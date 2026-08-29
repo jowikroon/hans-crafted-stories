@@ -514,7 +514,7 @@ for (const [slug, blogPost] of postBySlug) {
             <li><a href="/work/connect-car-parts">Connect Car Parts, automotive parts e-commerce: Amazon DE, eBay DE &amp; Magento operations</a></li>
           </ul>
           <p>More marketplace results: 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. See also <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.</p>`;
-  const workFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml, "h2");
+  const workFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml, "h1");
   let page = template.replace('<div id="root"></div>', `<div id="root">${workFallbackHtml}</div>`);
   page = setHead(page, WORK_HEAD);
   page = replaceSsrFallbackHtml(page, "");
