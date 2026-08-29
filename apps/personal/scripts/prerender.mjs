@@ -138,7 +138,8 @@ const PROFESSIONAL_SERVICE_ENTITY = {
   ],
 };
 
-// Static page SEO (English, primary for prerender), aligned with functions/[[path]].ts ROUTE_METAconst ABOUT_HEAD = {
+// Static page SEO (English, primary for prerender), aligned with functions/[[path]].ts ROUTE_META
+const ABOUT_HEAD = {
   title: "Over Hans van Leeuwen – E-commerce & Marketplace Manager (Amazon, Bol.com & AI)",
   description:
     "E-commerce en marketplace manager met 10+ jaar ervaring op Amazon, Bol.com en AI-gedreven operaties (n8n, Channable, Claude). Aantoonbare resultaten: 70% marktaandeel (Nielsen), out-of-stock onder 2%. Amersfoort, NL.",
@@ -164,8 +165,6 @@ const WRITING_HEAD = {
     "Lees de visie van Hans van Leeuwen op e-commerce strategie, marktplaats optimalisatie, Amazon groei, Bol.com best practices en digitale commerce trends.",
   canonical: `${BASE}/writing`,
 };
-};
-
 const ABOUT_JSONLD = {
   "@context": "https://schema.org",
   "@graph": [
@@ -809,3 +808,5 @@ for (const { route, head } of SEO_PAGES) {
 
 console.log("[prerender] Done.");
 process.exit(0);
+
+
