@@ -45,8 +45,8 @@ export default function Dashboards() {
     if (iframeRef.current && iframeRef.current.contentWindow) {
       try {
         iframeRef.current.contentWindow.postMessage({ type: "THEME_CHANGE", theme: isDarkMode ? "dark" : "light" }, "*");
-      } catch {
-        // Ignore cross-origin frame access if any
+      } catch (err) {
+        void err;
       }
     }
   }, [isDarkMode]);
@@ -60,8 +60,8 @@ export default function Dashboards() {
   };
 
   const handleRefresh = () => {
-    if (iframeRef.current) {
-      iframeRef.current.src = iframeRef.current.src;
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.location.reload();
       toast({
         title: "Dashboard ververst",
         description: "Live data van Channable, Magento en Supabase wordt opnieuw gesynchroniseerd.",
