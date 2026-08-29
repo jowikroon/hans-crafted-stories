@@ -72,7 +72,7 @@ template = clearRootHtml(template);
 // the hydrated page (instead of the hand-maintained static block) and there is
 // no layout swap on mount. Head, JSON-LD and the rich <noscript> stay as-is.
 {
-  const { html } = renderQuietly("/", null, { initialLang: "en" });
+  const { html } = renderQuietly("/", null, { initialLang: "nl" });
   const page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   fs.writeFileSync(path.join(distDir, "index.html"), page, "utf8");
   console.log(`[prerender] / -> ${path.join(distDir, "index.html")} (real render)`);
@@ -138,32 +138,32 @@ const PROFESSIONAL_SERVICE_ENTITY = {
   ],
 };
 
-// Static page SEO (English, primary for prerender), aligned with functions/[[path]].ts ROUTE_META
-const ABOUT_HEAD = {
-  title: "About Hans van Leeuwen – E-commerce & Marketplace Manager (Amazon, Bol.com & AI)",
+// Static page SEO (English, primary for prerender), aligned with functions/[[path]].ts ROUTE_METAconst ABOUT_HEAD = {
+  title: "Over Hans van Leeuwen – E-commerce & Marketplace Manager (Amazon, Bol.com & AI)",
   description:
-    "E-commerce and marketplace manager with 10+ years across Amazon, Bol.com and AI-assisted operations (n8n, Channable, Claude). Documented results: 70% category share (Nielsen), OOS under 2%. Amersfoort, NL.",
+    "E-commerce en marketplace manager met 10+ jaar ervaring op Amazon, Bol.com en AI-gedreven operaties (n8n, Channable, Claude). Aantoonbare resultaten: 70% marktaandeel (Nielsen), out-of-stock onder 2%. Amersfoort, NL.",
   canonical: `${BASE}/about`,
 };
 
 const WORK_HEAD = {
-  title: "Amazon & Bol.com Case Studies: Marketplace Growth Portfolio | Hans van Leeuwen",
+  title: "Amazon & Bol.com Case Studies: Portfolio Marktplaatsgroei | Hans van Leeuwen",
   description:
-    "Real marketplace results: Amazon NL & DE, Bol.com and e-commerce operations case studies by e-commerce & marketplace manager Hans van Leeuwen, including Connect Car Parts.",
+    "Concrete marktplaats resultaten: Amazon NL & DE, Bol.com en e-commerce operaties case studies door e-commerce & marketplace manager Hans van Leeuwen, waaronder Connect Car Parts.",
   canonical: `${BASE}/work`,
   intro: [
-    "This portfolio brings together practical marketplace and e-commerce work by Hans van Leeuwen, an e-commerce & marketplace manager based in Amersfoort. The case studies focus on the operating work behind growth: improving product data, marketplace listings, advertising, inventory planning, reporting and automation across Amazon, Bol.com, eBay and owned webshops. Each case is intended to show the starting point, the intervention and the measurable commercial or operational result instead of presenting a gallery without context.",
-    "The featured Connect Car Parts case covers a Dutch automotive-parts operation selling A.B.S. brake components through Magento, Amazon DE and eBay DE. The work combines catalog quality, vehicle-fitment data, marketplace feed management through Channable, listing optimization, advertising and recurring performance reviews. It is a useful example of how technical product data and daily commercial decisions need to work together when a large assortment is distributed across several channels and countries.",
-    "Other documented marketplace results on this site include 70% market share in an Amazon NL earplug category based on Nielsen data, out-of-stock rates below 2% after improving demand forecasting, and 20% weekly sales growth through targeted Sponsored campaigns. These figures describe specific engagements and are not generic promises. The related service pages explain the working method for Amazon NL account management, Bol.com consulting and interim e-commerce leadership, while the writing section provides deeper articles about marketplace operations and AI-assisted automation.",
-    "A typical engagement starts with a baseline of catalog health, content quality, search visibility, advertising efficiency, pricing, stock risk and reporting. The resulting backlog separates urgent revenue leaks from structural improvements, assigns an owner and defines a measurable outcome. Weekly reviews then connect organic visibility, conversion, advertising, margin and availability so that decisions are based on their combined commercial impact. The goal is a transparent operation that an internal team can understand, continue and improve.",
+    "Dit portfolio bundelt praktisch marktplaats- en e-commercewerk van Hans van Leeuwen, een e-commerce & marketplace manager uit Amersfoort. De case studies richten zich op het operationele werk achter groei: het verbeteren van productdata, marktplaats listings, advertising, voorraadplanning, rapportages en automatisering over Amazon, Bol.com, eBay en eigen webshops. Elke case is bedoeld om het startpunt, de ingreep en het meetbare commerciële of operationele resultaat te tonen, in plaats van een galerij zonder context te presenteren.",
+    "De uitgelichte Connect Car Parts case beschrijft een Nederlandse e-commerce operatie in auto-onderdelen die A.B.S. remonderdelen verkoopt via Magento, Amazon DE en eBay DE. Het werk combineert cataloguskwaliteit, voertuig-fitment data, feedmanagement via Channable, listing optimalisatie, advertising en terugkerende performance reviews. Het is een nuttig voorbeeld van hoe technische productdata en dagelijkse commerciële beslissingen moeten samenwerken wanneer een groot assortiment wordt gedistribueerd over meerdere kanalen en landen.",
+    "Andere gedocumenteerde marktplaats resultaten op deze site omvatten 70% marktaandeel in een Amazon NL oordoppencategorie op basis van Nielsen data, out-of-stock percentages onder de 2% na het verbeteren van demand forecasting, en 20% wekelijkse omzetgroei door gerichte Sponsored campagnes. Deze cijfers beschrijven specifieke opdrachten en zijn geen generieke beloftes. De gerelateerde dienstenpagina's lichten de werkwijze toe voor Amazon NL accountmanagement, Bol.com consultancy en interim e-commerce leiderschap, terwijl de schrijven-sectie diepgaandere artikelen biedt over marktplaats operaties en AI-gedreven automatisering.",
+    "Een typische opdracht begint met een nulmeting van catalogusgezondheid, contentkwaliteit, zoekzichtbaarheid, advertentie-efficiëntie, prijzen, voorraadrisico en rapportage. De resulterende backlog scheidt acute omzetlekken van structurele verbeteringen, wijst een eigenaar toe en definieert een meetbaar resultaat. Wekelijkse reviews verbinden vervolgens organische zichtbaarheid, conversie, advertising, marge en beschikbaarheid, zodat beslissingen gebaseerd zijn op hun gecombineerde commerciële impact. Het doel is een transparante operatie die een intern team kan begrijpen, voortzetten en verbeteren.",
   ],
 };
 
 const WRITING_HEAD = {
-  title: "E-commerce Insights & Articles | Hans van Leeuwen",
+  title: "E-commerce Inzichten & Artikelen | Hans van Leeuwen",
   description:
-    "Read Hans van Leeuwen's thoughts on e-commerce strategy, marketplace optimization, Amazon growth, Bol.com best practices, and digital commerce trends.",
+    "Lees de visie van Hans van Leeuwen op e-commerce strategie, marktplaats optimalisatie, Amazon groei, Bol.com best practices en digitale commerce trends.",
   canonical: `${BASE}/writing`,
+};
 };
 
 const ABOUT_JSONLD = {
@@ -482,7 +482,7 @@ for (const [slug, blogPost] of postBySlug) {
 // Prerender /about for indexable content and correct meta/schema
 {
   const route = "/about";
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
+  const { html } = renderQuietly(route, null, { initialLang: "nl" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, ABOUT_HEAD);
   page = replaceSsrFallbackHtml(page, buildStaticPageFallback(ABOUT_HEAD));
@@ -515,7 +515,7 @@ for (const [slug, blogPost] of postBySlug) {
             <li><a href="/work/connect-car-parts">Connect Car Parts, automotive parts e-commerce: Amazon DE, eBay DE &amp; Magento operations</a></li>
           </ul>
           <p>More marketplace results: 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. See also <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.</p>`;
-  const workFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml, "h1");
+  const workFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml, "h2");
   let page = template.replace('<div id="root"></div>', `<div id="root">${workFallbackHtml}</div>`);
   page = setHead(page, WORK_HEAD);
   page = replaceSsrFallbackHtml(page, "");
@@ -542,7 +542,7 @@ for (const [slug, blogPost] of postBySlug) {
   } catch (err) {
     console.warn("[prerender] Could not pre-fetch blog posts for /writing:", err.message);
   }
-  const { html } = renderQuietly(route, null, { initialLang: "en", preloadedBlogPosts: writingPosts });
+  const { html } = renderQuietly(route, null, { initialLang: "nl", preloadedBlogPosts: writingPosts });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, WRITING_HEAD);
   page = replaceSsrFallbackHtml(page, buildStaticPageFallback(WRITING_HEAD));
@@ -679,7 +679,7 @@ const SEO_PAGES = [
 ];
 
 for (const { route, head } of SEO_PAGES) {
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
+  const { html } = renderQuietly(route, null, { initialLang: "nl" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
   const faqHtml = head.faq
@@ -696,7 +696,7 @@ for (const { route, head } of SEO_PAGES) {
       description: head.description,
       isPartOf: { "@id": `${BASE}/#website` },
       about: { "@id": `${BASE}/#person` },
-      inLanguage: "en",
+      inLanguage: "nl",
     },
     WEBSITE_ENTITY,
     PERSON_ENTITY,
@@ -765,7 +765,7 @@ for (const { route, head } of SEO_PAGES) {
       'Current expansion work includes preparing the Amazon DE catalogue launch, including German VAT registration, and rolling the full A.B.S. assortment out to eBay DE and Bol.com with marketplace-specific content rules. The case shows how one operator can run a multi-channel parts business by combining structured product data, feed automation and AI-assisted workflows with human commercial judgment.',
     ],
   };
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
+  const { html } = renderQuietly(route, null, { initialLang: "nl" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
   page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, `
@@ -782,7 +782,7 @@ for (const { route, head } of SEO_PAGES) {
         isPartOf: { "@id": `${BASE}/#website` },
         about: { "@id": `${BASE}/#person` },
         author: { "@type": "Person", "@id": `${BASE}/#person`, name: "Hans van Leeuwen" },
-        inLanguage: "en",
+        inLanguage: "nl",
       },
       WEBSITE_ENTITY,
       PERSON_ENTITY,

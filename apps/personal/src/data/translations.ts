@@ -645,7 +645,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       headingEmphasis: "strategie",
       freelanceH2: "Groei Amazon NL & Bol.com omzet met een hands-on interim marktplaatsmanager",
       description:
-        "Ik ben Hans van Leeuwen, freelance e-commerce en marketplace manager in Amersfoort. Na tien jaar Amazon- en Bol.com-omzet laten groeien voor merken weet ik waar marketplace-groei echt vandaan komt: scherpe listings, gedisciplineerde ads en betrouwbare operatie. Ik help merken in Nederland en de EU hun digitale kanalen omzetten in omzetmotoren.",
+        "Laat je omzet op Amazon NL & Bol.com groeien met een ervaren interim marketplace manager. Ik ben Hans van Leeuwen, freelance e-commerce en marketplace specialist gevestigd in Amersfoort. Na tien jaar omzetgroei op Amazon en Bol.com voor diverse merken, weet ik exact hoe je marktplaatsen omzet in winstgevende groeikanalen: strakke productlistings, scherpe advertenties en betrouwbare operations.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
       ctaWork: "Bekijk portfolio & cases",
       ctaConsult: "Neem contact op met mij",
