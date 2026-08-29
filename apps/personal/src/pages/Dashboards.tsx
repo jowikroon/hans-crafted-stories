@@ -1,23 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
   ShoppingBag, 
-  Sparkles, 
   TrendingUp, 
-  Package, 
-  AlertTriangle, 
-  CheckCircle2, 
   Maximize2, 
   Minimize2, 
   RefreshCw, 
   ExternalLink, 
   Sun, 
   Moon, 
-  Zap, 
-  ShieldCheck, 
-  Layers, 
-  ArrowUpRight 
+  Layers 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -53,7 +45,9 @@ export default function Dashboards() {
     if (iframeRef.current && iframeRef.current.contentWindow) {
       try {
         iframeRef.current.contentWindow.postMessage({ type: "THEME_CHANGE", theme: isDarkMode ? "dark" : "light" }, "*");
-      } catch (e) {}
+      } catch {
+        // Ignore cross-origin frame access if any
+      }
     }
   }, [isDarkMode]);
 
@@ -95,10 +89,10 @@ export default function Dashboards() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold text-base shadow-md shadow-blue-500/20">
                     CCP
                   </div>
-                  <span>Connect Car Parts & Marketplace Engine</span>
+                  <span>Connect Car Parts &amp; Marketplace Engine</span>
                 </h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Live eBay DE & Multi-channel Command Center · Pacing Matrix · Geïntegreerd met Samantha Copilot
+                  Live eBay DE &amp; Multi-channel Command Center · Pacing Matrix · Ge&iuml;ntegreerd met Samantha Copilot
                 </p>
               </div>
 
@@ -151,6 +145,7 @@ export default function Dashboards() {
             {/* Domain Tabs Navigation (Mobile Swipeable) */}
             <div className="flex items-center gap-2 border-b border-border/60 pb-2 overflow-x-auto">
               <button
+                type="button"
                 onClick={() => setDomain("ccp")}
                 className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all shrink-0 ${
                   domain === "ccp" 
@@ -164,6 +159,7 @@ export default function Dashboards() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setDomain("mpg")}
                 className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all shrink-0 ${
                   domain === "mpg" 
@@ -176,6 +172,7 @@ export default function Dashboards() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setDomain("hvl")}
                 className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all shrink-0 ${
                   domain === "hvl" 
@@ -184,7 +181,7 @@ export default function Dashboards() {
                 }`}
               >
                 <TrendingUp size={14} />
-                <span>Hans van Leeuwen (SEO & Traffic)</span>
+                <span>Hans van Leeuwen (SEO &amp; Traffic)</span>
               </button>
             </div>
 
@@ -195,7 +192,7 @@ export default function Dashboards() {
                   <span>eBay DE Top-400</span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-500">Live</span>
                 </div>
-                <div className="mt-1 text-base sm:text-lg font-bold text-foreground">250 / 400 SKU's</div>
+                <div className="mt-1 text-base sm:text-lg font-bold text-foreground">250 / 400 SKU&apos;s</div>
                 <div className="text-[11px] text-muted-foreground">Quality Score 100/100</div>
               </div>
 
@@ -204,7 +201,7 @@ export default function Dashboards() {
                   <span>Q3 Pacing</span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-bold text-blue-500">W33</span>
                 </div>
-                <div className="mt-1 text-base sm:text-lg font-bold text-foreground">€ 100K Target</div>
+                <div className="mt-1 text-base sm:text-lg font-bold text-foreground">&euro; 100K Target</div>
                 <div className="text-[11px] text-muted-foreground">Nulmeting actief</div>
               </div>
 
@@ -223,12 +220,12 @@ export default function Dashboards() {
                   <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-1.5 py-0.5 text-[10px] font-bold text-purple-400">Online</span>
                 </div>
                 <div className="mt-1 text-base sm:text-lg font-bold text-foreground">Copilot Ready</div>
-                <div className="text-[11px] text-muted-foreground">Toets 'S' in dashboard</div>
+                <div className="text-[11px] text-muted-foreground">Toets &apos;S&apos; in dashboard</div>
               </div>
 
               <div className="rounded-xl border border-border/60 bg-card/70 p-3 backdrop-blur-sm shadow-xs col-span-2 sm:col-span-4 lg:col-span-1">
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
-                  <span>Track & Trace</span>
+                  <span>Track &amp; Trace</span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-500">ABS Gap</span>
                 </div>
                 <div className="mt-1 text-base sm:text-lg font-bold text-foreground">Push Ready</div>
@@ -245,6 +242,7 @@ export default function Dashboards() {
           {/* Floating Exit Button for Fullscreen */}
           {isFullscreen && (
             <button
+              type="button"
               onClick={() => setIsFullscreen(false)}
               className="absolute top-4 right-5 z-50 flex items-center gap-1.5 rounded-lg bg-slate-900/90 px-3.5 py-2 text-xs font-semibold text-white shadow-xl backdrop-blur border border-slate-700 hover:bg-slate-800 transition"
             >
