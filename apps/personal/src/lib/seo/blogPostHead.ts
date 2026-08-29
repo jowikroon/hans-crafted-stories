@@ -39,7 +39,28 @@ export function detectBlogPostLang(
 }
 
 export function getBlogPostCanonical(post: Pick<BlogPostRow, "slug" | "canonical_url">): string {
-  return clean(post.canonical_url) || `${BASE_URL}/writing/${post.slug}`;
+  const routeCanonical = `${BASE_URL}/writing/${post.slug}`;
+  const configuredCanonical = clean(post.canonical_url);
+
+  if (!configuredCanonical) return routeCanonical;
+
+  try {
+    const canonicalUrl = new URL(configuredCanonical, BASE_URL);
+    const routeUrl = new URL(routeCanonical);
+
+    // An internal CMS canonical must resolve to the post's actual route. Stale
+    // clean-slug values otherwise canonicalize suffixed live posts to a soft 404.
+    if (
+      canonicalUrl.origin === routeUrl.origin &&
+      canonicalUrl.pathname.replace(/\/+$/, "") !== routeUrl.pathname
+    ) {
+      return routeCanonical;
+    }
+
+    return canonicalUrl.toString().replace(/\/$/, "");
+  } catch {
+    return routeCanonical;
+  }
 }
 
 export function getBlogPostHead(post: BlogPostRow): SeoHead {
