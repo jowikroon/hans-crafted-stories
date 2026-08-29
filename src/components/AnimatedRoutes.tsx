@@ -7,6 +7,7 @@ import Writing from "@/pages/Writing";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
 import Portal from "@/pages/Portal";
+import Dashboard from "@/pages/Dashboard";
 import Wiki from "@/pages/Wiki";
 import Empire from "@/pages/Empire";
 import EmpireLayout from "@/components/empire/EmpireLayout";
@@ -37,6 +38,7 @@ const AnimatedRoutes = () => {
         <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
         <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
+        <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
         <Route path="/wiki" element={<Navigate to="/empire/wiki" replace />} />
         <Route path="/empire" element={<PageTransition><EmpireLayout /></PageTransition>}>
           <Route index element={<Empire />} />
