@@ -632,9 +632,9 @@ const SEO_PAGES = [
   {
     route: "/ai-ecommerce-automation",
     head: {
-      title: "AI E-commerce Automation: Marketplace Operations on n8n, Supabase & Claude | Hans van Leeuwen",
+      title: "AI E-commerce Automation Specialist | Hans van Leeuwen",
       description:
-        "Freelance AI e-commerce automation specialist. Run Amazon NL & Bol.com operations with n8n, Supabase and Claude, product data, ads reporting and content workflows automated. Amersfoort, NL/EU.",
+        "Freelance AI e-commerce automation specialist. Automatiseer Amazon NL & Bol.com operations met n8n, Supabase en Claude. Amersfoort, NL/EU.",
       canonical: `${BASE}/ai-ecommerce-automation`,
       serviceName: "AI E-commerce Automation Consulting",
       intro: [
