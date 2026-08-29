@@ -37,6 +37,7 @@ export default function DashboardsHvl() {
   const [seo, setSeo] = useState<{ severity: string | null; count: number }[]>([]);
   const [radar, setRadar] = useState<Record<string, unknown>[]>([]);
   const [posts, setPosts] = useState<{ total: number; inPeriod: number; drafts: number }>({ total: 0, inPeriod: 0, drafts: 0 });
+  const [articles, setArticles] = useState<{ slug: string; title: string; clicks: number; impressions: number; position: number | null; pageviews: number }[]>([]);
   const [busy, setBusy] = useState(true);
 
   const load = async (force = false) => {
@@ -46,10 +47,13 @@ export default function DashboardsHvl() {
     });
     setA((data as Analytics) ?? null);
 
-    const [{ data: items }, { data: rr }, { data: bp }] = await Promise.all([
+    const [{ data: items }, { data: rr }, { data: bp }, { data: bm }] = await Promise.all([
       supabase.from("seo_action_items").select("severity,status"),
       supabase.from("brand_radar_weekly").select("*").order("created_at", { ascending: false }).limit(1),
-      supabase.from("blog_posts").select("id,status,published_at"),
+      supabase.from("blog_posts").select("id,status,published_at,slug,title"),
+      supabase.from("blog_post_metrics_daily")
+        .select("post_id,metric_date,search_clicks,search_impressions,search_avg_position,pageviews")
+        .gte("metric_date", period.from).lte("metric_date", period.to),
     ]);
 
     const bySev = new Map<string, number>();
@@ -67,6 +71,28 @@ export default function DashboardsHvl() {
       inPeriod: all.filter((p) => p.published_at && p.published_at.slice(0, 10) >= period.from && p.published_at.slice(0, 10) <= period.to).length,
       drafts: all.filter((p) => p.status !== "published").length,
     });
+    // per-artikel: dagelijkse GSC/GA4-rijen aggregeren binnen de periode
+    const meta = new Map((all as { id?: string; slug?: string; title?: string }[]).map((p) => [p.id, p]));
+    const agg = new Map<string, { clicks: number; impressions: number; posW: number; pageviews: number }>();
+    for (const r of (bm as { post_id: string; search_clicks: number | null; search_impressions: number | null; search_avg_position: number | null; pageviews: number | null }[]) ?? []) {
+      const t = agg.get(r.post_id) ?? { clicks: 0, impressions: 0, posW: 0, pageviews: 0 };
+      const imp = r.search_impressions ?? 0;
+      t.clicks += r.search_clicks ?? 0;
+      t.impressions += imp;
+      t.posW += (r.search_avg_position ?? 0) * imp;
+      t.pageviews += r.pageviews ?? 0;
+      agg.set(r.post_id, t);
+    }
+    setArticles([...agg.entries()]
+      .map(([id, t]) => ({
+        slug: meta.get(id)?.slug ?? "?",
+        title: meta.get(id)?.title ?? meta.get(id)?.slug ?? "?",
+        clicks: t.clicks, impressions: t.impressions,
+        position: t.impressions > 0 ? Math.round((t.posW / t.impressions) * 10) / 10 : null,
+        pageviews: t.pageviews,
+      }))
+      .sort((x, y) => y.impressions - x.impressions)
+      .slice(0, 8));
     setBusy(false);
   };
 
@@ -186,7 +212,40 @@ export default function DashboardsHvl() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-[11px] text-[#7E7A6F]">Bron: blog_posts (canoniek). Per-artikel verkeer vereist blog_post_metrics_daily — die tabel is nog leeg.</p>
+          {articles.length > 0 ? (
+            <div className="mt-4">
+              <h4 className="mb-2 text-xs font-semibold text-[#15140F]">Per artikel (Search Console, in periode)</h4>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-wide text-[#7E7A6F]">
+                    <th className="py-1 font-medium">Artikel</th>
+                    <th className="py-1 text-right font-medium">Vert.</th>
+                    <th className="py-1 text-right font-medium">Klikken</th>
+                    <th className="py-1 text-right font-medium">Pos.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {articles.map((r) => (
+                    <tr key={r.slug} className="border-t border-[#E5DFCE]/70">
+                      <td className="max-w-0 truncate py-1.5 pr-2 text-[#15140F]">
+                        <a className="hover:underline" href={`/writing/${r.slug}`} target="_blank" rel="noreferrer">{r.title}</a>
+                      </td>
+                      <td className="py-1.5 text-right tabular-nums">{nf(r.impressions)}</td>
+                      <td className="py-1.5 text-right tabular-nums">{nf(r.clicks)}</td>
+                      <td className="py-1.5 text-right tabular-nums">{r.position ?? "–"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="mt-2 text-[11px] text-[#7E7A6F]">
+                Artikelen zonder rij zijn onzichtbaar in search — geen enkele vertoning in deze periode.
+              </p>
+            </div>
+          ) : (
+            <p className="mt-3 text-[11px] text-[#7E7A6F]">
+              Geen artikel had vertoningen in deze periode (bron: blog_post_metrics_daily, dagelijks gevuld uit Search Console; loopt ~3 dagen achter).
+            </p>
+          )}
         </section>
       </div>
 
