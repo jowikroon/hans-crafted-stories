@@ -19,7 +19,7 @@ const content = {
     breadcrumb: "Interim E-commerce Manager",
     h1: "Interim E-commerce Manager",
     subtitle: "Freelance marketplace lead, strategy, operations & hands-on execution",
-    intro: "Need senior e-commerce leadership without the permanent headcount? I step in as your interim e-commerce manager, driving marketplace strategy, managing daily operations, and delivering KPI-driven growth on Amazon NL, Bol.com, and beyond.",
+    intro: "Need senior e-commerce leadership without the permanent headcount? I step in as your interim e-commerce manager, bringing a track record that includes 70% category market share on Amazon NL (Nielsen data), 20% weekly marketplace sales growth, and an out-of-stock rate below 2% through forecasting and operational control.",
     whenToHire: "When to Bring in an Interim E-commerce Manager",
     scenarios: [
       "You need to fix ACOS and restructure ad campaigns fast",
@@ -55,7 +55,7 @@ const content = {
     breadcrumb: "Interim E-commerce Manager",
     h1: "Interim E-commerce Manager",
     subtitle: "Freelance marktplaats lead, strategie, operations & hands-on uitvoering",
-    intro: "Senior e-commerce leiderschap nodig zonder vast dienstverband? Ik stap in als je interim e-commerce manager, ik stuur marktplaatsstrategie aan, beheer dagelijkse operations en lever KPI-gedreven groei op Amazon NL, Bol.com en daarbuiten.",
+    intro: "Senior e-commerce leiderschap nodig zonder vast dienstverband? Ik stap in als je interim e-commerce manager met een trackrecord van 70% categoriemarktaandeel op Amazon NL (Nielsen-data), 20% wekelijkse marketplace-omzetgroei en een out-of-stockpercentage onder 2% door forecasting en operationele sturing.",
     whenToHire: "Wanneer een Interim E-commerce Manager Inschakelen",
     scenarios: [
       "Je moet ACOS fixen en advertentiecampagnes snel herstructureren",
