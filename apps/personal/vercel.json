@@ -4,6 +4,17 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.hansvanleeuwen.com"
+        }
+      ],
+      "destination": "https://hansvanleeuwen.com/:path*",
+      "permanent": true
+    },
+    {
       "source": "/writing/one-man-just-liberated-fable-and-now-it-s-illegal",
       "destination": "/writing",
       "permanent": true

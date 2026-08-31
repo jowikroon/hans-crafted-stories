@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import "../write-cms/write-cms.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 import "./music-cms.css";
 import { VOICE_TEMPLATES } from "./voiceTemplates";
 import { listSongs } from "./lib/songStore";
 import SongsMode from "./modes/SongsMode";
 import SongwriterMode from "./modes/SongwriterMode";
 import VoicesMode from "./modes/VoicesMode";
+import ProductionMode from "./modes/ProductionMode";
 
-type CmsMode = "songs" | "write" | "voices";
+type CmsMode = "songs" | "write" | "voices" | "productie";
 
 const ICONS: Record<CmsMode, JSX.Element> = {
   songs: (
@@ -21,6 +23,9 @@ const ICONS: Record<CmsMode, JSX.Element> = {
   ),
   voices: (
     <svg viewBox="0 0 16 16" fill="none"><rect x="6" y="1.5" width="4" height="8" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M3.5 7a4.5 4.5 0 0 0 9 0M8 11.5V14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+  ),
+  productie: (
+    <svg viewBox="0 0 16 16" fill="none"><path d="M2 8h2l1.5-4 2.5 8 2-6 1.5 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
   ),
 };
 
@@ -33,10 +38,12 @@ const ICONS: Record<CmsMode, JSX.Element> = {
  * Supabase RLS; zonder sessie tonen we de Google sign-in van de app.
  */
 export default function MusicCmsShell({ songId }: { songId?: string }) {
-  const [params, setParams] = useSearchParams();
+  useEffect(() => { ensureFontCss("fonts-write-cms", FONT_CSS.writeCms); }, []);
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
   const { user, loading, signInWithGoogle } = useAuth();
   const raw = params.get("mode");
-  const mode: CmsMode = songId ? "write" : raw === "write" || raw === "voices" ? raw : "songs";
+  const mode: CmsMode = songId ? "write" : raw === "write" || raw === "voices" || raw === "productie" ? raw : "songs";
 
   const [songCount, setSongCount] = useState<number | null>(null);
   useEffect(() => {
@@ -55,17 +62,18 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
   }, [mode]);
 
   const setMode = (m: CmsMode) => {
-    const next = new URLSearchParams(params);
-    // Songs is de default landing mode en bezit de schone (param-loze) URL.
-    if (m === "songs") next.delete("mode");
-    else next.set("mode", m);
-    setParams(next, { replace: false });
+    // Altijd via een absoluut pad navigeren. Anders blijft een /music-cms/:id
+    // songwerkblad-pad staan en dwingt songId de mode terug naar "write" —
+    // waardoor de menu-rail dood lijkt tot een full reload. navigate() reset
+    // het pad naar /music-cms zodat elke mode-wissel betrouwbaar werkt.
+    navigate(m === "songs" ? "/music-cms" : `/music-cms?mode=${m}`);
   };
 
   const RAIL: { id: CmsMode; label: string; count: string }[] = [
     { id: "songs", label: "Songs", count: songCount != null ? String(songCount) : "–" },
     { id: "write", label: "Schrijven", count: "werkblad" },
     { id: "voices", label: "Voices", count: `${VOICE_TEMPLATES.length} tpl` },
+    { id: "productie", label: "Productie", count: "catalogus" },
   ];
 
   const gated = !loading && !user;
@@ -116,6 +124,7 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
               {mode === "songs" && <SongsMode />}
               {mode === "write" && <SongwriterMode songId={songId} />}
               {mode === "voices" && <VoicesMode />}
+              {mode === "productie" && <ProductionMode />}
             </>
           )}
         </div>

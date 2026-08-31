@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -68,6 +68,7 @@ export default function VoiceMode() {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const saveRef = useRef<() => Promise<void>>(async () => undefined);
 
   const flash = (m: string) => { setToast(m); window.setTimeout(() => setToast(null), 2400); };
 
@@ -138,6 +139,18 @@ export default function VoiceMode() {
     }
   };
 
+  saveRef.current = save;
+
+  useEffect(() => {
+    const handleSaveShortcut = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "s") return;
+      event.preventDefault();
+      if (dirty && !saving) void saveRef.current();
+    };
+    window.addEventListener("keydown", handleSaveShortcut);
+    return () => window.removeEventListener("keydown", handleSaveShortcut);
+  }, [dirty, saving]);
+
   const remove = async () => {
     if (!draft?.id) return;
     if (!window.confirm(`"${draft.name}" verwijderen, kan niet ongedaan.`)) return;
@@ -161,7 +174,7 @@ export default function VoiceMode() {
   const defaultName = useMemo(() => rows.find((r) => r.is_default)?.name ?? "no default", [rows]);
 
   return (
-    <div className="shell">
+    <div className="shell shell--single">
       <main className="main">
         <h1 className="manage-h">Voice<em>.</em></h1>
         <p className="voice-stat">

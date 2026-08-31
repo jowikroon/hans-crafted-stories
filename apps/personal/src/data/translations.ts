@@ -198,7 +198,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-commerce Manager",
         period: "Dec 2025 – Present",
         highlights: [
-          "Automated VIN-based part lookup — a first in the industry",
+          "Automated VIN-based part lookup, a first in the industry",
           "Connected eBay, Amazon and Bol.com into one marketplace operation",
           "Forecasting revenue and delivering actionable KPI insights",
         ],
@@ -279,7 +279,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     educationList: [
       {
         institution: "HU University of Applied Sciences Utrecht",
-        degree: "B.A.Sc. Communication & Media Studies — User Experience specialisation",
+        degree: "B.A.Sc. Communication & Media Studies, User Experience specialisation",
         period: "2012 – 2016",
       },
       {
@@ -400,7 +400,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       label: "Portfolio",
       heading: "Design, UX & e-commerce work",
       description:
-        "A decade of design-driven e-commerce. UX and interaction design, 3D, VR and creative work — alongside Amazon NL & Bol.com case studies with measurable results.",
+        "A decade of design-driven e-commerce. UX and interaction design, 3D, VR and creative work, alongside Amazon NL & Bol.com case studies with measurable results.",
       projectSingular: "project",
       projectPlural: "projects",
       matching: "matching",
@@ -498,15 +498,15 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "10+ years growing Amazon NL & Bol.com revenue. Listings, ads, CRO & forecasting. Based in Amersfoort, NL/EU. Available for freelance and interim marketplace work.",
+      homeDescription: "Freelance e-commerce manager, Amazon NL specialist & Bol.com consultant. 10+ years growing marketplace revenue: listings, ads, CRO & forecasting. Amersfoort, NL/EU.",
       writingTitle: "E-commerce Insights for Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
-      workTitle: "Portfolio — UX & E-commerce Design | Hans van Leeuwen",
+      workTitle: "Amazon & Bol.com Case Studies: Marketplace Growth Portfolio | Hans van Leeuwen",
       workDescription: "UX, interaction and 3D design portfolio, plus Amazon NL & Bol.com case studies with measurable results. Freelance e-commerce manager & UX designer in Amersfoort.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
       privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
-      aboutTitle: "About Hans van Leeuwen – E-commerce Manager & UX Designer | 10+ Years Experience",
-      aboutDescription: "Learn about Hans van Leeuwen's 10+ years of experience in e-commerce management, marketplace strategy (Amazon, Bol.com), UX design, and AI-assisted digital commerce. Based in Amersfoort, NL.",
+      aboutTitle: "About Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
+      aboutDescription: "Interim e-commerce manager and marketplace specialist with 10+ years of experience in Amazon, Bol.com, marketplace strategy and AI-assisted digital commerce. Based in Amersfoort, NL.",
       notFoundTitle: "Page Not Found | Hans van Leeuwen",
     },
   },
@@ -529,7 +529,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-commerce Manager",
         period: "Dec 2025 – Heden",
         highlights: [
-          "VIN-gebaseerde onderdelen-lookup geautomatiseerd — een primeur in de branche",
+          "VIN-gebaseerde onderdelen-lookup geautomatiseerd, een primeur in de branche",
           "eBay, Amazon en Bol.com verbonden tot één marketplace-operatie",
           "Omzetprognoses en leveren van actionable KPI-inzichten",
         ],
@@ -610,7 +610,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     educationList: [
       {
         institution: "Hogeschool Utrecht",
-        degree: "B.A.Sc. Communication & Media Studies — specialisatie User Experience",
+        degree: "B.A.Sc. Communication & Media Studies, specialisatie User Experience",
         period: "2012 – 2016",
       },
       {
@@ -731,7 +731,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       label: "Portfolio",
       heading: "Design, UX & e-commerce werk",
       description:
-        "Tien jaar design-gedreven e-commerce. UX- en interactieontwerp, 3D-, VR- en creatief werk — naast Amazon NL & Bol.com cases met meetbaar resultaat.",
+        "Tien jaar design-gedreven e-commerce. UX- en interactieontwerp, 3D-, VR- en creatief werk, naast Amazon NL & Bol.com cases met meetbaar resultaat.",
       projectSingular: "project",
       projectPlural: "projecten",
       matching: "gevonden",
@@ -829,15 +829,15 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
-      homeDescription: "10+ jaar groei op Amazon NL & Bol.com. Listings, ads, CRO & forecasting. Gevestigd in Amersfoort, NL/EU. Beschikbaar voor freelance en interim marketplace-werk.",
+      homeDescription: "Freelance e-commerce manager, Amazon NL-specialist & Bol.com-consultant. 10+ jaar groei op marketplaces: listings, ads, CRO & forecasting. Amersfoort, NL/EU. Beschikbaar voor freelance en interim werk.",
       writingTitle: "E-commerce Inzichten voor Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
-      workTitle: "Portfolio — UX & E-commerce Design | Hans van Leeuwen",
+      workTitle: "Amazon & Bol.com Case Studies: Marketplace Growth Portfolio | Hans van Leeuwen",
       workDescription: "UX-, interactie- en 3D-designportfolio, plus Amazon NL & Bol.com cases met meetbaar resultaat. Freelance e-commerce manager & UX designer in Amersfoort.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
       privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
-      aboutTitle: "Over Hans van Leeuwen – E-commerce Manager & UX Designer | 10+ Jaar Ervaring",
-      aboutDescription: "Leer meer over Hans van Leeuwen: 10+ jaar ervaring in e-commercemanagement, marktplaatsstrategie (Amazon, Bol.com), UX-design en digitale commerce. Gevestigd in Amersfoort, NL.",
+      aboutTitle: "Over Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
+      aboutDescription: "Interim e-commerce manager en marketplace specialist met 10+ jaar ervaring in Amazon, Bol.com, marktplaatsstrategie en digitale commerce. Gevestigd in Amersfoort, NL.",
       notFoundTitle: "Pagina Niet Gevonden | Hans van Leeuwen",
     },
   },

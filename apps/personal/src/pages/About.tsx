@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home } from "lucide-react";
+import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home, Calendar } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
 import { Link } from "react-router-dom";
@@ -29,6 +29,33 @@ const About = () => {
 
   const seo = t.seo;
 
+  // Single source for the About FAQ: rendered UI and FAQPage JSON-LD read the
+  // SAME localized array, so schema always matches visible content (Codex
+  // review on PR #272).
+  const aboutFaq = lang === "nl" ? [
+    { q: "Wat doet een freelance e-commerce manager?",
+      a: "Ik neem tijdelijk de e-commerce operatie over: marketplace-strategie, listings, advertising, pricing, forecasting en rapportages. Ik werk hands-on binnen jullie team en tool-stack." },
+    { q: "Wat kost freelance marketplace-management?",
+      a: "Retainer voor doorlopend Amazon/Bol-beheer, projectprijs voor een audit of lancering, dagtarief voor interim. Exact bedrag hangt af van scope en channel-mix; een 30-min intake geeft binnen 1 werkdag een schriftelijke offerte." },
+    { q: "Vendor of Seller op Bol.com — wat past beter?",
+      a: "Seller houdt marge en controle maar vraagt actief accountwerk. Vendor bespaart operatie maar levert marge en pricing-controle in. Ik help beide modellen te modelleren op EBITDA, niet alleen omzet." },
+    { q: "Hoe verlaag je out-of-stock rates?",
+      a: "Een demand-forecasting model op recente sell-through, seizoen en promotie-lift, gekoppeld aan supplier lead-times. In bestaande cases OOS onder 2%." },
+    { q: "Doe je ook Amazon Ads en Bol Ads?",
+      a: "Ja. Sponsored Products, Sponsored Brands, Display en Bol Ads met wekelijkse bidsturing en negative harvesting; ACOS/TACOS als primaire KPI\u2019s." },
+  ] : [
+    { q: "What does a freelance e-commerce manager do?",
+      a: "I temporarily lead the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." },
+    { q: "How much does marketplace management cost?",
+      a: "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. Actual number depends on scope; a 30-min intake produces a written quote within one working day." },
+    { q: "Bol.com — vendor or seller?",
+      a: "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. I model both routes on EBITDA, not just revenue." },
+    { q: "How do you reduce out-of-stock rates?",
+      a: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2% OOS." },
+    { q: "Do you manage Amazon Ads and Bol Ads?",
+      a: "Yes. Sponsored Products, Sponsored Brands, Display and Bol Ads with weekly bid steering and negative harvesting; ACOS/TACOS as primary KPIs." },
+  ];
+
   useSEO({
     title: seo.aboutTitle,
     description: seo.aboutDescription,
@@ -53,13 +80,12 @@ const About = () => {
           "@id": "https://hansvanleeuwen.com/#person",
           name: "Hans van Leeuwen",
           url: "https://hansvanleeuwen.com/about",
-          jobTitle: "Freelance E-commerce Manager & UX Designer",
+          jobTitle: "Freelance & Interim E-commerce Manager",
+          alternateName: "Jowikroon",
           description: "Freelance e-commerce manager & UX designer with 10+ years of experience in marketplace strategy, Amazon, Bol.com, AI-assisted automation, and digital commerce.",
           image: {
             "@type": "ImageObject",
-            url: "https://hansvanleeuwen.com/og-image.png",
-            width: 1200,
-            height: 630,
+            url: `https://hansvanleeuwen.com${hansProfile}`,
             caption: "Hans van Leeuwen – Freelance E-commerce Manager",
           },
           knowsAbout: ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Interaction design", "AI-assisted e-commerce automation", "Conversion optimization", "Digital commerce", "SEO", "Amazon Ads", "Bol Ads"],
@@ -80,12 +106,20 @@ const About = () => {
             { "@type": "ListItem", position: 2, name: "About", item: "https://hansvanleeuwen.com/about" },
           ],
         },
+        {
+          "@type": "FAQPage",
+          mainEntity: aboutFaq.map((qa) => ({
+            "@type": "Question",
+            name: qa.q,
+            acceptedAnswer: { "@type": "Answer", text: qa.a },
+          })),
+        },
       ],
     },
   });
 
   return (
-    <section className="relative section-container pt-28 pb-20 overflow-hidden">
+    <section className="relative mx-auto max-w-6xl px-6 pt-6 pb-20 overflow-hidden">
       {/* Subtle Stargate-inspired background rings */}
       {isVisible("stargate_decorations") && (
         <>
@@ -140,7 +174,7 @@ const About = () => {
               <div className="relative">
                 <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-primary/10 via-transparent to-primary/5 blur-sm" />
                 <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted ring-1 ring-border/50">
-                  <img src={hansProfile} alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands" width={600} height={800} loading="lazy" decoding="async" className="h-full w-full object-cover object-top" />
+                  <img src={hansProfile} alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands" width={600} height={800} loading="eager" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-top" />
                   <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background/40 to-transparent" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 flex items-center gap-0.5 rounded-full border border-primary/20 bg-background px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-primary shadow-sm">
@@ -157,9 +191,12 @@ const About = () => {
                 <div className="h-px w-8 bg-primary/60" />
                 <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{getValue("about_label", t.about)}</p>
               </div>
-              <h1 className="mb-6 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                {getValue("about_name", "Hans van Leeuwen")}
+              <h1 className="mb-2 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
+                {getValue("about_h1", lang === "nl" ? "Interim E-commerce Manager & Marketplace-specialist (Amazon & Bol.com)" : "Interim E-commerce Manager & Marketplace Specialist (Amazon & Bol.com)")}
               </h1>
+              <p className="mb-6 font-display text-lg font-medium text-muted-foreground md:text-xl">
+                {getValue("about_name", "Hans van Leeuwen")} · {getValue("about_location", "Amersfoort, NL")}
+              </p>
 
               {isVisible("bio_section") && (
               <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
@@ -187,12 +224,29 @@ const About = () => {
 
               {isVisible("cv_downloads") && (
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <a href="/Hans_CV_-_e-commerce_manager.pdf" download className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-all hover:opacity-80 hover:shadow-lg hover:shadow-foreground/10">
+                  <a href="/Hans_CV_-_e-commerce_manager.pdf" download onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "download_cv", label: "en" }); }} className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-all hover:opacity-80 hover:shadow-lg hover:shadow-foreground/10">
                     <Download size={14} /> {getValue("about_cv_en_label", t.downloadCvEn)}
                     <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
-                  <a href="/Cv_HvL_-_Ecommerce.pdf" download className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:border-primary/20">
+                  <a href="/Cv_HvL_-_Ecommerce.pdf" download onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "download_cv", label: "nl" }); }} className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:border-primary/20">
                     <Download size={14} /> {getValue("about_cv_nl_label", t.downloadCvNl)}
+                    <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                  </a>
+                </div>
+              )}
+
+              {/* Book-a-call CTA: own visibility flag, decoupled from cv_downloads (Codex PR #275) */}
+              {isVisible("book_call_cta", true) && (
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <a
+                    href="https://calendly.com/hansvl3/30min"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "book_call", label: "calendly_30min" }); }}
+                    className="group inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/5 px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-primary/10 hover:border-primary"
+                    aria-label={lang === "nl" ? "Plan een gesprek van 30 minuten via Calendly" : "Book a 30-minute call via Calendly"}
+                  >
+                    <Calendar size={14} /> {getValue("about_book_call_label", lang === "nl" ? "Plan 30-min gesprek" : "Book a 30-min call")}
                     <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
                 </div>
@@ -200,6 +254,65 @@ const About = () => {
             </motion.div>
           </div>
         </div>
+
+        {/* Methodology (P2-7) */}
+        {isVisible("methodology_section", true) && (
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-20">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <h2 className="font-display text-2xl font-medium text-foreground">
+                {getValue("about_methodology_heading", lang === "nl" ? "Werkwijze" : "How I work")}
+              </h2>
+            </div>
+            <p className="mb-6 max-w-3xl text-base leading-relaxed text-muted-foreground">
+              {getValue("about_methodology_intro", lang === "nl"
+                ? "Elke opdracht doorloopt vier fases. Compact en meetbaar, geen abstract framework, maar exact wat er per week gebeurt en welke KPI’s bewegen."
+                : "Every engagement runs through four phases. Compact and measurable, no abstract framework — just what happens each week and which KPIs move.")}
+            </p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[
+                { k: "discovery", label: lang === "nl" ? "Ontdekken" : "Discovery",
+                  copy: lang === "nl" ? "Audit van marketplace-presence, snel te winnen en structurele groeihefbomen." : "Audit current marketplace presence, identify quick wins and structural growth levers." },
+                { k: "strategy", label: lang === "nl" ? "Strategie" : "Strategy",
+                  copy: lang === "nl" ? "Actieplan met KPI\u2019s, tijdlijn en eigenaarschap per hefboom." : "Action plan with KPIs, timelines and clear ownership per lever." },
+                { k: "execution", label: lang === "nl" ? "Executie" : "Execution",
+                  copy: lang === "nl" ? "Hands-on: listings, A+ content, Amazon Ads en Bol Ads, met wekelijkse check-ins." : "Hands-on: listings, A+ content, Amazon Ads and Bol Ads, with weekly check-ins." },
+                { k: "scale", label: lang === "nl" ? "Schalen" : "Scale",
+                  copy: lang === "nl" ? "Itereren op data, nieuwe kanalen (DE, FR) en compound results." : "Iterate based on data, expand to new channels (DE, FR) and compound results." },
+              ].map((step, i) => (
+                <div key={step.k} className="rounded-xl border border-border/40 bg-card p-4">
+                  <div className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">{i + 1}</div>
+                  <h3 className="mb-1 text-sm font-semibold text-foreground">{step.label}</h3>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{step.copy}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* FAQ (P2-7) — UI en JSON-LD lezen dezelfde aboutFaq array */}
+        {isVisible("about_faq_section", true) && (
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-20">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <h2 className="font-display text-2xl font-medium text-foreground">
+                {getValue("about_faq_heading", lang === "nl" ? "Veelgestelde vragen" : "Frequently Asked Questions")}
+              </h2>
+            </div>
+            <div className="max-w-3xl space-y-2">
+              {aboutFaq.map((qa) => (
+                <details key={qa.q} className="rounded-xl border border-border/40 bg-card p-4">
+                  <summary className="cursor-pointer text-sm font-semibold text-foreground">{qa.q}</summary>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{qa.a}</p>
+                </details>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Skills */}
         {isVisible("skills_section") && (

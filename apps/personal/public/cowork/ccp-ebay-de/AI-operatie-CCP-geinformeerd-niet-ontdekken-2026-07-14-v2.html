@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Geïnformeerd, niet ontdekken — AI-operatie Connect Car Parts</title>
+<style>
+  @page { size: A4; margin: 22mm 20mm 20mm 20mm;
+    @bottom-right { content: counter(page) " / " counter(pages); font-size: 7.5pt; color: #AFB8C6; font-family: Carlito, sans-serif; }
+    @bottom-left { content: "Connect Car Parts · internal · 14 juli 2026"; font-size: 7.5pt; color: #AFB8C6; font-family: Carlito, sans-serif; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Carlito, sans-serif; color: #4B5563; font-size: 9.5pt; line-height: 1.55; }
+  h1, h2, .big { font-family: Caladea, serif; color: #1A202C; }
+
+  /* header */
+  .logo { height: 26pt; margin-bottom: 22pt; }
+  h1 { font-size: 22pt; line-height: 1.15; font-weight: 700; }
+  .sub { font-family: Caladea, serif; font-size: 12pt; color: #8A929E; margin-top: 4pt; }
+  .meta { font-size: 8pt; color: #8A929E; margin-top: 14pt; }
+
+  /* kern */
+  .kern { margin: 26pt 0 0 0; padding-left: 12pt; border-left: 2.5pt solid #1577D6; }
+  .kern p { font-size: 10pt; line-height: 1.65; }
+
+  /* kpi strip */
+  .kpis { display: flex; margin-top: 30pt; }
+  .kpi { flex: 1; padding-right: 14pt; }
+  .kpi .v { font-family: Caladea, serif; font-size: 21pt; font-weight: 700; color: #1577D6; line-height: 1.1; }
+  .kpi .l { font-size: 7.8pt; color: #8A929E; margin-top: 4pt; line-height: 1.4; }
+
+  /* sections */
+  section { margin-top: 30pt; }
+  h2 { font-size: 13.5pt; font-weight: 700; margin-bottom: 4pt; }
+  h2 .nr { color: #1577D6; margin-right: 6pt; }
+  .lead { margin-bottom: 14pt; }
+
+  /* row pattern — geen lijnen, witruimte als scheiding */
+  .row { display: flex; margin-top: 13pt; }
+  .row .k { width: 30%; padding-right: 16pt; font-weight: 700; color: #1A202C; }
+  .row .val { width: 70%; }
+  .src { display: block; font-size: 7.6pt; color: #AFB8C6; margin-top: 2pt; }
+
+  /* dots — herkenning uit de weekdeck */
+  .dot { display: inline-block; width: 6.5pt; height: 6.5pt; border-radius: 50%; margin-right: 7pt; vertical-align: 0.5pt; }
+  .d-green { background: #2F805B; } .d-blue { background: #1577D6; } .d-amber { background: #B47609; } .d-grey { background: #AFB8C6; }
+
+  /* progress bar road-to-100K */
+  .progress { margin: 20pt 0 6pt 0; }
+  .bar { height: 8pt; background: #F0F3F7; border-radius: 4pt; position: relative; }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 19%; background: #1577D6; border-radius: 4pt; }
+  .bar-labels { display: flex; justify-content: space-between; font-size: 7.8pt; color: #8A929E; margin-top: 4pt; }
+  .tension { font-size: 8.8pt; color: #8A929E; font-style: italic; margin-top: 8pt; }
+
+  /* minimale tabel (alleen kosten) — twee hairlines totaal */
+  table { width: 100%; border-collapse: collapse; margin-top: 12pt; font-size: 9pt; }
+  th { text-align: left; font-size: 7.5pt; letter-spacing: 0.6pt; text-transform: uppercase; color: #8A929E; font-weight: 700; padding: 0 8pt 6pt 0; border-bottom: 0.75pt solid #E3E7EC; }
+  td { padding: 8pt 8pt 8pt 0; vertical-align: top; }
+  tr.total td { border-top: 0.75pt solid #E3E7EC; font-weight: 700; color: #1A202C; }
+
+  /* besluit — CEO-focus-slide stijl */
+  .besluit { background: #F6F8FA; border-radius: 8pt; padding: 16pt 20pt; margin-top: 22pt; }
+  .besluit .lbl { font-size: 8pt; letter-spacing: 1pt; text-transform: uppercase; color: #1577D6; font-weight: 700; margin-bottom: 10pt; }
+  .opt { display: flex; margin-top: 10pt; }
+  .opt .n { font-family: Caladea, serif; font-size: 13pt; font-weight: 700; color: #1577D6; width: 22pt; }
+  .opt .t { flex: 1; }
+  .opt .t b { color: #1A202C; }
+
+  .quote { font-family: Caladea, serif; font-size: 11.5pt; color: #1A202C; line-height: 1.5; margin-bottom: 14pt; }
+  .fine { font-size: 7.6pt; color: #AFB8C6; margin-top: 26pt; line-height: 1.5; }
+  .pb { page-break-before: always; }
+  .nobreak { page-break-inside: avoid; }
+  em.mark { font-style: normal; color: #1A202C; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<img class="logo" src="ccp-logo-blue.png" alt="Connect Car Parts">
+<h1>Geïnformeerd, niet ontdekken</h1>
+<div class="sub">AI-operatie Connect Car Parts — bewijs, kosten en besluit</div>
+<div class="meta">Voor: directie · Van: Hans · 14 juli 2026 · elk cijfer heeft een bron · aannames gemarkeerd met * · internal</div>
+
+<div class="kern"><p>De afgelopen drie maanden is drie keer, op drie verschillende disciplines, gebleken dat wij fouten van onze technische leverancier zelf moesten <em>ontdekken</em> in plaats van erover geïnformeerd te worden — met als zwaarste geval een shipment-koppeling die twee maanden op 99,8% faalratio draaide en een productie-incident dat alle verkoopkanalen een werkdag raakte. Het eigen team heeft die problemen zelf gevonden en opgelost met AI-tooling die al binnen het bestaande abonnement draait, en heeft er dagelijkse geautomatiseerde bewaking omheen gebouwd. Dit document onderbouwt wat de oude werkwijze kostte, wat de nieuwe aantoonbaar oplevert, en vraagt één besluit: <em class="mark">een vast, klein AI-budget voor CCP, zodat "wij worden geïnformeerd" de standaard wordt op elk kanaal.</em></p></div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">99,8%</div><div class="l">faalratio tracking (888 van 890), twee maanden onopgemerkt</div></div>
+  <div class="kpi"><div class="v">1 middag</div><div class="l">intern: oorzaak gevonden, fix bewezen, bewaking ingericht</div></div>
+  <div class="kpi"><div class="v">11 min</div><div class="l">van fix tot tracking zichtbaar op de eBay-order</div></div>
+  <div class="kpi"><div class="v">€ 250*</div><div class="l">gevraagd AI-budget per maand, gedekt uit contract-einde</div></div>
+</div>
+
+<section>
+  <h2><span class="nr">1</span>Waarvoor Atvise is aangenomen</h2>
+  <p class="lead">Het doel van de leveranciersrelatie was ontzorging: een externe partij bewaakt de techniek zodat het eigen team zich op commercie richt.</p>
+  <div class="row"><div class="k">Technisch beheer Magento</div><div class="val">Platform stabiel houden: techniek, werking, features, updates en integratie-onderhoud — inclusief de D365→Magento shipment-koppeling.</div></div>
+  <div class="row"><div class="k">SEA/SEO <span style="font-weight:400;color:#8A929E;">(beëindigd in april)</span></div><div class="val">Rendement op advertentiebudget.</div></div>
+</section>
+
+<section class="pb">
+  <h2><span class="nr">2</span>Mandaat versus realiteit</h2>
+  <p class="lead">Elke regel is een directe tegenspraak tussen wat de leverancier moest doen en wat er feitelijk gebeurde — en elke regel is door het eigen team ontdekt, niet door de leverancier gemeld.</p>
+
+  <div class="row"><div class="k">Shipment-koppeling onderhouden</div><div class="val">888 van 890 zendingen zonder trackingnummer (99,8%), twee maanden onopgemerkt; de oorzaak — een ontbrekende tracks-array in de ship-call — door het eigen team gevonden.<span class="src">Magento REST API-analyse 11-07</span></div></div>
+  <div class="row"><div class="k">Platform stabiel houden</div><div class="val">Onaangekondigde wijziging op live (7 juli): alle verkoopkanalen op 0 producten, 13 order-import-errors, één werkdag verloren, rollback op ons verzoek.<span class="src">Incident-A4 08-07 · Channable-API geverifieerd</span></div></div>
+  <div class="row"><div class="k">Integraties bewaken</div><div class="val">17 Channable platform_failure-errors onopgemerkt opgestapeld; fulfillments leeg op vrijwel alle orders.<span class="src">Channable orders-log 11-07</span></div></div>
+  <div class="row"><div class="k">Kwaliteitscontrole bij updates</div><div class="val">Update-checklist door het bureau "groen" afgevinkt; bij Luca's eigen verificatie in Magento kwamen meerdere punten niet groen uit.<span class="src">Bevinding Luca · CEO-rapport 11-07</span></div></div>
+  <div class="row"><div class="k">Rendement op ads <span style="font-weight:400;color:#8A929E;">(tot april)</span></div><div class="val">Fee-to-spend 67% (marktnorm 10–20%), ROAS 1,08 ex-brand, 64,9% van het Search-budget zonder één conversie, eigen bestseller Brembo zelf geblokkeerd.<span class="src">Google Ads-audit 17–20 april</span></div></div>
+  <div class="row"><div class="k">Verantwoord beheer</div><div class="val">Superuser-toegang zonder audit trail: activiteit tijdens het incident van 7–8 juli is niet reconstrueerbaar.<span class="src">Magento Users-grid 11-07</span></div></div>
+
+  <p style="margin-top:18pt;">Het patroon is steeds hetzelfde: de fout loopt maanden door, wordt zichtbaar zodra wij zelf in de data duiken, en de rapportage van het bureau bleek geen betrouwbare bron. Dat laatste — een controle die "in orde" meldt terwijl dat aantoonbaar niet zo is — weegt het zwaarst, omdat het de basis onder elke toekomstige rapportage wegneemt.</p>
+</section>
+
+<section>
+  <h2><span class="nr">3</span>Wat het heeft gekost</h2>
+  <p class="lead">Geverifieerde momenten van waardeverlies. Bedragen met * zijn gemarkeerde aannames of berekeningen op bestaande cijfers; dit document bevat geen verzonnen bedragen.</p>
+
+  <div class="row"><div class="k">mei – juli <span style="font-weight:400;color:#8A929E;">(2 maanden)</span></div><div class="val">99,8% van de zendingen zonder tracking naar de klant. Direct risico op valid-tracking-rate en Late-Shipment-metrics (DACH-norm ≤ 3%) — raakt zichtbaarheid en <em class="mark">verkooprecht</em>, dus potentieel 100% van de marketplace-omzet.</div></div>
+  <div class="row"><div class="k">6 juli</div><div class="val">DE-testorders faalden op order-import (Allow Countries); door het eigen team gediagnosticeerd en gefixt. Vertraging van het go-live-window eBay DE; diagnose-uren bij ons in plaats van de leverancier.</div></div>
+  <div class="row"><div class="k">7 juli</div><div class="val">Feed op 0 op álle kanalen (Amazon NL, Google Shopping, Bol, eBay), 13 order-errors, één werkdag team verloren. ± €140–150 directe dagomzet at risk* + €500–750* teamdag, in de week vóór de stakeholdermeeting.</div></div>
+  <div class="row"><div class="k">januari – april</div><div class="val">64,9% van het Search-budget zonder conversie bij ± €3.205/mnd spend — indicatief ± €2.000*/mnd verspilde ad-spend, bovenop 67% fee-to-spend.</div></div>
+  <div class="row"><div class="k">doorlopend</div><div class="val">Consent Mode granted rate 0% (doel &gt; 80%): attributie en biedoptimalisatie blind. Gerapporteerde ROAS onbetrouwbaar; PMax-voorbeeld: €282 spend → 2 conversies. Daarnaast het beheercontract van € __ per maand (bedrag uit contract) zonder aantoonbare monitoring-tegenwaarde.</div></div>
+
+  <div class="progress nobreak">
+    <div class="bar"><div class="fill"></div></div>
+    <div class="bar-labels"><span>YTD € 18.947</span><span>doel € 100.000</span></div>
+    <div class="tension">Elke verloren werkdag en elk kanaal op 0 telt dubbel: de weg naar € 100K vraagt ± € 2.456 per week — een dag stilstand is geen incident maar achterstand.</div>
+  </div>
+
+  <p style="margin-top:14pt;">De grootste post staat niet in euro's hierboven: twee maanden lang wisten wij niet wat onze eigen klanten meemaakten. Geen trackingmail, geen signaal, geen rapportage. De klant en de marketplace-metrics wisten het eerder dan wij.</p>
+</section>
+
+<section class="pb">
+  <h2><span class="nr">4</span>Wat intern al bewezen is</h2>
+  <p class="lead">Geen plan, maar gedraaid resultaat — gebouwd met de bestaande AI-tooling (Claude Cowork + eigen server), zonder extra investering, gedocumenteerd in het vault-logboek.</p>
+
+  <div class="row"><div class="k"><span class="dot d-green"></span>7 juli, middag</div><div class="val">Oorzaak van het storeview-incident én de tracking-faalratio gevonden — wat het bureau in twee maanden niet zag, in één middag gediagnosticeerd.</div></div>
+  <div class="row"><div class="k"><span class="dot d-green"></span>11 juli</div><div class="val">Fix drie keer bewezen tot op de eBay-order: tracking van injectie tot zichtbaar bij de koper in <em class="mark">11 minuten</em>.</div></div>
+  <div class="row"><div class="k"><span class="dot d-green"></span>11 juli</div><div class="val">Automatische track-injectie-keten live: elke 30 minuten worden open shipments gecontroleerd en aangevuld; de tracking-bron bij het ABS-portal aangetoond en geautomatiseerd geoogst.</div></div>
+  <div class="row"><div class="k"><span class="dot d-green"></span>sinds 10 juli</div><div class="val">Dagelijkse go-live-audit eBay DE (07:25) met append-only bewijslog — elke checklist-status is verifieerbaar; het omgekeerde van een afgevinkt lijstje.</div></div>
+  <div class="row"><div class="k"><span class="dot d-green"></span>doorlopend</div><div class="val">Dagelijkse infra-health-check en watchdog met alerts naar WhatsApp en Slack · ochtend-brief · wekelijkse CEO-statusdeck · concurrentie-radar.</div></div>
+  <div class="row"><div class="k"><span class="dot d-green"></span>doorlopend</div><div class="val">Channable-verrijking met technische specs (geïsoleerd van bestaande mappings) · Bol-titelregels actief op 2.207 van 2.228 producten.</div></div>
+</section>
+
+<section class="nobreak">
+  <h2><span class="nr">5</span>Het verschil in werkwijze</h2>
+  <p class="quote">Wij worden geïnformeerd — wij ontdekken niet meer achteraf. Elk verkoopkanaal en elke koppeling krijgt een dagelijkse geautomatiseerde controle met alert.</p>
+  <p class="lead">Concreet is dit het einde van zes dingen die we dit kwartaal wél hebben meegemaakt:</p>
+
+  <div class="row"><div class="k">Nooit meer</div><div class="val" style="font-weight:700;color:#1A202C;">In plaats daarvan</div></div>
+  <div class="row"><div class="k" style="font-weight:400;color:#4B5563;">Twee maanden onopgemerkte faalratio</div><div class="val"><span class="dot d-green"></span>Dagelijkse check "shipments zonder track &gt; 24 uur" met alert — draait al</div></div>
+  <div class="row"><div class="k" style="font-weight:400;color:#4B5563;">Kanalen op 0 zonder dat iemand het merkt</div><div class="val"><span class="dot d-blue"></span>Dagelijkse feed- en kanaalcontrole: Amazon, eBay, Bol, Google Shopping, webshop</div></div>
+  <div class="row"><div class="k" style="font-weight:400;color:#4B5563;">Fouten die zich stil opstapelen</div><div class="val"><span class="dot d-blue"></span>Channable-errorteller met drempel-alert</div></div>
+  <div class="row"><div class="k" style="font-weight:400;color:#4B5563;">Checklists "groen" zonder bewijs</div><div class="val"><span class="dot d-green"></span>Elke controle schrijft een bewijslog; status zonder bron telt niet — draait al</div></div>
+  <div class="row"><div class="k" style="font-weight:400;color:#4B5563;">Wijzigingen op live zonder aankondiging</div><div class="val"><span class="dot d-blue"></span>Change-stop en audit trail op admin-activiteit</div></div>
+  <div class="row"><div class="k" style="font-weight:400;color:#4B5563;">Rapportages die we niet kunnen verifiëren</div><div class="val"><span class="dot d-green"></span>Elk cijfer herleidbaar naar bron — zoals in dit document</div></div>
+</section>
+
+<section class="pb nobreak">
+  <h2><span class="nr">6</span>Kosten en besluit</h2>
+  <table>
+    <tr><th style="width:50%">Post</th><th style="width:23%">Nu</th><th>Voorstel</th></tr>
+    <tr><td>Beheercontract Atvise (Magento)</td><td>€ __ (uit contract)</td><td>€ 0</td></tr>
+    <tr><td><b style="color:#1A202C">AI-operatiebudget CCP</b> — bestaand abonnement ~€180 + marge API-verbruik monitoring-agents</td><td>€ ~180</td><td><b style="color:#1577D6">€ 250*</b> vast per maand</td></tr>
+    <tr><td>Vangnet core-updates en security-patches (on-demand, andere partij)</td><td>—</td><td>€ 150–300* equivalent</td></tr>
+    <tr><td>Automatisering op eigen server (n8n, Supabase)</td><td>—</td><td>€ 0</td></tr>
+    <tr><td>Incidentkosten (type 7 juli)</td><td>€ 650–900* per incident</td><td>↓ structureel door dagelijkse bewaking</td></tr>
+    <tr class="total"><td>Netto</td><td colspan="2">besparing = contractbedrag − € 400–550*</td></tr>
+  </table>
+
+  <div class="besluit">
+    <div class="lbl">Besluit gevraagd</div>
+    <div class="opt"><div class="n">1</div><div class="t"><b>AI-operatiebudget CCP bevestigen als vaste post: € 250*/maand</b> — gedekt uit het te beëindigen of af te schalen Atvise-contract; bij een gangbaar beheercontract per direct netto positief.</div></div>
+    <div class="opt"><div class="n">2</div><div class="t"><b>Monitoring-standaard vaststellen:</b> geen kanaal of koppeling zonder dagelijkse geautomatiseerde controle met alert en bewijslog. De eerste controles draaien al; de rest wordt binnen het budget uitgebouwd.</div></div>
+    <div class="opt"><div class="n">3</div><div class="t"><b>Smal on-demand vangnet</b> voor Magento core-updates en security-patches bij een andere partij (offerte volgt); geen vast contract.</div></div>
+  </div>
+
+  <p class="fine">Volledig bewijsdossier beschikbaar: Atvise-dossier 11-07 (tijdlijn, logins, 99,8%-analyse) · CEO-rapport 11-07 (incl. Google Ads-auditcijfers april en checklist-vergelijking) · Incident-A4 08-07 · Channable/Magento API-analyses · vault-logboek. Elk genoemd cijfer is daarin herleidbaar; bedragen met * zijn aannames of berekeningen op die cijfers.</p>
+</section>
+
+</body>
+</html>

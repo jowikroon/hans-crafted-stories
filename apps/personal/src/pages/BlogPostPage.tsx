@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Home, ChevronRight, Link2, Linkedin, Twitter, ArrowRight, ArrowUpRight } from "lucide-react";
+import { Home, ChevronRight, Link2, Linkedin, Twitter, ArrowRight, ArrowUpRight, ArrowUp, List, Share2, X } from "lucide-react";
 import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
@@ -9,7 +9,10 @@ import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
 import "@/styles/article-v2.css";
+import "@/styles/blog.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 import { applyMaskTokens, type MaskingConfig } from "@/lib/masking";
+import { trackBlogView, trackTocClick, trackReadDepth, trackShare, type BlogEventContext } from "@/lib/blogAnalytics";
 
 /* ────────────────────────────────────────────────────────────
    BlogPostPage — article reader, redesign v2.
@@ -38,12 +41,45 @@ import { applyMaskTokens, type MaskingConfig } from "@/lib/masking";
    Output trust model is unchanged — content originates from the CMS. */
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 type MaskCtx = { cfg: MaskingConfig | null | undefined; counters: Record<string, number> };
+/* Links: support every destination the CMS can produce — external https?://,
+   site-relative (/writing/…, /work/…), in-page #anchors and mailto:. Legacy
+   /blog/<slug> hrefs are normalised to /writing/<slug> (a /blog route never
+   shipped on this site). External links open in a new tab; unsafe schemes
+   (javascript: etc.) render as plain text. Bare URLs are autolinked. */
+const SAFE_HREF_RE = /^(https?:\/\/|\/(?![/\\])|#|mailto:)/i;
+const normalizeHref = (href: string): string => {
+  const h = href.trim();
+  if (h === "/blog" || h === "/blog/") return "/writing";
+  if (h.startsWith("/blog/")) return "/writing/" + h.slice("/blog/".length);
+  return h;
+};
+const anchorHtml = (rawHref: string, label: string): string | null => {
+  const href = normalizeHref(rawHref);
+  if (!SAFE_HREF_RE.test(href)) return null;
+  const attrs = /^https?:\/\//i.test(href) ? ' target="_blank" rel="noopener noreferrer"' : "";
+  return `<a href="${href.replace(/"/g, "&quot;")}"${attrs}>${label}</a>`;
+};
+const AUTOLINK_RE = /(^|[\s(])((?:https?:\/\/|www\.)[^\s<>"')]*[^\s<>"').,;:!?])/g;
 const inlineMd = (s: string, mask?: MaskCtx) => {
   let out = esc(s);
   if (mask) out = applyMaskTokens(out, mask.cfg, mask.counters);
-  return out
+  out = out
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\[(.+?)\]\((https?:[^)]+)\)/g, '<a href="$2" rel="noopener noreferrer">$1</a>');
+    .replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (m, label: string, href: string) => anchorHtml(href, label) ?? m);
+  // Autolink bare URLs, but never inside an <a>…</a> that already exists —
+  // split on anchor segments and only transform the text between them.
+  return out
+    .split(/(<a\b[^>]*>[\s\S]*?<\/a>)/g)
+    .map((seg, i) =>
+      i % 2 === 1
+        ? seg
+        : seg.replace(AUTOLINK_RE, (_m, pre: string, url: string) => {
+            const href = /^www\./i.test(url) ? `https://${url}` : url;
+            return `${pre}<a href="${href.replace(/"/g, "&quot;")}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+          })
+    )
+    .join("");
 };
 
 interface RenderResult { html: string; headings: { id: string; text: string }[]; }
@@ -127,7 +163,67 @@ function buildFigure(header: string, body: string[], autoNum: number, mask?: Mas
     + `<div class="fig__modalsrc" id="figm-${num}" hidden>${modalHtml}</div></figure>`;
 }
 
-function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderResult {
+/* ── "In het kort" summary card. Authored as:
+     :::kort
+     Eerste kernpunt.
+     Tweede kernpunt.
+     Derde kernpunt.
+     :::
+   Numbered items with accent styling; ported from the Anthropic-leak
+   article prototype. Leading "1." / "-" prefixes in authored lines are
+   stripped so both list styles work. */
+function buildKort(body: string[], lang: "nl" | "en", mask?: MaskCtx): string {
+  const items = body
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => l.replace(/^(?:\d+[.)]\s*|-\s*)/, ""));
+  if (!items.length) return "";
+  const label = lang === "en" ? "IN SHORT" : "IN HET KORT";
+  return `<div class="tldr"><div class="tldr__k">${label}</div><div class="tldr__list">`
+    + items.map((it, i) => `<div class="tldr__item"><span class="tldr__n">${i + 1}.</span><span>${inlineMd(it, mask)}</span></div>`).join("")
+    + `</div></div>`;
+}
+
+/* ── Horizontal timeline figure. Authored as:
+     :::timeline title="Een week uit het leven" sub="Maart–april 2026"
+     punt feb 2025 | Eerdere, vergelijkbare source-lek | grijs
+     punt 26 mrt | CMS-fout lekt ±3.000 documenten | amber
+     punt 31 mrt | Source map ontdekt in npm | rood
+     punt +2 uur | Clean-room rewrite | blauw
+     punt dagen erna | DMCA-takedowns | ink
+     caption Twee lekken in één week.
+     :::
+   "rood" renders as the highlighted milestone (bigger dot + halo).
+   Ported from the Anthropic-leak article prototype. */
+const TL_COLORS: Record<string, string> = { grijs: "#9aa39a", amber: "#e2a93c", rood: "#d5453a", blauw: "#4a7fb5", ink: "#1b1f1c" };
+function buildTimeline(header: string, body: string[], mask?: MaskCtx): string {
+  const title = attr(header, "title");
+  const sub = attr(header, "sub");
+  let caption = "";
+  const pts: { date: string; label: string; color: string; hot: boolean }[] = [];
+  for (const raw of body) {
+    const t = raw.trim(); if (!t) continue;
+    if (t.startsWith("caption ")) { caption = t.slice(8).trim(); continue; }
+    const line = t.replace(/^(?:punt|stap|-)\s+/, "");
+    const parts = line.split("|").map((p) => p.trim());
+    if (parts.length < 2) continue;
+    const colorKey = (parts[2] || "grijs").toLowerCase();
+    pts.push({ date: parts[0], label: parts[1], color: TL_COLORS[colorKey] || TL_COLORS.grijs, hot: colorKey === "rood" });
+  }
+  if (pts.length < 2) return "";
+  const cols = pts.map((p) => `<div class="tl__item${p.hot ? " tl__item--hot" : ""}">`
+    + `<div class="tl__date">${esc(p.date)}</div>`
+    + `<div class="tl__dot" style="background:${p.color}"></div>`
+    + `<div class="tl__lab">${inlineMd(p.label, mask)}</div></div>`).join("");
+  return `<figure class="tl"${title ? "" : ' data-notitle=""'}>`
+    + (title ? `<div class="tl__t">${esc(title)}</div>` : "")
+    + (sub ? `<div class="tl__s">${esc(sub)}</div>` : "")
+    + `<div class="tl__grid" style="grid-template-columns:repeat(${pts.length},1fr)"><div class="tl__line"></div>${cols}</div>`
+    + (caption ? `<figcaption class="tl__cap">${inlineMd(caption, mask)}</figcaption>` : "")
+    + `</figure>`;
+}
+
+function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl" | "en" = "nl"): RenderResult {
   const mask: MaskCtx = { cfg: maskingCfg, counters: {} };
   const lines = md.split("\n");
   const headings: { id: string; text: string }[] = [];
@@ -198,6 +294,31 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
       continue;
     }
 
+    // "In het kort" summary card:  :::kort ... :::
+    if (t === ":::kort" || t.startsWith(":::kort ")) {
+      flushList();
+      const bodyLines: string[] = [];
+      let j = i + 1;
+      for (; j < lines.length; j++) { if (lines[j].trim() === ":::") break; bodyLines.push(lines[j]); }
+      i = j;
+      const html = buildKort(bodyLines, lang, mask);
+      if (html) out.push(html);
+      continue;
+    }
+
+    // Horizontal timeline figure:  :::timeline ... :::
+    if (t.startsWith(":::timeline")) {
+      flushList();
+      const header = t.slice(3).trim();
+      const bodyLines: string[] = [];
+      let j = i + 1;
+      for (; j < lines.length; j++) { if (lines[j].trim() === ":::") break; bodyLines.push(lines[j]); }
+      i = j;
+      const html = buildTimeline(header, bodyLines, mask);
+      if (html) out.push(html);
+      continue;
+    }
+
     // Callout:  :::Kicker | body   (graceful: also plain "::: body")
     if (t.startsWith(":::")) {
       flushList();
@@ -235,6 +356,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null): RenderRes
 }
 
 const BlogPostPage = () => {
+  useEffect(() => { ensureFontCss("fonts-article-v2", FONT_CSS.articleV2); ensureFontCss("fonts-newsreader", FONT_CSS.newsreader); }, []);
   const { slug } = useParams<{ slug: string }>();
   const preloaded = usePreloadedBlogPost(slug);
   const [rawPost, setRawPost] = useState<BlogPostRow | null | undefined>(
@@ -244,6 +366,8 @@ const BlogPostPage = () => {
   const articleRef = useRef<HTMLElement>(null);
   const progRef = useRef<HTMLDivElement>(null);
   const [figHtml, setFigHtml] = useState<string | null>(null);
+  const [showBtt, setShowBtt] = useState(false);
+  const [mtocOpen, setMtocOpen] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -279,15 +403,66 @@ const BlogPostPage = () => {
   const displayContent = post ? (lang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
 
   const { html: bodyHtml, headings } = useMemo(
-    () => renderArticle(displayContent || "", post?.masking),
-    [displayContent, post?.masking]
+    () => renderArticle(displayContent || "", post?.masking, lang === "nl" ? "nl" : "en"),
+    [displayContent, post?.masking, lang]
   );
   const showToc = headings.length >= 3;
+
+  /* Hydration self-heal: the prerendered/SSR HTML is built for one language,
+     but the client can mount in the other (useLang). React does not reconcile
+     children inside dangerouslySetInnerHTML during hydration, which left the
+     stale server-language DOM — without the client's anchors — on first paint.
+     After mount (and on every recompute) force the DOM to match bodyHtml. */
+  useEffect(() => {
+    if (!bodyHtml) return;
+    // Marker-based guard: some page loads intermittently end up with a stale
+    // article DOM even though React's props hold the correct html (observed
+    // live; root cause is a mount/transition race). Stamp every write with a
+    // content marker and re-assert for the first seconds after mount — any
+    // write that isn't ours loses. Content or language changes update the
+    // marker via the dependency and re-run the guard.
+    // Marker = the browser-normalised length of OUR html. Any write by another
+    // actor (a racing commit with an older snapshot, a transition remnant, …)
+    // yields a different normalised length and is overwritten on the next tick.
+    let mark = -1;
+    const heal = () => {
+      const el = articleRef.current?.querySelector<HTMLElement>(".prose");
+      if (!el || !el.isConnected) return;
+      if (el.innerHTML.length !== mark) {
+        el.innerHTML = bodyHtml;          // write our version
+        mark = el.innerHTML.length;        // remember its normalised form
+      }
+    };
+    heal();
+    const iv = window.setInterval(heal, 500); // cheap: one length check per tick
+    return () => window.clearInterval(iv);
+  }, [bodyHtml]);
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const seoHead = post ? getBlogPostHead(post) : null;
   const seoUrl = seoHead?.canonical || `https://hansvanleeuwen.com/writing/${slug}`;
   const isDraft = !!post && (post.published === false || (post as { status?: string }).status === "draft");
+
+  /* ── GTM dataLayer analytics (blogAnalytics.ts) ── */
+  const analyticsCtx = useMemo<BlogEventContext | null>(
+    () => (post && slug ? { slug, title: displayTitle, category: post.category || "Marketplace", lang } : null),
+    [post, slug, displayTitle, lang]
+  );
+  useEffect(() => {
+    if (!analyticsCtx || isDraft) return;
+    trackBlogView(analyticsCtx);
+  }, [analyticsCtx, isDraft]);
+
+  /* Read-depth thresholds + read-complete (independent of TOC presence). */
+  useEffect(() => {
+    if (typeof window === "undefined" || !analyticsCtx || isDraft) return;
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (max > 0) trackReadDepth(analyticsCtx, window.scrollY / max);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [analyticsCtx, isDraft]);
 
   useSEO({
     enabled: post !== undefined,
@@ -312,14 +487,38 @@ const BlogPostPage = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       if (progRef.current) progRef.current.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
       if (!secs.length) return;
-      let cur = secs[0];
-      secs.forEach((s) => { if (s.getBoundingClientRect().top <= 140) cur = s; });
-      links.forEach((a) => a.classList.toggle("active", a.dataset.toc === cur.id));
+      let curIdx = 0;
+      secs.forEach((s, idx) => { if (s.getBoundingClientRect().top <= 140) curIdx = idx; });
+      const curId = secs[curIdx].id;
+      links.forEach((a) => {
+        const idx = headings.findIndex((h) => h.id === a.dataset.toc);
+        a.classList.toggle("active", a.dataset.toc === curId);
+        a.classList.toggle("done", idx > -1 && idx < curIdx);
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, [post, showToc, headings, slug]);
+
+  /* ── Back-to-top visibility ── */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onScroll = () => setShowBtt(window.scrollY > 500);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* ── Close mobile TOC on ESC or route change ── */
+  useEffect(() => { setMtocOpen(false); }, [slug]);
+  useEffect(() => {
+    if (!mtocOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMtocOpen(false); };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+  }, [mtocOpen]);
 
   /* ── Inline figure "Bekijk context" modal: open + ESC/scroll-lock ── */
   useEffect(() => {
@@ -344,17 +543,43 @@ const BlogPostPage = () => {
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
   }, [figHtml]);
 
-  const scrollToHeading = (e: React.MouseEvent, id: string) => {
+  const scrollToHeading = (e: React.MouseEvent, id: string, source: "toc" | "mtoc" = "toc") => {
     e.preventDefault();
     const el = articleRef.current?.querySelector<HTMLElement>(`#${id}`);
     if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 96, behavior: "smooth" });
+    if (analyticsCtx) {
+      const idx = headings.findIndex((h) => h.id === id);
+      const h = idx > -1 ? headings[idx] : null;
+      trackTocClick(analyticsCtx, id, h ? h.text : id, Math.max(idx, 0), source);
+    }
   };
 
   const handleCopyLink = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(currentUrl);
       toast.success(lang === "nl" ? "Link gekopieerd" : "Link copied to clipboard");
+      if (analyticsCtx) trackShare(analyticsCtx, "copy_link");
     }
+  };
+
+  const handleWebShare = async () => {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: displayTitle, url: currentUrl });
+        if (analyticsCtx) trackShare(analyticsCtx, "web_share");
+      } catch {
+        /* user cancelled — ignore */
+      }
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleMtocClick = (e: React.MouseEvent, id: string) => {
+    scrollToHeading(e, id, "mtoc");
+    setMtocOpen(false);
   };
 
   if (post === undefined) {
@@ -441,9 +666,12 @@ const BlogPostPage = () => {
             <aside className="toc" aria-label={lang === "nl" ? "In dit artikel" : "In this article"}>
               <div className="toc__l">{lang === "nl" ? "In dit artikel" : "In this article"}</div>
               <ol>
-                {headings.map((h) => (
+                {headings.map((h, i) => (
                   <li key={h.id}>
-                    <a data-toc={h.id} href={`#${h.id}`} onClick={(e) => scrollToHeading(e, h.id)}>{h.text}</a>
+                    <a data-toc={h.id} href={`#${h.id}`} onClick={(e) => scrollToHeading(e, h.id)}>
+                      <span className="toc__n" aria-hidden="true"><i>{String(i + 1).padStart(2, "0")}</i><b>✓</b></span>
+                      <span>{h.text}</span>
+                    </a>
                   </li>
                 ))}
               </ol>
@@ -451,20 +679,27 @@ const BlogPostPage = () => {
           ) : (
             <div aria-hidden />
           )}
-          <div className="prose" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+          <div className="prose" key={`prose-${lang}-${bodyHtml.length}`} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
         </div>
 
-        {/* Tags */}
+        {/* Tags — link to the filtered /writing index */}
         {post.tags.length > 0 && (
-          <div className="atags">{post.tags.map((t) => <span key={t} className="atag">{t}</span>)}</div>
+          <div className="atags">
+            {post.tags.map((t) => (
+              <Link key={t} className="atag" to={`/writing?tag=${encodeURIComponent(t)}`}>{t}</Link>
+            ))}
+          </div>
         )}
 
         {/* Share */}
         <div className="share">
           <span className="share__l">{lang === "nl" ? "Delen" : "Share"}</span>
-          <a href={shareLinkedIn} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a>
-          <a href={shareTwitter} target="_blank" rel="noopener noreferrer" aria-label="X / Twitter"><Twitter size={17} /></a>
+          <a href={shareLinkedIn} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" onClick={() => analyticsCtx && trackShare(analyticsCtx, "linkedin")}><Linkedin size={17} /></a>
+          <a href={shareTwitter} target="_blank" rel="noopener noreferrer" aria-label="X / Twitter" onClick={() => analyticsCtx && trackShare(analyticsCtx, "twitter")}><Twitter size={17} /></a>
           <button type="button" onClick={handleCopyLink} aria-label={lang === "nl" ? "Kopieer link" : "Copy link"}><Link2 size={17} /></button>
+          {typeof navigator !== "undefined" && !!navigator.share && (
+            <button type="button" className="share__native" onClick={handleWebShare} aria-label={lang === "nl" ? "Delen via..." : "Share via..."}><Share2 size={20} /></button>
+          )}
         </div>
 
         {/* Conversion CTA */}
@@ -480,6 +715,43 @@ const BlogPostPage = () => {
         {/* More */}
         <MoreReading category={post.category} currentSlug={post.slug} lang={lang} />
       </article>
+
+      {/* Mobile TOC FAB */}
+      {showToc && (
+        <button
+          className="mtoc-fab"
+          onClick={() => setMtocOpen(true)}
+          aria-label={lang === "nl" ? "Inhoudsopgave" : "Table of contents"}
+        >
+          <List />
+        </button>
+      )}
+
+      {/* Mobile TOC Bottom Sheet */}
+      {showToc && mtocOpen && (
+        <div className="mtoc-sheet open" onClick={(e) => { if (e.target === e.currentTarget) setMtocOpen(false); }}>
+          <div className="mtoc-panel" role="dialog" aria-modal="true" aria-label={lang === "nl" ? "Inhoudsopgave" : "Table of contents"}>
+            <div className="mtoc-handle" />
+            <div className="mtoc-panel__hd">{lang === "nl" ? "In dit artikel" : "In this article"}</div>
+            <ol>
+              {headings.map((h) => (
+                <li key={h.id}>
+                  <a href={`#${h.id}`} onClick={(e) => handleMtocClick(e, h.id)}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      )}
+
+      {/* Back to top */}
+      <button
+        className={`btt${showBtt ? " show" : ""}`}
+        onClick={scrollToTop}
+        aria-label={lang === "nl" ? "Naar boven" : "Back to top"}
+      >
+        <ArrowUp />
+      </button>
 
       {figHtml && (
         <div className="figov" onClick={(e) => { if (e.target === e.currentTarget) setFigHtml(null); }}>

@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "updated": "2026-08-19",
+  "description": "Canonieke MCP-registry voor het HansOS-netwerk. Dit bestand is de enige bron van waarheid over welke MCP-servers bestaan en welk device ze hoort te kennen. Wijzig hier, niet in een device-lokale config. Controleer een device met `npm run mcp:audit`.",
+
+  "servers": [
+    {
+      "id": "workflow-orchestrator",
+      "label": "Workflow Orchestrator",
+      "transport": "stdio",
+      "scope": "repo",
+      "command": "node",
+      "args": [".claude/mcp/workflow-orchestrator/index.js"],
+      "expectedTools": [
+        "list_webhooks",
+        "trigger_webhook",
+        "n8n_health",
+        "git_status",
+        "git_changed_files",
+        "deployment_map",
+        "trigger_deploy"
+      ],
+      "requiredOn": ["vps1", "laptop", "cloud-sandbox"],
+      "note": "Reist mee met de repo via .mcp.json. Dependencies via `npm run mcp:setup`."
+    },
+    {
+      "id": "health-guardian",
+      "label": "Health Guardian",
+      "transport": "stdio",
+      "scope": "repo",
+      "command": "node",
+      "args": [".claude/mcp/health-guardian/index.js"],
+      "expectedTools": [
+        "health_check_all",
+        "health_check_layer",
+        "health_report",
+        "log_event",
+        "trigger_alert",
+        "list_endpoints",
+        "health_run_and_log"
+      ],
+      "requiredOn": ["vps1", "laptop", "cloud-sandbox"],
+      "note": "Reist mee met de repo via .mcp.json. Dependencies via `npm run mcp:setup`."
+    },
+    {
+      "id": "n8n-hostinger",
+      "label": "n8n Hostinger MCP",
+      "transport": "http",
+      "scope": "self-hosted",
+      "url": "https://n8n.srv1402218.hstgr.cloud/mcp-server/http",
+      "auth": "bearer",
+      "aliases": ["Hostinger_n8n"],
+      "expectUnauthenticated": [401, 403],
+      "requiredOn": ["vps1", "laptop", "cloud-sandbox", "claude-account"],
+      "note": "De enige werkende self-hosted MCP. Token heeft de mcp-server-api audience nodig, niet public-api."
+    },
+    {
+      "id": "supabase",
+      "label": "Supabase MCP",
+      "transport": "http",
+      "scope": "saas",
+      "url": "https://mcp.supabase.com/mcp",
+      "auth": "oauth",
+      "expectUnauthenticated": [401],
+      "requiredOn": ["claude-account"]
+    },
+    {
+      "id": "cloudflare-bindings",
+      "label": "Cloudflare Developer Platform MCP",
+      "transport": "http",
+      "scope": "saas",
+      "url": "https://bindings.mcp.cloudflare.com/mcp",
+      "auth": "oauth",
+      "aliases": ["Cloudflare_Developer_Platform"],
+      "expectUnauthenticated": [401],
+      "requiredOn": ["claude-account"]
+    },
+    {
+      "id": "github",
+      "label": "GitHub MCP",
+      "transport": "http",
+      "scope": "saas",
+      "auth": "oauth",
+      "requiredOn": ["claude-account"],
+      "note": "Endpoint wordt door de client beheerd; alleen aanwezigheid wordt gecontroleerd."
+    },
+    {
+      "id": "monday",
+      "label": "monday.com MCP",
+      "transport": "http",
+      "scope": "saas",
+      "url": "https://mcp.monday.com/mcp",
+      "auth": "oauth",
+      "aliases": ["monday_com"],
+      "expectUnauthenticated": [401],
+      "requiredOn": ["claude-account", "laptop"],
+      "note": "Op de laptop geconfigureerd in Cursor, zie docs/monday-mcp-setup.md."
+    },
+    {
+      "id": "linear",
+      "label": "Linear MCP",
+      "transport": "http",
+      "scope": "saas",
+      "auth": "oauth",
+      "requiredOn": ["claude-account"]
+    },
+    {
+      "id": "slack",
+      "label": "Slack MCP",
+      "transport": "http",
+      "scope": "saas",
+      "auth": "oauth",
+      "requiredOn": ["claude-account"]
+    }
+  ],
+
+  "devices": [
+    {
+      "id": "vps1",
+      "label": "VPS1 — Capital City",
+      "hostname": "srv1402218.hstgr.cloud",
+      "ip": "187.124.1.75",
+      "heartbeatHost": "vps1",
+      "clients": ["claude-code-cli"],
+      "repoCheckout": true
+    },
+    {
+      "id": "vps2",
+      "label": "VPS2 — Industrial Zone",
+      "hostname": "srv1411336.hstgr.cloud",
+      "ip": "187.124.2.66",
+      "heartbeatHost": "vps2",
+      "clients": ["openclaw"],
+      "repoCheckout": false
+    },
+    {
+      "id": "pi5",
+      "label": "pi5 — Raspberry Pi 5 (CasaOS)",
+      "heartbeatHost": "pi5",
+      "clients": ["openclaw"],
+      "repoCheckout": false
+    },
+    {
+      "id": "laptop",
+      "label": "Laptop — Cursor + Cowork",
+      "heartbeatHost": "laptop",
+      "clients": ["cursor", "claude-code-cli", "cowork"],
+      "repoCheckout": true
+    },
+    {
+      "id": "cloud-sandbox",
+      "label": "Claude Code cloud sandbox",
+      "heartbeatHost": "cloud-sandbox",
+      "clients": ["claude-code-web"],
+      "repoCheckout": true,
+      "ephemeral": true
+    },
+    {
+      "id": "claude-account",
+      "label": "claude.ai-account (web, mobiel, sandbox)",
+      "clients": ["claude-ai"],
+      "repoCheckout": false,
+      "note": "Connectors op accountniveau; niet per machine te auditen, alleen per client-sessie."
+    }
+  ],
+
+  "retired": [
+    {
+      "id": "n8n-cloud",
+      "label": "n8n Cloud MCP",
+      "url": "https://hansvanleeuwen.app.n8n.cloud/mcp-server/http",
+      "retiredOn": "2026-08-19",
+      "reason": "Instance geeft 404 op /, /healthz en /mcp-server/http. Niet opnieuw als default invoeren zonder eerst een 200 op /healthz aan te tonen.",
+      "stillReferencedIn": [
+        "apps/personal/src/lib/config/infrastructure.ts",
+        "apps/personal/src/components/portal/WorkflowViewerModal.tsx",
+        "supabase/functions/_shared/workflows.ts",
+        "supabase/functions/empire-health/index.ts",
+        ".env.production",
+        ".env.example"
+      ]
+    },
+    {
+      "id": "docker-mcp-gateway",
+      "label": "Docker MCP Gateway :3100",
+      "retiredOn": "2026-08-19",
+      "reason": "Genoemd in vijf documenten en in de Command Center UI, maar draait op geen enkele host (niet in de heartbeats van pi5, vps1 of vps2). Behandel als niet-bestaand tot een heartbeat het tegendeel bewijst."
+    }
+  ],
+
+  "unverified": [
+    {
+      "id": "workos",
+      "aliases": ["WorkOS"],
+      "reason": "Staat als geconfigureerd-zonder-auth op het claude.ai-account, maar komt in geen enkel architectuurdocument voor. Uitzoeken of hij hoort te bestaan."
+    },
+    {
+      "id": "adobe-experience-manager",
+      "aliases": ["Adobe_Experience_Manager"],
+      "reason": "Idem: geconfigureerd zonder auth, nergens gedocumenteerd."
+    }
+  ]
+}

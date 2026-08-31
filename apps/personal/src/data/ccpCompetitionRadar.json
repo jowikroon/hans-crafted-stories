@@ -1,0 +1,714 @@
+[
+  {
+    "run": "2026-05-14",
+    "delivered": "2026-05-14",
+    "sourceFile": "ccp-concurrentie-radar-2026-05-14.md",
+    "kpi": {
+      "autodocRevenue": null,
+      "autodocB2b": null,
+      "fbaNet": null,
+      "euro7Days": 199,
+      "openQuestions": 6
+    },
+    "summary": [
+      "Tier-1 (Bosch, ATE/Continental, TRW/ZF, Lemförder, SKF, FAG, febi) bezetten de Amazon.de bestseller-posities; tier-2 value-segment wordt steeds harder geclaimd door Autodoc-eigen labels (RIDEX/STARK/goCORE) en Frankberg — precies de ruimte waar A.B.S. positioneert.",
+      "Euro 7 brake-dust regulering treedt 29 november 2026 in werking voor nieuwe lichte voertuigen — fundamentele herijking van de remcategorie binnen 6 maanden, géén signaal dat ABS hier publiek op stuurt.",
+      "Amazon FBA-tariefwijzigingen (jan 2026 prep-services einde + 3,5% brandstoftoeslag apr 2026) drukken value-tier marges; Autodoc rapporteert tóch sterke start 2026, wat suggereert dat private-label gewoon doorzet ondanks kostenduw."
+    ],
+    "changes": [],
+    "actions": [
+      {
+        "title": "Concurrent-watchlist scherpstellen rond febi bilstein, Autodoc-private-labels (RIDEX/STARK/goCORE) en Frankberg.",
+        "detail": "Bosch/ATE/TRW zijn niet de strijd; ze spelen op andere prijspunten. Toevoegen aan `/context/competitor-watchlist.md`. Impact: hoog. Effort: laag (1 uur)."
+      },
+      {
+        "title": "Maak Euro 7 brake-dust positie expliciet vóór Q3 2026.",
+        "detail": "Inventariseer ABS rem-SKU's op PM10-friction performance en bepaal communicatieve positie (compliant / in-ontwikkeling / wait-and-see). Zonder publieke positie tegen sept 2026 verliest A.B.S. zichtbaarheid in \"Euro 7 ready\" SEO/SOV. Impact: hoog. Effort: middel (vereist data uit fabrikanten + comms-call)."
+      },
+      {
+        "title": "Bouw een Amazon.de SKU/prijs-tracker op de drie target-categorieën — top-30 ASIN's, weekly snapshot.",
+        "detail": "Zonder eigen baseline kunnen de volgende runs geen diffs leveren. Tracker bouwen via n8n (Hostinger) + Ahrefs Brand Radar zodra MCP staat. Impact: hoog. Effort: middel (1-2 dagen build)."
+      },
+      {
+        "title": "Test ABS-merkpositie tegen goCORE op één pilot-distributeur in DE.",
+        "detail": "goCORE richt zich op pro/werkplaatsen — dat is A.B.S.'s natuurlijke kanaal. Test welke conversie ABS heeft tegenover goCORE-aanbod bij dezelfde werkplaatsklant. Impact: middel-hoog. Effort: middel (vereist distributeursafspraak)."
+      },
+      {
+        "title": "Authenticeer Ahrefs Brand Radar MCP voor volgende run.",
+        "detail": "Zonder AI-mentions data missen we de share-of-voice dimensie die in de scope staat. Impact: hoog voor rapportkwaliteit. Effort: laag (auth-flow)."
+      }
+    ],
+    "openQuestions": [
+      "Ahrefs Brand Radar MCP nog niet geauthenticeerd in deze sessie. Aanname: data uit web_search + publieke rapporten is voldoende voor eerste baseline-run; volgende run moet Brand Radar AI-mentions en SOV-data toevoegen. Geen \"raden\" gedaan op AI-citation cijfers.",
+      "Geen directe Amazon.de SKU-volumes of prijs-deltas beschikbaar zonder marketplace-data scraper of Ahrefs/Jungle Scout API. Aanname: top-brand structuur uit bestseller-lijsten is representatief; concrete prijswijzigingen kunnen pas vanaf SKU-tracker (zie actie 3).",
+      "A.B.S. eigen Amazon.de listing-status niet bevestigd. A.B.S. distribueert volgens eigen statements via professionele distributeurs, niet rechtstreeks D2C op Amazon — maar of ABS-branded ASINs op Amazon.de circuleren via derden is niet vastgesteld in deze run. Aanname voor nu: ABS heeft géén directe Amazon.de presence; CCP/ABS verkoopt via offline + eigen sites.",
+      "FBA-tariefveranderingen geverifieerd voor US/CA — Europese tariefwijzigingen (Amazon.de specifiek) niet expliciet gevonden in deze run. Aanname: directionele druk geldt parallel in EU, maar exacte cijfers voor DE moeten in volgende run worden bevestigd.",
+      "\"Top-10\" lijst is samengesteld door consolidatie over de drie categorieën, niet door één enkele Amazon.de bestseller-export. Werkdefinitie volstaat voor strategische framing; voor SKU-niveau scherpte zie actie 3.",
+      "Slack-delivery naar #ccp-updates uit deze run: niet uitgevoerd zonder bevestiging van kanaal-toegang. Rapport staat in workspace; toelichting in chat-antwoord."
+    ]
+  },
+  {
+    "run": "2026-05-20",
+    "delivered": "2026-05-21",
+    "sourceFile": "ccp-concurrentie-radar-2026-05-20.md",
+    "kpi": {
+      "autodocRevenue": null,
+      "autodocB2b": null,
+      "fbaNet": -0.32,
+      "euro7Days": 193,
+      "openQuestions": 7
+    },
+    "summary": [
+      "Top-10 competitor-set Amazon.de stabiel sinds 14-05; één meaningful diff: Lemförder zichtbaar verschoven naar #2-positie in tie-rod-bestseller (Lemförder 2764501, 5,0/5, 11 offers) — Lemförder versterkt stuurdelen-grip ten koste van febi bilstein 37629 (#32) en febi bilstein 49082.",
+      "Amazon EU FBA-tarieven gaan per 15-12-2025 (parcel fulfilment) en 05-01-2026 (referral) structureel omlaag in DE — gemiddeld €0,32/unit voor parcels, plus uitbreiding low-price FBA tot €20 (–€0,45/unit). Dit verbetert direct de FBA-first margin-case voor ABS in 2026 én voor Frankberg/RIDEX in het value-tier; netto is dit een gunstige duw voor wie nú instapt, geen bedreiging.",
+      "ABS publieke positie op Euro 7 brake-dust (29-11-2026) is in 7 dagen niet bewogen; carry-over risico uit 14-05-rapport blijft staan. Tegenwaarde: bovenkant van de markt (Brembo, ATE, Textar) heeft in deze run géén nieuwe Euro 7 SKU-launch publiek aangekondigd — venster om publiek te claimen is nog open."
+    ],
+    "changes": [
+      {
+        "domain": "Top-10 competitor-set",
+        "change": "Geen toetreders / uitvallers. Lemförder schuift omhoog in tie-rod bestseller. Febi bilstein behoudt brede multi-categorie positie maar verliest #1 in tie-rod.",
+        "source": "Amazon.de Bestsellers Tie Rods, 2026-05-20"
+      },
+      {
+        "domain": "FBA-fees EU/DE",
+        "change": "Bevestigd: parcel fulfilment –€0,32/unit gem. (vanaf 15-12-2025), low-price FBA uitgebreid tot €20 (–€0,45/unit). Referral-cuts in clothing/home/grocery (niet auto-parts).",
+        "source": "Amazon EU Rate Card Feb-2026, About-Amazon EU, 2026"
+      },
+      {
+        "domain": "Autodoc private-labels",
+        "change": "Geen wijziging in label-portfolio (RIDEX/STARK/goCORE). Geen nieuwe label-launches publiek sinds 14-05.",
+        "source": "Autodoc.de, 2026-05-20"
+      },
+      {
+        "domain": "Euro 7 brake-dust",
+        "change": "Geen publieke Bosch/ATE/TRW productlijn-launch deze week. Venster blijft open.",
+        "source": "Web-scan 2026-05-20"
+      },
+      {
+        "domain": "EU M&A consolidatie",
+        "change": "Q1-Q2 2026 versnelt: NL/DE/UK = 41% target-share. Driver: tariff-druk + supply-chain resilience. Roland Berger/Portage Point/Bain-publicaties tussen 14-05 en 20-05.",
+        "source": "M&A reports, 2026"
+      },
+      {
+        "domain": "ABS Amazon.de presence",
+        "change": "Geen update gevonden. Aanname uit 14-05 blijft: geen directe D2C-presence; alleen via derden.",
+        "source": "Web-scan 2026-05-20"
+      },
+      {
+        "domain": "Ahrefs Brand Radar MCP",
+        "change": "Status: nog steeds `Insufficient plan` (carry-over uit 2026-05-15). Geen AI-mentions data deze run.",
+        "source": "last-run-summary.md"
+      }
+    ],
+    "actions": [
+      {
+        "title": "Vertaal Amazon EU FBA-fee-verlaging direct naar ABS pricing-model voor sub-€20 SKU's.",
+        "detail": "Bereken per SKU of de –€0,32/unit + low-price FBA uitbreiding tot €20 een netto margin-verbetering oplevert (afhankelijk van size-tier). Specifiek beoordelen: ABS rem-blokjes en kleine stuurelementen in €15–€20 band. Beslissingspunt: of Q3 2026 een agressievere FBA-listing schaalbaar wordt. Impact: hoog. Effort: middel (1 dag SKU-modeling, vereist ABS prijslijst)."
+      },
+      {
+        "title": "Update concurrent-watchlist: Lemförder verhuist naar #2 in stuurdelen, naast febi bilstein op #1.",
+        "detail": "`/context/competitor-watchlist.md` (indien aanwezig) bijwerken. Bosch/ATE blijven op rem-prio; SKF/FAG op wiellager. Impact: middel. Effort: laag (30 min)."
+      },
+      {
+        "title": "Euro 7 brake-dust positie: maak Q3-deadline expliciet in roadmap.",
+        "detail": "Tier-1 heeft 7 dagen niets gelanceerd. ABS heeft tot eind augustus 2026 om publieke positie te claimen vóórdat tier-1 dominant communiceert. Concrete acties: PM10-friction inventarisatie per SKU, comms-statement opstellen, één DE-werkplaats-pilot. Impact: hoog. Effort: middel (vereist data uit fabrikanten + comms-call)."
+      },
+      {
+        "title": "EU aftermarket M&A monitoring: maak een distributeur-portfolio kwetsbaarheidsanalyse.",
+        "detail": "Welke NL/DE distributeurs in ABS-kanaal zijn potentiële LKQ/Alliance/Parts Holding-targets? Als één van die hands wordt, hoe snel kan ABS vervangen? Impact: middel-hoog. Effort: middel (1-2 dagen, vereist commerciële input)."
+      },
+      {
+        "title": "Authenticeer Ahrefs Brand Radar MCP — derde run op rij dat dit ontbreekt.",
+        "detail": "Blockt SOV-data en AI-citation tracking; carry-over uit 2026-05-15. Impact: hoog voor rapportkwaliteit. Effort: laag (auth-flow + plan-upgrade-check, zie last-run-summary.md)."
+      }
+    ],
+    "openQuestions": [
+      "Ahrefs Brand Radar MCP plan-restrictie carry-over. Sinds 2026-05-15 (3 runs geleden) niet beschikbaar. Aanname: web_search + publieke rapporten volstaan voor strategische framing maar leveren géén AI-mentions/SOV-data. Geen schatting gedaan op AI-citation cijfers.",
+      "Amazon.de SKU-level prijs-deltas en volume. Geen marketplace-scraper of seller-tooling beschikbaar in deze run. Aanname: bestseller-page ranking is bruikbare proxy voor mix-shift detectie (zoals Lemförder #33 in tie-rod), maar exacte units en prijs-veranderingen vereisen tracker uit actie 3 van 14-05-rapport.",
+      "FBA-fee impact per ABS SKU. Verlaging van gemiddeld €0,32/unit is gemiddelde EU-cijfer; ABS SKU-mix verschilt waarschijnlijk van mediane Amazon-seller-mix (zwaardere brake discs vs. lichte tie-rod-ends bewegen anders). Aanname: low-price FBA-band uitbreiding tot €20 is unambiguously positief voor ABS-SKU's onder €20; voor zwaardere wiellagersets / brake discs moet per size-tier geverifieerd. SKU-mapping nog niet gedaan.",
+      "Vorige run noemde FBA prep-services einde (jan 2026 US) en 3,5% brandstoftoeslag (apr 2026 US/CA). Deze run bevestigt parallelle EU-tariefstructuur als netto-verlaging, dus eerdere \"marge-druk\" framing was directioneel maar feitelijk te negatief voor EU. Correctie: voor DE specifiek is 2026 een fee-verlaging-jaar, niet een fee-stijging-jaar.",
+      "ABS Amazon.de presence-status: geen nieuwe data deze run. Carry-over aanname uit 14-05: geen directe D2C-presence; verkoopt via offline professionele distributeurs. Volgende run zou met seller-scan (3rd-party listings van ABS-branded ASINs) bevestiging kunnen geven.",
+      "Slack-delivery naar #ccp-updates: `#ccp-updates` bestaat nog steeds niet volgens last-run-summary.md (carry-over sinds 2026-05-15). Aanname: rapport wordt enkel in workspace gepubliceerd, geen Slack-push deze run.",
+      "Top-10 lijst is composite over 3 categorieën, niet uit één enkele Amazon.de export. Zelfde werkdefinitie als 14-05. SKU-tracker (actie 3 vorige run) is voorwaarde voor scherpere ranking."
+    ]
+  },
+  {
+    "run": "2026-05-27",
+    "delivered": "2026-05-28",
+    "sourceFile": "ccp-concurrentie-radar-2026-05-27.md",
+    "kpi": {
+      "autodocRevenue": null,
+      "autodocB2b": null,
+      "fbaNet": -0.27,
+      "euro7Days": 186,
+      "openQuestions": 11
+    },
+    "summary": [
+      "Correctie op 20-05-claim: tier-1 heeft Euro 7-window niet meer open — ZF/TRW kondigde 13-05-2026 een eigen brake-particle dynamometer (dustIN, Spanje) aan, Brembo Greentell loopt al richting OE-toepassing, en ATE New Original brake-pad/disc-paren met Euro 7-coating zijn sinds H2 2025 in markt. Het \"first-mover-narratief\"-tijdvenster voor ABS is in deze week scherp versmald.",
+      "FBA-fee picture nuanceert: vanaf 17-04-2026 een 1,5% fuel-surcharge op FBA-fees in DE (gem. €0,05/unit), MCF vanaf 02-05-2026. Netto effect voor DE auto-parts blijft positief t.o.v. baseline (parcel-verlaging –€0,32 > surcharge +€0,05), maar de marge-winning is kleiner dan 20-05-rapport suggereerde.",
+      "LKQ Europe-divestiture is van \"activist-druk\" naar \"actieve uitvoering\" gegaan: $410M self-service-sale al rond, specialty-business-sale (tot $1B) gelanceerd. Direct distributeur-risico voor ABS — kwetsbaarheidsanalyse uit 20-05-actie 4 wordt urgenter."
+    ],
+    "changes": [
+      {
+        "domain": "Top-10 competitor-set",
+        "change": "Stabiel — Bosch / ATE / TRW / febi bilstein / Brembo / SKF / FAG / Lemförder / Meyle / Frankberg/RIDEX onveranderd. febi bilstein-SKU-totaal nu bevestigd op 37.000 (vs. ABS 36.000+) — proxy voor breedte. Frankberg-catalogus bevestigd op 41.311 items op Autodoc.",
+        "source": "Amazon.de bestseller-pagina's + febi.com + autodoc.parts, 2026-05-27"
+      },
+      {
+        "domain": "Euro 7 brake-dust launches",
+        "change": "Correctie op 20-05. Tier-1 heeft wél productlines in de markt: ATE New Original H2 2025 (VW ID.3/4, Tesla Model S, Cupra Born, Polestar 2), Brembo Greentell Set (Auto Shanghai 2025 → 90% PM-reductie), ZF dustIN dynamometer (13-05-2026 publiek, TRW-pads validatie). PureForge meldt 3,3 mg/km PM (53% onder Euro 7 ICE-limiet).",
+        "source": "The BRAKE Report, AfterMarketNews, autonews.com, motor1.com, 2026-05-13 → 2026-05-27"
+      },
+      {
+        "domain": "FBA-fees EU/DE",
+        "change": "Nuance: vanaf 17-04-2026 een 1,5% fuel-/logistics-surcharge op FBA-fees in DE/UK/FR/IT/ES/PL/SE/NL/IE/BE (gem. +€0,05/unit). MCF idem vanaf 02-05-2026. Parcel-verlaging –€0,32 uit baseline blijft, maar netto-saldo wordt kleiner.",
+        "source": "ChannelX 2026-04-03, Digital Commerce 360 2026-04-03"
+      },
+      {
+        "domain": "Autodoc private-labels",
+        "change": "Stabiel op label-portfolio (RIDEX/STARK/goCORE). Cijfer-update: 17,7 mln units van eigen labels verkocht in 2025. Geen nieuwe label-launches publiek deze week.",
+        "source": "autodoc.group/faq, 2026-05-27"
+      },
+      {
+        "domain": "EU M&A consolidatie",
+        "change": "Versterkt signaal: LKQ Corp is van activist-pressure naar uitvoering. Q4 2025 → Q1 2026: self-service-segment verkocht voor $410M; specialty-business-sale (tot $1B) gelanceerd. Ananym Capital +361.902 aandelen in Q4 2025; LKQ = 13,79% van Ananym 13F.",
+        "source": "CNBC 2025-12-20, Hedgeweek, Motley Fool 2026-02-18, Yahoo Finance 2026"
+      },
+      {
+        "domain": "ABS Amazon.de presence",
+        "change": "Stabiel — geen nieuwe data deze run. ABS dekt naar eigen statement 99,7% European carparc; 3 EU-warehouses; geen directe Amazon-D2C-bevestiging gevonden.",
+        "source": "absallbrakesystems.com, slimstock.com, 2026-05-27"
+      },
+      {
+        "domain": "Ahrefs Brand Radar MCP",
+        "change": "Stabiel `Insufficient plan` — 4e run op rij geblokkeerd sinds 2026-05-15. Geen SOV-, AI-mentions- of Site Explorer-data deze run.",
+        "source": "Ahrefs MCP response, 2026-05-27"
+      }
+    ],
+    "actions": [
+      {
+        "title": "ABS Euro 7 publieke positie naar voren: deadline maand i.p.v. kwartaal.",
+        "detail": "Tier-1 heeft narratieve aanwezigheid op Euro 7 in deze week opgebouwd (ATE-productlijn, Brembo-merk, ZF-dyno). ABS moet vóór eind juni 2026 een eigen publieke positie communiceren — anders wordt het reactief. Concrete deliverable: één-pagina-statement (compliant / in-ontwikkeling / wait-and-see) + één werkplaats-pilot in DE. Vereist: PM10-data per SKU én comms-call met handelsmedia (The BRAKE Report, AfterMarketNews zijn de cycli waar ZF/Brembo binnenkomen). Impact: hoog. Effort: middel (5-10 werkdagen bij parallelle uitvoering)."
+      },
+      {
+        "title": "Distributeur-portfolio kwetsbaarheidsanalyse NL/DE: van \"actie 4\" naar \"actie 1\" voor next sprint.",
+        "detail": "LKQ EU specialty-sale van tot $1 mld is in process. Vraag te beantwoorden: welke NL/DE-distributeurs in ABS-kanaal zijn LKQ-bezit of LKQ-acquisitie-target? Hoe snel kan ABS pivoten naar Alliance / Parts Holding Europe / lokale alternatieven als één hand kantelt? Vereist commerciële en accountmanagement-input — niet alleen radar-data. Carry-over uit 20-05 actie 4, maar urgenter. Impact: hoog. Effort: middel-hoog (1-2 weken commerciële input)."
+      },
+      {
+        "title": "FBA-fee per-SKU impact-model bouwen mét surcharge-correctie.",
+        "detail": "20-05-actie 1 staat nog open. Nieuwe input: 1,5% fuel-surcharge vanaf 17-04-2026 voor FBA, vanaf 02-05-2026 voor MCF. Per-ABS-SKU modelling moet zowel baseline-verlaging (parcel –€0,32, low-price tot €20 –€0,45) als surcharge (+€0,05 gem.) bevatten. Output: lijst van SKU's met netto-positieve FBA-case voor 2026 Q3. Impact: hoog. Effort: middel (1 dag, vereist ABS-prijslijst)."
+      },
+      {
+        "title": "Ahrefs Brand Radar plan-upgrade besluit forceren of bron-alternatief kiezen.",
+        "detail": "4 runs op rij geblokkeerd sinds 2026-05-15. Twee opties: (a) plan-upgrade goedkeuren, of (b) alternative SOV-/AI-mention-bron kiezen (Brand24, Mention.com, custom GPT-mentions-scraper). Status-quo is dat dit rapport blijft geheel op publieke web-bronnen leunen — wat genoeg is voor strategische framing maar geen Brand-Radar AI-mentions geeft. Impact: hoog voor rapport-kwaliteit. Effort: laag (procurement-besluit)."
+      },
+      {
+        "title": "Competitor-watchlist v2: positioneer-dimensie expliciet maken.",
+        "detail": "Update `/context/competitor-watchlist.md` (of aanmaken indien nog niet bestaand): febi bilstein als primaire peer op DNA-match, Frankberg/RIDEX als value-tier-druk, AUTODOC labels als volume-druk, tier-1 (Bosch/ATE/TRW/Brembo/SKF/FAG/Lemförder) als premium-segment. Voeg per peer toe: positioneer-dimensie + ABS-differentiatie-claim. Impact: middel. Effort: laag (1u)."
+      }
+    ],
+    "openQuestions": [
+      "Ahrefs Brand Radar MCP `Insufficient plan` — 4e run op rij carry-over. Aanname deze run: web_search levert voldoende strategisch signaal; geen AI-mention-counts of SOV-cijfers. Volgende run nog steeds afhankelijk van plan-upgrade of alternative-bron besluit (actie 4).",
+      "Ahrefs Site Explorer eveneens geblokkeerd door zelfde plan-restrictie. Aanname: domein-rating en SEO-traffic-proxy van ABS / CCP / autodoc niet beschikbaar. Geen ranking-bewegingen detecteerbaar buiten Amazon.de-bestseller-pagina's.",
+      "Amazon.de SKU-niveau prijs/volume tracker ontbreekt nog steeds. Carry-over uit 20-05 en 14-05. Bestseller-pagina ranking is bruikbare proxy voor mix-shift detectie, maar exacte units en prijs-deltas niet beschikbaar. SKU-tracker is voorwaarde voor scherper rapport.",
+      "FBA fuel-surcharge \"temporary\" framing. Amazon labelt expliciet als tijdelijk; geen einddatum gegeven. Aanname: surcharge blijft minstens t/m Q4 2026. Tegen-scenario (vroege terugdraaiing) is niet in netto-saldo verwerkt. SKU-modelling (actie 3) moet beide scenario's bevatten.",
+      "Brembo Greentell-OE-positionering: aftermarket-roll-out timing onduidelijk. Bron noemt eerst premium/performance OE-toepassing; \"Greenance\" wordt genoemd als aftermarket-equivalent maar geen launch-datum. Aanname: aftermarket-listing in 2026 onwaarschijnlijk; ABS hoeft niet binnen 90 dagen tegen Brembo-aftermarket-aanwezigheid te concurreren. Volgende run: check op Brembo-pers voor aftermarket-datum.",
+      "ZF dustIN-dyno is een test-facility, geen product. Geen TRW Euro 7-SKU-launch gevonden in deze run. Aanname: TRW publiceert Euro 7-compliant aftermarket-SKU's in Q3/Q4 2026; ABS first-mover-window is tot eind augustus realistisch.",
+      "ATE New Original launches H2 2025 mogelijk al gedeeltelijk op Amazon.de. Deze run heeft geen Amazon.de-ASIN-bevestiging voor specifieke ATE New Original SKU's. Volgende run: directe Amazon.de zoekquery op \"ATE New Original\" om listing-presence te verifiëren.",
+      "ABS Amazon.de directe presence-status: nog steeds geen bevestiging. Carry-over uit 20-05 en 14-05. Aanname: geen directe D2C-listing; verkoopt via professionele distributeurs en mogelijk via 3rd-party Amazon-sellers. Volgende run: seller-scan op ABS-branded ASIN-patroon.",
+      "Top-10 competitor-set is composite-werkdefinitie, niet één bestseller-export. Zelfde aanname als 14-05 en 20-05. SKU-tracker (carry-over actie) is voorwaarde voor scherpere ranking.",
+      "Slack-delivery `#ccp-updates`: kanaal bestaat nog steeds niet volgens last-run-summary (carry-over sinds 2026-05-15, nu 12+ runs). Aanname deze run: rapport publiceren in workspace; geen Slack-push naar fallback-kanaal zonder bevestiging.",
+      "Diff-baseline vs. werkelijk veranderd in 7 dagen. Sommige bewegingen (ATE New Original H2 2025, Brembo Greentell Auto Shanghai 2025) zijn niet \"nieuw deze week\" maar wel \"nieuw in mijn rapportage\" — d.w.z. de 20-05-claim \"tier-1 geen Euro 7-launch\" was feitelijk onjuist op moment van schrijven. Correctie expliciet gemaakt in patroon 5."
+    ]
+  },
+  {
+    "run": "2026-06-03",
+    "delivered": "2026-06-04",
+    "sourceFile": "ccp-concurrentie-radar-2026-06-03.md",
+    "kpi": {
+      "autodocRevenue": 484.9,
+      "autodocB2b": 42.4,
+      "fbaNet": -0.27,
+      "euro7Days": 179,
+      "openQuestions": 8
+    },
+    "summary": [
+      "Correctie op 27-05-claim: de LKQ-verkoop die \"tot $1 mld EU specialty\" werd genoemd is de Noord-Amerikaanse Specialty-tak (RV/marine); de Europese divestiture is wat activist Ananym Capital *aandringt*, nog niet geïnitieerd — direct distributeur-risico voor ABS staat dus nog niet op de klok.",
+      "AUTODOC Q1 2026: omzet €484,9 mln (+13,5% YoY) en B2B-omzet €42,4 mln (+39% YoY via AUTODOC PRO drop-shipping) — de B2B-versnelling raakt het ABS-distributiekanaal harder dan de marketplace-listings.",
+      "Top-10 competitor-set Amazon.de stabiel sinds 27-05; geen toetreders/uitvallers, Brembo Greentell-aftermarket loopt via \"Greenance\" (ECE R90-pad), nog geen Amazon.de-listing gevonden."
+    ],
+    "changes": [
+      {
+        "domain": "Top-10 / competitor-set",
+        "change": "Stabiel. Geen toetreders/uitvallers t.o.v. 27-05 (Bosch, ATE, TRW, febi, Brembo, SKF, FAG, Lemförder, Meyle, Frankberg/RIDEX).",
+        "source": "Amazon.de bestsellers + corporate, 2026-06-03"
+      },
+      {
+        "domain": "FBA-fees / Amazon EU policy",
+        "change": "Stabiel t.o.v. 27-05. Parcel –€0,32/unit (15-12-2025), low-price FBA tot €20 (05-01-2026), 1,5% fuel-/logistics-surcharge vanaf 17-04-2026 bevestigd. Geen nieuwe wijziging deze run.",
+        "source": "About Amazon EU + Rate Card 2026, 2026-06-03"
+      },
+      {
+        "domain": "Autodoc private-labels",
+        "change": "Q1 2026-cijfers nieuw: omzet €484,9 mln (+13,5%), B2B €42,4 mln (+39%). RIDEX best-selling eigen merk. Geen nieuwe label-launch (STARK/goCORE).",
+        "source": "AUTODOC Q1 2026 release, 13-05-2026"
+      },
+      {
+        "domain": "Euro 7 brake-dust",
+        "change": "Stabiel narratief. Brembo Greentell (OE) → aftermarket via \"Greenance\"; aftermarket-pad loopt via ECE R90-certificering. Geen Bosch/ATE/Textar publieke Euro 7-aftermarket-SKU gevonden.",
+        "source": "autonews.com 06-05-2026, S&P Global 03-2026"
+      },
+      {
+        "domain": "EU M&A",
+        "change": "Stabiel: NL/DE/UK = 41% van targets, strategische kopers 91% van deals. Geen nieuwe brake/steering-distributeur-deal deze run.",
+        "source": "Roland Berger / IMAP / Portage Point, 2026-06-03"
+      },
+      {
+        "domain": "LKQ-divestiture",
+        "change": "Correctie: initieel proces = NA Specialty-segment (RV/marine, tot ~$1 mld); EU-divestiture is activist-druk (Ananym), nog niet geïnitieerd.",
+        "source": "LKQ investor release 12-2025; CNBC 20-12-2025"
+      },
+      {
+        "domain": "ABS Amazon.de presence",
+        "change": "Stabiel: geen update. Aanname blijft: distributie via derden, geen bevestigde directe ABS-seller-presence.",
+        "source": "ABS corporate, carry-over"
+      },
+      {
+        "domain": "Ahrefs Brand Radar status",
+        "change": "Geblokkeerd — `Insufficient plan`, 5e run op rij. SOV/AI-mention-data ontbreekt volledig.",
+        "source": "Ahrefs MCP, 2026-06-03"
+      }
+    ],
+    "actions": [
+      {
+        "title": "Corrigeer de LKQ-aanname in de watchlist en herclassificeer het distributeur-risico als latent i.p.v. acuut.",
+        "detail": "De NA-Specialty-sale raakt ABS niet; de EU-divestiture is activist-druk zonder formeel proces. Houd Ananym/LKQ-Europe als kwartaal-monitor, niet als brandhaard. Impact: middel. Effort: laag (15 min watchlist-update)."
+      },
+      {
+        "title": "Modelleer de AUTODOC PRO B2B-dreiging tegen ABS' eigen B2B-propositie (levertijd, marge, assortimentsbreedte).",
+        "detail": "De +39% B2B-groei is het scherpste structurele signaal — benchmark CCP/ABS-levertijd en netto-marge per SKU-cluster tegen AUTODOC PRO drop-shipping. Impact: hoog. Effort: middel (halve dag data + analyse)."
+      },
+      {
+        "title": "Formuleer een ABS low-dust/Euro 7-positie nu het tier-1-venster nog open is (Bosch/ATE/Textar stil).",
+        "detail": "Aftermarket-deadline is juridisch losser (ECE R90, niet directe Euro 7), dus dit is narratief- en niet compliance-gedreven — claim de positionering voordat tier-1 de term bezet. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Werk het FBA per-SKU impact-model af incl. surcharge-correctie voor sub-€20 ABS-SKU's.",
+        "detail": "Carry-over uit 20-05/27-05 — netto –€0,27/unit blijft gunstig voor low-price FBA-uitbreiding; kwantificeer welke ABS-SKU's onder €20 zakken en FBA-voordeel pakken. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Neem een plan-besluit over Ahrefs Brand Radar (5e carry-over): upgrade of definitief alternatief.",
+        "detail": "Vijf runs zonder SOV/AI-mention-data maakt de merkzichtbaarheid-dimensie structureel blind — beslis of het budget waard is of schrap de dimensie uit de radar-scope. Impact: middel. Effort: laag."
+      }
+    ],
+    "openQuestions": [
+      "Ahrefs Brand Radar `Insufficient plan` (carry-over #5). Aanname: web-bronnen leveren voldoende corporate/markt-signaal voor deze run; SOV/AI-mention-dimensie volledig afwezig. Volgende run nog steeds plan-afhankelijk.",
+      "LKQ-correctie. Aanname: het 27-05-rapport verwarde de NA Specialty-sale met de EU-divestiture; gecorrigeerd op basis van LKQ investor-release (12-2025) en CNBC (20-12-2025). EU-divestiture-timing onbekend — afhankelijk van of LKQ-bestuur op Ananym-druk ingaat.",
+      "AUTODOC PRO B2B-groei +39%. Aanname: vergelijkbaar kwartaal (Q1 vs Q1), niet seizoenseffect. Eén kwartaal is geen trend; volgende run Q2-cijfers afwachten (publicatie ~augustus 2026).",
+      "Euro 7 aftermarket-binding. Aanname: Euro 7 geldt OE/nieuw-gehomologeerd, aftermarket via ECE R90 — dus geen harde compliance-deadline voor ABS-vervangingsonderdelen vóór 29-11-2026. Te verifiëren met regulatoir specialist als ABS publiek positie inneemt.",
+      "Brembo Greentell aftermarket-timing. Aanname behouden uit 27-05: 2026 OE-focus, aftermarket-roll-out (\"Greenance\") timing niet publiek bevestigd. Geen Amazon.de-listing gevonden deze run.",
+      "Top-10 competitor-set. Aanname: composite-werkdefinitie over 3 categorieën, geen enkele Amazon.de bestseller-export (geen SKU-scraper beschikbaar). Carry-over #3.",
+      "ABS Amazon.de directe presence niet bevestigd (carry-over sinds 14-05). Aanname: distributie via derden.",
+      "Slack-delivery. `#ccp-updates` bestaat nog steeds niet (13+ runs carry-over sinds 2026-05-15). Wel gevonden: `#daily-price-update-ccp` (C0B4KRCAY4F, aangemaakt 20-05). Conform skill-regel niet naar fallback-kanaal gepost zonder bevestiging — rapport niet via Slack geleverd deze run."
+    ]
+  },
+  {
+    "run": "2026-06-10",
+    "delivered": "2026-06-10",
+    "sourceFile": "concurrentie-radar-amazon-de-all-2026-06-10.md",
+    "kpi": {
+      "autodocRevenue": 484.9,
+      "autodocB2b": 42.4,
+      "fbaNet": -0.27,
+      "euro7Days": 172,
+      "openQuestions": 9
+    },
+    "summary": [
+      "LKQ blijkt sinds 26-01-2026 een bedrijfsbrede strategic review te draaien inclusief mogelijke verkoop van het hele bedrijf — het distributeur-risico voor ABS gaat van \"latent\" terug naar \"actief monitoren\".",
+      "febi bilstein voegde in mei 897 nieuwe artikelnummers toe, waarvan 391 stuur- en ophangingslijnen — directe assortimentsdruk in een ABS-kerncategorie.",
+      "Correctie op eigen baseline: Brembo's Greenance is geen toekomstige aftermarket-launch maar al sinds 2023 op de markt (sedans sinds 09-2024) — het Euro 7-narratief-venster is kleiner dan gerapporteerd, al blijven Bosch/ATE/Textar stil."
+    ],
+    "changes": [
+      {
+        "domain": "Top-10 / competitor-set",
+        "change": "Stabiel — 5e run op rij dezelfde set (Bosch, ATE, TRW, febi, Brembo, SKF, FAG, Lemförder, Meyle, Frankberg/RIDEX). Geen swap-trigger.",
+        "source": "watchlist + web-scan, 2026-06-10"
+      },
+      {
+        "domain": "LKQ-divestiture",
+        "change": "Nieuw + correctie: LKQ-board startte 26-01-2026 een strategische review incl. mogelijke verkoop van het héle bedrijf (BofA + Wachtell als adviseurs); Self Service-segment en delen Oost-Europa al gedivesteerd. Vorige runs registreerden dit niet (\"EU-proces niet geïnitieerd\"). Ananym kocht in februari voor ~$11 mln bij; lead-plaintiff-deadline rechtszaak 22-06-2026.",
+        "source": "LKQ investor release 26-01-2026; GlobeNewswire; Fool.com 18-02-2026; ainvest 06-2026"
+      },
+      {
+        "domain": "febi bilstein assortiment",
+        "change": "Nieuw: +897 artikelnummers in mei 2026 over febi Car/LCV/Truck + Blue Print. febi Car: 714 referenties, waarvan 391 stuur/ophanging (incl. 266 schokdempers), 102 motor, 48 elektrisch. Blue Print: 19 rem-componenten.",
+        "source": "Garage Wire Europe, 01-06-2026"
+      },
+      {
+        "domain": "Brembo Greenance",
+        "change": "Correctie op baseline: Greenance-kits (schijf+blok, Euro 7-compliant, −80% PM10/PM2.5, 3× schijflevensduur) zijn al sinds Q2 2023 aftermarket-beschikbaar voor LCV (Ducato, Transit, Sprinter e.a.) en sinds 09-2024 voor sedans. De aanname \"aftermarket-timing niet bevestigd\" was onjuist. Amazon.de-listing nog niet geverifieerd.",
+        "source": "Brembo corporate; The BRAKE Report; CAT Magazine"
+      },
+      {
+        "domain": "Euro 7 tier-1 aftermarket",
+        "change": "Stabiel: nog steeds geen dedicated Euro 7-aftermarket-SKU van Bosch/ATE/Textar. Wel: bestaande low-dust-lijnen (ATE Ceramic, Textar epad, Bosch BP938) worden actief als \"low dust\" vermarkt; AUTODOC claimt het narratief via content (\"best low-dust brake pads 2026\").",
+        "source": "AUTODOC blog; Textar/ATE productpagina's, 2026-06-10"
+      },
+      {
+        "domain": "AUTODOC",
+        "change": "Stabiel — geen nieuwe release sinds Q1-cijfers (13-05): omzet €484,9 mln (+13,5%), B2B €42,4 mln (+39%). UK10-warehouse vol operationeel in Q2 als guidance.",
+        "source": "AUTODOC Q1-release, 13-05-2026"
+      },
+      {
+        "domain": "FBA / Amazon EU policy",
+        "change": "Stabiel — parcel −€0,32/unit (15-12-2025), low-price FBA tot €20 (05-01-2026), 1,5% fuel-/logistics-surcharge (17-04-2026). Geen nieuwe wijziging gevonden deze run.",
+        "source": "Amazon EU Rate Card 2026; About Amazon EU"
+      },
+      {
+        "domain": "Ahrefs Brand Radar",
+        "change": "Geblokkeerd — `Insufficient plan`, 6e run op rij (carry-over).",
+        "source": "Ahrefs MCP, 2026-06-10"
+      },
+      {
+        "domain": "Titel-monitor (sectie 7b)",
+        "change": "Niet uitvoerbaar — web_fetch op Amazon.de-bestseller-URLs geblokkeerd door tool-restrictie (provenance). Geen rank/ASIN/prijs-data deze run. Carry-over.",
+        "source": "tooling, 2026-06-10"
+      }
+    ],
+    "actions": [
+      {
+        "title": "Herclassificeer LKQ van kwartaal- naar maand-monitor en werk de kwetsbaarheidsanalyse van het ABS-distributiekanaal af.",
+        "detail": "De board-review (26-01) plus reeds uitgevoerde divestitures maken een eigendomswijziging van LKQ Europe binnen 12 maanden een reëel scenario. Impact: hoog. Effort: middel (bestaande 20-05-analyse actualiseren)."
+      },
+      {
+        "title": "Leg febi's mei-release (391 stuur/ophanging-referenties) naast de ABS-fitmentdekking voor stuurdelen en identificeer de gap op nieuwe modellen (incl. MG/Chinese merken).",
+        "detail": "Dit is de meest concrete assortimentsbeweging van de directe concurrent in vijf runs. Impact: hoog. Effort: middel (catalogus-vergelijking)."
+      },
+      {
+        "title": "Claim de low-dust/Euro 7-positionering in het mid-segment via listing-content, nu Bosch/ATE/Textar stil zijn en Brembo alleen premium bezet.",
+        "detail": "Drie bol.com-content-packages hieronder zijn de eerste concrete stap; Amazon.de-equivalent volgt na validatie. Impact: hoog. Effort: laag-middel (content, geen product)."
+      },
+      {
+        "title": "Voer de AUTODOC PRO B2B-benchmark uit (levertijd, marge, assortimentsbreedte) — carry-over van 03-06, nog niet uitgevoerd.",
+        "detail": "De +39% B2B-groei blijft het scherpste structurele kanaal-signaal. Impact: hoog. Effort: middel (halve dag)."
+      },
+      {
+        "title": "Neem het Ahrefs Brand Radar plan-besluit (6e carry-over): upgrade of schrap de SOV-dimensie formeel uit de radar-scope.",
+        "detail": "Zes runs zonder data maakt elke merkzichtbaarheid-uitspraak onmogelijk. Impact: middel. Effort: laag."
+      }
+    ],
+    "openQuestions": [
+      "Baseline-formaat (aanname, confidence hoog): geen `marketplaces/amazon-de/last-run-all.md` aanwezig; het rapport van 2026-06-03 is als diff-baseline gebruikt. Dit rapport initieert de v2-baseline-files in de workspace.",
+      "Ahrefs Brand Radar `Insufficient plan` (carry-over #6). SOV/AI-mention-dimensie blijft volledig blind. Plan-besluit nodig (actie 5).",
+      "Titel-monitor niet uitvoerbaar (carry-over, confidence hoog): directe Amazon.de-fetches geblokkeerd door tool-provenance-restrictie; geen rank/ASIN/prijs-data. Alternatief (scraper via n8n of Bright Data) vergt een infra-besluit van Hans.",
+      "LKQ strategic review reikwijdte (confidence middel): de review omvat \"strategische alternatieven incl. verkoop van het bedrijf\"; of LKQ Europe apart wordt verkocht dan wel het geheel, is niet bepaald. Geen vaste tijdlijn. Volgende run: check op uitkomst-aankondiging of segment-specifiek proces.",
+      "febi mei-release verdeling (confidence middel): 391 stuur/ophanging-lijnen incl. 266 schokdempers — schokdempers vallen buiten CCP-scope; netto stuurdelen-druk is dus kleiner dan het bruto-cijfer suggereert. Exacte spoorstang/stuurkogel-aantallen niet gepubliceerd.",
+      "Brembo Greenance op Amazon.de (confidence laag): kits zijn aftermarket-beschikbaar maar een Amazon.de-listing is deze run niet geverifieerd (geen listing-data mogelijk). Volgende run checken zodra listing-toegang er is.",
+      "ABS Amazon.de directe presence niet bevestigd (carry-over sinds 14-05). Aanname blijft: distributie via derden.",
+      "Signaal buiten scope: bilstein group breidt ook uit in schokdempers en dual-clutch-kits (Blue Print) — buiten CCP-categorieën, niet uitgewerkt.",
+      "Slack-delivery: `#ccp-updates` bestaat nog steeds niet (carry-over sinds 15-05). Conform v2-taakdefinitie is delivery deze run: files + chat-samenvatting, geen Slack-post."
+    ]
+  },
+  {
+    "run": "2026-07-01",
+    "delivered": "2026-07-01",
+    "sourceFile": "concurrentie-radar-amazon-de-all-2026-07-01.md",
+    "kpi": {
+      "autodocRevenue": 484.9,
+      "autodocB2b": 42.4,
+      "fbaNet": -0.27,
+      "euro7Days": 151,
+      "openQuestions": 7
+    },
+    "summary": [
+      "AUTODOC heeft per 15-06 het \"phygital\"-model geschrapt: AUTODOC PRO gaat volledig digitaal (geen lokale service-agents meer) — de B2B-druk op het ABS-distributiekanaal wordt pure platform-schaal op prijs en levertijd (bron: AUTODOC persbericht 15-06-2026).",
+      "febi opende 10-06 de campagne \"Why System Coverage Matters Around the Wheel\" — expliciete systeemdekking-positionering op precies de ABS-kerncategorieën (wiellagers, remmen, ophanging/stuur) bovenop het mei-assortimentsoffensief van +897 artikelnummers.",
+      "LKQ: lead-plaintiff-deadline 22-06 is verstreken zonder gepubliceerde uitkomst; de strategic review (incl. mogelijke verkoop van het hele bedrijf) loopt door zonder tijdlijn — distributeur-risico blijft op \"actief monitoren\"."
+    ],
+    "changes": [
+      {
+        "domain": "Top-10 competitor-set",
+        "change": "Stabiel (6e run op rij). Geen listing-data beschikbaar, dus geen rank-diffs — set ongewijzigd aangehouden.",
+        "source": "werkdefinitie watchlist"
+      },
+      {
+        "domain": "AUTODOC B2B",
+        "change": "AUTODOC PRO → volledig digitaal operating model per 15-06; \"phygital\"-concept (lokale agents) losgelaten na review, voor efficiency en schaalbaarheid.",
+        "source": "autodoc.group persbericht, 15-06-2026"
+      },
+      {
+        "domain": "febi bilstein",
+        "change": "\"All Around the Wheel\"-campagne live per 10-06: systeemdekking wiel/as-ecosysteem. Juni-release artikelaantallen niet publiek gevonden.",
+        "source": "febi.com/info/news, 10-06-2026"
+      },
+      {
+        "domain": "LKQ / distributeurs",
+        "change": "Lawsuit lead-plaintiff-deadline 22-06 verstreken, geen uitkomst gepubliceerd. Strategic review loopt (BofA + Wachtell aangesteld), geen tijdlijn; Specialty-sale proces loopt door. Geen formeel EU-divestiture-proces gevonden.",
+        "source": "SEC 8-K FY2026; PR Newswire mei/juni 2026"
+      },
+      {
+        "domain": "Brembo Greenance",
+        "change": "Greenance-kit nu \"ab sofort erhältlich\" voor gangbare Europese LCV-modellen (gelist bij Bremboparts/TecDoc); Brembo kondigt uitgebreid aftermarket-aanbod aan voor Automechanika 2026 (sept). Geen Greenance-listing op Amazon.de zichtbaar via search.",
+        "source": "brembo.com; autoservicepraxis.de"
+      },
+      {
+        "domain": "FBA fees / policy",
+        "change": "Stabiel. Geen nieuwe wijzigingen juni/juli; bekende structuur bevestigd: parcel −€0,32/unit, low-price FBA ≤€20 (−€0,45/unit), fuel-surcharge +1,5% per 17-04.",
+        "source": "Amazon DE Rate Card (geldig per 01-02-2026); sell.amazon.de"
+      },
+      {
+        "domain": "Euro 7 (rem-categorie)",
+        "change": "Zimmermann adopteert WLTP brake-cycle testing voor Euro 7-limieten; ATE/Bosch/Textar investeren in testbanken. Nog geen tier-1 low-dust aftermarket-SKU-golf zichtbaar op Amazon.de.",
+        "source": "The Brake Report; automotivetesting.com"
+      },
+      {
+        "domain": "ABS presence Amazon.de",
+        "change": "Geen update — carry-over sinds 14-05, niet bevestigd.",
+        "source": "—"
+      },
+      {
+        "domain": "Ahrefs Brand Radar",
+        "change": "`Insufficient plan` — carry-over #7.",
+        "source": "live API-call 01-07-2026"
+      },
+      {
+        "domain": "Titel-monitor",
+        "change": "Amazon.de bestseller-fetch levert lege respons — carry-over; infra-besluit (n8n/Bright Data) blijft open.",
+        "source": "web_fetch 01-07-2026"
+      }
+    ],
+    "actions": [
+      {
+        "title": "Low-dust positie claimen vóór Automechanika (deadline: begin sept).",
+        "detail": "Content + assortimentskeuze voor mid-segment low-dust remmen, minimaal een publieke positionering. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "febi-AATW-antwoord op listing-niveau:",
+        "detail": "bundel-/systeemcontent (\"complete wielreparatie\") toevoegen aan ABS-relevante Amazon DE listings zodra catalogus-werk loopt — sluit aan op de openstaande stuurdelen-gap-analyse. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "AUTODOC PRO all-digital benchmark:",
+        "detail": "levertijd + prijs B2B t.o.v. ABS-kanaal, nu het model puur digitaal en dus meetbaar is. Carry-over 03-06, urgenter geworden. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Titel-monitor infra-besluit (n8n of Bright Data):",
+        "detail": "derde run zonder listing-data; zonder scraper blijft de radar blind op rank/prijs-niveau. Impact: middel-hoog. Effort: middel."
+      },
+      {
+        "title": "Ahrefs plan-besluit (carry-over #7):",
+        "detail": "upgraden of de SOV/AI-mention-dimensie formeel schrappen uit de radar. Impact: middel. Effort: laag."
+      }
+    ],
+    "openQuestions": [
+      "Cadence-gat: runs 17-06 en 24-06 ontbreken in workspace — geen rapporten aangetroffen. Aanname: taken niet gedraaid. Watchdog/dispatch checken.",
+      "LKQ na 22-06: geen gepubliceerde uitkomst gevonden; aanname dat review doorloopt. Volgende run opnieuw checken (Q2-earnings ~eind juli is logisch informatiemoment).",
+      "febi juni-release: artikelaantallen [unverified] — febi publiceert release-cijfers niet consistent; nieuwsbrief/partsfinder zou preciezer zijn.",
+      "Brembo Greenance op Amazon.de: niet gevonden via search, maar zonder listing-toegang niet uitsluitbaar — [unverified].",
+      "ABS directe Amazon.de-presence: carry-over sinds 14-05, onbevestigd.",
+      "Slack-delivery: `#ccp-updates` bestaat niet (carry-over sinds 15-05); scheduled-task file vraagt geen Slack-post, dus conform regels niet gepost.",
+      "Run-log C:\\AI onbereikbaar vanuit deze sessie (buiten connected folders) — START/DONE-regels niet geschreven; genoteerd in dit rapport als vervanging."
+    ]
+  },
+  {
+    "run": "2026-07-08",
+    "delivered": "2026-07-08",
+    "sourceFile": "concurrentie-radar-amazon-de-all-2026-07-08.md",
+    "kpi": {
+      "autodocRevenue": 484.9,
+      "autodocB2b": 42.4,
+      "fbaNet": -0.27,
+      "euro7Days": 144,
+      "openQuestions": 7
+    },
+    "summary": [
+      "AUTODOC haalt €530 mln schuldfinanciering op (7-jaars term loan B) om het minderheidsbelang van Apollo Global Management uit te kopen — eigendomsconsolidatie met hefboom, aangekondigd 07-07 (bron: Bloomberg).",
+      "Brembo's Automechanika-programma is nu publiek: volledig kopervrije remblokken-range, Greenance uitgebreid met remvloeistof, vernieuwde caliper-lineup — het tier-1 low-dust-aanbod voor sept staat vast; ABS-venster om mid-segment te claimen is nog ~9 weken.",
+      "LKQ publiceert Q2-cijfers op 30-07 — eerste formele informatiemoment over de strategic review sinds de verstreken lawsuit-deadline (22-06)."
+    ],
+    "changes": [
+      {
+        "domain": "Top-10 competitor-set",
+        "change": "Stabiel (7e run op rij). Geen listing-data, dus geen rank-diffs — set ongewijzigd aangehouden.",
+        "source": "werkdefinitie watchlist"
+      },
+      {
+        "domain": "AUTODOC eigendom",
+        "change": "Nieuw: €530 mln term loan B (7 jr) om Apollo-minderheidsbelang uit te kopen, aangekondigd 07-07-2026. Schuldgefinancierde consolidatie na sterke Q1 (+13,5% omzet, B2B +39%).",
+        "source": "Bloomberg, 07-07-2026"
+      },
+      {
+        "domain": "Brembo / low-dust",
+        "change": "Automechanika 2026-programma publiek: volledig kopervrije remblokken-range, Greenance-lijn nu incl. remvloeistof, vernieuwde calipers, EV-kit. Euro 7-framing expliciet.",
+        "source": "brembogroup.com; The Brake Report, juni/juli 2026"
+      },
+      {
+        "domain": "LKQ / distributeurs",
+        "change": "Q2-earnings gepland 30-07-2026 — eerstvolgende formele update strategic review. Review zelf: geen nieuwe feiten sinds 01-07.",
+        "source": "GlobeNewswire, 02-07-2026"
+      },
+      {
+        "domain": "febi bilstein",
+        "change": "Assortimentsuitbreiding: schokdempers voor personenauto's toegevoegd aan stuur/onderstel-programma — verdere verbreding van het \"All Around the Wheel\"-ecosysteem. Plus NEXUS CX Champion Award en DTM-sponsoring (Landgraf) 2026. Publicatiedata niet exact herleidbaar [datum unverified].",
+        "source": "febi.com/info/news; bilsteingroup.com"
+      },
+      {
+        "domain": "FBA fees / policy",
+        "change": "Stabiel. Geen nieuwe wijzigingen; structuur bevestigd: parcel −€0,32/unit, low-price FBA ≤€20 (−€0,45/unit), fuel-surcharge +1,5% per 17-04.",
+        "source": "sell.amazon.de; Rate Card 2026"
+      },
+      {
+        "domain": "ABS presence Amazon.de",
+        "change": "Geen update — carry-over sinds 14-05, niet bevestigd.",
+        "source": "—"
+      },
+      {
+        "domain": "Ahrefs Brand Radar",
+        "change": "`Insufficient plan` — carry-over #8.",
+        "source": "live API-call 08-07-2026"
+      },
+      {
+        "domain": "Titel-monitor",
+        "change": "Amazon.de bestseller-fetch levert lege respons — carry-over, 4e run; infra-besluit blijft open.",
+        "source": "web_fetch 08-07-2026"
+      }
+    ],
+    "actions": [
+      {
+        "title": "Low-dust mid-segment positie claimen vóór Automechanika (harde deadline: begin sept, ~9 wk).",
+        "detail": "Brembo's programma is publiek — ABS kan nu gericht ónder dat prijspunt positioneren. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "AUTODOC PRO benchmark uitvoeren (carry-over 03-06, opnieuw urgenter):",
+        "detail": "levertijd + prijs B2B t.o.v. ABS-kanaal, nu schuldgedreven groeidruk prijsagressie waarschijnlijker maakt. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Titel-monitor infra-besluit (4e run zonder listing-data):",
+        "detail": "n8n-scraper of Bright Data — zonder gaat het tactische deel van deze radar structureel niet door. Impact: middel-hoog. Effort: middel."
+      },
+      {
+        "title": "febi-AATW-antwoord op listing-niveau (carry-over):",
+        "detail": "systeem-/bundelcontent op ABS-relevante Amazon DE listings zodra catalogus-werk loopt. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Ahrefs plan-besluit (carry-over #8):",
+        "detail": "upgraden of SOV/AI-mentions formeel uit de radar schrappen. Impact: middel. Effort: laag."
+      }
+    ],
+    "openQuestions": [
+      "LKQ 30-07: Q2-call is het checkpoint voor strategic-review-nieuws — volgende runs 29-07/05-08 expliciet checken.",
+      "febi publicatiedata: schokdemper-uitbreiding, NEXUS-award en DTM-sponsoring niet exact dateerbaar uit publieke bronnen — [datum unverified]; inhoud zelf wel bevestigd op febi/bilsteingroup nieuwspagina's.",
+      "AUTODOC prijsagressie-hypothese: afgeleid uit schuldstructuur, geen direct bewijs — hypothese, geen feit.",
+      "Brembo Greenance op Amazon.de: nog steeds niet via search gevonden; zonder listing-toegang niet uitsluitbaar — [unverified].",
+      "ABS directe Amazon.de-presence: carry-over sinds 14-05, onbevestigd.",
+      "Run-log C:\\AI onbereikbaar vanuit deze sessie (buiten connected folders) — START/DONE-regels niet geschreven; genoteerd hier als vervanging.",
+      "Cadence: hersteld — deze run volgt exact 1 week op 01-07. Gat 17/24-06 blijft onverklaard (watchdog-check staat open)."
+    ]
+  },
+  {
+    "run": "2026-07-15",
+    "delivered": "2026-07-15",
+    "sourceFile": "concurrentie-radar-amazon-de-all-2026-07-15.md",
+    "kpi": {
+      "autodocRevenue": 484.9,
+      "autodocB2b": 42.4,
+      "fbaNet": -0.27,
+      "euro7Days": 137,
+      "openQuestions": 9
+    },
+    "summary": [
+      "Amazon schaft het tweestaps Buy Box-kwalificatiesysteem af: seller-performance wordt van toegangsfilter een directe ranking-factor, rollout start deze maand en is eind 2026 wereldwijd afgerond — het veld concurrenten per listing wordt groter (bron: Seller Forum via Onlinehändler News, 09-07).",
+      "FBM-regime DE verscherpt per vandaag (15-07): OTDR ≥90% verplicht, standaard handling time nog maar 0/1 dag; handhaving met listing-deactivering vanaf 01-09 — FBA-first strategie van CCP wordt hierdoor extra bevestigd.",
+      "AUTODOC schrapt opnieuw IT/R&D-banen (Kyiv/Odessa, 14-07) met \"AI-implementatie\" als motivering — tweede ontslagronde, een week na de €530 mln schuldgefinancierde Apollo buy-out."
+    ],
+    "changes": [
+      {
+        "domain": "Buy Box-mechanisme",
+        "change": "Nieuw: kwalificatie-gate vervalt. Verkäufer-/Händlerleistung verschuift van toegangsvoorwaarde naar directe ranking-factor naast prijs en leversnelheid. Rollout start juli 2026, wereldwijd afgerond eind 2026. Weging niet gepubliceerd.",
+        "source": "Onlinehändler News, 09-07-2026; Amazon Seller Forum"
+      },
+      {
+        "domain": "FBM-regime DE",
+        "change": "Nieuw: verscherping in fasen. Per 15-07: OTDR ≥90% + handling time account-default 0/1 dag. Per 01-09: deactivering listings onder norm + auto-verkorting handling time per SKU. Per 30-09: B2B-zustelling ≥90% binnen kantoortijden. OTDR telt per unit, niet per zending.",
+        "source": "Onlinehändler News, 30-06/01-07-2026; Seller Central"
+      },
+      {
+        "domain": "EU-douane",
+        "change": "Nieuw sinds 01-07: zollfreigrenze ≤€150 vervallen; €3 per douanepositie voor non-EU→EU zendingen (FBA én FBM). Intra-EU zendingen uitgezonderd.",
+        "source": "Onlinehändler News, 22-06-2026; Seller Central"
+      },
+      {
+        "domain": "AUTODOC",
+        "change": "Nieuw: tweede ontslagronde IT/R&D Oekraïne (developers, testers, PM's), aangekondigd via CTO-meeting + mail, 2 mnd compensatie; motivering: transformatie + \"implementatie van AI\".",
+        "source": "dev.ua, 14-07-2026"
+      },
+      {
+        "domain": "Brembo",
+        "change": "#1 Aftermarket Power Rankings juli (69 pt, +1 op NRS Brakes) op kracht van het Automechanika-programma (kopervrij + Greenance). Inhoudelijk geen nieuw productnieuws sinds 08-07.",
+        "source": "The Brake Report, 02-07-2026"
+      },
+      {
+        "domain": "febi bilstein",
+        "change": "Nieuw-op-radar (gepubliceerd 25-06): +290 art.nrs (217 febi Car, 56 Truck, 17 Blue Print waarvan 9 remmen). Kleiner en minder rem-gericht dan het mei-offensief (+897).",
+        "source": "Garage Wire Europe, 25-06-2026"
+      },
+      {
+        "domain": "Frictie-consolidatie VS",
+        "change": "Nieuw: Raybestos → Friction One (29-06), Centric/StopTech → Motorcar Parts of America (30-06), beide uit First Brands Chapter 11-afwikkeling. IP/catalogi only, geen operatie.",
+        "source": "The Brake Report, 29/30-06-2026"
+      },
+      {
+        "domain": "LKQ",
+        "change": "Stabiel. Q2-earnings 30-07 blijft eerstvolgende checkpoint; geen nieuws deze week.",
+        "source": "GlobeNewswire, 02-07-2026"
+      },
+      {
+        "domain": "Top-10 competitor-set",
+        "change": "Stabiel (8e run op rij). Geen listing-data, dus geen rank-diffs — set ongewijzigd aangehouden.",
+        "source": "werkdefinitie watchlist"
+      },
+      {
+        "domain": "Ahrefs Brand Radar",
+        "change": "`Insufficient plan` — carry-over #9.",
+        "source": "live API-call 15-07-2026"
+      },
+      {
+        "domain": "Titel-monitor",
+        "change": "Amazon.de bestseller-fetch levert lege respons — carry-over, 5e run; infra-besluit blijft open.",
+        "source": "web_fetch 15-07-2026"
+      }
+    ],
+    "actions": [
+      {
+        "title": "Buy Box-impactcheck CCP-listings (nieuw, urgent):",
+        "detail": "inventariseer per actieve ASIN wie er meebiedt en welke performance-metrics nu ranking-factor worden; zet OTDR/leversnelheid-monitoring klaar vóór de DE-rollout landt. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Titel-monitor infra-besluit (5e run zonder listing-data, nu gekoppeld aan actie 1):",
+        "detail": "n8n-scraper of Bright Data — zonder listing-data is het Buy Box-effect straks niet meetbaar. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Low-dust mid-segment positie claimen vóór Automechanika (~8 wk, carry-over):",
+        "detail": "Brembo's programma is publiek en bekroond (#1 ranking); het mid-segment onder Brembo-prijspunt blijft onbezet. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "AUTODOC PRO benchmark (carry-over, opnieuw urgenter):",
+        "detail": "levertijd + prijs B2B t.o.v. ABS-kanaal; tweede ontslagronde bevestigt margeverdedigings-patroon dat aan prijsagressie voorafgaat. Impact: hoog. Effort: middel."
+      },
+      {
+        "title": "Ahrefs plan-besluit (carry-over #9):",
+        "detail": "upgraden of SOV/AI-mentions formeel uit de radar schrappen — 9 runs geblokkeerd is een besluit op zich. Impact: middel. Effort: laag."
+      }
+    ],
+    "openQuestions": [
+      "Buy Box-weging: Amazon publiceert de ranking-formule niet; onduidelijk of off-Amazon prijzen meetellen en wanneer DE precies aan de beurt is. Volgende runs: Seller Forum + PPC Land monitoren.",
+      "AUTODOC ontslag-omvang: aantallen niet gepubliceerd; bron is Telegram-kanaal via dev.ua — richting bevestigd, schaal [unverified].",
+      "febi rem-aandeel juni-batch: 9 rem-referenties via Blue Print geteld uit het persbericht; febi-Car breakdown per categorie niet gepubliceerd.",
+      "Brembo Greenance op Amazon.de: nog steeds niet via search gevonden; zonder listing-toegang niet uitsluitbaar — [unverified].",
+      "ABS directe Amazon.de-presence: carry-over sinds 14-05, onbevestigd.",
+      "LKQ 30-07: Q2-call is het checkpoint — run 29-07/05-08 expliciet checken.",
+      "Run-log C:\\AI onbereikbaar vanuit deze sessie (buiten connected folders) — START/DONE-regels niet geschreven; genoteerd hier als vervanging.",
+      "Context-files (`/context/competitor-watchlist.md`, `/context/ccp-amazon-de-strategy.md`) niet aanwezig in de projectmap — watchlist uit de skill-bundel gebruikt als baseline.",
+      "Premium A+ Content gratis (17-06, via gerelateerd artikel OHN) — kans voor CCP-listingcontent, nog niet geverifieerd in Seller Central; meenemen bij catalogus-werk [unverified]."
+    ]
+  }
+]

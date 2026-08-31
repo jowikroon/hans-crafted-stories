@@ -4,6 +4,7 @@ import type { BlogInitWorkflow } from "./useBlogInitWorkflow";
 import { useYoutubeAnalyze, extractVideoId } from "./useYoutubeAnalyze";
 import YouTubeStageModal from "./YouTubeStageModal";
 import { usePipelineChoice } from "./usePipelineChoice";
+import { supabase } from "@/integrations/supabase/client";
 
 const AUTO_PIPELINE_WEBHOOK =
   "https://n8n.srv1402218.hstgr.cloud/webhook/auto-blog-pipeline";
@@ -27,6 +28,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
   const { pipeline, setPipeline } = usePipelineChoice();
 
   const [autoState, setAutoState] = useState<"idle" | "starting" | "started" | "error">("idle");
+  const [autoWarning, setAutoWarning] = useState<string | null>(null);
 
   const [ytPreview, setYtPreview] = useState<YtPreview | null>(null);
   const [showStageModal, setShowStageModal] = useState(false);
@@ -39,6 +41,20 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
   // Auto pipeline: fire-and-forget POST to the n8n webhook. The pipeline runs
   // async server-side and can take minutes, so we use a short timeout and treat
   // a timeout as "started" rather than blocking the UI.
+  // Auto draait via Opus-reviews + kwaliteitspoort. Als de Anthropic-key op zijn
+  // limiet zit, keurt de reviewer alles af (score 0) — dat is geen kwaliteitsoordeel
+  // maar uitval. Waarschuw vooraf in plaats van stil te laten falen.
+  const reviewerWarning = async (): Promise<string | null> => {
+    try {
+      const { data } = await supabase.functions.invoke("blog-youtube-analyze", { body: { action: "health" } });
+      const d = (data ?? {}) as { anthropic?: string };
+      if (d.anthropic && d.anthropic !== "ok") {
+        return `Opus-reviewer niet beschikbaar (${String(d.anthropic).slice(0, 110)}…). De Auto-poort keurt drafts nu af zonder echt oordeel — Klassiek werkt wel, met Gemini-vangnet.`;
+      }
+    } catch { /* health-check optioneel — nooit blokkeren op de check zelf */ }
+    return null;
+  };
+
   const startAutoPipeline = async () => {
     setAutoState("starting");
     const controller = new AbortController();
@@ -107,14 +123,27 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
     if (!youtube.trim()) ytAnalyze.reset();
   }, [youtube]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const pasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text.trim()) setYoutube(text.trim());
+    } catch { /* clipboard geweigerd — veld blijft handmatig invulbaar */ }
+  };
+
   return (
-    <div className="source-bar">
+    <div className="source-bar action-card">
+      <div className="eyebrow">
+        <span className="pulse" />
+        <span>Begin hier · meest gebruikt</span>
+      </div>
+      <h2 className="ac-title">Plak een YouTube link<em> — ik maak er een artikel van.</em></h2>
+      <p className="copy">Ik kijk de video, haal de transcriptie eruit, match je voice template en schrijf de draft in jouw stem. Analyse toont eerst topics en invalshoeken — <strong>jij kiest de angle</strong>.</p>
       <div className="source-bar-row">
         {/* Pipeline picker, Klassiek vs Auto */}
         <label className="source-field">
           <span className="source-label">Pipeline</span>
           <select
-            className="source-input"
+            className={`source-input${pipeline === "auto" ? " source-input--auto" : ""}`}
             value={pipeline}
             onChange={(e) => setPipeline(e.target.value as "classic" | "auto")}
             disabled={busy || !!init}
@@ -133,14 +162,20 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
             YouTube URL
             {ytPreviewLoading && <SpinIcon />}
           </span>
-          <input
-            type="url"
-            className="source-input"
-            placeholder="https://youtube.com/watch?v=…"
-            value={youtube}
-            onChange={(e) => setYoutube(e.target.value)}
-            disabled={busy || !!init}
-          />
+          <span className="paste-row paste-row--compact">
+            <input
+              type="url"
+              className="source-input"
+              placeholder="https://youtube.com/watch?v=…"
+              value={youtube}
+              onChange={(e) => setYoutube(e.target.value)}
+              disabled={busy || !!init}
+            />
+            <button type="button" className="paste-btn" title="Plak vanaf klembord" onClick={pasteFromClipboard} disabled={busy || !!init}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="10" height="12" rx="1" stroke="currentColor" strokeWidth="1.4"/><path d="M6 2v1.5a.5.5 0 00.5.5h3a.5.5 0 00.5-.5V2" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>
+              Paste
+            </button>
+          </span>
         </label>
 
         {/* Topic */}
@@ -175,7 +210,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
         </label>
 
         {/* Analyze button, only when valid YouTube URL + not yet analyzed */}
-        {hasValidYtUrl && ytAnalyze.phase === "idle" && !busy && !init && (
+        {hasValidYtUrl && (ytAnalyze.phase === "idle" || ytAnalyze.phase === "error") && !busy && !init && (
           <button
             className="stamp-btn stamp-btn--ghost stamp-btn--sm source-bar-cta"
             onClick={() => ytAnalyze.analyze(youtube)}
@@ -192,9 +227,15 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
         {/* Ghost-write button, opens the 4-stage modal (design contract #14) */}
         <button
           className="stamp-btn stamp-btn--sm source-bar-cta"
-          onClick={() => {
+          onClick={async () => {
             if (pipeline === "auto") {
               if (!topic.trim() && !youtube.trim()) return;
+              if (!autoWarning) {
+                setAutoState("starting");
+                const warning = await reviewerWarning();
+                if (warning) { setAutoWarning(warning); setAutoState("idle"); return; }
+              }
+              setAutoWarning(null);
               startAutoPipeline();
               return;
             }
@@ -219,6 +260,18 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
         </button>
       </div>
 
+      {/* Auto-pipeline reviewer warning (pre-flight health check) */}
+      {autoWarning && (
+        <div className="source-notice source-notice--err">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <path d="M8 2v8M8 13v1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          {autoWarning}
+          <button className="source-notice-retry" onClick={() => { setAutoWarning(null); startAutoPipeline(); }}>Toch starten</button>
+          <button className="source-notice-retry" onClick={() => { setAutoWarning(null); setPipeline("classic"); }}>Gebruik Klassiek</button>
+        </div>
+      )}
+
       {/* Auto-pipeline started */}
       {autoState === "started" && (
         <div className="source-notice source-notice--ok">
@@ -242,7 +295,7 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
       )}
 
       {/* oEmbed preview + pre-flight options (design contract B2) */}
-      {ytPreview && ytAnalyze.phase === "idle" && !busy && !init && (
+      {ytPreview && (ytAnalyze.phase === "idle" || ytAnalyze.phase === "error") && !busy && !init && (
         <div className="preflight">
           <div className="yt-preview">
             <img src={ytPreview.thumbnail} alt="" />
@@ -275,7 +328,12 @@ export default function ManageSourceBar({ workflow, category = "general" }: Prop
       {ytAnalyze.phase === "analyzing" && (
         <div className="analyze-status">
           <SpinIcon />
-          <span style={{ color: "var(--scheduled)" }}>Analyzing transcript + extracting topics…</span>
+          <span style={{ color: "var(--scheduled)" }}>
+            {ytAnalyze.steps.length ? ytAnalyze.steps[ytAnalyze.steps.length - 1] : "Analyse gestart — transcript ophalen + topics extraheren…"}
+          </span>
+          {ytAnalyze.steps.length > 1 && (
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, opacity: 0.7 }}>stap {ytAnalyze.steps.length}</span>
+          )}
         </div>
       )}
 

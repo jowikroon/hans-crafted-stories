@@ -2,7 +2,7 @@ import { useForcedTheme } from "@/hooks/useTheme";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
-import { useAdmin } from "@/hooks/useAdmin";
+import { usePortalAccess } from "@/hooks/usePortalAccess";
 import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Search, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
@@ -42,15 +42,20 @@ const tabs: { id: Tab; label: string; icon: typeof Wrench; hint: string }[] = [
 
 const Portal = () => {
   const { user, loading, signInWithGoogle, signInWithEmail, signOut } = useAuth();
-  const { isAdmin, loading: adminLoading } = useAdmin();
+  const { status: accessStatus, profile } = usePortalAccess();
+  const isAdmin = accessStatus === "admin";
+  const allowedTabIds: Tab[] = isAdmin
+    ? tabs.map((t) => t.id)
+    : tabs.filter((t) => (profile?.tab_access ?? []).includes(t.id)).map((t) => t.id);
   const [activeTab, setActiveTab] = useState<Tab>("tools");
   const [subFilter, setSubFilter] = useState<string>("All");
   const [commandOpen, setCommandOpen] = useState(false);
   const { toast } = useToast();
   const { isVisible } = usePageElements("portal");
 
-  // Dark-only immersive page: forced without touching the visitor's saved theme.
-  useForcedTheme("dark");
+  // Backend surface: always light, consistent with /write and /music-cms.
+  // Forced without touching the visitor's saved theme.
+  useForcedTheme("light");
 
   useEffect(() => {
     document.title = "Portal — Hans van Leeuwen";
@@ -68,6 +73,14 @@ const Portal = () => {
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
+  // Members: make sure the active tab is one they're allowed to see
+  useEffect(() => {
+    if (accessStatus === "member" && allowedTabIds.length > 0 && !allowedTabIds.includes(activeTab)) {
+      setActiveTab(allowedTabIds[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessStatus, activeTab, profile]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
@@ -83,7 +96,7 @@ const Portal = () => {
     setEmailLoading(false);
   };
 
-  if (loading || adminLoading) {
+  if (loading || (user && accessStatus === "loading")) {
     return (
       <section className="section-container flex min-h-[60vh] items-center justify-center pt-28">
         <p className="text-muted-foreground">Loading...</p>
@@ -136,13 +149,13 @@ const Portal = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (accessStatus === "denied") {
     return (
       <section className="section-container flex min-h-[60vh] flex-col items-center justify-center pt-28">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
           <ShieldAlert size={40} className="mx-auto mb-4 text-muted-foreground" />
           <h1 className="mb-2 font-display text-2xl font-medium text-foreground">Access Denied</h1>
-          <p className="mb-6 text-muted-foreground">You don't have admin access to this portal.</p>
+          <p className="mb-6 text-muted-foreground">This account has no portal access. Ask Hans for an invite.</p>
           <button onClick={signOut} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
             <LogOut size={14} /> Sign out
           </button>
@@ -172,13 +185,13 @@ const Portal = () => {
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2 sm:mt-0">
-            <Link
+            {isAdmin && <Link
               to="/samantha"
               className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-rose-500/30 px-4 py-2.5 text-xs font-medium text-rose-400 transition-all hover:bg-rose-500/10 hover:text-rose-300 active:scale-[0.97] sm:min-h-0 sm:px-3 sm:py-2"
             >
               <Sparkles size={14} />
               <span className="hidden sm:inline">Ask Samantha</span>
-            </Link>
+            </Link>}
             {isAdmin && (
               <Link
                 to="/god-structure"
@@ -188,13 +201,13 @@ const Portal = () => {
                 <span className="hidden sm:inline">Dashboard</span>
               </Link>
             )}
-            <button
+            {isAdmin && <button
               onClick={() => setCommandOpen(true)}
               className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:inline-flex"
               title="Search (⌘K)"
             >
               <Search size={13} />
-            </button>
+            </button>}
             <button
               onClick={signOut}
               className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97] sm:min-h-0 sm:py-2"
@@ -206,7 +219,7 @@ const Portal = () => {
 
         {/* Tab Navigation */}
         <div className="mb-2 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:overflow-visible">
-          {tabs.map((tab) => {
+          {tabs.filter((tab) => allowedTabIds.includes(tab.id)).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
@@ -250,17 +263,17 @@ const Portal = () => {
 
 
         {/* Tab Content */}
-        {activeTab === "tools" && <PortalToolsTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
-        {activeTab === "content" && <PortalContentTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
-        {activeTab === "pages" && <PortalPagesTab subFilter={subFilter} />}
-        {activeTab === "users" && <PortalUsersManager adminUserId={user.id} subFilter={subFilter} />}
-        {activeTab === "status" && <PortalStatusTab subFilter={subFilter} />}
+        {activeTab === "tools" && allowedTabIds.includes("tools") && <PortalToolsTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
+        {activeTab === "content" && allowedTabIds.includes("content") && <PortalContentTab userId={user.id} isAdmin={isAdmin} subFilter={subFilter} />}
+        {activeTab === "pages" && allowedTabIds.includes("pages") && <PortalPagesTab subFilter={subFilter} />}
+        {activeTab === "users" && allowedTabIds.includes("users") && <PortalUsersManager adminUserId={user.id} subFilter={subFilter} />}
+        {activeTab === "status" && allowedTabIds.includes("status") && <PortalStatusTab subFilter={subFilter} />}
       </motion.div>
 
-      {isVisible("terminal_button") && (
+      {isAdmin && isVisible("terminal_button") && (
         <PortalFloatingDock activeTab={activeTab} onTabChange={setActiveTab} onCommandOpen={() => setCommandOpen(true)} />
       )}
-      <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => { /* empty */ }} onN8nOpen={() => { /* empty */ }} onSignOut={signOut} />
+      {isAdmin && <PortalCommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onTabChange={setActiveTab} onEmpireOpen={() => { /* empty */ }} onN8nOpen={() => { /* empty */ }} onSignOut={signOut} />}
     </section>
     </MediaPickerProvider>
   );

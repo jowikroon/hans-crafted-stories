@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSkin } from "@/hooks/useSkin";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { getBlogPosts, isHansSession, BlogPostRow } from "@/lib/api/content";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePreloadedBlogPosts } from "@/contexts/PreloadedDataContext";
 import "@/styles/writing-v2.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 
 type SortOrder = "newest" | "oldest";
 
@@ -63,10 +64,19 @@ function ChevronRight() {
 }
 
 const WritingV2 = () => {
+  // Fonts: loaded per-route, not via CSS @import (see fontCss.ts)
+  useEffect(() => { ensureFontCss("fonts-writing", FONT_CSS.writing); ensureFontCss("fonts-newsreader", FONT_CSS.newsreader); }, []);
   const preloadedPosts = usePreloadedBlogPosts();
   const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>(() => preloadedPosts ?? []);
   const [loading, setLoading] = useState(preloadedPosts === null);
-  const [filter, setFilter] = useState("all");
+  // Filter is URL-driven (/writing?tag=x) so article tag pills can deep-link
+  // into a filtered index. Prerender-safe: useSearchParams works under the
+  // MemoryRouter used by SSR as well.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filter = searchParams.get("tag") || "all";
+  const setFilter = (tag: string) => {
+    setSearchParams(tag === "all" ? {} : { tag }, { replace: true });
+  };
   const { skin, setSkin, skins } = useSkin();
   const [sort, setSort] = useState<SortOrder>("newest");
   const [authed, setAuthed] = useState(false);
@@ -76,36 +86,72 @@ const WritingV2 = () => {
   const seo = translations[lang].seo;
   const toolbarRef = useRef<HTMLDivElement>(null);
 
+  // Filtered/sorted/draft views are near-duplicates of /writing -> keep them out
+  // of the index but let link equity flow (noindex,follow). Canonical already
+  // points at the clean /writing URL below.
+  const isFilteredView = filter !== "all" || sort !== "newest" || publishedOnly;
+
+  // Public posts drive an ItemList of BlogPosting entities (rich results).
+  const publicPostsForLd = useMemo(
+    () => blogPosts.filter((p) => p.published === true && p.status === "published"),
+    [blogPosts],
+  );
+
+  const writingJsonLd = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": "https://hansvanleeuwen.com/writing#page",
+        name: t.heading,
+        description: seo.writingDescription,
+        url: "https://hansvanleeuwen.com/writing",
+        isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
+        author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
+          { "@type": "ListItem", position: 2, name: t.label, item: "https://hansvanleeuwen.com/writing" },
+        ],
+      },
+      ...(publicPostsForLd.length
+        ? [{
+            "@type": "ItemList",
+            "@id": "https://hansvanleeuwen.com/writing#articles",
+            itemListElement: publicPostsForLd.slice(0, 20).map((p, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              item: {
+                "@type": "BlogPosting",
+                "@id": `https://hansvanleeuwen.com/writing/${p.slug}#post`,
+                headline: p.title,
+                url: `https://hansvanleeuwen.com/writing/${p.slug}`,
+                datePublished: p.created_at,
+                dateModified: p.updated_at,
+                ...(p.image_url ? { image: p.image_url } : {}),
+                description: p.meta_description || p.excerpt || undefined,
+                author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+                publisher: { "@id": "https://hansvanleeuwen.com/#person" },
+              },
+            })),
+          }]
+        : []),
+    ],
+  }), [publicPostsForLd, t.heading, t.label, seo.writingDescription]);
+
   useSEO({
     title: seo.writingTitle,
     description: seo.writingDescription,
     url: "https://hansvanleeuwen.com/writing",
+    robots: isFilteredView ? "noindex,follow" : undefined,
     hreflang: [
       { lang: "en", href: "https://hansvanleeuwen.com/writing" },
       { lang: "nl", href: "https://hansvanleeuwen.com/writing" },
       { lang: "x-default", href: "https://hansvanleeuwen.com/writing" },
     ],
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "CollectionPage",
-          "@id": "https://hansvanleeuwen.com/writing#page",
-          name: t.heading,
-          description: seo.writingDescription,
-          url: "https://hansvanleeuwen.com/writing",
-          isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
-          author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
-        },
-        {
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-            { "@type": "ListItem", position: 2, name: t.label, item: "https://hansvanleeuwen.com/writing" },
-          ],
-        },
-      ],
-    },
+    jsonLd: writingJsonLd,
   });
 
   useEffect(() => {
@@ -216,19 +262,19 @@ const WritingV2 = () => {
         {/* Masthead */}
         <section className="masthead">
           <span className="eyebrow">Insights &amp; Essays</span>
-          <h1 className="title">{lang === "nl" ? "Gedachten & essays" : "Thoughts & Essays"}</h1>
+          <h1 className="title">{lang === "nl" ? "E-commerce inzichten & marketplace-optimalisatie" : "E-commerce Insights & Marketplace Optimization"}</h1>
           <p className="lede">
             {lang === "nl" ? (
               <>
-                Field notes van <strong>Hans van Leeuwen</strong>, freelance e-commerce manager en Amazon en Bol.com
-                marketplace-specialist, gevestigd in Amersfoort. Praktische essays over marketplace-strategie,
-                listing-optimalisatie en e-commerce groei door NL en EU, geschreven vanuit hands-on klantwerk.
+                <strong>E-commerce inzichten en marketplace-optimalisatie</strong> door <strong>Hans van Leeuwen</strong>, freelance
+                e-commerce manager en Amazon- en Bol.com-specialist in Amersfoort. Praktische essays over listing-optimalisatie,
+                Amazon Ads en Bol Ads, AI-automatisering en marketplace-groei in NL en de EU, geschreven vanuit hands-on klantwerk.
               </>
             ) : (
               <>
-                Field notes from <strong>Hans van Leeuwen</strong>, a freelance e-commerce manager and Amazon and Bol.com
-                marketplace specialist based in Amersfoort, Netherlands. Practical writing on marketplace strategy,
-                listing optimization, and marketplace growth across the NL and EU, drawn from hands-on client work.
+                <strong>E-commerce insights and marketplace optimization</strong> by <strong>Hans van Leeuwen</strong>, a freelance
+                e-commerce manager and Amazon and Bol.com specialist based in Amersfoort. Practical essays on listing optimization,
+                Amazon Ads and Bol Ads, AI automation and marketplace growth across the NL and EU, drawn from hands-on client work.
               </>
             )}
           </p>
@@ -257,17 +303,52 @@ const WritingV2 = () => {
         {/* Toolbar */}
         <div className="toolbar" ref={toolbarRef}>
           <div className="filters" role="group" aria-label="Filter by topic">
-            {FILTER_PILLS.map((p) => (
+            {FILTER_PILLS.map((p) => {
+              // Counts follow the same scope as the visible list (Codex PR #273):
+              // published-only toggle filters drafts, and tags are normalised so
+              // "e-commerce" (CMS default) matches the "ecommerce" pill.
+              const countable = authed && publishedOnly ? mappedPosts.filter((post) => post.isPublic) : mappedPosts;
+              const pillCount = p.tag === "all"
+                ? countable.length
+                : countable.filter((post) => {
+                    const allTags = [post.category, ...(post.tags || [])].map((tag) => (tag || "").toLowerCase().replace(/[^a-z0-9]/g, ""));
+                    return allTags.some((tag) => tag.includes(p.tag.toLowerCase().replace(/[^a-z0-9]/g, "")));
+                  }).length;
+              return (
+                <a
+                  key={p.tag}
+                  href={p.tag === "all" ? "/writing" : `/writing?tag=${p.tag}`}
+                  className={`pill ${filter === p.tag ? "on" : ""}`}
+                  aria-pressed={filter === p.tag}
+                  aria-label={`${p.label} (${pillCount})`}
+                  onClick={(e) => { e.preventDefault(); setFilter(p.tag); }}
+                >
+                  {p.label} <span className="pill__count">({pillCount})</span>
+                </a>
+              );
+            })}
+            {filter !== "all" && !FILTER_PILLS.some((p) => p.tag === filter) && (
               <button
-                key={p.tag}
                 type="button"
-                className={`pill ${filter === p.tag ? "on" : ""}`}
-                aria-pressed={filter === p.tag}
-                onClick={() => setFilter(p.tag)}
+                className="pill on"
+                aria-pressed="true"
+                onClick={() => setFilter("all")}
+                title={lang === "nl" ? "Filter wissen" : "Clear filter"}
               >
-                {p.label}
+                {filter} ×
               </button>
-            ))}
+            )}
+            {filter !== "all" && (
+              <button
+                type="button"
+                className="pill pill--clear"
+                onClick={() => setFilter("all")}
+                aria-label={lang === "nl" ? "Filter wissen" : "Clear filters"}
+                title={lang === "nl" ? "Filter wissen" : "Clear filters"}
+              >
+                {lang === "nl" ? "Filter wissen" : "Clear filters"} ×
+              </button>
+            )}
             {authed && (
               <button
                 type="button"
@@ -325,12 +406,8 @@ const WritingV2 = () => {
             <>
               {/* Featured post (first item) */}
               {featured && (
-                <Link
-                  to={`/writing/${featured.slug}`}
-                  className="post post--featured rv"
-                  aria-label={`Featured essay: ${featTitle}`}
-                >
-                  <article className={`feat__grid${featured.imageUrl ? "" : " feat__grid--solo"}`}>
+                <article className="post post--featured rv">
+                  <div className={`feat__grid${featured.imageUrl ? "" : " feat__grid--solo"}`}>
                     <div className="feat__body">
                       <span className="feat__kicker">
                         {featured.isDraft
@@ -362,7 +439,15 @@ const WritingV2 = () => {
                           </>
                         )}
                       </div>
-                      <h2 className="post__title">{featTitle}</h2>
+                      <h2 className="post__title">
+                        <Link
+                          to={`/writing/${featured.slug}`}
+                          className="post__title-link"
+                          aria-label={`Featured essay: ${featTitle}`}
+                        >
+                          {featTitle}
+                        </Link>
+                      </h2>
                       <p className="post__excerpt">{featExcerpt}</p>
                       <span className="feat__cta">
                         {lang === "nl" ? "Lees het essay" : "Read the essay"}
@@ -377,12 +462,13 @@ const WritingV2 = () => {
                           width={1200}
                           height={800}
                           loading="eager"
+                          fetchPriority="high"
                           decoding="async"
                         />
                       </div>
                     )}
-                  </article>
-                </Link>
+                  </div>
+                </article>
               )}
 
               {/* Rest of posts */}
@@ -390,7 +476,7 @@ const WritingV2 = () => {
                 const title = lang === "nl" && post.titleNl ? post.titleNl : post.title;
                 const excerpt = lang === "nl" && post.excerptNl ? post.excerptNl : post.excerpt;
                 return (
-                  <Link key={post.id} to={`/writing/${post.slug}`} className="post rv">
+                  <article key={post.id} className="post rv">
                     <div className="post__thumb">
                       {post.imageUrl ? (
                         <img
@@ -425,13 +511,17 @@ const WritingV2 = () => {
                           </>
                         )}
                       </div>
-                      <h2 className="post__title">{title}</h2>
+                      <h2 className="post__title">
+                        <Link to={`/writing/${post.slug}`} className="post__title-link">
+                          {title}
+                        </Link>
+                      </h2>
                       <p className="post__excerpt">{excerpt}</p>
                     </div>
                     <span className="post__go" aria-hidden="true">
                       <ArrowIcon />
                     </span>
-                  </Link>
+                  </article>
                 );
               })}
             </>

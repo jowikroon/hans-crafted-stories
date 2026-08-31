@@ -86,6 +86,12 @@ const STATIC_CONTENT = `<header>
         <dd>Hans provides marketplace management, conversion rate optimization (CRO), UX design for e-commerce, SEO &amp; content strategy, data-driven analytics, and digital commerce consulting for brands across the Netherlands and EU.</dd>
         <dt>Is Hans van Leeuwen available for freelance or contract work?</dt>
         <dd>Hans is based in Amersfoort, Netherlands and available for e-commerce management roles, consulting, and freelance marketplace projects. Contact via LinkedIn or email for availability.</dd>
+        <dt>What does a freelance e-commerce manager cost?</dt>
+        <dd>Engagements are priced per model: retainer for ongoing Amazon and Bol.com management, project pricing for defined scopes such as an audit or launch, and a daily rate for interim work. A 30-minute intake typically produces a written quote within one working day.</dd>
+        <dt>How long until I see results on Amazon NL or Bol.com?</dt>
+        <dd>Listing and A+ content fixes tend to shift conversion within 2-4 weeks. Sponsored Products and Bol Ads restructures usually show meaningful ACOS improvement within one advertising cycle (4-6 weeks). Structural share and stockout improvements are a 3-6 month arc.</dd>
+        <dt>Does Hans work on Amazon DE and Amazon FR as well?</dt>
+        <dd>Yes. In addition to Amazon NL and Bol.com, engagements regularly cover Amazon DE and Amazon FR for brands expanding across the EU, using the same operating model per marketplace.</dd>
       </dl>
     </section>
   </main>

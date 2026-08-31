@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { useLang } from "@/hooks/useLang";
 import "@/styles/writing-v2.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 
 /**
  * FeaturedArticles — homepage "writing" teaser.
@@ -33,6 +34,7 @@ function ArrowIcon() {
 }
 
 const FeaturedArticles = () => {
+  useEffect(() => { ensureFontCss("fonts-writing", FONT_CSS.writing); }, []);
   const { lang } = useLang();
   const isNl = lang === "nl";
   const [posts, setPosts] = useState<BlogPostRow[]>([]);

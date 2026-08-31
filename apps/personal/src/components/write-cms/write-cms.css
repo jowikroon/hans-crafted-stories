@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap");
 /*
   write-cms.css
   All styles scoped to .write-cms wrapper.
@@ -2082,3 +2081,228 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
   text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-0);
 }
 .write-cms .gate-empty { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); padding: var(--s-2) 0; }
+
+
+/* ══════════════ Editorial Stamp v1.5 — Manage hero (action-card) ══════════════
+   Port uit design Write.html v1.5. Accent blijft het bestaande groen via var(--accent).
+   Additief: raakt geen bestaande klassen. */
+.write-cms /* ========== YouTube / action card (from Blog CMS) ========== */
+.action-card { background: var(--bg-1);
+  border: 1.5px solid var(--ink-0);
+  border-radius: var(--r-3);
+  padding: var(--s-6) var(--s-7);
+  box-shadow: var(--shadow-stamp); }
+.write-cms[data-theme="dark"] .action-card { box-shadow: 4px 4px 0 var(--ink-1); border-color: var(--ink-1); }
+.write-cms .action-card .eyebrow { display: flex; align-items: center; gap: 8px; margin-bottom: var(--s-3); }
+.write-cms .action-card .eyebrow .pulse { width: 6px; height: 6px; background: var(--live); border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--live-soft);
+  animation: savePulse 2.4s ease-in-out infinite; }
+.write-cms .action-card .eyebrow span { font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-2); }
+.write-cms .action-card h2 { font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  margin: 0 0 var(--s-4); }
+.write-cms .action-card h2 em { font-style: italic; font-weight: 600; color: var(--ink-2); }
+.write-cms .action-card .copy { font-family: var(--font-display); font-size: 15px; line-height: 1.48;
+  color: var(--ink-1); margin: 0 0 var(--s-5); }
+.write-cms .action-card .copy strong { color: var(--ink-0); font-weight: 600; }
+.write-cms .paste-row { display: flex; align-items: center; gap: var(--s-2);
+  background: var(--paper); border: 1.5px solid var(--ink-0);
+  border-radius: var(--r-2); padding: 4px 4px 4px var(--s-4);
+  transition: box-shadow var(--t-fast); }
+.write-cms .paste-row:focus-within { box-shadow: 0 0 0 3px var(--accent-glow); }
+.write-cms[data-theme="dark"] .paste-row { border-color: var(--ink-1); }
+.write-cms .paste-row .icon { display: grid; place-items: center; color: var(--draft); width: 20px; height: 20px; flex-shrink: 0; }
+.write-cms .paste-row input { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 13px;
+  color: var(--ink-0); padding: 10px 0; }
+.write-cms .paste-row input::placeholder { color: var(--ink-3); }
+.write-cms .paste-btn, .write-cms .analyze-btn { display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px; border-radius: var(--r-1);
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 13px; letter-spacing: -0.01em;
+  transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
+  border: 1px solid var(--line); }
+.write-cms .paste-btn { background: var(--bg-1); color: var(--ink-0); }
+.write-cms .paste-btn:hover { background: var(--bg-2); }
+.write-cms .analyze-btn { background: var(--accent); color: var(--accent-fg);
+  border-color: var(--ink-0); font-weight: 700; }
+.write-cms .analyze-btn:hover { transform: translateY(-1px); }
+.write-cms .preflight-top { display: flex; gap: var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  align-items: center;
+  border-bottom: 1px dashed var(--line); }
+.write-cms .preflight-thumb { width: 84px; height: 50px;
+  background: linear-gradient(135deg, #2a0e0e, #500a0a);
+  border-radius: var(--r-1);
+  position: relative;
+  flex-shrink: 0;
+  display: grid; place-items: center;
+  overflow: hidden; }
+.write-cms .preflight-thumb::before { content: "";
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.04) 5px, rgba(255,255,255,0.04) 6px); }
+.write-cms .preflight-thumb .play-tri { width: 0; height: 0;
+  border-left: 9px solid rgba(255,255,255,0.92);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  margin-left: 3px;
+  position: relative; }
+.write-cms .preflight-thumb .dur { position: absolute; bottom: 3px; right: 3px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: #fff;
+  background: rgba(0,0,0,0.75);
+  padding: 0 4px;
+  border-radius: 2px; }
+.write-cms .preflight-meta { flex: 1; min-width: 0; }
+.write-cms .preflight-meta .src { font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--live);
+  display: flex; align-items: center; gap: 6px; }
+.write-cms .preflight-meta .src::before { content: ""; width: 6px; height: 6px;
+  background: var(--live); border-radius: 50%;
+  display: inline-block; }
+.write-cms .preflight-meta h4 { font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 4px 0 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden; }
+.write-cms .preflight-meta .channel { font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-2); }
+.write-cms .opt-cell { padding: 10px var(--s-4);
+  border-right: 1px dashed var(--line); }
+.write-cms .opt-cell:last-child { border-right: 0; }
+.write-cms .opt-label { font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  margin-bottom: 4px; }
+.write-cms .opt-value { display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-0);
+  cursor: pointer;
+  transition: color var(--t-fast); }
+.write-cms .opt-value:hover { color: var(--draft); }
+.write-cms .opt-value .caret { color: var(--ink-3);
+  font-size: 10px; }
+.write-cms .opt-value .badge-fit { font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--live);
+  background: var(--live-soft);
+  padding: 1px 5px;
+  border-radius: 2px;
+  margin-left: auto; }
+.write-cms .preflight-foot { display: flex; justify-content: space-between; align-items: center;
+  padding: 8px var(--s-4);
+  background: var(--bg-inset);
+  border-top: 1px dashed var(--line);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-2); }
+.write-cms .preflight-foot .est { display: flex; gap: var(--s-4); }
+.write-cms .preflight-foot .est span strong { color: var(--ink-0); font-weight: 500; }
+.write-cms .action-meta { display: flex; gap: var(--s-2); flex-wrap: wrap; margin-top: var(--s-4); }
+.write-cms .action-meta .chip { font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-2);
+  background: var(--bg-2); padding: 4px 8px; border-radius: var(--r-1); }
+.write-cms .action-meta .kbd { font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  background: var(--bg-0); border: 1px solid var(--line);
+  padding: 1px 4px; border-radius: 2px; color: var(--ink-0); }
+.write-cms .alt-actions { display: flex; gap: var(--s-2); flex-wrap: wrap;
+  margin-top: var(--s-4); padding-top: var(--s-4);
+  border-top: 1px dashed var(--line); }
+.write-cms .alt-actions .caps { font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-3); }
+.write-cms .alt-actions .alt { display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-display); font-size: 12px; font-weight: 500;
+  color: var(--ink-1);
+  background: var(--bg-0); border: 1px solid var(--line);
+  padding: 6px 10px; border-radius: var(--r-1);
+  transition: background var(--t-fast), color var(--t-fast); }
+.write-cms .alt-actions .alt:hover { background: var(--bg-2); color: var(--ink-0); }
+
+/* action-card wrapper-details voor de bestaande source-bar */
+.write-cms .source-bar.action-card { display: block; }
+.write-cms .action-card .ac-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(24px, 3.2vw, 36px); line-height: 1.08; letter-spacing: -0.025em; margin: 0 0 10px; color: var(--ink-0); }
+.write-cms .action-card .ac-title em { font-style: italic; font-weight: 600; color: var(--ink-2); }
+.write-cms .paste-row--compact { display: flex; align-items: center; gap: 6px; }
+.write-cms .paste-row--compact .source-input { flex: 1; min-width: 0; }
+.write-cms .action-card .source-bar-row { margin-top: 4px; }
+
+
+/* UX-fixes 2026-07-18 */
+/* Sticky pipeline-keuze 'Auto' is een gedragswissel — maak hem onmisbaar zichtbaar. */
+.write-cms .source-input--auto { border-color: var(--live); background: var(--live-soft); font-weight: 600; }
+/* Voice-editor: rechterkolom kapte velden af — kolommen mogen nooit onder hun content minimum. */
+.write-cms .voice-editor .vt-cols, .write-cms .voice-editor [class*="two-col"] { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: var(--s-4); }
+.write-cms .voice-editor textarea, .write-cms .voice-editor input[type="text"] { width: 100%; min-width: 0; box-sizing: border-box; }
+/* Rail krijgt op smalle schermen zijn oude plek onder de content terug. */
+@media (max-width: 1080px) { .write-cms .shell { grid-template-columns: 1fr; } .write-cms .rail { position: static; } }
+
+
+/* Voice-breedte 2026-07-18: VoiceMode heeft geen rechter-rail — de lege 320px-railkolom
+   van .shell halveerde de editor. Single-kolom shell: de editor loopt nu net als het
+   linkermenu door tot de cc-frame rand (breder dan de header, by design). */
+.write-cms .shell--single { grid-template-columns: minmax(0,1fr); }
+.write-cms .shell--single .voice-grid { grid-template-columns: 264px minmax(0,1fr); }
+
+/* ============================= INFRA STATUS (heartbeats) ============================= */
+/* InfraStatusCard — chart-card in Analytics-mode. Alleen tokens, geen hex. */
+.write-cms .infra-card { margin-top: var(--s-5); }
+.write-cms .infra-card .infra-h-sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); text-transform: none; letter-spacing: 0.04em; }
+.write-cms .infra-hosts { display: flex; flex-direction: column; gap: var(--s-4); }
+.write-cms .infra-host { border: 1px solid var(--line); border-radius: var(--r-2); background: var(--bg-inset); overflow: hidden; }
+.write-cms .infra-host-head { display: flex; align-items: baseline; gap: var(--s-3); min-width: 0; padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--line-faint); }
+.write-cms .infra-host-name { font-family: var(--font-mono); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-0); }
+.write-cms .infra-host-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.write-cms .infra-host.offline .infra-host-name,
+.write-cms .infra-host.offline .infra-host-meta,
+.write-cms .infra-host.offline .infra-svc,
+.write-cms .infra-host.offline .infra-note { color: var(--ink-3); }
+.write-cms .infra-offline-band { padding: var(--s-2) var(--s-4); background: var(--bg-2); color: var(--ink-1); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; border-bottom: 1px solid var(--line-faint); }
+.write-cms .infra-rows { display: flex; flex-direction: column; }
+.write-cms .infra-row { display: flex; align-items: center; gap: var(--s-2); padding: 6px var(--s-4); border-bottom: 1px solid var(--line-faint); }
+.write-cms .infra-row:last-child { border-bottom: 0; }
+.write-cms .infra-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.write-cms .infra-dot.up { background: var(--live); }
+.write-cms .infra-dot.degraded { background: var(--review); }
+.write-cms .infra-dot.down { background: var(--draft); }
+.write-cms .infra-dot.offline { background: var(--ink-3); }
+.write-cms .infra-svc { font-family: var(--font-mono); font-size: 12px; color: var(--ink-0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.write-cms .infra-note { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); flex-shrink: 0; }
+.write-cms .infra-state { margin-left: auto; flex-shrink: 0; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+.write-cms .infra-state.up { color: var(--live); }
+.write-cms .infra-state.degraded { color: var(--review); }
+.write-cms .infra-state.down { color: var(--draft); }
+.write-cms .infra-state.offline { color: var(--ink-2); text-transform: none; letter-spacing: 0.02em; }
+.write-cms .infra-foot { display: flex; align-items: center; gap: var(--s-3); margin-top: var(--s-4); }
+.write-cms .infra-refresh { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--line); border-radius: var(--r-1); padding: 2px 8px; color: var(--ink-1); transition: color var(--t-fast), border-color var(--t-fast); }
+.write-cms .infra-refresh:hover:not(:disabled) { color: var(--ink-0); border-color: var(--line-strong); }
+.write-cms .infra-refresh:disabled { opacity: 0.5; cursor: default; }
+.write-cms .infra-updated { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+.write-cms .infra-empty { font-family: var(--font-mono); font-size: 11px; color: var(--ink-1); padding: var(--s-4) 0; }
+.write-cms .infra-error-detail { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); margin-top: 4px; }
+.write-cms .infra-skel { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-2) 0; }
+.write-cms .infra-skel span { display: block; height: 12px; border-radius: var(--r-1); background: var(--bg-2); animation: wcInfraPulse 1.2s ease-in-out infinite; }
+.write-cms .infra-skel span:nth-child(2) { animation-delay: 0.15s; width: 80%; }
+.write-cms .infra-skel span:nth-child(3) { animation-delay: 0.3s; width: 60%; }
+@keyframes wcInfraPulse { 50% { opacity: 0.45; } }

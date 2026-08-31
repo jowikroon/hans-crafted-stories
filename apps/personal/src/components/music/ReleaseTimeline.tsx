@@ -1,10 +1,10 @@
 /**
- * ReleaseTimeline.tsx — "Music Studio" release timeline, folded into /music.
+ * ReleaseTimeline.tsx, "Music Studio" release timeline, folded into /music.
  *
  * React port of the prototype's music-studio.js engine. A chronological
  * timeline (oldest release at the top, newest at the bottom) built from a
  * canonical BASE_RELEASES list merged with releases the visitor adds. User
- * additions persist in localStorage (per the design — browser-local, no
+ * additions persist in localStorage (per the design, browser-local, no
  * backend). Styled by the scoped .music-neon stylesheet.
  *
  * SSR-safe: localStorage and IntersectionObserver are only touched in effects
@@ -12,6 +12,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { songs } from "@/data/music";
 
 type ReleaseType = "Single" | "EP" | "Album";
 
@@ -31,13 +33,14 @@ interface Release {
 
 const LS_KEY = "hvl_music_releases_v1";
 
-/* Canonical catalogue — mirrors the live catalogue's release history. */
+/* Canonical catalogue, mirrors the live catalogue's release history. */
 const BASE_RELEASES: Release[] = [
-  { id: "new-level", date: "2025-09-01", title: "New Level (Main Menu)", type: "Single", genre: "Electronic", note: "Where it started — a menu-screen loop that refused to stay background music." },
+  { id: "new-level", date: "2025-09-01", title: "New Level (Main Menu)", type: "Single", genre: "Electronic", note: "Where it started, a menu-screen loop that refused to stay background music." },
   { id: "beat-between", date: "2025-10-01", title: "Beat Between Our Years × Layer Cake Universe", type: "Single", genre: "Mashup" },
   { id: "hanging-on", date: "2025-11-01", title: "Hanging On (Remastered)", type: "Single", genre: "Electronic" },
   { id: "teacher-leave", date: "2025-12-01", title: "Teacher Leave (Remastered x2)", type: "Single", genre: "Electronic" },
-  { id: "beat-drop", date: "2026-01-01", title: "Beat Drop", type: "Single", genre: "Electronic", video: true, note: "The first official single — out on Spotify as Jowikroon." },
+  { id: "beat-drop", date: "2026-01-01", title: "Beat Drop", type: "Single", genre: "Electronic", video: true, note: "The first official single, out on Spotify as Jowikroon." },
+  { id: "neon-house-of-glass", date: "2026-07-03", title: "Neon House of Glass", type: "Single", genre: "Electronic", dur: "4:46", note: "Second official single, out on Spotify." },
 ];
 
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -87,7 +90,7 @@ const ReleaseTimeline = () => {
 
   const stats = useMemo(() => ({
     total: merged.length,
-    since: merged.length ? yearOf(merged[0].date) : "—",
+    since: merged.length ? yearOf(merged[0].date) : "-",
     singles: merged.filter((r) => r.type === "Single").length,
     albums: merged.filter((r) => r.type !== "Single").length,
   }), [merged]);
@@ -102,7 +105,7 @@ const ReleaseTimeline = () => {
     if (!form.title.trim()) { setErrField("title"); return; }
     if (!form.date.trim()) { setErrField("date"); return; }
     setErrField(null);
-    const rec: Release = { id: `u${Date.now()}`, date: form.date, title: form.title.trim(), type: form.type, genre: form.genre.trim() || "—", user: true };
+    const rec: Release = { id: `u${Date.now()}`, date: form.date, title: form.title.trim(), type: form.type, genre: form.genre.trim() || ", ", user: true };
     persist([...userReleases, rec]);
     setForm({ title: "", type: "Single", date: "", genre: "" });
     setComposerOpen(false);
@@ -141,7 +144,7 @@ const ReleaseTimeline = () => {
     <div className="mn-studio">
       <span className="mn-studio__eyebrow">Music Studio · Release timeline</span>
       <h2 className="mn-studio__title">The discography, in order</h2>
-      <p className="mn-studio__sub">Every <strong>single, EP and album</strong> on one growing timeline — anchored to the first release and stretching down with each new one. Add a release and watch the page get longer.</p>
+      <p className="mn-studio__sub">Every <strong>single, EP and album</strong> on one growing timeline, anchored to the first release and stretching down with each new one. Add a release and watch the page get longer.</p>
 
       <div className="mn-studio__stats">
         <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.total}</span><span className="mn-studio__stat-l">Releases</span></div>
@@ -186,7 +189,7 @@ const ReleaseTimeline = () => {
         <div className="mn-tl__origin">
           <div className="mn-tl__origin-dot" />
           <div className="mn-tl__origin-k">The beginning</div>
-          <div className="mn-tl__origin-t">First release — {merged.length ? fmtDate(merged[0].date) : ""}</div>
+          <div className="mn-tl__origin-t">First release: {merged.length ? fmtDate(merged[0].date) : ""}</div>
         </div>
         {merged.map((r, i) => {
           const y = yearOf(r.date);
@@ -212,7 +215,13 @@ const ReleaseTimeline = () => {
                       <span className="dot" /><span className="mn-rel__genre">{r.genre}</span>
                       {sub && <><span className="dot" /><span>{sub}</span></>}
                     </div>
-                    <div className="mn-rel__title">{r.title}{r.type === "EP" ? " — EP" : ""}</div>
+                    {(() => {
+                      const match = songs.find((sg) => sg.slug === r.id || sg.title.toLowerCase() === r.title.toLowerCase());
+                      const label = <>{r.title}{r.type === "EP" ? " (EP)" : ""}</>;
+                      return match
+                        ? <Link to={`/music/${match.slug}`} className="mn-rel__title" data-cursor aria-label={`Open ${match.title} track page`}>{label}</Link>
+                        : <div className="mn-rel__title">{label}</div>;
+                    })()}
                     {r.note && <div className="mn-rel__note">{r.note}</div>}
                     {(i === 0 || r.type !== "Single" || r.user) && (
                       <div className="mn-rel__badges">

@@ -4,6 +4,7 @@ import { usePostAutosave, type SaveStatus } from "../hooks/usePostAutosave";
 import { usePublish } from "../hooks/usePublish";
 import { useReviews } from "../hooks/useReviews";
 import { useVoiceTemplate, parseContentTips, countBannedWords } from "../hooks/useVoiceTemplate";
+import { useEditorsAtWork } from "../hooks/useEditorsAtWork";
 import LangSplit from "../write/LangSplit";
 import GateFiller from "../write/GateFiller";
 import HeroImageTool from "../write/HeroImageTool";
@@ -45,6 +46,12 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const autosave = usePostAutosave(post);
   const pub = usePublish(() => state.refetch());
   const reviewsHook = useReviews(postId);
+  const editors = useEditorsAtWork();
+  useEffect(() => {
+    // Een afgeronde Editors-run logt naar blog_cms_agent_reviews — ververs de Reviews-kaart mee.
+    if (editors.status === "done") reviewsHook.refetch();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editors.status]);
   const { template: voiceTemplate } = useVoiceTemplate(post?.category);
   const [showSchedule, setShowSchedule] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
@@ -82,7 +89,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
   // No post selected — empty state
   if (!postId || state.status === "idle") {
     return (
-      <>
+      <div className="shell">
         <main className="main">
           <section className="hero">
             <div className="hero-titleblock">
@@ -117,7 +124,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
           </div>
         </aside>
         {showLibrary && <BlogLibrary onClose={() => setShowLibrary(false)} />}
-      </>
+      </div>
     );
   }
 
@@ -159,7 +166,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
   const completenessScore = post!.completeness_score ?? 0;
 
   return (
-    <>
+    <div className="shell">
       <main className="main">
         <section className="hero">
           <div className="hero-titleblock">
@@ -409,12 +416,83 @@ export default function WriteMode({ postId }: { postId?: string }) {
           </>
         )}
 
-        <h2 className="rail-h" style={voiceTemplate ? { marginTop: "var(--s-4)" } : {}}>Score<em>.</em></h2>
+        <h2 className="rail-h" style={voiceTemplate ? { marginTop: "var(--s-4)" } : {}}>Editors <em>at work</em></h2>
+        <div className="card" style={{ marginBottom: "var(--s-3)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--s-2)" }}>
+            <button
+              className="stamp-btn stamp-btn--sm"
+              disabled={editors.status === "running"}
+              onClick={() => editors.runReview({
+                postId: post!.id,
+                title: autosave.fields.title || autosave.fields.title_nl,
+                content: autosave.fields.content || autosave.fields.content_nl,
+                metaDescription: post!.meta_description,
+                category: post!.category,
+              })}
+            >
+              {editors.status === "running" ? "Reviewing..." : editors.status === "done" ? "Review opnieuw" : "Review nu"}
+            </button>
+            {editors.provider && (
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--ink-3)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                via {editors.provider}
+              </span>
+            )}
+          </div>
+          {editors.verdict && (
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--ink-1)", margin: "var(--s-2) 0 0", lineHeight: 1.5 }}>
+              {editors.verdict}
+            </p>
+          )}
+          {editors.error && (
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--draft, #c00)", margin: "var(--s-2) 0 0" }}>
+              {editors.error}
+            </p>
+          )}
+        </div>
         <ScoreCards
-          voice={voiceScore}
-          seo={post!.seo_score ?? 0}
-          readability={completenessScore}
+          voice={editors.scores?.voice ?? voiceScore}
+          seo={editors.scores?.seo ?? post!.seo_score ?? 0}
+          readability={editors.scores?.readability ?? post!.readability_score ?? completenessScore}
         />
+
+        {/* Toepasbare fixes uit de review — klik = echte wijziging in de tekst */}
+        {editors.openIssues.length > 0 && (
+          <div className="tips-stack" style={{ marginTop: "var(--s-3)" }}>
+            {editors.openIssues.map((issue) => (
+              <div key={issue.id} className={`tip-card ${issue.dim === "seo" ? "seo" : issue.dim === "readability" ? "linking" : "tone"}`}>
+                <div className="tip-row">
+                  <span className="tip-tag">{issue.dim} · {issue.kind}</span>
+                  <span className="tip-impact"><strong>+{issue.delta}</strong></span>
+                </div>
+                <h4 className="tip-headline">{issue.note}</h4>
+                {issue.kind === "replace" && issue.target && (
+                  <div className="tip-suggestion" style={{ display: "block" }}>
+                    <span className="strike" style={{ display: "block", marginBottom: 2 }}>{issue.target.slice(0, 90)}{issue.target.length > 90 ? "…" : ""}</span>
+                    <span className="pick" style={{ display: "block" }}>{(issue.replacement ?? "").slice(0, 90)}{(issue.replacement ?? "").length > 90 ? "…" : ""}</span>
+                  </div>
+                )}
+                <div className="tip-why" style={{ display: "block" }}>
+                  <div className="tip-why-body">{issue.why}</div>
+                  <div className="tip-actions">
+                    {issue.kind === "replace" && (
+                      <button className="tip-apply" onClick={() => {
+                        const hit = editors.applyReplace(issue, autosave.fields, (k, v) => autosave.setField(k, v));
+                        if (!hit) editors.dismiss(issue.id);
+                      }}>Apply →</button>
+                    )}
+                    {issue.kind === "meta" && (
+                      <button className="tip-apply" disabled={editors.metaBusy} onClick={async () => {
+                        const meta = await editors.applyMeta(issue, post!.id, autosave.fields.title, autosave.fields.content || autosave.fields.content_nl);
+                        if (meta) state.refetch();
+                      }}>{editors.metaBusy ? "Generating…" : "Generate →"}</button>
+                    )}
+                    <button className="tip-later" onClick={() => editors.dismiss(issue.id)}>Later</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Agent reviews */}
         <h2 className="rail-h" style={{ marginTop: "var(--s-4)" }}>Reviews<em>.</em></h2>
@@ -463,6 +541,6 @@ export default function WriteMode({ postId }: { postId?: string }) {
         </div>
       </aside>
       {showLibrary && <BlogLibrary onClose={() => setShowLibrary(false)} />}
-    </>
+    </div>
   );
 }

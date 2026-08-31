@@ -4,7 +4,8 @@
  * Monitors all 7 layers of the Sovereign AI Spine.
  * Polls health endpoints, logs incidents to Supabase, triggers alerts.
  *
- * Install: claude mcp add health-guardian node .claude/mcp/health-guardian/index.js
+ * Registratie: .mcp.json in de repo-root (reist mee met git clone).
+ * Dependencies: npm run mcp:setup — controleren met npm run mcp:audit.
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -15,7 +16,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
-const N8N_URL     = process.env.VITE_N8N_PROD_URL    || "https://hansvanleeuwen.app.n8n.cloud";
+const N8N_URL     = process.env.VITE_N8N_PROD_URL    || "https://n8n.srv1402218.hstgr.cloud";
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL   || "https://oejeojzaakfhculcoqdh.supabase.co";
 const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 

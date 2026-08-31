@@ -20,6 +20,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
 import "@/styles/music-v2.css";
+import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 
 /** Turn a YouTube watch/Shorts/youtu.be URL into an embeddable /embed/<id> URL. */
 function youtubeEmbedUrl(url?: string): string | null {
@@ -113,6 +114,7 @@ function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
 }
 
 export default function MusicSong() {
+  useEffect(() => { ensureFontCss("fonts-music-v2", FONT_CSS.musicV2); }, []);
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const resolved = getSongBySlug(slug);
@@ -138,7 +140,7 @@ export default function MusicSong() {
   useSEO({
     enabled: true,
     title: song
-      ? `${song.title} — Song & Production Notes | Hans van Leeuwen`
+      ? `${song.title}: Song & Production Notes | Hans van Leeuwen`
       : "Song not found | Hans van Leeuwen",
     description: song
       ? `Listen to ${song.title} by Hans van Leeuwen and read the full production notes: how the track was made, the gear and DAW used, plus the complete lyrics.`
@@ -227,7 +229,7 @@ export default function MusicSong() {
               <div className="cover-fallback">
                 <span style={{ fontSize: 22 }}>{song.title}</span>
               </div>
-              <img src={song.cover} alt={`Cover art — ${song.title}`} />
+              <img src={song.cover} alt={`Cover art, ${song.title}`} />
             </div>
             <div className="songhead__info">
               <div className="songhead__cat">
@@ -236,7 +238,7 @@ export default function MusicSong() {
               </div>
               <h1 className="songtitle">{song.title}</h1>
               <p className="songhead__by">
-                By <strong>{song.artist}</strong> — the artist alias of Hans van Leeuwen
+                By <strong>{song.artist}</strong>, the artist alias of Hans van Leeuwen
               </p>
               <div className="songhead__facts">
                 {d.facts.map((f) => (
@@ -252,7 +254,7 @@ export default function MusicSong() {
           {/* Spotify player (eager — leads the page like the prototype) */}
           <div className="songplay">
             <iframe
-              title={`${song.provider === "soundcloud" ? "SoundCloud" : "Spotify"} — ${song.title}`}
+              title={`${song.provider === "soundcloud" ? "SoundCloud" : "Spotify"}: ${song.title}`}
               style={{ borderRadius: 14 }}
               src={song.embed}
               width="100%"
@@ -391,7 +393,7 @@ export default function MusicSong() {
                   {d.gear.map((g) => (
                     <li key={g.name}>
                       <span>
-                        <strong>{g.name}</strong> — {g.note}
+                        <strong>{g.name}</strong>: {g.note}
                       </span>
                     </li>
                   ))}
