@@ -1,5 +1,4 @@
-import { lazy, Suspense } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "./PageTransition";
 import Index from "@/pages/Index";
@@ -8,10 +7,21 @@ import Writing from "@/pages/Writing";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
 import Portal from "@/pages/Portal";
-import BlogManager from "@/pages/BlogManager";
-import NotFound from "@/pages/NotFound";
+import Dashboard from "@/pages/Dashboard";
+import Wiki from "@/pages/Wiki";
+import Empire from "@/pages/Empire";
+import EmpireLayout from "@/components/empire/EmpireLayout";
+import OpenClaw from "@/pages/OpenClaw";
+import HansAI from "@/pages/HansAI";
+import AIHub from "@/pages/AIHub";
+import Templates from "@/pages/Templates";
 
-const SeoCMS = lazy(() => import("@/pages/SeoCMS"));
+import Privacy from "@/pages/Privacy";
+import AuthCallback from "@/pages/AuthCallback";
+import NotFound from "@/pages/NotFound";
+import AmazonNlSpecialist from "@/pages/AmazonNlSpecialist";
+import BolComConsultant from "@/pages/BolComConsultant";
+import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -24,9 +34,23 @@ const AnimatedRoutes = () => {
         <Route path="/writing" element={<PageTransition><Writing /></PageTransition>} />
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+        <Route path="/amazon-nl-specialist" element={<PageTransition><AmazonNlSpecialist /></PageTransition>} />
+        <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
+        <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
-        <Route path="/portal/blog" element={<PageTransition><BlogManager /></PageTransition>} />
-        <Route path="/seo-cms" element={<Suspense fallback={<div className="flex h-screen items-center justify-center bg-[#0a0a0a]"><div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-400 border-t-transparent" /></div>}><PageTransition><SeoCMS /></PageTransition></Suspense>} />
+        <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+        <Route path="/wiki" element={<Navigate to="/empire/wiki" replace />} />
+        <Route path="/empire" element={<PageTransition><EmpireLayout /></PageTransition>}>
+          <Route index element={<Empire />} />
+          <Route path="wiki" element={<Wiki />} />
+          <Route path="openclaw" element={<OpenClaw />} />
+        </Route>
+        <Route path="/hansai" element={<HansAI />} />
+        <Route path="/ai" element={<AIHub />} />
+        <Route path="/templates" element={<PageTransition><Templates /></PageTransition>} />
+        
+        <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>

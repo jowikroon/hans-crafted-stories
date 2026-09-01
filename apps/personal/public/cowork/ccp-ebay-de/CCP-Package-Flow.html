@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CCP Package Flow · live orderflow</title>
+<style>
+:root{
+  --bg:#05070c; --bg2:#080b12; --ink:#e8edf7; --ink2:#7d8aa3; --ink3:#4a556b;
+  --cyan:#3ddcff; --blue:#4d8dff; --violet:#9d7bff;
+  --amber:#ffb340; --red:#ff5c6a; --green:#3ce8a8;
+  --line:rgba(255,255,255,.07);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);overflow:hidden;
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(1100px 620px at 88% 12%,rgba(77,141,255,.13),transparent 62%),
+             radial-gradient(900px 560px at 10% 88%,rgba(61,220,255,.09),transparent 60%)}
+.app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
+
+/* header */
+header{padding:20px 34px 16px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line)}
+.ttl{display:flex;align-items:baseline;gap:13px}
+.ttl h1{font-size:15px;font-weight:600;letter-spacing:.16em;text-transform:uppercase}
+.ttl span{font-size:11px;color:var(--ink3);letter-spacing:.13em;text-transform:uppercase}
+.sp{flex:1}
+.stat{display:flex;flex-direction:column;gap:2px;min-width:76px}
+.stat b{font:600 20px/1 var(--mono);letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.stat i{font-style:normal;font-size:9.5px;color:var(--ink3);letter-spacing:.11em;text-transform:uppercase}
+.live{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink2);letter-spacing:.07em}
+.led{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);
+  animation:br 2.2s ease-in-out infinite}
+.led.off{background:var(--ink3);box-shadow:none;animation:none}
+.led.err{background:var(--red);box-shadow:0 0 12px var(--red)}
+@keyframes br{0%,100%{opacity:1}50%{opacity:.32}}
+button{font:inherit;cursor:pointer;background:none;border:1px solid var(--line);color:var(--ink2);
+  padding:7px 14px;border-radius:8px;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;transition:.2s}
+button:hover{border-color:rgba(61,220,255,.45);color:var(--cyan);background:rgba(61,220,255,.05)}
+button.on{border-color:rgba(61,220,255,.55);color:var(--cyan);background:rgba(61,220,255,.09)}
+
+/* stage */
+.stage{flex:1;position:relative;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* station labels */
+.stations{position:absolute;inset:0;pointer-events:none}
+.st{position:absolute;top:0;transform:translateX(-50%);text-align:center;width:190px;padding-top:16px}
+.st .idx{font:600 9.5px var(--mono);color:var(--ink3);letter-spacing:.2em}
+.st .nm{font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-top:5px}
+.st .ct{font:600 25px/1.1 var(--mono);margin-top:7px;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.st .dw{font-size:10px;color:var(--ink3);letter-spacing:.06em;margin-top:3px}
+.st.dead .ct{color:var(--red)}
+.st.dead .dw{color:var(--red);opacity:.85}
+
+/* detail */
+.det{position:absolute;left:34px;bottom:104px;width:312px;padding:17px 19px;border-radius:14px;
+  background:rgba(9,13,21,.93);border:1px solid var(--line);backdrop-filter:blur(18px);
+  opacity:0;transform:translateY(10px);transition:.28s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.det.on{opacity:1;transform:none}
+.det .hd{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.det .hd b{font:600 13px var(--mono);letter-spacing:-.2px}
+.det .tag{font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:2.5px 7px;border-radius:20px;
+  background:rgba(77,141,255,.16);color:var(--blue)}
+.det .art{font-size:12px;color:var(--ink2);line-height:1.45;margin-bottom:13px}
+.det .leg{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:11.5px;
+  border-top:1px solid var(--line)}
+.det .leg span{color:var(--ink3)}
+.det .leg b{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums}
+.det .leg b.no{color:var(--red)}
+.det .leg b.ok{color:var(--green)}
+
+/* footer */
+footer{padding:14px 34px 18px;border-top:1px solid var(--line);display:flex;align-items:center;
+  gap:26px;flex-wrap:wrap;font-size:11px;color:var(--ink3);letter-spacing:.05em}
+.key{display:flex;align-items:center;gap:7px}
+.key i{width:9px;height:9px;border-radius:50%;display:block}
+.warn{color:var(--amber)}
+.msg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:40px;z-index:5}
+.msg p{max-width:440px;color:var(--ink2);font-size:13px;line-height:1.65}
+.msg h2{font-size:14px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;color:var(--red)}
+@media(max-width:900px){.st{width:120px}.st .nm{font-size:10px}.st .ct{font-size:19px}.det{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="ttl"><h1>Package Flow</h1><span>connect car parts · live</span></div>
+  <div class="sp"></div>
+  <div class="stat"><b id="sOrders">–</b><i>orders</i></div>
+  <div class="stat"><b id="sRev">–</b><i>waarde</i></div>
+  <div class="stat"><b id="sTransit">–</b><i>onderweg</i></div>
+  <div class="stat"><b id="sStuck" style="color:var(--amber)">–</b><i>vastgelopen</i></div>
+  <div class="live"><span class="led off" id="led"></span><span id="ledTxt">verbinden</span></div>
+  <button id="bTime" class="on">Echte tijden</button>
+  <button id="bTest">Testorders</button>
+  <button id="bReload">Ververs</button>
+</header>
+
+<div class="stage" id="stage">
+  <canvas id="cv"></canvas>
+  <div class="stations" id="stations"></div>
+  <div class="det" id="det"></div>
+  <div class="msg" id="msg" style="display:none"></div>
+</div>
+
+<footer>
+  <div class="key"><i style="background:var(--cyan);box-shadow:0 0 9px var(--cyan)"></i>onderweg</div>
+  <div class="key"><i style="background:var(--green);box-shadow:0 0 9px var(--green)"></i>hele keten doorlopen</div>
+  <div class="key"><i style="background:var(--amber);box-shadow:0 0 9px var(--amber)"></i>vastgelopen — komt niet verder</div>
+  <div class="key"><i style="background:var(--red);box-shadow:0 0 9px var(--red)"></i>fout of geannuleerd</div>
+  <div class="sp"></div>
+  <span id="foot">–</span>
+</footer>
+</div>
+
+<script>
+const SUPA = "https://pesfakewujjwkyybwaom.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlc2Zha2V3dWpqd2t5eWJ3YW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzcyNzQsImV4cCI6MjA4NzQ1MzI3NH0.6jTLT1MbeTKhxVW5ATtDnkRa02N-X5zlt3zGgFVA3iU";
+const LINK = SUPA + "/functions/v1/ccp-ops-link";
+
+/* stations: index 0 = rechts (bron) → index 4 = links (bij de koper) */
+const STATIONS = [
+  {nm:"Bron",       sub:"marketplace / webshop"},
+  {nm:"Channable",  sub:"order opgehaald"},
+  {nm:"Magento",    sub:"order aangemaakt"},
+  {nm:"Verzonden",  sub:"label & pakket"},
+  {nm:"Bij koper",  sub:"track & trace"}
+];
+const LAG_KEYS = [null,"to_channable","to_magento","to_shipped","to_track"];
+
+const CH_COLOR = {ebay:"#4d8dff", bol:"#3ddcff", webshop:"#9d7bff", magento:"#9d7bff"};
+const chColor = c => CH_COLOR[String(c).toLowerCase()] || "#7d8aa3";
+const eur = n => "€" + (n||0).toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function dur(m){ if(m==null) return "geen data"; if(m<60) return m+" min";
+  const h=m/60; if(h<48) return h.toFixed(h<10?1:0)+" uur"; return (h/24).toFixed(1)+" dagen"; }
+
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+let W=0, H=0, DPR=1;
+let DATA=null, PKTS=[], LANES=[], useRealTime=true, showTest=false, hovered=null;
+let mouse={x:-999,y:-999};
+
+function resize(){
+  const r = document.getElementById("stage").getBoundingClientRect();
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  W = r.width; H = r.height;
+  cv.width = W*DPR; cv.height = H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  layout();
+}
+function stationX(i){ const R=0.905, L=0.095; return W*(R - (R-L)*(i/(STATIONS.length-1))); }
+
+function layout(){
+  const top = 118, bot = 34;
+  const chans = [...new Set((DATA?.orders||[]).map(o=>o.channel))];
+  if(!chans.length) chans.push("ebay");
+  LANES = chans.map((c,i)=>({ ch:c, y: top + (H-top-bot)*((i+.5)/chans.length) }));
+  const el = document.getElementById("stations");
+  el.innerHTML = STATIONS.map((s,i)=>`<div class="st" id="st${i}" style="left:${stationX(i)}px">
+    <div class="idx">${String(i+1).padStart(2,"0")}</div>
+    <div class="nm">${s.nm}</div><div class="ct" id="ct${i}">–</div>
+    <div class="dw" id="dw${i}">${s.sub}</div></div>`).join("");
+  paintCounts();
+}
+
+function paintCounts(){
+  if(!DATA) return;
+  const c = DATA.counts, L = DATA.median_lags_min;
+  const vals = [c.source, c.channable, c.magento, c.shipped, c.track];
+  vals.forEach((v,i)=>{
+    const ct = document.getElementById("ct"+i), st = document.getElementById("st"+i);
+    if(!ct) return;
+    ct.textContent = v;
+    st.classList.toggle("dead", v===0 && i>0);
+    const dw = document.getElementById("dw"+i);
+    const lag = i ? L[LAG_KEYS[i]] : null;
+    dw.textContent = i===0 ? STATIONS[0].sub
+      : (v===0 ? "niets komt hier aan" : "+" + dur(lag));
+  });
+}
+
+/* ── packet-model ───────────────────────────────────────────
+   Elke order krijgt een pakketje dat van rechts naar links reist
+   langs precies de stations die hij in werkelijkheid heeft gehaald.
+   De verblijftijd per station is de échte doorlooptijd, log-gecomprimeerd. */
+const DWELL_MIN = 700, DWELL_MAX = 5200, TRAVEL = 1500;
+function dwellFor(min){
+  if(min==null) return DWELL_MIN;
+  const t = Math.log10(Math.max(1,min)+1)/Math.log10(20000);
+  return DWELL_MIN + (DWELL_MAX-DWELL_MIN)*Math.min(1,t);
+}
+
+function buildPackets(){
+  const orders = (DATA?.orders||[]);
+  PKTS = orders.map((o,i)=>{
+    const reached = o.stages.reduce((a,s,idx)=>s.done?idx:a, 0);
+    const lane = LANES.find(l=>l.ch===o.channel) || LANES[0];
+    return {
+      o, lane, reached,
+      stuck: reached < 4,
+      failed: o.status==="cancelled" || o.error,
+      st: 0, phase:"travel", t:0,
+      x: W + 60 + i*26, y: lane.y + (Math.random()*22-11),
+      start: performance.now() + i*430 + Math.random()*260,
+      alive:false, fade:0, r: 5.4 + Math.min(4.4, Math.log10(1+(o.total||1))*2.5)
+    };
+  });
+}
+
+function respawn(p, now){
+  p.st=0; p.phase="travel"; p.t=0; p.x = W+70; p.alive=false; p.fade=0;
+  p.start = now + 900 + Math.random()*5200;
+  p.y = p.lane.y + (Math.random()*22-11);
+}
+
+function step(now, dt){
+  for(const p of PKTS){
+    if(!p.alive){ if(now >= p.start){ p.alive=true; p.t=0; p.phase="travel"; } else continue; }
+    p.fade = Math.min(1, p.fade + dt/420);
+    const targetX = stationX(p.st);
+
+    if(p.phase==="travel"){
+      const dx = targetX - p.x;
+      p.x += dx * Math.min(1, dt/TRAVEL*2.6);
+      p.y += (p.lane.y - p.y) * Math.min(1, dt/900);
+      if(Math.abs(dx) < 1.2){ p.x = targetX; p.phase="dwell"; p.t=0; }
+    } else {
+      p.t += dt;
+      const nxt = p.st+1;
+      const lagMin = useRealTime ? p.o.lags[LAG_KEYS[nxt]] : 300;
+      const need = p.st >= p.reached ? 3400 : dwellFor(lagMin);
+      if(p.t >= need){
+        if(p.st < p.reached){ p.st++; p.phase="travel"; p.t=0; }
+        else if(p.st >= 4){ p.fade = -1; }
+        else { p.t = need*0.55; }   // vastgelopen: blijft pulseren op deze plek
+      }
+    }
+    if(p.fade < 0){ p.fade -= dt/900; if(p.fade < -1.6) respawn(p, now); }
+  }
+}
+
+function draw(now){
+  ctx.clearRect(0,0,W,H);
+
+  /* rails per kanaal */
+  ctx.lineWidth = 1;
+  for(const l of LANES){
+    const g = ctx.createLinearGradient(stationX(4)-40,0,stationX(0)+40,0);
+    g.addColorStop(0,"rgba(255,255,255,.015)");
+    g.addColorStop(.5,"rgba(255,255,255,.075)");
+    g.addColorStop(1,"rgba(255,255,255,.015)");
+    ctx.strokeStyle=g; ctx.beginPath(); ctx.moveTo(stationX(4)-40,l.y); ctx.lineTo(stationX(0)+50,l.y); ctx.stroke();
+    ctx.font="500 9.5px ui-monospace,monospace"; ctx.fillStyle="rgba(125,138,163,.55)";
+    ctx.textAlign="left"; ctx.fillText(l.ch.toUpperCase(), stationX(0)+60, l.y+3.5);
+  }
+
+  /* stationkolommen */
+  STATIONS.forEach((s,i)=>{
+    const x = stationX(i), dead = DATA && [0,1,2,3,4].map(k=>[DATA.counts.source,DATA.counts.channable,DATA.counts.magento,DATA.counts.shipped,DATA.counts.track][k])[i]===0 && i>0;
+    const g = ctx.createLinearGradient(0,104,0,H-20);
+    const col = dead ? "255,92,106" : "61,220,255";
+    g.addColorStop(0,`rgba(${col},.22)`); g.addColorStop(.55,`rgba(${col},.07)`); g.addColorStop(1,`rgba(${col},0)`);
+    ctx.fillStyle=g; ctx.fillRect(x-.75,104,1.5,H-124);
+    ctx.beginPath(); ctx.arc(x,104,3,0,7); ctx.fillStyle=`rgba(${col},.85)`; ctx.fill();
+  });
+
+  /* pakketten */
+  let transit=0, stuck=0;
+  hovered = null;
+  for(const p of PKTS){
+    if(!p.alive) continue;
+    const a = p.fade >= 0 ? p.fade : Math.max(0, 1+p.fade);
+    if(a <= 0) continue;
+    const done = p.st >= 4;
+    const stalled = p.phase==="dwell" && p.st >= p.reached && !done;
+    if(stalled) stuck++; else if(!done) transit++;
+
+    const base = p.failed ? "#ff5c6a" : done ? "#3ce8a8" : stalled ? "#ffb340" : chColor(p.o.channel);
+    const pulse = stalled ? .55 + .45*Math.sin(now/330) : 1;
+    const near = Math.hypot(mouse.x-p.x, mouse.y-p.y) < 22;
+    if(near) hovered = p;
+
+    /* sleep */
+    if(p.phase==="travel"){
+      const g = ctx.createLinearGradient(p.x, p.y, p.x+64, p.y);
+      g.addColorStop(0, hex(base, .34*a)); g.addColorStop(1, hex(base, 0));
+      ctx.fillStyle=g;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y-p.r*.62); ctx.lineTo(p.x+64, p.y-1.1);
+      ctx.lineTo(p.x+64, p.y+1.1); ctx.lineTo(p.x, p.y+p.r*.62); ctx.closePath(); ctx.fill();
+    }
+
+    /* halo */
+    const hr = p.r*(near?4.4:3.3);
+    const hg = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,hr);
+    hg.addColorStop(0, hex(base,(near?.42:.3)*a*pulse)); hg.addColorStop(1, hex(base,0));
+    ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(p.x,p.y,hr,0,7); ctx.fill();
+
+    /* tijd-vulring: hoe ver is de verblijftijd op dit station verstreken */
+    if(p.phase==="dwell" && !done){
+      const nxt=p.st+1;
+      const need = p.st>=p.reached ? 3400 : dwellFor(useRealTime ? p.o.lags[LAG_KEYS[nxt]] : 300);
+      const frac = Math.min(1, p.t/need);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r+4.6, -Math.PI/2, -Math.PI/2 + Math.PI*2*(stalled?1:frac));
+      ctx.strokeStyle = hex(base, (stalled?.4*pulse:.85)*a); ctx.lineWidth = 1.7; ctx.lineCap="round"; ctx.stroke();
+    }
+
+    /* kern */
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7);
+    ctx.fillStyle = hex(base, .95*a*(stalled?pulse:1)); ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x-p.r*.3, p.y-p.r*.3, p.r*.34, 0, 7);
+    ctx.fillStyle = `rgba(255,255,255,${.55*a})`; ctx.fill();
+  }
+
+  document.getElementById("sTransit").textContent = transit;
+  document.getElementById("sStuck").textContent = stuck;
+  paintDetail();
+}
+function hex(c,a){
+  const n = parseInt(c.slice(1),16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;
+}
+
+function paintDetail(){
+  const d = document.getElementById("det");
+  if(!hovered){ d.classList.remove("on"); return; }
+  const o = hovered.o;
+  const reachedLbl = STATIONS[hovered.reached].nm;
+  d.classList.add("on");
+  d.innerHTML = `
+    <div class="hd"><b>${esc(o.id)}</b><span class="tag">${esc(o.channel)}</span>
+      ${o.is_test?'<span class="tag" style="background:rgba(125,138,163,.18);color:var(--ink2)">test</span>':''}</div>
+    <div class="art">${esc(o.title)||"—"}<br><span style="color:var(--ink3)">${esc(o.sku)||"geen sku"} · ${esc(o.city||"")} ${esc(o.country||"")}</span></div>
+    <div class="leg"><span>Waarde</span><b>${eur(o.total)}</b></div>
+    <div class="leg"><span>Marketplace-fee</span><b>${eur(o.commission)}</b></div>
+    <div class="leg"><span>Naar Channable</span><b>${dur(o.lags.to_channable)}</b></div>
+    <div class="leg"><span>Naar Magento</span><b class="${o.lags.to_magento==null?'no':''}">${dur(o.lags.to_magento)}</b></div>
+    <div class="leg"><span>Naar verzending</span><b class="${o.lags.to_shipped==null?'no':''}">${dur(o.lags.to_shipped)}</b></div>
+    <div class="leg"><span>Naar T&amp;T</span><b class="${o.lags.to_track==null?'no':''}">${dur(o.lags.to_track)}</b></div>
+    <div class="leg"><span>Magento-order</span><b class="${o.magento_increment_id?'ok':'no'}">${esc(o.magento_increment_id||"niet gekoppeld")}</b></div>
+    <div class="leg"><span>Trackingnummer</span><b class="${o.track_number?'ok':'no'}">${esc(o.track_number||"ontbreekt")}</b></div>
+    <div class="leg"><span>Gestrand bij</span><b class="${hovered.reached<4?'no':'ok'}">${esc(reachedLbl)}</b></div>`;
+}
+
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(64, now-last); last = now;
+  if(DATA){ step(now, dt); draw(now); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ── data ─────────────────────────────────────────────── */
+/* Kijker-token: eenmalig met de beheer-PIN opgehaald, daarna onthouden door deze browser.
+   Staat niet in dit bestand — de HTML kopiëren geeft niemand toegang. */
+const BROKER = SUPA + "/functions/v1/ccp-secrets-broker";
+const vGet = () => { try { return JSON.parse(localStorage.getItem("ccp.viewer")||"null"); } catch(e){ return null; } };
+const vSet = v => { try { localStorage.setItem("ccp.viewer", JSON.stringify(v)); } catch(e){} };
+
+function askUnlock(msg){
+  const m = document.getElementById("msg");
+  document.getElementById("led").className = "led off";
+  document.getElementById("ledTxt").textContent = "vergrendeld";
+  m.style.display = "grid";
+  m.innerHTML = `<div style="max-width:420px">
+    <h2 style="color:var(--cyan)">Ontgrendelen</h2>
+    <p>${msg||"Orderdata zit achter een slot. Vul je beheer-PIN in; deze browser onthoudt daarna een kijker-token."}</p>
+    <input id="pfPin" type="password" placeholder="beheer-PIN" style="margin-top:16px;width:100%;padding:10px 13px;
+      border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);
+      font:13px var(--mono);text-align:center">
+    <button id="pfGo" style="margin-top:12px">Ontgrendelen</button>
+    <div id="pfMsg" style="margin-top:10px;font-size:11.5px;color:var(--ink3)"></div></div>`;
+  document.getElementById("pfPin").addEventListener("keydown", e => { if(e.key==="Enter") document.getElementById("pfGo").click(); });
+  document.getElementById("pfGo").onclick = async () => {
+    const pin = document.getElementById("pfPin").value.trim();
+    const out = document.getElementById("pfMsg");
+    if(!pin){ out.textContent="vul je PIN in"; return; }
+    out.textContent = "controleren…";
+    const r = await fetch(BROKER, {method:"POST",
+      headers:{Authorization:"Bearer "+ANON,"Content-Type":"application/json","x-ccp-pin":pin},
+      body:JSON.stringify({action:"consumer_create", name:"viewer-"+Math.random().toString(36).slice(2,8),
+        scope:["__viewer__"], description:"package-flow kijker"})}).then(x=>x.json()).catch(e=>({ok:false,error:String(e)}));
+    if(!r.ok){ out.textContent = r.error; return; }
+    vSet({name:r.name, token:r.token, at:new Date().toISOString()});
+    m.style.display = "none";
+    fetchData();
+  };
+}
+
+async function fetchData(){
+  const led = document.getElementById("led"), txt = document.getElementById("ledTxt");
+  const v = vGet();
+  if(!v?.token){ askUnlock(); return; }
+  led.className="led off"; txt.textContent="ophalen";
+  try{
+    const r = await fetch(LINK,{method:"POST",
+      headers:{Authorization:"Bearer "+ANON,"Content-Type":"application/json","x-ccp-viewer":v.token},
+      body:JSON.stringify({action:"pipeline", limit:80, exclude_test:!showTest})});
+    const d = await r.json();
+    if(d.needs_unlock){ vSet(null); askUnlock("Kijker-token verlopen of ingetrokken. Ontgrendel opnieuw."); return; }
+    if(!d.ok) throw new Error(d.error||"onbekende fout");
+    DATA = d;
+    document.getElementById("msg").style.display="none";
+    document.getElementById("sOrders").textContent = d.counts.total;
+    document.getElementById("sRev").textContent = "€"+Math.round(d.sales.d30.revenue).toLocaleString("nl-NL");
+    document.getElementById("foot").textContent =
+      `${d.counts.magento}/${d.counts.total} gekoppeld aan Magento · ${d.counts.track}/${d.counts.total} met trackingnummer · ${new Date(d.ran_at).toLocaleTimeString("nl-NL")}`;
+    layout(); buildPackets();
+    const broken = d.counts.track === 0 && d.counts.shipped > 0;
+    led.className = "led" + (broken?" err":"");
+    txt.textContent = broken ? "keten breekt bij T&T" : "keten volledig";
+  }catch(e){
+    led.className="led err"; txt.textContent="fout";
+    const m = document.getElementById("msg");
+    m.style.display="grid";
+    m.innerHTML = `<div><h2>Geen verbinding</h2><p>${esc(e.message)}<br><br>
+      Controleer of de edge function <code>ccp-ops-link</code> bereikbaar is en of de Channable-sleutel nog geldig is.
+      De sleutels beheer je in het Command Dashboard, tabblad Toegang.</p></div>`;
+  }
+}
+
+/* ── interactie ───────────────────────────────────────── */
+document.getElementById("stage").addEventListener("mousemove", e=>{
+  const r = cv.getBoundingClientRect(); mouse.x = e.clientX-r.left; mouse.y = e.clientY-r.top;
+});
+document.getElementById("stage").addEventListener("mouseleave", ()=>{ mouse.x=mouse.y=-999; });
+document.getElementById("bTime").onclick = e => { useRealTime=!useRealTime; e.target.classList.toggle("on",useRealTime);
+  e.target.textContent = useRealTime?"Echte tijden":"Gelijk tempo"; };
+document.getElementById("bTest").onclick = e => { showTest=!showTest; e.target.classList.toggle("on",showTest); fetchData(); };
+document.getElementById("bReload").onclick = fetchData;
+window.addEventListener("resize", ()=>{ resize(); if(DATA) buildPackets(); });
+
+resize(); fetchData();
+setInterval(fetchData, 5*60*1000);
+</script>
+</body>
+</html>

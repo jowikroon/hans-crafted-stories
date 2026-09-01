@@ -53,8 +53,9 @@ const Portal = () => {
   const { toast } = useToast();
   const { isVisible } = usePageElements("portal");
 
-  // Dark-only immersive page: forced without touching the visitor's saved theme.
-  useForcedTheme("dark");
+  // Backend surface: always light, consistent with /write and /music-cms.
+  // Forced without touching the visitor's saved theme.
+  useForcedTheme("light");
 
   useEffect(() => {
     document.title = "Portal — Hans van Leeuwen";

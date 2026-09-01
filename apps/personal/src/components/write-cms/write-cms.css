@@ -2371,3 +2371,45 @@ body.write-focus .write-cms .main { max-width: 760px; margin: 0 auto; transition
 .write-cms .voice-template-popover__error {
   color: var(--accent, #c00);
 }
+
+/* ============================= INFRA STATUS (heartbeats) ============================= */
+/* InfraStatusCard — chart-card in Analytics-mode. Alleen tokens, geen hex. */
+.write-cms .infra-card { margin-top: var(--s-5); }
+.write-cms .infra-card .infra-h-sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); text-transform: none; letter-spacing: 0.04em; }
+.write-cms .infra-hosts { display: flex; flex-direction: column; gap: var(--s-4); }
+.write-cms .infra-host { border: 1px solid var(--line); border-radius: var(--r-2); background: var(--bg-inset); overflow: hidden; }
+.write-cms .infra-host-head { display: flex; align-items: baseline; gap: var(--s-3); min-width: 0; padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--line-faint); }
+.write-cms .infra-host-name { font-family: var(--font-mono); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-0); }
+.write-cms .infra-host-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.write-cms .infra-host.offline .infra-host-name,
+.write-cms .infra-host.offline .infra-host-meta,
+.write-cms .infra-host.offline .infra-svc,
+.write-cms .infra-host.offline .infra-note { color: var(--ink-3); }
+.write-cms .infra-offline-band { padding: var(--s-2) var(--s-4); background: var(--bg-2); color: var(--ink-1); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; border-bottom: 1px solid var(--line-faint); }
+.write-cms .infra-rows { display: flex; flex-direction: column; }
+.write-cms .infra-row { display: flex; align-items: center; gap: var(--s-2); padding: 6px var(--s-4); border-bottom: 1px solid var(--line-faint); }
+.write-cms .infra-row:last-child { border-bottom: 0; }
+.write-cms .infra-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.write-cms .infra-dot.up { background: var(--live); }
+.write-cms .infra-dot.degraded { background: var(--review); }
+.write-cms .infra-dot.down { background: var(--draft); }
+.write-cms .infra-dot.offline { background: var(--ink-3); }
+.write-cms .infra-svc { font-family: var(--font-mono); font-size: 12px; color: var(--ink-0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.write-cms .infra-note { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); flex-shrink: 0; }
+.write-cms .infra-state { margin-left: auto; flex-shrink: 0; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+.write-cms .infra-state.up { color: var(--live); }
+.write-cms .infra-state.degraded { color: var(--review); }
+.write-cms .infra-state.down { color: var(--draft); }
+.write-cms .infra-state.offline { color: var(--ink-2); text-transform: none; letter-spacing: 0.02em; }
+.write-cms .infra-foot { display: flex; align-items: center; gap: var(--s-3); margin-top: var(--s-4); }
+.write-cms .infra-refresh { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--line); border-radius: var(--r-1); padding: 2px 8px; color: var(--ink-1); transition: color var(--t-fast), border-color var(--t-fast); }
+.write-cms .infra-refresh:hover:not(:disabled) { color: var(--ink-0); border-color: var(--line-strong); }
+.write-cms .infra-refresh:disabled { opacity: 0.5; cursor: default; }
+.write-cms .infra-updated { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+.write-cms .infra-empty { font-family: var(--font-mono); font-size: 11px; color: var(--ink-1); padding: var(--s-4) 0; }
+.write-cms .infra-error-detail { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); margin-top: 4px; }
+.write-cms .infra-skel { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-2) 0; }
+.write-cms .infra-skel span { display: block; height: 12px; border-radius: var(--r-1); background: var(--bg-2); animation: wcInfraPulse 1.2s ease-in-out infinite; }
+.write-cms .infra-skel span:nth-child(2) { animation-delay: 0.15s; width: 80%; }
+.write-cms .infra-skel span:nth-child(3) { animation-delay: 0.3s; width: 60%; }
+@keyframes wcInfraPulse { 50% { opacity: 0.45; } }

@@ -13,7 +13,7 @@
 | Path | Title / purpose | Category |
 |------|-----------------|----------|
 | `README.md` | Project overview, Lovable/GitHub edit flow, local dev | Project |
-| `docs/hosting-context.md` | Cloudflare Pages context for AI tools and deploy (build command, output dir, env, SPA) | Hosting |
+| `docs/hosting-context.md` | **Wie host wat**: Vercel serveert de site, Cloudflare doet DNS. Build command, root dir, env, routing | Hosting |
 | `docs/lovable-cloudflare-pages.md` | Lovable + Cloudflare Pages flow, dual-edit (Cursor/Lovable), sync and deploy steps | Hosting |
 | `docs/domain-nameservers-hansvanleeuwen.md` | DNS records, Cloudflare Pages project name, custom domains for hansvanleeuwen.com | Hosting |
 | `docs/cloudflare-connection-troubleshooting.md` | Dashboard login, wrong account, API/CLI tokens, wrangler | Hosting |
@@ -35,7 +35,7 @@
 - **README.md** — How to edit (Lovable, IDE, GitHub), clone, `npm i`, `npm run dev`.
 
 ### Hosting & deploy
-- **docs/hosting-context.md** — One-page context: Cloudflare Pages, build (`npm run build`, `dist`, Node 20), SPA, env, custom domain, Git.
+- **docs/hosting-context.md** — One-page context: Vercel serveert hansvanleeuwen.com (Cloudflare alleen DNS), build via `apps/personal/vercel.json`, routing, env, verificatiecommando's.
 - **docs/lovable-cloudflare-pages.md** — Dual-edit workflow (Lovable + Cursor → GitHub → Cloudflare), Cloudflare checklist, project name.
 - **docs/domain-nameservers-hansvanleeuwen.md** — DNS (A, CNAME), Pages project **hansvanleeuwen**, build settings table.
 - **docs/cloudflare-connection-troubleshooting.md** — Login, account/team, API tokens, wrangler.
@@ -61,7 +61,7 @@
 
 When scanning or generating build/deploy steps:
 
-1. Use **docs/hosting-context.md** for Cloudflare Pages build and env.
+1. Use **docs/hosting-context.md** for the Vercel build and env — and check there first before concluding anything about which host serves the site.
 2. Use **docs/lovable-cloudflare-pages.md** for dual-edit and deploy verification.
 3. Use **docs/empire-n8n-flow.md** for entry points, webhooks, and N8N workflow names.
 4. Use **docs/one-input-intent-routing.md** for how a single input is routed to workflows or chat (intent layer, HansAI as single point of contact).

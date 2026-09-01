@@ -19,7 +19,7 @@ const content = {
     breadcrumb: "Amazon NL Specialist",
     h1: "Amazon NL Specialist",
     subtitle: "Freelance Amazon Netherlands account manager, listings, ads & growth",
-    intro: "I help brands sell more on Amazon Netherlands through optimized listings, data-driven advertising, and strategic account management. From launch to scale, hands-on, measurable, and results-focused.",
+    intro: "I help brands sell more on Amazon Netherlands through optimized listings, data-driven advertising, and strategic account management. Documented results include 70% market share in the Amazon NL earplug category (Nielsen data), an out-of-stock rate below 2%, and, across Bol.com work, 20% weekly sales growth from targeted Bol Ads campaigns.",
     services: [
       "Product listing optimization (titles, bullets, backend keywords, images)",
       "A+ Content / Enhanced Brand Content creation",
@@ -51,7 +51,7 @@ const content = {
     breadcrumb: "Amazon NL Specialist",
     h1: "Amazon NL Specialist",
     subtitle: "Freelance Amazon Nederland accountmanager, listings, ads & groei",
-    intro: "Ik help merken meer te verkopen op Amazon Nederland door geoptimaliseerde listings, datagedreven advertenties en strategisch accountmanagement. Van lancering tot schaling, hands-on, meetbaar en resultaatgericht.",
+    intro: "Ik help merken meer te verkopen op Amazon Nederland door geoptimaliseerde listings, datagedreven advertenties en strategisch accountmanagement. Gedocumenteerde resultaten zijn 70% marktaandeel in de oordoppencategorie op Amazon NL (Nielsen-data), een out-of-stockpercentage onder 2% en, binnen Bol.com-werk, 20% wekelijkse omzetgroei uit gerichte Bol Ads-campagnes.",
     services: [
       "Productlisting optimalisatie (titels, bullets, backend keywords, afbeeldingen)",
       "A+ Content / Enhanced Brand Content creatie",

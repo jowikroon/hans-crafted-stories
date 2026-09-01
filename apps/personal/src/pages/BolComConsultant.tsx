@@ -19,7 +19,7 @@ const content = {
     breadcrumb: "Bol.com Consultant",
     h1: "Bol.com Consultant",
     subtitle: "Freelance Bol.com specialist, content, Bol Ads & marketplace growth",
-    intro: "I help brands grow on Bol.com, the Netherlands' largest online marketplace. From optimizing product content and managing Bol Ads campaigns to transitioning from vendor to seller, I deliver measurable results with a hands-on approach.",
+    intro: "I help brands grow on Bol.com, the Netherlands' largest online marketplace. My marketplace track record includes 70% category market share on Amazon NL (Nielsen data) and 20% weekly sales growth from targeted Bol Ads campaigns; I apply the same data-led operating discipline to Bol.com content, advertising, pricing, and availability.",
     services: [
       "Bol.com product content optimization (titles, descriptions, attributes)",
       "Bol Ads campaign setup, management & ROAS optimization",
@@ -51,7 +51,7 @@ const content = {
     breadcrumb: "Bol.com Consultant",
     h1: "Bol.com Consultant",
     subtitle: "Freelance Bol.com specialist, content, Bol Ads & marktplaatsgroei",
-    intro: "Ik help merken groeien op Bol.com, de grootste online marktplaats van Nederland. Van het optimaliseren van productcontent en het beheren van Bol Ads campagnes tot vendor-naar-seller transities. Hands-on en meetbaar.",
+    intro: "Ik help merken groeien op Bol.com, de grootste online marktplaats van Nederland. Mijn marketplace-trackrecord omvat 70% categoriemarktaandeel op Amazon NL (Nielsen-data) en 20% wekelijkse omzetgroei uit gerichte Bol Ads-campagnes; dezelfde datagedreven werkwijze pas ik toe op Bol.com-content, advertising, pricing en beschikbaarheid.",
     services: [
       "Bol.com productcontent optimalisatie (titels, beschrijvingen, attributen)",
       "Bol Ads campagne-opzet, beheer & ROAS-optimalisatie",

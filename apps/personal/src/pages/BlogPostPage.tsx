@@ -12,6 +12,7 @@ import "@/styles/article-v2.css";
 import "@/styles/blog.css";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 import { applyMaskTokens, type MaskingConfig } from "@/lib/masking";
+import { trackBlogView, trackTocClick, trackReadDepth, trackShare, type BlogEventContext } from "@/lib/blogAnalytics";
 
 /* ────────────────────────────────────────────────────────────
    BlogPostPage — article reader, redesign v2.
@@ -442,6 +443,27 @@ const BlogPostPage = () => {
   const seoUrl = seoHead?.canonical || `https://hansvanleeuwen.com/writing/${slug}`;
   const isDraft = !!post && (post.published === false || (post as { status?: string }).status === "draft");
 
+  /* ── GTM dataLayer analytics (blogAnalytics.ts) ── */
+  const analyticsCtx = useMemo<BlogEventContext | null>(
+    () => (post && slug ? { slug, title: displayTitle, category: post.category || "Marketplace", lang } : null),
+    [post, slug, displayTitle, lang]
+  );
+  useEffect(() => {
+    if (!analyticsCtx || isDraft) return;
+    trackBlogView(analyticsCtx);
+  }, [analyticsCtx, isDraft]);
+
+  /* Read-depth thresholds + read-complete (independent of TOC presence). */
+  useEffect(() => {
+    if (typeof window === "undefined" || !analyticsCtx || isDraft) return;
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (max > 0) trackReadDepth(analyticsCtx, window.scrollY / max);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [analyticsCtx, isDraft]);
+
   useSEO({
     enabled: post !== undefined,
     title: post ? seoHead?.title || `${displayTitle} | Hans van Leeuwen` : "Post not found | Hans van Leeuwen",
@@ -521,16 +543,22 @@ const BlogPostPage = () => {
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
   }, [figHtml]);
 
-  const scrollToHeading = (e: React.MouseEvent, id: string) => {
+  const scrollToHeading = (e: React.MouseEvent, id: string, source: "toc" | "mtoc" = "toc") => {
     e.preventDefault();
     const el = articleRef.current?.querySelector<HTMLElement>(`#${id}`);
     if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 96, behavior: "smooth" });
+    if (analyticsCtx) {
+      const idx = headings.findIndex((h) => h.id === id);
+      const h = idx > -1 ? headings[idx] : null;
+      trackTocClick(analyticsCtx, id, h ? h.text : id, Math.max(idx, 0), source);
+    }
   };
 
   const handleCopyLink = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(currentUrl);
       toast.success(lang === "nl" ? "Link gekopieerd" : "Link copied to clipboard");
+      if (analyticsCtx) trackShare(analyticsCtx, "copy_link");
     }
   };
 
@@ -538,6 +566,7 @@ const BlogPostPage = () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({ title: displayTitle, url: currentUrl });
+        if (analyticsCtx) trackShare(analyticsCtx, "web_share");
       } catch {
         /* user cancelled — ignore */
       }
@@ -549,7 +578,7 @@ const BlogPostPage = () => {
   };
 
   const handleMtocClick = (e: React.MouseEvent, id: string) => {
-    scrollToHeading(e, id);
+    scrollToHeading(e, id, "mtoc");
     setMtocOpen(false);
   };
 
@@ -665,8 +694,8 @@ const BlogPostPage = () => {
         {/* Share */}
         <div className="share">
           <span className="share__l">{lang === "nl" ? "Delen" : "Share"}</span>
-          <a href={shareLinkedIn} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a>
-          <a href={shareTwitter} target="_blank" rel="noopener noreferrer" aria-label="X / Twitter"><Twitter size={17} /></a>
+          <a href={shareLinkedIn} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" onClick={() => analyticsCtx && trackShare(analyticsCtx, "linkedin")}><Linkedin size={17} /></a>
+          <a href={shareTwitter} target="_blank" rel="noopener noreferrer" aria-label="X / Twitter" onClick={() => analyticsCtx && trackShare(analyticsCtx, "twitter")}><Twitter size={17} /></a>
           <button type="button" onClick={handleCopyLink} aria-label={lang === "nl" ? "Kopieer link" : "Copy link"}><Link2 size={17} /></button>
           {typeof navigator !== "undefined" && !!navigator.share && (
             <button type="button" className="share__native" onClick={handleWebShare} aria-label={lang === "nl" ? "Delen via..." : "Share via..."}><Share2 size={20} /></button>
