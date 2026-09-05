@@ -91,7 +91,8 @@ function checkFile(file) {
   if (route.startsWith("/writing/")) {
     const decode = (t) => t.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d)).replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
     const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
-    const h1Text = h1 ? decode(h1[1].replace(/<[^>]+>/g, "")) : "";
+    // Vergelijkingstekst, geen sanitizer: tags eruit via split (CodeQL js/incomplete-multi-character-sanitization).
+    const h1Text = h1 ? decode(h1[1].split(/<[^>]*>/).join("")) : "";
     const headline = html.match(/"headline":"((?:[^"\\]|\\.)*)"/);
     const headlineText = headline ? JSON.parse(`"${headline[1]}"`).replace(/\s+/g, " ").trim() : "";
     if (h1Text && headlineText && h1Text !== headlineText) failures.push(`${rel}: JSON-LD headline "${headlineText.slice(0, 40)}…" ≠ <h1> "${h1Text.slice(0, 40)}…" (andere taalversie)`);
@@ -206,7 +207,7 @@ else {
     if (!fs.existsSync(file)) return null;
     let h = fs.readFileSync(file, "utf8");
     h = h.replace(/[\s\S]*?<div id="root">/, "").replace(/<footer[\s\S]*$/, "");
-    h = h.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ");
+    h = h.split(/<script\b[\s\S]*?<\/script\s*>/i).join(" ").split(/<[^>]*>/).join(" ").replace(/&[a-z#0-9]+;/gi, " ");
     return h.toLowerCase().replace(/[^a-z0-9àâäéèêëïîôöùûüç€%.,'-]+/g, " ").trim().split(/\s+/);
   };
   const shingles = (words) => { const out = new Set(); for (let i = 0; i + N <= words.length; i++) out.add(words.slice(i, i + N).join(" ")); return out; };
