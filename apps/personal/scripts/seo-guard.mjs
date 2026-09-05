@@ -105,7 +105,8 @@ function checkFile(file) {
     const self = isNl ? by.nl : by.en;
     if (self && canonical && self !== canonical) failures.push(`${rel}: hreflang-self ${self} ≠ canonical ${canonical}`);
     for (const [code, href] of Object.entries(by)) {
-      if (!href.startsWith(BASE)) { failures.push(`${rel}: hreflang ${code} niet absoluut (${href})`); continue; }
+      // Exacte origin-match (CodeQL js/incomplete-url-substring-sanitization): "https://hansvanleeuwen.com.evil" mag niet slagen.
+      if (href !== `${BASE}/` && !href.startsWith(`${BASE}/`)) { failures.push(`${rel}: hreflang ${code} niet op ${BASE} (${href})`); continue; }
       const p = href.slice(BASE.length) || "/";
       const target = path.join(distDir, p === "/" ? "index.html" : `${p.slice(1)}/index.html`);
       if (!fs.existsSync(target)) failures.push(`${rel}: hreflang ${code} → ${href} bestaat niet in dist (wederkerigheid gebroken)`);
