@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { Home, ChevronRight, Link2, Linkedin, Twitter, ArrowRight, ArrowUpRight, ArrowUp, List, Share2, X } from "lucide-react";
 import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
+import { primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
@@ -409,14 +410,19 @@ const BlogPostPage = () => {
   const post =
     rawPost && slug && rawPost.slug !== slug ? undefined : rawPost;
 
-  // Language-aware fields
-  const displayTitle = post ? (lang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
-  const displayExcerpt = post ? (lang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";
-  const displayContent = post ? (lang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
+  // Taal van het artikel volgt het artikel, niet de bezoeker (HAN-167): de URL
+  // serveert de primaire taal (NL zodra er een NL-versie is); ?lang=en toont de
+  // Engelse versie op dezelfde URL zonder eigen canonical.
+  const routerLocation = useLocation();
+  const wantsEn = new URLSearchParams(routerLocation.search).get("lang") === "en";
+  const articleLang: "nl" | "en" = post ? (wantsEn && post.content ? "en" : primaryBlogPostLang(post)) : lang;
+  const displayTitle = post ? (articleLang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
+  const displayExcerpt = post ? (articleLang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";
+  const displayContent = post ? (articleLang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
 
   const { html: bodyHtml, headings } = useMemo(
-    () => renderArticle(displayContent || "", post?.masking, lang === "nl" ? "nl" : "en"),
-    [displayContent, post?.masking, lang]
+    () => renderArticle(displayContent || "", post?.masking, articleLang),
+    [displayContent, post?.masking, articleLang]
   );
   const showToc = headings.length >= 3;
 
@@ -481,6 +487,7 @@ const BlogPostPage = () => {
     title: post ? seoHead?.title || `${displayTitle} | Hans van Leeuwen` : "Post not found | Hans van Leeuwen",
     description: displayExcerpt || "Read this article by Hans van Leeuwen on e-commerce, marketplace strategy, and digital commerce.",
     url: seoUrl,
+    lang: articleLang,
     type: "article",
     jsonLd: post && !isDraft ? getBlogPostJsonLd(post) : undefined,
     noindex: isDraft,
@@ -653,7 +660,7 @@ const BlogPostPage = () => {
       <article className="art rise" ref={articleRef}>
         {/* Head */}
         <div className="ahead">
-          <div className="ahead__cat">{catLine} <span className="langtag">{lang.toUpperCase()}</span></div>
+          <div className="ahead__cat">{catLine} <span className="langtag">{articleLang.toUpperCase()}</span></div>
           <h1 className="atitle">{displayTitle}</h1>
           {displayExcerpt && <p className="adek">{displayExcerpt}</p>}
           <div className="byline">

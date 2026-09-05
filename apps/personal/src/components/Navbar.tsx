@@ -61,6 +61,11 @@ const Navbar = (_props: NavbarProps) => {
   /* Theme toggle still controls page-content dark mode; the bar stays light.
      State lives in the site-wide ThemeProvider (src/hooks/useTheme). */
   const { theme: siteTheme, toggleTheme } = useTheme();
+  /* Artikelen hebben één URL per artikel (HAN-167): de taalwissel gebruikt daar
+     ?lang=en in plaats van een /nl-prefix, zodat de NL-canonical intact blijft. */
+  const isArticle = /^\/writing\/[^/]+$/.test(parsePath(location.pathname).path);
+  const langTarget = (l: "nl" | "en") =>
+    isArticle ? (l === "en" ? `${location.pathname}?lang=en` : location.pathname) : localizePath(location.pathname, l);
 
   /* ── Nav model ── */
   /* Editable header menu (Design mode in /write); defaults mirror the old
@@ -348,9 +353,9 @@ const Navbar = (_props: NavbarProps) => {
                 {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               <div className="hidden sm:flex items-center gap-0.5 font-mono text-xs">
-                <RouterLink to={localizePath(location.pathname, "nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
+                <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
                 <span className={barSep}>|</span>
-                <RouterLink to={localizePath(location.pathname, "en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
+                <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
               </div>
 
               {/* Account chip (logged-in) or Login pill */}
@@ -463,9 +468,9 @@ const Navbar = (_props: NavbarProps) => {
 
                 <div className={`my-1 h-px ${barDark ? "bg-white/10" : "bg-black/10"}`} />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
-                  <RouterLink to={localizePath(location.pathname, "nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
+                  <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
                   <span className={barSep}>|</span>
-                  <RouterLink to={localizePath(location.pathname, "en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
+                  <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
                 </div>
 
                 {user ? (

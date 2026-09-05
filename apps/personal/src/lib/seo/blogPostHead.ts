@@ -38,6 +38,18 @@ export function detectBlogPostLang(
   return hits >= 8 ? "nl" : "en";
 }
 
+/**
+ * Primaire taal van een artikel-URL: Nederlands zodra er een NL-versie is (de
+ * doelmarkt), anders de gedetecteerde taal van de EN-velden. Eén URL = één
+ * taal; de EN-versie is bereikbaar via ?lang=en zonder eigen canonical (HAN-167).
+ */
+export function primaryBlogPostLang(
+  post: Pick<BlogPostRow, "title" | "excerpt" | "content"> & { content_nl?: string | null },
+): "nl" | "en" {
+  if (post.content_nl && clean(post.content_nl).length > 0) return "nl";
+  return detectBlogPostLang(post);
+}
+
 export function getBlogPostCanonical(post: Pick<BlogPostRow, "slug" | "canonical_url">): string {
   return clean(post.canonical_url) || `${BASE_URL}/writing/${post.slug}`;
 }
@@ -85,6 +97,6 @@ export function getBlogPostJsonLd(post: BlogPostRow): Record<string, unknown> {
     articleSection: post.category,
     keywords: post.tags.join(", "),
     ...(wordCount > 0 ? { wordCount } : {}),
-    inLanguage: detectBlogPostLang(post),
+    inLanguage: primaryBlogPostLang(post),
   };
 }

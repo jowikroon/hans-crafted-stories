@@ -60,6 +60,7 @@ const {
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
   detectBlogPostLang,
+  primaryBlogPostLang,
   SERVICE_PAGES,
   SERVICE_PAGES_UPDATED,
   EXPERIENCE_STRIP,
@@ -436,7 +437,8 @@ for (const [slug, blogPost] of postBySlug) {
   const route = `/writing/${slug}`;
   const head = getBlogPostHead(blogPost);
 
-  const postLang = detectBlogPostLang(blogPost) === "nl" ? "nl" : "en";
+  // Eén URL = één taal: NL zodra er een NL-versie is (doelmarkt); EN-versie via ?lang=en.
+  const postLang = primaryBlogPostLang(blogPost);
   const { html } = renderQuietly(route, blogPost, { initialLang: postLang });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);

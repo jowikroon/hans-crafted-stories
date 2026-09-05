@@ -22,6 +22,7 @@
  *  10. geen /music/<slug>-links naar tracks die niet publiek zijn
  *  11. dist/404.html bestaat, is noindex en heeft géén canonical
  *  12. elke <Navigate to> in AnimatedRoutes.tsx bestaat als redirect in vercel.json
+ *  15. artikeltaal volgt het artikel (primaryBlogPostLang), niet de UI-taal — geen hydratie-flip
  *      (zonder catch-all rewrite geeft een client-side alias anders 404 — les #29)
  *  13. de dienstenpagina's delen geen lange tekstreeksen (12-woord-shingles) buiten
  *      de bewust gedeelde blokken (tarief, byline, ervaring) — sjabloon-variatie
@@ -234,6 +235,17 @@ else {
   }
 }
 
+// 15. Artikeltaal volgt het artikel, niet de UI-taal (HAN-167 hydratie-flip): BlogPostPage mag
+//     content/title/excerpt nooit op de bezoekerstaal (`lang`) kiezen en moet primaryBlogPostLang gebruiken.
+{
+  const appDir = path.resolve(distDir, "..");
+  const bp = fs.readFileSync(path.join(appDir, "src", "pages", "BlogPostPage.tsx"), "utf8");
+  if (/\blang === "nl" && post\.(content|title|excerpt)_nl/.test(bp)) failures.push("BlogPostPage.tsx: artikelvelden gekozen op UI-taal (lang) i.p.v. articleLang — artikel flipt na hydratie");
+  if (!bp.includes("primaryBlogPostLang(")) failures.push("BlogPostPage.tsx: gebruikt primaryBlogPostLang niet");
+  const pr = fs.readFileSync(path.join(appDir, "scripts", "prerender.mjs"), "utf8");
+  if (!/postLang = primaryBlogPostLang\(/.test(pr)) failures.push("prerender.mjs: postLang niet via primaryBlogPostLang");
+}
+
 // Wederkerigheid vanuit de andere kant: elke /nl-pagina heeft een EN-tweeling en andersom.
 for (const route of seen) {
   if (route === "/nl" || route.startsWith("/nl/")) {
@@ -247,4 +259,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK — ${seen.size} pagina's voldoen (14 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast).`);
+console.log(`[seo-guard] OK — ${seen.size} pagina's voldoen (15 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal).`);
