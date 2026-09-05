@@ -13,7 +13,9 @@ const NotFound = () => {
   useSEO({
     title: seo.notFoundTitle,
     description: "The page you're looking for doesn't exist or has been moved.",
-    url: `https://hansvanleeuwen.com${location.pathname}`,
+    // Geen pad-afgeleide URL in de head van een 404 (CodeQL js/xss-through-dom; en
+    // een niet-bestaand pad hoort nergens als og:url of canonical te staan).
+    url: "https://hansvanleeuwen.com/",
     noindex: true,
   });
 
