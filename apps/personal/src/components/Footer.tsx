@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 

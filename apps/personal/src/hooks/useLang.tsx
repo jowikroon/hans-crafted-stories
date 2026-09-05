@@ -1,53 +1,60 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { isLocalizedRoute, localizePath, parsePath, type Lang } from "@/lib/i18n/routes";
 
-export type Lang = "nl" | "en";
-
-const STORAGE_KEY = "site_lang";
+export type { Lang };
 
 interface LangContextValue {
   lang: Lang;
+  /** Navigeert naar dezelfde pagina in de andere taal (aparte URL). */
   setLang: (l: Lang) => void;
 }
 
-const LangContext = createContext<LangContextValue>({ lang: "nl", setLang: () => { /* empty */ } });
+const LangContext = createContext<LangContextValue>({ lang: "en", setLang: () => { /* empty */ } });
 
 export const useLang = () => useContext(LangContext);
 
 interface LangProviderProps {
   children: ReactNode;
-  /** Set during SSR/prerender to control initial language (e.g. "en" for /about). */
+  /**
+   * SSR/prerender hint. De URL wint altijd; dit veld bestaat alleen nog zodat
+   * oudere aanroepen niet breken en als fallback voor niet-gelokaliseerde routes.
+   */
   initialLang?: Lang;
 }
 
+/**
+ * Taal = URL. `/nl/...` is Nederlands, al het andere Engels (HAN-167).
+ *
+ * Bewust verwijderd (2026-09-05): localStorage-voorkeur en navigator.language.
+ * Die maakten dat één URL twee talen serveerde afhankelijk van de bezoeker,
+ * waardoor html[lang], title/meta en body elkaar tegenspraken en Google een
+ * andere taal indexeerde dan NL-bezoekers zagen. Google vraagt expliciet om
+ * geen automatische taalwissel op browsertaal; de zichtbare NL/ENG-schakelaar
+ * in de navigatie is de aanbevolen vorm.
+ */
 export const LangProvider = ({ children, initialLang }: LangProviderProps) => {
-  // Language resolution order (2026-07-23, permanent fix for the EN<->NL flip-flop):
-  //   1. explicit SSR initialLang (prerender pins EN)
-  //   2. the visitor's PERSISTED choice in localStorage (survives reloads --
-  //      this was the missing piece: before, a NL visitor fell back to EN on
-  //      every load and had to re-toggle)
-  //   3. navigator.language auto-detect
-  //   4. "en" (canonical)
-  const [lang, setLangState] = useState<Lang>(() => {
-    if (initialLang) return initialLang;
-    if (typeof localStorage !== "undefined") {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored === "nl" || stored === "en") return stored;
-      } catch { /* private mode */ }
-    }
-    if (typeof navigator !== "undefined" && /^nl\b/i.test(navigator.language || "")) return "nl";
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const lang = useMemo<Lang>(() => {
+    const { lang: fromUrl, path } = parsePath(location.pathname);
+    if (fromUrl === "nl") return "nl";
+    // Niet-gelokaliseerde routes (artikelen, portal, cms) hebben geen /nl-variant;
+    // daar bepaalt de SSR-hint (bv. NL-artikel) de UI-taal, anders EN.
+    if (!isLocalizedRoute(path) && initialLang) return initialLang;
     return "en";
-  });
+  }, [location.pathname, initialLang]);
 
   const setLang = (l: Lang) => {
-    setLangState(l);
-    try { localStorage.setItem(STORAGE_KEY, l); } catch { /* private mode */ }
+    if (l === lang) return;
+    const target = localizePath(location.pathname, l);
+    navigate(`${target}${location.search}${location.hash}`);
   };
 
-  // Keep <html lang> in sync with the language the visitor actually sees.
-  // Replaces the removed pre-paint "language guard" script (PR #264) at the
-  // correct layer: attribute follows CONTENT, so a11y tools and crawlers that
-  // execute JS always see a consistent lang/content pair.
+  // html[lang] volgt de URL, zodat a11y-tools en JS-renderende crawlers altijd
+  // een consistent lang/content-paar zien. De prerender zet hetzelfde attribuut
+  // al in de ruwe HTML voor crawlers die geen JS uitvoeren.
   useEffect(() => {
     if (typeof document !== "undefined") document.documentElement.lang = lang;
   }, [lang]);

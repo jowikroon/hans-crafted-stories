@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link as RouterLink } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
+import { localizePath, parsePath } from "@/lib/i18n/routes";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
@@ -35,7 +37,7 @@ interface NavbarProps {
 const Navbar = (_props: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { lang, setLang } = useLang();
+  const { lang } = useLang();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
   const t = translations[lang].nav;
@@ -151,16 +153,18 @@ const Navbar = (_props: NavbarProps) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isActive = (to: string) => location.pathname === to;
-  const isWorkActive = location.pathname.startsWith("/work")
-    || ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager"].includes(location.pathname);
-  const isMusicActive = location.pathname === "/music" || location.pathname.startsWith("/music/") || location.pathname.startsWith("/muziek");
+  // Actieve staat op het EN-basispad, zodat /nl/about en /about dezelfde tab oplichten.
+  const basePath = parsePath(location.pathname).path;
+  const isActive = (to: string) => basePath === to;
+  const isWorkActive = basePath.startsWith("/work")
+    || ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager"].includes(basePath);
+  const isMusicActive = basePath === "/music" || basePath.startsWith("/music/") || basePath.startsWith("/muziek");
 
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((i) => Math.min(i + 1, filteredPages.length - 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIndex((i) => Math.max(i - 1, 0)); }
-    else if (e.key === "Enter" && filteredPages[selectedIndex]) { navigate(filteredPages[selectedIndex].to); setSearchOpen(false); }
+    else if (e.key === "Enter" && filteredPages[selectedIndex]) { navigate(localizePath(filteredPages[selectedIndex].to, lang)); setSearchOpen(false); }
   };
 
   const firstName = user?.user_metadata?.full_name?.split(" ")[0] || t.portal;
@@ -283,7 +287,7 @@ const Navbar = (_props: NavbarProps) => {
                   <p className="px-4 py-6 text-center text-sm text-[#7E7A6F]">{t.noResults}</p>
                 ) : (
                   filteredPages.map((page, i) => (
-                    <button key={page.to} onClick={() => { navigate(page.to); setSearchOpen(false); }} onMouseEnter={() => setSelectedIndex(i)} className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${i === selectedIndex ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#15140F] hover:bg-[#E5DFCE]/60"}`}>
+                    <button key={page.to} onClick={() => { navigate(localizePath(page.to, lang)); setSearchOpen(false); }} onMouseEnter={() => setSelectedIndex(i)} className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${i === selectedIndex ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#15140F] hover:bg-[#E5DFCE]/60"}`}>
                       <span className="font-medium">{page.label}</span>
                       <span className="ml-auto text-xs text-[#7E7A6F]">{page.to}</span>
                     </button>
@@ -344,9 +348,9 @@ const Navbar = (_props: NavbarProps) => {
                 {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               <div className="hidden sm:flex items-center gap-0.5 font-mono text-xs">
-                <button onClick={() => setLang("nl")} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</button>
+                <RouterLink to={localizePath(location.pathname, "nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
                 <span className={barSep}>|</span>
-                <button onClick={() => setLang("en")} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</button>
+                <RouterLink to={localizePath(location.pathname, "en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
               </div>
 
               {/* Account chip (logged-in) or Login pill */}
@@ -459,9 +463,9 @@ const Navbar = (_props: NavbarProps) => {
 
                 <div className={`my-1 h-px ${barDark ? "bg-white/10" : "bg-black/10"}`} />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
-                  <button onClick={() => setLang("nl")} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</button>
+                  <RouterLink to={localizePath(location.pathname, "nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
                   <span className={barSep}>|</span>
-                  <button onClick={() => setLang("en")} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</button>
+                  <RouterLink to={localizePath(location.pathname, "en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
                 </div>
 
                 {user ? (

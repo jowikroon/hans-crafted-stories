@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home, Calendar } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import hansProfile from "@/assets/hans-profile.jpg";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/hooks/useLang";
@@ -59,12 +59,8 @@ const About = () => {
   useSEO({
     title: seo.aboutTitle,
     description: seo.aboutDescription,
-    url: "https://hansvanleeuwen.com/about",
-    hreflang: [
-      { lang: "en", href: "https://hansvanleeuwen.com/about" },
-      { lang: "nl", href: "https://hansvanleeuwen.com/about" },
-      { lang: "x-default", href: "https://hansvanleeuwen.com/about" },
-    ],
+    path: "/about",
+    lang,
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
@@ -97,6 +93,9 @@ const About = () => {
           sameAs: [
             "https://www.linkedin.com/in/hansvl3",
             "https://x.com/hansvl3",
+            "https://github.com/jowikroon",
+            "https://www.youtube.com/@jowikroon1990",
+            "https://soundcloud.com/jowikroon",
           ],
         },
         {

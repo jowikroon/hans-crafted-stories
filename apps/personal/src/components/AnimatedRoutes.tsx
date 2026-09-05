@@ -46,6 +46,8 @@ const DashboardsMpg = lazy(() => import(/* webpackChunkName: "dashboards-mpg" */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
 const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-template-editor" */ "@/components/portal/blog/VoiceTemplateEditor"));
 
+const LANG_PREFIXES = ["", "/nl"] as const;
+
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
 
 /* /blog-cms is retired — React CMS shell at /write is canonical.
@@ -71,10 +73,18 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence initial={false}>
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><Index /></PageTransition>} />
-        <Route path="/work" element={<PageTransition><Work /></PageTransition>} />
+        {/* Eén URL per taal (HAN-167/HAN-83): elke gelokaliseerde route bestaat als
+            EN-pad én als /nl-pad. De taal komt uit de URL (zie hooks/useLang). */}
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/`} path={`${prefix}/`} element={<PageTransition><Index /></PageTransition>} />
+        ))}
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/work`} path={`${prefix}/work`} element={<PageTransition><Work /></PageTransition>} />
+        ))}
         <Route path="/portfolio" element={<Navigate to="/work" replace />} />
-        <Route path="/work/connect-car-parts" element={<PageTransition><CaseStudyDetail /></PageTransition>} />
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/work/connect-car-parts`} path={`${prefix}/work/connect-car-parts`} element={<PageTransition><CaseStudyDetail /></PageTransition>} />
+        ))}
         <Route path="/writing" element={<PageTransition><Writing /></PageTransition>} />
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
         <Route path="/blog" element={<Navigate to="/writing" replace />} />
@@ -82,11 +92,21 @@ const AnimatedRoutes = () => {
         <Route path="/music" element={<PageTransition><Music /></PageTransition>} />
         <Route path="/music/:slug" element={<PageTransition><MusicSong /></PageTransition>} />
         <Route path="/muziek/artist-radar" element={<PageTransition><ArtistRadar /></PageTransition>} />
-        <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-        <Route path="/amazon-nl-specialist" element={<PageTransition><AmazonNlSpecialist /></PageTransition>} />
-        <Route path="/bol-com-consultant" element={<PageTransition><BolComConsultant /></PageTransition>} />
-        <Route path="/interim-ecommerce-manager" element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
-        <Route path="/ai-ecommerce-automation" element={<PageTransition><AiEcommerceAutomation /></PageTransition>} />
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/about`} path={`${prefix}/about`} element={<PageTransition><About /></PageTransition>} />
+        ))}
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/amazon-nl-specialist`} path={`${prefix}/amazon-nl-specialist`} element={<PageTransition><AmazonNlSpecialist /></PageTransition>} />
+        ))}
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/bol-com-consultant`} path={`${prefix}/bol-com-consultant`} element={<PageTransition><BolComConsultant /></PageTransition>} />
+        ))}
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/interim-ecommerce-manager`} path={`${prefix}/interim-ecommerce-manager`} element={<PageTransition><InterimEcommerceManager /></PageTransition>} />
+        ))}
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/ai-ecommerce-automation`} path={`${prefix}/ai-ecommerce-automation`} element={<PageTransition><AiEcommerceAutomation /></PageTransition>} />
+        ))}
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
         <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/write/:id" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
@@ -107,7 +127,9 @@ const AnimatedRoutes = () => {
         <Route path="/hansai" element={<Navigate to="/samantha" replace />} />
         <Route path="/hans-ai" element={<Navigate to="/samantha" replace />} />
         <Route path="/command" element={<Navigate to="/samantha" replace />} />
-        <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/privacy`} path={`${prefix}/privacy`} element={<PageTransition><Privacy /></PageTransition>} />
+        ))}
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>

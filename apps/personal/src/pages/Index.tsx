@@ -10,7 +10,8 @@ const Index = () => {
   useSEO({
     title: seo.homeTitle,
     description: seo.homeDescription,
-    url: "https://hansvanleeuwen.com/",
+    path: "/",
+    lang,
   });
 
   return <Hero />;

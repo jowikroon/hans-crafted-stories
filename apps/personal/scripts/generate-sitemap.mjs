@@ -26,12 +26,34 @@ function readEnv(name) {
 const SUPABASE_URL = readEnv("VITE_SUPABASE_URL");
 const SUPABASE_KEY = readEnv("VITE_SUPABASE_PUBLISHABLE_KEY");
 
+// Gelokaliseerde routes: EN op het basispad, NL onder /nl. Per URL een
+// wederkerige xhtml:link-set (Google: HTML-tags óf sitemap, hier beide consistent).
+const LOCALIZED = [
+  { path: "/", changefreq: "monthly", priority: "1.0" },
+  { path: "/work", changefreq: "monthly", priority: "0.8" },
+  { path: "/work/connect-car-parts", changefreq: "monthly", priority: "0.7" },
+  { path: "/about", changefreq: "monthly", priority: "0.8" },
+  { path: "/amazon-nl-specialist", changefreq: "monthly", priority: "0.9" },
+  { path: "/bol-com-consultant", changefreq: "monthly", priority: "0.9" },
+  { path: "/interim-ecommerce-manager", changefreq: "monthly", priority: "0.9" },
+  { path: "/ai-ecommerce-automation", changefreq: "monthly", priority: "0.9" },
+  { path: "/privacy", changefreq: "yearly", priority: "0.3" },
+];
+const nlLoc = (p) => `${BASE}/nl${p === "/" ? "" : p}`;
+const enLoc = (p) => `${BASE}${p}`;
+const alternates = (p) => [
+  { hreflang: "en", href: enLoc(p) },
+  { hreflang: "nl", href: nlLoc(p) },
+  { hreflang: "x-default", href: enLoc(p) },
+];
+const LOCALIZED_ROUTES = LOCALIZED.flatMap((r) => [
+  { loc: enLoc(r.path), changefreq: r.changefreq, priority: r.priority, alternates: alternates(r.path) },
+  { loc: nlLoc(r.path), changefreq: r.changefreq, priority: r.priority, alternates: alternates(r.path) },
+]);
+
 const STATIC_ROUTES = [
-  { loc: `${BASE}/`, changefreq: "monthly", priority: "1.0" },
-  { loc: `${BASE}/work`, changefreq: "monthly", priority: "0.8" },
-  { loc: `${BASE}/work/connect-car-parts`, changefreq: "yearly", priority: "0.7" },
+  ...LOCALIZED_ROUTES,
   { loc: `${BASE}/writing`, changefreq: "weekly", priority: "0.8" },
-  { loc: `${BASE}/about`, changefreq: "monthly", priority: "0.8" },
   { loc: `${BASE}/music`, changefreq: "monthly", priority: "0.7" },
   // Music sub-routes intentionally NOT in the sitemap (Codex review PR #264):
   // - teacher-leave / hanging-on / beat-between-our-years / new-level are
@@ -39,11 +61,6 @@ const STATIC_ROUTES = [
   //   for crawlers, so advertising them poisons crawl budget.
   // - beat-drop is public but not prerendered; direct fetches serve the
   //   homepage shell until prerender support lands. Re-add once prerendered.
-  { loc: `${BASE}/amazon-nl-specialist`, changefreq: "monthly", priority: "0.9" },
-  { loc: `${BASE}/bol-com-consultant`, changefreq: "monthly", priority: "0.9" },
-  { loc: `${BASE}/interim-ecommerce-manager`, changefreq: "monthly", priority: "0.9" },
-  { loc: `${BASE}/ai-ecommerce-automation`, changefreq: "monthly", priority: "0.9" },
-  { loc: `${BASE}/privacy`, changefreq: "yearly", priority: "0.3" },
 ];
 
 async function fetchPublishedPosts() {
@@ -85,14 +102,15 @@ const urls = [
 ];
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls
   .map(
     (u) => `  <url>
     <loc>${u.loc}</loc>
     <lastmod>${u.lastmod}</lastmod>
     <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority}</priority>
+    <priority>${u.priority}</priority>${(u.alternates || []).map((a) => `
+    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}" />`).join("")}
   </url>`
   )
   .join("\n")}

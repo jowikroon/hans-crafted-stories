@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { ArrowUpRight } from "lucide-react";
 import { BlogPost } from "@/data/types";
 import { useLang } from "@/hooks/useLang";

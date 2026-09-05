@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import FeaturedArticles from "@/components/FeaturedArticles";
 import HomeFAQ from "@/components/HomeFAQ";
 import ServiceDetails from "@/components/ServiceDetails";

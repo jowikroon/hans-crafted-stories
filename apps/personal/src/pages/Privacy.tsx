@@ -10,7 +10,8 @@ const Privacy = () => {
   useSEO({
     title: seo.privacyTitle,
     description: seo.privacyDescription,
-    url: "https://hansvanleeuwen.com/privacy",
+    path: "/privacy",
+    lang,
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "WebPage",
