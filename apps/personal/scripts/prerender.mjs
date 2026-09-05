@@ -752,6 +752,8 @@ writeLocalizedPage("/privacy", {
   page = page.replace(/[ \t]*<meta property="og:url" content="[^"]*" \/>\n?/, "");
   page = applyLang(page, "en");
   page = setHreflang(page, null);
+  // De taalschakelaar mag niet naar het probe-pad wijzen: NL -> /nl, ENG -> /.
+  page = page.replace(/href="\/__prerender-404-probe__"/g, (m, offset) => (page.lastIndexOf('hrefLang="nl"', offset) > page.lastIndexOf('hrefLang="en"', offset) ? 'href="/nl"' : 'href="/"'));
   page = setJsonLd(page, { "@context": "https://schema.org", "@type": "WebPage", name: "Page Not Found", inLanguage: "en" });
   page = replaceSsrFallbackHtml(page, `
       <main><article><h2>Page not found</h2><p>This page does not exist or has moved.</p><p><a href="/">Back to the homepage</a></p></article></main>`);
