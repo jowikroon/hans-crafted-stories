@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { songs, featuredRelease, previousRelease, type Song } from "@/data/music";
@@ -119,11 +119,6 @@ const Music = () => {
     imageAlt: "Hans van Leeuwen music: original songs and production notes (Lo-fi, Electronic, Ambient)",
     url: "https://hansvanleeuwen.com/music",
     type: "music.playlist",
-    hreflang: [
-      { lang: "en", href: "https://hansvanleeuwen.com/music" },
-      { lang: "nl", href: "https://hansvanleeuwen.com/music" },
-      { lang: "x-default", href: "https://hansvanleeuwen.com/music" },
-    ],
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [

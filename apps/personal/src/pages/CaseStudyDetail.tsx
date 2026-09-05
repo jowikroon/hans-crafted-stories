@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { Home, ChevronRight, ArrowRight, X, ChevronLeft } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 import { useSEO } from "@/hooks/useSEO";
@@ -18,81 +18,122 @@ const images = [
   { src: "/cases/connect-car-parts/ccp-13.png", alt: "SEO analysis tool, marketplace optimization" },
 ];
 
-const stats = [
-  { label: "SKUs Optimized", value: "2,400+" },
-  { label: "Marketplaces", value: "Amazon DE/NL/FR" },
-  { label: "Content Types", value: "Listings, A+, Ads" },
-  { label: "Quality Score Avg", value: "94/100" },
-];
+const stats = {
+  nl: [
+    { label: "Actieve SKU's live", value: "~400" },
+    { label: "Productrecords van content voorzien", value: "2.400+" },
+    { label: "Kanalen", value: "Magento · Amazon DE · eBay DE" },
+    { label: "Ordermonitoring", value: "elke 30 min" },
+  ],
+  en: [
+    { label: "Active SKUs live", value: "~400" },
+    { label: "Product records with generated content", value: "2,400+" },
+    { label: "Channels", value: "Magento · Amazon DE · eBay DE" },
+    { label: "Order monitoring", value: "every 30 min" },
+  ],
+};
 
 const CaseStudyDetail = () => {
   const { lang } = useLang();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const content = lang === "nl" ? {
-    breadcrumbWork: "Portfolio",
+    breadcrumbWork: "Case studies",
     breadcrumbCase: "Connect Car Parts",
-    label: "Case Study",
-    title: "Connect Car Parts, Marketplace Content Optimalisatie",
-    subtitle: "Van handmatige productlijsten naar geautomatiseerde, publish-ready Amazon content voor 2.400+ automotive onderdelen.",
-    problemTitle: "De Uitdaging",
-    problemText: "Connect Car Parts verkoopt premium remonderdelen (ABS, Frankberg) op Amazon DE, NL en FR. Met 2.400+ SKU's was handmatige contentcreatie onhoudbaar: inconsistente titels, ontbrekende attributen, policy-afwijzingen en geen kwaliteitsmeting per listing.",
-    solutionTitle: "De Oplossing",
-    solutionItems: [
-      "Gestructureerde productdata-import vanuit hun ERP/PIM systeem",
-      "AI-gestuurde contentgeneratie: titels, bullets, A+ content, backend keywords per land",
-      "Automatische policy-validatie (Amazon-regels, byte-limieten, verboden claims)",
-      "Kwaliteitsscore per listing met prioritering op omzetkans",
-      "Visuele content: merkinfographics, vergelijkingstabellen, productfotografie-briefs",
+    label: "Case study · 2025–2026",
+    title: "Connect Car Parts: A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento",
+    subtitle: "Hoe één operator een multi-channel onderdelenbusiness runt met gestructureerde productdata, feedautomatisering en AI-ondersteunde content, met de mens op prijs, merkstem en compliance.",
+    contextTitle: "Context en rol",
+    contextText: [
+      "Connect Car Parts is de e-commerce-operatie van ABS All Brake Systems: een Nederlandse verkoper van remonderdelen (schijven, blokken, slangen, wiellagersets) van het merk A.B.S. en aanvullende merken zoals Frankberg. De verkoop loopt via een eigen Magento-webshop en via Amazon DE en eBay DE; Bol.com en het volledige A.B.S.-assortiment op eBay DE zijn in uitrol. Ik werk hier sinds december 2025 als e-commerce manager en run de marketplace-kant van begin tot eind.",
+      "Twee getallen die vaak door elkaar lopen: de actieve catalogus die live staat telt circa 400 SKU's met voertuig-fitmentdata (K-types) en OE-kruisverwijzingen; het aantal productrecords dat door de contentpipeline is gegaan ligt boven de 2.400, omdat elk record per land en per kanaal een eigen versie krijgt en omdat het bredere A.B.S.-assortiment wordt voorbereid.",
     ],
-    resultsTitle: "Resultaten",
+    problemTitle: "De uitdaging",
+    problemText: "Een remonderdeel verkoopt alleen als de koper zeker weet dat het op zijn auto past. Dat vraagt per SKU om fitment-data, OE-nummers, technische specificaties en per marketplace andere titel-, attribuut- en compliance-regels (GPSR, ISO, merkvermelding). Handmatig kostte een publish-ready listing gemiddeld 45 minuten; met duizenden records over drie landen en drie talen was dat niet vol te houden, en fouten in fitment of claims leidden direct tot retouren of afkeuringen.",
+    solutionTitle: "De aanpak",
+    solutionItems: [
+      "Gestructureerde productdata-import vanuit ERP/PIM en de A.B.S. TecDoc-export, met K-type-koppeling per voertuig",
+      "Feedmanagement via Channable met merk-gesplitste GPSR- en ISO-regels per kanaal (Amazon DE, eBay DE, Bol.com)",
+      "AI-ondersteunde contentgeneratie: titels, bullets, A+ Content en backend keywords per land, met bron- en zekerheidslabel",
+      "Automatische policy-validatie (Amazon-regels, bytelimieten, verboden claims) vóór publicatie; menselijke controle op prijs en merkstem",
+      "Kwaliteitsscore per listing met prioritering op omzetkans; visuele content zoals merkinfographics en vergelijkingstabellen",
+      "Geautomatiseerde VIN-zoekfunctie in de webshop, een primeur in de branche, zodat de koper op kenteken het juiste onderdeel vindt",
+      "Ordermonitoring elke 30 minuten via n8n met alerts bij uitval; dagelijkse radar op Channable-feedkwaliteit en marketplace-regels",
+    ],
+    resultsTitle: "Wat het opleverde",
     resultsItems: [
-      "Gemiddelde kwaliteitsscore van 94/100 over alle listings",
-      "Contentcreatie-tijd gereduceerd van 45 min naar 3 min per SKU",
-      "Nul policy-afwijzingen na implementatie",
+      "Gemiddelde kwaliteitsscore van 94/100 over alle gegenereerde listings",
+      "Contentcreatie-tijd van 45 minuten naar 3 minuten per SKU (−93%)",
+      "Nul policy-afwijzingen na implementatie van de validatiestap",
       "Consistente merkboodschap over 3 landen en 3 talen",
+      "eBay, Amazon en Bol.com gekoppeld tot één marketplace-operatie met één productdatabron",
+      "Omzetprognoses en KPI-rapportage die de directie wekelijks gebruikt",
     ],
+    ongoingTitle: "Lopend werk",
+    ongoingText: "De Amazon DE-catalogus wordt gelanceerd inclusief Duitse btw-registratie, het volledige A.B.S.-assortiment gaat naar eBay DE en Bol.com met marketplace-specifieke contentregels en voertuigcompatibiliteitsbestanden, en een wekelijkse concurrentiescan volgt prijs- en assortimentsbewegingen op Amazon DE en eBay DE. Wat ik daarbij leer over agents die successen melden zonder bewijs, beschreef ik in mijn artikelen over AI-betrouwbaarheid en meta-monitoring.",
     galleryTitle: "Deliverables",
-    ctaTitle: "Wil je hetzelfde voor jouw merk?",
-    ctaText: "Dit project is gebouwd met dezelfde technologie die nu beschikbaar is als SaaS op marketplacegrowth.nl.",
-    ctaButton: "Probeer de Content Builder",
+    ctaTitle: "Hetzelfde voor jouw catalogus?",
+    ctaText: "Deze aanpak werkt voor elke grote catalogus met technische productdata. Bekijk de dienstenpagina's of plan een kennismaking.",
+    ctaButton: "Plan een kennismaking",
+    links: [
+      { href: "/ai-ecommerce-automation", label: "AI e-commerce automatisering" },
+      { href: "/amazon-nl-specialist", label: "Amazon-diensten" },
+      { href: "/writing/ai-agent-verzint-succes", label: "Artikel: AI-agent verzint succes" },
+    ],
   } : {
-    breadcrumbWork: "Portfolio",
+    breadcrumbWork: "Case studies",
     breadcrumbCase: "Connect Car Parts",
-    label: "Case Study",
-    title: "Connect Car Parts, Marketplace Content Optimization",
-    subtitle: "From manual product listings to automated, publish-ready Amazon content for 2,400+ automotive parts.",
-    problemTitle: "The Challenge",
-    problemText: "Connect Car Parts sells premium brake parts (ABS, Frankberg) on Amazon DE, NL, and FR. With 2,400+ SKUs, manual content creation was unsustainable: inconsistent titles, missing attributes, policy rejections, and no quality measurement per listing.",
-    solutionTitle: "The Solution",
+    label: "Case study · 2025–2026",
+    title: "Connect Car Parts: A.B.S. brake parts on Amazon DE, eBay DE and Magento",
+    subtitle: "How one operator runs a multi-channel parts business with structured product data, feed automation and AI-assisted content, with a human on pricing, brand voice and compliance.",
+    contextTitle: "Context and role",
+    contextText: [
+      "Connect Car Parts is the e-commerce operation of ABS All Brake Systems: a Dutch seller of brake parts (discs, pads, hoses, wheel-bearing kits) under the A.B.S. brand and complementary brands such as Frankberg. Sales run through its own Magento storefront and on Amazon DE and eBay DE; Bol.com and the full A.B.S. assortment on eBay DE are being rolled out. I've worked here as e-commerce manager since December 2025 and run the marketplace side end to end.",
+      "Two numbers that are often confused: the active catalogue that is live counts roughly 400 SKUs with vehicle-fitment data (K-types) and OE cross-references; the number of product records that have gone through the content pipeline exceeds 2,400, because every record gets its own version per country and channel and because the wider A.B.S. assortment is being prepared.",
+    ],
+    problemTitle: "The challenge",
+    problemText: "A brake part only sells when the buyer is certain it fits their car. That requires fitment data, OE numbers and technical specifications per SKU, plus different title, attribute and compliance rules per marketplace (GPSR, ISO, brand mention). Done by hand, a publish-ready listing took 45 minutes on average; with thousands of records across three countries and three languages that was unsustainable, and errors in fitment or claims led straight to returns or rejections.",
+    solutionTitle: "The approach",
     solutionItems: [
-      "Structured product data import from their ERP/PIM system",
-      "AI-powered content generation: titles, bullets, A+ content, backend keywords per country",
-      "Automatic policy validation (Amazon rules, byte limits, forbidden claims)",
-      "Quality score per listing with prioritization on revenue opportunity",
-      "Visual content: brand infographics, comparison tables, product photography briefs",
+      "Structured product data import from ERP/PIM and the A.B.S. TecDoc export, with K-type mapping per vehicle",
+      "Feed management through Channable with brand-split GPSR and ISO rules per channel (Amazon DE, eBay DE, Bol.com)",
+      "AI-assisted content generation: titles, bullets, A+ Content and backend keywords per country, with source and confidence labels",
+      "Automatic policy validation (Amazon rules, byte limits, forbidden claims) before publishing; human review on pricing and brand voice",
+      "Quality score per listing with prioritisation on revenue opportunity; visual content such as brand infographics and comparison tables",
+      "Automated VIN-based parts lookup in the storefront, a first in the industry, so buyers find the right part by licence plate",
+      "Order monitoring every 30 minutes through n8n with failure alerts; daily radar on Channable feed quality and marketplace rules",
     ],
-    resultsTitle: "Results",
+    resultsTitle: "What it delivered",
     resultsItems: [
-      "Average quality score of 94/100 across all listings",
-      "Content creation time reduced from 45 min to 3 min per SKU",
-      "Zero policy rejections after implementation",
+      "Average quality score of 94/100 across all generated listings",
+      "Content creation time from 45 minutes to 3 minutes per SKU (−93%)",
+      "Zero policy rejections after implementing the validation step",
       "Consistent brand messaging across 3 countries and 3 languages",
+      "eBay, Amazon and Bol.com connected into one marketplace operation with a single product-data source",
+      "Revenue forecasts and KPI reporting used weekly by management",
     ],
+    ongoingTitle: "Ongoing work",
+    ongoingText: "The Amazon DE catalogue is being launched including German VAT registration, the full A.B.S. assortment is moving to eBay DE and Bol.com with marketplace-specific content rules and vehicle compatibility files, and a weekly competitor scan tracks price and assortment movements on Amazon DE and eBay DE. What I keep learning about agents reporting success without evidence is documented in my articles on AI reliability and meta-monitoring.",
     galleryTitle: "Deliverables",
-    ctaTitle: "Want the same for your brand?",
-    ctaText: "This project was built with the same technology now available as SaaS on marketplacegrowth.nl.",
-    ctaButton: "Try the Content Builder",
+    ctaTitle: "The same for your catalogue?",
+    ctaText: "This approach works for any large catalogue with technical product data. See the service pages or book an intro call.",
+    ctaButton: "Book an intro call",
+    links: [
+      { href: "/ai-ecommerce-automation", label: "AI e-commerce automation" },
+      { href: "/amazon-nl-specialist", label: "Amazon services" },
+      { href: "/writing/ai-agent-verzint-succes", label: "Article: my AI agent invented success (Dutch)" },
+    ],
   };
 
   useSEO({
     title: lang === "nl"
-      ? "Connect Car Parts, Marketplace Content Optimalisatie | Hans van Leeuwen"
-      : "Connect Car Parts, Marketplace Content Optimization | Hans van Leeuwen",
+      ? "Case study Connect Car Parts: A.B.S.-remonderdelen op Amazon DE, eBay DE & Magento | Hans van Leeuwen"
+      : "Connect Car Parts Case Study: A.B.S. Brake Parts on Amazon DE, eBay DE & Magento | Hans van Leeuwen",
     description: lang === "nl"
-      ? "Case study: AI-gestuurde Amazon content optimalisatie voor 2.400+ automotive onderdelen. Kwaliteitsscore 94/100, 93% tijdsbesparing per SKU."
-      : "Case study: AI-powered Amazon content optimization for 2,400+ automotive parts. Quality score 94/100, 93% time reduction per SKU.",
-    url: "https://hansvanleeuwen.com/work/connect-car-parts",
+      ? "Hoe Hans van Leeuwen de marketplace-operatie van Connect Car Parts runt: ~400 actieve SKU's A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento, 2.400+ productrecords van AI-content voorzien (94/100), Channable-feeds en n8n-monitoring."
+      : "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: ~400 active A.B.S. brake-part SKUs on Amazon DE, eBay DE and Magento, 2,400+ product records with AI-generated content (94/100), Channable feeds and n8n monitoring.",
+    path: "/work/connect-car-parts",
+    lang,
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -100,7 +141,9 @@ const CaseStudyDetail = () => {
       description: content.subtitle,
       author: { "@type": "Person", name: "Hans van Leeuwen", url: "https://hansvanleeuwen.com/about" },
       publisher: { "@id": "https://hansvanleeuwen.com/#organization" },
-      url: "https://hansvanleeuwen.com/work/connect-car-parts",
+      url: `https://hansvanleeuwen.com${lang === "nl" ? "/nl" : ""}/work/connect-car-parts`,
+      inLanguage: lang,
+      dateModified: "2026-09-05",
     },
   });
 
@@ -163,7 +206,7 @@ const CaseStudyDetail = () => {
         transition={{ duration: 0.6, delay: 0.1 }}
         className="mb-16 grid grid-cols-2 gap-4 md:grid-cols-4"
       >
-        {stats.map((stat) => (
+        {stats[lang].map((stat) => (
           <div key={stat.label} className="rounded-xl border border-border/50 bg-card p-5">
             <p className="text-2xl font-semibold text-foreground">{stat.value}</p>
             <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
@@ -184,6 +227,20 @@ const CaseStudyDetail = () => {
           className="w-full object-cover"
           loading="eager"
         />
+      </motion.div>
+
+      {/* Context */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="mb-16 max-w-3xl"
+      >
+        <h2 className="mb-4 font-display text-2xl font-medium text-foreground">{content.contextTitle}</h2>
+        <div className="space-y-4 leading-relaxed text-muted-foreground">
+          {content.contextText.map((p) => <p key={p}>{p}</p>)}
+        </div>
       </motion.div>
 
       {/* Problem / Solution / Results */}
@@ -243,6 +300,23 @@ const CaseStudyDetail = () => {
         </ul>
       </motion.div>
 
+      {/* Ongoing */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="mb-16 max-w-3xl"
+      >
+        <h2 className="mb-4 font-display text-2xl font-medium text-foreground">{content.ongoingTitle}</h2>
+        <p className="leading-relaxed text-muted-foreground">{content.ongoingText}</p>
+        <p className="mt-4 text-sm text-muted-foreground">
+          {content.links.map((l, i) => (
+            <span key={l.href}>{i > 0 && " · "}<Link to={l.href} className="underline hover:text-foreground">{l.label}</Link></span>
+          ))}
+        </p>
+      </motion.div>
+
       {/* Gallery */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -290,15 +364,13 @@ const CaseStudyDetail = () => {
         <p className="mx-auto mb-6 max-w-lg text-muted-foreground">
           {content.ctaText}
         </p>
-        <a
-          href="https://marketplacegrowth.nl"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          to="/about#contact"
           className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           {content.ctaButton}
           <ArrowRight size={16} />
-        </a>
+        </Link>
       </motion.div>
 
       {/* Lightbox */}

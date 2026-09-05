@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { Home, ChevronRight, Link2, Linkedin, Twitter, ArrowRight, ArrowUpRight, ArrowUp, List, Share2, X } from "lucide-react";
 import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";

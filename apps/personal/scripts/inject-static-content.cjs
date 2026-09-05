@@ -33,8 +33,8 @@ const STATIC_CONTENT = `<header>
     </section>
     <section aria-label="Proven results">
       <ul>
-        <li><strong>70% market share on Amazon NL</strong> (earplug category, Nielsen Data) &mdash; Full listing overhaul, A+ content, and Sponsored Products strategy within 18 months.</li>
-        <li><strong>20% weekly sales increase</strong> via targeted Bol Ads campaigns and seasonal bundles.</li>
+        <li><strong>70% market share on Amazon NL</strong> (earplug category, Nielsen Data) &mdash; Listing overhaul, A+ content, A/B-tested images and Buy Box alignment (Alpine Hearing Protection, Nielsen 2023).</li>
+        <li><strong>20% weekly sales increase</strong> from a targeted Back-to-School social ad campaign on top of optimised listings (Alpine Hearing Protection).</li>
         <li><strong>Out-of-stock rates below 2%</strong> through demand forecasting and optimized logistics.</li>
       </ul>
     </section>

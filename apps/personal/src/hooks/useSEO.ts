@@ -1,9 +1,5 @@
 import { useEffect } from "react";
-
-interface HreflangEntry {
-  lang: string;
-  href: string;
-}
+import { absoluteUrl, alternatesFor, isLocalizedRoute, parsePath, OG_LOCALE, type HreflangEntry, type Lang } from "@/lib/i18n/routes";
 
 interface SEOConfig {
   enabled?: boolean;
@@ -11,8 +7,17 @@ interface SEOConfig {
   description: string;
   /** Optional page-specific alt text for og:image / twitter:image. Falls back to title. */
   imageAlt?: string;
-  url: string;
+  /**
+   * Absolute URL van de pagina. Voor gelokaliseerde routes liever `path` + `lang`
+   * gebruiken: dan worden canonical, hreflang en og:locale automatisch consistent.
+   */
+  url?: string;
+  /** EN-basispad (bv. "/about"). Samen met `lang` de bron voor canonical + hreflang. */
+  path?: string;
+  /** Taal van de gerenderde content; bepaalt canonical (/nl/...) en og:locale. */
+  lang?: Lang;
   type?: string;
+  /** Expliciete hreflang-set. Wordt genegeerd wanneer `path` is opgegeven (dan wederkerig afgeleid). */
   hreflang?: HreflangEntry[];
   jsonLd?: Record<string, unknown>;
   /**
@@ -48,9 +53,20 @@ const removeMeta = (name: string, attr = "name") => {
   document.querySelector(`meta[${attr}="${name}"]`)?.remove();
 };
 
-export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd, noindex = false, robots, imageAlt }: SEOConfig) => {
+export const useSEO = ({ enabled = true, title, description, url: explicitUrl, path, lang, type = "website", hreflang: explicitHreflang, jsonLd, noindex = false, robots, imageAlt }: SEOConfig) => {
+  // Eén URL per taal: canonical en hreflang volgen uit (path, lang), nooit uit de
+  // bezoeker. Zie lib/i18n/routes.ts (HAN-167 / HAN-83).
+  const resolvedLang: Lang = lang ?? (path ? parsePath(path).lang : "en");
+  const url = path ? absoluteUrl(path, resolvedLang) : (explicitUrl ?? "https://hansvanleeuwen.com/");
+  const hreflang = path && isLocalizedRoute(parsePath(path).path) ? alternatesFor(path) : explicitHreflang;
+  const hreflangKey = JSON.stringify(hreflang ?? null);
+
   useEffect(() => {
     if (!enabled) return;
+    document.documentElement.lang = resolvedLang;
+    setMeta("og:locale", OG_LOCALE[resolvedLang], "property");
+    const cl = document.querySelector('meta[http-equiv="content-language"]') as HTMLMetaElement | null;
+    if (cl) cl.content = resolvedLang;
 
     document.title = title;
     setMeta("description", description);
@@ -135,5 +151,6 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
         "og:image:alt",
       ].forEach((name) => removeMeta(name, "property"));
     };
-  }, [enabled, title, description, url, type, hreflang, jsonLd, noindex, robots, imageAlt]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- hreflang wordt via hreflangKey (stringified) vergeleken
+  }, [enabled, title, description, url, type, hreflangKey, jsonLd, noindex, robots, imageAlt, resolvedLang]);
 };

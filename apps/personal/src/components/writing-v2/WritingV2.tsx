@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSkin } from "@/hooks/useSkin";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { getBlogPosts, isHansSession, BlogPostRow } from "@/lib/api/content";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
@@ -146,11 +147,6 @@ const WritingV2 = () => {
     description: seo.writingDescription,
     url: "https://hansvanleeuwen.com/writing",
     robots: isFilteredView ? "noindex,follow" : undefined,
-    hreflang: [
-      { lang: "en", href: "https://hansvanleeuwen.com/writing" },
-      { lang: "nl", href: "https://hansvanleeuwen.com/writing" },
-      { lang: "x-default", href: "https://hansvanleeuwen.com/writing" },
-    ],
     jsonLd: writingJsonLd,
   });
 

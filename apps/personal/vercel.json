@@ -123,7 +123,39 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/(portal|wiki|god-structure|samantha|release-set|music-cms|write)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(write|music-cms)/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboards",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboards/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog-cms/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/muziek/artist-radar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/music/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/writing/:slug",
       "destination": "/index.html"
     }
   ],

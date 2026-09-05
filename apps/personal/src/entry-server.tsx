@@ -10,6 +10,9 @@ import { getBlogPosts } from "@/lib/api/content";
 import { getHeroPost, getHeroPostHead, HERO_SLUGS } from "@/data/heroPosts";
 import { getBlogPostHead, getBlogPostJsonLd, detectBlogPostLang } from "@/lib/seo/blogPostHead";
 import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "@/lib/seo/staticHtml";
+import { SERVICE_PAGES, SERVICE_PAGES_UPDATED, SERVICE_BYLINE } from "@/data/servicePages";
+import { translations } from "@/data/translations";
+import { LOCALIZED_ROUTES, alternatesFor, absoluteUrl, localizePath, OG_LOCALE } from "@/lib/i18n/routes";
 
 export interface RenderOptions {
   /** Initial language for SSR (e.g. "en" for /about prerender). */
@@ -47,4 +50,13 @@ export {
   clearRootHtml,
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
+  SERVICE_PAGES,
+  SERVICE_PAGES_UPDATED,
+  SERVICE_BYLINE,
+  translations,
+  LOCALIZED_ROUTES,
+  alternatesFor,
+  absoluteUrl,
+  localizePath,
+  OG_LOCALE,
 };
