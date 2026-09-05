@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { Home, ChevronRight, Link2, Linkedin, Twitter, ArrowRight, ArrowUpRight, ArrowUp, List, Share2, X } from "lucide-react";
 import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
+import { getBlogPostHead, getBlogPostJsonLd, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
 import "@/styles/article-v2.css";
@@ -356,6 +356,17 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl"
   return { html: out.join("\n"), headings };
 }
 
+/** Welke dienstenpagina bij welk artikel hoort; anker = exact de query waarop de pagina moet ranken. */
+const SERVICE_FOR_ARTICLE: Record<string, { path: string; nl: string; en: string; leadNl: string; leadEn: string }> = {
+  "waarom-marketplace-listings-niet-converteren": { path: "/interim-ecommerce-manager", nl: "interim e-commerce manager inhuren", en: "hire an interim e-commerce manager", leadNl: "Wil je dat iemand dit in jouw account doet, niet alleen erover schrijft?", leadEn: "Want this done inside your own account, not just written about?" },
+  "amazon-vs-bol-com-2026-nederland": { path: "/bol-com-consultant", nl: "Bol.com consultant inhuren", en: "hire a Bol.com consultant", leadNl: "Twijfel je tussen vendor en seller, of tussen Amazon en Bol?", leadEn: "Deciding between vendor and seller, or Amazon and Bol?" },
+  "designing-with-llms": { path: "/ai-ecommerce-automation", nl: "AI e-commerce automation specialist inhuren", en: "hire an AI e-commerce automation specialist", leadNl: "Dit framework toepassen op jouw content- en productdatapipeline?", leadEn: "Apply this framework to your own content and product-data pipeline?" },
+  "ai-agent-verzint-succes": { path: "/ai-ecommerce-automation", nl: "AI e-commerce automation specialist inhuren", en: "hire an AI e-commerce automation specialist", leadNl: "Automatisering met bewijsplicht in jouw operatie?", leadEn: "Automation with proof in your own operation?" },
+  "meta-monitoring-wie-bewaakt-de-bewaker": { path: "/ai-ecommerce-automation", nl: "AI e-commerce automation specialist inhuren", en: "hire an AI e-commerce automation specialist", leadNl: "Een vangnet dat zichzelf bewaakt, voor jouw marketplace-stack?", leadEn: "A safety net that watches itself, for your marketplace stack?" },
+  "codex-agentic-ai-operator": { path: "/amazon-nl-specialist", nl: "Amazon NL specialist inhuren", en: "hire an Amazon NL specialist", leadNl: "Concurrentie- en prijsradar op jouw Amazon-account?", leadEn: "A competitor and price radar on your Amazon account?" },
+};
+const DEFAULT_SERVICE = { path: "/interim-ecommerce-manager", nl: "interim e-commerce manager inhuren", en: "hire an interim e-commerce manager", leadNl: "Tijdelijk een hands-on e-commerce lead nodig?", leadEn: "Need a hands-on e-commerce lead for a while?" };
+
 const BlogPostPage = () => {
   useEffect(() => { ensureFontCss("fonts-article-v2", FONT_CSS.articleV2); ensureFontCss("fonts-newsreader", FONT_CSS.newsreader); }, []);
   const { slug } = useParams<{ slug: string }>();
@@ -398,14 +409,19 @@ const BlogPostPage = () => {
   const post =
     rawPost && slug && rawPost.slug !== slug ? undefined : rawPost;
 
-  // Language-aware fields
-  const displayTitle = post ? (lang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
-  const displayExcerpt = post ? (lang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";
-  const displayContent = post ? (lang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
+  // Taal van het artikel volgt het artikel, niet de bezoeker (HAN-167): de URL
+  // serveert de primaire taal (NL zodra er een NL-versie is); ?lang=en toont de
+  // Engelse versie op dezelfde URL zonder eigen canonical.
+  const routerLocation = useLocation();
+  const wantsEn = new URLSearchParams(routerLocation.search).get("lang") === "en";
+  const articleLang: "nl" | "en" = post ? (wantsEn && post.content ? "en" : primaryBlogPostLang(post)) : lang;
+  const displayTitle = post ? (articleLang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
+  const displayExcerpt = post ? (articleLang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";
+  const displayContent = post ? (articleLang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
 
   const { html: bodyHtml, headings } = useMemo(
-    () => renderArticle(displayContent || "", post?.masking, lang === "nl" ? "nl" : "en"),
-    [displayContent, post?.masking, lang]
+    () => renderArticle(displayContent || "", post?.masking, articleLang),
+    [displayContent, post?.masking, articleLang]
   );
   const showToc = headings.length >= 3;
 
@@ -440,7 +456,7 @@ const BlogPostPage = () => {
   }, [bodyHtml]);
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-  const seoHead = post ? getBlogPostHead(post) : null;
+  const seoHead = post ? getBlogPostHead(post, articleLang) : null;
   const seoUrl = seoHead?.canonical || `https://hansvanleeuwen.com/writing/${slug}`;
   const isDraft = !!post && (post.published === false || (post as { status?: string }).status === "draft");
 
@@ -470,8 +486,9 @@ const BlogPostPage = () => {
     title: post ? seoHead?.title || `${displayTitle} | Hans van Leeuwen` : "Post not found | Hans van Leeuwen",
     description: displayExcerpt || "Read this article by Hans van Leeuwen on e-commerce, marketplace strategy, and digital commerce.",
     url: seoUrl,
+    lang: articleLang,
     type: "article",
-    jsonLd: post && !isDraft ? getBlogPostJsonLd(post) : undefined,
+    jsonLd: post && !isDraft ? getBlogPostJsonLd(post, articleLang) : undefined,
     noindex: isDraft,
   });
 
@@ -642,13 +659,13 @@ const BlogPostPage = () => {
       <article className="art rise" ref={articleRef}>
         {/* Head */}
         <div className="ahead">
-          <div className="ahead__cat">{catLine} <span className="langtag">{lang.toUpperCase()}</span></div>
+          <div className="ahead__cat">{catLine} <span className="langtag">{articleLang.toUpperCase()}</span></div>
           <h1 className="atitle">{displayTitle}</h1>
           {displayExcerpt && <p className="adek">{displayExcerpt}</p>}
           <div className="byline">
             <span className="byline__av">H<img src={hansProfile} alt="Hans van Leeuwen" loading="lazy" decoding="async" onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} /></span>
             <div>
-              <div className="byline__n">Hans van Leeuwen</div>
+              <div className="byline__n"><Link to="/about" className="underline-offset-4 hover:underline">Hans van Leeuwen</Link></div>
               <div className="byline__r">E-commerce and Marketplace Specialist</div>
             </div>
             <span className="dot" />
@@ -691,6 +708,21 @@ const BlogPostPage = () => {
             ))}
           </div>
         )}
+
+        {/* Dienst bij dit artikel — contextuele, exact-match link naar de money page (plan Q4 werkstroom A) */}
+        {(() => {
+          const svc = SERVICE_FOR_ARTICLE[post.slug] ?? DEFAULT_SERVICE;
+          const label = lang === "nl" ? svc.nl : svc.en;
+          return (
+            <aside className="mt-8 rounded-xl border border-border/40 bg-card p-5" aria-label={lang === "nl" ? "Dienst bij dit artikel" : "Related service"}>
+              <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-primary">{lang === "nl" ? "Uit de praktijk naar de praktijk" : "From the article to the work"}</p>
+              <p className="text-sm text-foreground/90">
+                {lang === "nl" ? svc.leadNl : svc.leadEn}{" "}
+                <Link to={svc.path} className="font-semibold underline underline-offset-4">{label}</Link>
+              </p>
+            </aside>
+          );
+        })()}
 
         {/* Share */}
         <div className="share">

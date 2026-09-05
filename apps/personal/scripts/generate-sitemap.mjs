@@ -37,6 +37,7 @@ const LOCALIZED = [
   { path: "/bol-com-consultant", changefreq: "monthly", priority: "0.9" },
   { path: "/interim-ecommerce-manager", changefreq: "monthly", priority: "0.9" },
   { path: "/ai-ecommerce-automation", changefreq: "monthly", priority: "0.9" },
+  { path: "/rates", changefreq: "monthly", priority: "0.8" },
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
 ];
 const nlLoc = (p) => `${BASE}/nl${p === "/" ? "" : p}`;

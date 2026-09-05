@@ -359,19 +359,19 @@ export const translations: Record<Lang, TranslationStrings> = {
       expertiseHeading: "Amazon & Bol.com Marketplace Management (NL/EU)",
       expertise: [
         {
-          title: "Amazon Marketplace Management",
+          title: "Amazon NL specialist",
           description: "Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations. Your Amazon NL specialist for scalable growth.",
         },
         {
-          title: "Bol.com Optimization",
+          title: "Bol.com consultant",
           description: "Content optimization, Bol Ads management, catalog management, and performance analytics. Hands-on Bol.com consultant for the Netherlands' largest marketplace.",
         },
         {
-          title: "Marketplace CRO & Growth",
+          title: "Interim e-commerce manager",
           description: "Data-driven conversion rate optimization (CRO), A/B testing, and revenue scaling. Reduce friction, improve Buy Box win rate, and grow profitably.",
         },
         {
-          title: "SEO & Content Strategy",
+          title: "AI e-commerce automation",
           description: "Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction and increasing conversions.",
         },
       ],
@@ -504,7 +504,7 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Freelance E-commerce Manager for Amazon & Bol.com (NL/EU) | Hans van Leeuwen",
+      homeTitle: "Hans van Leeuwen — Freelance E-commerce & Marketplace Manager (Amazon, Bol.com)",
       homeDescription: "Freelance e-commerce & marketplace manager, 10+ years on Amazon NL/DE & Bol.com: 70% category share (Nielsen 2023), out-of-stock under 2%, AI-assisted operations on n8n, Channable & Claude. Amersfoort, NL/EU.",
       writingTitle: "E-commerce Insights for Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
@@ -697,19 +697,19 @@ export const translations: Record<Lang, TranslationStrings> = {
       expertiseHeading: "Amazon & Bol.com Marktplaatsbeheer (NL/EU)",
       expertise: [
         {
-          title: "Amazon Marktplaatsbeheer",
+          title: "Amazon NL specialist inhuren",
           description: "Listing-optimalisatie, A+-content, Amazon Ads (Sponsored Products, Brands, Display), prijsstrategie en operations. Uw Amazon NL specialist voor schaalbare groei.",
         },
         {
-          title: "Bol.com Optimalisatie",
+          title: "Bol.com consultant inhuren",
           description: "Content-optimalisatie, Bol Ads-beheer, catalogusbeheer en prestatieanalytics. Hands-on Bol.com consultant voor de grootste Nederlandse marktplaats.",
         },
         {
-          title: "Marktplaats CRO & Groei",
+          title: "Interim e-commerce manager inhuren",
           description: "Datagedreven conversie-optimalisatie (CRO), A/B-testen en omzetschaling. Verminder frictie, verbeter Buy Box-winrate en groei winstgevend.",
         },
         {
-          title: "SEO & Contentstrategie",
+          title: "AI e-commerce automation",
           description: "Zoekgerichte contentstrategieën die organisch verkeer stimuleren en marktplaatsrankings verbeteren. UX-design gericht op frictieverlaging en hogere conversies.",
         },
       ],
@@ -842,8 +842,8 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Freelance E-commerce Manager inhuren voor Amazon & Bol.com | Hans van Leeuwen",
-      homeDescription: "Freelance e-commerce & marketplace manager inhuren: 10+ jaar Amazon NL/DE & Bol.com, 70% categoriemarktaandeel (Nielsen 2023), out-of-stock onder 2%, AI-automatisering met n8n, Channable & Claude. Amersfoort, NL/EU.",
+      homeTitle: "Hans van Leeuwen — Freelance E-commerce & Marketplace Manager (Amazon, Bol.com)",
+      homeDescription: "Hans van Leeuwen, freelance e-commerce & marketplace manager uit Amersfoort. Diensten: interim e-commerce manager, Amazon NL specialist, Bol.com consultant en AI-automatisering. 70% categoriemarktaandeel (Nielsen 2023), out-of-stock onder 2%.",
       writingTitle: "E-commerce Inzichten voor Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
       workTitle: "Amazon & Bol.com case studies: portfolio marktplaatsgroei | Hans van Leeuwen",

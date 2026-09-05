@@ -60,10 +60,16 @@ const {
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
   detectBlogPostLang,
+  primaryBlogPostLang,
+  localizeBlogPost,
   SERVICE_PAGES,
   SERVICE_PAGES_UPDATED,
   EXPERIENCE_STRIP,
+  RATES_PAGE,
+  PRICING_NL,
+  PRICING_EN,
   translations,
+  songs,
   alternatesFor,
   absoluteUrl,
   OG_LOCALE,
@@ -365,7 +371,8 @@ function textToParagraphs(text) {
     .join("\n          ");
 }
 
-function buildBlogPostFallback(post, head) {
+function buildBlogPostFallback(input, head) {
+  const post = localizeBlogPost(input);
   const body = textToParagraphs(post.content);
   return `
       <header>
@@ -432,7 +439,8 @@ for (const [slug, blogPost] of postBySlug) {
   const route = `/writing/${slug}`;
   const head = getBlogPostHead(blogPost);
 
-  const postLang = detectBlogPostLang(blogPost) === "nl" ? "nl" : "en";
+  // Eén URL = één taal: NL zodra er een NL-versie is (doelmarkt); EN-versie via ?lang=en.
+  const postLang = primaryBlogPostLang(blogPost);
   const { html } = renderQuietly(route, blogPost, { initialLang: postLang });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
@@ -700,6 +708,29 @@ writeLocalizedPage("/work/connect-car-parts", {
   }),
 });
 
+/* ───────────────────────────── /rates (NL: /nl/rates, alias /nl/tarieven) ───────────────────────────── */
+writeLocalizedPage("/rates", {
+  buildHead: (lang) => {
+    const t = RATES_PAGE[lang]; const pr = lang === "nl" ? PRICING_NL : PRICING_EN;
+    return { title: t.title, description: t.metaDesc, intro: [t.intro, pr.note, t.compareIntro], t, pr };
+  },
+  buildJsonLd: (lang, head) => ({
+    "@context": "https://schema.org",
+    "@graph": [
+      PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY, WEBSITE_ENTITY,
+      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, description: head.description, isPartOf: { "@id": `${BASE}/#website` }, about: { "@id": `${BASE}/#person` }, author: { "@id": `${BASE}/#person` }, dateModified: SERVICE_PAGES_UPDATED, inLanguage: lang },
+      { "@type": "BreadcrumbList", itemListElement: [ { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) }, { "@type": "ListItem", position: 2, name: head.t.breadcrumb, item: head.canonical } ] },
+      { "@type": "FAQPage", "@id": `${head.canonical}#faq`, mainEntity: head.t.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+    ],
+  }),
+  fallbackHtml: (lang, head) => {
+    const models = `\n          <h2>${escapeHtml(head.pr.heading)}</h2>\n          <ul>` + head.pr.models.map((m) => `<li><strong>${escapeHtml(m.name)}</strong>: ${escapeHtml(m.fit)}</li>`).join("") + `</ul>`;
+    const compare = `\n          <h2>${escapeHtml(head.t.compareHeading)}</h2>\n          <ul>` + head.t.compare.map((r) => `<li><strong>${escapeHtml(r.label)}</strong>: ${escapeHtml(r.value)} (${escapeHtml(r.note)})</li>`).join("") + `</ul>`;
+    const faq = `\n          <h2>${escapeHtml(head.t.faqHeading)}</h2>\n` + head.t.faq.map((f) => `          <h3>${escapeHtml(f.q)}</h3>\n          <p>${escapeHtml(f.a)}</p>`).join("\n");
+    return buildStaticPageFallback(head, models + compare + faq, "h2", lang);
+  },
+});
+
 /* ───────────────────────────── /privacy ───────────────────────────── */
 writeLocalizedPage("/privacy", {
   buildHead: (lang) => (lang === "nl"
@@ -734,6 +765,33 @@ writeLocalizedPage("/privacy", {
     "@context": "https://schema.org",
     "@graph": [
       { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, description: head.description, isPartOf: { "@id": `${BASE}/#website` }, about: { "@id": `${BASE}/#person` }, inLanguage: "en" },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+    ],
+  });
+  const outPath = outPathFor(route);
+  fs.writeFileSync(outPath, page, "utf8");
+  console.log(`[prerender] ${route} -> ${outPath}`);
+}
+
+/* ───────────────────────────── /music/<slug> — alleen publieke tracks (HAN-146, plan F.2) ───────────────────────────── */
+for (const song of songs.filter((sg) => sg.provider !== "soundcloud")) {
+  const route = `/music/${song.slug}`;
+  const head = {
+    title: `${song.title}: Song & Production Notes | Hans van Leeuwen`,
+    description: `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): listen on Spotify and read how the track was made, the gear used and the lyrics. Original music by an e-commerce manager by day.`,
+    canonical: `${BASE}${route}`,
+  };
+  const { html } = renderQuietly(route, null, { initialLang: "en" });
+  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+  page = setHead(page, head);
+  page = applyLang(page, "en");
+  page = setHreflang(page, null);
+  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, `<p><a href="/music">All songs</a></p>`));
+  page = setJsonLd(page, {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "MusicRecording", "@id": `${head.canonical}#recording`, name: song.title, url: head.canonical, genre: song.genre, datePublished: song.date, byArtist: { "@type": "MusicGroup", name: song.artist || "Jowikroon", "@id": `${BASE}/music#artist` }, sameAs: song.listenUrl, image: song.cover },
       WEBSITE_ENTITY,
       PERSON_ENTITY,
     ],
