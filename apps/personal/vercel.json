@@ -118,6 +118,31 @@
       "source": "/writing/untitled",
       "destination": "/writing",
       "permanent": true
+    },
+    {
+      "source": "/portfolio",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/empire",
+      "destination": "/samantha",
+      "permanent": true
+    },
+    {
+      "source": "/hansai",
+      "destination": "/samantha",
+      "permanent": true
+    },
+    {
+      "source": "/hans-ai",
+      "destination": "/samantha",
+      "permanent": true
+    },
+    {
+      "source": "/command",
+      "destination": "/samantha",
+      "permanent": true
     }
   ],
   "trailingSlash": false,

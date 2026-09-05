@@ -691,7 +691,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "AI e-commerce automation specialist inhuren",
         subtitle: "Pipelines die repetitief marketplace-werk overnemen, met de mens op de gevoelige knoppen",
         intro:
-          "Ik ben Hans van Leeuwen, freelance e-commerce manager die zijn eigen marketplace-operatie grotendeels heeft geautomatiseerd. Bij ABS All Brake Systems automatiseerde ik het VIN-zoekproces voor onderdelen, een primeur in de branche, en koppelde ik eBay, Amazon en Bol.com tot één operatie; bij Alpine Hearing Protection automatiseerde ik de marketplace-content via Channable. De stack is n8n voor orchestratie, Supabase als datalaag, Claude voor content en analyse en Channable voor feeds. Wat ik lever is geen 'AI die je winkel runt', maar concrete, gemonitorde workflows waarvan elke succesmelding te bewijzen is.",
+          "Ik ben Hans van Leeuwen, freelance e-commerce manager die zijn eigen marketplace-operatie grotendeels heeft geautomatiseerd. Bij ABS All Brake Systems automatiseerde ik het VIN-zoekproces voor onderdelen, een primeur in de branche, en koppelde ik eBay, Amazon en Bol.com tot één operatie; bij Alpine Hearing Protection automatiseerde ik de marketplace-content via Channable en bracht geautomatiseerde demand forecasting het out-of-stockpercentage onder de 2%. De stack is n8n voor orchestratie, Supabase als datalaag, Claude voor content en analyse en Channable voor feeds. Wat ik lever is geen 'AI die je winkel runt', maar concrete, gemonitorde workflows waarvan elke succesmelding te bewijzen is.",
         whenHeading: "Voor wie dit werkt",
         when: [
           "Teams die elke week dezelfde exports, controles en rapportages met de hand maken",
@@ -773,7 +773,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "AI e-commerce automation specialist",
         subtitle: "Pipelines that take over repetitive marketplace work, with a human on the sensitive decisions",
         intro:
-          "I'm Hans van Leeuwen, a freelance e-commerce manager who has automated most of his own marketplace operation. At ABS All Brake Systems I automated the VIN-based parts lookup, a first in the industry, and connected eBay, Amazon and Bol.com into a single operation; at Alpine Hearing Protection I automated marketplace content through Channable. The stack is n8n for orchestration, Supabase as the data layer, Claude for content and analysis and Channable for feeds. What I deliver is not 'an AI that runs your store' but concrete, monitored workflows where every success message can be proven.",
+          "I'm Hans van Leeuwen, a freelance e-commerce manager who has automated most of his own marketplace operation. At ABS All Brake Systems I automated the VIN-based parts lookup, a first in the industry, and connected eBay, Amazon and Bol.com into a single operation; at Alpine Hearing Protection I automated marketplace content through Channable and automated demand forecasting brought out-of-stock below 2%. The stack is n8n for orchestration, Supabase as the data layer, Claude for content and analysis and Channable for feeds. What I deliver is not 'an AI that runs your store' but concrete, monitored workflows where every success message can be proven.",
         whenHeading: "Who this is for",
         when: [
           "Teams that build the same exports, checks and reports by hand every week",
