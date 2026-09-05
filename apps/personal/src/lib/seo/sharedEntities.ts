@@ -4,6 +4,12 @@ export const PERSON_ENTITY = {
   name: "Hans van Leeuwen",
   url: "https://hansvanleeuwen.com/about",
   jobTitle: "Freelance E-commerce Manager",
+  sameAs: [
+    "https://www.linkedin.com/in/hansvl3",
+    "https://github.com/jowikroon",
+    "https://www.youtube.com/@jowikroon1990",
+    "https://soundcloud.com/jowikroon",
+  ],
 } as const;
 
 export const PROFESSIONAL_SERVICE_ENTITY = {

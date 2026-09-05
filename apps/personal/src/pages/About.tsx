@@ -93,6 +93,9 @@ const About = () => {
           sameAs: [
             "https://www.linkedin.com/in/hansvl3",
             "https://x.com/hansvl3",
+            "https://github.com/jowikroon",
+            "https://www.youtube.com/@jowikroon1990",
+            "https://soundcloud.com/jowikroon",
           ],
         },
         {

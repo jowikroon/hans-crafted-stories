@@ -108,6 +108,8 @@ const PERSON_ENTITY = {
     "https://www.linkedin.com/in/hansvl3",
     "https://twitter.com/hansvl3",
     "https://github.com/jowikroon",
+    "https://www.youtube.com/@jowikroon1990",
+    "https://soundcloud.com/jowikroon",
   ],
 };
 
