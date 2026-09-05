@@ -152,7 +152,7 @@ const RELATED = {
   },
 } as const;
 
-const PRICING_NL: { heading: string; intro: string; models: PricingModel[]; note: string } = {
+export const PRICING_NL: { heading: string; intro: string; models: PricingModel[]; note: string } = {
   heading: "Tarief en samenwerkingsvormen",
   intro:
     "Geen bureaumarge, geen minimumcontract van een halfjaar, per maand opzegbaar. Drie vormen, met indicatieve tarieven (excl. btw):",
@@ -165,7 +165,7 @@ const PRICING_NL: { heading: string; intro: string; models: PricingModel[]; note
     "Na een kennismaking van 30 minuten ontvang je binnen één werkdag een schriftelijke offerte met scope, cadans en definitief tarief. Ter vergelijking: een vaste e-commerce manager kost inclusief werkgeverslasten al snel €6.000 of meer per maand, zonder de flexibiliteit om per maand te stoppen. Een interim-inzet van drie dagen per week blijft daar doorgaans onder.",
 };
 
-const PRICING_EN: { heading: string; intro: string; models: PricingModel[]; note: string } = {
+export const PRICING_EN: { heading: string; intro: string; models: PricingModel[]; note: string } = {
   heading: "Rates and ways of working",
   intro:
     "No agency margin, no six-month minimum, cancellable monthly. Three models, with indicative rates (excl. VAT):",
@@ -852,3 +852,90 @@ export const SERVICE_PAGES: ServicePageDef[] = [
 
 export const getServicePage = (path: string): ServicePageDef | undefined =>
   SERVICE_PAGES.find((p) => p.path === path);
+
+
+/** /nl/tarieven en /rates — de tariefvraag is een eigen zoekintentie ("freelance e-commerce manager tarief"). */
+export const RATES_PAGE = {
+  nl: {
+    title: "Tarieven freelance e-commerce manager: dagtarief, project en retainer | Hans van Leeuwen",
+    metaDesc: "Wat kost een freelance of interim e-commerce manager? Indicatieve tarieven van Hans van Leeuwen: €760 per dag, projecten vanaf €2.500, retainer vanaf €1.750 per maand. Excl. btw, per maand opzegbaar, offerte binnen één werkdag.",
+    breadcrumb: "Tarieven",
+    h1: "Wat kost een freelance e-commerce manager?",
+    intro: "Drie samenwerkingsvormen, elk met een indicatief tarief. Dit zijn mijn eigen bedragen, niet een marktgemiddelde: freelance e-commerce managers in Nederland rekenen tussen €50 en €195 per uur, afhankelijk van ervaring en specialisatie. Ik zit daar met circa €95 per uur in het midden, met 10+ jaar marketplace-ervaring (Amazon NL/DE, Bol.com) en meer dan €2 miljoen aangestuurde marketplace-omzet. Definitieve bedragen staan in de offerte die je binnen één werkdag na een kennismaking ontvangt.",
+    includedHeading: "Wat zit er altijd in",
+    included: [
+      "Een nulmeting in week 1 (account, listings, advertising, voorraad, productdata, rapportage) met een geprioriteerde backlog",
+      "Werk in jouw eigen accounts en tools; je houdt alle toegang, data en documenten",
+      "Een schriftelijke weekupdate en een compact KPI-dashboard",
+      "Overdracht aan je team of je vaste opvolger, met documentatie",
+      "Geen bureaumarge, geen minimumcontract van een halfjaar, per maand opzegbaar",
+    ],
+    notIncludedHeading: "Wat er niet in zit",
+    notIncluded: [
+      "Advertentiebudget op Amazon, Bol.com of social (dat blijft van jou, op jouw accounts)",
+      "Tooling-abonnementen zoals Channable, Helium10 of n8n-hosting (op jouw naam, zodat je ze houdt)",
+      "Fotografie, videoproductie en vertalingen door derden (regel ik, factureer ik door zonder opslag)",
+    ],
+    compareHeading: "Vast in dienst of interim: de rekensom",
+    compareIntro: "Een vaste e-commerce manager kost inclusief werkgeverslasten, vakantiegeld en pensioen al snel €6.000 of meer per maand, bij een bruto salaris van €4.500 tot €5.500. Daar staat tegenover: opzegtermijn, wervingskosten en drie maanden inwerktijd. Een interim-inzet van drie dagen per week kost circa €9.900 per maand maar is per maand opzegbaar, start binnen weken en brengt de eerste dag ervaring mee. Twee dagen per week (€6.600) is meestal genoeg om een marketplace-operatie te leiden die al draait.",
+    compare: [
+      { label: "Vaste e-commerce manager (fulltime)", value: "≈ €6.000–7.500 per maand, incl. werkgeverslasten", note: "opzegtermijn, werving, inwerktijd" },
+      { label: "Interim, 3 dagen per week", value: "≈ €9.900 per maand", note: "per maand opzegbaar, start binnen weken" },
+      { label: "Interim, 2 dagen per week", value: "≈ €6.600 per maand", note: "voldoende voor een operatie die al draait" },
+      { label: "Retainer Amazon + Bol.com", value: "vanaf €1.750 per maand", note: "2 vaste dagen, weekcadans, maandrapport" },
+    ],
+    faqHeading: "Veelgestelde vragen over tarieven",
+    faq: [
+      { q: "Waarom staan hier bedragen en bij de meeste freelancers niet?", a: "Omdat je anders drie gesprekken nodig hebt om te weten of we in dezelfde orde van grootte zitten. De bedragen zijn indicatief; de offerte na de kennismaking is definitief en daar wijk ik niet vanaf." },
+      { q: "Is er een minimale opdrachtduur?", a: "Nee. Interim-opdrachten zijn per maand opzegbaar. Voor een project spreken we vooraf een vast resultaat en een vaste prijs af; die staat los van het aantal uren." },
+      { q: "Reken je reiskosten?", a: "Binnen de regio Utrecht niet. Daarbuiten €0,23 per kilometer of de treinkosten, alleen bij werk op locatie." },
+      { q: "Kun je ook op resultaat werken?", a: "Voor advertising en marketplace-groei kan een deel van het tarief variabel zijn op een vooraf afgesproken KPI (bijvoorbeeld TACOS of omzet per kanaal). Dat spreken we af na de nulmeting, nooit ervoor." },
+      { q: "Wat kost een audit los?", a: "De 7-punts Amazon NL-audit en de automation audit zijn gratis: je krijgt binnen 48 uur de grootste kansen op een rij. Een volledige marketplace-audit met plan begint bij €2.500 als project." },
+      { q: "Hoe snel kun je starten?", a: "Meestal binnen enkele weken, afhankelijk van lopende opdrachten. De eerste week is altijd een nulmeting, zodat de prioriteiten in week twee vaststaan." },
+    ],
+    ctaHeading: "Wil je weten wat het in jouw situatie kost?",
+    ctaText: "Plan een kennismaking van 30 minuten. Binnen één werkdag heb je een schriftelijke offerte met scope, cadans en definitief tarief.",
+    ctaButton: "Plan een kennismaking",
+  },
+  en: {
+    title: "Freelance E-commerce Manager Rates: Day Rate, Project and Retainer | Hans van Leeuwen",
+    metaDesc: "What does a freelance or interim e-commerce manager cost? Indicative rates from Hans van Leeuwen: €760 per day, projects from €2,500, retainer from €1,750 per month. Excl. VAT, cancellable monthly, written quote within one working day.",
+    breadcrumb: "Rates",
+    h1: "What does a freelance e-commerce manager cost?",
+    intro: "Three ways of working, each with an indicative rate. These are my own numbers, not a market average: freelance e-commerce managers in the Netherlands charge between €50 and €195 per hour depending on experience and specialisation. At roughly €95 per hour I sit in the middle, with 10+ years of marketplace experience (Amazon NL/DE, Bol.com) and more than €2 million in marketplace revenue managed. Final amounts are in the quote you receive within one working day after an intro call.",
+    includedHeading: "What is always included",
+    included: [
+      "A baseline in week 1 (account, listings, advertising, stock, product data, reporting) with a prioritised backlog",
+      "Work inside your own accounts and tools; you keep all access, data and documents",
+      "A written weekly update and a compact KPI dashboard",
+      "Handover to your team or permanent successor, with documentation",
+      "No agency margin, no six-month minimum, cancellable monthly",
+    ],
+    notIncludedHeading: "What is not included",
+    notIncluded: [
+      "Advertising budget on Amazon, Bol.com or social (stays yours, on your accounts)",
+      "Tool subscriptions such as Channable, Helium10 or n8n hosting (in your name, so you keep them)",
+      "Photography, video production and third-party translations (I arrange them and pass the cost through without markup)",
+    ],
+    compareHeading: "Permanent hire or interim: the maths",
+    compareIntro: "A permanent e-commerce manager costs €6,000 or more per month including employer contributions, holiday pay and pension, on a gross salary of €4,500 to €5,500. Add notice periods, recruitment cost and three months of onboarding. An interim engagement of three days a week costs about €9,900 per month but can be cancelled monthly, starts within weeks and brings experience from day one. Two days a week (€6,600) is usually enough to lead a marketplace operation that is already running.",
+    compare: [
+      { label: "Permanent e-commerce manager (full-time)", value: "≈ €6,000–7,500 per month incl. employer costs", note: "notice period, recruitment, onboarding" },
+      { label: "Interim, 3 days a week", value: "≈ €9,900 per month", note: "cancellable monthly, starts within weeks" },
+      { label: "Interim, 2 days a week", value: "≈ €6,600 per month", note: "enough for an operation that already runs" },
+      { label: "Retainer Amazon + Bol.com", value: "from €1,750 per month", note: "2 fixed days, weekly cadence, monthly report" },
+    ],
+    faqHeading: "Frequently asked questions about rates",
+    faq: [
+      { q: "Why are there numbers here when most freelancers don't publish them?", a: "Because otherwise you need three conversations to find out whether we are in the same range. The numbers are indicative; the quote after the intro call is final and I don't deviate from it." },
+      { q: "Is there a minimum engagement length?", a: "No. Interim engagements can be cancelled monthly. For a project we agree a fixed outcome and a fixed price up front; that is independent of hours." },
+      { q: "Do you charge travel costs?", a: "Not within the Utrecht region. Beyond that €0.23 per kilometre or train fare, only for on-site work." },
+      { q: "Can you work on a results basis?", a: "For advertising and marketplace growth part of the fee can be variable on a KPI agreed in advance (for example TACOS or revenue per channel). We agree that after the baseline, never before." },
+      { q: "What does a standalone audit cost?", a: "The 7-point Amazon NL audit and the automation audit are free: you get the biggest opportunities within 48 hours. A full marketplace audit with a plan starts at €2,500 as a project." },
+      { q: "How fast can you start?", a: "Usually within a few weeks, depending on current commitments. The first week is always a baseline, so priorities are fixed by week two." },
+    ],
+    ctaHeading: "Want to know what it costs in your situation?",
+    ctaText: "Book a 30-minute intro call. Within one working day you have a written quote with scope, cadence and final rate.",
+    ctaButton: "Book an intro call",
+  },
+} as const;

@@ -207,7 +207,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
             </div>
           ))}
         </dl>
-        <p className="text-sm leading-relaxed text-muted-foreground">{t.pricingNote}</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">{t.pricingNote}{" "}<Link to="/rates" className="underline hover:text-foreground">{lang === "nl" ? "Alle tarieven en wat erin zit →" : "All rates and what is included →"}</Link></p>
       </motion.div>
 
       <motion.div {...fade} className="mb-16 max-w-3xl">

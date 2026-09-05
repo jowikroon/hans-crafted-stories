@@ -143,6 +143,16 @@
       "source": "/command",
       "destination": "/samantha",
       "permanent": true
+    },
+    {
+      "source": "/nl/tarieven",
+      "destination": "/nl/rates",
+      "permanent": true
+    },
+    {
+      "source": "/tarieven",
+      "destination": "/nl/rates",
+      "permanent": true
     }
   ],
   "trailingSlash": false,

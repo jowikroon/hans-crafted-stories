@@ -13,6 +13,7 @@ import BlogPostPage from "@/pages/BlogPostPage";
 import Portal from "@/pages/Portal";
 import Wiki from "@/pages/Wiki";
 import Privacy from "@/pages/Privacy";
+import Rates from "@/pages/Rates";
 import AuthCallback from "@/pages/AuthCallback";
 import NotFound from "@/pages/NotFound";
 import AmazonNlSpecialist from "@/pages/AmazonNlSpecialist";
@@ -129,6 +130,9 @@ const AnimatedRoutes = () => {
         <Route path="/command" element={<Navigate to="/samantha" replace />} />
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/privacy`} path={`${prefix}/privacy`} element={<PageTransition><Privacy /></PageTransition>} />
+        ))}
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/rates`} path={`${prefix}/rates`} element={<PageTransition><Rates /></PageTransition>} />
         ))}
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />

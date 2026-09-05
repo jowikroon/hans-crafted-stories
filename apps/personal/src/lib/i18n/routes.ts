@@ -26,6 +26,7 @@ export const LOCALIZED_ROUTES: readonly string[] = [
   "/interim-ecommerce-manager",
   "/ai-ecommerce-automation",
   "/privacy",
+  "/rates",
 ] as const;
 
 const normalize = (p: string): string => {

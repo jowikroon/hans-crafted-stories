@@ -63,6 +63,9 @@ const {
   SERVICE_PAGES,
   SERVICE_PAGES_UPDATED,
   EXPERIENCE_STRIP,
+  RATES_PAGE,
+  PRICING_NL,
+  PRICING_EN,
   translations,
   songs,
   alternatesFor,
@@ -699,6 +702,29 @@ writeLocalizedPage("/work/connect-car-parts", {
       },
     ],
   }),
+});
+
+/* ───────────────────────────── /rates (NL: /nl/rates, alias /nl/tarieven) ───────────────────────────── */
+writeLocalizedPage("/rates", {
+  buildHead: (lang) => {
+    const t = RATES_PAGE[lang]; const pr = lang === "nl" ? PRICING_NL : PRICING_EN;
+    return { title: t.title, description: t.metaDesc, intro: [t.intro, pr.note, t.compareIntro], t, pr };
+  },
+  buildJsonLd: (lang, head) => ({
+    "@context": "https://schema.org",
+    "@graph": [
+      PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY, WEBSITE_ENTITY,
+      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, description: head.description, isPartOf: { "@id": `${BASE}/#website` }, about: { "@id": `${BASE}/#person` }, author: { "@id": `${BASE}/#person` }, dateModified: SERVICE_PAGES_UPDATED, inLanguage: lang },
+      { "@type": "BreadcrumbList", itemListElement: [ { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) }, { "@type": "ListItem", position: 2, name: head.t.breadcrumb, item: head.canonical } ] },
+      { "@type": "FAQPage", "@id": `${head.canonical}#faq`, mainEntity: head.t.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+    ],
+  }),
+  fallbackHtml: (lang, head) => {
+    const models = `\n          <h2>${escapeHtml(head.pr.heading)}</h2>\n          <ul>` + head.pr.models.map((m) => `<li><strong>${escapeHtml(m.name)}</strong>: ${escapeHtml(m.fit)}</li>`).join("") + `</ul>`;
+    const compare = `\n          <h2>${escapeHtml(head.t.compareHeading)}</h2>\n          <ul>` + head.t.compare.map((r) => `<li><strong>${escapeHtml(r.label)}</strong>: ${escapeHtml(r.value)} (${escapeHtml(r.note)})</li>`).join("") + `</ul>`;
+    const faq = `\n          <h2>${escapeHtml(head.t.faqHeading)}</h2>\n` + head.t.faq.map((f) => `          <h3>${escapeHtml(f.q)}</h3>\n          <p>${escapeHtml(f.a)}</p>`).join("\n");
+    return buildStaticPageFallback(head, models + compare + faq, "h2", lang);
+  },
 });
 
 /* ───────────────────────────── /privacy ───────────────────────────── */
