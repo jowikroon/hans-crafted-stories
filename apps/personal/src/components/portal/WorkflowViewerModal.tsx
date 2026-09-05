@@ -21,7 +21,7 @@ const WorkflowViewerModal = ({ open, onClose, name, description, workflowFile, w
   };
 
   const handleImportToN8n = () => {
-    window.open("https://hansvanleeuwen.app.n8n.cloud", "_blank");
+    window.open("https://n8n.srv1402218.hstgr.cloud", "_blank");
   };
 
   return (

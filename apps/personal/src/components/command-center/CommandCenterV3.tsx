@@ -150,7 +150,7 @@ const A = {
         id: "a-status", label: "Status of my automations",
         sub: "Active workflows, last run times, success rates, unknown errors right now",
         cmd: "/automate show status of all running workflows",
-        tools: ["Hostinger n8n", "n8n Cloud"],
+        tools: ["Hostinger n8n"],
         deliveryType: "report",
       },
       {

@@ -34,7 +34,7 @@ The idea is to add **one or more n8n workflows that behave as agents**: webhook 
 
 **Integration with this repo:**
 
-- Add a workflow in `WORKFLOWS` in [src/lib/config/workflows.ts](src/lib/config/workflows.ts), e.g. `personal-agent` → `https://hansvanleeuwen.app.n8n.cloud/webhook/personal-agent`.
+- Add a workflow in `WORKFLOWS` in [src/lib/config/workflows.ts](src/lib/config/workflows.ts), e.g. `personal-agent` → `https://n8n.srv1402218.hstgr.cloud/webhook/personal-agent`.
 - In [supabase/functions/intent-router/index.ts](supabase/functions/intent-router/index.ts), add `personal-agent` (or a generic “agent” intent) to the list the LLM can return when the user says things like “do what’s best” or “handle this”.
 - Command Center already triggers workflows by name; you’d either (a) route to `personal-agent` with the raw message in the body, or (b) keep the current intent router and have it sometimes return `personal-agent` and pass the message through.
 

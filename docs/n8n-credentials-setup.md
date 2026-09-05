@@ -8,10 +8,10 @@ This guide maps every credential used by the Sovereign AI Empire’s n8n workflo
 
 | Use for | URL |
 |--------|-----|
-| **Open n8n (dashboard / UI)** | **https://hansvanleeuwen.app.n8n.cloud** |
-| **Webhooks & API (code / env)** | **https://hansvanleeuwen.app.n8n.cloud** |
+| **Open n8n (dashboard / UI)** | **https://n8n.srv1402218.hstgr.cloud** |
+| **Webhooks & API (code / env)** | **https://n8n.srv1402218.hstgr.cloud** |
 
-Whenever this doc says “in n8n” or “open n8n”, use: **https://hansvanleeuwen.app.n8n.cloud**.  
+Whenever this doc says “in n8n” or “open n8n”, use: **https://n8n.srv1402218.hstgr.cloud**.  
 For `N8N_BASE_URL` / `N8N_URL` in env and for the script, use this URL.
 
 ---
@@ -19,7 +19,7 @@ For `N8N_BASE_URL` / `N8N_URL` in env and for the script, use this URL.
 ## Basic steps (what to do)
 
 1. **Open n8n**  
-   Go to **https://hansvanleeuwen.app.n8n.cloud** and log in.
+   Go to **https://n8n.srv1402218.hstgr.cloud** and log in.
 
 2. **Enable the API and create an API key**  
    In n8n: **Settings (gear) → n8n API → Create an API key**.  
@@ -28,7 +28,7 @@ For `N8N_BASE_URL` / `N8N_URL` in env and for the script, use this URL.
 
 3. **Prepare your env file**  
    In **`config/all-credentials.export.env`** (create it if needed), add or confirm:
-   - `N8N_BASE_URL=https://hansvanleeuwen.app.n8n.cloud` (or `N8N_URL=...` — same value)
+   - `N8N_BASE_URL=https://n8n.srv1402218.hstgr.cloud` (or `N8N_URL=...` — same value)
    - `N8N_API_KEY=<the key from step 2>`
    - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `MONDAY_API_TOKEN` (and optionally `FIRECRAWL_API_KEY`).  
    Never commit this file.
@@ -36,10 +36,10 @@ For `N8N_BASE_URL` / `N8N_URL` in env and for the script, use this URL.
 4. **Add credentials automatically**  
    From the project root run:  
    `npm run n8n:add-credentials`  
-   This adds Supabase, Anthropic, OpenAI, Monday.com (and optionally Firecrawl) to **https://hansvanleeuwen.app.n8n.cloud**.
+   This adds Supabase, Anthropic, OpenAI, Monday.com (and optionally Firecrawl) to **https://n8n.srv1402218.hstgr.cloud**.
 
 5. **Add Google Sheets and Gmail in n8n**  
-   Open **https://hansvanleeuwen.app.n8n.cloud** → **Settings → Credentials → Add credential**. Add **Google Sheets OAuth2** and **Gmail OAuth2** (OAuth flow in the UI; cannot be scripted).
+   Open **https://n8n.srv1402218.hstgr.cloud** → **Settings → Credentials → Add credential**. Add **Google Sheets OAuth2** and **Gmail OAuth2** (OAuth flow in the UI; cannot be scripted).
 
 6. **Test**  
    In n8n, open a workflow that uses a credential (e.g. Supabase or Claude), select the new credential, and run the node once.
@@ -48,13 +48,13 @@ For `N8N_BASE_URL` / `N8N_URL` in env and for the script, use this URL.
 
 ## Add all credentials via script (recommended)
 
-You can add **Supabase, Anthropic, OpenAI, Monday.com, and Firecrawl** credentials in one go using the n8n REST API. The script talks to **https://hansvanleeuwen.app.n8n.cloud** (or whatever you set in `N8N_BASE_URL`).
+You can add **Supabase, Anthropic, OpenAI, Monday.com, and Firecrawl** credentials in one go using the n8n REST API. The script talks to **https://n8n.srv1402218.hstgr.cloud** (or whatever you set in `N8N_BASE_URL`).
 
 **Prerequisites**
 
-1. **n8n API enabled** on your instance (e.g. env `N8N_API_ENABLED=true`). Open **https://hansvanleeuwen.app.n8n.cloud** → **Settings → n8n API → Create an API key**.
+1. **n8n API enabled** on your instance (e.g. env `N8N_API_ENABLED=true`). Open **https://n8n.srv1402218.hstgr.cloud** → **Settings → n8n API → Create an API key**.
 2. **`config/all-credentials.export.env`** (or your `.env`) containing at least:
-   - `N8N_BASE_URL` or `N8N_URL` — your n8n URL, e.g. **`https://hansvanleeuwen.app.n8n.cloud`**
+   - `N8N_BASE_URL` or `N8N_URL` — your n8n URL, e.g. **`https://n8n.srv1402218.hstgr.cloud`**
    - `N8N_API_KEY` — the API key from step 1
    - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `MONDAY_API_TOKEN` (optional: `FIRECRAWL_API_KEY`)
 
@@ -104,11 +104,11 @@ All other values (service role key, API keys, tokens) must come from **`config/a
 
 ## 2. Step-by-step: add each credential in n8n UI
 
-Open **https://hansvanleeuwen.app.n8n.cloud** and use the steps below.
+Open **https://n8n.srv1402218.hstgr.cloud** and use the steps below.
 
 ### 2.1 Supabase (Service Role) — required for Supabase nodes
 
-1. In n8n (**https://hansvanleeuwen.app.n8n.cloud**): **Settings (gear) → Credentials → Add credential**.
+1. In n8n (**https://n8n.srv1402218.hstgr.cloud**): **Settings (gear) → Credentials → Add credential**.
 2. Search for **Supabase** → choose **Supabase API**.
 3. **Name:** `Prod - Supabase Service Role`.
 4. **Host:** paste `https://oejeojzaakfhculcoqdh.supabase.co` (or from `SUPABASE_URL`).
@@ -151,7 +151,7 @@ Use a **Web application** OAuth 2.0 client. In **APIs & Services → Credentials
 
 **Authorized redirect URIs** (for use with requests from a web server):
 
-- `https://hansvanleeuwen.app.n8n.cloud/rest/oauth2-credential/callback` — for n8n Gmail/Sheets OAuth  
+- `https://n8n.srv1402218.hstgr.cloud/rest/oauth2-credential/callback` — for n8n Gmail/Sheets OAuth  
   (Duplicate entries cause "Duplicate redirect URIs are not allowed".)
 - **If using google-agent (Connect Google):** add a second redirect URI:  
   `https://oejeojzaakfhculcoqdh.supabase.co/functions/v1/google-oauth-callback`  
@@ -160,7 +160,7 @@ Use a **Web application** OAuth 2.0 client. In **APIs & Services → Credentials
 **Authorized JavaScript origins** (for use with requests from a browser):
 
 - Exactly **one** entry:  
-  `https://hansvanleeuwen.app.n8n.cloud`  
+  `https://n8n.srv1402218.hstgr.cloud`  
   (No trailing slash. Remove any placeholder such as `https://www.example.com` and delete any empty row to avoid "URI must not be empty".)
 
 **Summary:** One redirect URI for n8n; optionally a second for google-agent. One origin for n8n. Save; changes can take a few minutes to apply. Then in n8n add the Gmail (or Google Sheets) OAuth2 credential using this client's Client ID and Client Secret. For google-agent, set `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `APP_ORIGIN` in Supabase Edge secrets (see [gemini-google-control.md](gemini-google-control.md)).
@@ -190,7 +190,7 @@ Set these where n8n runs (e.g. `.env` next to `docker-compose` or in your proces
 | `N8N_HOST` | Host n8n listens on | `0.0.0.0` |
 | `N8N_PORT` | Port | `5678` |
 | `N8N_PROTOCOL` | http or https | `https` (if behind reverse proxy) |
-| `N8N_URL` | Public URL of your n8n (for webhooks/callbacks) | **`https://hansvanleeuwen.app.n8n.cloud`** |
+| `N8N_URL` | Public URL of your n8n (for webhooks/callbacks) | **`https://n8n.srv1402218.hstgr.cloud`** |
 | `N8N_ENCRYPTION_KEY` | Encrypts credentials at rest; set once and never change | Long random string (e.g. `openssl rand -hex 32`); store in `config/all-credentials.export.env` as `N8N_ENCRYPTION_KEY` |
 | `WEBHOOK_URL` | Override webhook base URL if different from `N8N_URL` | Usually same as `N8N_URL` |
 | `GENERIC_TIMEZONE` | Default timezone for schedules | `Europe/Amsterdam` |
@@ -200,7 +200,7 @@ Set these where n8n runs (e.g. `.env` next to `docker-compose` or in your proces
 
 ```bash
 # Paste from config/all-credentials.export.env
-N8N_URL=https://hansvanleeuwen.app.n8n.cloud
+N8N_URL=https://n8n.srv1402218.hstgr.cloud
 N8N_ENCRYPTION_KEY=<from all-credentials.export.env>
 N8N_HOST=0.0.0.0
 N8N_PORT=5678
@@ -213,7 +213,7 @@ GENERIC_TIMEZONE=Europe/Amsterdam
 ```yaml
 # In your n8n service (if you run n8n in Docker)
 environment:
-  - N8N_URL=https://hansvanleeuwen.app.n8n.cloud
+  - N8N_URL=https://n8n.srv1402218.hstgr.cloud
   - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
   - N8N_HOST=0.0.0.0
   - N8N_PORT=5678

@@ -100,8 +100,24 @@ default, en `stillReferencedIn` houdt bij welke opruiming nog open staat.
   drift zichtbaar is, maar de audit kan ze alleen controleren vanuit een client-sessie.
 - **De MCP-config van OpenClaw op VPS2 en pi5.** Die devices hebben geen repo-checkout;
   de audit markeert de repo-servers daar als `n.v.t.` in plaats van te doen alsof hij het weet.
-- **De dode n8n Cloud-URL in de frontend en de edge functions.** In de MCP-laag is hij
-  vervangen door `n8n.srv1402218.hstgr.cloud`; in `apps/personal/src/lib/config/infrastructure.ts`,
-  `supabase/functions/_shared/workflows.ts` en `empire-health` staat hij nog. Die opruiming
-  raakt productie-edge-functions en de site-UI en hoort in een eigen change, met eigen
-  verificatie. `retired[].stillReferencedIn` houdt de lijst bij.
+- **De 26 SaaS-connectors blijven accountwerk.** Zie hierboven.
+
+## Wat op 2026-09-05 is opgeruimd
+
+De afgevoerde n8n Cloud-host is uit alle **runtime**-paden verdwenen: de edge functions
+(`_shared/workflows.ts`, `empire-health`), de frontend-config, `.env.production`,
+`.env.example`, `.env.development`, de n8n-scripts en de `.claude`-agents wijzen nu naar
+`n8n.srv1402218.hstgr.cloud` (GET `/healthz` → 200).
+
+Twee dingen waren daarbij aantoonbaar kapot:
+
+1. `supabase/functions/_shared/workflows.ts` bouwde zes webhook-URL's op de dode host en wordt
+   geïmporteerd door `monday-webhook` en `monday-trigger-agent`. Monday-getriggerde workflows
+   liepen dus in een 404, terwijl `trigger-webhook` al wél de live host gebruikte.
+   `POST /webhook/autoseo` op de live host geeft 200 — dat pad werkt nu weer.
+2. `health-guardian` viel terug op Supabase-project `oejeojzaakfhculcoqdh`, dat niet eens
+   resolvet. Regel "alert bij n8n/supabase down" sloeg daardoor permanent vals alarm.
+   Nu `pesfakewujjwkyybwaom` (401 = leeft).
+
+`retired[].stillReferencedIn` bevat nu alleen nog documentatie. `docs/mcp-network-validation.md`
+en dit bestand noemen de oude URL bewust — dat is het bewijsmateriaal, niet een restant.

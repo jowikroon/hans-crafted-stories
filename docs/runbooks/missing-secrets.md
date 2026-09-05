@@ -21,7 +21,7 @@ When `commander secrets:heal` or `secrets_registry_verify` reports missing secre
 
 ### N8N_API_KEY
 - **Provider:** n8n instance
-- **How:** Open n8n (`https://hansvanleeuwen.app.n8n.cloud`) -> Settings (gear) -> n8n API -> Create an API key.
+- **How:** Open n8n (`https://n8n.srv1402218.hstgr.cloud`) -> Settings (gear) -> n8n API -> Create an API key.
 - **Store in:** `config/all-credentials.export.env` as `N8N_API_KEY=<value>`
 
 ### N8N_ENCRYPTION_KEY

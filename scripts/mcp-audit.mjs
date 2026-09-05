@@ -47,6 +47,7 @@ function detectDevice() {
     (d) =>
       d.id === host ||
       d.heartbeatHost === host ||
+      (Array.isArray(d.hostnameAliases) && d.hostnameAliases.some((x) => x.toLowerCase() === host)) ||
       (d.hostname && (d.hostname.toLowerCase() === host || d.hostname.toLowerCase().startsWith(`${host}.`))),
   );
   return match ?? { id: host, label: `${host} (niet in de registry)`, heartbeatHost: host, repoCheckout: true, unknown: true };
