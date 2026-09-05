@@ -67,7 +67,7 @@ const Hero = () => {
             </Link>
             .
           </p>
-          <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground/70">
+          <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground">
             <MapPin size={13} className="shrink-0 text-primary/60" />
             {getValue("hero_location", t.location)}
           </p>
@@ -92,7 +92,7 @@ const Hero = () => {
               </Link>
             </Magnetic>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground/60">
+          <p className="mt-3 text-xs text-muted-foreground">
             {isNl
               ? "Reactie binnen 48 uur · Vrijblijvend · Voor merken en retailers op Amazon NL & Bol.com"
               : "Response within 48h · No obligation · For brands & retailers on Amazon NL & Bol.com"}

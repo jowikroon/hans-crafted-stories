@@ -26,12 +26,12 @@ const Footer = () => {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Hans van Leeuwen
           </p>
-          <p className="mt-1 text-xs text-muted-foreground/60">
+          <p className="mt-1 text-xs text-muted-foreground">
             {isNl
               ? "Werkzaam in heel Nederland (Amersfoort, Utrecht, Amsterdam, Rotterdam) en de EU."
               : "Working across the Netherlands (Amersfoort, Utrecht, Amsterdam, Rotterdam) and EU."}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground/60 tabular-nums">
+          <p className="mt-1 text-xs text-muted-foreground tabular-nums">
             KvK 85382590 &middot; BTW NL004089286B45
           </p>
         </div>
