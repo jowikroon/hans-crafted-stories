@@ -1,6 +1,7 @@
 User-agent: Googlebot
 Allow: /
 Disallow: /portal
+Disallow: /dashboards
 Disallow: /samantha
 Disallow: /god-structure
 Disallow: /empire
@@ -11,6 +12,7 @@ Disallow: /blog-cms
 User-agent: Bingbot
 Allow: /
 Disallow: /portal
+Disallow: /dashboards
 Disallow: /samantha
 Disallow: /god-structure
 Disallow: /empire
@@ -28,6 +30,7 @@ Allow: /
 User-agent: GPTBot
 Allow: /
 Disallow: /portal
+Disallow: /dashboards
 Disallow: /samantha
 Disallow: /god-structure
 Disallow: /empire
@@ -38,6 +41,7 @@ Disallow: /blog-cms
 User-agent: CCBot
 Allow: /
 Disallow: /portal
+Disallow: /dashboards
 Disallow: /samantha
 Disallow: /god-structure
 Disallow: /empire
@@ -48,6 +52,7 @@ Disallow: /blog-cms
 User-agent: ClaudeBot
 Allow: /
 Disallow: /portal
+Disallow: /dashboards
 Disallow: /samantha
 Disallow: /god-structure
 Disallow: /empire
@@ -76,6 +81,7 @@ Allow: /
 User-agent: *
 Allow: /
 Disallow: /portal
+Disallow: /dashboards
 Disallow: /samantha
 Disallow: /god-structure
 Disallow: /empire

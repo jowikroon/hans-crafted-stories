@@ -24,18 +24,17 @@ const STATIC_CONTENT = `<header>
   <main>
     <section aria-label="Introduction">
       <p>Freelance E-commerce Manager &middot; Amazon &amp; Bol.com Specialist</p>
-      <h2>Freelance E-commerce Manager &amp; Marketplace Specialist (Amazon &amp; Bol.com)</h2>
-      <p>Grow Amazon NL &amp; Bol.com revenue with a hands-on interim marketplace lead</p>
-      <p>I&rsquo;m Hans van Leeuwen &mdash; a freelance e-commerce manager and marketplace consultant based in Amersfoort, Netherlands. I specialize in <a href="/amazon-nl-specialist">Amazon marketplace management</a>, <a href="/bol-com-consultant">Bol.com optimization</a>, and scalable marketplace growth. As an experienced <a href="/interim-ecommerce-manager">interim e-commerce manager in the Netherlands</a>, I help brands across the Netherlands and EU turn digital channels into revenue engines.</p>
-      <p>Based in Amersfoort, Netherlands &middot; Working with brands across Amsterdam, Utrecht, Rotterdam &amp; the wider EU</p>
+      <h2>Groei Amazon NL &amp; Bol.com omzet met een hands-on interim marktplaatsmanager</h2>
+      <p>Laat je omzet op Amazon NL &amp; Bol.com groeien met een ervaren interim marketplace manager. Ik ben Hans van Leeuwen, freelance e-commerce en marketplace specialist gevestigd in Amersfoort. Na tien jaar omzetgroei op Amazon en Bol.com voor diverse merken, weet ik exact hoe je marktplaatsen omzet in winstgevende groeikanalen: strakke productlistings, scherpe advertenties en betrouwbare operations.</p>
+      <p>Gevestigd in Amersfoort &middot; Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam &amp; de rest van de EU</p>
       <a href="/work">Amazon NL marketplace case studies</a>
-      <a href="/about#contact">Get a 7-point Amazon NL &amp; Bol.com marketplace audit (48h reply)</a>
-      <a href="/about#contact">Book a 30-min Amazon NL &amp; Bol.com growth call</a>
+      <a href="/about#contact">Vraag een 7-punten Amazon NL &amp; Bol.com audit aan (48u reactie)</a>
+      <a href="/about#contact">Plan een vrijblijvend 30-min Amazon NL &amp; Bol.com groeigesprek</a>
     </section>
     <section aria-label="Proven results">
       <ul>
-        <li><strong>70% market share on Amazon NL</strong> (earplug category, Nielsen Data) &mdash; Full listing overhaul, A+ content, and Sponsored Products strategy within 18 months.</li>
-        <li><strong>20% weekly sales increase</strong> via targeted Bol Ads campaigns and seasonal bundles.</li>
+        <li><strong>70% market share on Amazon NL</strong> (earplug category, Nielsen Data) &mdash; Listing overhaul, A+ content, A/B-tested images and Buy Box alignment (Alpine Hearing Protection, Nielsen 2023).</li>
+        <li><strong>20% weekly sales increase</strong> from a targeted Back-to-School social ad campaign on top of optimised listings (Alpine Hearing Protection).</li>
         <li><strong>Out-of-stock rates below 2%</strong> through demand forecasting and optimized logistics.</li>
       </ul>
     </section>

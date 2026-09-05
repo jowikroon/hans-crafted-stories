@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { Home, ChevronRight } from "lucide-react";
 import { getCaseStudies, CaseStudyRow } from "@/lib/api/content";
 import CaseStudyCard from "@/components/CaseStudyCard";
@@ -43,12 +43,8 @@ const Work = () => {
   useSEO({
     title: seo.workTitle,
     description: seo.workDescription,
-    url: "https://hansvanleeuwen.com/work",
-    hreflang: [
-      { lang: "en", href: "https://hansvanleeuwen.com/work" },
-      { lang: "nl", href: "https://hansvanleeuwen.com/work" },
-      { lang: "x-default", href: "https://hansvanleeuwen.com/work" },
-    ],
+    path: "/work",
+    lang,
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
@@ -224,7 +220,7 @@ const Work = () => {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="mb-6 text-xs text-muted-foreground/60"
+        className="mb-6 text-xs text-muted-foreground"
       >
         {filtered.length} {filtered.length === 1 ? tw.projectSingular : tw.projectPlural}
         {filter !== "all" && ` ${tw.matching}`}

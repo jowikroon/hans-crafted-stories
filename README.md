@@ -28,7 +28,7 @@ This repository is the **source of truth** for my personal professional website 
 - Carefully written personal and professional stories
 - Experiments with AI tools and automation (**HansAI** section)
 
-The site is a modern, blazing-fast single-page React application. I primarily edit it with natural language prompts in Lovable.dev. Every change is automatically committed here and deployed via Cloudflare Pages.
+The site is a modern, blazing-fast single-page React application. I primarily edit it with natural language prompts in Lovable.dev. Every change is automatically committed here and deployed via Vercel.
 
 ---
 
@@ -123,8 +123,9 @@ const { data: stories } = await supabase
 | Routing            | React Router DOM                        |
 | Animations         | Framer Motion                           |
 | Backend / CMS      | Supabase (Auth, Postgres, Storage)      |
-| Serverless         | Cloudflare Pages Functions              |
-| Deployment         | Cloudflare Pages + Lovable.dev          |
+| Serverless         | Supabase Edge Functions                 |
+| Deployment         | Vercel (DNS via Cloudflare) + Lovable.dev |
+| Legacy             | `functions/` bevat Cloudflare Pages Functions die op de Vercel-host niet draaien |
 | Testing            | Vitest                                  |
 
 ---
@@ -219,7 +220,7 @@ hansvanleeuwen.com is connected in Lovable → Project Settings → Domains.
 ---
 
 **Made with ❤️ in the Netherlands**  
-Built using the power of AI (Lovable.dev) + Supabase + Cloudflare Pages.
+Built using the power of AI (Lovable.dev) + Supabase + Vercel.
 
 Feel free to explore the code, fork it, or reach out if you have questions!
 ```

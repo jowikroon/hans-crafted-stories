@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { ArrowRight } from "lucide-react";
 import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { useLang } from "@/hooks/useLang";

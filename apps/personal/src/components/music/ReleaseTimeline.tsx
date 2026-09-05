@@ -216,7 +216,10 @@ const ReleaseTimeline = () => {
                       {sub && <><span className="dot" /><span>{sub}</span></>}
                     </div>
                     {(() => {
-                      const match = songs.find((sg) => sg.slug === r.id || sg.title.toLowerCase() === r.title.toLowerCase());
+                      // HAN-146: SoundCloud-tracks zijn login-gated en renderen publiek als
+                      // "Track not found"; daar dus geen link naartoe, alleen naar publieke pagina's.
+                      const found = songs.find((sg) => sg.slug === r.id || sg.title.toLowerCase() === r.title.toLowerCase());
+                      const match = found && found.provider !== "soundcloud" ? found : undefined;
                       const label = <>{r.title}{r.type === "EP" ? " (EP)" : ""}</>;
                       return match
                         ? <Link to={`/music/${match.slug}`} className="mn-rel__title" data-cursor aria-label={`Open ${match.title} track page`}>{label}</Link>

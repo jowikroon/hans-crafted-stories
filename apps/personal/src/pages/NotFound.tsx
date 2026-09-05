@@ -13,7 +13,10 @@ const NotFound = () => {
   useSEO({
     title: seo.notFoundTitle,
     description: "The page you're looking for doesn't exist or has been moved.",
-    url: `https://hansvanleeuwen.com${location.pathname}`,
+    // Geen pad-afgeleide URL in de head van een 404 (CodeQL js/xss-through-dom; en
+    // een niet-bestaand pad hoort nergens als og:url of canonical te staan).
+    url: "https://hansvanleeuwen.com/",
+    noindex: true,
   });
 
   useEffect(() => {
@@ -37,7 +40,7 @@ const NotFound = () => {
     <div className="flex min-h-screen items-center justify-center bg-muted">
       <div className="text-center">
         <h1 className="mb-4 text-4xl font-bold">{t.heading}</h1>
-        <p className="mb-4 text-xl text-muted-foreground">{t.message}</p>
+        <p className="mb-4 text-xl text-foreground/80">{t.message}</p>
         <a href="/" className="text-primary underline hover:text-primary/90">
           {t.returnHome}
         </a>

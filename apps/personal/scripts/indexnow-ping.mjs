@@ -12,6 +12,11 @@ if (branch && branch !== "main") {
   console.log(`[indexnow] skip — branch ${branch} is not main`);
   process.exit(0);
 }
+// Vercel: alleen productie-builds mogen pingen; previews (PR's, dependabot) niet.
+if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production") {
+  console.log(`[indexnow] skip — VERCEL_ENV=${process.env.VERCEL_ENV}`);
+  process.exit(0);
+}
 
 import fs from "node:fs";
 import path from "node:path";

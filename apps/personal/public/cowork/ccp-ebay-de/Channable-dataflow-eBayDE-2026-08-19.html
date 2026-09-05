@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCP · Channable datastroom eBay DE</title>
+<style>
+  :root{
+    --ink:#1a2230; --muted:#5b6675; --line:#d7dee8; --bg:#ffffff; --soft:#f4f7fb;
+    --blue:#1f6feb; --blueSoft:#e7f0fe;
+    --green:#12805c; --greenSoft:#e2f4ec;
+    --teal:#0e7490; --tealSoft:#e0f2f7;
+    --purple:#6d38c9; --purpleSoft:#efe7fb;
+    --amber:#a86400; --amberSoft:#fbf0d9;
+    --grey:#556; --greySoft:#eef1f5;
+    --red:#c0392b; --redSoft:#fdeceb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1280px;margin:0 auto;padding:32px 28px 60px}
+  h1{font-size:22px;margin:0 0 2px;letter-spacing:-.2px}
+  .sub{color:var(--muted);margin:0 0 22px;font-size:13px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0 0 24px;padding:12px 14px;background:var(--soft);border:1px solid var(--line);border-radius:10px}
+  .lg{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .flow{display:flex;flex-direction:column;gap:0}
+  .stage{border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:14px 16px 16px;position:relative}
+  .stage + .stage{margin-top:26px}
+  .stage::before{content:"";position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+    width:2px;height:20px;background:var(--line)}
+  .stage:first-child::before{display:none}
+  .stage::after{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%) rotate(45deg);
+    width:9px;height:9px;border-right:2px solid var(--line);border-bottom:2px solid var(--line);background:var(--bg)}
+  .stage:first-child::after{display:none}
+  .stg-h{display:flex;align-items:baseline;gap:10px;margin:0 0 12px}
+  .stg-n{font-size:11px;font-weight:700;color:#fff;background:var(--blue);border-radius:20px;padding:2px 9px}
+  .stg-t{font-weight:700;font-size:15px}
+  .stg-d{color:var(--muted);font-size:12px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px}
+  .card{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:var(--bg)}
+  .card.b{border-top:3px solid var(--blue)} .card.g{border-top:3px solid var(--green)}
+  .card.t{border-top:3px solid var(--teal)} .card.p{border-top:3px solid var(--purple)}
+  .card.a{border-top:3px solid var(--amber)} .card.y{border-top:3px solid var(--grey)}
+  .card h3{margin:0 0 3px;font-size:13px}
+  .card .meta{color:var(--muted);font-size:11px;margin:0 0 8px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{font-size:11px;padding:2px 7px;border-radius:6px;border:1px solid transparent;white-space:nowrap}
+  .chip.b{background:var(--blueSoft);color:var(--blue)} .chip.g{background:var(--greenSoft);color:var(--green)}
+  .chip.t{background:var(--tealSoft);color:var(--teal)} .chip.p{background:var(--purpleSoft);color:var(--purple)}
+  .chip.a{background:var(--amberSoft);color:var(--amber)} .chip.y{background:var(--greySoft);color:var(--grey)}
+  .chip.r{background:var(--redSoft);color:var(--red);border-color:#f3c9c4}
+  .mergekey{font-size:10.5px;color:var(--muted);margin-top:8px}
+  .mergekey b{color:var(--ink)}
+  .issue{margin-top:7px;font-size:11px;color:var(--red);background:var(--redSoft);border:1px solid #f3c9c4;border-radius:7px;padding:6px 8px}
+  .note{font-size:11px;color:var(--muted);margin-top:6px}
+  .foot{margin-top:26px;color:var(--muted);font-size:11.5px;border-top:1px solid var(--line);padding-top:14px}
+  .foot b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Hoe de eBay DE-data in Channable tot stand komt</h1>
+  <p class="sub">Connect Car Parts · project 314525 · kanaal eBay DE 152339 / API 159122 · stand 2026-08-19 · geverifieerd tegen Supabase + vault</p>
+
+  <div class="legend">
+    <span class="lg"><span class="dot" style="background:var(--blue)"></span>Magento (live)</span>
+    <span class="lg"><span class="dot" style="background:var(--green)"></span>Supabase SKU-overlay</span>
+    <span class="lg"><span class="dot" style="background:var(--teal)"></span>Supabase categorie-baseline</span>
+    <span class="lg"><span class="dot" style="background:var(--purple)"></span>Supabase brand-GPSR</span>
+    <span class="lg"><span class="dot" style="background:var(--amber)"></span>Channable import-regel</span>
+    <span class="lg"><span class="dot" style="background:var(--grey)"></span>Master-groep (gedeeld)</span>
+    <span class="lg"><span class="dot" style="background:var(--red)"></span>Knelpunt / let op</span>
+  </div>
+
+  <div class="flow">
+
+    <!-- STAGE 1 -->
+    <div class="stage">
+      <div class="stg-h"><span class="stg-n">1</span><span class="stg-t">Bronnen</span><span class="stg-d">waar de data vandaan komt</span></div>
+      <div class="cards">
+        <div class="card b">
+          <h3>Magento — live REST / Amasty</h3>
+          <div class="meta">catalogus · prijs · voorraad · basis</div>
+          <div class="chips">
+            <span class="chip b">sku</span><span class="chip b">ean</span><span class="chip b">price</span>
+            <span class="chip b">qty / stock</span><span class="chip b">image_link (+extra)</span>
+            <span class="chip b">categories / category_ids</span><span class="chip b">description</span>
+            <span class="chip b">oe_reference (JSON)</span><span class="chip b">manufacturer = ABS</span>
+            <span class="chip b">specs = option-ID's</span>
+          </div>
+          <div class="issue">Specs komen als <b>option-ID's</b> (bv. remsysteem=385), niet als leesbare waarden. Merk-attribuut staat op <b>ABS</b> — óók voor Brembo.</div>
+        </div>
+        <div class="card g">
+          <h3>Supabase · v_companion_remblokken</h3>
+          <div class="meta">3.442 remblokken · rijk, per SKU</div>
+          <div class="chips">
+            <span class="chip g">title_de</span><span class="chip g">description_de</span><span class="chip g">ktypes</span>
+            <span class="chip g">einbauposition</span><span class="chip g">brand_display</span><span class="chip g">gpsr_brand_key</span>
+          </div>
+          <div class="note">REST-ready (anon-SELECT). Brembo-content nu correct hermerkt.</div>
+        </div>
+        <div class="card g">
+          <h3>Supabase · v_channable_import</h3>
+          <div class="meta">398 masterfile-SKU's · diepe specs</div>
+          <div class="chips">
+            <span class="chip g">breite/hoehe/dicke_mm</span><span class="chip g">bremssystem</span>
+            <span class="chip g">wva_nummer</span><span class="chip g">verschleisswarnkontakt</span>
+            <span class="chip g">oe_nummern</span><span class="chip g">produktart</span>
+          </div>
+          <div class="note">Lost de Magento option-ID's op naar leesbare waarden.</div>
+        </div>
+        <div class="card t">
+          <h3>Supabase · v_channable_category_enrichment</h3>
+          <div class="meta">1 rij per categorie · vangnet</div>
+          <div class="chips">
+            <span class="chip t">produktart_de</span><span class="chip t">ebay_category_id</span>
+            <span class="chip t">titel-template</span><span class="chip t">beschrijving-template</span>
+          </div>
+        </div>
+        <div class="card p">
+          <h3>Supabase · v_channable_brand_gpsr</h3>
+          <div class="meta">1 rij per merk · GPSR</div>
+          <div class="chips">
+            <span class="chip p">gpsr_manufacturer_name</span><span class="chip p">gpsr_address</span><span class="chip p">gpsr_email</span>
+          </div>
+          <div class="note">ABS + Brembo, beide verified=true.</div>
+        </div>
+        <div class="card y">
+          <h3>Google Sheet · SKU-whitelist</h3>
+          <div class="meta">kostenrem</div>
+          <div class="chips"><span class="chip y">welke SKU's mogen listen</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 2 -->
+    <div class="stage">
+      <div class="stg-h"><span class="stg-n">2</span><span class="stg-t">Imports &amp; merge</span><span class="stg-d">bronnen worden op een sleutel samengevoegd</span></div>
+      <div class="cards">
+        <div class="card b"><h3>Import: Magento</h3><div class="meta">basis, order laag</div><div class="mergekey">merge-key: <b>—</b> (hoofdbron)</div></div>
+        <div class="card g"><h3>Import: v_companion_remblokken</h3><div class="meta">rijke remblokken-overlay</div><div class="mergekey">merge op <b>sku</b> · wint waar gevuld</div></div>
+        <div class="card g"><h3>Import: CCP Attributen</h3><div class="meta">masterfile-specs overlay (398)</div><div class="mergekey">merge op <b>sku / ean</b></div></div>
+        <div class="card t"><h3>Import: Categorie-baseline</h3><div class="meta">vangnet voor kale items</div><div class="mergekey">merge op <b>categories_clean</b></div></div>
+        <div class="card p"><h3>Import: Brand-GPSR</h3><div class="meta">merk-adres</div>
+          <div class="mergekey">merge op <b>gpsr_brand_key</b> (ABS/Brembo)</div>
+          <div class="issue">Niet op ruwe <b>brand</b> (=altijd ABS) en niet op <b>brand_display</b> ('A.B.S.' met punten matcht niet).</div>
+        </div>
+      </div>
+      <p class="note">Volgorde bepaalt de winnaar: latere import overschrijft eerdere waar gevuld. Overlay (SKU) &gt; baseline (categorie) &gt; Magento-basis.</p>
+    </div>
+
+    <!-- STAGE 3 -->
+    <div class="stage">
+      <div class="stg-h"><span class="stg-n">3</span><span class="stg-t">Import-regels</span><span class="stg-d">kanaal-agnostische bewerking, van boven naar beneden</span></div>
+      <div class="cards">
+        <div class="card a"><h3>126712 · Alle categorieën</h3><div class="meta">basisselectie</div></div>
+        <div class="card a"><h3>127918 · Voorraad &gt; 0</h3><div class="meta">gate qty&gt;0</div></div>
+        <div class="card a"><h3>121945 · Exclude image</h3><div class="meta">geen lege afbeelding</div></div>
+        <div class="card a"><h3>143446 · BTW</h3><div class="meta">prijslogica</div></div>
+        <div class="card a"><h3>143619 · ebay_country_origin</h3></div>
+        <div class="card a"><h3>143655 · Brand ABS</h3><div class="meta">zet brand = "ABS"</div>
+          <div class="issue">Forceert het merk op ABS voor <b>alles</b> — óók Brembo. Reden dat merk niet als Brembo binnenkomt. Vervangen door merk-uit-SKU voor bron-fix.</div>
+        </div>
+        <div class="card a"><h3>143672 · Vooras/Achteras Duits</h3><div class="meta">→ vooras_achteras_duits</div></div>
+        <div class="card a"><h3>154267/68/69 · OE Split/Norm/Dedupe</h3><div class="meta">→ oe_nummern</div></div>
+        <div class="card a"><h3>130686… · car_brands / car_models</h3><div class="meta">→ *_top1 (uit OE)</div></div>
+      </div>
+    </div>
+
+    <!-- STAGE 4 -->
+    <div class="stage">
+      <div class="stg-h"><span class="stg-n">4</span><span class="stg-t">Master-groepen</span><span class="stg-d">gedeeld over eBay + Bol + Amazon — niet destructief bewerken</span></div>
+      <div class="cards">
+        <div class="card y"><h3>321808 · Omschrijvingen</h3><div class="meta">gedeelde beschrijvingslogica</div>
+          <div class="issue">Voedt ook Bol/Amazon. Kanaal moet <b>self-contained</b> overschrijven, niet deze master wijzigen.</div>
+        </div>
+        <div class="card y"><h3>326214 · Product safety component</h3><div class="meta">GPSR-safety (3 rules)</div></div>
+        <div class="card y"><h3>331271 · DE compliance</h3><div class="meta">1 rule</div></div>
+      </div>
+    </div>
+
+    <!-- STAGE 5 -->
+    <div class="stage">
+      <div class="stg-h"><span class="stg-n">5</span><span class="stg-t">Kanaal eBay DE</span><span class="stg-d">categorieën, kanaalregels &amp; veld-mapping</span></div>
+      <div class="cards">
+        <div class="card b"><h3>Categorieën</h3><div class="meta">AI + handmatig</div>
+          <div class="chips"><span class="chip b">Bremsbeläge 57357</span><span class="chip b">Bremsscheiben 33564</span></div>
+        </div>
+        <div class="card g"><h3>Kanaalregels (self-contained)</h3><div class="meta">per categorie, gegate</div>
+          <div class="chips"><span class="chip g">ebay_title_de</span><span class="chip g">ebay_beschreibung_de</span></div>
+          <div class="issue">Schrijf naar <b>ebay_beschreibung_de</b> — <b>ebay_omschrijving_de</b> is dode output (Build leest 'm niet).</div>
+        </div>
+        <div class="card b"><h3>Build → Attributes per categorie</h3><div class="meta">projectveld → eBay item specific</div>
+          <div class="chips">
+            <span class="chip b">Marke ← brand</span><span class="chip b">Herstellernummer ← sku</span>
+            <span class="chip g">Einbauposition ← vooras_achteras_duits</span>
+            <span class="chip g">OE/OEM Ref ← oe_nummern</span><span class="chip g">Bremssystem</span>
+            <span class="chip p">GPSR ← brand-merge</span>
+          </div>
+          <div class="issue">Bekende mismap remschijven (33564): 4 attributen trokken uit bremsbeläge-velden → OP-0.5.</div>
+        </div>
+        <div class="card y"><h3>SKU selectie · 27858166</h3><div class="meta">kostenrem — NOOIT aanraken</div></div>
+      </div>
+    </div>
+
+    <!-- STAGE 6 -->
+    <div class="stage">
+      <div class="stg-h"><span class="stg-n">6</span><span class="stg-t">Output → eBay DE listing</span><span class="stg-d">wat de koper ziet</span></div>
+      <div class="cards">
+        <div class="card b"><h3>Titel</h3><div class="chips"><span class="chip g">ebay_title_de ≤80</span></div></div>
+        <div class="card g"><h3>Omschrijving</h3><div class="chips"><span class="chip g">ebay_beschreibung_de</span></div></div>
+        <div class="card b"><h3>Item specifics</h3><div class="chips"><span class="chip b">Marke</span><span class="chip b">Herstellernummer</span><span class="chip g">Einbauposition</span><span class="chip g">OE-Nr</span><span class="chip g">Bremssystem</span></div></div>
+        <div class="card t"><h3>Fahrzeugverwendungsliste (K-Type)</h3>
+          <div class="issue">Nu handmatig via Verkäufer-Cockpit geüpload; Channable draagt 'm (nog) niet → hold beschermt dit.</div>
+        </div>
+        <div class="card p"><h3>GPSR / verantwortliche Person</h3><div class="chips"><span class="chip p">A.B.S. of Brembo N.V.</span></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <b>Kernlijn:</b> Magento levert de basis + ruwe option-ID's; Supabase-overlays maken er leesbare, verrijkte, merk-correcte data van; import-regels normaliseren kanaal-breed; master-groepen leveren gedeelde compliance; het kanaal mapt alles naar eBay item specifics. <b>Drie knelpunten</b> (rood): regel 143655 plat merk naar ABS, <b>ebay_omschrijving_de</b> is dood, en de remschijf-mismap (OP-0.5). <b>Merk-waarheid</b> zit in de SKU, niet in het Magento-brand-veld.
+  </div>
+</div>
+</body>
+</html>

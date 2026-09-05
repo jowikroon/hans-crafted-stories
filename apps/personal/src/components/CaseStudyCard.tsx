@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { CaseStudy } from "@/data/types";
 import { useLang } from "@/hooks/useLang";
 

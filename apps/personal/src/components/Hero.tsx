@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import FeaturedArticles from "@/components/FeaturedArticles";
 import HomeFAQ from "@/components/HomeFAQ";
 import ServiceDetails from "@/components/ServiceDetails";
@@ -15,6 +15,9 @@ const icons = [
   <TrendingUp size={20} />,
   <Search size={20} />,
 ];
+
+// Volgorde = translations.hero.expertise; elke kaart linkt exact-match naar zijn dienstenpagina (plan Q4, werkstroom A).
+const SERVICE_PATHS = ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation"];
 
 const Hero = () => {
   const { lang } = useLang();
@@ -46,8 +49,8 @@ const Hero = () => {
           </p>
           <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
             {isNl
-              ? <>Freelance E-commerce Manager (Amazon &amp; Bol.com) <em className="text-primary">strategie</em>, groei &amp; design</>
-              : <>Freelance E-commerce Manager (Amazon &amp; Bol.com) <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; design</>
+              ? <>E-commerce &amp; Marketplace Manager (Amazon &amp; Bol.com) <em className="text-primary">strategie</em>, groei &amp; AI-operations</>
+              : <>E-commerce &amp; Marketplace Manager (Amazon &amp; Bol.com) <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
             }
           </h1>
           <p className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
@@ -67,7 +70,7 @@ const Hero = () => {
             </Link>
             .
           </p>
-          <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground/70">
+          <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground">
             <MapPin size={13} className="shrink-0 text-primary/60" />
             {getValue("hero_location", t.location)}
           </p>
@@ -92,7 +95,7 @@ const Hero = () => {
               </Link>
             </Magnetic>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground/60">
+          <p className="mt-3 text-xs text-muted-foreground">
             {isNl
               ? "Reactie binnen 48 uur · Vrijblijvend · Voor merken en retailers op Amazon NL & Bol.com"
               : "Response within 48h · No obligation · For brands & retailers on Amazon NL & Bol.com"}
@@ -237,7 +240,7 @@ const Hero = () => {
                 {icons[i]}
               </div>
               <h3 className="mb-1.5 text-sm font-bold text-foreground">
-                {item.title}
+                <Link to={SERVICE_PATHS[i]} className="underline-offset-4 hover:underline">{item.title}</Link>
               </h3>
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {item.description}
@@ -254,17 +257,17 @@ const Hero = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
         >
+          <Link to="/interim-ecommerce-manager" className="font-semibold transition-colors hover:text-foreground">
+            {isNl ? "Interim e-commerce manager inhuren →" : "Interim e-commerce manager →"}
+          </Link>
           <Link to="/amazon-nl-specialist" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "Amazon NL specialist →" : "Amazon NL specialist →"}
+            {isNl ? "Amazon NL specialist inhuren →" : "Amazon NL specialist →"}
           </Link>
           <Link to="/bol-com-consultant" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "Bol.com consultant →" : "Bol.com consultant →"}
-          </Link>
-          <Link to="/interim-ecommerce-manager" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "Interim e-commerce manager →" : "Interim e-commerce manager →"}
+            {isNl ? "Bol.com consultant inhuren →" : "Bol.com consultant →"}
           </Link>
           <Link to="/ai-ecommerce-automation" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "AI e-commerce automatisering →" : "AI e-commerce automation →"}
+            {isNl ? "AI e-commerce automation →" : "AI e-commerce automation →"}
           </Link>
           <Link to="/work" className="font-semibold transition-colors hover:text-foreground">
             {t.linkCases}

@@ -59,6 +59,20 @@ const {
   clearRootHtml,
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
+  detectBlogPostLang,
+  primaryBlogPostLang,
+  localizeBlogPost,
+  SERVICE_PAGES,
+  SERVICE_PAGES_UPDATED,
+  EXPERIENCE_STRIP,
+  RATES_PAGE,
+  PRICING_NL,
+  PRICING_EN,
+  translations,
+  songs,
+  alternatesFor,
+  absoluteUrl,
+  OG_LOCALE,
 } = await import(
   pathToFileURL(entryPath).href
 );
@@ -67,15 +81,7 @@ const {
 // Use balanced div parsing so nested homepage markup cannot leak into prerendered article pages.
 template = clearRootHtml(template);
 
-// Prerender the homepage with the real Index render so the first paint matches
-// the hydrated page (instead of the hand-maintained static block) and there is
-// no layout swap on mount. Head, JSON-LD and the rich <noscript> stay as-is.
-{
-  const { html } = renderQuietly("/", null, { initialLang: "en" });
-  const page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
-  fs.writeFileSync(path.join(distDir, "index.html"), page, "utf8");
-  console.log(`[prerender] / -> ${path.join(distDir, "index.html")} (real render)`);
-}
+// De homepage wordt verderop per taal gerenderd (/ en /nl) — zie writeLocalizedPage().
 
 const BASE = "https://hansvanleeuwen.com";
 
@@ -84,15 +90,33 @@ const PERSON_ENTITY = {
   "@id": `${BASE}/#person`,
   name: "Hans van Leeuwen",
   url: `${BASE}/about`,
-  jobTitle: "Freelance & Interim E-commerce Manager",
+  jobTitle: "E-commerce & Marketplace Manager",
   alternateName: "Jowikroon",
   description:
-    "Hans van Leeuwen is a freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. 10+ years of experience. Based in Amersfoort, NL.",
+    "Hans van Leeuwen is an e-commerce and marketplace manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. 10+ years of experience across in-house, interim and freelance roles. Based in Amersfoort, NL.",
+  knowsAbout: [
+    "E-commerce management",
+    "Marketplace management",
+    "Amazon Seller & Vendor management",
+    "Bol.com",
+    "Amazon Ads",
+    "Bol Ads",
+    "Product data & feed management (Channable)",
+    "Demand forecasting",
+    "AI-assisted e-commerce operations",
+    "Marketplace automation (n8n)",
+    "LLM content workflows (Claude)",
+    "Marketplace SEO",
+    "Magento",
+    "eBay",
+  ],
   address: { "@type": "PostalAddress", addressLocality: "Amersfoort", addressRegion: "Utrecht", addressCountry: "NL" },
   sameAs: [
     "https://www.linkedin.com/in/hansvl3",
     "https://twitter.com/hansvl3",
     "https://github.com/jowikroon",
+    "https://www.youtube.com/@jowikroon1990",
+    "https://soundcloud.com/jowikroon",
   ],
 };
 
@@ -101,14 +125,14 @@ const WEBSITE_ENTITY = {
   "@id": `${BASE}/#website`,
   name: "Hans van Leeuwen",
   url: `${BASE}/`,
-  inLanguage: "en",
+  inLanguage: ["en", "nl"],
   publisher: { "@id": `${BASE}/#person` },
 };
 
 const PROFESSIONAL_SERVICE_ENTITY = {
   "@type": ["Organization", "ProfessionalService"],
   "@id": `${BASE}/#organization`,
-  name: "Hans van Leeuwen – Freelance E-commerce Management",
+  name: "Hans van Leeuwen – E-commerce & Marketplace Management",
   url: `${BASE}/`,
   founder: { "@id": `${BASE}/#person` },
   sameAs: [
@@ -121,129 +145,64 @@ const PROFESSIONAL_SERVICE_ENTITY = {
   ],
 };
 
-// Static page SEO (English, primary for prerender), aligned with functions/[[path]].ts ROUTE_META
-const ABOUT_HEAD = {
-  title: "About Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
-  description:
-    "Interim e-commerce manager and marketplace specialist with 10+ years of experience in Amazon, Bol.com, marketplace strategy and digital commerce. Based in Amersfoort, NL.",
-  canonical: `${BASE}/about`,
+// Static page SEO — per taal. Dienstenpagina's komen uit data/servicePages.ts.
+const ABOUT_PERSON_ENTITY = {
+  ...PERSON_ENTITY,
+  image: { "@type": "ImageObject", url: `${BASE}/hans-profile.jpg`, caption: "Hans van Leeuwen – freelance e-commerce & marketplace manager" },
+  alumniOf: [
+    { "@type": "CollegeOrUniversity", name: "HU University of Applied Sciences Utrecht" },
+    { "@type": "EducationalOrganization", name: "ROC Amsterdam - Hilversum" },
+  ],
+  worksFor: { "@type": "Organization", name: "ABS All Brake Systems" },
+  hasOccupation: { "@type": "Occupation", name: "E-commerce & Marketplace Manager", occupationLocation: { "@type": "Country", name: "NL" } },
 };
 
-const WORK_HEAD = {
+const WORK_HEAD_EN = {
   title: "Amazon & Bol.com Case Studies: Marketplace Growth Portfolio | Hans van Leeuwen",
   description:
-    "Real marketplace results: Amazon NL & DE, Bol.com and e-commerce operations case studies by freelance e-commerce manager Hans van Leeuwen, including Connect Car Parts.",
-  canonical: `${BASE}/work`,
+    "Documented marketplace results by e-commerce & marketplace manager Hans van Leeuwen: Amazon NL/DE, Bol.com and e-commerce operations case studies, including Connect Car Parts (A.B.S. brake parts on Amazon DE, eBay DE and Magento).",
   intro: [
-    "This portfolio brings together practical marketplace and e-commerce work by Hans van Leeuwen, a freelance e-commerce manager based in Amersfoort. The case studies focus on the operating work behind growth: improving product data, marketplace listings, advertising, inventory planning, reporting and automation across Amazon, Bol.com, eBay and owned webshops. Each case is intended to show the starting point, the intervention and the measurable commercial or operational result instead of presenting a gallery without context.",
-    "The featured Connect Car Parts case covers a Dutch automotive-parts operation selling A.B.S. brake components through Magento, Amazon DE and eBay DE. The work combines catalog quality, vehicle-fitment data, marketplace feed management through Channable, listing optimization, advertising and recurring performance reviews. It is a useful example of how technical product data and daily commercial decisions need to work together when a large assortment is distributed across several channels and countries.",
-    "Other documented marketplace results on this site include 70% market share in an Amazon NL earplug category based on Nielsen data, out-of-stock rates below 2% after improving demand forecasting, and 20% weekly sales growth through targeted Sponsored campaigns. These figures describe specific engagements and are not generic promises. The related service pages explain the working method for Amazon NL account management, Bol.com consulting and interim e-commerce leadership, while the writing section provides deeper articles about marketplace operations and AI-assisted automation.",
-    "A typical engagement starts with a baseline of catalog health, content quality, search visibility, advertising efficiency, pricing, stock risk and reporting. The resulting backlog separates urgent revenue leaks from structural improvements, assigns an owner and defines a measurable outcome. Weekly reviews then connect organic visibility, conversion, advertising, margin and availability so that decisions are based on their combined commercial impact. The goal is a transparent operation that an internal team can understand, continue and improve.",
+    "This portfolio brings together hands-on marketplace and e-commerce work by Hans van Leeuwen, e-commerce & marketplace manager based in Amersfoort. The case studies focus on the operational work behind growth: product data, marketplace listings, advertising, stock planning, reporting and automation across Amazon, Bol.com, eBay and own webstores. Every case shows the starting point, the intervention and the measurable commercial or operational result.",
+    "The featured Connect Car Parts case describes a Dutch automotive parts operation selling A.B.S. brake parts through Magento, Amazon DE and eBay DE, with catalogue quality, vehicle fitment data, Channable feed management, listing optimisation, advertising and recurring performance reviews. Other documented results: 70% market share in an Amazon NL earplug category (Nielsen 2023), out-of-stock below 2% after improving demand forecasting, and 20% more weekly sales from a targeted social ad campaign, all at Alpine Hearing Protection.",
+  ],
+};
+const WORK_HEAD_NL = {
+  title: "Amazon & Bol.com case studies: portfolio marktplaatsgroei | Hans van Leeuwen",
+  description:
+    "Gedocumenteerde marktplaatsresultaten van e-commerce & marketplace manager Hans van Leeuwen: case studies Amazon NL/DE, Bol.com en e-commerce-operaties, waaronder Connect Car Parts (A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento).",
+  intro: [
+    "Dit portfolio bundelt praktisch marktplaats- en e-commercewerk van Hans van Leeuwen, e-commerce & marketplace manager uit Amersfoort. De case studies richten zich op het operationele werk achter groei: productdata, listings, advertising, voorraadplanning, rapportage en automatisering over Amazon, Bol.com, eBay en eigen webshops. Elke case toont het startpunt, de ingreep en het meetbare commerciële of operationele resultaat.",
+    "De uitgelichte Connect Car Parts-case beschrijft een Nederlandse operatie in auto-onderdelen die A.B.S.-remonderdelen verkoopt via Magento, Amazon DE en eBay DE, met cataloguskwaliteit, voertuig-fitmentdata, feedmanagement via Channable, listingoptimalisatie, advertising en terugkerende performance reviews. Andere gedocumenteerde resultaten: 70% marktaandeel in een oordoppencategorie op Amazon NL (Nielsen 2023), out-of-stock onder 2% na betere demand forecasting en 20% meer wekelijkse verkopen door een gerichte social-ad-campagne, alle bij Alpine Hearing Protection.",
+  ],
+};
+
+const CASE_CCP_HEAD_EN = {
+  title: "Connect Car Parts Case Study: A.B.S. Brake Parts on Amazon DE, eBay DE & Magento | Hans van Leeuwen",
+  description:
+    "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: a ~400-SKU active A.B.S. brake-parts catalogue on Amazon DE, eBay DE and Magento, with Channable feeds, n8n order monitoring, an automated VIN lookup and AI-assisted listing content.",
+  intro: [
+    "Connect Car Parts is a Dutch automotive e-commerce operation selling A.B.S. brake parts (discs, pads, hoses and wheel-bearing kits) through its own Magento storefront and on Amazon DE and eBay DE. The active catalogue covers roughly 400 SKUs with vehicle-fitment data (K-types) and OE cross-references; the wider A.B.S. assortment being rolled out to eBay DE and Bol.com runs into the thousands of references.",
+    "Hans van Leeuwen runs the marketplace side end to end: catalogue and product-data quality, feed management via Channable, listing optimisation, marketplace advertising and the operational reporting loop across the Dutch and German markets. The operation is automation-first: orders are monitored every 30 minutes through an n8n pipeline with failure alerts, a daily radar checks Channable feed quality and marketplace rule changes, an automated VIN-based parts lookup (a first in the industry) drives the storefront, and listing content is generated through an AI-assisted pipeline with human review on pricing, brand voice and compliance.",
+    "Current expansion work: the Amazon DE catalogue launch including German VAT registration, and rolling the full A.B.S. assortment out to eBay DE and Bol.com with marketplace-specific content rules and vehicle compatibility files.",
+  ],
+};
+const CASE_CCP_HEAD_NL = {
+  title: "Case study Connect Car Parts: A.B.S.-remonderdelen op Amazon DE, eBay DE & Magento | Hans van Leeuwen",
+  description:
+    "Hoe Hans van Leeuwen de marketplace-operatie van Connect Car Parts runt: een actieve catalogus van ~400 SKU's A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento, met Channable-feeds, n8n-ordermonitoring, een geautomatiseerde VIN-zoekfunctie en AI-ondersteunde listingcontent.",
+  intro: [
+    "Connect Car Parts is een Nederlandse e-commerce-operatie in auto-onderdelen die A.B.S.-remonderdelen (schijven, blokken, slangen en wiellagersets) verkoopt via een eigen Magento-webshop en op Amazon DE en eBay DE. De actieve catalogus omvat circa 400 SKU's met voertuig-fitmentdata (K-types) en OE-kruisverwijzingen; het bredere A.B.S.-assortiment dat naar eBay DE en Bol.com wordt uitgerold loopt in de duizenden referenties.",
+    "Hans van Leeuwen runt de marketplace-kant van begin tot eind: catalogus- en productdatakwaliteit, feedmanagement via Channable, listingoptimalisatie, marketplace-advertising en de operationele rapportagecyclus over de Nederlandse en Duitse markt. De operatie is automation-first: orders worden elke 30 minuten bewaakt via een n8n-pipeline met alerts, een dagelijkse radar controleert de Channable-feedkwaliteit en marketplace-regelwijzigingen, een geautomatiseerde VIN-zoekfunctie (een primeur in de branche) stuurt de webshop aan en listingcontent komt uit een AI-ondersteunde pipeline met menselijke controle op prijs, merkstem en compliance.",
+    "Lopende uitbreiding: de lancering van de Amazon DE-catalogus inclusief Duitse btw-registratie, en de uitrol van het volledige A.B.S.-assortiment naar eBay DE en Bol.com met marketplace-specifieke contentregels en voertuigcompatibiliteitsbestanden.",
   ],
 };
 
 const WRITING_HEAD = {
-  title: "E-commerce Insights & Articles | Hans van Leeuwen",
+  title: "E-commerce Inzichten & Artikelen | Hans van Leeuwen",
   description:
-    "Read Hans van Leeuwen's thoughts on e-commerce strategy, marketplace optimization, Amazon growth, Bol.com best practices, and digital commerce trends.",
+    "Lees de visie van Hans van Leeuwen op e-commerce strategie, marktplaats optimalisatie, Amazon groei, Bol.com best practices en digitale commerce trends.",
   canonical: `${BASE}/writing`,
 };
-
-const ABOUT_JSONLD = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "ProfilePage",
-      mainEntity: { "@id": "https://hansvanleeuwen.com/#person" },
-      name: ABOUT_HEAD.title,
-      url: `${BASE}/about`,
-      isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
-    },
-    WEBSITE_ENTITY,
-    {
-      "@type": "Person",
-      "@id": "https://hansvanleeuwen.com/#person",
-      name: "Hans van Leeuwen",
-      url: `${BASE}/about`,
-      jobTitle: "Freelance & Interim E-commerce Manager",
-      alternateName: "Jowikroon",
-      description:
-        "Freelance e-commerce manager with 10+ years of experience in marketplace strategy, Amazon, Bol.com, and digital commerce.",
-      image: {
-        "@type": "ImageObject",
-        url: `${BASE}/og-image.png`,
-        width: 1200,
-        height: 630,
-        caption: "Hans van Leeuwen – Freelance E-commerce Manager",
-      },
-      knowsAbout: [
-        "E-commerce",
-        "Amazon",
-        "Bol.com",
-        "Marketplace optimization",
-        "UX design",
-        "Conversion optimization",
-        "Digital commerce",
-        "SEO",
-        "Amazon Ads",
-        "Bol Ads",
-      ],
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: "Amersfoort",
-        addressCountry: "NL",
-      },
-      sameAs: [
-        "https://www.linkedin.com/in/hansvl3",
-        "https://twitter.com/hansvl3",
-        "https://github.com/jowikroon",
-      ],
-    },
-    {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${BASE}/` },
-        { "@type": "ListItem", position: 2, name: "About", item: `${BASE}/about` },
-      ],
-    },
-    {
-      "@type": "FAQPage",
-      mainEntity: [
-        { "@type": "Question", name: "What does a freelance e-commerce manager do?", acceptedAnswer: { "@type": "Answer", text: "Temporarily leads the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." } },
-        { "@type": "Question", name: "How much does marketplace management cost?", acceptedAnswer: { "@type": "Answer", text: "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. A 30-min intake produces a written quote within one working day." } },
-        { "@type": "Question", name: "Bol.com — vendor or seller?", acceptedAnswer: { "@type": "Answer", text: "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. Both routes are modeled on EBITDA, not just revenue." } },
-        { "@type": "Question", name: "How do you reduce out-of-stock rates?", acceptedAnswer: { "@type": "Answer", text: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2 percent OOS." } },
-        { "@type": "Question", name: "Do you manage Amazon Ads and Bol Ads?", acceptedAnswer: { "@type": "Answer", text: "Yes. Sponsored Products, Sponsored Brands, Display and Bol Ads with weekly bid steering and negative harvesting; ACOS and TACOS as primary KPIs." } },
-      ],
-    },
-  ],
-};
-
-const WORK_JSONLD = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "CollectionPage",
-      "@id": `${BASE}/work#page`,
-      name: WORK_HEAD.title,
-      description: WORK_HEAD.description,
-      url: `${BASE}/work`,
-      isPartOf: { "@id": `${BASE}/#website` },
-      about: { "@type": "Person", "@id": `${BASE}/#person` },
-      author: { "@type": "Person", "@id": `${BASE}/#person`, name: "Hans van Leeuwen" },
-    },
-    WEBSITE_ENTITY,
-    PERSON_ENTITY,
-    {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${BASE}/` },
-        { "@type": "ListItem", position: 2, name: "Work", item: `${BASE}/work` },
-      ],
-    },
-  ],
-};
-
 const WRITING_JSONLD = {
   "@context": "https://schema.org",
   "@graph": [
@@ -346,6 +305,62 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Eén URL per taal (HAN-167 / HAN-83)
+ * ───────────────────────────────────────────────────────────────────────── */
+const LANGS = ["en", "nl"];
+
+/** html[lang], content-language en og:locale volgen de gerenderde taal. */
+function applyLang(html, lang) {
+  let out = html.replace(/<html([^>]*)\blang="[^"]*"/, `<html$1lang="${lang}"`);
+  out = out.replace(/<meta http-equiv="content-language" content="[^"]*" \/>/, `<meta http-equiv="content-language" content="${lang}" />`);
+  out = out.replace(/<meta property="og:locale" content="[^"]*" \/>/, `<meta property="og:locale" content="${OG_LOCALE[lang]}" />`);
+  return out;
+}
+
+/**
+ * Vervangt ALLE hreflang-links door één wederkerige set voor het EN-basispad
+ * (en + nl + x-default). Voor niet-gelokaliseerde routes worden ze verwijderd.
+ */
+function setHreflang(html, basePath) {
+  const stripped = html.replace(/[ \t]*<link rel="alternate" hreflang="[^"]*" href="[^"]*" \/>\n?/g, "");
+  const alts = basePath ? alternatesFor(basePath) : [];
+  if (!alts.length) return stripped;
+  const links = alts.map((a) => `    <link rel="alternate" hreflang="${a.lang}" href="${escapeHtml(a.href)}" />`).join("\n");
+  return stripped.replace(/<meta property="og:locale" content="[^"]*" \/>/, (m) => `${m}\n${links}`);
+}
+
+function outPathFor(route) {
+  const rel = route === "/" ? "" : route.replace(/^\//, "");
+  const dir = path.join(distDir, rel);
+  fs.mkdirSync(dir, { recursive: true });
+  return path.join(dir, "index.html");
+}
+
+/**
+ * Rendert een gelokaliseerde route in beide talen en schrijft dist/<route> en
+ * dist/nl/<route>. `buildHead(lang)` levert title/description/canonical/intro/faq,
+ * `buildJsonLd(lang, head)` de @graph, `fallbackHtml(lang, head)` de noscript-body.
+ */
+function writeLocalizedPage(basePath, { buildHead, buildJsonLd, fallbackHtml, renderOptions, rootHtml }) {
+  for (const lang of LANGS) {
+    const route = lang === "nl" ? (basePath === "/" ? "/nl" : `/nl${basePath}`) : basePath;
+    const head = buildHead(lang);
+    head.canonical = absoluteUrl(basePath, lang);
+    const html = rootHtml ? rootHtml(lang, head) : renderQuietly(route, null, { initialLang: lang, ...(renderOptions || {}) }).html;
+    let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+    page = setHead(page, head);
+    page = applyLang(page, lang);
+    page = setHreflang(page, basePath);
+    if (buildJsonLd) page = setJsonLd(page, buildJsonLd(lang, head));
+    page = replaceSsrFallbackHtml(page, fallbackHtml ? fallbackHtml(lang, head) : buildStaticPageFallback(head, "", "h2", lang));
+    const outPath = outPathFor(route);
+    fs.writeFileSync(outPath, page, "utf8");
+    console.log(`[prerender] ${route} (${lang}) -> ${outPath}`);
+  }
+}
+
 function textToParagraphs(text) {
   return String(text || "")
     .split(/\n{2,}/)
@@ -356,7 +371,8 @@ function textToParagraphs(text) {
     .join("\n          ");
 }
 
-function buildBlogPostFallback(post, head) {
+function buildBlogPostFallback(input, head) {
+  const post = localizeBlogPost(input);
   const body = textToParagraphs(post.content);
   return `
       <header>
@@ -367,7 +383,7 @@ function buildBlogPostFallback(post, head) {
       </header>
       <main>
         <article>
-          <h1>${escapeHtml(post.title)}</h1>
+          <h2>${escapeHtml(post.title)}</h2>
           <p>${escapeHtml(head.description)}</p>
           ${body || "<p>Full article coming soon.</p>"}
         </article>
@@ -375,17 +391,19 @@ function buildBlogPostFallback(post, head) {
 }
 
 
-function buildStaticPageFallback(head, extraHtml = "", headingTag = "h2") {
+function buildStaticPageFallback(head, extraHtml = "", headingTag = "h2", lang = "en") {
   const intro = (head.intro || [])
     .map((para) => `<p>${para}</p>`)
     .join("\n          ");
+  const nl = lang === "nl";
+  const p = nl ? "/nl" : "";
   return `
       <header>
         <nav aria-label="Primary navigation">
-          <a href="/">Home</a> |
-          <a href="/work">Case Studies</a> |
-          <a href="/writing">Articles</a> |
-          <a href="/about">About</a>
+          <a href="${p || "/"}">Home</a> |
+          <a href="${p}/work">${nl ? "Case studies" : "Case Studies"}</a> |
+          <a href="/writing">${nl ? "Artikelen" : "Articles"}</a> |
+          <a href="${p}/about">${nl ? "Over Hans" : "About"}</a>
         </nav>
       </header>
       <main>
@@ -421,84 +439,143 @@ for (const [slug, blogPost] of postBySlug) {
   const route = `/writing/${slug}`;
   const head = getBlogPostHead(blogPost);
 
-  const { html } = renderQuietly(route, blogPost);
+  // Eén URL = één taal: NL zodra er een NL-versie is (doelmarkt); EN-versie via ?lang=en.
+  const postLang = primaryBlogPostLang(blogPost);
+  const { html } = renderQuietly(route, blogPost, { initialLang: postLang });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
-  page = setJsonLd(page, getBlogPostJsonLd(blogPost));
+  // HAN-159: zelfstandige graph per artikel — volledige Person/WebSite/Organization
+  // nodes naast de BlogPosting, zodat @id-referenties in dit document resolven.
+  const { "@context": _articleCtx, ...articleNode } = getBlogPostJsonLd(blogPost);
+  page = setJsonLd(page, {
+    "@context": "https://schema.org",
+    "@graph": [articleNode, PERSON_ENTITY, WEBSITE_ENTITY, PROFESSIONAL_SERVICE_ENTITY],
+  });
+  // HAN-158: taalsignaal per artikel uit de contenttaal. Artikelen zijn eentalig,
+  // dus geen hreflang-set (een self-referentie zonder alternatief is ruis).
+  page = applyLang(page, postLang);
+  page = setHreflang(page, null);
   page = replaceSsrFallbackHtml(page, buildBlogPostFallback(blogPost, head));
-
-  page = page.replace(
-    /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
-    (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(head.canonical)}"`)
-  );
 
   const preloadedScript = `<script id="__PRELOADED__" type="application/json">${serializeJsonForHtmlScript({
     blogPost,
   })}</script>`;
   page = page.replace("</body>", `${preloadedScript}\n  </body>`);
 
-  const outDir = path.join(distDir, "writing", slug);
-  fs.mkdirSync(outDir, { recursive: true });
-  const outPath = path.join(outDir, "index.html");
+  const outPath = outPathFor(route);
   fs.writeFileSync(outPath, page, "utf8");
   console.log(`[prerender] ${route} -> ${outPath}`);
 }
 
-// Prerender /about for indexable content and correct meta/schema
+/* ───────────────────────────── / (home) ───────────────────────────── */
 {
-  const route = "/about";
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
-  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
-  page = setHead(page, ABOUT_HEAD);
-  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(ABOUT_HEAD));
-
-  // Replace homepage structured data with About-specific schema
-  page = page.replace(
-    /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-    `<script type="application/ld+json">\n${JSON.stringify(ABOUT_JSONLD)}\n    </script>`
-  );
-
-  // Point hreflang to /about
-  page = page.replace(
-    /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
-    (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(ABOUT_HEAD.canonical)}"`)
-  );
-
-  const outDir = path.join(distDir, "about");
-  fs.mkdirSync(outDir, { recursive: true });
-  const outPath = path.join(outDir, "index.html");
-  fs.writeFileSync(outPath, page, "utf8");
-  console.log(`[prerender] ${route} -> ${outPath}`);
+  const HOME_HEAD = {
+    en: {
+      title: "Freelance E-commerce Manager for Amazon & Bol.com (NL/EU) | Hans van Leeuwen",
+      description:
+        "Freelance e-commerce & marketplace manager, 10+ years on Amazon NL/DE & Bol.com: 70% category share (Nielsen 2023), out-of-stock under 2%, AI-assisted operations on n8n, Channable & Claude. Amersfoort, NL/EU.",
+    },
+    nl: {
+      title: "Freelance E-commerce Manager inhuren voor Amazon & Bol.com | Hans van Leeuwen",
+      description:
+        "Freelance e-commerce & marketplace manager inhuren: 10+ jaar Amazon NL/DE & Bol.com, 70% categoriemarktaandeel (Nielsen 2023), out-of-stock onder 2%, AI-automatisering met n8n, Channable & Claude. Amersfoort, NL/EU.",
+    },
+  };
+  // De homepage-JSON-LD staat in index.html (template); alleen taal/canonical/hreflang
+  // worden per variant aangepast. inLanguage van de WebSite dekt beide talen.
+  writeLocalizedPage("/", {
+    buildHead: (lang) => ({ ...HOME_HEAD[lang] }),
+    fallbackHtml: (lang, head) => buildStaticPageFallback({ ...head, intro: [] }, "", "h2", lang),
+  });
+  // De home-JSON-LD staat in de template; inLanguage per variant gelijktrekken.
+  for (const [file, lang] of [[path.join(distDir, "index.html"), "en"], [path.join(distDir, "nl", "index.html"), "nl"]]) {
+    let page = fs.readFileSync(file, "utf8");
+    page = page.replace(/"inLanguage":\s*"(?:en|nl)"/g, `"inLanguage": "${lang}"`);
+    fs.writeFileSync(file, page, "utf8");
+  }
 }
 
-// Prerender /work for indexable content and correct meta/schema
-{
-  const route = "/work";
-  const workFallbackExtraHtml = `
-          <h2>Amazon NL, DE &amp; Bol.com Growth Case Studies</h2>
-          <ul>
-            <li><a href="/work/connect-car-parts">Connect Car Parts, automotive parts e-commerce: Amazon DE, eBay DE &amp; Magento operations</a></li>
-          </ul>
-          <p>More marketplace results: 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. See also <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.</p>`;
-  const workFallbackHtml = buildStaticPageFallback(WORK_HEAD, workFallbackExtraHtml, "h1");
-  let page = template.replace('<div id="root"></div>', `<div id="root">${workFallbackHtml}</div>`);
-  page = setHead(page, WORK_HEAD);
-  page = replaceSsrFallbackHtml(page, "");
-  page = page.replace(
-    /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-    `<script type="application/ld+json">\n${JSON.stringify(WORK_JSONLD)}\n    </script>`
-  );
-  page = page.replace(
-    /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
-    (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(WORK_HEAD.canonical)}"`)
-  );
-  const outDir = path.join(distDir, "work");
-  fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, "index.html"), page, "utf8");
-  console.log(`[prerender] ${route} -> ${path.join(outDir, "index.html")}`);
-}
+/* ───────────────────────────── /about ───────────────────────────── */
+writeLocalizedPage("/about", {
+  buildHead: (lang) => ({
+    title: translations[lang].seo.aboutTitle,
+    description: translations[lang].seo.aboutDescription,
+  }),
+  buildJsonLd: (lang, head) => ({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ProfilePage",
+        "@id": `${head.canonical}#profilepage`,
+        mainEntity: { "@id": `${BASE}/#person` },
+        name: head.title,
+        url: head.canonical,
+        isPartOf: { "@id": `${BASE}/#website` },
+        inLanguage: lang,
+        dateModified: SERVICE_PAGES_UPDATED,
+      },
+      WEBSITE_ENTITY,
+      ABOUT_PERSON_ENTITY,
+      PROFESSIONAL_SERVICE_ENTITY,
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) },
+          { "@type": "ListItem", position: 2, name: lang === "nl" ? "Over" : "About", item: head.canonical },
+        ],
+      },
+    ],
+  }),
+  fallbackHtml: (lang, head) => buildStaticPageFallback({
+    ...head,
+    intro: translations[lang].experienceList.map((job) => `<strong>${escapeHtml(job.role)}, ${escapeHtml(job.company)}</strong> (${escapeHtml(job.period)}): ${job.highlights.map(escapeHtml).join("; ")}.`),
+  }, "", "h2", lang),
+});
 
-// Prerender /writing for indexable content and correct meta/schema
+/* ───────────────────────────── /work ───────────────────────────── */
+const workExtra = (lang) => lang === "nl"
+  ? `
+          <h2>Case studies Amazon NL, DE &amp; Bol.com</h2>
+          <ul><li><a href="/nl/work/connect-car-parts">Connect Car Parts: A.B.S.-remonderdelen op Amazon DE, eBay DE &amp; Magento</a></li></ul>
+          <p>Zie ook <a href="/nl/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/nl/bol-com-consultant">Bol.com consultant</a> en <a href="/nl/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`
+  : `
+          <h2>Amazon NL, DE &amp; Bol.com case studies</h2>
+          <ul><li><a href="/work/connect-car-parts">Connect Car Parts: A.B.S. brake parts on Amazon DE, eBay DE &amp; Magento</a></li></ul>
+          <p>See also <a href="/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/bol-com-consultant">Bol.com consultant</a> and <a href="/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`;
+writeLocalizedPage("/work", {
+  buildHead: (lang) => (lang === "nl" ? WORK_HEAD_NL : WORK_HEAD_EN),
+  // /work laadt zijn cases client-side en heeft geen SSR-h1 (HAN-134/123): de
+  // root krijgt daarom de statische fallback met h1, net als vóór deze refactor.
+  rootHtml: (lang, head) => buildStaticPageFallback(head, workExtra(lang), "h1", lang),
+  buildJsonLd: (lang, head) => ({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${head.canonical}#page`,
+        name: head.title,
+        description: head.description,
+        url: head.canonical,
+        isPartOf: { "@id": `${BASE}/#website` },
+        about: { "@id": `${BASE}/#person` },
+        author: { "@id": `${BASE}/#person` },
+        inLanguage: lang,
+      },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) },
+          { "@type": "ListItem", position: 2, name: lang === "nl" ? "Case studies" : "Work", item: head.canonical },
+        ],
+      },
+    ],
+  }),
+  fallbackHtml: () => "",
+});
+
+/* ───────────────────────────── /writing (eentalige index, NL) ───────────────────────────── */
 {
   const route = "/writing";
   let writingPosts = [];
@@ -507,234 +584,101 @@ for (const [slug, blogPost] of postBySlug) {
   } catch (err) {
     console.warn("[prerender] Could not pre-fetch blog posts for /writing:", err.message);
   }
-  const { html } = renderQuietly(route, null, { initialLang: "en", preloadedBlogPosts: writingPosts });
+  const { html } = renderQuietly(route, null, { initialLang: "nl", preloadedBlogPosts: writingPosts });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, WRITING_HEAD);
+  page = applyLang(page, "nl");
+  page = setHreflang(page, null);
   page = replaceSsrFallbackHtml(page, buildStaticPageFallback(WRITING_HEAD));
-  page = page.replace(
-    /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-    `<script type="application/ld+json">\n${JSON.stringify(WRITING_JSONLD)}\n    </script>`
-  );
-  page = page.replace(
-    /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
-    (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(WRITING_HEAD.canonical)}"`)
-  );
-  // Inject preloaded blog posts for client-side hydration (avoids loading flash)
+  page = setJsonLd(page, WRITING_JSONLD);
   const writingPreloadScript = `<script id="__PRELOADED__" type="application/json">${JSON.stringify({ blogPosts: writingPosts })}</script>`;
   page = page.replace("</body>", `${writingPreloadScript}\n  </body>`);
-  const outDir = path.join(distDir, "writing");
-  fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, "index.html"), page, "utf8");
-  console.log(`[prerender] ${route} -> ${path.join(outDir, "index.html")}`);
+  const outPath = outPathFor(route);
+  fs.writeFileSync(outPath, page, "utf8");
+  console.log(`[prerender] ${route} -> ${outPath}`);
 }
 
-// Prerender SEO landing pages
-const SEO_PAGES = [
-  {
-    route: "/amazon-nl-specialist",
-    head: {
-      title: "Amazon NL Specialist: Freelance Amazon Netherlands Account Manager | Hans van Leeuwen",
-      description: "Freelance Amazon NL specialist with 10+ years managing Amazon Netherlands accounts. Listing optimization, Amazon Ads, A+ content & marketplace growth. Based in Amersfoort.",
-      canonical: `${BASE}/amazon-nl-specialist`,
-      serviceName: "Amazon NL Account Management",
-      intro: [
-        'Hans van Leeuwen is a freelance e-commerce manager and Amazon NL specialist based in Amersfoort, the Netherlands, specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. He helps brands sell more on Amazon Netherlands through optimized listings, data-driven advertising and strategic account management, from launch to scale.',
-        'The work covers product listing optimization (titles, bullets, backend keywords, images), A+ Content creation, Amazon Ads (Sponsored Products, Sponsored Brands, Sponsored Display), Buy Box strategy and pricing, catalog management and listing suppression resolution, Amazon SEO for the Dutch market, competitor benchmarking, and inventory planning with demand forecasting.',
-        'An engagement starts with a practical account baseline covering catalog health, listing quality, search-term coverage, advertising structure, pricing, Buy Box performance, stock risk, account warnings and reporting. The resulting plan separates urgent revenue leaks from longer-term growth opportunities, with a measurable target and owner for every action.',
-        'Execution connects content, advertising and operations. Search-term research informs titles, bullets, backend keywords, A+ Content and campaign structure instead of treating each area as a separate project. Weekly trading reviews bring organic visibility, conversion, advertising efficiency, margin and availability into one view, so budget and catalog decisions are based on commercial impact rather than isolated marketplace metrics.',
-        'For ongoing account management, the cadence includes catalog checks, campaign optimization, pricing and Buy Box review, stock-risk monitoring, competitor changes and a concise performance update. Brands retain access to the decisions, data and working documents. The goal is a repeatable Amazon Netherlands operation that an internal team can understand and continue, not a black-box dependency on an external specialist.',
-        'Proven results include 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns. Start with a free 7-point Amazon NL audit, top growth opportunities identified within 48 hours. Also see <a href="/bol-com-consultant">Bol.com consulting</a> and <a href="/interim-ecommerce-manager">interim e-commerce management</a>.',
-      ],
-      faq: [
-        { q: "What does a freelance Amazon NL specialist do?", a: "A freelance Amazon NL specialist manages and grows a brand's presence on Amazon Netherlands: optimizing product listings (titles, bullets, backend keywords, images), creating A+ Content, running Amazon Ads campaigns (Sponsored Products, Brands and Display), managing the Buy Box and pricing, resolving listing suppressions, and planning inventory with demand forecasting." },
-        { q: "What results has Hans van Leeuwen achieved on Amazon NL?", a: "Documented results include 70% market share in the earplug category on Amazon NL (Nielsen data), out-of-stock rates below 2% through improved demand forecasting, and 20% weekly sales growth via targeted Sponsored campaigns." },
-        { q: "How does an engagement start?", a: "It starts with a free 7-point Amazon NL audit. Hans reviews listings, advertising, pricing, content and operations, and identifies the top growth opportunities within 48 hours. From there you can engage him for hands-on execution or ongoing account management." },
-        { q: "Does Hans also manage Amazon Ads (PPC)?", a: "Yes. Amazon advertising is a core service: Sponsored Products, Sponsored Brands and Sponsored Display campaigns, including keyword research for the Dutch market, bid management and campaign structure aligned with category benchmarks." },
-        { q: "Which product categories does Hans work with?", a: "Health & personal care, consumer electronics, automotive parts, home & garden, sports & outdoor, beauty & cosmetics, food & supplements, and fashion & accessories, for brands in the Netherlands and the EU." },
-      ],
+/* ───────────────────────────── dienstenpagina's (data/servicePages.ts) ───────────────────────────── */
+for (const def of SERVICE_PAGES) {
+  writeLocalizedPage(def.path, {
+    buildHead: (lang) => {
+      const c = def.copy[lang];
+      return {
+        title: c.title,
+        description: c.metaDesc,
+        intro: [c.intro, ...c.approach],
+        faqHeading: c.faqHeading,
+        faq: c.faq,
+        results: c.results,
+        resultsHeading: c.resultsHeading,
+        practice: c.practice,
+        practiceHeading: c.practiceHeading,
+        breadcrumb: c.breadcrumb,
+      };
     },
-  },
-  {
-    route: "/bol-com-consultant",
-    head: {
-      title: "Bol.com Consultant: Freelance Bol.com Specialist & Ads Manager | Hans van Leeuwen",
-      description: "Freelance Bol.com consultant specializing in product content optimization, Bol Ads management, and marketplace growth strategy. Based in Amersfoort, Netherlands.",
-      canonical: `${BASE}/bol-com-consultant`,
-      serviceName: "Bol.com Marketplace Consulting",
-      intro: [
-        'Hans van Leeuwen is a freelance e-commerce manager and Bol.com consultant based in Amersfoort, the Netherlands, specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. He helps brands grow on Bol.com, the Netherlands\' largest online marketplace, with a hands-on, measurable approach.',
-        'Services include product content optimization, Bol Ads campaign management, catalog and assortment management, vendor-to-seller transitions, pricing and Buy Block strategy, and monthly performance reporting. Every engagement is grounded in product data quality: complete, correct and conversion-oriented listings are the foundation of Bol.com growth.',
-        'With 10+ years of marketplace experience across Bol.com and Amazon, Hans combines platform knowledge with practical execution. Start with a marketplace audit to identify your top growth levers. Also see <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/interim-ecommerce-manager">interim e-commerce management</a>.',
-        'An engagement starts with a practical Bol.com baseline covering assortment coverage, product-data completeness, content quality, findability, Buy Block performance, pricing, advertising structure, logistics, performance scores and reporting. The resulting plan separates immediate revenue leaks from structural growth opportunities, with a measurable target and owner for every action.',
-        'Execution connects content, advertising and operations. Search and category data inform titles, descriptions, attributes, images and Bol Ads campaigns instead of treating them as separate workstreams. A weekly trading review brings visibility, conversion, advertising efficiency, margin, availability, returns and service performance into one view, so decisions reflect commercial impact across the whole Bol.com account.',
-        'For ongoing marketplace management, the cadence includes catalog checks, campaign optimization, pricing and Buy Block review, stock-risk monitoring, competitor changes and a concise performance update. Vendor-to-seller transitions receive a separate migration plan for assortment, pricing, logistics, content and measurement. Brands retain access to the decisions, data and working documents, creating an operation an internal team can understand and continue.',
+    buildJsonLd: (lang, head) => ({
+      "@context": "https://schema.org",
+      "@graph": [
+        PERSON_ENTITY,
+        PROFESSIONAL_SERVICE_ENTITY,
+        WEBSITE_ENTITY,
+        {
+          "@type": "WebPage",
+          "@id": `${head.canonical}#webpage`,
+          url: head.canonical,
+          name: head.title,
+          description: head.description,
+          isPartOf: { "@id": `${BASE}/#website` },
+          about: { "@id": `${BASE}/#person` },
+          author: { "@id": `${BASE}/#person` },
+          dateModified: SERVICE_PAGES_UPDATED,
+          inLanguage: lang,
+        },
+        {
+          "@type": "Service",
+          "@id": `${head.canonical}#service`,
+          name: def.serviceName,
+          url: head.canonical,
+          provider: { "@id": `${BASE}/#organization` },
+          areaServed: [
+            { "@type": "Country", name: "Netherlands" },
+            { "@type": "Place", name: "European Union" },
+          ],
+          description: head.description,
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) },
+            { "@type": "ListItem", position: 2, name: head.breadcrumb, item: head.canonical },
+          ],
+        },
+        {
+          "@type": "FAQPage",
+          "@id": `${head.canonical}#faq`,
+          mainEntity: head.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+        },
       ],
-      faq: [
-        { q: "What does a Bol.com consultant do?", a: "A Bol.com consultant helps brands grow on the Netherlands' largest online marketplace: optimizing product content, managing Bol Ads campaigns, improving catalog and assortment quality, advising on pricing and Buy Block strategy, and setting up performance reporting." },
-        { q: "Can Hans help with a vendor-to-seller transition on Bol.com?", a: "Yes. Transitioning from a vendor (retail) relationship to a seller (marketplace) model is a core service, including assortment migration, pricing strategy, logistics setup and protecting performance scores during the switch." },
-        { q: "Why is product data so important on Bol.com?", a: "Bol.com ranks and converts on content quality. Complete, correct and conversion-oriented product data, titles, descriptions, specifications and images, is the foundation for visibility, the Buy Block and advertising efficiency." },
-        { q: "Does Hans manage Bol Ads campaigns?", a: "Yes. Bol Ads (sponsored products) management is a core service: campaign structure, keyword targeting, bid management and continuous optimization against ACoS and growth targets." },
-        { q: "How do I start working with Hans on Bol.com?", a: "Start with a marketplace audit. Hans reviews your content, advertising, assortment and operations on Bol.com and identifies the highest-impact growth opportunities before any engagement." },
-      ],
+    }),
+    fallbackHtml: (lang, head) => {
+      const results = `\n          <h2>${escapeHtml(head.resultsHeading)}</h2>\n          <ul>` +
+        head.results.map((r) => `<li><strong>${escapeHtml(r.stat)}</strong> ${escapeHtml(r.desc)} (${escapeHtml(r.source)})</li>`).join("") + `</ul>`;
+      const strip = EXPERIENCE_STRIP[lang];
+      const experience = `\n          <h2>${escapeHtml(strip.heading)}</h2>\n          <ul>` +
+        strip.items.map((e) => `<li><strong>${escapeHtml(e.name)}</strong>, ${escapeHtml(e.role)} (${escapeHtml(e.period)})</li>`).join("") + `</ul><p>${escapeHtml(strip.note)}</p>`;
+      const practice = `\n          <h2>${escapeHtml(head.practiceHeading)}</h2>\n` +
+        head.practice.map((c) => `          <h3>${escapeHtml(c.title)}</h3>\n          <p>${escapeHtml(c.summary)} <a href="${escapeHtml(c.href)}">${escapeHtml(c.linkLabel)}</a></p>`).join("\n");
+      const faq = `\n          <h2>${escapeHtml(head.faqHeading)}</h2>\n` +
+        head.faq.map((f) => `          <h3>${escapeHtml(f.q)}</h3>\n          <p>${escapeHtml(f.a)}</p>`).join("\n");
+      return buildStaticPageFallback(head, results + experience + practice + faq, "h2", lang);
     },
-  },
-  {
-    route: "/privacy",
-    head: {
-      title: "Privacy Policy | Hans van Leeuwen",
-      description: "Privacy policy for hansvanleeuwen.com, what data is collected, how analytics cookies are used, and your rights under the GDPR.",
-      canonical: `${BASE}/privacy`,
-    },
-  },
-  {
-    route: "/music",
-    head: {
-      title: "Music: Songs & Production Notes | Hans van Leeuwen",
-      description: "Original songs by Hans van Leeuwen, listen on Spotify and read the production notes behind each track: how it was made, the gear, and the lyrics.",
-      canonical: `${BASE}/music`,
-      ogImageAlt: "Hans van Leeuwen music: original songs and production notes (Lo-fi, Electronic, Ambient)",
-    },
-  },
-  {
-    route: "/ai-ecommerce-automation",
-    head: {
-      title: "AI E-commerce Automation: Marketplace Operations on n8n, Supabase & Claude | Hans van Leeuwen",
-      description:
-        "Freelance AI e-commerce automation specialist. Run Amazon NL & Bol.com operations with n8n, Supabase and Claude, product data, ads reporting and content workflows automated. Amersfoort, NL/EU.",
-      canonical: `${BASE}/ai-ecommerce-automation`,
-      serviceName: "AI E-commerce Automation Consulting",
-      intro: [
-        'Hans van Leeuwen is a freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. This page covers the AI-automation practice: pipelines that remove repetitive manual marketplace work and surface decisions faster, with a human in the loop on strategy, pricing and brand voice.',
-        'A typical engagement covers four layers. Product data: feed normalization, enrichment and nightly validation across channels. Operations: stock, pricing and order sync between Amazon NL/DE, Bol.com and the webstore. Advertising: automated ROAS/ACOS reporting and budget alerts. Intelligence: competitor and ranking monitoring with weekly KPI reports generated automatically.',
-        'The stack is n8n for orchestration, Supabase for the data layer, Claude for content and analysis, and Channable for feed and marketplace sync. Documented results include 70% market share on Amazon NL in a competitive category (Nielsen data), out-of-stock rates below 2% through automated demand forecasting, and a twice-weekly automated SEO and competitor intelligence pipeline running on this site. Start with a free automation audit, the three highest-ROI workflows to automate first, with a written plan inside 48 hours. Also see <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.',
-      ],
-      faq: [
-        { q: "What is AI e-commerce automation?", a: "A set of pipelines, product data, operations, advertising and reporting, that remove repetitive manual marketplace work and speed up decisions, with a human in the loop on strategy, pricing and brand voice. It is concrete, monitored workflows built on n8n, Supabase and Claude, not 'an AI that runs your store'." },
-        { q: "Which platforms and tools does Hans automate?", a: "Amazon (NL, DE and other EU marketplaces), Bol.com, eBay and own-store platforms such as Magento, plus the feed and automation layer that connects them, Channable for feeds and n8n for orchestration, with Supabase as the data layer and Claude for content and analysis." },
-        { q: "Do I need to replace my team?", a: "No. Automation removes the repetitive 80% so your team focuses on strategy, merchandising and brand. The human stays in the loop on pricing limits, brand voice and final decisions." },
-        { q: "How does an engagement start?", a: "With a free automation audit: Hans maps your current manual workload and returns a prioritized plan within 48 hours, identifying the three highest-ROI workflows to automate first." },
-        { q: "Is my data and account access safe?", a: "Pipelines run on your own infrastructure and accounts; marketplace credentials are never shared in plain text. The automation layer is auditable and you keep full control of access." },
-      ],
-    },
-  },
-  {
-    route: "/interim-ecommerce-manager",
-    head: {
-      title: "Interim E-commerce Manager: Freelance Marketplace Lead (NL/EU) | Hans van Leeuwen",
-      description: "Interim e-commerce manager available for freelance marketplace leadership roles. Strategy, operations & hands-on execution for Amazon, Bol.com & more. NL/EU.",
-      canonical: `${BASE}/interim-ecommerce-manager`,
-      serviceName: "Interim E-commerce Management",
-      intro: [
-        'Hans van Leeuwen is a freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. As interim e-commerce manager he provides senior e-commerce leadership without the permanent headcount, driving marketplace strategy, managing daily operations and delivering KPI-driven growth on Amazon NL, Bol.com and beyond.',
-        'Typical interim scope: owning the marketplace P&L, managing listings, advertising and pricing across channels, coordinating logistics and inventory, building reporting and automation, and upskilling internal teams. Engagements run on-site in the Netherlands or remote across the EU, from a few days per week to full coverage during recruitment, growth phases or transitions.',
-        'With 10+ years of hands-on marketplace experience, Hans combines strategic direction with operational execution. Based in Amersfoort, available for NL & EU projects. Also see <a href="/amazon-nl-specialist">Amazon NL specialist services</a> and <a href="/bol-com-consultant">Bol.com consulting</a>.',
-        'The first week starts with an operational baseline covering channel profitability, advertising efficiency, listing quality, stock risk, product-data health, team ownership and reporting cadence. Urgent revenue and availability risks are separated from structural improvements, then converted into a prioritized backlog with an owner and measurable outcome for every action.',
-        'During weeks two and three, Hans works inside the existing team and tool stack. The focus may include restructuring Amazon Ads or Bol Ads, repairing catalog and feed issues, introducing a weekly trading rhythm, clarifying marketplace P&L ownership, or coordinating agencies, logistics, finance and content. A compact KPI dashboard and written weekly update keep decisions and progress visible to stakeholders.',
-        'By week four, processes, access, decisions and recurring checks are documented for the permanent owner. The handover covers current performance, open risks, a practical 90-day roadmap and recommendations for team capacity. This makes the engagement useful both as temporary leadership and as preparation for a permanent e-commerce hire.',
-      ],
-      faq: [
-        { q: "What is an interim e-commerce manager?", a: "An interim e-commerce manager is a senior professional who temporarily leads a company's e-commerce operation, owning strategy, daily marketplace operations, advertising, product data and reporting, without adding permanent headcount." },
-        { q: "When should a company hire an interim e-commerce manager?", a: "Typical moments: a sudden departure of the e-commerce lead, a growth phase that outpaces the current team, a marketplace expansion (e.g. launching on Amazon DE), or a transition period while recruiting a permanent hire." },
-        { q: "Does Hans work on-site or remote?", a: "Both. Hans is based in Amersfoort, the Netherlands, and works on-site in the NL/Utrecht region or remote for clients across the Netherlands and the EU, from a few days per week to full interim coverage." },
-        { q: "Which platforms does Hans cover as interim manager?", a: "Amazon (NL, DE and other EU marketplaces), Bol.com, eBay and own-store platforms such as Magento, including the product data, feed management and automation layer (e.g. Channable) that connects them." },
-        { q: "How fast can an interim engagement start?", a: "Usually within a few weeks, depending on current commitments. The engagement starts with an operational audit so priorities are clear in the first week." },
-      ],
-    },
-  },
-];
-
-for (const { route, head } of SEO_PAGES) {
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
-  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
-  page = setHead(page, head);
-  const faqHtml = head.faq
-    ? `\n          <h2>Frequently Asked Questions</h2>\n` +
-      head.faq.map((f) => `          <h3>${escapeHtml(f.q)}</h3>\n          <p>${escapeHtml(f.a)}</p>`).join("\n")
-    : "";
-  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, faqHtml));
-  const graph = [
-    {
-      "@type": "WebPage",
-      "@id": `${head.canonical}#webpage`,
-      url: head.canonical,
-      name: head.title,
-      description: head.description,
-      isPartOf: { "@id": `${BASE}/#website` },
-      about: { "@id": `${BASE}/#person` },
-      inLanguage: "en",
-    },
-    WEBSITE_ENTITY,
-    PERSON_ENTITY,
-    {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${BASE}/` },
-        { "@type": "ListItem", position: 2, name: head.title.split("\u2014")[0].split("|")[0].trim(), item: head.canonical },
-      ],
-    },
-  ];
-  if (head.serviceName) {
-    graph.splice(1, 0,
-      PROFESSIONAL_SERVICE_ENTITY,
-      {
-        "@type": "Service",
-        "@id": `${head.canonical}#service`,
-        name: head.serviceName,
-        url: head.canonical,
-        provider: { "@id": `${BASE}/#organization` },
-        areaServed: [
-          { "@type": "Country", name: "Netherlands" },
-          { "@type": "Place", name: "European Union" },
-        ],
-        description: head.description,
-      },
-    );
-  }
-  if (head.faq) {
-    graph.push({
-      "@type": "FAQPage",
-      "@id": `${head.canonical}#faq`,
-      isPartOf: { "@id": `${head.canonical}#webpage` },
-      mainEntity: head.faq.map((f) => ({
-        "@type": "Question",
-        name: f.q,
-        acceptedAnswer: { "@type": "Answer", text: f.a },
-      })),
-    });
-  }
-  page = setJsonLd(page, { "@context": "https://schema.org", "@graph": graph });
-  page = page.replace(
-    /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
-    (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(head.canonical)}"`)
-  );
-  const slug = route.slice(1); // remove leading /
-  const outDir = path.join(distDir, slug);
-  fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, "index.html"), page, "utf8");
-  console.log(`[prerender] ${route} -> ${path.join(outDir, "index.html")}`);
+  });
 }
 
-
-// Prerender /work/connect-car-parts, the only internal case study route (HAN-114)
-{
-  const route = "/work/connect-car-parts";
-  const head = {
-    title: "Connect Car Parts Case Study: Automotive Parts E-commerce (Amazon DE, eBay & Magento) | Hans van Leeuwen",
-    description:
-      "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: A.B.S. brake parts on Amazon DE and eBay DE, Magento storefront, product data and feed automation.",
-    canonical: `${BASE}/work/connect-car-parts`,
-    intro: [
-      'Connect Car Parts is a Dutch automotive parts e-commerce operation selling A.B.S. brake parts, discs, pads, hoses and wheel-bearing kits, through its own Magento storefront and on marketplaces including Amazon DE and eBay DE.',
-      'Hans van Leeuwen, freelance e-commerce manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations, manages the marketplace side of the business: catalog and product data quality, feed management via Channable, listing optimization, marketplace advertising and the operational reporting loop.',
-      'The case combines large-catalog product data work (vehicle-fitment data, OE references), multi-channel feed automation, and the day-to-day commercial operation of a parts brand across the Dutch and German markets.',
-    ],
-  };
-  const { html } = renderQuietly(route, null, { initialLang: "en" });
-  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
-  page = setHead(page, head);
-  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, `
-          <p>Back to <a href="/work">all case studies</a> or see <a href="/amazon-nl-specialist">Amazon specialist services</a>.</p>`));
-  page = setJsonLd(page, {
+/* ───────────────────────────── /work/connect-car-parts ───────────────────────────── */
+writeLocalizedPage("/work/connect-car-parts", {
+  buildHead: (lang) => (lang === "nl" ? CASE_CCP_HEAD_NL : CASE_CCP_HEAD_EN),
+  buildJsonLd: (lang, head) => ({
     "@context": "https://schema.org",
     "@graph": [
       {
@@ -745,27 +689,139 @@ for (const { route, head } of SEO_PAGES) {
         description: head.description,
         isPartOf: { "@id": `${BASE}/#website` },
         about: { "@id": `${BASE}/#person` },
-        author: { "@type": "Person", "@id": `${BASE}/#person`, name: "Hans van Leeuwen" },
-        inLanguage: "en",
+        author: { "@id": `${BASE}/#person` },
+        dateModified: SERVICE_PAGES_UPDATED,
+        inLanguage: lang,
       },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+      PROFESSIONAL_SERVICE_ENTITY,
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${BASE}/` },
-          { "@type": "ListItem", position: 2, name: "Case Studies", item: `${BASE}/work` },
+          { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) },
+          { "@type": "ListItem", position: 2, name: lang === "nl" ? "Case studies" : "Case Studies", item: absoluteUrl("/work", lang) },
           { "@type": "ListItem", position: 3, name: "Connect Car Parts", item: head.canonical },
         ],
       },
     ],
+  }),
+});
+
+/* ───────────────────────────── /rates (NL: /nl/rates, alias /nl/tarieven) ───────────────────────────── */
+writeLocalizedPage("/rates", {
+  buildHead: (lang) => {
+    const t = RATES_PAGE[lang]; const pr = lang === "nl" ? PRICING_NL : PRICING_EN;
+    return { title: t.title, description: t.metaDesc, intro: [t.intro, pr.note, t.compareIntro], t, pr };
+  },
+  buildJsonLd: (lang, head) => ({
+    "@context": "https://schema.org",
+    "@graph": [
+      PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY, WEBSITE_ENTITY,
+      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, description: head.description, isPartOf: { "@id": `${BASE}/#website` }, about: { "@id": `${BASE}/#person` }, author: { "@id": `${BASE}/#person` }, dateModified: SERVICE_PAGES_UPDATED, inLanguage: lang },
+      { "@type": "BreadcrumbList", itemListElement: [ { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) }, { "@type": "ListItem", position: 2, name: head.t.breadcrumb, item: head.canonical } ] },
+      { "@type": "FAQPage", "@id": `${head.canonical}#faq`, mainEntity: head.t.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+    ],
+  }),
+  fallbackHtml: (lang, head) => {
+    const models = `\n          <h2>${escapeHtml(head.pr.heading)}</h2>\n          <ul>` + head.pr.models.map((m) => `<li><strong>${escapeHtml(m.name)}</strong>: ${escapeHtml(m.fit)}</li>`).join("") + `</ul>`;
+    const compare = `\n          <h2>${escapeHtml(head.t.compareHeading)}</h2>\n          <ul>` + head.t.compare.map((r) => `<li><strong>${escapeHtml(r.label)}</strong>: ${escapeHtml(r.value)} (${escapeHtml(r.note)})</li>`).join("") + `</ul>`;
+    const faq = `\n          <h2>${escapeHtml(head.t.faqHeading)}</h2>\n` + head.t.faq.map((f) => `          <h3>${escapeHtml(f.q)}</h3>\n          <p>${escapeHtml(f.a)}</p>`).join("\n");
+    return buildStaticPageFallback(head, models + compare + faq, "h2", lang);
+  },
+});
+
+/* ───────────────────────────── /privacy ───────────────────────────── */
+writeLocalizedPage("/privacy", {
+  buildHead: (lang) => (lang === "nl"
+    ? { title: "Privacybeleid | Hans van Leeuwen", description: "Privacybeleid van hansvanleeuwen.com: welke gegevens worden verzameld, hoe analytics-cookies worden gebruikt en welke rechten je hebt onder de AVG." }
+    : { title: "Privacy Policy | Hans van Leeuwen", description: "Privacy policy for hansvanleeuwen.com, what data is collected, how analytics cookies are used, and your rights under the GDPR." }),
+  buildJsonLd: (lang, head) => ({
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, description: head.description, isPartOf: { "@id": `${BASE}/#website` }, inLanguage: lang },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+    ],
+  }),
+});
+
+/* ───────────────────────────── /music (eentalig EN) ───────────────────────────── */
+{
+  const route = "/music";
+  const head = {
+    title: "Music: Songs & Production Notes | Hans van Leeuwen",
+    description: "Original songs by Hans van Leeuwen, listen on Spotify and read the production notes behind each track: how it was made, the gear, and the lyrics.",
+    canonical: `${BASE}/music`,
+    ogImageAlt: "Hans van Leeuwen music: original songs and production notes (Lo-fi, Electronic, Ambient)",
+  };
+  const { html } = renderQuietly(route, null, { initialLang: "en" });
+  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+  page = setHead(page, head);
+  page = applyLang(page, "en");
+  page = setHreflang(page, null);
+  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head));
+  page = setJsonLd(page, {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, description: head.description, isPartOf: { "@id": `${BASE}/#website` }, about: { "@id": `${BASE}/#person` }, inLanguage: "en" },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+    ],
   });
-  page = page.replace(
-    /<link rel="alternate" hreflang="[^"]*" href="https:\/\/hansvanleeuwen\.com\/" \/>/g,
-    (m) => m.replace('href="https://hansvanleeuwen.com/"', `href="${escapeHtml(head.canonical)}"`)
-  );
-  const outDir = path.join(distDir, "work", "connect-car-parts");
-  fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, "index.html"), page, "utf8");
-  console.log(`[prerender] ${route} -> ${path.join(outDir, "index.html")}`);
+  const outPath = outPathFor(route);
+  fs.writeFileSync(outPath, page, "utf8");
+  console.log(`[prerender] ${route} -> ${outPath}`);
+}
+
+/* ───────────────────────────── /music/<slug> — alleen publieke tracks (HAN-146, plan F.2) ───────────────────────────── */
+for (const song of songs.filter((sg) => sg.provider !== "soundcloud")) {
+  const route = `/music/${song.slug}`;
+  const head = {
+    title: `${song.title}: Song & Production Notes | Hans van Leeuwen`,
+    description: `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): listen on Spotify and read how the track was made, the gear used and the lyrics. Original music by an e-commerce manager by day.`,
+    canonical: `${BASE}${route}`,
+  };
+  const { html } = renderQuietly(route, null, { initialLang: "en" });
+  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+  page = setHead(page, head);
+  page = applyLang(page, "en");
+  page = setHreflang(page, null);
+  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, `<p><a href="/music">All songs</a></p>`));
+  page = setJsonLd(page, {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "MusicRecording", "@id": `${head.canonical}#recording`, name: song.title, url: head.canonical, genre: song.genre, datePublished: song.date, byArtist: { "@type": "MusicGroup", name: song.artist || "Jowikroon", "@id": `${BASE}/music#artist` }, sameAs: song.listenUrl, image: song.cover },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+    ],
+  });
+  const outPath = outPathFor(route);
+  fs.writeFileSync(outPath, page, "utf8");
+  console.log(`[prerender] ${route} -> ${outPath}`);
+}
+
+/* ───────────────────────────── 404.html (echte HTTP 404 via Vercel) ───────────────────────────── */
+{
+  // Vercel serveert dist/404.html met status 404 voor elk pad dat geen bestand,
+  // redirect of rewrite matcht (HAN-138). Geen canonical, wel noindex.
+  const { html } = renderQuietly("/__prerender-404-probe__", null, { initialLang: "en" });
+  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+  page = page.replace(/<title>[\s\S]*?<\/title>/, "<title>Page Not Found | Hans van Leeuwen</title>");
+  page = page.replace(/<meta name="description" content="[^"]*"/, '<meta name="description" content="This page does not exist or has moved. Go back to the homepage of Hans van Leeuwen, freelance e-commerce manager for Amazon and Bol.com."');
+  page = page.replace(/<meta name="robots" content="[^"]*"/, '<meta name="robots" content="noindex, nofollow"');
+  page = page.replace(/[ \t]*<link rel="canonical" href="[^"]*" \/>\n?/, "");
+  page = page.replace(/[ \t]*<meta property="og:url" content="[^"]*" \/>\n?/, "");
+  page = applyLang(page, "en");
+  page = setHreflang(page, null);
+  // De taalschakelaar mag niet naar het probe-pad wijzen: NL -> /nl, ENG -> /.
+  page = page.replace(/href="\/__prerender-404-probe__"/g, (m, offset) => (page.lastIndexOf('hrefLang="nl"', offset) > page.lastIndexOf('hrefLang="en"', offset) ? 'href="/nl"' : 'href="/"'));
+  page = setJsonLd(page, { "@context": "https://schema.org", "@type": "WebPage", name: "Page Not Found", inLanguage: "en" });
+  page = replaceSsrFallbackHtml(page, `
+      <main><article><h2>Page not found</h2><p>This page does not exist or has moved.</p><p><a href="/">Back to the homepage</a></p></article></main>`);
+  const outPath = path.join(distDir, "404.html");
+  fs.writeFileSync(outPath, page, "utf8");
+  console.log(`[prerender] 404 -> ${outPath}`);
 }
 
 console.log("[prerender] Done.");

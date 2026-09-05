@@ -8,8 +8,12 @@ import App from "./App";
 import type { BlogPostRow } from "@/lib/api/content";
 import { getBlogPosts } from "@/lib/api/content";
 import { getHeroPost, getHeroPostHead, HERO_SLUGS } from "@/data/heroPosts";
-import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
+import { getBlogPostHead, getBlogPostJsonLd, detectBlogPostLang, primaryBlogPostLang, localizeBlogPost } from "@/lib/seo/blogPostHead";
 import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "@/lib/seo/staticHtml";
+import { SERVICE_PAGES, SERVICE_PAGES_UPDATED, SERVICE_BYLINE, EXPERIENCE_STRIP, RATES_PAGE, PRICING_NL, PRICING_EN } from "@/data/servicePages";
+import { translations } from "@/data/translations";
+import { songs } from "@/data/music";
+import { LOCALIZED_ROUTES, alternatesFor, absoluteUrl, localizePath, OG_LOCALE } from "@/lib/i18n/routes";
 
 export interface RenderOptions {
   /** Initial language for SSR (e.g. "en" for /about prerender). */
@@ -43,7 +47,24 @@ export {
   getBlogPosts,
   getBlogPostHead,
   getBlogPostJsonLd,
+  detectBlogPostLang,
+  primaryBlogPostLang,
+  localizeBlogPost,
   clearRootHtml,
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
+  SERVICE_PAGES,
+  SERVICE_PAGES_UPDATED,
+  SERVICE_BYLINE,
+  EXPERIENCE_STRIP,
+  RATES_PAGE,
+  PRICING_NL,
+  PRICING_EN,
+  translations,
+  songs,
+  LOCALIZED_ROUTES,
+  alternatesFor,
+  absoluteUrl,
+  localizePath,
+  OG_LOCALE,
 };

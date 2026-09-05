@@ -1,9 +1,5 @@
 import { useEffect } from "react";
-
-interface HreflangEntry {
-  lang: string;
-  href: string;
-}
+import { absoluteUrl, alternatesFor, isLocalizedRoute, parsePath, OG_LOCALE, type HreflangEntry, type Lang } from "@/lib/i18n/routes";
 
 interface SEOConfig {
   enabled?: boolean;
@@ -11,8 +7,17 @@ interface SEOConfig {
   description: string;
   /** Optional page-specific alt text for og:image / twitter:image. Falls back to title. */
   imageAlt?: string;
-  url: string;
+  /**
+   * Absolute URL van de pagina. Voor gelokaliseerde routes liever `path` + `lang`
+   * gebruiken: dan worden canonical, hreflang en og:locale automatisch consistent.
+   */
+  url?: string;
+  /** EN-basispad (bv. "/about"). Samen met `lang` de bron voor canonical + hreflang. */
+  path?: string;
+  /** Taal van de gerenderde content; bepaalt canonical (/nl/...) en og:locale. */
+  lang?: Lang;
   type?: string;
+  /** Expliciete hreflang-set. Wordt genegeerd wanneer `path` is opgegeven (dan wederkerig afgeleid). */
   hreflang?: HreflangEntry[];
   jsonLd?: Record<string, unknown>;
   /**
@@ -34,6 +39,21 @@ const DEFAULT_OG_IMAGE_TYPE = "image/png";
 const DEFAULT_OG_IMAGE_WIDTH = "1200";
 const DEFAULT_OG_IMAGE_HEIGHT = "630";
 
+/**
+ * Alleen absolute URL's op het eigen origin komen in canonical/og:url terecht;
+ * al het andere valt terug op de homepage. Sluit pad-injectie uit (CodeQL
+ * js/xss-through-dom) en voorkomt canonicals naar vreemde hosts.
+ */
+const sameOriginUrl = (candidate: string): string => {
+  try {
+    const u = new URL(candidate, "https://hansvanleeuwen.com/");
+    if (u.origin !== "https://hansvanleeuwen.com") return "https://hansvanleeuwen.com/";
+    return `${u.origin}${encodeURI(decodeURI(u.pathname))}`;
+  } catch {
+    return "https://hansvanleeuwen.com/";
+  }
+};
+
 const setMeta = (name: string, content: string, attr = "name") => {
   let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
   if (!el) {
@@ -48,9 +68,20 @@ const removeMeta = (name: string, attr = "name") => {
   document.querySelector(`meta[${attr}="${name}"]`)?.remove();
 };
 
-export const useSEO = ({ enabled = true, title, description, url, type = "website", hreflang, jsonLd, noindex = false, robots, imageAlt }: SEOConfig) => {
+export const useSEO = ({ enabled = true, title, description, url: explicitUrl, path, lang, type = "website", hreflang: explicitHreflang, jsonLd, noindex = false, robots, imageAlt }: SEOConfig) => {
+  // Eén URL per taal: canonical en hreflang volgen uit (path, lang), nooit uit de
+  // bezoeker. Zie lib/i18n/routes.ts (HAN-167 / HAN-83).
+  const resolvedLang: Lang = lang ?? (path ? parsePath(path).lang : "en");
+  const url = path ? absoluteUrl(path, resolvedLang) : (explicitUrl ?? "https://hansvanleeuwen.com/");
+  const hreflang = path && isLocalizedRoute(parsePath(path).path) ? alternatesFor(path) : explicitHreflang;
+  const hreflangKey = JSON.stringify(hreflang ?? null);
+
   useEffect(() => {
     if (!enabled) return;
+    document.documentElement.lang = resolvedLang;
+    setMeta("og:locale", OG_LOCALE[resolvedLang], "property");
+    const cl = document.querySelector('meta[http-equiv="content-language"]') as HTMLMetaElement | null;
+    if (cl) cl.content = resolvedLang;
 
     document.title = title;
     setMeta("description", description);
@@ -63,7 +94,7 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
     }
     setMeta("og:title", title, "property");
     setMeta("og:description", description, "property");
-    setMeta("og:url", url, "property");
+    setMeta("og:url", sameOriginUrl(url), "property");
     setMeta("og:type", type, "property");
     setMeta("og:image", DEFAULT_OG_IMAGE, "property");
     setMeta("og:image:type", DEFAULT_OG_IMAGE_TYPE, "property");
@@ -76,13 +107,19 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
     setMeta("twitter:description", description);
     setMeta("twitter:image:alt", imageAlt || title);
 
+    // Een noindex-pagina (404, drafts) draagt geen canonical: een canonical op een
+    // niet-indexeerbare URL is een tegenstrijdig signaal (Kernel-meting 2026-09-05).
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
+    if (noindex || (robots && /noindex/i.test(robots))) {
+      canonical?.remove();
+    } else {
+      if (!canonical) {
+        canonical = document.createElement("link");
+        canonical.rel = "canonical";
+        document.head.appendChild(canonical);
+      }
+      canonical.href = sameOriginUrl(url);
     }
-    canonical.href = url;
 
     const hreflangClass = "seo-hreflang";
     document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
@@ -135,5 +172,6 @@ export const useSEO = ({ enabled = true, title, description, url, type = "websit
         "og:image:alt",
       ].forEach((name) => removeMeta(name, "property"));
     };
-  }, [enabled, title, description, url, type, hreflang, jsonLd, noindex, robots, imageAlt]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- hreflang wordt via hreflangKey (stringified) vergeleken
+  }, [enabled, title, description, url, type, hreflangKey, jsonLd, noindex, robots, imageAlt, resolvedLang]);
 };

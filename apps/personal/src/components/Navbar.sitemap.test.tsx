@@ -21,6 +21,7 @@ import Navbar from "./Navbar";
 
 /** Canonical sitemap — keep in sync with AnimatedRoutes.tsx. */
 const APP_ROUTES = [
+  "/dashboards", "/dashboards/ccp", "/dashboards/hvl", "/dashboards/mpg",
   "/", "/work", "/work/connect-car-parts", "/writing", "/writing/:slug", "/about",
   "/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager",
   "/portal", "/write", "/write/:id", "/blog-cms", "/blog-cms/voice/:id",
@@ -30,6 +31,7 @@ const APP_ROUTES = [
 
 /** Nav-link targets surfaced by Navbar (public + the logged-in Command Center). */
 const NAV_TARGETS = [
+  "/dashboards", "/dashboards/ccp", "/dashboards/hvl", "/dashboards/mpg",
   "/", "/work", "/work/connect-car-parts", "/amazon-nl-specialist",
   "/bol-com-consultant", "/interim-ecommerce-manager", "/writing", "/about",
   "/write", "/samantha", "/portal", "/wiki", "/god-structure",
@@ -65,7 +67,7 @@ describe("account access", () => {
   // for the account menu. (t.commandCenter is validated separately below.)
   it("logged out: shows the Login link and no workspace link", () => {
     authState.user = null;
-    renderNav("/");
+    renderNav("/nl");
     expect(screen.getAllByText(translations.nl.nav.login).length).toBeGreaterThan(0);
     expect(document.querySelector('a[href="/write"]')).toBeNull();
     expect(screen.queryByText("Command Center")).toBeNull();
@@ -78,11 +80,23 @@ describe("account access", () => {
 });
 
 describe("public links present for everyone", () => {
-  it("shows Home / Werk / Artikelen / Over Hans", () => {
+  it("shows Home / Werk / Artikelen / Over Hans on the NL URL", () => {
     authState.user = null;
-    renderNav("/");
+    renderNav("/nl");
     [translations.nl.nav.home, translations.nl.nav.work, translations.nl.nav.writing, translations.nl.nav.about]
       .forEach((label) => expect(screen.getAllByText(label).length).toBeGreaterThan(0));
+  });
+  // HAN-167: de taal komt uit de URL, niet uit de bezoeker. "/" is Engels.
+  it("shows English labels on the EN URL and localized hrefs on the NL URL", () => {
+    authState.user = null;
+    renderNav("/");
+    [translations.en.nav.work, translations.en.nav.about]
+      .forEach((label) => expect(screen.getAllByText(label).length).toBeGreaterThan(0));
+    cleanup();
+    renderNav("/nl/about");
+    expect(document.querySelector('a[href="/nl/work"]')).not.toBeNull();
+    expect(document.querySelector('a[hreflang="en"][href="/about"]')).not.toBeNull();
+    expect(document.querySelector('a[hreflang="nl"][href="/nl/about"]')).not.toBeNull();
   });
 });
 

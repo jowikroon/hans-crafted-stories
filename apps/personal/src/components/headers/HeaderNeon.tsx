@@ -1,6 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,

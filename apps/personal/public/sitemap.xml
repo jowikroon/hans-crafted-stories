@@ -1,86 +1,248 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://hansvanleeuwen.com/</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/" />
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/work</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/work" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/work" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/work" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl/work</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/work" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/work" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/work" />
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/work/connect-car-parts</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>yearly</changefreq>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/work/connect-car-parts" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/work/connect-car-parts" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/work/connect-car-parts" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl/work/connect-car-parts</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/work/connect-car-parts" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/work/connect-car-parts" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/work/connect-car-parts" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/about</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/about" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/about" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl/about</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/about" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/about" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/amazon-nl-specialist</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/amazon-nl-specialist" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/amazon-nl-specialist" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/amazon-nl-specialist" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl/amazon-nl-specialist</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/amazon-nl-specialist" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/amazon-nl-specialist" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/amazon-nl-specialist" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/bol-com-consultant</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/bol-com-consultant" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/bol-com-consultant" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/bol-com-consultant" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl/bol-com-consultant</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/bol-com-consultant" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/bol-com-consultant" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/bol-com-consultant" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/interim-ecommerce-manager</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/interim-ecommerce-manager" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/interim-ecommerce-manager" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/interim-ecommerce-manager" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl/interim-ecommerce-manager</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/interim-ecommerce-manager" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/interim-ecommerce-manager" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/interim-ecommerce-manager" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/ai-ecommerce-automation</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/ai-ecommerce-automation" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/ai-ecommerce-automation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/ai-ecommerce-automation" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl/ai-ecommerce-automation</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/ai-ecommerce-automation" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/ai-ecommerce-automation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/ai-ecommerce-automation" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/rates</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/rates" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/rates" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/rates" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl/rates</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/rates" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/rates" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/rates" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/privacy</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/privacy" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/nl/privacy</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/nl/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/privacy" />
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/writing</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hansvanleeuwen.com/about</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://hansvanleeuwen.com/music</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://hansvanleeuwen.com/amazon-nl-specialist</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://hansvanleeuwen.com/bol-com-consultant</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://hansvanleeuwen.com/interim-ecommerce-manager</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://hansvanleeuwen.com/ai-ecommerce-automation</loc>
-    <lastmod>2026-07-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://hansvanleeuwen.com/privacy</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://hansvanleeuwen.com/writing/meta-monitoring-wie-bewaakt-de-bewaker</loc>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://hansvanleeuwen.com/writing/freelance-e-commerce-manager-inhuren</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://hansvanleeuwen.com/writing/ai-agent-verzint-succes</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/codex-agentic-ai-operator</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/karpathys-knowledge-base-claude-cowork-2026-06</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/waarom-marketplace-listings-niet-converteren</loc>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/writing/designing-with-llms</loc>
-    <lastmod>2026-07-23</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
