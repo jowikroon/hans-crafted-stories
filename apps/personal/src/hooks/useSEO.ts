@@ -39,6 +39,21 @@ const DEFAULT_OG_IMAGE_TYPE = "image/png";
 const DEFAULT_OG_IMAGE_WIDTH = "1200";
 const DEFAULT_OG_IMAGE_HEIGHT = "630";
 
+/**
+ * Alleen absolute URL's op het eigen origin komen in canonical/og:url terecht;
+ * al het andere valt terug op de homepage. Sluit pad-injectie uit (CodeQL
+ * js/xss-through-dom) en voorkomt canonicals naar vreemde hosts.
+ */
+const sameOriginUrl = (candidate: string): string => {
+  try {
+    const u = new URL(candidate, "https://hansvanleeuwen.com/");
+    if (u.origin !== "https://hansvanleeuwen.com") return "https://hansvanleeuwen.com/";
+    return `${u.origin}${encodeURI(decodeURI(u.pathname))}`;
+  } catch {
+    return "https://hansvanleeuwen.com/";
+  }
+};
+
 const setMeta = (name: string, content: string, attr = "name") => {
   let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
   if (!el) {
@@ -79,7 +94,7 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
     }
     setMeta("og:title", title, "property");
     setMeta("og:description", description, "property");
-    setMeta("og:url", url, "property");
+    setMeta("og:url", sameOriginUrl(url), "property");
     setMeta("og:type", type, "property");
     setMeta("og:image", DEFAULT_OG_IMAGE, "property");
     setMeta("og:image:type", DEFAULT_OG_IMAGE_TYPE, "property");
@@ -92,13 +107,19 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
     setMeta("twitter:description", description);
     setMeta("twitter:image:alt", imageAlt || title);
 
+    // Een noindex-pagina (404, drafts) draagt geen canonical: een canonical op een
+    // niet-indexeerbare URL is een tegenstrijdig signaal (Kernel-meting 2026-09-05).
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
+    if (noindex || (robots && /noindex/i.test(robots))) {
+      canonical?.remove();
+    } else {
+      if (!canonical) {
+        canonical = document.createElement("link");
+        canonical.rel = "canonical";
+        document.head.appendChild(canonical);
+      }
+      canonical.href = sameOriginUrl(url);
     }
-    canonical.href = url;
 
     const hreflangClass = "seo-hreflang";
     document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
