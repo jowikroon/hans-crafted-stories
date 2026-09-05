@@ -17,8 +17,13 @@ import {
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const N8N_URL     = process.env.VITE_N8N_PROD_URL    || "https://n8n.srv1402218.hstgr.cloud";
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL   || "https://oejeojzaakfhculcoqdh.supabase.co";
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL   || "https://pesfakewujjwkyybwaom.supabase.co";
 const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+
+// Layer 5 draait op VPS1 zelf; vanaf een ander device wijst localhost nergens heen.
+const OLLAMA_URL      = process.env.OLLAMA_URL      || "http://localhost:11434";
+const QDRANT_URL      = process.env.QDRANT_URL      || "http://localhost:6333";
+const ANYTHINGLLM_URL = process.env.ANYTHINGLLM_URL || "http://localhost:3001";
 
 // Local tunnel endpoints (SSH tunnels must be open via SSH Sentinel first)
 const ENDPOINTS = {
@@ -32,9 +37,9 @@ const ENDPOINTS = {
   n8n: { url: `${N8N_URL}/healthz`, layer: 3, name: "n8n Orchestration" },
 
   // Layer 5 — Senses (local tunnel services)
-  ollama:      { url: "http://localhost:11434/api/tags",  layer: 5, name: "Ollama LLM" },
-  qdrant:      { url: "http://localhost:6333/health",     layer: 5, name: "Qdrant Vector DB" },
-  anythingllm: { url: "http://localhost:3001",            layer: 5, name: "AnythingLLM RAG" },
+  ollama:      { url: `${OLLAMA_URL}/api/tags`, layer: 5, name: "Ollama LLM",       localOnly: true },
+  qdrant:      { url: `${QDRANT_URL}/health`,  layer: 5, name: "Qdrant Vector DB", localOnly: true },
+  anythingllm: { url: ANYTHINGLLM_URL,         layer: 5, name: "AnythingLLM RAG",  localOnly: true },
 
   // Layer 6 — Memory (Supabase)
   supabase: { url: `${SUPABASE_URL}/rest/v1/`, layer: 6, name: "Supabase Memory" },

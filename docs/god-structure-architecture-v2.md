@@ -70,12 +70,6 @@ A 6-layer AI-powered SaaS platform with infrastructure automation across two dom
 │  │  ├── State Snapshot Logger (every 15 min)                │   │
 │  │  └── Change Detector (every 15 min)                      │   │
 │  └──────────────────────────────────────────────────────────┘   │
-│                                                                   │
-│  ┌─ n8n Cloud (SECONDARY) ──────────────────────────────────┐   │
-│  │  URL: https://hansvanleeuwen.app.n8n.cloud                │   │
-│  │  AutoSEO Brain + cloud AI workflows                       │   │
-│  │  Built-in AI capabilities (langchain nodes)               │   │
-│  └──────────────────────────────────────────────────────────┘   │
 └──────────────────────┬──────────────────────────────────────────┘
                        │ SSH / Docker API
 ┌──────────────────────▼──────────────────────────────────────────┐
@@ -313,11 +307,6 @@ Claude.ai (this session)
        │
        ├──► Hostinger n8n MCP
        │    https://n8n.srv1402218.hstgr.cloud/mcp-server/http
-       │    Token: Bearer (mcp-server-api audience)
-       │    Access: search, execute, get details
-       │
-       ├──► n8n Cloud MCP
-       │    https://hansvanleeuwen.app.n8n.cloud/mcp-server/http
        │    Token: Bearer (mcp-server-api audience)
        │    Access: search, execute, get details
        │
@@ -586,7 +575,6 @@ Infrastructure and monitoring tables have indexes that have never been used. Con
 | **Hostinger VPS1** | `srv1402218` / 187.124.1.75 | Capital: n8n + Docker + AI | ✅ Running |
 | **Hostinger VPS2** | `srv1411336` / 187.124.2.66 | Industrial: Ollama inference | ✅ Running |
 | **Hostinger n8n** | `n8n.srv1402218.hstgr.cloud` | Primary workflow automation | ✅ 7 active |
-| **Cloud n8n** | `hansvanleeuwen.app.n8n.cloud` | Secondary n8n (AI workflows) | ✅ Available |
 | **Ollama** | `187.124.2.66:11434` | Local AI (qwen2.5:7b + 14b) | ✅ Running |
 | **Qdrant** | `172.20.0.1:6333` | Vector database | ✅ Running |
 | **AnythingLLM** | `172.20.0.1:3001` | RAG interface | ✅ Running |

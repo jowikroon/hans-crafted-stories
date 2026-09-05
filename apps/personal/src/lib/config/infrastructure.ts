@@ -84,9 +84,8 @@ export const INFRA_LAYERS: InfraLayer[] = [
     ],
     urls: [
       { label: "n8n Hostinger", url: "https://n8n.srv1402218.hstgr.cloud" },
-      { label: "n8n Cloud", url: "https://hansvanleeuwen.app.n8n.cloud" },
     ],
-    description: "n8n workflow automation runs on VPS1 as the primary orchestrator and on n8n Cloud as secondary. Handles scheduled monitoring, webhook processing, AI routing through BJ Fogg behavioral filter, and Claude Relay gateway.",
+    description: "n8n workflow automation runs on VPS1 as the sole orchestrator. Handles scheduled monitoring, webhook processing, AI routing through BJ Fogg behavioral filter, and Claude Relay gateway.",
     dependsOn: ["compute", "backend"],
   },
   {
@@ -160,8 +159,7 @@ export const CONNECTED_SERVICES: ConnectedService[] = [
   { name: "Supabase", identifier: "pesfakewujjwkyybwaom", role: "Database + Auth + Edge Functions", layer: "backend", status: "online", url: "https://supabase.com/dashboard/project/pesfakewujjwkyybwaom" },
   { name: "VPS1 (Capital)", identifier: "srv1402218 / 187.124.1.75", role: "n8n + Docker + Claude Code", layer: "compute", status: "online" },
   { name: "VPS2 (Industrial)", identifier: "srv1411336 / 187.124.2.66", role: "Ollama AI inference", layer: "compute", status: "online" },
-  { name: "n8n Hostinger", identifier: "n8n.srv1402218.hstgr.cloud", role: "Primary workflow automation", layer: "automation", status: "online", url: "https://n8n.srv1402218.hstgr.cloud" },
-  { name: "n8n Cloud", identifier: "hansvanleeuwen.app.n8n.cloud", role: "Secondary n8n (AI workflows)", layer: "automation", status: "online", url: "https://hansvanleeuwen.app.n8n.cloud" },
+  { name: "n8n Hostinger", identifier: "n8n.srv1402218.hstgr.cloud", role: "Workflow automation", layer: "automation", status: "online", url: "https://n8n.srv1402218.hstgr.cloud" },
   { name: "Ollama", identifier: "187.124.2.66:11434", role: "Local LLM (qwen2.5:7b + 14b)", layer: "ai", status: "online" },
   { name: "AnythingLLM", identifier: "VPS1:3001", role: "RAG document interface", layer: "ai", status: "online" },
   { name: "Qdrant", identifier: "VPS1:6333-6334", role: "Vector database", layer: "ai", status: "online" },

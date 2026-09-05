@@ -13,7 +13,7 @@ A simple text file with lines like `NAME=value`. It’s where we put secrets (AP
    - **To:** `all-credentials.export.env`
 
 2. **Open `all-credentials.export.env`** in a text editor and replace the placeholders with your real values:
-   - **N8N_BASE_URL** — your n8n address: `https://hansvanleeuwen.app.n8n.cloud`
+   - **N8N_BASE_URL** — your n8n address: `https://n8n.srv1402218.hstgr.cloud`
    - **N8N_API_KEY** — the long key you got from n8n (Settings → n8n API → Create an API key). Paste it after the `=`, no quotes needed.
    - **SUPABASE_URL** — already filled in the example (`https://pesfakewujjwkyybwaom.supabase.co`). Change only if you use another project.
    - **SUPABASE_SERVICE_ROLE_KEY** — from Supabase: Project Settings → API → “service_role” key (secret).
@@ -26,7 +26,7 @@ A simple text file with lines like `NAME=value`. It’s where we put secrets (AP
    ```bash
    npm run n8n:add-credentials
    ```
-   That script reads `config/all-credentials.export.env` and adds the credentials to n8n at **https://hansvanleeuwen.app.n8n.cloud**.
+   That script reads `config/all-credentials.export.env` and adds the credentials to n8n at **https://n8n.srv1402218.hstgr.cloud**.
 
 **Summary:**  
 Env file = one place for your n8n URL, n8n API key, and other keys. You create it once from the example, paste your real values, then the script uses it to talk to n8n.

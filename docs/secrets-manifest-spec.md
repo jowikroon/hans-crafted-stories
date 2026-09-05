@@ -44,7 +44,7 @@ Example:
 ```yaml
 variables:
   - name: N8N_BASE_URL
-    default: "https://hansvanleeuwen.app.n8n.cloud"
+    default: "https://n8n.srv1402218.hstgr.cloud"
     purpose: "n8n instance URL for API calls and webhook base"
 ```
 

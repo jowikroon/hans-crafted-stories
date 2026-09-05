@@ -102,11 +102,10 @@ No dedicated `/n8n/templates/` folder exists. The workflow JSON files in `n8n/wo
 
 ### How n8n is started
 
-n8n runs on **n8n Cloud** (`https://hansvanleeuwen.app.n8n.cloud`), not on the repo's docker-compose or the primary VPS. It is provisioned separately (via the VPS setup scripts or manually). The public compose file (`public/empire/docker-compose.yml`) manages the observability stack and vault adapter only.
+n8n runs **self-hosted on VPS1** (`https://n8n.srv1402218.hstgr.cloud`), not from the repo's docker-compose. It is provisioned separately (via the VPS setup scripts or manually). The former n8n Cloud instance was retired on 2026-08-19. The public compose file (`public/empire/docker-compose.yml`) manages the observability stack and vault adapter only.
 
-Two URL aliases exist for the same n8n instance:
-- **Admin UI / API:** `https://hansvanleeuwen.app.n8n.cloud` (used in scripts and setup docs)
-- **Public webhooks:** `https://hansvanleeuwen.app.n8n.cloud` (behind Cloudflare; used in frontend config and workflow JSON)
+One URL serves both roles:
+- **Admin UI / API and public webhooks:** `https://n8n.srv1402218.hstgr.cloud`
 
 ### How n8n is authenticated
 
@@ -142,7 +141,7 @@ Two URL aliases exist for the same n8n instance:
 | F-03 | `public/workflows/seo-audit-workflow.json` | 61, 86, 220, 250 | **INFO** | Credential nodes reference `id: "REPLACE_WITH_YOUR_CREDENTIAL_ID"`. This is the correct export pattern (no real IDs). Confirmed no secret values present. |
 | F-04 | `public/workflows/product-title-optimizer.json` | 72, 114, 156 | **INFO** | Same placeholder pattern as F-03. Correct. |
 | F-05 | `supabase/functions/trigger-webhook/index.ts` | 42 | **LOW** | `console.log("Triggering webhook:", webhook_url)` — if a webhook URL ever contains a token or API key as a query parameter, it would be logged in plain text. Current usage does not include tokens in URLs. **Mitigation (Gate 6):** Wrap with redact middleware before logging URLs. |
-| F-06 | `public/empire/docker-compose.yml` | 20 | **INFO** | `N8N_URL=https://hansvanleeuwen.app.n8n.cloud` hardcoded in compose. This is a non-secret URL, but it couples the compose file to a specific hostname. Consider using `${N8N_URL}` with a documented default. |
+| F-06 | `public/empire/docker-compose.yml` | 20 | **INFO** | `N8N_URL=https://n8n.srv1402218.hstgr.cloud` hardcoded in compose. This is a non-secret URL, but it couples the compose file to a specific hostname. Consider using `${N8N_URL}` with a documented default. |
 | F-07 | `scripts/n8n-add-credentials.js` | 109–110 | **LOW** | When creating OpenAI credentials, the script sets `headerValue: \`Bearer ${openAiKey}\`` inline in the credential object. This is sent to the n8n API (HTTPS), not logged. Redact middleware (`scripts/lib/redact.cjs`) should be imported to guard `console.log` calls in this file. |
 
 **Scan result:** No literal `sk-`, `ghp_`, `xoxb-`, `AKIA[A-Z0-9]{16}`, or bare Bearer token strings found anywhere in tracked source files. The only `Bearer` strings in docs are instructional (e.g., `Authorization: Bearer YOUR_TOKEN`).
