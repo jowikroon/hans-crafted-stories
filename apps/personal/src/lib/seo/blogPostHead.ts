@@ -54,7 +54,27 @@ export function getBlogPostCanonical(post: Pick<BlogPostRow, "slug" | "canonical
   return clean(post.canonical_url) || `${BASE_URL}/writing/${post.slug}`;
 }
 
-export function getBlogPostHead(post: BlogPostRow): SeoHead {
+/**
+ * De taalversie van een artikel zoals de URL die serveert: title/excerpt/content
+ * uit de *_nl-velden wanneer de artikeltaal NL is (en die velden gevuld zijn),
+ * anders de EN-basisvelden. Head, JSON-LD en prerender-fallback lezen hier
+ * allemaal doorheen zodat ze nooit een andere taal tonen dan de <h1>.
+ */
+export function localizeBlogPost<T extends Pick<BlogPostRow, "title" | "excerpt" | "content"> & { title_nl?: string | null; excerpt_nl?: string | null; content_nl?: string | null }>(
+  post: T,
+  lang: "nl" | "en" = primaryBlogPostLang(post),
+): T {
+  if (lang !== "nl") return post;
+  return {
+    ...post,
+    title: clean(post.title_nl) || post.title,
+    excerpt: clean(post.excerpt_nl) || post.excerpt,
+    content: clean(post.content_nl) || post.content,
+  };
+}
+
+export function getBlogPostHead(input: BlogPostRow, lang?: "nl" | "en"): SeoHead {
+  const post = localizeBlogPost(input, lang);
   const metaTitle = clean(post.meta_title);
   const title = metaTitle || `${post.title} | Hans van Leeuwen`;
   const description = clean(post.meta_description) || clean(post.excerpt) || DEFAULT_DESCRIPTION;
@@ -66,8 +86,10 @@ export function getBlogPostHead(post: BlogPostRow): SeoHead {
   };
 }
 
-export function getBlogPostJsonLd(post: BlogPostRow): Record<string, unknown> {
-  const head = getBlogPostHead(post);
+export function getBlogPostJsonLd(input: BlogPostRow, lang?: "nl" | "en"): Record<string, unknown> {
+  const articleLang = lang ?? primaryBlogPostLang(input);
+  const post = localizeBlogPost(input, articleLang);
+  const head = getBlogPostHead(input, articleLang);
   const url = head.canonical;
   const content = clean(post.content);
   const wordCount = content ? content.split(/\s+/).length : 0;
@@ -97,6 +119,6 @@ export function getBlogPostJsonLd(post: BlogPostRow): Record<string, unknown> {
     articleSection: post.category,
     keywords: post.tags.join(", "),
     ...(wordCount > 0 ? { wordCount } : {}),
-    inLanguage: primaryBlogPostLang(post),
+    inLanguage: articleLang,
   };
 }

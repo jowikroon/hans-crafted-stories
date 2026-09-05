@@ -61,6 +61,7 @@ const {
   serializeJsonForHtmlScript,
   detectBlogPostLang,
   primaryBlogPostLang,
+  localizeBlogPost,
   SERVICE_PAGES,
   SERVICE_PAGES_UPDATED,
   EXPERIENCE_STRIP,
@@ -370,7 +371,8 @@ function textToParagraphs(text) {
     .join("\n          ");
 }
 
-function buildBlogPostFallback(post, head) {
+function buildBlogPostFallback(input, head) {
+  const post = localizeBlogPost(input);
   const body = textToParagraphs(post.content);
   return `
       <header>

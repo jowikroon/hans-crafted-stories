@@ -6,8 +6,7 @@ import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { primaryBlogPostLang } from "@/lib/seo/blogPostHead";
-import { getBlogPostHead, getBlogPostJsonLd } from "@/lib/seo/blogPostHead";
+import { getBlogPostHead, getBlogPostJsonLd, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
 import "@/styles/article-v2.css";
@@ -457,7 +456,7 @@ const BlogPostPage = () => {
   }, [bodyHtml]);
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-  const seoHead = post ? getBlogPostHead(post) : null;
+  const seoHead = post ? getBlogPostHead(post, articleLang) : null;
   const seoUrl = seoHead?.canonical || `https://hansvanleeuwen.com/writing/${slug}`;
   const isDraft = !!post && (post.published === false || (post as { status?: string }).status === "draft");
 
@@ -489,7 +488,7 @@ const BlogPostPage = () => {
     url: seoUrl,
     lang: articleLang,
     type: "article",
-    jsonLd: post && !isDraft ? getBlogPostJsonLd(post) : undefined,
+    jsonLd: post && !isDraft ? getBlogPostJsonLd(post, articleLang) : undefined,
     noindex: isDraft,
   });
 

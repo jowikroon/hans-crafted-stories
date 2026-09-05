@@ -87,6 +87,17 @@ function checkFile(file) {
   if (!lang) failures.push(`${rel}: html lang ontbreekt`);
   else if (isNl && lang !== "nl") failures.push(`${rel}: /nl-pad maar html lang="${lang}"`);
   else if (!isNl && !isArticle && lang !== "en") failures.push(`${rel}: EN-pad maar html lang="${lang}"`);
+  // 15b. Artikel: JSON-LD headline en de statische fallback-<h2> dragen dezelfde taal als de <h1>.
+  if (route.startsWith("/writing/")) {
+    const decode = (t) => t.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d)).replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+    const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
+    const h1Text = h1 ? decode(h1[1].replace(/<[^>]+>/g, "")) : "";
+    const headline = html.match(/"headline":"((?:[^"\\]|\\.)*)"/);
+    const headlineText = headline ? JSON.parse(`"${headline[1]}"`).replace(/\s+/g, " ").trim() : "";
+    if (h1Text && headlineText && h1Text !== headlineText) failures.push(`${rel}: JSON-LD headline "${headlineText.slice(0, 40)}…" ≠ <h1> "${h1Text.slice(0, 40)}…" (andere taalversie)`);
+    const fb = html.match(/<article>\s*<h2>([\s\S]*?)<\/h2>/);
+    if (fb && h1Text && decode(fb[1]) !== h1Text) failures.push(`${rel}: statische fallback-<h2> ≠ <h1> (andere taalversie)`);
+  }
 
   // 7 + 8: taalsignalen consistent
   const inLang = [...html.matchAll(/"inLanguage":\s*"([a-z]{2})"/g)].map((m) => m[1]);

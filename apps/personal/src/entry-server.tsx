@@ -8,7 +8,7 @@ import App from "./App";
 import type { BlogPostRow } from "@/lib/api/content";
 import { getBlogPosts } from "@/lib/api/content";
 import { getHeroPost, getHeroPostHead, HERO_SLUGS } from "@/data/heroPosts";
-import { getBlogPostHead, getBlogPostJsonLd, detectBlogPostLang, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+import { getBlogPostHead, getBlogPostJsonLd, detectBlogPostLang, primaryBlogPostLang, localizeBlogPost } from "@/lib/seo/blogPostHead";
 import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "@/lib/seo/staticHtml";
 import { SERVICE_PAGES, SERVICE_PAGES_UPDATED, SERVICE_BYLINE, EXPERIENCE_STRIP, RATES_PAGE, PRICING_NL, PRICING_EN } from "@/data/servicePages";
 import { translations } from "@/data/translations";
@@ -49,6 +49,7 @@ export {
   getBlogPostJsonLd,
   detectBlogPostLang,
   primaryBlogPostLang,
+  localizeBlogPost,
   clearRootHtml,
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
