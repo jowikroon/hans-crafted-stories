@@ -62,6 +62,7 @@ const {
   detectBlogPostLang,
   SERVICE_PAGES,
   SERVICE_PAGES_UPDATED,
+  EXPERIENCE_STRIP,
   translations,
   alternatesFor,
   absoluteUrl,
@@ -654,11 +655,14 @@ for (const def of SERVICE_PAGES) {
     fallbackHtml: (lang, head) => {
       const results = `\n          <h2>${escapeHtml(head.resultsHeading)}</h2>\n          <ul>` +
         head.results.map((r) => `<li><strong>${escapeHtml(r.stat)}</strong> ${escapeHtml(r.desc)} (${escapeHtml(r.source)})</li>`).join("") + `</ul>`;
+      const strip = EXPERIENCE_STRIP[lang];
+      const experience = `\n          <h2>${escapeHtml(strip.heading)}</h2>\n          <ul>` +
+        strip.items.map((e) => `<li><strong>${escapeHtml(e.name)}</strong>, ${escapeHtml(e.role)} (${escapeHtml(e.period)})</li>`).join("") + `</ul><p>${escapeHtml(strip.note)}</p>`;
       const practice = `\n          <h2>${escapeHtml(head.practiceHeading)}</h2>\n` +
         head.practice.map((c) => `          <h3>${escapeHtml(c.title)}</h3>\n          <p>${escapeHtml(c.summary)} <a href="${escapeHtml(c.href)}">${escapeHtml(c.linkLabel)}</a></p>`).join("\n");
       const faq = `\n          <h2>${escapeHtml(head.faqHeading)}</h2>\n` +
         head.faq.map((f) => `          <h3>${escapeHtml(f.q)}</h3>\n          <p>${escapeHtml(f.a)}</p>`).join("\n");
-      return buildStaticPageFallback(head, results + practice + faq, "h2", lang);
+      return buildStaticPageFallback(head, results + experience + practice + faq, "h2", lang);
     },
   });
 }

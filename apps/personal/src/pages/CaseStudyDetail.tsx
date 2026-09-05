@@ -62,8 +62,8 @@ const CaseStudyDetail = () => {
     ],
     resultsTitle: "Wat het opleverde",
     resultsItems: [
-      "Gemiddelde kwaliteitsscore van 94/100 over alle gegenereerde listings",
-      "Contentcreatie-tijd van 45 minuten naar 3 minuten per SKU (−93%)",
+      "Gemiddelde kwaliteitsscore van 94/100 over alle gegenereerde listings (interne meting van de contentpipeline, 2025)",
+      "Contentcreatie-tijd van 45 minuten naar 3 minuten per SKU (−93%, interne tijdmeting)",
       "Nul policy-afwijzingen na implementatie van de validatiestap",
       "Consistente merkboodschap over 3 landen en 3 talen",
       "eBay, Amazon en Bol.com gekoppeld tot één marketplace-operatie met één productdatabron",
@@ -105,8 +105,8 @@ const CaseStudyDetail = () => {
     ],
     resultsTitle: "What it delivered",
     resultsItems: [
-      "Average quality score of 94/100 across all generated listings",
-      "Content creation time from 45 minutes to 3 minutes per SKU (−93%)",
+      "Average quality score of 94/100 across all generated listings (internal measurement of the content pipeline, 2025)",
+      "Content creation time from 45 minutes to 3 minutes per SKU (−93%, internal time measurement)",
       "Zero policy rejections after implementing the validation step",
       "Consistent brand messaging across 3 countries and 3 languages",
       "eBay, Amazon and Bol.com connected into one marketplace operation with a single product-data source",

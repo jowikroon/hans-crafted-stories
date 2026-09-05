@@ -100,6 +100,39 @@ const BYLINE = {
 
 export const SERVICE_BYLINE = BYLINE;
 
+/**
+ * Authentiek sociaal bewijs zonder verzonnen testimonials: de werkgevers en
+ * opdrachtgevers uit het cv, met rol en periode. Referenties op aanvraag.
+ */
+export const EXPERIENCE_STRIP = {
+  nl: {
+    heading: "Ervaring bij",
+    note: "Referenties van opdrachtgevers en leidinggevenden op aanvraag beschikbaar.",
+    linkedin: "Aanbevelingen op LinkedIn",
+    items: [
+      { name: "ABS All Brake Systems", role: "E-commerce manager", period: "2025–heden" },
+      { name: "Alpine Hearing Protection", role: "Marketplace manager", period: "2021–2025" },
+      { name: "Intergamma (Karwei & Gamma)", role: "E-commerce manager", period: "2017–2020" },
+      { name: "IGM Badkamerwinkel", role: "E-commerce manager", period: "2019–2020" },
+      { name: "Webhelp (GGD GHOR)", role: "Team coach", period: "2020–2022" },
+      { name: "Talpa · Edelman", role: "Online marketing · UX design", period: "2013–2015" },
+    ],
+  },
+  en: {
+    heading: "Experience at",
+    note: "References from clients and managers available on request.",
+    linkedin: "Recommendations on LinkedIn",
+    items: [
+      { name: "ABS All Brake Systems", role: "E-commerce manager", period: "2025–present" },
+      { name: "Alpine Hearing Protection", role: "Marketplace manager", period: "2021–2025" },
+      { name: "Intergamma (Karwei & Gamma)", role: "E-commerce manager", period: "2017–2020" },
+      { name: "IGM Badkamerwinkel", role: "E-commerce manager", period: "2019–2020" },
+      { name: "Webhelp (GGD GHOR)", role: "Team coach", period: "2020–2022" },
+      { name: "Talpa · Edelman", role: "Online marketing · UX design", period: "2013–2015" },
+    ],
+  },
+} as const;
+
 const RELATED = {
   nl: {
     interim: { href: "/interim-ecommerce-manager", label: "Interim e-commerce manager" },
@@ -122,27 +155,27 @@ const RELATED = {
 const PRICING_NL: { heading: string; intro: string; models: PricingModel[]; note: string } = {
   heading: "Tarief en samenwerkingsvormen",
   intro:
-    "Geen verborgen bureaumarge en geen minimumcontract van een halfjaar. Drie vormen, afhankelijk van wat je nodig hebt:",
+    "Geen bureaumarge, geen minimumcontract van een halfjaar, per maand opzegbaar. Drie vormen, met indicatieve tarieven (excl. btw):",
   models: [
-    { name: "Dagtarief (interim)", fit: "Voor tijdelijke leiding, 2 tot 5 dagen per week, op locatie in de regio Utrecht of remote in NL/EU." },
-    { name: "Projectprijs", fit: "Voor een afgebakende opdracht met een vast resultaat: een audit, een Bol.com-launch, een Amazon DE-uitrol of een feed-automatisering." },
-    { name: "Retainer", fit: "Voor doorlopend accountmanagement van Amazon en Bol.com met een vaste weekcadans en maandrapportage." },
+    { name: "Dagtarief (interim) · €760 per dag", fit: "Circa €95 per uur. Voor tijdelijke leiding, 2 tot 5 dagen per week, op locatie in de regio Utrecht of remote in NL/EU." },
+    { name: "Projectprijs · vanaf €2.500", fit: "Voor een afgebakende opdracht met een vast resultaat: een audit met plan, een Bol.com-launch, een Amazon DE-uitrol of een feed-automatisering." },
+    { name: "Retainer · vanaf €1.750 per maand", fit: "Doorlopend accountmanagement van Amazon en Bol.com: twee vaste dagen per maand, wekelijkse trading review en maandrapportage." },
   ],
   note:
-    "Na een kennismaking van 30 minuten ontvang je binnen één werkdag een schriftelijke offerte met scope, cadans en tarief. Ter vergelijking: een vaste e-commerce manager kost inclusief werkgeverslasten al snel meer dan een interim-inzet van drie dagen per week, zonder de opzegbaarheid.",
+    "Na een kennismaking van 30 minuten ontvang je binnen één werkdag een schriftelijke offerte met scope, cadans en definitief tarief. Ter vergelijking: een vaste e-commerce manager kost inclusief werkgeverslasten al snel €6.000 of meer per maand, zonder de flexibiliteit om per maand te stoppen. Een interim-inzet van drie dagen per week blijft daar doorgaans onder.",
 };
 
 const PRICING_EN: { heading: string; intro: string; models: PricingModel[]; note: string } = {
   heading: "Rates and ways of working",
   intro:
-    "No agency margin and no six-month minimum. Three models, depending on what you need:",
+    "No agency margin, no six-month minimum, cancellable monthly. Three models, with indicative rates (excl. VAT):",
   models: [
-    { name: "Day rate (interim)", fit: "For temporary leadership, 2 to 5 days a week, on-site in the Utrecht region or remote across NL/EU." },
-    { name: "Project fee", fit: "For a scoped engagement with a fixed outcome: an audit, a Bol.com launch, an Amazon DE roll-out or a feed automation." },
-    { name: "Retainer", fit: "For ongoing Amazon and Bol.com account management with a fixed weekly cadence and monthly reporting." },
+    { name: "Day rate (interim) · €760 per day", fit: "About €95 per hour. For temporary leadership, 2 to 5 days a week, on-site in the Utrecht region or remote across NL/EU." },
+    { name: "Project fee · from €2,500", fit: "For a scoped engagement with a fixed outcome: an audit with plan, a Bol.com launch, an Amazon DE roll-out or a feed automation." },
+    { name: "Retainer · from €1,750 per month", fit: "Ongoing Amazon and Bol.com account management: two fixed days a month, weekly trading review and monthly reporting." },
   ],
   note:
-    "After a 30-minute intro call you receive a written quote within one working day: scope, cadence and rate. For context: a permanent e-commerce manager, including employer costs, quickly exceeds an interim engagement of three days a week — without the flexibility to stop.",
+    "After a 30-minute intro call you receive a written quote within one working day: scope, cadence and final rate. For context: a permanent e-commerce manager, including employer costs, quickly runs to €6,000 or more per month, without the option to stop monthly. An interim engagement of three days a week usually stays below that.",
 };
 
 export const SERVICE_PAGES: ServicePageDef[] = [

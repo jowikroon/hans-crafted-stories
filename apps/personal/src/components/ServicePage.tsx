@@ -5,7 +5,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
 import { absoluteUrl, BASE_URL } from "@/lib/i18n/routes";
-import { SERVICE_BYLINE, SERVICE_PAGES_UPDATED, type ServicePageDef } from "@/data/servicePages";
+import { EXPERIENCE_STRIP, SERVICE_BYLINE, SERVICE_PAGES_UPDATED, type ServicePageDef } from "@/data/servicePages";
 import hansProfile from "@/assets/hans-profile.jpg";
 
 const fade = {
@@ -31,6 +31,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
   const { lang } = useLang();
   const t = page.copy[lang];
   const byline = SERVICE_BYLINE[lang];
+  const strip = EXPERIENCE_STRIP[lang];
   const Icon = ICONS[page.icon];
   const canonical = absoluteUrl(page.path, lang);
 
@@ -154,6 +155,22 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
             </div>
           ))}
         </div>
+      </motion.div>
+
+      <motion.div {...fade} className="mb-16">
+        <h2 className={h2}>{strip.heading}</h2>
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
+          {strip.items.map((e) => (
+            <li key={e.name} className="rounded-lg border border-border/40 bg-card px-4 py-3">
+              <p className="font-semibold text-foreground">{e.name}</p>
+              <p className="text-xs text-muted-foreground">{e.role} · {e.period}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-sm text-muted-foreground">
+          {strip.note}{" "}
+          <a href="https://www.linkedin.com/in/hansvl3/details/recommendations/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">{strip.linkedin}</a>
+        </p>
       </motion.div>
 
       <motion.div {...fade} className="mb-16">
