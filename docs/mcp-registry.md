@@ -119,5 +119,18 @@ Twee dingen waren daarbij aantoonbaar kapot:
    resolvet. Regel "alert bij n8n/supabase down" sloeg daardoor permanent vals alarm.
    Nu `pesfakewujjwkyybwaom` (401 = leeft).
 
+### Gemeten webhook-status op de live host (2026-09-05)
+
+`POST https://n8n.srv1402218.hstgr.cloud/webhook/<naam>` met een lege JSON-body:
+
+| webhook | status |
+|---|---|
+| `autoseo`, `product-titles`, `product-feed`, `campaign`, `site-audit`, `blog-init` | 200 |
+| `scraper`, `monday-orchestrator` | **404 — workflow staat niet op deze host** |
+
+Let op: `monday-orchestrator` is precies wat `monday-webhook` aanroept. Het hostadres klopt nu,
+maar die workflow moet nog op VPS1 worden aangezet voordat Monday-routing weer rondloopt.
+Hetzelfde geldt voor `context-keeper` en `vps-alert` uit de `.claude`-agents.
+
 `retired[].stillReferencedIn` bevat nu alleen nog documentatie. `docs/mcp-network-validation.md`
 en dit bestand noemen de oude URL bewust — dat is het bewijsmateriaal, niet een restant.
