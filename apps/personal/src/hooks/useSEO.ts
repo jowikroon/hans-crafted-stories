@@ -92,13 +92,19 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
     setMeta("twitter:description", description);
     setMeta("twitter:image:alt", imageAlt || title);
 
+    // Een noindex-pagina (404, drafts) draagt geen canonical: een canonical op een
+    // niet-indexeerbare URL is een tegenstrijdig signaal (Kernel-meting 2026-09-05).
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
+    if (noindex || (robots && /noindex/i.test(robots))) {
+      canonical?.remove();
+    } else {
+      if (!canonical) {
+        canonical = document.createElement("link");
+        canonical.rel = "canonical";
+        document.head.appendChild(canonical);
+      }
+      canonical.href = url;
     }
-    canonical.href = url;
 
     const hreflangClass = "seo-hreflang";
     document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());

@@ -14,6 +14,7 @@ const NotFound = () => {
     title: seo.notFoundTitle,
     description: "The page you're looking for doesn't exist or has been moved.",
     url: `https://hansvanleeuwen.com${location.pathname}`,
+    noindex: true,
   });
 
   useEffect(() => {
@@ -37,7 +38,7 @@ const NotFound = () => {
     <div className="flex min-h-screen items-center justify-center bg-muted">
       <div className="text-center">
         <h1 className="mb-4 text-4xl font-bold">{t.heading}</h1>
-        <p className="mb-4 text-xl text-muted-foreground">{t.message}</p>
+        <p className="mb-4 text-xl text-foreground/80">{t.message}</p>
         <a href="/" className="text-primary underline hover:text-primary/90">
           {t.returnHome}
         </a>
