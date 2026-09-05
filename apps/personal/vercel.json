@@ -176,11 +176,11 @@
       "destination": "/index.html"
     },
     {
-      "source": "/music/:slug",
+      "source": "/writing/:slug",
       "destination": "/index.html"
     },
     {
-      "source": "/writing/:slug",
+      "source": "/music/(teacher-leave|hanging-on|beat-between-our-years|new-level)",
       "destination": "/index.html"
     }
   ],

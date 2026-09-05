@@ -12,6 +12,7 @@ import { getBlogPostHead, getBlogPostJsonLd, detectBlogPostLang } from "@/lib/se
 import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "@/lib/seo/staticHtml";
 import { SERVICE_PAGES, SERVICE_PAGES_UPDATED, SERVICE_BYLINE, EXPERIENCE_STRIP } from "@/data/servicePages";
 import { translations } from "@/data/translations";
+import { songs } from "@/data/music";
 import { LOCALIZED_ROUTES, alternatesFor, absoluteUrl, localizePath, OG_LOCALE } from "@/lib/i18n/routes";
 
 export interface RenderOptions {
@@ -55,6 +56,7 @@ export {
   SERVICE_BYLINE,
   EXPERIENCE_STRIP,
   translations,
+  songs,
   LOCALIZED_ROUTES,
   alternatesFor,
   absoluteUrl,

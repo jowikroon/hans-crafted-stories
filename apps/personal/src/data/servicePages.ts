@@ -115,7 +115,7 @@ export const EXPERIENCE_STRIP = {
       { name: "Intergamma (Karwei & Gamma)", role: "E-commerce manager", period: "2017–2020" },
       { name: "IGM Badkamerwinkel", role: "E-commerce manager", period: "2019–2020" },
       { name: "Webhelp (GGD GHOR)", role: "Team coach", period: "2020–2022" },
-      { name: "Talpa · Edelman", role: "Online marketing · UX design", period: "2013–2015" },
+      { name: "Talpa · Edelman", role: "Stages: online marketing · UX design", period: "2013–2015" },
     ],
   },
   en: {
@@ -128,7 +128,7 @@ export const EXPERIENCE_STRIP = {
       { name: "Intergamma (Karwei & Gamma)", role: "E-commerce manager", period: "2017–2020" },
       { name: "IGM Badkamerwinkel", role: "E-commerce manager", period: "2019–2020" },
       { name: "Webhelp (GGD GHOR)", role: "Team coach", period: "2020–2022" },
-      { name: "Talpa · Edelman", role: "Online marketing · UX design", period: "2013–2015" },
+      { name: "Talpa · Edelman", role: "Internships: online marketing · UX design", period: "2013–2015" },
     ],
   },
 } as const;
@@ -227,7 +227,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         practice: [
           {
             title: "Listings die niet converteren",
-            summary: "Bij een outdoormerk met ~120 SKU's op Amazon DE en Bol.com ging €14.000 per maand naar Sponsored Products bij 23% retouren. Maatvoering in de galerij, een vergelijkingstabel en een scanbare titel brachten de conversie van 8,1% naar 12,7% en de retouren naar 14%, waarna de ad spend met €3.000 per maand omlaag kon.",
+            summary: "In mijn artikel over listings die niet converteren beschrijf ik een outdoormerk met ~120 SKU's op Amazon DE en Bol.com: €14.000 per maand naar Sponsored Products bij 23% retouren. Maatvoering in de galerij, een vergelijkingstabel en een scanbare titel brachten de conversie van 8,1% naar 12,7% en de retouren naar 14%, waarna de ad spend met €3.000 per maand omlaag kon.",
             href: "/writing/waarom-marketplace-listings-niet-converteren",
             linkLabel: "Lees de casus",
           },
@@ -304,7 +304,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         practice: [
           {
             title: "Listings that don't convert",
-            summary: "An outdoor brand with ~120 SKUs on Amazon DE and Bol.com spent €14,000 a month on Sponsored Products with a 23% return rate. Sizing infographics in the gallery, a comparison table and a scannable title lifted conversion from 8.1% to 12.7% and cut returns to 14%, after which ad spend could drop by €3,000 a month.",
+            summary: "In my article on listings that don't convert I describe an outdoor brand with ~120 SKUs on Amazon DE and Bol.com spending €14,000 a month on Sponsored Products with a 23% return rate. Sizing infographics in the gallery, a comparison table and a scannable title lifted conversion from 8.1% to 12.7% and cut returns to 14%, after which ad spend could drop by €3,000 a month.",
             href: "/writing/waarom-marketplace-listings-niet-converteren",
             linkLabel: "Read the case (Dutch)",
           },
@@ -357,8 +357,8 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "Amazon NL specialist inhuren",
         subtitle: "Freelance Amazon-accountmanager voor listings, advertising, Buy Box en voorraad",
         intro:
-          "Ik ben Hans van Leeuwen, freelance Amazon-specialist uit Amersfoort. Ik beheer en laat Amazon.nl- en Amazon.de-accounts groeien voor merken die geen fulltime specialist in huis hebben. Bij Alpine Hearing Protection bracht ik de oordoppencategorie op Amazon NL naar 70% marktaandeel (Nielsen, 2023), verlaagde ik prijsvolatiliteit in de Buy Box door B2B-afstemming en verhoogde ik de conversie met A/B-tests op afbeeldingen. Bij ABS All Brake Systems run ik nu een catalogus van A.B.S.-remonderdelen op Amazon DE naast eBay DE en Bol.com.",
-        whenHeading: "Voor wie dit werkt",
+          "Ik ben Hans van Leeuwen, freelance Amazon-specialist uit Amersfoort. Ik beheer en laat Amazon.nl- en Amazon.de-accounts groeien voor merken die geen fulltime specialist in huis hebben. Voor Alpine Hearing Protection was Amazon NL vier jaar mijn dagelijkse werk: de oordoppencategorie groeide daar naar een marktaandeel van 70% (Nielsen, 2023), de Buy Box werd rustiger door prijsafstemming met de B2B-kanalen en A/B-tests op de productafbeeldingen tilden de conversie. Bij ABS All Brake Systems run ik nu een catalogus van A.B.S.-remonderdelen op Amazon DE naast eBay DE en Bol.com.",
+        whenHeading: "Voor wie Amazon-accountmanagement werkt",
         when: [
           "Merken die op Amazon.nl staan maar geen zicht hebben op waarom de verkoop stagneert",
           "D2C-merken die Amazon willen toevoegen zonder een fulltime accountmanager aan te nemen",
@@ -380,22 +380,22 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ],
         resultsHeading: "Resultaten op Amazon",
         results: [
-          { stat: "70%", desc: "marktaandeel in de oordoppencategorie op Amazon NL", source: "Alpine Hearing Protection · Nielsen 2023" },
-          { stat: "<2%", desc: "out-of-stock na invoering van demand forecasting", source: "Alpine Hearing Protection · 2021–2022" },
-          { stat: "+20%", desc: "wekelijkse verkopen door een social-ad-campagne (Back to School)", source: "Alpine Hearing Protection · cv" },
+          { stat: "70%", desc: "van de oordoppencategorie op Amazon NL in handen van één merk", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "<2%", desc: "out-of-stock op Amazon door forecasting op sell-through en levertijd", source: "Alpine Hearing Protection · 2021–2022" },
+          { stat: "+20%", desc: "wekelijkse verkopen rond het schoolseizoen, social ads bovenop geoptimaliseerde listings", source: "Alpine Hearing Protection · cv" },
         ],
         practiceHeading: "Uit de praktijk",
         practiceIntro: "Drie situaties die ik op Amazon zelf meemaakte en beschreef:",
         practice: [
           {
             title: "€14.000 ad spend per maand, 23% retouren",
-            summary: "Bij een outdoormerk op Amazon DE en Bol.com lag het probleem niet in de campagnes maar in de listing: geen maatvoering in de galerij, generieke A+ Content. Na de herbouw steeg de conversie van 8,1% naar 12,7% en daalden de retouren naar 14%.",
+            summary: "Zoals beschreven in mijn artikel: bij een outdoormerk op Amazon DE en Bol.com lag het probleem niet in de campagnes maar in de listing: geen maatvoering in de galerij, generieke A+ Content. Na de herbouw steeg de conversie van 8,1% naar 12,7% en daalden de retouren naar 14%.",
             href: "/writing/waarom-marketplace-listings-niet-converteren",
             linkLabel: "Lees de casus",
           },
           {
             title: "AI-titels die de Duitse zoektermen misten",
-            summary: "Een AI-tool schreef technisch correcte Amazon DE-titels zonder de zoektermen die verkeer opleveren. De CTR daalde in zes weken met 23% voordat iemand handmatig keek. Sindsdien krijgt elke gegenereerde titel een bron- en zekerheidslabel voordat hij live gaat.",
+            summary: "Uit mijn UX-framework voor LLM's: een AI-tool schreef technisch correcte Amazon DE-titels zonder de zoektermen die verkeer opleveren. De CTR daalde in zes weken met 23% voordat iemand handmatig keek. Sindsdien krijgt elke gegenereerde titel een bron- en zekerheidslabel voordat hij live gaat.",
             href: "/writing/designing-with-llms",
             linkLabel: "Lees het UX-framework",
           },
@@ -439,8 +439,8 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "Amazon NL specialist",
         subtitle: "Freelance Amazon account manager for listings, advertising, Buy Box and stock",
         intro:
-          "I'm Hans van Leeuwen, a freelance Amazon specialist based in Amersfoort, the Netherlands. I manage and grow Amazon.nl and Amazon.de accounts for brands that don't have a full-time specialist in-house. At Alpine Hearing Protection I took the earplug category on Amazon NL to a 70% market share (Nielsen, 2023), reduced Buy Box price volatility through B2B alignment and lifted conversion with A/B tests on images. At ABS All Brake Systems I currently run a catalogue of A.B.S. brake parts on Amazon DE alongside eBay DE and Bol.com.",
-        whenHeading: "Who this is for",
+          "I'm Hans van Leeuwen, a freelance Amazon specialist based in Amersfoort, the Netherlands. I manage and grow Amazon.nl and Amazon.de accounts for brands that don't have a full-time specialist in-house. For Alpine Hearing Protection, Amazon NL was my daily work for four years: the earplug category there grew to a 70% market share (Nielsen, 2023), the Buy Box calmed down through price alignment with the B2B channels, and A/B tests on product images lifted conversion. At ABS All Brake Systems I currently run a catalogue of A.B.S. brake parts on Amazon DE alongside eBay DE and Bol.com.",
+        whenHeading: "Who Amazon account management is for",
         when: [
           "Brands on Amazon.nl with no clear view of why sales have stalled",
           "D2C brands adding Amazon without hiring a full-time account manager",
@@ -462,22 +462,22 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ],
         resultsHeading: "Results on Amazon",
         results: [
-          { stat: "70%", desc: "market share in the earplug category on Amazon NL", source: "Alpine Hearing Protection · Nielsen 2023" },
-          { stat: "<2%", desc: "out-of-stock after introducing demand forecasting", source: "Alpine Hearing Protection · 2021–2022" },
-          { stat: "+20%", desc: "weekly sales from a social ad campaign (Back to School)", source: "Alpine Hearing Protection · CV" },
+          { stat: "70%", desc: "of the earplug category on Amazon NL held by one brand", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "<2%", desc: "out-of-stock on Amazon through forecasting on sell-through and lead time", source: "Alpine Hearing Protection · 2021–2022" },
+          { stat: "+20%", desc: "weekly sales around the school season, social ads on top of optimised listings", source: "Alpine Hearing Protection · CV" },
         ],
         practiceHeading: "From the field",
         practiceIntro: "Three situations I ran into on Amazon and wrote up:",
         practice: [
           {
             title: "€14,000 ad spend a month, 23% returns",
-            summary: "For an outdoor brand on Amazon DE and Bol.com the problem wasn't the campaigns but the listing: no sizing in the gallery, generic A+ Content. After the rebuild conversion rose from 8.1% to 12.7% and returns dropped to 14%.",
+            summary: "As described in my article: for an outdoor brand on Amazon DE and Bol.com the problem wasn't the campaigns but the listing: no sizing in the gallery, generic A+ Content. After the rebuild conversion rose from 8.1% to 12.7% and returns dropped to 14%.",
             href: "/writing/waarom-marketplace-listings-niet-converteren",
             linkLabel: "Read the case (Dutch)",
           },
           {
             title: "AI titles that missed the German search terms",
-            summary: "An AI tool wrote technically correct Amazon DE titles without the search terms that bring traffic. CTR fell 23% in six weeks before anyone checked manually. Since then every generated title carries a source and confidence label before it goes live.",
+            summary: "From my UX framework for LLMs: an AI tool wrote technically correct Amazon DE titles without the search terms that bring traffic. CTR fell 23% in six weeks before anyone checked manually. Since then every generated title carries a source and confidence label before it goes live.",
             href: "/writing/designing-with-llms",
             linkLabel: "Read the UX framework (Dutch)",
           },
@@ -531,7 +531,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         subtitle: "Freelance Bol.com-specialist voor content, Bol Ads, Buy Block en de vendor-naar-seller-transitie",
         intro:
           "Ik ben Hans van Leeuwen, freelance Bol.com-consultant uit Amersfoort. Ik help merken groeien op de grootste marktplaats van Nederland en België, van productcontent en Bol Ads tot prijs, Buy Block en logistiek. Bij Alpine Hearing Protection lanceerde ik het Bol.com-sellerkanaal en begeleidde ik de transitie van vendor naar seller, automatiseerde ik de marketplace-content via Channable en behaalde ik 20% meer wekelijkse verkopen met een social-ad-campagne. Bij ABS All Brake Systems rol ik nu het A.B.S.-assortiment uit naar Bol.com naast Amazon en eBay.",
-        whenHeading: "Voor wie dit werkt",
+        whenHeading: "Voor wie Bol.com-consultancy werkt",
         when: [
           "Merken die als vendor leveren en willen weten of seller meer marge en controle oplevert",
           "Verkopers met een compleet assortiment maar slechte vindbaarheid en een lage Buy Block-score",
@@ -554,15 +554,15 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         resultsHeading: "Resultaten op Bol.com en marketplaces",
         results: [
           { stat: "Vendor → seller", desc: "Bol.com-sellerkanaal gelanceerd en de transitie succesvol begeleid", source: "Alpine Hearing Protection · 2022–2025" },
-          { stat: "+20%", desc: "wekelijkse verkopen door een social-ad-campagne (Back to School)", source: "Alpine Hearing Protection · cv" },
-          { stat: "70%", desc: "marktaandeel in de oordoppencategorie op Amazon NL, dezelfde werkwijze", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "+20%", desc: "meer wekelijkse verkopen met één gerichte Back-to-School-campagne", source: "Alpine Hearing Protection · cv" },
+          { stat: "70%", desc: "categorie-aandeel op Amazon NL met dezelfde content- en prijsdiscipline", source: "Alpine Hearing Protection · Nielsen 2023" },
         ],
         practiceHeading: "Uit de praktijk",
         practiceIntro: "Wat ik op Bol.com en Amazon meemaakte, met cijfers:",
         practice: [
           {
             title: "Een listing is een verkooppagina, geen formulier",
-            summary: "Bol.com toont titels volledig, op Amazon moeten de eerste 80 tekens overtuigen. Bij een outdoormerk op beide platforms bracht een UX-herbouw van de listings de conversie van 8,1% naar 12,7% en de retouren van 23% naar 14%.",
+            summary: "Bol.com toont titels volledig, op Amazon moeten de eerste 80 tekens overtuigen. In mijn artikel beschrijf ik hoe bij een outdoormerk op beide platforms bracht een UX-herbouw van de listings de conversie van 8,1% naar 12,7% en de retouren van 23% naar 14%.",
             href: "/writing/waarom-marketplace-listings-niet-converteren",
             linkLabel: "Lees de casus",
           },
@@ -607,7 +607,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         subtitle: "Freelance Bol.com specialist for content, Bol Ads, Buy Block and the vendor-to-seller transition",
         intro:
           "I'm Hans van Leeuwen, a freelance Bol.com consultant based in Amersfoort, the Netherlands. I help brands grow on the largest marketplace in the Netherlands and Belgium, from product content and Bol Ads to pricing, Buy Block and logistics. At Alpine Hearing Protection I launched the Bol.com seller channel and led the transition from vendor to seller, automated marketplace content through Channable and achieved 20% more weekly sales with a social ad campaign. At ABS All Brake Systems I'm currently rolling the A.B.S. range out to Bol.com alongside Amazon and eBay.",
-        whenHeading: "Who this is for",
+        whenHeading: "Who Bol.com consulting is for",
         when: [
           "Brands supplying as a vendor that want to know whether seller brings more margin and control",
           "Sellers with a complete range but poor findability and a low Buy Block score",
@@ -630,15 +630,15 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         resultsHeading: "Results on Bol.com and marketplaces",
         results: [
           { stat: "Vendor → seller", desc: "Bol.com seller channel launched and the transition led successfully", source: "Alpine Hearing Protection · 2022–2025" },
-          { stat: "+20%", desc: "weekly sales from a social ad campaign (Back to School)", source: "Alpine Hearing Protection · CV" },
-          { stat: "70%", desc: "market share in the earplug category on Amazon NL, same method", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "+20%", desc: "more weekly sales from one targeted Back-to-School campaign", source: "Alpine Hearing Protection · CV" },
+          { stat: "70%", desc: "category share on Amazon NL with the same content and pricing discipline", source: "Alpine Hearing Protection · Nielsen 2023" },
         ],
         practiceHeading: "From the field",
         practiceIntro: "What I ran into on Bol.com and Amazon, with numbers:",
         practice: [
           {
             title: "A listing is a sales page, not a form",
-            summary: "Bol.com shows titles in full; on Amazon the first 80 characters have to convince. For an outdoor brand on both platforms a UX rebuild of the listings lifted conversion from 8.1% to 12.7% and cut returns from 23% to 14%.",
+            summary: "Bol.com shows titles in full; on Amazon the first 80 characters have to convince. In my article I describe how, for an outdoor brand on both platforms, a UX rebuild of the listings lifted conversion from 8.1% to 12.7% and cut returns from 23% to 14%.",
             href: "/writing/waarom-marketplace-listings-niet-converteren",
             linkLabel: "Read the case (Dutch)",
           },
@@ -692,7 +692,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         subtitle: "Pipelines die repetitief marketplace-werk overnemen, met de mens op de gevoelige knoppen",
         intro:
           "Ik ben Hans van Leeuwen, freelance e-commerce manager die zijn eigen marketplace-operatie grotendeels heeft geautomatiseerd. Bij ABS All Brake Systems automatiseerde ik het VIN-zoekproces voor onderdelen, een primeur in de branche, en koppelde ik eBay, Amazon en Bol.com tot één operatie; bij Alpine Hearing Protection automatiseerde ik de marketplace-content via Channable en bracht geautomatiseerde demand forecasting het out-of-stockpercentage onder de 2%. De stack is n8n voor orchestratie, Supabase als datalaag, Claude voor content en analyse en Channable voor feeds. Wat ik lever is geen 'AI die je winkel runt', maar concrete, gemonitorde workflows waarvan elke succesmelding te bewijzen is.",
-        whenHeading: "Voor wie dit werkt",
+        whenHeading: "Voor wie automatisering nu loont",
         when: [
           "Teams die elke week dezelfde exports, controles en rapportages met de hand maken",
           "Merken met grote catalogi waar productdata per kanaal handmatig wordt onderhouden",
@@ -774,7 +774,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         subtitle: "Pipelines that take over repetitive marketplace work, with a human on the sensitive decisions",
         intro:
           "I'm Hans van Leeuwen, a freelance e-commerce manager who has automated most of his own marketplace operation. At ABS All Brake Systems I automated the VIN-based parts lookup, a first in the industry, and connected eBay, Amazon and Bol.com into a single operation; at Alpine Hearing Protection I automated marketplace content through Channable and automated demand forecasting brought out-of-stock below 2%. The stack is n8n for orchestration, Supabase as the data layer, Claude for content and analysis and Channable for feeds. What I deliver is not 'an AI that runs your store' but concrete, monitored workflows where every success message can be proven.",
-        whenHeading: "Who this is for",
+        whenHeading: "Who automation pays off for now",
         when: [
           "Teams that build the same exports, checks and reports by hand every week",
           "Brands with large catalogues where product data is maintained manually per channel",

@@ -64,6 +64,7 @@ const {
   SERVICE_PAGES_UPDATED,
   EXPERIENCE_STRIP,
   translations,
+  songs,
   alternatesFor,
   absoluteUrl,
   OG_LOCALE,
@@ -734,6 +735,33 @@ writeLocalizedPage("/privacy", {
     "@context": "https://schema.org",
     "@graph": [
       { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, description: head.description, isPartOf: { "@id": `${BASE}/#website` }, about: { "@id": `${BASE}/#person` }, inLanguage: "en" },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+    ],
+  });
+  const outPath = outPathFor(route);
+  fs.writeFileSync(outPath, page, "utf8");
+  console.log(`[prerender] ${route} -> ${outPath}`);
+}
+
+/* ───────────────────────────── /music/<slug> — alleen publieke tracks (HAN-146, plan F.2) ───────────────────────────── */
+for (const song of songs.filter((sg) => sg.provider !== "soundcloud")) {
+  const route = `/music/${song.slug}`;
+  const head = {
+    title: `${song.title}: Song & Production Notes | Hans van Leeuwen`,
+    description: `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): listen on Spotify and read how the track was made, the gear used and the lyrics. Original music by an e-commerce manager by day.`,
+    canonical: `${BASE}${route}`,
+  };
+  const { html } = renderQuietly(route, null, { initialLang: "en" });
+  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+  page = setHead(page, head);
+  page = applyLang(page, "en");
+  page = setHreflang(page, null);
+  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, `<p><a href="/music">All songs</a></p>`));
+  page = setJsonLd(page, {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "MusicRecording", "@id": `${head.canonical}#recording`, name: song.title, url: head.canonical, genre: song.genre, datePublished: song.date, byArtist: { "@type": "MusicGroup", name: song.artist || "Jowikroon", "@id": `${BASE}/music#artist` }, sameAs: song.listenUrl, image: song.cover },
       WEBSITE_ENTITY,
       PERSON_ENTITY,
     ],
