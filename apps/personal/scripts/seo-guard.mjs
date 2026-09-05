@@ -207,7 +207,20 @@ else {
     if (!fs.existsSync(file)) return null;
     let h = fs.readFileSync(file, "utf8");
     h = h.replace(/[\s\S]*?<div id="root">/, "").replace(/<footer[\s\S]*$/, "");
-    h = h.split(/<script\b[\s\S]*?<\/script\s*>/i).join(" ").split(/<[^>]*>/).join(" ").replace(/&[a-z#0-9]+;/gi, " ");
+    // Scriptblokken verwijderen zonder tag-regex (CodeQL js/bad-tag-filter): scan op indexOf.
+    const lower = h.toLowerCase();
+    let out = "", pos = 0;
+    for (;;) {
+      const open = lower.indexOf("<script", pos);
+      if (open === -1) { out += h.slice(pos); break; }
+      out += h.slice(pos, open) + " ";
+      const close = lower.indexOf("</script", open);
+      if (close === -1) break;
+      pos = lower.indexOf(">", close);
+      if (pos === -1) break;
+      pos += 1;
+    }
+    h = out.split(/<[^>]*>/).join(" ").replace(/&[a-z#0-9]+;/gi, " ");
     return h.toLowerCase().replace(/[^a-z0-9àâäéèêëïîôöùûüç€%.,'-]+/g, " ").trim().split(/\s+/);
   };
   const shingles = (words) => { const out = new Set(); for (let i = 0; i + N <= words.length; i++) out.add(words.slice(i, i + N).join(" ")); return out; };
