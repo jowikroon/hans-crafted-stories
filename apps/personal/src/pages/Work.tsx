@@ -220,7 +220,7 @@ const Work = () => {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="mb-6 text-xs text-muted-foreground/60"
+        className="mb-6 text-xs text-muted-foreground"
       >
         {filtered.length} {filtered.length === 1 ? tw.projectSingular : tw.projectPlural}
         {filter !== "all" && ` ${tw.matching}`}
