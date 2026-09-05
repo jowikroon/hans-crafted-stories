@@ -11,6 +11,12 @@
 //   GA4_PROPERTY_ID = "395015361"
 //   GSC_SITE_URL    = "" (auto-detected via sites.list when empty)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {
+  SITE_ORIGIN,
+  collectInspectionUrls,
+  summarizeSitemaps,
+  type SitemapEntry,
+} from "./coverage.ts";
 
 const GA4_PROPERTY_ID = Deno.env.get("GA4_PROPERTY_ID") || "395015361";
 const GSC_SITE_OVERRIDE = Deno.env.get("GSC_SITE_URL") || "";
@@ -181,6 +187,103 @@ async function fetchGSC(token: string) {
   };
 }
 
+// Index coverage — submitted vs indexed page counts, sourced from the sitemaps
+// GSC has on file for the property (HAN-93: "indexed pages count").
+//
+// Accuracy hazards in this API's response shape, all handled below:
+//
+// 1. `SitemapContent.indexed` is deprecated and may be omitted — for every
+//    content entry, for just some of them, or (for a pending/failed
+//    sitemap) by having no `contents` at all. Only report a site-wide total
+//    when every entry actually used for the total has a known count; a
+//    partial sum would quietly under-report the real count, which is worse
+//    than admitting it's unavailable.
+// 2. A sitemap-index entry's counts describe the aggregate of its child
+//    sitemaps — summing an index alongside its own children double-counts
+//    the same pages. Index entries are therefore always excluded from the
+//    sum. An earlier version of this function tried to fall back to
+//    aggregating index entries when the response contained no separately-
+//    listed leaves (to handle an index-only submission), but that fallback
+//    couldn't be made safe: this endpoint gives no parent/child linkage, so
+//    there's no way to tell "an index with no listed children" apart from
+//    "an index alongside an unrelated leaf sitemap" (e.g. the main sitemap
+//    index plus a separately-submitted RSS feed) — and guessing wrong in
+//    the second case double-counts. A property whose only submitted sitemap
+//    is an index that GSC hasn't (yet) expanded into separate child entries
+//    will report indexed_pages as unavailable (null) rather than a number
+//    that might silently be wrong; that trade favors correctness over
+//    coverage, consistent with every other null-vs-guess decision here.
+//    (This also doesn't protect against a different overlap — two unrelated
+//    leaf sitemaps that happen to list the same URLs — which isn't
+//    detectable from this endpoint's per-sitemap aggregate counts either;
+//    only per-URL data would allow deduping that case.)
+// 3. `contents` breaks counts down by type (web pages, images, video, news
+//    …). Only the "web" entries represent pages — summing every type would
+//    inflate the page count with image/video/news URLs from the same
+//    sitemap.
+async function fetchSitemapCoverage(token: string, site: string) {
+  const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/sitemaps`;
+  const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  const d = await r.json();
+  if (!r.ok) throw new Error(`gsc sitemaps: ${JSON.stringify(d)}`);
+  // All the reduction rules (and the reasoning behind them) live in
+  // coverage.ts so they are unit-tested — see src/test/gscCoverage.test.ts.
+  return summarizeSitemaps((d.sitemap ?? []) as SitemapEntry[]);
+}
+
+// Per-URL indexing issues via the URL Inspection API, sampled over the site's
+// most-recently-updated published posts plus core static pages (HAN-93:
+// "indexing issues are surfaced automatically"). Bounded to stay well under
+// the API's per-minute quota.
+//
+// A request that errors (403/429/etc.) is not evidence the page is indexed —
+// it's evidence we couldn't check. `checked` only counts URLs we actually got
+// a verdict for, and if every request in the sample failed we throw instead
+// of returning a "checked: N, 0 issues" result that would read as "all clean".
+async function fetchIndexingIssues(token: string, site: string, sampleUrls: string[]) {
+  const inspectUrl = "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect";
+  const issues: { url: string; verdict: string; coverage_state: string | null; last_crawl: string | null }[] = [];
+  let succeeded = 0;
+  let failed = 0;
+  for (const url of sampleUrls) {
+    // Every way a single URL can fail must stay scoped to that URL: a rejected
+    // fetch (connection reset, DNS, TLS), a non-2xx status, and an unparseable
+    // body all count as one skipped URL. Anything escaping this block would
+    // discard every verdict already collected plus every URL still queued —
+    // so the fetch belongs inside the try, not just the parse. Google's
+    // frontend also serves HTML for 502/503, hence checking status before
+    // parsing rather than letting a SyntaxError decide.
+    let d: { inspectionResult?: { indexStatusResult?: Record<string, unknown> } };
+    try {
+      const r = await fetch(inspectUrl, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ inspectionUrl: url, siteUrl: site }),
+      });
+      if (!r.ok) { failed++; continue; } // couldn't inspect — not the same as "indexed"
+      d = await r.json();
+    } catch {
+      failed++;
+      continue;
+    }
+    succeeded++;
+    const idx = d.inspectionResult?.indexStatusResult ?? {};
+    const verdict = (idx.verdict as string) ?? "UNKNOWN";
+    if (verdict !== "PASS") {
+      issues.push({
+        url,
+        verdict,
+        coverage_state: (idx.coverageState as string) ?? null,
+        last_crawl: (idx.lastCrawlTime as string) ?? null,
+      });
+    }
+  }
+  if (sampleUrls.length > 0 && succeeded === 0) {
+    throw new Error(`url inspection: all ${failed} sampled requests failed`);
+  }
+  return { checked: succeeded, skipped: failed, issues };
+}
+
 // ---------- cache (PostgREST, service-role) ----------
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SB_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -205,6 +308,129 @@ async function writeCache(data: unknown) {
   });
 }
 
+// Mirrors the allowlist in src/hooks/useAdmin.tsx, including its built-in
+// fallback, so the server and the CMS agree on who is an admin.
+// The CMS reads VITE_ADMIN_EMAILS (a Vite build-time var baked into the
+// client bundle); an edge function can only read Supabase secrets, so the two
+// cannot literally share one variable. Accept BOTH names so setting either
+// works, and keep the same always-included fallback as useAdmin.tsx —
+// otherwise an admin added via VITE_ADMIN_EMAILS passes the CMS and is denied
+// here, which is the exact frontend/backend split this was meant to close.
+const ADMIN_EMAILS = [
+  ...(Deno.env.get("ADMIN_EMAILS") || "").split(","),
+  ...(Deno.env.get("VITE_ADMIN_EMAILS") || "").split(","),
+  "hansvl3@gmail.com",
+]
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+const INDEXING_SAMPLE_SIZE = 15;
+
+// Sample of URLs to run through the URL Inspection API: core static pages
+// plus the most recently updated published posts (most likely to still be
+// mid-crawl, so most likely to surface a real coverage issue).
+//
+// Posts with an external canonical_url are deliberately excluded — same rule
+// as scripts/generate-sitemap.mjs — since their /writing/<slug> copy is
+// intentionally not the canonical URL and would falsely report as a
+// "not indexed" issue when GSC (correctly) indexes the external canonical
+// instead.
+// `startsWith(SITE_ORIGIN)` would be a substring-sanitization bug — a
+// canonical_url like "https://hansvanleeuwen.com.evil.example/x" passes a
+// prefix check but is not this origin. Compare parsed origins instead.
+
+// Any live recompute (explicit force, or the cache simply being stale/
+// missing) re-runs the full GA4 + GSC + Sitemaps + URL Inspection sweep.
+// URL Inspection in particular has a small daily quota, and the anon key is
+// public in the client bundle — an authenticated-but-non-admin account (or
+// no account at all) could otherwise exhaust that quota and make indexing
+// checks unavailable for the real site owner. Mirrors the admin-role check
+// in supabase/functions/trigger-webhook/index.ts: resolve the caller via
+// /auth/v1/user, then require has_role(user, 'admin') — being logged in is
+// not enough.
+async function isAuthorizedCaller(req: Request): Promise<boolean> {
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!token) return false;
+  try {
+    const ur = await fetch(`${SB_URL}/auth/v1/user`, {
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${token}` },
+    });
+    if (!ur.ok) return false;
+    const user = await ur.json();
+    if (!user?.id || user?.is_anonymous) return false;
+
+    // The CMS admits admins two ways (src/hooks/useAdmin.tsx): an email
+    // allowlist checked FIRST, then has_role. Checking only has_role here
+    // meant an allowlisted account — including the built-in hansvl3@gmail.com
+    // fallback, which exists precisely because the DB role may not be
+    // provisioned — sees an admin UI whose refresh button 403s, leaving the
+    // dashboard permanently stale. Same two sources, same order, server-side.
+    // The email is read from the verified session, never from the request.
+    const email = String(user.email ?? "").trim().toLowerCase();
+    if (email && ADMIN_EMAILS.includes(email)) return true;
+
+    const rr = await fetch(`${SB_URL}/rest/v1/rpc/has_role`, {
+      method: "POST",
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ _user_id: user.id, _role: "admin" }),
+    });
+    if (!rr.ok) return false;
+    return (await rr.json()) === true;
+  } catch {
+    return false;
+  }
+}
+
+async function sampleUrlsForInspection(): Promise<string[]> {
+  const staticUrls = [`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/writing`, `${SITE_ORIGIN}/about`, `${SITE_ORIGIN}/work`];
+  const target = INDEXING_SAMPLE_SIZE - staticUrls.length;
+  const PAGE_SIZE = target * 4;
+  const MAX_PAGES = 5; // bounds worst case to PAGE_SIZE * MAX_PAGES rows scanned
+
+  // Page through published posts, filtering out externally-canonical ones
+  // and deduping resolved URLs (several posts can legitimately share one
+  // canonical — a syndicated series pointing at a hub page), until `target`
+  // UNIQUE self-canonical URLs are collected or posts run out. Pagination
+  // must stop on the unique-URL count, not the raw row count: a page full
+  // of posts that resolve to the same handful of canonicals would otherwise
+  // look "full" and end pagination while the actual sample stayed tiny.
+  //
+  // If the very first page fails, we have zero real post data — throwing
+  // (rather than quietly falling back to the 4 static URLs) keeps that
+  // failure visible via errors.indexing instead of letting a fully-failed
+  // post sample masquerade as "4 pages checked, all clean." A failure on a
+  // later page keeps whatever posts were already gathered — `checked`
+  // already reports the smaller real count, so it isn't misleading.
+  // Seed with the static URLs so a post that happens to declare one of them
+  // as its own canonical (e.g. a post canonicalizing to /writing) doesn't
+  // get counted as a second, duplicate inspection of the same page.
+  const seenUrls = new Set<string>(staticUrls);
+  const uniqueUrls: string[] = [];
+  for (let page = 0; page < MAX_PAGES && uniqueUrls.length < target; page++) {
+    // A rejected fetch or an unparseable body has to be handled here, not just
+    // a non-2xx status: without this catch a page-2 network blip propagates out
+    // of the whole function and cancels the inspection entirely, contradicting
+    // the "later pages keep what we gathered" rule above.
+    let rows: { slug: string; canonical_url: string | null }[];
+    try {
+      const r = await fetch(
+        `${SB_URL}/rest/v1/blog_posts?select=slug,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc&limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`,
+        { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } },
+      );
+      if (!r.ok) throw new Error(`blog_posts sample: HTTP ${r.status}`);
+      rows = await r.json();
+    } catch (e) {
+      if (page === 0) throw e; // no real post data at all — surface via errors.indexing
+      break; // keep the partial sample already collected
+    }
+    // Canonical resolution, off-site exclusion and dedup all live in
+    // coverage.ts so they are unit-tested — see src/test/gscCoverage.test.ts.
+    collectInspectionUrls(rows, seenUrls, uniqueUrls);
+    if (rows.length < PAGE_SIZE) break; // reached the end of the table
+  }
+  return [...staticUrls, ...uniqueUrls.slice(0, target)];
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   let force = false;
@@ -217,12 +443,36 @@ Deno.serve(async (req) => {
     }
   } catch (_) { /* ignore */ }
 
-  // Serve fresh cache unless forced.
-  if (!force) {
-    const cached = await readCache();
-    if (cached && Date.now() - new Date(cached.fetched_at).getTime() < TTL_MS) {
-      return json({ ...cached.data, cached: true, fetched_at: cached.fetched_at });
-    }
+  // The cache read is now unconditional (it also feeds the stale-copy fallback
+  // for unauthorized callers), so it must not be able to take the whole
+  // function down: a rejected fetch or unparseable row would otherwise 500 the
+  // request and leave even an admin's force:true unable to rebuild the cache —
+  // exactly when rebuilding matters most. A failed read is just a cache miss.
+  let cached: { data: Record<string, unknown>; fetched_at: string } | null = null;
+  try {
+    cached = await readCache();
+  } catch {
+    cached = null;
+  }
+  const cacheFresh = !!cached && Date.now() - new Date(cached.fetched_at).getTime() < TTL_MS;
+
+  if (cacheFresh && !force) {
+    return json({ ...cached.data, cached: true, fetched_at: cached.fetched_at });
+  }
+
+  // Beyond this point every path does a live Google API sweep — GA4 + GSC +
+  // Sitemaps + URL Inspection — whether the caller explicitly asked for one
+  // (force) or the cache is simply stale/missing. Gating only the explicit
+  // force flag left the "just wait for the cache to go stale, then hit the
+  // endpoint" path (or a burst of concurrent requests at that boundary) wide
+  // open to anyone holding the public anon key, each one independently
+  // burning the URL Inspection quota. Require the same admin check for
+  // both; an unauthorized caller gets the stale cache back (harmless — it's
+  // already-public dashboard data) instead of triggering a recompute, or a
+  // 403 if there's nothing cached yet at all.
+  if (!(await isAuthorizedCaller(req))) {
+    if (cached) return json({ ...cached.data, cached: true, stale: true, fetched_at: cached.fetched_at });
+    return json({ ok: false, error: "admin role required" }, 403);
   }
 
   const saRaw = Deno.env.get("GOOGLE_SA_KEY");
@@ -236,7 +486,25 @@ Deno.serve(async (req) => {
     const sa = JSON.parse(saRaw);
     const token = await getAccessToken(sa);
     try { payload.ga4 = await fetchGA4(token); } catch (e) { payload.errors.ga4 = String(e); }
-    try { payload.gsc = await fetchGSC(token); } catch (e) { payload.errors.gsc = String(e); }
+    try {
+      const gsc = await fetchGSC(token) as Record<string, unknown>;
+      try {
+        const coverage = await fetchSitemapCoverage(token, gsc.site as string);
+        gsc.indexed_pages = coverage.indexed_pages;
+        gsc.submitted_pages = coverage.submitted_pages;
+        gsc.sitemap_warnings = coverage.sitemap_warnings;
+        gsc.sitemap_errors = coverage.sitemap_errors;
+        gsc.sitemaps = coverage.sitemaps;
+      } catch (e) { (payload.errors as Record<string, string>).sitemaps = String(e); }
+      try {
+        const sampleUrls = await sampleUrlsForInspection();
+        const { checked, skipped, issues } = await fetchIndexingIssues(token, gsc.site as string, sampleUrls);
+        gsc.indexing_checked = checked;
+        gsc.indexing_skipped = skipped;
+        gsc.indexing_issues = issues;
+      } catch (e) { (payload.errors as Record<string, string>).indexing = String(e); }
+      payload.gsc = gsc;
+    } catch (e) { payload.errors.gsc = String(e); }
     await writeCache(payload);
     return json({ ...payload, cached: false });
   } catch (e) {
