@@ -49,8 +49,8 @@
     --sidebar-border: 35 15% 88%;
     --sidebar-ring: 16 55% 52%;
 
-    --font-display: 'Switzer', 'Inter', system-ui, sans-serif;
-    --font-body: 'Switzer', 'Inter', system-ui, sans-serif;
+    --font-display: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, sans-serif; /* fallback met metric-overrides: zie index.html (CLS-fix 2026-09-11) */
+    --font-body: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
     /* Blog CMS instrument tokens (light fallback) */
