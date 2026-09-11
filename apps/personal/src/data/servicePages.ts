@@ -237,6 +237,12 @@ export const SERVICE_PAGES: ServicePageDef[] = [
             href: "/writing/ai-agent-verzint-succes",
             linkLabel: "Lees waarom rapportage bewijs nodig heeft",
           },
+          {
+            title: "Wat kost een interim e-commerce manager in 2026?",
+            summary: "Dagtarief, projectprijs of maandbedrag: in mijn artikel leg ik uit welke vorm bij welk werk past, wat er wél en niet in een dag zit (tooling en automatiseringen uit eerdere opdrachten wel; advertentiebudget, fees, fotografie niet) en wanneer een vaste hire goedkoper is.",
+            href: "/writing/wat-kost-een-interim-ecommerce-manager-2026",
+            linkLabel: "Lees hoe de tarieven zijn opgebouwd",
+          },
         ],
         approachHeading: "De eerste 30 dagen",
         approach: [
@@ -313,6 +319,12 @@ export const SERVICE_PAGES: ServicePageDef[] = [
             summary: "In my own automation stack roughly half of the success messages could not be traced to a real action. Since then every operation I lead runs on one rule: no green light without evidence.",
             href: "/writing/ai-agent-verzint-succes",
             linkLabel: "Read why reporting needs proof (Dutch)",
+          },
+          {
+            title: "What does an interim e-commerce manager cost in 2026?",
+            summary: "Day rate, project price or monthly fee: the article explains which model fits which kind of work, what a day does and does not include (tooling and automations from earlier engagements yes; ad budget, marketplace fees and photography no) and when a permanent hire is the cheaper option.",
+            href: "/writing/wat-kost-een-interim-ecommerce-manager-2026",
+            linkLabel: "Read how the rates are built up (Dutch)",
           },
         ],
         approachHeading: "The first 30 days",
@@ -572,6 +584,12 @@ export const SERVICE_PAGES: ServicePageDef[] = [
             href: "/writing/amazon-vs-bol-com-2026-nederland",
             linkLabel: "Lees het beslisframework",
           },
+          {
+            title: "Vendor of seller op Bol.com: zo rekende ik het door bij Alpine",
+            summary: "Bij Alpine Hearing Protection stapten we over van vendor naar seller. In mijn artikel staat de rekensom per productgroep (verkoopprijs minus inkoopkorting en promotiebijdrage tegenover commissie, logistiek, retouren én eigen uren), wat ik onderschatte — retourstroom, Buy Box, content — en wanneer ik het nu bij vendor zou laten.",
+            href: "/writing/vendor-of-seller-bol-com-alpine",
+            linkLabel: "Lees de vendor-versus-seller-rekensom",
+          },
         ],
         approachHeading: "Hoe een Bol.com-opdracht verloopt",
         approach: [
@@ -647,6 +665,12 @@ export const SERVICE_PAGES: ServicePageDef[] = [
             summary: "Bol's Groeibeloning with commission discounts goes live on 1 July 2026, the same day the €150 import exemption for non-EU shipments ends. My advice: calculate contribution margin per order, because 30% margin on paper can turn negative after returns and advertising.",
             href: "/writing/amazon-vs-bol-com-2026-nederland",
             linkLabel: "Read the decision framework (Dutch)",
+          },
+          {
+            title: "Vendor or seller on Bol.com: how I ran the numbers at Alpine",
+            summary: "At Alpine Hearing Protection we moved from vendor to seller on Bol.com. The article walks through the calculation per product group (sales price minus purchase discount and promo contribution versus commission, logistics, returns and your own hours), what I underestimated — returns, Buy Box, content — and when I would stay vendor today.",
+            href: "/writing/vendor-of-seller-bol-com-alpine",
+            linkLabel: "Read the vendor-versus-seller calculation (Dutch)",
           },
         ],
         approachHeading: "How a Bol.com engagement runs",
