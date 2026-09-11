@@ -153,6 +153,21 @@
       "source": "/tarieven",
       "destination": "/nl/rates",
       "permanent": true
+    },
+    {
+      "source": "/cases",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/cases/connect-car-parts",
+      "destination": "/work/connect-car-parts",
+      "permanent": true
+    },
+    {
+      "source": "/cowork",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "trailingSlash": false,

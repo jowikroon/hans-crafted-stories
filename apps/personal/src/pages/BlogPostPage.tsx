@@ -489,7 +489,9 @@ const BlogPostPage = () => {
     lang: articleLang,
     type: "article",
     jsonLd: post && !isDraft ? getBlogPostJsonLd(post, articleLang) : undefined,
-    noindex: isDraft,
+    // 2026-09-11: een niet-bestaand artikel (post === null) rendert "Post not found" met HTTP 200
+    // via de /writing/:slug-rewrite; zonder noindex is dat een indexeerbare soft-404 met self-canonical.
+    noindex: isDraft || post === null,
   });
 
   /* ── TOC scroll-spy + reading-progress bar (prerender-safe) ── */
