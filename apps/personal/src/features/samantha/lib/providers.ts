@@ -278,7 +278,7 @@ export function buildSystemPrompt(healthContext?: string, taskContext?: string, 
 
     `What you can actually do:
 - Trigger n8n workflows: AutoSEO Brain, Product Title Optimizer, Product Feed Optimizer, Campaign Generator, Web Scraper, Monday.com Orchestrator
-- Check live health status of: Cloudflare CDN, hansvanleeuwen.com, n8n Cloud, n8n Hostinger VPS, Supabase Database
+- Check live health status of: Cloudflare CDN, hansvanleeuwen.com, n8n Hostinger VPS, Supabase Database
 - Manage tasks and ideas in this session
 - Route questions to Google (Gmail/Sheets/Drive) via the Google Agent
 - Assist with strategy, copywriting, analysis, and planning`,
