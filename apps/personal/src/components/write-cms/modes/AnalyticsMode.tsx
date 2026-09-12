@@ -19,13 +19,21 @@ interface PostMetric {
 interface SeriesPoint { date: string; value: number; }
 interface TopPage { path: string; title: string; sessions: number; }
 interface Query { query: string; clicks: number; impressions: number; ctr: number | null; position: number | null; }
+interface Sitemap { path: string; is_index?: boolean; submitted: number; indexed: number | null; warnings: number; errors: number; last_downloaded: string | null; }
+interface IndexingIssue { url: string; verdict: string; coverage_state: string | null; last_crawl: string | null; }
 interface Dashboard {
   configured?: boolean;
   generated_at?: string;
   fetched_at?: string;
   ga4?: { sessions_30d: number; sessions_prev_30d: number; sessions_change_pct: number | null; series: SeriesPoint[]; top_pages: TopPage[] };
-  gsc?: { site: string; clicks: number; impressions: number; ctr: number | null; position: number | null; pages_with_traffic: number; queries: Query[] };
-  errors?: { ga4?: string; gsc?: string };
+  gsc?: {
+    site: string; clicks: number; impressions: number; ctr: number | null; position: number | null;
+    pages_with_traffic: number; queries: Query[];
+    indexed_pages?: number | null; submitted_pages?: number | null; sitemaps?: Sitemap[];
+    sitemap_warnings?: number; sitemap_errors?: number;
+    indexing_checked?: number; indexing_skipped?: number; indexing_issues?: IndexingIssue[];
+  };
+  errors?: { ga4?: string; gsc?: string; sitemaps?: string; indexing?: string };
 }
 
 export default function AnalyticsMode() {
@@ -131,6 +139,11 @@ export default function AnalyticsMode() {
           { k: "Avg. position", v: gsc?.position != null ? gsc.position.toFixed(1) : "–", sub: "Search Console" },
           { k: "Avg. CTR", v: gsc?.ctr != null ? `${gsc.ctr}%` : "–", sub: "Search Console" },
           { k: "Clicks · 28d", v: num(gsc?.clicks), sub: gsc?.impressions != null ? `${num(gsc.impressions)} impr.` : undefined },
+          // Provenance matters here: the only site-wide indexed count Google
+          // exposes by API is the sitemap-reported one, which is deprecated
+          // and approximate. Say where it comes from rather than presenting
+          // it as an exact figure.
+          { k: "Indexed pages", v: num(gsc?.indexed_pages), sub: gsc?.submitted_pages ? `of ${num(gsc.submitted_pages)} in sitemaps` : "Search Console · sitemap-reported" },
         ].map((m) => (
           <div key={m.k} className="metric-cell">
             <div className="k">{m.k}</div>
@@ -218,12 +231,56 @@ export default function AnalyticsMode() {
         </div>
       )}
 
-      {dash?.errors && (dash.errors.ga4 || dash.errors.gsc) && (
+      {/* Indexing issues, surfaced automatically from URL Inspection sampling +
+          sitemap health (HAN-93) */}
+      {/* Each operand must be a boolean: `a != null || 0 || 0` evaluates to the
+          last operand (0), and `0 && <jsx>` renders a literal "0" text node. */}
+      {(gsc?.indexing_checked != null || !!gsc?.sitemap_warnings || !!gsc?.sitemap_errors) && (
+        <div className="chart-card">
+          <h3>
+            Indexing issues{" "}
+            {gsc.indexing_checked != null && (
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>
+                {gsc.indexing_issues?.length ? `${gsc.indexing_issues.length} flagged` : "none flagged"} · {gsc.indexing_checked} pages checked
+                {/* These are failed inspection REQUESTS (quota, auth, 5xx,
+                    network) — they say nothing about whether the page is
+                    reachable, so don't report them as a page-health problem. */}
+                {gsc.indexing_skipped ? ` · ${gsc.indexing_skipped} not checked` : ""}
+              </span>
+            )}
+          </h3>
+          {(gsc.sitemap_errors || gsc.sitemap_warnings) ? (
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--warn, #b45309)", padding: "4px 0" }}>
+              Sitemap: {gsc.sitemap_errors ?? 0} errors, {gsc.sitemap_warnings ?? 0} warnings reported by Search Console.
+            </div>
+          ) : null}
+          {gsc.indexing_issues && gsc.indexing_issues.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "var(--s-3) 0" }}>
+              {gsc.indexing_issues.map((iss) => (
+                <div key={iss.url} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "4px 0", borderBottom: "1px solid var(--bg-1)" }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }} title={iss.url}>{iss.url}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)" }}>{iss.coverage_state ?? iss.verdict}</span>
+                </div>
+              ))}
+            </div>
+          ) : gsc.indexing_checked != null ? (
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)", padding: "var(--s-3) 0" }}>
+              {gsc.indexing_skipped
+                ? `All ${gsc.indexing_checked} successfully checked pages are indexed (${gsc.indexing_skipped} could not be checked).`
+                : "All sampled pages are indexed."}
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {dash?.errors && (dash.errors.ga4 || dash.errors.gsc || dash.errors.sitemaps || dash.errors.indexing) && (
         <div className="chart-card" style={{ borderColor: "var(--bg-1)" }}>
           <h3>Connection notes</h3>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)", whiteSpace: "pre-wrap" }}>
             {dash.errors.ga4 && <div>GA4: {dash.errors.ga4}</div>}
             {dash.errors.gsc && <div>GSC: {dash.errors.gsc}</div>}
+            {dash.errors.sitemaps && <div>Sitemaps: {dash.errors.sitemaps}</div>}
+            {dash.errors.indexing && <div>Indexing: {dash.errors.indexing}</div>}
           </div>
         </div>
       )}
