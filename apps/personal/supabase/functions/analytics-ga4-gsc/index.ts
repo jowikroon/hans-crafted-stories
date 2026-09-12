@@ -454,9 +454,10 @@ Deno.serve(async (req) => {
   } catch {
     cached = null;
   }
-  const cacheFresh = !!cached && Date.now() - new Date(cached.fetched_at).getTime() < TTL_MS;
-
-  if (cacheFresh && !force) {
+  // Keep the freshness test inline rather than behind a boolean: a separate
+  // `cacheFresh` flag reads the same at runtime but doesn't narrow `cached`,
+  // so the body below only type-checks by accident.
+  if (cached && !force && Date.now() - new Date(cached.fetched_at).getTime() < TTL_MS) {
     return json({ ...cached.data, cached: true, fetched_at: cached.fetched_at });
   }
 
