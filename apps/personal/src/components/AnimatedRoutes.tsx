@@ -2,6 +2,7 @@ import { Routes, Route, useLocation, Navigate, useParams } from "react-router-do
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense, type ComponentType } from "react";
 import PageTransition from "./PageTransition";
+import RouteErrorBoundary from "./RouteErrorBoundary";
 import Index from "@/pages/Index";
 import Work from "@/pages/Work";
 import Writing from "@/pages/Writing";
@@ -72,6 +73,7 @@ const AnimatedRoutes = () => {
   const location = useLocation();
 
   return (
+    <RouteErrorBoundary>
     <AnimatePresence initial={false}>
       <Routes location={location} key={location.pathname}>
         {/* Eén URL per taal (HAN-167/HAN-83): elke gelokaliseerde route bestaat als
@@ -140,6 +142,7 @@ const AnimatedRoutes = () => {
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
+    </RouteErrorBoundary>
   );
 };
 

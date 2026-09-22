@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useLocation } from "react-router-dom";
 import {
   getOverrides,
   saveOverride as apiSave,
@@ -42,10 +43,11 @@ function isUnsafeStyleSelector(sel: string | null | undefined): boolean {
 /** Overrides zijn per pagina opgeslagen; pas ze alleen toe op die pagina.
  * (Voorheen werden alle rijen site-breed geïnjecteerd.) Rijen zonder
  * page_path blijven site-breed voor terugwaartse compatibiliteit. */
-function overrideAppliesHere(pagePath: string | null | undefined): boolean {
+function overrideAppliesHere(pagePath: string | null | undefined, currentPath?: string): boolean {
   if (!pagePath || pagePath === "*") return true;
-  if (typeof window === "undefined") return true;
-  return window.location.pathname === pagePath || window.location.pathname === pagePath.replace(/\/$/, "");
+  const here = currentPath ?? (typeof window === "undefined" ? null : window.location.pathname);
+  if (here == null) return true;
+  return here === pagePath || here === pagePath.replace(/\/$/, "");
 }
 
 function camelToKebab(s: string) {
@@ -151,6 +153,11 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     void reloadOverrides();
   }, [reloadOverrides]);
 
+  // Overrides zijn per pagina; bij client-side navigatie (o.a. de NL/ENG-
+  // schakelaar) moeten ze opnieuw gefilterd worden, anders blijft de stylesheet
+  // van de vorige pagina staan (i18n-audit 2026-09-22).
+  const { pathname: routePath } = useLocation();
+
   // ── Apply STYLE overrides via an injected stylesheet (survives React re-renders) ──
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -163,7 +170,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     const css: string[] = [];
     overrides.forEach((o) => {
       if (o.element_key.startsWith("__site__:")) return; // site settings, not DOM styles
-      if (!overrideAppliesHere(o.page_path)) return;
+      if (!overrideAppliesHere(o.page_path, routePath)) return;
       if (isUnsafeStyleSelector(o.selector)) return;
       const decls = Object.entries(o.style || {})
         .filter(([, v]) => v != null && v !== "")
@@ -172,7 +179,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       if (decls) css.push(`${o.selector || `[data-lov-id="${o.element_key}"]`}{${decls}}`);
     });
     tag.textContent = css.join("\n");
-  }, [overrides]);
+  }, [overrides, routePath]);
 
   // ── Apply TEXT overrides via DOM (best-effort; re-applied on DOM mutations) ──
   useEffect(() => {
@@ -180,7 +187,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     const applyText = () => {
       overrides.forEach((o) => {
         if (o.element_key.startsWith("__site__:")) return; // site settings, not DOM text
-        if (!overrideAppliesHere(o.page_path)) return;
+        if (!overrideAppliesHere(o.page_path, routePath)) return;
         if (o.text_override == null || o.text_override === "") return;
         const sel = o.selector || `[data-lov-id="${o.element_key}"]`;
         document.querySelectorAll(sel).forEach((el) => {
@@ -202,7 +209,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     });
     obs.observe(document.body, { childList: true, subtree: true, characterData: true });
     return () => obs.disconnect();
-  }, [overrides]);
+  }, [overrides, routePath]);
 
   const select = useCallback((el: HTMLElement | null) => {
     if (!el) {
