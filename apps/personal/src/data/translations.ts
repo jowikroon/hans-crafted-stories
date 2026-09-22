@@ -842,7 +842,7 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Hans van Leeuwen — Freelance E-commerce & Marketplace Manager (Amazon, Bol.com)",
+      homeTitle: "Hans van Leeuwen — freelance e-commerce & marketplace manager (Amazon, Bol.com)",
       homeDescription: "Hans van Leeuwen, freelance e-commerce & marketplace manager uit Amersfoort. Diensten: interim e-commerce manager, Amazon NL specialist, Bol.com consultant en AI-automatisering. 70% categoriemarktaandeel (Nielsen 2023), out-of-stock onder 2%.",
       writingTitle: "E-commerce Inzichten voor Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
