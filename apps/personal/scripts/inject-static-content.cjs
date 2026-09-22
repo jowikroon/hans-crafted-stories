@@ -24,18 +24,17 @@ const STATIC_CONTENT = `<header>
   <main>
     <section aria-label="Introduction">
       <p>Freelance E-commerce Manager &middot; Amazon &amp; Bol.com Specialist</p>
-      <h2>Groei Amazon NL &amp; Bol.com omzet met een hands-on interim marktplaatsmanager</h2>
-      <p>Laat je omzet op Amazon NL &amp; Bol.com groeien met een ervaren interim marketplace manager. Ik ben Hans van Leeuwen, freelance e-commerce en marketplace specialist gevestigd in Amersfoort. Na tien jaar omzetgroei op Amazon en Bol.com voor diverse merken, weet ik exact hoe je marktplaatsen omzet in winstgevende groeikanalen: strakke productlistings, scherpe advertenties en betrouwbare operations.</p>
-      <p>Gevestigd in Amersfoort &middot; Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam &amp; de rest van de EU</p>
-      <a href="/work">Amazon NL marketplace case studies</a>
-      <a href="/about#contact">Vraag een 7-punten Amazon NL &amp; Bol.com audit aan (48u reactie)</a>
-      <a href="/about#contact">Plan een vrijblijvend 30-min Amazon NL &amp; Bol.com groeigesprek</a>
+      <h2>Hands-on marketplace leadership. From strategy to reliable operations.</h2>
+      <p>I'm Hans van Leeuwen. I help brands run Amazon and Bol.com with clearer product data, better customer journeys and AI-assisted workflows whose output can be checked.</p>
+      <a href="/about#contact">Discuss your marketplace challenge</a>
+      <a href="/work">View marketplace cases</a>
+      <p>Based in Amersfoort, Netherlands &middot; Working with brands across the Netherlands and the EU</p>
     </section>
-    <section aria-label="Proven results">
+    <section aria-label="Marketplace work in practice">
       <ul>
-        <li><strong>70% market share on Amazon NL</strong> (earplug category, Nielsen Data) &mdash; Listing overhaul, A+ content, A/B-tested images and Buy Box alignment (Alpine Hearing Protection, Nielsen 2023).</li>
-        <li><strong>20% weekly sales increase</strong> from a targeted Back-to-School social ad campaign on top of optimised listings (Alpine Hearing Protection).</li>
-        <li><strong>Out-of-stock rates below 2%</strong> through demand forecasting and optimized logistics.</li>
+        <li><strong>Marketplace content and channel coordination</strong> &mdash; Amazon and Bol.com content, campaign activity and coordination between sales channels for a European consumer brand.</li>
+        <li><strong>Campaigns connected to the customer journey</strong> &mdash; clearer product information, relevant imagery and a consistent buying experience.</li>
+        <li><strong>Forecasting and operational control</strong> &mdash; coordination between marketplace sales, logistics and customer service.</li>
       </ul>
     </section>
     <section aria-label="Who I help">

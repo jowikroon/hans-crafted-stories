@@ -149,7 +149,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
         <div className={`grid gap-6 ${t.results.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"}`}>
           {t.results.map((r) => (
             <div key={r.desc} className="rounded-xl border-2 border-border/40 bg-card p-6 text-center">
-              <p className="mb-2 font-display text-3xl font-bold text-primary">{r.stat}</p>
+              <p className={`mb-2 font-display font-bold text-primary ${r.stat.length > 6 ? "text-xl" : "text-3xl"}`}>{r.stat}</p>
               <p className="text-sm text-foreground">{r.desc}</p>
               <p className="mt-2 text-xs text-muted-foreground">{r.source}</p>
             </div>
