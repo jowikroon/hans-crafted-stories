@@ -8,6 +8,8 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageContent } from "@/hooks/usePageContent";
 import Magnetic from "@/components/Magnetic";
+import hansProfile from "@/assets/hans-profile.jpg";
+import { SERVICE_BYLINE, SERVICE_PAGES_UPDATED } from "@/data/servicePages";
 
 const icons = [
   <ShoppingCart size={20} />,
@@ -19,10 +21,14 @@ const icons = [
 // Volgorde = translations.hero.expertise; elke kaart linkt exact-match naar zijn dienstenpagina (plan Q4, werkstroom A).
 const SERVICE_PATHS = ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation"];
 
+const formatDate = (iso: string, lang: "nl" | "en") =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString(lang === "nl" ? "nl-NL" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
+
 const Hero = () => {
   const { lang } = useLang();
   const isNl = lang === "nl";
   const t = translations[lang].hero;
+  const byline = SERVICE_BYLINE[lang];
   const { getValue } = usePageContent("home");
 
   const expertise = [
@@ -39,6 +45,7 @@ const Hero = () => {
         className="section-container flex min-h-[78vh] flex-col justify-center pt-10"
         aria-label="Introduction"
       >
+        <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_260px] lg:grid-cols-[minmax(0,1fr)_300px]">
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0 }}
@@ -101,6 +108,25 @@ const Hero = () => {
               : "Response within 48h · No obligation · For brands & retailers on Amazon NL & Bol.com"}
           </p>
         </motion.div>
+        {/* Portrait: echte foto (E-E-A-T), eager + fetchpriority want boven de vouw op md+; op mobiel verborgen zodat de H1 de LCP blijft. SEO-run april-items "zero images". */}
+        <figure className="hidden md:block">
+          <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-muted ring-1 ring-border/50">
+            <img
+              src={hansProfile}
+              alt={isNl
+                ? "Hans van Leeuwen, freelance en interim e-commerce manager voor Amazon NL/DE en Bol.com, Amersfoort"
+                : "Hans van Leeuwen, freelance and interim e-commerce manager for Amazon NL/DE and Bol.com, Amersfoort"}
+              width={600}
+              height={800}
+              loading="eager"
+              decoding="async"
+              {...{ fetchpriority: "high" }}
+              className="h-full w-full object-cover object-top"
+            />
+          </div>
+          <figcaption className="mt-2 text-center text-xs text-muted-foreground">{byline.name} · {isNl ? "Amersfoort" : "Amersfoort, NL"}</figcaption>
+        </figure>
+        </div>
       </section>
 
       {/* Results / Proof Section, enriched mini case studies */}
@@ -130,6 +156,14 @@ const Hero = () => {
             </Link>
           ))}
           </div>
+          {/* Byline + zichtbare revisiedatum (freshness + E-E-A-T; april-items "last updated"). Twin: dateModified in prerender.mjs (home). */}
+          <p className="mt-8 border-t border-border/40 pt-4 text-xs text-muted-foreground">
+            {byline.updated}: <time dateTime={SERVICE_PAGES_UPDATED}>{formatDate(SERVICE_PAGES_UPDATED, lang)}</time>
+            {" · "}
+            <Link to="/about" className="underline hover:text-foreground">{byline.about}</Link>
+            {" · "}
+            <a href="https://www.linkedin.com/in/hansvl3" rel="me noopener noreferrer" target="_blank" className="underline hover:text-foreground">{byline.linkedin}</a>
+          </p>
         </motion.div>
       </section>
 
