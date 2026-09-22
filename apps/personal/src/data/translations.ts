@@ -504,7 +504,7 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Hans van Leeuwen — Freelance E-commerce & Marketplace Manager (Amazon, Bol.com)",
+      homeTitle: "Hans van Leeuwen — Freelance E-commerce Manager NL/EU",
       homeDescription: "Freelance e-commerce & marketplace manager, 10+ years on Amazon NL/DE & Bol.com: 70% category share (Nielsen 2023), out-of-stock under 2%, AI-assisted operations on n8n, Channable & Claude. Amersfoort, NL/EU.",
       writingTitle: "E-commerce Insights for Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
@@ -842,7 +842,7 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Hans van Leeuwen — freelance e-commerce & marketplace manager (Amazon, Bol.com)",
+      homeTitle: "Hans van Leeuwen — freelance e-commerce manager inhuren",
       homeDescription: "Hans van Leeuwen, freelance e-commerce & marketplace manager uit Amersfoort. Diensten: interim e-commerce manager, Amazon NL specialist, Bol.com consultant en AI-automatisering. 70% categoriemarktaandeel (Nielsen 2023), out-of-stock onder 2%.",
       writingTitle: "E-commerce Inzichten voor Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
