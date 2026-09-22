@@ -466,7 +466,7 @@ const WritingV2 = () => {
                           width={1200}
                           height={800}
                           loading="eager"
-                          fetchPriority="high"
+                          {...{ fetchpriority: "high" }}
                           decoding="async"
                         />
                       </div>

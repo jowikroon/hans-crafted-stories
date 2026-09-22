@@ -127,11 +127,11 @@ const CaseStudyDetail = () => {
 
   useSEO({
     title: lang === "nl"
-      ? "Case study Connect Car Parts: A.B.S.-remonderdelen op Amazon DE, eBay DE & Magento | Hans van Leeuwen"
-      : "Connect Car Parts Case Study: A.B.S. Brake Parts on Amazon DE, eBay DE & Magento | Hans van Leeuwen",
+      ? "Case study Connect Car Parts | Hans van Leeuwen"
+      : "Connect Car Parts Case Study | Hans van Leeuwen",
     description: lang === "nl"
-      ? "Hoe Hans van Leeuwen de marketplace-operatie van Connect Car Parts runt: ~400 actieve SKU's A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento, 2.400+ productrecords van AI-content voorzien (94/100), Channable-feeds en n8n-monitoring."
-      : "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: ~400 active A.B.S. brake-part SKUs on Amazon DE, eBay DE and Magento, 2,400+ product records with AI-generated content (94/100), Channable feeds and n8n monitoring.",
+      ? "Hoe Hans van Leeuwen de marketplace-operatie van Connect Car Parts runt: ~400 A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento met Channable en n8n."
+      : "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: ~400 A.B.S. brake-part SKUs on Amazon DE, eBay DE and Magento, Channable and n8n.",
     path: "/work/connect-car-parts",
     lang,
     jsonLd: {
@@ -143,7 +143,7 @@ const CaseStudyDetail = () => {
       publisher: { "@id": "https://hansvanleeuwen.com/#organization" },
       url: `https://hansvanleeuwen.com${lang === "nl" ? "/nl" : ""}/work/connect-car-parts`,
       inLanguage: lang,
-      dateModified: "2026-09-05",
+      dateModified: "2026-09-22",
     },
   });
 
