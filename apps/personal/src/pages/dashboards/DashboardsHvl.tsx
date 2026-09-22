@@ -54,7 +54,8 @@ export default function DashboardsHvl() {
 
     const bySev = new Map<string, number>();
     for (const it of items ?? []) {
-      if ((it as { status?: string }).status === "done") continue;
+      // Alleen echt openstaande items tellen (done/ignored/verified/auto_applied zijn afgehandeld).
+      if (["done", "ignored", "verified", "auto_applied"].includes((it as { status?: string }).status ?? "")) continue;
       const s = ((it as { severity?: string }).severity ?? "onbekend");
       bySev.set(s, (bySev.get(s) ?? 0) + 1);
     }

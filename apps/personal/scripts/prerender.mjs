@@ -499,10 +499,13 @@ for (const [slug, blogPost] of postBySlug) {
   writeLocalizedPage("/", {
     buildHead: (lang) => ({ ...HOME_HEAD[lang] }),
     // NL-homepage: Person-description in het Nederlands (template-JSON-LD is Engels).
-    postProcess: (page, lang) =>
-      lang === "nl"
+    postProcess: (page, lang) => {
+      // WebPage.dateModified (template-JSON-LD heeft geen datum); twin: zichtbare revisiedatum in Hero.tsx.
+      page = page.replace(/("@id":\s*"https:\/\/hansvanleeuwen\.com\/#webpage",)/, `$1\n          "dateModified": "${SERVICE_PAGES_UPDATED}",`);
+      return lang === "nl"
         ? page.replace(/"description":\s*"Hans van Leeuwen is an e-commerce and marketplace manager[^"]*"/g, `"description": ${JSON.stringify(PERSON_DESCRIPTION_NL)}`)
-        : page,
+        : page;
+    },
     fallbackHtml: (lang, head) => buildStaticPageFallback({ ...head, intro: [] }, "", "h2", lang),
   });
   // De home-JSON-LD staat in de template; inLanguage per variant gelijktrekken.
