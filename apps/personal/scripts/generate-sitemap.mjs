@@ -39,6 +39,8 @@ const LOCALIZED = [
   { path: "/ai-ecommerce-automation", changefreq: "monthly", priority: "0.9" },
   { path: "/rates", changefreq: "monthly", priority: "0.8" },
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
+  // Artikelenindex in beide talen sinds 2026-09-22 (/writing EN, /nl/writing NL).
+  { path: "/writing", changefreq: "weekly", priority: "0.8" },
 ];
 const nlLoc = (p) => `${BASE}/nl${p === "/" ? "" : p}`;
 const enLoc = (p) => `${BASE}${p}`;
@@ -54,7 +56,6 @@ const LOCALIZED_ROUTES = LOCALIZED.flatMap((r) => [
 
 const STATIC_ROUTES = [
   ...LOCALIZED_ROUTES,
-  { loc: `${BASE}/writing`, changefreq: "weekly", priority: "0.8" },
   { loc: `${BASE}/music`, changefreq: "monthly", priority: "0.7" },
   // Music sub-routes intentionally NOT in the sitemap (Codex review PR #264):
   // - teacher-leave / hanging-on / beat-between-our-years / new-level are
@@ -90,7 +91,7 @@ const posts = await fetchPublishedPosts();
 const today = new Date().toISOString().slice(0, 10);
 
 const urls = [
-  ...STATIC_ROUTES.map((r) => ({ ...r, lastmod: r.loc === `${BASE}/writing` && posts[0] ? iso(posts[0].updated_at) : today })),
+  ...STATIC_ROUTES.map((r) => ({ ...r, lastmod: (r.loc === `${BASE}/writing` || r.loc === `${BASE}/nl/writing`) && posts[0] ? iso(posts[0].updated_at) : today })),
   ...posts
     // External canonicals point elsewhere; keep only self-canonical posts in our sitemap
     .filter((p) => !p.canonical_url || p.canonical_url.startsWith(BASE))

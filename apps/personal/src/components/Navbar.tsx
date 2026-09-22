@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Link as RouterLink } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { localizePath, parsePath } from "@/lib/i18n/routes";
+import { useArticleHasEnglish } from "@/lib/i18n/articleLang";
+import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
+import { hasEnglishVersion } from "@/lib/seo/blogPostHead";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
@@ -66,6 +69,14 @@ const Navbar = (_props: NavbarProps) => {
   const isArticle = /^\/writing\/[^/]+$/.test(parsePath(location.pathname).path);
   const langTarget = (l: "nl" | "en") =>
     isArticle ? (l === "en" ? `${location.pathname}?lang=en` : location.pathname) : localizePath(location.pathname, l);
+  /* ENG alleen aanbieden als het artikel een Engelse versie heeft (i18n-audit
+     2026-09-22, R2). Bron: de prerender-/SSR-preload (direct load) of de store
+     die BlogPostPage vult na het laden (client-side navigatie). Onbekend = tonen. */
+  const articleSlug = isArticle ? parsePath(location.pathname).path.split("/")[2] : undefined;
+  const preloadedArticle = usePreloadedBlogPost(articleSlug);
+  const storedHasEn = useArticleHasEnglish(articleSlug);
+  const articleHasEn = !isArticle || (storedHasEn ?? (preloadedArticle ? hasEnglishVersion(preloadedArticle) : true));
+  const engUnavailableTitle = "Alleen in het Nederlands beschikbaar / Only available in Dutch";
 
   /* ── Nav model ── */
   /* Editable header menu (Design mode in /write); defaults mirror the old
@@ -355,7 +366,11 @@ const Navbar = (_props: NavbarProps) => {
               <div className="hidden sm:flex items-center gap-0.5 font-mono text-xs">
                 <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
                 <span className={barSep}>|</span>
-                <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
+                {articleHasEn ? (
+                  <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
+                ) : (
+                  <span aria-disabled="true" title={engUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>ENG</span>
+                )}
               </div>
 
               {/* Account chip (logged-in) or Login pill */}
@@ -470,7 +485,11 @@ const Navbar = (_props: NavbarProps) => {
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
                   <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
                   <span className={barSep}>|</span>
-                  <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
+                  {articleHasEn ? (
+                    <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
+                  ) : (
+                    <span aria-disabled="true" title={engUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>ENG</span>
+                  )}
                 </div>
 
                 {user ? (

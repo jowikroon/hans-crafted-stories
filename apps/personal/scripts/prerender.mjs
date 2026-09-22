@@ -197,35 +197,46 @@ const CASE_CCP_HEAD_NL = {
   ],
 };
 
-const WRITING_HEAD = {
-  title: "E-commerce Inzichten & Artikelen | Hans van Leeuwen",
-  description:
-    "Lees de visie van Hans van Leeuwen op e-commerce strategie, marktplaats optimalisatie, Amazon groei, Bol.com best practices en digitale commerce trends.",
-  canonical: `${BASE}/writing`,
+// /writing is sinds de i18n-audit (2026-09-22) een gelokaliseerde route: /writing (EN)
+// en /nl/writing (NL). Titels/omschrijvingen = translations.ts seo.writingTitle /
+// seo.writingDescription (taal-twin), zodat prerender en client hetzelfde tonen.
+const WRITING_HEADS = {
+  en: {
+    title: "E-commerce Insights for Amazon NL & Bol.com | Hans van Leeuwen",
+    description: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
+  },
+  nl: {
+    title: "E-commerce Inzichten voor Amazon NL & Bol.com | Hans van Leeuwen",
+    description: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
+  },
 };
-const WRITING_JSONLD = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "CollectionPage",
-      "@id": `${BASE}/writing#page`,
-      name: WRITING_HEAD.title,
-      description: WRITING_HEAD.description,
-      url: `${BASE}/writing`,
-      isPartOf: { "@id": `${BASE}/#website` },
-      about: { "@type": "Person", "@id": `${BASE}/#person` },
-      author: { "@type": "Person", "@id": `${BASE}/#person`, name: "Hans van Leeuwen" },
-    },
-    WEBSITE_ENTITY,
-    PERSON_ENTITY,
-    {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${BASE}/` },
-        { "@type": "ListItem", position: 2, name: "Writing", item: `${BASE}/writing` },
-      ],
-    },
-  ],
+const writingJsonLd = (lang, head) => {
+  const url = absoluteUrl("/writing", lang);
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${url}#page`,
+        name: head.title,
+        description: head.description,
+        url,
+        inLanguage: lang === "nl" ? "nl-NL" : "en",
+        isPartOf: { "@id": `${BASE}/#website` },
+        about: { "@type": "Person", "@id": `${BASE}/#person` },
+        author: { "@type": "Person", "@id": `${BASE}/#person`, name: "Hans van Leeuwen" },
+      },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) },
+          { "@type": "ListItem", position: 2, name: lang === "nl" ? "Artikelen" : "Writing", item: url },
+        ],
+      },
+    ],
+  };
 };
 
 function renderQuietly(...args) {
@@ -343,7 +354,7 @@ function outPathFor(route) {
  * dist/nl/<route>. `buildHead(lang)` levert title/description/canonical/intro/faq,
  * `buildJsonLd(lang, head)` de @graph, `fallbackHtml(lang, head)` de noscript-body.
  */
-function writeLocalizedPage(basePath, { buildHead, buildJsonLd, fallbackHtml, renderOptions, rootHtml }) {
+function writeLocalizedPage(basePath, { buildHead, buildJsonLd, fallbackHtml, renderOptions, rootHtml, postProcess }) {
   for (const lang of LANGS) {
     const route = lang === "nl" ? (basePath === "/" ? "/nl" : `/nl${basePath}`) : basePath;
     const head = buildHead(lang);
@@ -355,6 +366,8 @@ function writeLocalizedPage(basePath, { buildHead, buildJsonLd, fallbackHtml, re
     page = setHreflang(page, basePath);
     if (buildJsonLd) page = setJsonLd(page, buildJsonLd(lang, head));
     page = replaceSsrFallbackHtml(page, fallbackHtml ? fallbackHtml(lang, head) : buildStaticPageFallback(head, "", "h2", lang));
+    // Optionele nabewerking per taal (bv. __PRELOADED__ voor de artikelenindex).
+    if (postProcess) page = postProcess(page, lang);
     const outPath = outPathFor(route);
     fs.writeFileSync(outPath, page, "utf8");
     console.log(`[prerender] ${route} (${lang}) -> ${outPath}`);
@@ -571,27 +584,22 @@ writeLocalizedPage("/work", {
   fallbackHtml: () => "",
 });
 
-/* ───────────────────────────── /writing (eentalige index, NL) ───────────────────────────── */
+/* ───────────────────────────── /writing (EN) + /nl/writing (NL) ───────────────────────────── */
 {
-  const route = "/writing";
   let writingPosts = [];
   try {
     writingPosts = await getBlogPosts(true);
   } catch (err) {
     console.warn("[prerender] Could not pre-fetch blog posts for /writing:", err.message);
   }
-  const { html } = renderQuietly(route, null, { initialLang: "nl", preloadedBlogPosts: writingPosts });
-  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
-  page = setHead(page, WRITING_HEAD);
-  page = applyLang(page, "nl");
-  page = setHreflang(page, null);
-  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(WRITING_HEAD));
-  page = setJsonLd(page, WRITING_JSONLD);
   const writingPreloadScript = `<script id="__PRELOADED__" type="application/json">${JSON.stringify({ blogPosts: writingPosts })}</script>`;
-  page = page.replace("</body>", `${writingPreloadScript}\n  </body>`);
-  const outPath = outPathFor(route);
-  fs.writeFileSync(outPath, page, "utf8");
-  console.log(`[prerender] ${route} -> ${outPath}`);
+  writeLocalizedPage("/writing", {
+    buildHead: (lang) => ({ ...WRITING_HEADS[lang] }),
+    buildJsonLd: (lang, head) => writingJsonLd(lang, head),
+    fallbackHtml: (lang, head) => buildStaticPageFallback(head, "", "h2", lang),
+    renderOptions: { preloadedBlogPosts: writingPosts },
+    postProcess: (page) => page.replace("</body>", `${writingPreloadScript}\n  </body>`),
+  });
 }
 
 /* ───────────────────────────── dienstenpagina's (data/servicePages.ts) ───────────────────────────── */

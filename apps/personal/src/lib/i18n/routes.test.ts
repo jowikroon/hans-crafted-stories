@@ -16,6 +16,17 @@ describe("i18n routes", () => {
     expect(localizePath("/writing/slug", "nl")).toBe("/writing/slug");
     expect(localizePath("/portal", "nl")).toBe("/portal");
   });
+  it("treats the article index as localised but articles as single-URL (audit 2026-09-22)", () => {
+    expect(localizePath("/writing", "nl")).toBe("/nl/writing");
+    expect(localizePath("/nl/writing", "en")).toBe("/writing");
+    expect(alternatesFor("/writing").map((a) => a.href)).toEqual([
+      "https://hansvanleeuwen.com/writing",
+      "https://hansvanleeuwen.com/nl/writing",
+      "https://hansvanleeuwen.com/writing",
+    ]);
+    expect(alternatesFor("/writing/slug")).toEqual([]);
+    expect(localizePath("/writing/slug?lang=en", "nl")).toBe("/writing/slug");
+  });
   it("builds a reciprocal hreflang set where en ≠ nl and x-default = en", () => {
     const alts = alternatesFor("/nl/interim-ecommerce-manager");
     expect(alts).toEqual([

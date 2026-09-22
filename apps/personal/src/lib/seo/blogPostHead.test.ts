@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getBlogPostHead, getBlogPostJsonLd } from "./blogPostHead";
+import { getBlogPostHead, getBlogPostJsonLd, hasEnglishVersion } from "./blogPostHead";
 import type { BlogPostRow } from "@/lib/api/content";
 
 const basePost: BlogPostRow = {
@@ -61,5 +61,25 @@ describe("blog post SEO head", () => {
       "@type": "WebPage",
       "@id": "https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland",
     });
+  });
+});
+
+// i18n-audit 2026-09-22 (R2): de ENG-schakelaar mag alleen een Engelse versie beloven
+// als `content` echt afwijkt van `content_nl`; de CMS kopieerde maandenlang NL in beide.
+describe("hasEnglishVersion", () => {
+  const nl = "Bij Alpine stapten we op Bol.com over van vendor naar seller. De rekensom per productgroep en wat het opleverde.";
+  it("is false when the EN column is a copy of the NL column", () => {
+    expect(hasEnglishVersion({ ...basePost, content: nl, content_nl: nl })).toBe(false);
+    expect(hasEnglishVersion({ ...basePost, content: nl + "\n", content_nl: "  " + nl })).toBe(false);
+  });
+  it("is true when EN and NL bodies differ", () => {
+    expect(hasEnglishVersion({ ...basePost, content: "At Alpine we moved from vendor to seller on Bol.com.", content_nl: nl })).toBe(true);
+  });
+  it("falls back to language detection when there is no NL column", () => {
+    expect(hasEnglishVersion({ ...basePost, content: "Useful article content in English.", content_nl: "" })).toBe(true);
+    expect(hasEnglishVersion({ ...basePost, title: "Wat kost een interim e-commerce manager", excerpt: "Mijn eigen tarieven en de rekensom erachter voor je bedrijf", content: nl + " " + nl, content_nl: "" })).toBe(false);
+  });
+  it("is false without any EN body", () => {
+    expect(hasEnglishVersion({ ...basePost, content: "", content_nl: nl })).toBe(false);
   });
 });
