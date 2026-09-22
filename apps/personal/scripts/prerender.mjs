@@ -469,17 +469,13 @@ for (const [slug, blogPost] of postBySlug) {
 
 /* ───────────────────────────── / (home) ───────────────────────────── */
 {
+  // Eén bron voor de homepage-<title>/description: translations[lang].seo (zelfde als useSEO in
+  // Index.tsx). Tot 2026-09-22 stond hier een eigen, oudere titel ("Freelance E-commerce Manager for
+  // Amazon & Bol.com (NL/EU) | …") — de merk-eerst-titel van PR #336 bestond daardoor alleen ná
+  // hydratie en heeft Google nooit bereikt (SERP 09-18 toonde nog de prerender-titel). Guard 17.
   const HOME_HEAD = {
-    en: {
-      title: "Freelance E-commerce Manager for Amazon & Bol.com (NL/EU) | Hans van Leeuwen",
-      description:
-        "Freelance e-commerce & marketplace manager, 10+ years on Amazon NL/DE & Bol.com: 70% category share (Nielsen 2023), out-of-stock under 2%, AI-assisted operations on n8n, Channable & Claude. Amersfoort, NL/EU.",
-    },
-    nl: {
-      title: "Freelance E-commerce Manager inhuren voor Amazon & Bol.com | Hans van Leeuwen",
-      description:
-        "Freelance e-commerce & marketplace manager inhuren: 10+ jaar Amazon NL/DE & Bol.com, 70% categoriemarktaandeel (Nielsen 2023), out-of-stock onder 2%, AI-automatisering met n8n, Channable & Claude. Amersfoort, NL/EU.",
-    },
+    en: { title: translations.en.seo.homeTitle, description: translations.en.seo.homeDescription },
+    nl: { title: translations.nl.seo.homeTitle, description: translations.nl.seo.homeDescription },
   };
   // De homepage-JSON-LD staat in index.html (template); alleen taal/canonical/hreflang
   // worden per variant aangepast. inLanguage van de WebSite dekt beide talen.
