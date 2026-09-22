@@ -77,6 +77,11 @@ const Navbar = (_props: NavbarProps) => {
   const storedHasEn = useArticleHasEnglish(articleSlug);
   const articleHasEn = !isArticle || (storedHasEn ?? (preloadedArticle ? hasEnglishVersion(preloadedArticle) : true));
   const engUnavailableTitle = "Alleen in het Nederlands beschikbaar / Only available in Dutch";
+  /* /music en /music/:slug bestaan alleen in het Engels (geen NL-copy); een
+     NL-knop die naar dezelfde URL wijst deed niets (i18n-audit 2026-09-22). */
+  const basePathNow = parsePath(location.pathname).path;
+  const isEnglishOnly = basePathNow === "/music" || basePathNow.startsWith("/music/");
+  const nlUnavailableTitle = "Only available in English / Alleen in het Engels beschikbaar";
 
   /* ── Nav model ── */
   /* Editable header menu (Design mode in /write); defaults mirror the old
@@ -364,7 +369,11 @@ const Navbar = (_props: NavbarProps) => {
                 {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               <div className="hidden sm:flex items-center gap-0.5 font-mono text-xs">
-                <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
+                {isEnglishOnly ? (
+                  <span aria-disabled="true" title={nlUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>NL</span>
+                ) : (
+                  <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
+                )}
                 <span className={barSep}>|</span>
                 {articleHasEn ? (
                   <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
@@ -483,10 +492,14 @@ const Navbar = (_props: NavbarProps) => {
 
                 <div className={`my-1 h-px ${barDark ? "bg-white/10" : "bg-black/10"}`} />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
-                  <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
+                  {isEnglishOnly ? (
+                    <span aria-disabled="true" title={nlUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>NL</span>
+                  ) : (
+                    <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" onClick={() => setMobileOpen(false)} aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
+                  )}
                   <span className={barSep}>|</span>
                   {articleHasEn ? (
-                    <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
+                    <RouterLink to={langTarget("en")} hrefLang="en" lang="en" onClick={() => setMobileOpen(false)} aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
                   ) : (
                     <span aria-disabled="true" title={engUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>ENG</span>
                   )}

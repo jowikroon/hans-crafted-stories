@@ -1,6 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { isLocalizedRoute, localizePath, parsePath, type Lang } from "@/lib/i18n/routes";
+import { usePreloadedData } from "@/contexts/PreloadedDataContext";
+import { useArticleLangInfo } from "@/lib/i18n/articleLang";
+import { primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+
+const ARTICLE_RE = /^\/writing\/([^/]+)$/;
 
 export type { Lang };
 
@@ -37,14 +42,34 @@ export const LangProvider = ({ children, initialLang }: LangProviderProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Artikelen: de UI-taal (menu, schakelaar, labels) volgt het artikel, niet de
+  // bezoeker (i18n-audit 2026-09-22): op een Nederlands artikel stond ENG als
+  // actief omdat de client geen initialLang kent. Bron in volgorde: ?lang=en,
+  // de prerender-/SSR-preload, de store die BlogPostPage vult na het laden.
+  const articleSlug = ARTICLE_RE.exec(parsePath(location.pathname).path)?.[1];
+  const wantsEn = articleSlug ? new URLSearchParams(location.search).get("lang") === "en" : false;
+  const preloaded = usePreloadedData();
+  const storeInfo = useArticleLangInfo(articleSlug);
+  const preloadedArticleLang = useMemo<Lang | null>(() => {
+    if (!articleSlug) return null;
+    const post = preloaded.blogPost?.slug === articleSlug
+      ? preloaded.blogPost
+      : preloaded.blogPosts?.find((p) => p.slug === articleSlug) ?? null;
+    return post ? primaryBlogPostLang(post) : null;
+  }, [articleSlug, preloaded.blogPost, preloaded.blogPosts]);
+
   const lang = useMemo<Lang>(() => {
     const { lang: fromUrl, path } = parsePath(location.pathname);
     if (fromUrl === "nl") return "nl";
-    // Niet-gelokaliseerde routes (artikelen, portal, cms) hebben geen /nl-variant;
-    // daar bepaalt de SSR-hint (bv. NL-artikel) de UI-taal, anders EN.
+    if (articleSlug) {
+      if (wantsEn && (storeInfo ? storeInfo.hasEn : true)) return "en";
+      return storeInfo?.lang ?? preloadedArticleLang ?? initialLang ?? "nl";
+    }
+    // Niet-gelokaliseerde routes (portal, cms, music) hebben geen /nl-variant;
+    // daar bepaalt de SSR-hint de UI-taal, anders EN.
     if (!isLocalizedRoute(path) && initialLang) return initialLang;
     return "en";
-  }, [location.pathname, initialLang]);
+  }, [location.pathname, initialLang, articleSlug, wantsEn, storeInfo, preloadedArticleLang]);
 
   const setLang = (l: Lang) => {
     if (l === lang) return;
