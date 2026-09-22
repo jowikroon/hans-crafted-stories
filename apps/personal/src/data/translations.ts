@@ -161,6 +161,14 @@ type TranslationStrings = {
     sending: string;
     successMessage: string;
     errorMessage: string;
+    /** Veldvalidatie (was hardcoded Engels in ContactForm). */
+    required: string;
+    invalidEmail: string;
+    errorSummary: string;
+    /** Getoond op previews/localhost: er wordt niets verstuurd. */
+    previewNotSent: string;
+    /** Label voor de directe e-mail-uitwijk naast het formulier. */
+    emailFallback: string;
   };
 
   /* ── SEO ── */
@@ -499,7 +507,12 @@ export const translations: Record<Lang, TranslationStrings> = {
       send: "Send Message",
       sending: "Sending…",
       successMessage: "Message sent! I'll get back to you soon.",
-      errorMessage: "Something went wrong. Please try again.",
+      errorMessage: "Your message was not sent. Please try again, or email me directly.",
+      required: "This field is required",
+      invalidEmail: "Enter a valid email address",
+      errorSummary: "Please check the highlighted fields.",
+      previewNotSent: "Preview environment: this message was not sent.",
+      emailFallback: "Prefer email? Write to me directly",
     },
 
     /* ── SEO ── */
@@ -837,7 +850,12 @@ export const translations: Record<Lang, TranslationStrings> = {
       send: "Verstuur bericht",
       sending: "Verzenden…",
       successMessage: "Bericht verzonden! Ik neem snel contact op.",
-      errorMessage: "Er ging iets mis. Probeer het opnieuw.",
+      errorMessage: "Je bericht is niet verstuurd. Probeer het opnieuw of mail me direct.",
+      required: "Dit veld is verplicht",
+      invalidEmail: "Vul een geldig e-mailadres in",
+      errorSummary: "Controleer de gemarkeerde velden.",
+      previewNotSent: "Previewomgeving: dit bericht is niet verstuurd.",
+      emailFallback: "Liever mailen? Stuur me direct een e-mail",
     },
 
     /* ── SEO ── */
