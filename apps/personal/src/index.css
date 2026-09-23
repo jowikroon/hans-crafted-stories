@@ -53,6 +53,20 @@
     --font-body: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
+    /* Display-typografie (2026-09-24): één bron voor publieke koppen, gelijk aan de standaard
+       Editorial-kop van /writing (writing-v2.css .writing-v2 .title). Switzer 700, dezelfde
+       Fontshare-bestanden als de rest van de site; 'Switzer Fallback' heeft metric-overrides
+       per gewicht (index.html). Geen nieuwe fontfamilie. */
+    --display-font: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, sans-serif;
+    --display-weight: 700;
+    --display-page-size: clamp(40px, 6vw, 72px);
+    --display-page-size-sm: clamp(34px, 9vw, 48px);
+    --display-page-leading: 1.02;
+    --display-page-tracking: -0.035em;
+    --display-card-size: clamp(18px, 14px + 0.9vw, 24px);
+    --display-card-leading: 1.15;
+    --display-card-tracking: -0.02em;
+
     /* Blog CMS instrument tokens (light fallback) */
     --ok: 140 45% 40%;
     --warn: 35 85% 50%;
@@ -211,6 +225,32 @@
   }
   .text-balance {
     text-wrap: balance;
+  }
+  /* Gedeelde display-koppen (zie --display-* tokens). Gebruik via <DisplayHeading>. */
+  .type-page-title,
+  .type-card-title {
+    font-family: var(--display-font);
+    font-weight: var(--display-weight);
+    font-feature-settings: "ss01", "cv01";
+    -webkit-font-smoothing: antialiased;
+    overflow-wrap: break-word;
+  }
+  .type-page-title {
+    font-size: var(--display-page-size);
+    line-height: var(--display-page-leading);
+    letter-spacing: var(--display-page-tracking);
+    text-wrap: balance;
+  }
+  .type-card-title {
+    font-size: var(--display-card-size);
+    line-height: var(--display-card-leading);
+    letter-spacing: var(--display-card-tracking);
+    text-wrap: pretty;
+  }
+  @media (max-width: 860px) {
+    .type-page-title {
+      font-size: var(--display-page-size-sm);
+    }
   }
   .filter-chip {
     @apply cursor-pointer rounded-full border-2 border-border px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-all duration-300;

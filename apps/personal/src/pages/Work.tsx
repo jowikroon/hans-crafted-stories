@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import DisplayHeading from "@/components/DisplayHeading";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "@/components/LocalizedLink";
 import { Home, ChevronRight, ArrowRight } from "lucide-react";
@@ -46,7 +47,9 @@ const Work = () => {
   const { lang } = useLang();
   const tw = translations[lang].work;
   const seo = translations[lang].seo;
-  const { getValue } = usePageContent("work");
+  const { getValue: getCmsValue } = usePageContent("work");
+  // De H1 is code-eigendom: prerender (zonder CMS) en browser tonen zo altijd dezelfde kop (B2-pariteit).
+  const getValue = (key: string, fallback: string) => (key === "work_heading" ? fallback : getCmsValue(key, fallback));
   const prefix = lang === "nl" ? "/nl" : "";
 
   useSEO({
@@ -197,9 +200,9 @@ const Work = () => {
           <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
             {getValue("work_label", tw.label)}
           </p>
-          <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
+          <DisplayHeading as="h1" className="mb-4">
             {getValue("work_heading", tw.heading)}
-          </h1>
+          </DisplayHeading>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">
             {getValue("work_description", tw.description)}
           </p>
@@ -236,7 +239,7 @@ const Work = () => {
                 className="group block h-full rounded-xl border-2 border-primary/20 bg-card p-6 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
               >
                 <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-primary">{c.copy[lang].label}</p>
-                <h3 className="mb-2 font-display text-lg font-medium leading-snug text-foreground">{c.copy[lang].title}</h3>
+                <DisplayHeading as="h3" size="card" className="mb-2">{c.copy[lang].title}</DisplayHeading>
                 <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{c.copy[lang].cardSummary}</p>
                 <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
                   {tw.readCase} <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />

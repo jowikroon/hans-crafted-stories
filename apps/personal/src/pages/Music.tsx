@@ -382,7 +382,7 @@ const Music = () => {
         <div className="mn-footer__inner">
           <div>
             <div className="mn-footer__brand">Hans van Leeuwen</div>
-            <p className="mn-footer__note">E-commerce manager by day. Making songs by night. Notes, gear and lyrics for every track.</p>
+            <p className="mn-footer__note">Marketplace manager by day. Making songs by night. Notes, gear and lyrics for every track.</p>
           </div>
           <nav className="mn-footer__links" aria-label="Footer">
             <Link to="/writing">Writing</Link>

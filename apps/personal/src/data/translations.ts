@@ -44,19 +44,16 @@ type TranslationStrings = {
 
   /* ── Hero / Home ── */
   hero: {
+    /** Kicker boven de H1 (positionering: marketplace manager, 2026-09-24). */
     subtitle: string;
+    /** Tweede regel van de H1, onder de naam. */
     heading: string;
-    headingEmphasis: string;
-    /** Slot van de H1 na de nadruk ("to reliable operations."). */
-    headingEnd: string;
     /** Beschikbaarheid — aanname uit de opdracht (1 december 2026); Hans bevestigt vóór release. */
     availability: string;
-    freelanceH2: string;
     description: string;
     location: string;
     ctaWork: string;
     ctaConsult: string;
-    ctaAbout: string;
     resultsLabel: string;
     results: string[];
     resultsDetail: string[];
@@ -218,7 +215,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     downloadCvEn: "Download CV (EN)",
     downloadCvNl: "Download CV (NL)",
     bio: [
-      "I'm Hans van Leeuwen, an e-commerce and marketplace manager based in Amersfoort. I combine hands-on Amazon and Bol.com management with a background in UX and practical experience building AI-assisted workflows.",
+      "I'm Hans van Leeuwen, a freelance and interim marketplace manager based in Amersfoort. I work hands-on on Amazon and bol, and more recently also with eBay. I combine that with a background in UX and practical experience building AI-assisted workflows.",
       "I work across product data, listings, advertising, stock planning and reporting, and make the operation understandable and transferable to the team that owns it. Interim assignments, projects and a suitable permanent role are all open for discussion.",
     ],
     experienceList: [
@@ -344,18 +341,14 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── Hero ── */
     hero: {
-      subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
-      heading: "Hands-on marketplace leadership.",
-      headingEmphasis: "From strategy",
-      headingEnd: "to reliable operations.",
+      subtitle: "Freelance and interim marketplace manager",
+      heading: "Marketplace manager for Amazon and bol",
       availability: "Available from 1 December 2026",
-      freelanceH2: "Grow Amazon NL & Bol.com revenue with a hands-on interim marketplace lead",
       description:
-        "I'm Hans van Leeuwen. I help brands run Amazon and Bol.com with clearer product data, better customer journeys and AI-assisted workflows whose output can be checked.",
+        "I help brands and retailers manage their strategy and day-to-day operations on Amazon and bol. My work covers product content, advertising, assortment and operational coordination. More recently, I have also worked with eBay.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
       ctaWork: "View marketplace cases",
-      ctaConsult: "Discuss your marketplace challenge",
-      ctaAbout: "About me",
+      ctaConsult: "Discuss your marketplace needs",
       resultsLabel: "Marketplace work in practice",
       results: [
         "Marketplace content and channel coordination",
@@ -370,10 +363,10 @@ export const translations: Record<Lang, TranslationStrings> = {
       whoIHelpLabel: "Who I help",
       whoIHelpHeading: "Brands I work with",
       whoIHelp: [
-        "D2C brands scaling into Amazon & Bol.com",
+        "D2C brands starting or growing on Amazon and bol",
         "Category leaders defending market share on marketplaces",
-        "Brands entering the Dutch & EU marketplace landscape",
-        "Companies seeking an interim e-commerce manager or marketplace strategist",
+        "Brands entering Dutch and European marketplaces",
+        "Companies that need interim marketplace management",
       ],
       problemsLabel: "Problems I solve",
       problemsHeading: "Common challenges I tackle",
@@ -382,31 +375,31 @@ export const translations: Record<Lang, TranslationStrings> = {
         "Low conversion rates on product detail pages",
         "Stockouts and Buy Box loss due to poor forecasting",
         "Listing suppression and catalog compliance issues",
-        "Weak organic ranking and poor indexing on Amazon or Bol.com",
+        "Weak organic ranking and poor indexing on Amazon or bol",
         "No clear marketplace strategy or KPI framework",
       ],
-      expertiseLabel: "Amazon & Bol.com Services",
-      expertiseHeading: "Amazon & Bol.com Marketplace Management (NL/EU)",
+      expertiseLabel: "Marketplace services",
+      expertiseHeading: "Marketplace management for Amazon and bol (NL/EU)",
       expertise: [
         {
           title: "Amazon NL specialist",
-          description: "Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations. Your Amazon NL specialist for scalable growth.",
+          description: "Listings and A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing and day-to-day account management for Amazon NL and DE.",
         },
         {
-          title: "Bol.com consultant",
-          description: "Content optimization, Bol Ads management, catalog management, and performance analytics. Hands-on Bol.com consultant for the Netherlands' largest marketplace.",
+          title: "bol.com consultant",
+          description: "Product content, advertising on bol, assortment and catalogue management, and performance reporting for sellers and vendors.",
         },
         {
-          title: "Interim e-commerce manager",
-          description: "Data-driven conversion rate optimization (CRO), A/B testing, and revenue scaling. Reduce friction, improve Buy Box win rate, and grow profitably.",
+          title: "Interim marketplace manager",
+          description: "Temporary cover for marketplace and e-commerce teams: set priorities, run the day-to-day work, coordinate with suppliers and colleagues, and hand over cleanly.",
         },
         {
           title: "AI e-commerce automation",
-          description: "Automating marketplace operations with n8n, Channable and Claude: feed processing, listing enrichment, order monitoring and stock and price runs across Amazon NL/DE and Bol.com, with a human on the sensitive decisions.",
+          description: "Automating marketplace operations with n8n, Channable and Claude: feed processing, listing enrichment, order monitoring and stock and price runs across Amazon NL/DE and bol, with a human on the sensitive decisions.",
         },
       ],
-      linkCases: "Portfolio & Amazon NL case studies →",
-      linkWriting: "Amazon & Bol.com optimization articles →",
+      linkCases: "Marketplace cases →",
+      linkWriting: "Articles on Amazon and bol →",
       linkAbout: "About Hans →",
     },
 
@@ -550,16 +543,16 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Hans van Leeuwen — Freelance E-commerce Manager NL/EU",
-      homeDescription: "Freelance e-commerce & marketplace manager for Amazon NL/DE and Bol.com: product data, listings, ads and checkable AI-assisted operations. Amersfoort.",
+      homeTitle: "Hans van Leeuwen | Marketplace manager for Amazon and bol",
+      homeDescription: "Freelance and interim marketplace manager for Amazon and bol: strategy, product content, advertising, assortment and day-to-day operations. Recently also eBay. Amersfoort, NL.",
       writingTitle: "E-commerce Insights: Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
       workTitle: "Amazon & Bol.com Case Studies | Hans van Leeuwen",
       workDescription: "Marketplace operations and product-data work by Hans van Leeuwen, alongside UX, design and creative projects.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
-      privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
-      aboutTitle: "About Hans van Leeuwen – Interim E-commerce Manager",
-      aboutDescription: "Interim e-commerce manager and marketplace specialist: 10+ years on Amazon and Bol.com, marketplace strategy and AI-assisted operations. Amersfoort, NL.",
+      privacyDescription: "Read the privacy policy of hansvanleeuwen.com: how we handle your data, cookies and analytics.",
+      aboutTitle: "About Hans van Leeuwen | Marketplace manager for Amazon and bol",
+      aboutDescription: "Freelance and interim marketplace manager for Amazon and bol, with 10+ years in e-commerce. Strategy, day-to-day marketplace operations and recent eBay work. Amersfoort, NL.",
       notFoundTitle: "Page Not Found | Hans van Leeuwen",
     },
   },
@@ -573,7 +566,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     downloadCvEn: "Download CV (EN)",
     downloadCvNl: "Download CV (NL)",
     bio: [
-      "Ik ben Hans van Leeuwen, e-commerce- en marketplace-manager in Amersfoort. Ik combineer hands-on management van Amazon en Bol.com met een achtergrond in UX en praktijkervaring met AI-ondersteunde workflows.",
+      "Ik ben Hans van Leeuwen, freelance en interim marketplace manager in Amersfoort. Ik werk hands-on op Amazon en bol, en recent ook met eBay. Dat combineer ik met een achtergrond in UX en praktijkervaring met AI-ondersteunde workflows.",
       "Ik werk aan productdata, listings, advertising, voorraadplanning en rapportage, en maak de operatie begrijpelijk en overdraagbaar aan het team dat ervoor verantwoordelijk is. Interim, projecten en een passende vaste rol zijn bespreekbaar.",
     ],
     experienceList: [
@@ -699,18 +692,14 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── Hero ── */
     hero: {
-      subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
-      heading: "Hands-on marketplace-management.",
-      headingEmphasis: "Van strategie",
-      headingEnd: "tot betrouwbare uitvoering.",
+      subtitle: "Freelance en interim marketplace manager",
+      heading: "Marketplace manager voor Amazon en bol",
       availability: "Beschikbaar vanaf 1 december 2026",
-      freelanceH2: "Groei Amazon NL & Bol.com omzet met een hands-on interim marktplaatsmanager",
       description:
-        "Ik ben Hans van Leeuwen. Ik help merken Amazon en Bol.com organiseren met heldere productdata, betere klantreizen en AI-ondersteunde workflows waarvan de output controleerbaar is.",
+        "Ik help merken en retailers met hun marketplace-strategie en dagelijkse uitvoering op Amazon en bol. Van productcontent en advertenties tot assortiment en operationele afstemming. Recent werk ik ook met eBay.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
       ctaWork: "Bekijk marketplace-cases",
       ctaConsult: "Bespreek je marketplace-vraag",
-      ctaAbout: "Over mij",
       resultsLabel: "Marketplace-werk in de praktijk",
       results: [
         "Marketplace-content en kanaalafstemming",
@@ -725,10 +714,10 @@ export const translations: Record<Lang, TranslationStrings> = {
       whoIHelpLabel: "Voor wie ik werk",
       whoIHelpHeading: "Merken waarmee ik werk",
       whoIHelp: [
-        "D2C-merken die opschalen naar Amazon & Bol.com",
+        "D2C-merken die starten of groeien op Amazon en bol",
         "Categorieleiders die marktaandeel verdedigen op marktplaatsen",
-        "Merken die de Nederlandse & Europese marktplaats betreden",
-        "Bedrijven op zoek naar een interim e-commerce manager of marktplaatsstrateeg",
+        "Merken die Nederlandse en Europese marketplaces betreden",
+        "Bedrijven die tijdelijk een marketplace manager nodig hebben",
       ],
       problemsLabel: "Problemen die ik oplos",
       problemsHeading: "Veelvoorkomende uitdagingen die ik aanpak",
@@ -737,31 +726,31 @@ export const translations: Record<Lang, TranslationStrings> = {
         "Lage conversieratio's op productdetailpagina's",
         "Stockouts en Buy Box-verlies door slechte forecasting",
         "Listing-suppressie en catalogus-complianceproblemen",
-        "Zwakke organische ranking en slechte indexering op Amazon of Bol.com",
+        "Zwakke organische ranking en slechte indexering op Amazon of bol",
         "Geen duidelijke marktplaatsstrategie of KPI-framework",
       ],
-      expertiseLabel: "Amazon & Bol.com Diensten",
-      expertiseHeading: "Amazon & Bol.com Marktplaatsbeheer (NL/EU)",
+      expertiseLabel: "Marketplace-diensten",
+      expertiseHeading: "Marketplace management voor Amazon en bol (NL/EU)",
       expertise: [
         {
           title: "Amazon NL specialist inhuren",
-          description: "Listing-optimalisatie, A+-content, Amazon Ads (Sponsored Products, Brands, Display), prijsstrategie en operations. Uw Amazon NL specialist voor schaalbare groei.",
+          description: "Listings en A+-content, Amazon Ads (Sponsored Products, Brands, Display), prijzen en dagelijks accountbeheer voor Amazon NL en DE.",
         },
         {
-          title: "Bol.com consultant inhuren",
-          description: "Content-optimalisatie, Bol Ads-beheer, catalogusbeheer en prestatieanalytics. Hands-on Bol.com consultant voor de grootste Nederlandse marktplaats.",
+          title: "bol.com consultant inhuren",
+          description: "Productcontent, adverteren op bol, assortiment- en catalogusbeheer en rapportage voor sellers en vendors.",
         },
         {
-          title: "Interim e-commerce manager inhuren",
-          description: "Datagedreven conversie-optimalisatie (CRO), A/B-testen en omzetschaling. Verminder frictie, verbeter Buy Box-winrate en groei winstgevend.",
+          title: "Interim marketplace manager inhuren",
+          description: "Tijdelijke versterking van marketplace- en e-commerceteams: prioriteiten stellen, het dagelijkse werk uitvoeren, afstemmen met leveranciers en collega's en netjes overdragen.",
         },
         {
           title: "AI e-commerce automation",
-          description: "Marketplace-operaties automatiseren met n8n, Channable en Claude: feedverwerking, listingverrijking, ordermonitoring en voorraad- en prijsruns voor Amazon NL/DE en Bol.com, met de mens op de gevoelige knoppen.",
+          description: "Marketplace-operaties automatiseren met n8n, Channable en Claude: feedverwerking, listingverrijking, ordermonitoring en voorraad- en prijsruns voor Amazon NL/DE en bol, met de mens op de gevoelige knoppen.",
         },
       ],
-      linkCases: "Portfolio & Amazon NL cases →",
-      linkWriting: "Amazon & Bol.com optimalisatie artikelen →",
+      linkCases: "Marketplace-cases →",
+      linkWriting: "Artikelen over Amazon en bol →",
       linkAbout: "Over Hans →",
     },
 
@@ -920,16 +909,16 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Hans van Leeuwen — freelance e-commerce manager inhuren",
-      homeDescription: "Freelance e-commerce & marketplace manager inhuren voor Amazon NL/DE en Bol.com: productdata, listings, ads en controleerbare AI-workflows. Amersfoort.",
+      homeTitle: "Hans van Leeuwen | Marketplace manager voor Amazon en bol",
+      homeDescription: "Freelance en interim marketplace manager voor Amazon en bol: strategie, productcontent, advertenties, assortiment en dagelijkse uitvoering. Recent ook eBay. Amersfoort.",
       writingTitle: "E-commerce inzichten Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
       workTitle: "Amazon & Bol.com case studies | Hans van Leeuwen",
       workDescription: "Marketplace-operaties en productdatawerk van Hans van Leeuwen, naast UX-, design- en creatieve projecten.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
-      privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
-      aboutTitle: "Over Hans van Leeuwen – Interim E-commerce Manager",
-      aboutDescription: "Interim e-commerce manager en marketplace specialist: 10+ jaar Amazon en Bol.com, marktplaatsstrategie en AI-ondersteunde operaties. Amersfoort, NL.",
+      privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com: hoe we omgaan met je gegevens, cookies en analytics.",
+      aboutTitle: "Over Hans van Leeuwen | Marketplace manager voor Amazon en bol",
+      aboutDescription: "Freelance en interim marketplace manager voor Amazon en bol, met 10+ jaar e-commerce-ervaring. Strategie, dagelijkse marketplace-uitvoering en recent werk met eBay. Amersfoort.",
       notFoundTitle: "Pagina Niet Gevonden | Hans van Leeuwen",
     },
   },

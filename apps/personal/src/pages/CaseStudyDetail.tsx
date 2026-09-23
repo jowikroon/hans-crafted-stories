@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import DisplayHeading from "@/components/DisplayHeading";
 import { Link } from "@/components/LocalizedLink";
 import { Home, ChevronRight, ArrowRight } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
@@ -63,7 +64,7 @@ const CaseStudyDetail = () => {
         className="mb-12"
       >
         <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">{c.label}</p>
-        <h1 className="mb-4 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl">{c.title}</h1>
+        <DisplayHeading as="h1" className="mb-4 max-w-4xl">{c.title}</DisplayHeading>
         <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">{c.description}</p>
       </motion.div>
 

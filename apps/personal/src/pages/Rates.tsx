@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import DisplayHeading from "@/components/DisplayHeading";
 import { ArrowRight, CheckCircle, ChevronRight, Home, Receipt, XCircle } from "lucide-react";
 import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
@@ -52,7 +53,7 @@ const Rates = () => {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><Receipt size={20} /></div>
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{t.breadcrumb}</p>
         </div>
-        <h1 className="mb-6 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">{t.h1}</h1>
+        <DisplayHeading as="h1" className="mb-6">{t.h1}</DisplayHeading>
         <p className="mb-12 max-w-3xl text-lg leading-relaxed text-foreground/90">{t.intro}</p>
       </motion.div>
 

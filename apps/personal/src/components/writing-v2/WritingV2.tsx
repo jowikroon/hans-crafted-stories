@@ -271,14 +271,14 @@ const WritingV2 = () => {
             {lang === "nl" ? (
               <>
                 <strong>E-commerce inzichten en marketplace-optimalisatie</strong> door <strong>Hans van Leeuwen</strong>, freelance
-                e-commerce manager en Amazon- en Bol.com-specialist in Amersfoort. Praktische essays over listing-optimalisatie,
-                Amazon Ads en Bol Ads, AI-automatisering en marketplace-groei in NL en de EU, geschreven vanuit hands-on klantwerk.
+                en interim marketplace manager voor Amazon en bol in Amersfoort. Praktische essays over listings, Amazon Ads,
+                adverteren op bol, AI-automatisering en marketplace-groei in NL en de EU, geschreven vanuit hands-on klantwerk.
               </>
             ) : (
               <>
                 <strong>E-commerce insights and marketplace optimization</strong> by <strong>Hans van Leeuwen</strong>, a freelance
-                e-commerce manager and Amazon and Bol.com specialist based in Amersfoort. Practical essays on listing optimization,
-                Amazon Ads and Bol Ads, AI automation and marketplace growth across the NL and EU, drawn from hands-on client work.
+                and interim marketplace manager for Amazon and bol based in Amersfoort. Practical essays on listings, Amazon Ads,
+                advertising on bol, AI automation and marketplace growth across the NL and EU, drawn from hands-on client work.
               </>
             )}
           </p>

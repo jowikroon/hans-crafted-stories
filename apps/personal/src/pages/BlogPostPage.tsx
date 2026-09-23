@@ -679,7 +679,7 @@ const BlogPostPage = () => {
             <span className="byline__av">H<img src={hansProfile} alt="Hans van Leeuwen" loading="lazy" decoding="async" onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} /></span>
             <div>
               <div className="byline__n"><Link to="/about" className="underline-offset-4 hover:underline">Hans van Leeuwen</Link></div>
-              <div className="byline__r">E-commerce and Marketplace Specialist</div>
+              <div className="byline__r">{lang === "nl" ? "Marketplace manager voor Amazon en bol" : "Marketplace manager for Amazon and bol"}</div>
             </div>
             <span className="dot" />
             <span className="byline__t">{dateStr} · {post.read_time}</span>

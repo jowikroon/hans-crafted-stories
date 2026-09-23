@@ -16,90 +16,38 @@ const DIST_HTML = path.resolve(__dirname, "../dist/index.html");
 const STATIC_CONTENT = `<header>
     <nav aria-label="Primary navigation">
       <a href="/">Home</a> |
-      <a href="/work">Amazon NL Marketplace Case Studies</a> |
-      <a href="/writing">Amazon &amp; Bol.com Optimization Articles</a> |
+      <a href="/work">Marketplace cases</a> |
+      <a href="/writing">Articles on Amazon and bol</a> |
       <a href="/about">About Hans van Leeuwen</a>
     </nav>
   </header>
   <main>
     <section aria-label="Introduction">
-      <p>Freelance E-commerce Manager &middot; Amazon &amp; Bol.com Specialist</p>
-      <h2>Hands-on marketplace leadership. From strategy to reliable operations.</h2>
-      <p>I'm Hans van Leeuwen. I help brands run Amazon and Bol.com with clearer product data, better customer journeys and AI-assisted workflows whose output can be checked.</p>
-      <a href="/about#contact">Discuss your marketplace challenge</a>
+      <p>Freelance and interim marketplace manager</p>
+      <h2>Hans van Leeuwen, marketplace manager for Amazon and bol</h2>
+      <p>I help brands and retailers manage their strategy and day-to-day operations on Amazon and bol. My work covers product content, advertising, assortment and operational coordination. More recently, I have also worked with eBay.</p>
+      <a href="/about#contact">Discuss your marketplace needs</a>
       <a href="/work">View marketplace cases</a>
       <p>Based in Amersfoort, Netherlands &middot; Working with brands across the Netherlands and the EU</p>
     </section>
-    <section aria-label="Marketplace work in practice">
+    <section aria-label="Marketplace services">
+      <h2>Marketplace management for Amazon and bol (NL/EU)</h2>
       <ul>
-        <li><strong>Marketplace content and channel coordination</strong> &mdash; Amazon and Bol.com content, campaign activity and coordination between sales channels for a European consumer brand.</li>
-        <li><strong>Campaigns connected to the customer journey</strong> &mdash; clearer product information, relevant imagery and a consistent buying experience.</li>
-        <li><strong>Forecasting and operational control</strong> &mdash; coordination between marketplace sales, logistics and customer service.</li>
+        <li><a href="/amazon-nl-specialist">Amazon NL specialist</a>: listings and A+ content, Amazon Ads, pricing and day-to-day account management for Amazon NL and DE.</li>
+        <li><a href="/bol-com-consultant">bol.com consultant</a>: product content, advertising on bol, assortment and catalogue management, and reporting for sellers and vendors.</li>
+        <li><a href="/interim-ecommerce-manager">Interim marketplace manager</a>: temporary cover for marketplace and e-commerce teams.</li>
+        <li><a href="/ai-ecommerce-automation">AI e-commerce automation</a>: automating marketplace operations with a human on sensitive decisions.</li>
       </ul>
-    </section>
-    <section aria-label="Who I help">
-      <h2>Brands I work with</h2>
-      <ul>
-        <li>D2C brands scaling into Amazon &amp; Bol.com</li>
-        <li>Category leaders defending market share on marketplaces</li>
-        <li>Brands entering the Dutch &amp; EU marketplace landscape</li>
-        <li>Companies seeking an interim e-commerce manager or marketplace strategist</li>
-      </ul>
-    </section>
-    <section aria-label="Problems I solve">
-      <h2>Common challenges I tackle</h2>
-      <ul>
-        <li>High ACOS eating into ad profitability</li>
-        <li>Low conversion rates on product detail pages</li>
-        <li>Stockouts and Buy Box loss due to poor forecasting</li>
-        <li>Listing suppression and catalog compliance issues</li>
-        <li>Weak organic ranking and poor indexing on Amazon or Bol.com</li>
-        <li>No clear marketplace strategy or KPI framework</li>
-      </ul>
-    </section>
-    <section aria-label="What I do">
-      <h2>Amazon &amp; Bol.com Marketplace Management (NL/EU)</h2>
-      <ul>
-        <li><strong>Amazon Marketplace Management</strong> &mdash; Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations. Your Amazon NL specialist for scalable growth.</li>
-        <li><strong>Bol.com Optimization</strong> &mdash; Content optimization, Bol Ads management, catalog management, and performance analytics. Hands-on Bol.com consultant for the Netherlands&rsquo; largest marketplace.</li>
-        <li><strong>Marketplace CRO &amp; Growth</strong> &mdash; Data-driven conversion rate optimization, A/B testing, and revenue scaling. Reduce friction, improve Buy Box win rate, and grow profitably.</li>
-        <li><strong>SEO &amp; Content Strategy</strong> &mdash; Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction and increasing conversions.</li>
-      </ul>
-    </section>
-    <section aria-label="Engagement Model">
-      <h2>Engagement Model</h2>
-      <ol>
-        <li><strong>Discovery</strong> &mdash; Audit your current marketplace presence, identify quick wins and long-term growth levers.</li>
-        <li><strong>Strategy</strong> &mdash; Build a tailored action plan with KPIs, timelines, and clear ownership.</li>
-        <li><strong>Execution</strong> &mdash; Hands-on implementation from listing optimization to ad campaigns with weekly check-ins.</li>
-        <li><strong>Scale</strong> &mdash; Iterate based on data, expand to new channels, and compound results over time.</li>
-      </ol>
-    </section>
-    <section aria-label="FAQ">
-      <h2>Frequently Asked Questions</h2>
-      <dl>
-        <dt>What marketplaces does Hans van Leeuwen specialize in?</dt>
-        <dd>Hans specializes in Amazon and Bol.com marketplace management, including product listing optimization, advertising (Amazon Ads, Bol Ads), A+ content creation, catalog management, and growth strategy.</dd>
-        <dt>What e-commerce services does Hans offer?</dt>
-        <dd>Hans provides marketplace management, conversion rate optimization (CRO), UX design for e-commerce, SEO &amp; content strategy, data-driven analytics, and digital commerce consulting for brands across the Netherlands and EU.</dd>
-        <dt>Is Hans van Leeuwen available for freelance or contract work?</dt>
-        <dd>Hans is based in Amersfoort, Netherlands and available for e-commerce management roles, consulting, and freelance marketplace projects. Contact via LinkedIn or email for availability.</dd>
-        <dt>What does a freelance e-commerce manager cost?</dt>
-        <dd>Engagements are priced per model: retainer for ongoing Amazon and Bol.com management, project pricing for defined scopes such as an audit or launch, and a daily rate for interim work. A 30-minute intake typically produces a written quote within one working day.</dd>
-        <dt>How long until I see results on Amazon NL or Bol.com?</dt>
-        <dd>Listing and A+ content fixes tend to shift conversion within 2-4 weeks. Sponsored Products and Bol Ads restructures usually show meaningful ACOS improvement within one advertising cycle (4-6 weeks). Structural share and stockout improvements are a 3-6 month arc.</dd>
-        <dt>Does Hans work on Amazon DE and Amazon FR as well?</dt>
-        <dd>Yes. In addition to Amazon NL and Bol.com, engagements regularly cover Amazon DE and Amazon FR for brands expanding across the EU, using the same operating model per marketplace.</dd>
-      </dl>
     </section>
   </main>
   <footer>
-    <p>&copy; {{CURRENT_YEAR}} Hans van Leeuwen | Freelance E-commerce Manager | Amersfoort, Netherlands</p>
+    <p>&copy; {{CURRENT_YEAR}} Hans van Leeuwen | Marketplace manager | Amersfoort, Netherlands</p>
     <nav aria-label="Footer navigation">
       <a href="/">Home</a> |
-      <a href="/work">Amazon NL Marketplace Case Studies</a> |
-      <a href="/writing">Amazon &amp; Bol.com Optimization Articles</a> |
-      <a href="/about">About Hans van Leeuwen</a>
+      <a href="/work">Cases</a> |
+      <a href="/writing">Articles</a> |
+      <a href="/about">About</a> |
+      <a href="/privacy">Privacy</a>
     </nav>
   </footer>`;
 

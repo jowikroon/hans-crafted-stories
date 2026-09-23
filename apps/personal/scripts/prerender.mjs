@@ -74,6 +74,8 @@ const {
   PRICING_EN,
   translations,
   songs,
+  homeFaqJsonLd,
+  IDENTITY,
   alternatesFor,
   absoluteUrl,
   OG_LOCALE,
@@ -94,26 +96,11 @@ const PERSON_ENTITY = {
   "@id": `${BASE}/#person`,
   name: "Hans van Leeuwen",
   url: `${BASE}/about`,
-  jobTitle: "Freelance & Interim E-commerce Manager",
+  jobTitle: IDENTITY.jobTitle.en,
   alternateName: "Jowikroon",
-  description:
-    "Hans van Leeuwen is an e-commerce and marketplace manager specializing in Amazon, Bol.com, marketplace growth, product data and AI-assisted e-commerce operations. 10+ years of experience across in-house, interim and freelance roles. Based in Amersfoort, NL.",
-  knowsAbout: [
-    "E-commerce management",
-    "Marketplace management",
-    "Amazon Seller & Vendor management",
-    "Bol.com",
-    "Amazon Ads",
-    "Bol Ads",
-    "Product data & feed management (Channable)",
-    "Demand forecasting",
-    "AI-assisted e-commerce operations",
-    "Marketplace automation (n8n)",
-    "LLM content workflows (Claude)",
-    "Marketplace SEO",
-    "Magento",
-    "eBay",
-  ],
+  description: IDENTITY.personDescription.en,
+  // Eén bron met index.html-template, sharedEntities en About (src/lib/seo/identity.ts).
+  knowsAbout: [...IDENTITY.knowsAbout],
   address: { "@type": "PostalAddress", addressLocality: "Amersfoort", addressRegion: "Utrecht", addressCountry: "NL" },
   sameAs: [
     "https://www.linkedin.com/in/hansvl3",
@@ -136,7 +123,7 @@ const WEBSITE_ENTITY = {
 const PROFESSIONAL_SERVICE_ENTITY = {
   "@type": ["Organization", "ProfessionalService"],
   "@id": `${BASE}/#organization`,
-  name: "Hans van Leeuwen – E-commerce & Marketplace Management",
+  name: IDENTITY.organizationName,
   url: `${BASE}/`,
   founder: { "@id": `${BASE}/#person` },
   sameAs: [
@@ -151,18 +138,18 @@ const PROFESSIONAL_SERVICE_ENTITY = {
 
 // Static page SEO — per taal. Dienstenpagina's komen uit data/servicePages.ts.
 /** Person-entity met beschrijving in de paginataal (NL-pagina's droegen een Engelse description). */
-const PERSON_DESCRIPTION_NL = "Hans van Leeuwen is een e-commerce- en marketplace-manager gespecialiseerd in Amazon, Bol.com, marketplace-groei, productdata en AI-ondersteunde e-commerce-operaties. 10+ jaar ervaring in in-house, interim- en freelance-rollen. Gevestigd in Amersfoort, NL.";
+const PERSON_DESCRIPTION_NL = IDENTITY.personDescription.nl;
 const personEntity = (lang) => (lang === "nl" ? { ...PERSON_ENTITY, description: PERSON_DESCRIPTION_NL } : PERSON_ENTITY);
 
 const ABOUT_PERSON_ENTITY = {
   ...PERSON_ENTITY,
-  image: { "@type": "ImageObject", url: `${BASE}/hans-profile.jpg`, caption: "Hans van Leeuwen – freelance e-commerce & marketplace manager" },
+  image: { "@type": "ImageObject", url: `${BASE}/hans-profile.jpg`, caption: "Hans van Leeuwen, marketplace manager for Amazon and bol" },
   alumniOf: [
     { "@type": "CollegeOrUniversity", name: "HU University of Applied Sciences Utrecht" },
     { "@type": "EducationalOrganization", name: "ROC Amsterdam - Hilversum" },
   ],
   worksFor: { "@type": "Organization", name: "ABS All Brake Systems" },
-  hasOccupation: { "@type": "Occupation", name: "E-commerce & Marketplace Manager", occupationLocation: { "@type": "Country", name: "NL" } },
+  hasOccupation: { "@type": "Occupation", name: IDENTITY.occupation.en, occupationLocation: { "@type": "Country", name: "NL" } },
 };
 
 const WORK_HEAD_EN = {
@@ -170,7 +157,7 @@ const WORK_HEAD_EN = {
   description:
     "Marketplace operations and product-data work by Hans van Leeuwen, alongside UX, design and creative projects.",
   intro: [
-    "This portfolio brings together hands-on marketplace and e-commerce work by Hans van Leeuwen, e-commerce & marketplace manager based in Amersfoort. The marketplace cases focus on the operational work behind a channel: product data, listings, advertising, stock planning, reporting and automation across Amazon, Bol.com, eBay and own webstores. Each case describes the problem, my role, the design choices and the deliverables; client-specific volumes and performance figures are not published.",
+    "This portfolio brings together hands-on marketplace and e-commerce work by Hans van Leeuwen, marketplace manager for Amazon and bol based in Amersfoort. The marketplace cases focus on the operational work behind a channel: product data, listings, advertising, stock planning, reporting and automation across Amazon, Bol.com, eBay and own webstores. Each case describes the problem, my role, the design choices and the deliverables; client-specific volumes and performance figures are not published.",
     "Below the marketplace cases you will find UX, design and creative projects as a separate category.",
   ],
 };
@@ -179,7 +166,7 @@ const WORK_HEAD_NL = {
   description:
     "Marketplace-operaties en productdatawerk van Hans van Leeuwen, naast UX-, design- en creatieve projecten.",
   intro: [
-    "Dit portfolio bundelt praktisch marketplace- en e-commercewerk van Hans van Leeuwen, e-commerce & marketplace manager uit Amersfoort. De marketplace-cases gaan over het operationele werk achter een kanaal: productdata, listings, advertising, voorraadplanning, rapportage en automatisering over Amazon, Bol.com, eBay en eigen webshops. Elke case beschrijft het probleem, mijn rol, de ontwerpkeuzes en de deliverables; klantspecifieke volumes en prestatiecijfers worden niet gepubliceerd.",
+    "Dit portfolio bundelt praktisch marketplace- en e-commercewerk van Hans van Leeuwen, marketplace manager voor Amazon en bol uit Amersfoort. De marketplace-cases gaan over het operationele werk achter een kanaal: productdata, listings, advertising, voorraadplanning, rapportage en automatisering over Amazon, Bol.com, eBay en eigen webshops. Elke case beschrijft het probleem, mijn rol, de ontwerpkeuzes en de deliverables; klantspecifieke volumes en prestatiecijfers worden niet gepubliceerd.",
     "Onder de marketplace-cases staan UX-, design- en creatieve projecten als aparte categorie.",
   ],
 };
@@ -502,8 +489,11 @@ for (const [slug, blogPost] of postBySlug) {
     postProcess: (page, lang) => {
       // WebPage.dateModified (template-JSON-LD heeft geen datum); twin: zichtbare revisiedatum in Hero.tsx.
       page = page.replace(/("@id":\s*"https:\/\/hansvanleeuwen\.com\/#webpage",)/, `$1\n          "dateModified": "${SERVICE_PAGES_UPDATED}",`);
+      // FAQPage per taal uit data/homeFaq.ts (zelfde bron als de zichtbare FAQ; de template heeft er geen).
+      const faqLd = serializeJsonForHtmlScript({ "@context": "https://schema.org", ...homeFaqJsonLd(lang) });
+      page = page.replace("</head>", `    <script type="application/ld+json" id="home-faq-jsonld">${faqLd}</script>\n</head>`);
       return lang === "nl"
-        ? page.replace(/"description":\s*"Hans van Leeuwen is an e-commerce and marketplace manager[^"]*"/g, `"description": ${JSON.stringify(PERSON_DESCRIPTION_NL)}`)
+        ? page.replace(/"description":\s*"Hans van Leeuwen is a freelance and interim marketplace manager[^"]*"/g, `"description": ${JSON.stringify(PERSON_DESCRIPTION_NL)}`)
         : page;
     },
     fallbackHtml: (lang, head) => buildStaticPageFallback({ ...head, intro: [] }, "", "h2", lang),
@@ -522,7 +512,7 @@ writeLocalizedPage("/about", {
     title: translations[lang].seo.aboutTitle,
     description: translations[lang].seo.aboutDescription,
     // og:image:alt volgt de H1 (SEO-run 2026-09-22: functietitel in OG week af van de kop)
-    ogImageAlt: lang === "nl" ? "Hans van Leeuwen – Interim E-commerce Manager & Marketplace-specialist" : "Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
+    ogImageAlt: lang === "nl" ? "Hans van Leeuwen, marketplace manager voor Amazon en bol" : "Hans van Leeuwen, marketplace manager for Amazon and bol",
   }),
   buildJsonLd: (lang, head) => ({
     "@context": "https://schema.org",
@@ -844,7 +834,7 @@ for (const song of songs.filter((sg) => sg.provider !== "soundcloud")) {
   const { html } = renderQuietly("/__prerender-404-probe__", null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = page.replace(/<title>[\s\S]*?<\/title>/, "<title>Page Not Found | Hans van Leeuwen</title>");
-  page = page.replace(/<meta name="description" content="[^"]*"/, '<meta name="description" content="This page does not exist or has moved. Go back to the homepage of Hans van Leeuwen, freelance e-commerce manager for Amazon and Bol.com."');
+  page = page.replace(/<meta name="description" content="[^"]*"/, '<meta name="description" content="This page does not exist or has moved. Go back to the homepage of Hans van Leeuwen, marketplace manager for Amazon and bol."');
   page = page.replace(/<meta name="robots" content="[^"]*"/, '<meta name="robots" content="noindex, nofollow"');
   page = page.replace(/[ \t]*<link rel="canonical" href="[^"]*" \/>\n?/, "");
   page = page.replace(/[ \t]*<meta property="og:url" content="[^"]*" \/>\n?/, "");

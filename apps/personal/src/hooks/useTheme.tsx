@@ -168,6 +168,5 @@ export const useLightOnRouteChange = (pathname: string) => {
     }
     resetToStart();
     resetPageLocalSkin();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen op padwissel
-  }, [pathname]);
+  }, [pathname, resetToStart]);
 };

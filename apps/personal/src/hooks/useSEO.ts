@@ -33,7 +33,7 @@ interface SEOConfig {
   robots?: string;
 }
 
-const DEFAULT_TITLE = "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen";
+const DEFAULT_TITLE = "Hans van Leeuwen | Marketplace manager for Amazon and bol";
 
 /**
  * Eigenaar van de <head>. AnimatePresence laat de vertrekkende pagina nog even
