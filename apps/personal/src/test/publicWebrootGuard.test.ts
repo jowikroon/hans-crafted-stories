@@ -3,7 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 // @ts-expect-error — .mjs-buildscript zonder type-declaraties
-import { scanWebroot } from "../../scripts/lib/publicWebrootGuard.mjs";
+import { scanWebroot, scanText } from "../../scripts/lib/publicWebrootGuard.mjs";
+import { execFileSync } from "node:child_process";
 
 const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64").replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
 const fakeJwt = (role: string) => `${b64({ alg: "HS256", typ: "JWT" })}.${b64({ iss: "supabase", ref: "testproject00000000", role })}.c2lnbmF0dXJlLW5vdC1yZWFsLXRlc3Q`;
@@ -42,7 +43,7 @@ describe("public webroot guard", () => {
 
   it("flags private keys and known secret prefixes", () => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), "webroot-"));
-    write("a.txt", "-----BEGIN RSA PRIVATE KEY-----");
+    write("a.txt", "-----BEGIN RSA " + "PRIVATE KEY-----"); // opgesplitst zodat dit testbestand zelf niet matcht
     write("b.js", "token = 'ghp_" + "a".repeat(36) + "'");
     expect(scanWebroot(dir).map((f: { kind: string }) => f.kind).sort()).toEqual(["github-token", "private-key"]);
   });
@@ -52,4 +53,17 @@ describe("public webroot guard", () => {
     const publicDir = path.resolve(__dirname, "../../public");
     expect(scanWebroot(publicDir)).toEqual([]);
   });
+
+  it("no tracked file in the repository contains a privileged Supabase key or known secret prefix", () => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "webroot-")); // voor afterEach
+    const repoRoot = path.resolve(__dirname, "../../../..");
+    const files = execFileSync("git", ["ls-files"], { cwd: repoRoot, encoding: "utf8" }).split(/\r?\n/).filter(Boolean)
+      .filter((f) => !/\.(png|jpe?g|gif|webp|ico|pdf|woff2?|ttf|mp3|mp4|xlsx|zip|lock)$/i.test(f) && !f.endsWith("package-lock.json"));
+    const findings = files.flatMap((f) => {
+      const full = path.join(repoRoot, f);
+      if (!fs.existsSync(full)) return [];
+      return scanText(fs.readFileSync(full, "utf8"), f);
+    });
+    expect(findings).toEqual([]);
+  }, 60_000);
 });

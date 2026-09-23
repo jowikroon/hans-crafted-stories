@@ -50,6 +50,19 @@ function walk(dir, root = dir, out = []) {
   return out;
 }
 
+/** Scant één tekst (bv. een getrackt bestand); bevindingen zonder secret-waarden. */
+export function scanText(text, file = "") {
+  const findings = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    for (const m of line.matchAll(JWT)) {
+      const role = decodeJwtRole(m[1]);
+      if (role === "service_role" || role === "supabase_admin") findings.push({ file, line: i + 1, kind: `jwt-${role}` });
+    }
+    for (const p of SECRET_PATTERNS) if (p.re.test(line)) findings.push({ file, line: i + 1, kind: p.id });
+  });
+  return findings;
+}
+
 /** Scant een map; geeft bevindingen terug zonder secret-waarden. */
 export function scanWebroot(root) {
   const findings = [];
