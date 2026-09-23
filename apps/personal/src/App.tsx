@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { installContactCtaTracking } from "@/lib/analytics/leadEvents";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +10,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { LangProvider } from "@/hooks/useLang";
 import { PreloadedDataProvider, type PreloadedData } from "@/contexts/PreloadedDataContext";
-import type { BlogPostRow } from "@/lib/api/content";
+import type { BlogPostRow, CaseStudyRow } from "@/lib/api/content";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollProgress from "./components/ScrollProgress";
@@ -67,6 +69,8 @@ const AppShell = ({ initialLang }: AppShellProps) => {
   const isCompact = location.pathname === "/samantha";
   const isDarkPage = isCompact || location.pathname === "/god-structure" || location.pathname.startsWith("/blog-cms") || location.pathname === "/music" || location.pathname.startsWith("/music/") || location.pathname === "/muziek/artist-radar" || location.pathname === "/release-set";
   const mainBg = mainBackgroundFor(location.pathname);
+  // Lead-meting: één gedelegeerde listener voor alle #contact-/mailto-CTA's (geen PII).
+  useEffect(() => installContactCtaTracking(), []);
 
   return (
     <ThemeProvider>
@@ -104,6 +108,8 @@ export interface AppProps {
     preloadedBlogPost?: BlogPostRow | null;
     /** Pre-fetched blog posts for /writing prerender. */
     preloadedBlogPosts?: BlogPostRow[] | null;
+    /** Pre-fetched CMS case studies for /work prerender. */
+    preloadedCaseStudies?: CaseStudyRow[] | null;
     /** Initial language for SSR (e.g. "en" for /about prerender). */
     initialLang?: "en" | "nl";
   };
@@ -116,10 +122,12 @@ const App = ({ preloadedData, serverContext }: AppProps) => {
     ? {
         blogPost: serverContext.preloadedBlogPost ?? null,
         blogPosts: serverContext.preloadedBlogPosts ?? null,
+        caseStudies: serverContext.preloadedCaseStudies ?? null,
       }
     : {
         blogPost: (preloadedData as { blogPost?: BlogPostRow } | null | undefined)?.blogPost ?? null,
         blogPosts: (preloadedData as { blogPosts?: BlogPostRow[] } | null | undefined)?.blogPosts ?? null,
+        caseStudies: (preloadedData as { caseStudies?: CaseStudyRow[] } | null | undefined)?.caseStudies ?? null,
       };
 
   return (

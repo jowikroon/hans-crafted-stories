@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { getTrackingScripts, TrackingScript } from "@/lib/api/trackingScripts";
+import { isProductionHost } from "@/lib/config/productionHost";
 
 const DEFER_TYPES = new Set(["hotjar", "linkedin", "meta_pixel", "custom"]);
 
@@ -79,6 +80,8 @@ const TrackingScriptInjector = () => {
   }, []);
 
   useEffect(() => {
+    // Previews/localhost laden geen tracking (zie lib/config/productionHost).
+    if (!isProductionHost()) return;
     if (!injected) inject();
   }, [injected, inject]);
 

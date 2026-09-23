@@ -5,13 +5,14 @@
 import React from "react";
 import { renderToString } from "react-dom/server";
 import App from "./App";
-import type { BlogPostRow } from "@/lib/api/content";
-import { getBlogPosts } from "@/lib/api/content";
+import type { BlogPostRow, CaseStudyRow } from "@/lib/api/content";
+import { getBlogPosts, getCaseStudies } from "@/lib/api/content";
 import { getHeroPost, getHeroPostHead, HERO_SLUGS } from "@/data/heroPosts";
 import { getBlogPostHead, getBlogPostJsonLd, detectBlogPostLang, primaryBlogPostLang, localizeBlogPost } from "@/lib/seo/blogPostHead";
 import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "@/lib/seo/staticHtml";
 import { SERVICE_PAGES, SERVICE_PAGES_UPDATED, SERVICE_BYLINE, EXPERIENCE_STRIP, RATES_PAGE, PRICING_NL, PRICING_EN } from "@/data/servicePages";
 import { translations } from "@/data/translations";
+import { MARKETPLACE_CASES } from "@/data/marketplaceCases";
 import { songs } from "@/data/music";
 import { LOCALIZED_ROUTES, alternatesFor, absoluteUrl, localizePath, OG_LOCALE } from "@/lib/i18n/routes";
 
@@ -20,6 +21,8 @@ export interface RenderOptions {
   initialLang?: "en" | "nl";
   /** Pre-fetched blog posts for /writing prerender. */
   preloadedBlogPosts?: BlogPostRow[] | null;
+  /** Pre-fetched CMS case studies for /work prerender. */
+  preloadedCaseStudies?: CaseStudyRow[] | null;
 }
 
 export function render(
@@ -34,6 +37,7 @@ export function render(
         preloadedBlogPost: preloadedBlogPost ?? null,
         initialLang: options?.initialLang,
         preloadedBlogPosts: options?.preloadedBlogPosts ?? null,
+        preloadedCaseStudies: options?.preloadedCaseStudies ?? null,
       },
     })
   );
@@ -45,6 +49,7 @@ export {
   getHeroPostHead,
   HERO_SLUGS,
   getBlogPosts,
+  getCaseStudies,
   getBlogPostHead,
   getBlogPostJsonLd,
   detectBlogPostLang,
@@ -57,6 +62,7 @@ export {
   SERVICE_PAGES_UPDATED,
   SERVICE_BYLINE,
   EXPERIENCE_STRIP,
+  MARKETPLACE_CASES,
   RATES_PAGE,
   PRICING_NL,
   PRICING_EN,

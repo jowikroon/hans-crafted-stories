@@ -4,7 +4,9 @@
  */
 
 const SUPABASE_URL = "https://kskumhtisifsdjjbzvbo.supabase.co";
-const SERVICE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtza3VtaHRpc2lmc2RqamJ6dmJvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTA5NzQ0MCwiZXhwIjoyMDk0NjczNDQwfQ.Fz9m22h085aj3IHgKBOv3Zx-rl_E4OtftyN5aJvEyN4";
+// Security 2026-09-23: hier stond een hard-coded service_role-sleutel (publieke repo). Nooit een
+// geprivilegieerde sleutel in (client)code; lees een publishable key uit de omgeving.
+const SERVICE_ANON_KEY: string = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_CCP_MARKETPLACE_PUBLISHABLE_KEY ?? "";
 
 const HEADERS = {
   "apikey": SERVICE_ANON_KEY,

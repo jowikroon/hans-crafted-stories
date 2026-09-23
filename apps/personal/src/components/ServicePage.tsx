@@ -149,7 +149,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
         <div className={`grid gap-6 ${t.results.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"}`}>
           {t.results.map((r) => (
             <div key={r.desc} className="rounded-xl border-2 border-border/40 bg-card p-6 text-center">
-              <p className="mb-2 font-display text-3xl font-bold text-primary">{r.stat}</p>
+              <p className={`mb-2 font-display font-bold text-primary ${r.stat.length > 6 ? "text-xl" : "text-3xl"}`}>{r.stat}</p>
               <p className="text-sm text-foreground">{r.desc}</p>
               <p className="mt-2 text-xs text-muted-foreground">{r.source}</p>
             </div>
@@ -225,7 +225,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
       <motion.div {...fade} className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-8 text-center md:p-12">
         <h2 className="mb-4 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{t.ctaHeading}</h2>
         <p className="mx-auto mb-6 max-w-xl text-sm text-muted-foreground">{t.ctaText}</p>
-        <Link to="/about#contact" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all hover:opacity-90">
+        <Link to="/about#contact" data-cta="service_page" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all hover:opacity-90">
           {t.ctaButton} <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
         </Link>
         <p className="mt-6 text-xs text-muted-foreground">

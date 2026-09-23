@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "@/components/LocalizedLink";
-import { Home, ChevronRight } from "lucide-react";
+import { Home, ChevronRight, ArrowRight } from "lucide-react";
 import { getCaseStudies, CaseStudyRow } from "@/lib/api/content";
 import CaseStudyCard from "@/components/CaseStudyCard";
 import CategoryCards from "@/components/CategoryCards";
@@ -11,6 +11,8 @@ import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageContent } from "@/hooks/usePageContent";
+import { usePreloadedCaseStudies } from "@/contexts/PreloadedDataContext";
+import { MARKETPLACE_CASES } from "@/data/marketplaceCases";
 
 // Map detailed categories to filter groups
 const categoryGroupMap: Record<string, string> = {
@@ -25,13 +27,19 @@ const categoryGroupMap: Record<string, string> = {
   "Web Design": "web-ux",
 };
 
-const internalRoutes: Record<string, string> = {
-  "connect-car-parts": "/work/connect-car-parts",
-};
+type LoadState = "loading" | "ready" | "error";
 
+/**
+ * /work — twee duidelijk gescheiden groepen (audit F2.6/F5.2):
+ *  1. zakelijke marketplace-cases uit data/marketplaceCases.ts (code, altijd in HTML én DOM);
+ *  2. creatieve projecten uit het CMS (case_studies). De prerender laadt dezelfde query en
+ *     geeft die als __PRELOADED__ mee, zodat HTML en browser dezelfde verzameling tonen.
+ * Een CMS-fout geeft een herstelbare foutmelding i.p.v. eindeloos "Loading…" (F2.7).
+ */
 const Work = () => {
-  const [studies, setStudies] = useState<CaseStudyRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const preloaded = usePreloadedCaseStudies();
+  const [studies, setStudies] = useState<CaseStudyRow[]>(preloaded ?? []);
+  const [state, setState] = useState<LoadState>(preloaded ? "ready" : "loading");
   const [filter, setFilter] = useState("all");
   const { isVisible } = usePageElements("work");
   const { cards: dbCards } = useCategoryCards("work");
@@ -39,6 +47,7 @@ const Work = () => {
   const tw = translations[lang].work;
   const seo = translations[lang].seo;
   const { getValue } = usePageContent("work");
+  const prefix = lang === "nl" ? "/nl" : "";
 
   useSEO({
     title: seo.workTitle,
@@ -50,54 +59,64 @@ const Work = () => {
       "@graph": [
         {
           "@type": "CollectionPage",
-          "@id": "https://hansvanleeuwen.com/work#page",
+          "@id": `https://hansvanleeuwen.com${prefix}/work#page`,
           name: seo.workTitle,
           description: seo.workDescription,
-          url: "https://hansvanleeuwen.com/work",
+          url: `https://hansvanleeuwen.com${prefix}/work`,
           isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
           about: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person" },
           author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+          inLanguage: lang,
         },
         {
           "@type": "BreadcrumbList",
           itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-            { "@type": "ListItem", position: 2, name: tw.label, item: "https://hansvanleeuwen.com/work" },
+            { "@type": "ListItem", position: 1, name: "Home", item: `https://hansvanleeuwen.com${prefix || "/"}` },
+            { "@type": "ListItem", position: 2, name: tw.label, item: `https://hansvanleeuwen.com${prefix}/work` },
           ],
         },
       ],
     },
   });
 
-  useEffect(() => {
-    getCaseStudies(true).then((s) => {
-      setStudies(s);
-      setLoading(false);
-    });
+  const load = useCallback(() => {
+    setState("loading");
+    getCaseStudies(true)
+      .then((s) => {
+        setStudies(s);
+        setState("ready");
+      })
+      .catch(() => setState("error"));
   }, []);
+
+  useEffect(() => {
+    // Met preloaded data (prerender) niet opnieuw laden: dezelfde verzameling als de HTML.
+    if (!preloaded) load();
+  }, [preloaded, load]);
+
+  const localizeCategory = useCallback(
+    (category: string) => tw.categoryLabels[category] ?? category,
+    [tw],
+  );
 
   const mapped = useMemo(
     () =>
-      studies.map((s) => {
-        const slug = s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-        return {
-          id: s.id,
-          title: s.title,
-          titleNl: s.title_nl || undefined,
-          category: s.category,
-          description: s.description,
-          descriptionNl: s.description_nl || undefined,
-          image: s.image,
-          year: s.year,
-          externalUrl: s.external_url ?? undefined,
-          internalUrl: internalRoutes[slug],
-          filterGroup: categoryGroupMap[s.category] ?? "visual",
-        };
-      }),
-    [studies]
+      studies.map((s) => ({
+        id: s.id,
+        title: s.title,
+        titleNl: s.title_nl || undefined,
+        category: localizeCategory(s.category),
+        description: s.description,
+        descriptionNl: s.description_nl || undefined,
+        image: s.image,
+        year: s.year,
+        externalUrl: s.external_url ?? undefined,
+        filterGroup: categoryGroupMap[s.category] ?? "visual",
+      })),
+    [studies, localizeCategory],
   );
 
-  // Inject CreativeWork JSON-LD for each case study
+  // Eén ItemList met eerst de zakelijke case(s), dan de creatieve projecten.
   useEffect(() => {
     const scriptId = "case-studies-jsonld";
     let el = document.getElementById(scriptId) as HTMLScriptElement | null;
@@ -107,26 +126,35 @@ const Work = () => {
       el.type = "application/ld+json";
       document.head.appendChild(el);
     }
-    const items = mapped.map((s, i) => ({
-      "@type": "CreativeWork",
-      "@id": `https://hansvanleeuwen.com/work#${s.id}`,
+    const business = MARKETPLACE_CASES.map((c, i) => ({
+      "@type": "ListItem",
       position: i + 1,
-      name: s.title,
-      description: s.description,
-      image: s.image,
-      dateCreated: s.year,
-      genre: s.category,
-      author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
-      ...(s.externalUrl ? { url: s.externalUrl } : { /* empty */ }),
+      url: `https://hansvanleeuwen.com${prefix}${c.path}`,
+      name: c.copy[lang].title,
+    }));
+    const creative = mapped.map((s, i) => ({
+      "@type": "ListItem",
+      position: business.length + i + 1,
+      item: {
+        "@type": "CreativeWork",
+        "@id": `https://hansvanleeuwen.com/work#${s.id}`,
+        name: s.title,
+        description: s.description,
+        image: s.image,
+        dateCreated: s.year,
+        genre: s.category,
+        author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
+        ...(s.externalUrl ? { url: s.externalUrl } : { /* empty */ }),
+      },
     }));
     el.textContent = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: "Design & UX Portfolio",
-      itemListElement: items,
+      name: seo.workTitle,
+      itemListElement: [...business, ...creative],
     });
     return () => { document.getElementById(scriptId)?.remove(); };
-  }, [mapped]);
+  }, [mapped, lang, prefix, seo.workTitle]);
 
   const filtered = useMemo(() => {
     if (filter === "all") return mapped;
@@ -136,13 +164,10 @@ const Work = () => {
   const getCount = (value: string) =>
     value === "all" ? mapped.length : mapped.filter((s) => s.filterGroup === value).length;
 
-  if (loading) {
-    return (
-      <section className="mx-auto max-w-6xl px-6 pt-6">
-        <p className="text-muted-foreground">{getValue("work_loading_text", tw.loading)}</p>
-      </section>
-    );
-  }
+  const cards = useMemo(
+    () => dbCards.map((c) => ({ ...c, ...(tw.filterLabels[c.value] ?? {}) })),
+    [dbCards, tw],
+  );
 
   return (
     <section className="mx-auto max-w-6xl px-6 pt-6 pb-20">
@@ -160,14 +185,6 @@ const Work = () => {
           </Link>
           <ChevronRight size={11} className="text-muted-foreground/40" />
           <span className="font-medium text-foreground">{tw.label}</span>
-          {filter !== "all" && (
-            <>
-              <ChevronRight size={11} className="text-muted-foreground/40" />
-              <span className="font-medium capitalize text-primary">
-                {dbCards.find((c) => c.value === filter)?.label ?? filter}
-              </span>
-            </>
-          )}
         </motion.nav>
       )}
 
@@ -207,46 +224,85 @@ const Work = () => {
         </motion.div>
       )}
 
-      {isVisible("category_cards") && dbCards.length > 0 && (
-        <CategoryCards
-          cards={dbCards}
-          activeValue={filter}
-          getCount={getCount}
-          onSelect={setFilter}
-        />
-      )}
+      {/* 1. Zakelijke marketplace-cases (code-bron, identiek in prerender en browser) */}
+      <section aria-labelledby="work-cases-heading" className="mb-16">
+        <h2 id="work-cases-heading" className="mb-2 font-display text-2xl font-medium text-foreground">{tw.casesHeading}</h2>
+        <p className="mb-6 max-w-2xl text-sm text-muted-foreground">{tw.casesIntro}</p>
+        <ul className="grid gap-5 md:grid-cols-2">
+          {MARKETPLACE_CASES.map((c) => (
+            <li key={c.slug}>
+              <Link
+                to={c.path}
+                className="group block h-full rounded-xl border-2 border-primary/20 bg-card p-6 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+              >
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-primary">{c.copy[lang].label}</p>
+                <h3 className="mb-2 font-display text-lg font-medium leading-snug text-foreground">{c.copy[lang].title}</h3>
+                <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{c.copy[lang].cardSummary}</p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                  {tw.readCase} <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      {/* Result count */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="mb-6 text-xs text-muted-foreground"
-      >
-        {filtered.length} {filtered.length === 1 ? tw.projectSingular : tw.projectPlural}
-        {filter !== "all" && ` ${tw.matching}`}
-      </motion.p>
+      {/* 2. Creatieve projecten (CMS) — aparte, herkenbare categorie */}
+      <section aria-labelledby="work-creative-heading">
+        <h2 id="work-creative-heading" className="mb-2 font-display text-2xl font-medium text-foreground">{tw.creativeHeading}</h2>
+        <p className="mb-6 max-w-2xl text-sm text-muted-foreground">{tw.creativeIntro}</p>
 
-      {isVisible("case_study_grid") && (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence mode="popLayout">
-            {filtered.map((study, i) => (
-              <CaseStudyCard key={study.id} study={study} index={i} />
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
+        {state === "loading" && (
+          <p className="text-muted-foreground" role="status">{getValue("work_loading_text", tw.loading)}</p>
+        )}
 
-      {filtered.length === 0 && (
-        <div className="py-16 text-center">
-          <p className="mb-2 text-muted-foreground">{getValue("work_no_projects_title", tw.noProjectsTitle)}</p>
-          <button
-            onClick={() => setFilter("all")}
-            className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
-          >
-            {getValue("work_show_all_label", tw.showAll)}
-          </button>
-        </div>
-      )}
+        {state === "error" && (
+          <div className="rounded-xl border border-border/60 bg-card p-6" role="alert">
+            <p className="mb-3 text-sm text-foreground">{tw.loadError}</p>
+            <button
+              onClick={load}
+              className="rounded-full border-2 border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              {tw.retry}
+            </button>
+          </div>
+        )}
+
+        {state === "ready" && (
+          <>
+            {isVisible("category_cards") && cards.length > 0 && (
+              <CategoryCards cards={cards} activeValue={filter} getCount={getCount} onSelect={setFilter} />
+            )}
+
+            <p className="mb-6 text-xs text-muted-foreground" aria-live="polite">
+              {filtered.length} {filtered.length === 1 ? tw.projectSingular : tw.projectPlural}
+              {filter !== "all" && ` ${tw.matching}`}
+            </p>
+
+            {isVisible("case_study_grid") && (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <AnimatePresence mode="popLayout">
+                  {filtered.map((study, i) => (
+                    <CaseStudyCard key={study.id} study={study} index={i} />
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {filtered.length === 0 && (
+              <div className="py-16 text-center">
+                <p className="mb-2 text-muted-foreground">{getValue("work_no_projects_title", tw.noProjectsTitle)}</p>
+                <button
+                  onClick={() => setFilter("all")}
+                  className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                >
+                  {getValue("work_show_all_label", tw.showAll)}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </section>
     </section>
   );
 };

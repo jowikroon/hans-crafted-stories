@@ -34,8 +34,10 @@ type TranslationStrings = {
     searchPlaceholder: string;
     noResults: string;
     login: string;
+    /** Primaire navigatieactie naar /about#contact. */
+    contact: string;
     portal: string;
-    workMenu: { allCases: string; services: string; amazon: string; bol: string; interim: string };
+    workMenu: { allCases: string; services: string; amazon: string; bol: string; interim: string; marketplaceCase: string };
     workspace: { label: string; blogCms: string; samantha: string; portal: string; docs: string; dashboard: string; signOut: string; dashboards: string; dashCcp: string; dashHvl: string; dashMpg: string };
     cms: { write: string; manage: string; analytics: string };
   };
@@ -45,6 +47,10 @@ type TranslationStrings = {
     subtitle: string;
     heading: string;
     headingEmphasis: string;
+    /** Slot van de H1 na de nadruk ("to reliable operations."). */
+    headingEnd: string;
+    /** Beschikbaarheid — aanname uit de opdracht (1 december 2026); Hans bevestigt vóór release. */
+    availability: string;
     freelanceH2: string;
     description: string;
     location: string;
@@ -106,6 +112,17 @@ type TranslationStrings = {
     linkAbout: string;
     linkAmazonNl: string;
     linkBolCom: string;
+    /** Zakelijke marketplace-cases (data/marketplaceCases.ts) boven de creatieve galerij. */
+    casesHeading: string;
+    casesIntro: string;
+    readCase: string;
+    creativeHeading: string;
+    creativeIntro: string;
+    loadError: string;
+    retry: string;
+    /** NL-labels voor de (Engelstalige) CMS-categorieën en filterkaarten. */
+    categoryLabels: Record<string, string>;
+    filterLabels: Record<string, { label: string; description: string }>;
   };
 
   /* ── Privacy page ── */
@@ -161,6 +178,18 @@ type TranslationStrings = {
     sending: string;
     successMessage: string;
     errorMessage: string;
+    /** Veldvalidatie (was hardcoded Engels in ContactForm). */
+    required: string;
+    invalidEmail: string;
+    errorSummary: string;
+    /** Getoond op previews/localhost: er wordt niets verstuurd. */
+    previewNotSent: string;
+    /** Server weigert tijdelijk (te veel inzendingen); e-mailuitwijk blijft. */
+    limitedMessage: string;
+    /** Botcontrole (Turnstile) niet afgerond of niet geladen. */
+    captchaMessage: string;
+    /** Label voor de directe e-mail-uitwijk naast het formulier. */
+    emailFallback: string;
   };
 
   /* ── SEO ── */
@@ -189,8 +218,8 @@ export const translations: Record<Lang, TranslationStrings> = {
     downloadCvEn: "Download CV (EN)",
     downloadCvNl: "Download CV (NL)",
     bio: [
-      "E-commerce Manager with 10+ years of experience accelerating digital commerce performance across marketplaces and D2C channels. Specializing in Amazon, Bol.com, AI-assisted e-commerce automation, and scalable revenue growth strategies.",
-      "I combine a strong background in UX design with hands-on commercial expertise to create data-driven strategies that deliver measurable results. From achieving 70% market share on Amazon NL to cutting out-of-stock rates below 2%, I turn complexity into growth.",
+      "I'm Hans van Leeuwen, an e-commerce and marketplace manager based in Amersfoort. I combine hands-on Amazon and Bol.com management with a background in UX and practical experience building AI-assisted workflows.",
+      "I work across product data, listings, advertising, stock planning and reporting, and make the operation understandable and transferable to the team that owns it. Interim assignments, projects and a suitable permanent role are all open for discussion.",
     ],
     experienceList: [
       {
@@ -198,7 +227,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-commerce Manager",
         period: "Dec 2025 – Present",
         highlights: [
-          "Automated VIN-based part lookup, a first in the industry",
+          "Implemented a VIN-based parts lookup and connected product data, marketplace feeds and operational reporting",
           "Connected eBay, Amazon and Bol.com into one marketplace operation",
           "Forecasting revenue and delivering actionable KPI insights",
         ],
@@ -208,12 +237,10 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "Marketplace Manager",
         period: "Feb 2022 – Dec 2025",
         highlights: [
-          "Achieved 70% market share in the earplug category on Amazon NL (Nielsen, 2023)",
-          "20% more weekly sales with a Back-to-School social ad campaign; A/B-tested images lifted conversion",
-          "Less Buy Box price volatility through B2B channel alignment; market analysis with Helium10 and Nielsen",
-          "Launched the Bol.com seller channel, transitioning from vendor to seller",
-          "Automated marketplace content via Channable integration",
-          "As e-commerce manager (Oct 2021 – Feb 2022): out-of-stock below 2%, logistics and customer service (NPS) restructured",
+          "Managed Amazon and Bol.com listings, campaigns and marketplace reporting",
+          "Led the Bol.com transition from vendor to seller",
+          "Automated marketplace content through Channable",
+          "Improved forecasting and coordination with logistics and customer service",
         ],
       },
       {
@@ -230,7 +257,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-commerce Manager",
         period: "Aug 2019 – Feb 2020",
         highlights: [
-          "Organic visibility +35% and conversion +15% through SEO strategy and PPC campaigns",
+          "Improved product content, navigation and campaign execution to support organic visibility and webshop conversion",
           "Product content, attributes, filtering and site mapping improved for badkamerwinkel.nl/.be",
         ],
       },
@@ -239,8 +266,8 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-Commerce Manager",
         period: "Feb 2016 – Aug 2019",
         highlights: [
-          "Organic traffic +40% through SEO optimisation of the KARWEI.nl, Gamma.nl and Gamma.be catalogues",
-          "Targeted advertising campaigns for higher engagement; company-wide e-commerce and catalogue training",
+          "Optimised online catalogues and supported teams with e-commerce and catalogue training",
+          "Targeted advertising campaigns for higher engagement",
           "Assistant e-commerce manager (Feb 2017 – Jan 2019), e-commerce manager from 2019",
         ],
       },
@@ -308,8 +335,9 @@ export const translations: Record<Lang, TranslationStrings> = {
       searchPlaceholder: "Search pages...",
       noResults: "No results found.",
       login: "Login",
+      contact: "Contact",
       portal: "Portal",
-      workMenu: { allCases: "Full portfolio", services: "Services", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
+      workMenu: { allCases: "Full portfolio", services: "Services", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager", marketplaceCase: "Case: marketplace product data" },
       workspace: { label: "Workspace", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Sign out", dashboards: "Dashboards", dashCcp: "Connect Car Parts", dashHvl: "Hans van Leeuwen", dashMpg: "Marketplace Growth" },
       cms: { write: "Write", manage: "Manage", analytics: "Analytics" },
     },
@@ -317,25 +345,27 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Hero ── */
     hero: {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
-      heading: "Driving marketplace growth through",
-      headingEmphasis: "strategy",
+      heading: "Hands-on marketplace leadership.",
+      headingEmphasis: "From strategy",
+      headingEnd: "to reliable operations.",
+      availability: "Available from 1 December 2026",
       freelanceH2: "Grow Amazon NL & Bol.com revenue with a hands-on interim marketplace lead",
       description:
-        "I'm Hans van Leeuwen, a freelance e-commerce and marketplace manager based in Amersfoort. After ten years growing Amazon and Bol.com revenue for brands, I know where marketplace growth actually comes from: sharp listings, disciplined ads, and reliable operations. I help brands across the Netherlands and EU turn their digital channels into revenue engines.",
+        "I'm Hans van Leeuwen. I help brands run Amazon and Bol.com with clearer product data, better customer journeys and AI-assisted workflows whose output can be checked.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
-      ctaWork: "View portfolio & case studies",
-      ctaConsult: "Contact me",
+      ctaWork: "View marketplace cases",
+      ctaConsult: "Discuss your marketplace challenge",
       ctaAbout: "About me",
-      resultsLabel: "Proven results",
+      resultsLabel: "Marketplace work in practice",
       results: [
-        "70% market share on Amazon NL (earplug category, Nielsen Data)",
-        "20% more weekly sales from a targeted Back-to-School social ad campaign",
-        "Out-of-stock rates below 2% through forecasting & logistics",
+        "Marketplace content and channel coordination",
+        "Campaigns connected to the customer journey",
+        "Forecasting and operational control",
       ],
       resultsDetail: [
-        "Challenge: Competitive earplug category on Amazon NL (Alpine Hearing Protection). Action: Listing overhaul, A+ content, A/B-tested images and Buy Box alignment with B2B channels. Result: 70% category market share (Nielsen, 2023).",
-        "Challenge: Flat weekly marketplace sales around the school season. Action: Built a targeted Back-to-School social ad campaign on top of optimised listings (Alpine Hearing Protection). Result: 20% more weekly sales.",
-        "Challenge: Frequent stockouts hurting Buy Box. Action: Built demand forecasting model and optimized logistics. Result: Out-of-stock rate reduced to below 2%.",
+        "For a European consumer brand, I managed Amazon and Bol.com content, campaign activity and coordination between sales channels. My work included listing improvements, image testing and the transition from vendor to seller on Bol.com.",
+        "I connected campaign activity to the product page: clearer product information, relevant imagery and a consistent buying experience. I reviewed campaign performance alongside conversion and product availability.",
+        "I improved demand forecasting and the coordination between marketplace sales, logistics and customer service. The focus was on identifying availability risks and making responsibilities clear.",
       ],
       whoIHelpLabel: "Who I help",
       whoIHelpHeading: "Brands I work with",
@@ -405,9 +435,9 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Work ── */
     work: {
       label: "Portfolio",
-      heading: "Design, UX & e-commerce work",
+      heading: "Marketplace cases & creative work",
       description:
-        "A decade of design-driven e-commerce. UX and interaction design, 3D, VR and creative work, alongside Amazon NL & Bol.com case studies with measurable results.",
+        "Marketplace operations and product-data work first, followed by UX, design and creative projects as a separate category.",
       projectSingular: "project",
       projectPlural: "projects",
       matching: "matching",
@@ -419,6 +449,15 @@ export const translations: Record<Lang, TranslationStrings> = {
       linkAbout: "About Hans",
       linkAmazonNl: "Amazon NL specialist",
       linkBolCom: "Bol.com consultant",
+      casesHeading: "Marketplace cases",
+      casesIntro: "Problem, role, design choices and deliverables. Client-specific volumes and performance figures are not published.",
+      readCase: "Read the case",
+      creativeHeading: "UX, design & creative work",
+      creativeIntro: "Earlier interaction, web, 3D and campaign work.",
+      loadError: "The creative projects could not be loaded.",
+      retry: "Try again",
+      categoryLabels: {},
+      filterLabels: {},
     },
 
     /* ── Privacy ── */
@@ -499,17 +538,24 @@ export const translations: Record<Lang, TranslationStrings> = {
       send: "Send Message",
       sending: "Sending…",
       successMessage: "Message sent! I'll get back to you soon.",
-      errorMessage: "Something went wrong. Please try again.",
+      errorMessage: "Your message was not sent. Please try again, or email me directly.",
+      required: "This field is required",
+      invalidEmail: "Enter a valid email address",
+      errorSummary: "Please check the highlighted fields.",
+      previewNotSent: "Preview environment: this message was not sent.",
+      limitedMessage: "Too many messages in a short time. Please try again later, or email me directly.",
+      captchaMessage: "The spam check did not complete. Please wait a moment and try again, or email me directly.",
+      emailFallback: "Prefer email? Write to me directly",
     },
 
     /* ── SEO ── */
     seo: {
       homeTitle: "Hans van Leeuwen — Freelance E-commerce Manager NL/EU",
-      homeDescription: "Freelance e-commerce & marketplace manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen 2023), AI-assisted operations. Amersfoort.",
+      homeDescription: "Freelance e-commerce & marketplace manager for Amazon NL/DE and Bol.com: product data, listings, ads and checkable AI-assisted operations. Amersfoort.",
       writingTitle: "E-commerce Insights: Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
       workTitle: "Amazon & Bol.com Case Studies | Hans van Leeuwen",
-      workDescription: "Documented marketplace results by Hans van Leeuwen: Amazon NL/DE, Bol.com and e-commerce operations case studies, including Connect Car Parts and Alpine.",
+      workDescription: "Marketplace operations and product-data work by Hans van Leeuwen, alongside UX, design and creative projects.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
       privacyDescription: "Read the privacy policy of hansvanleeuwen.com – how we handle your data, cookies, and analytics.",
       aboutTitle: "About Hans van Leeuwen – Interim E-commerce Manager",
@@ -527,8 +573,8 @@ export const translations: Record<Lang, TranslationStrings> = {
     downloadCvEn: "Download CV (EN)",
     downloadCvNl: "Download CV (NL)",
     bio: [
-      "E-commerce Manager met 10+ jaar ervaring in het versnellen van digitale commerceprestaties via marktplaatsen en D2C-kanalen. Gespecialiseerd in Amazon, Bol.com en schaalbare groeistrategieën.",
-      "Ik combineer een sterke achtergrond in UX-design met hands-on commerciële expertise om datagedreven strategieën te creëren die meetbare resultaten opleveren. Van 70% marktaandeel op Amazon NL tot het terugbrengen van out-of-stock rates onder de 2%, ik zet complexiteit om in groei.",
+      "Ik ben Hans van Leeuwen, e-commerce- en marketplace-manager in Amersfoort. Ik combineer hands-on management van Amazon en Bol.com met een achtergrond in UX en praktijkervaring met AI-ondersteunde workflows.",
+      "Ik werk aan productdata, listings, advertising, voorraadplanning en rapportage, en maak de operatie begrijpelijk en overdraagbaar aan het team dat ervoor verantwoordelijk is. Interim, projecten en een passende vaste rol zijn bespreekbaar.",
     ],
     experienceList: [
       {
@@ -536,7 +582,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-commerce Manager",
         period: "Dec 2025 – Heden",
         highlights: [
-          "VIN-gebaseerde onderdelen-lookup geautomatiseerd, een primeur in de branche",
+          "Implementeerde een VIN-gebaseerde onderdelenzoekfunctie en verbond productdata, marketplace-feeds en operationele rapportage",
           "eBay, Amazon en Bol.com verbonden tot één marketplace-operatie",
           "Omzetprognoses en leveren van actionable KPI-inzichten",
         ],
@@ -546,12 +592,10 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "Marketplace Manager",
         period: "Feb 2022 – Dec 2025",
         highlights: [
-          "70% marktaandeel in de oordoppencategorie op Amazon NL (Nielsen, 2023)",
-          "20% meer wekelijkse verkopen met een Back-to-School social-ad-campagne; A/B-tests op afbeeldingen verhoogden de conversie",
-          "Minder prijsvolatiliteit in de Buy Box door B2B-afstemming; marktdata-analyse met Helium10 en Nielsen",
-          "Bol.com-sellerkanaal gelanceerd, transitie van vendor naar seller",
-          "Marketplace-content geautomatiseerd via Channable-integratie",
-          "Als e-commerce manager (okt 2021 – feb 2022): out-of-stock onder 2%, logistiek en klantenservice (NPS) opnieuw ingericht",
+          "Beheerde listings, campagnes en marketplace-rapportage op Amazon en Bol.com",
+          "Begeleidde de overstap van vendor naar seller op Bol.com",
+          "Automatiseerde marketplace-content via Channable",
+          "Verbeterde forecasting en de afstemming met logistiek en klantenservice",
         ],
       },
       {
@@ -568,7 +612,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-commerce Manager",
         period: "Aug 2019 – Feb 2020",
         highlights: [
-          "Organische zichtbaarheid +35% en conversie +15% door SEO-strategie en PPC-campagnes",
+          "Verbeterde productcontent, navigatie en campagne-uitvoering voor organische zichtbaarheid en webshopconversie",
           "Productcontent, attributen, filtering en sitemapping verbeterd voor badkamerwinkel.nl/.be",
         ],
       },
@@ -577,8 +621,8 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "E-Commerce Manager",
         period: "Feb 2016 – Aug 2019",
         highlights: [
-          "Organisch verkeer +40% door SEO-optimalisatie van de catalogi van KARWEI.nl, Gamma.nl en Gamma.be",
-          "Gerichte advertentiecampagnes voor hogere betrokkenheid; bedrijfsbrede e-commerce- en catalogustraining",
+          "Optimaliseerde online catalogi en ondersteunde teams met e-commerce- en catalogustraining",
+          "Gerichte advertentiecampagnes voor hogere betrokkenheid",
           "Assistent e-commerce manager (feb 2017 – jan 2019), e-commerce manager vanaf 2019",
         ],
       },
@@ -646,8 +690,9 @@ export const translations: Record<Lang, TranslationStrings> = {
       searchPlaceholder: "Zoek pagina's...",
       noResults: "Geen resultaten gevonden.",
       login: "Inloggen",
+      contact: "Contact",
       portal: "Portal",
-      workMenu: { allCases: "Volledig portfolio", services: "Diensten", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager" },
+      workMenu: { allCases: "Volledig portfolio", services: "Diensten", amazon: "Amazon NL Specialist", bol: "Bol.com Consultant", interim: "Interim E-commerce Manager", marketplaceCase: "Case: marketplace-productdata" },
       workspace: { label: "Werkruimte", blogCms: "Blog CMS", samantha: "Samantha AI", portal: "Portal", docs: "Docs", dashboard: "Dashboard", signOut: "Uitloggen", dashboards: "Dashboards", dashCcp: "Connect Car Parts", dashHvl: "Hans van Leeuwen", dashMpg: "Marketplace Growth" },
       cms: { write: "Schrijven", manage: "Beheren", analytics: "Analytics" },
     },
@@ -655,25 +700,27 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Hero ── */
     hero: {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
-      heading: "Marktplaatsgroei realiseren door",
-      headingEmphasis: "strategie",
+      heading: "Hands-on marketplace-management.",
+      headingEmphasis: "Van strategie",
+      headingEnd: "tot betrouwbare uitvoering.",
+      availability: "Beschikbaar vanaf 1 december 2026",
       freelanceH2: "Groei Amazon NL & Bol.com omzet met een hands-on interim marktplaatsmanager",
       description:
-        "Laat je omzet op Amazon NL & Bol.com groeien met een ervaren interim marketplace manager. Ik ben Hans van Leeuwen, freelance e-commerce en marketplace specialist gevestigd in Amersfoort. Na tien jaar omzetgroei op Amazon en Bol.com voor diverse merken, weet ik exact hoe je marktplaatsen omzet in winstgevende groeikanalen: strakke productlistings, scherpe advertenties en betrouwbare operations.",
+        "Ik ben Hans van Leeuwen. Ik help merken Amazon en Bol.com organiseren met heldere productdata, betere klantreizen en AI-ondersteunde workflows waarvan de output controleerbaar is.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
-      ctaWork: "Bekijk portfolio & cases",
-      ctaConsult: "Neem contact op met mij",
+      ctaWork: "Bekijk marketplace-cases",
+      ctaConsult: "Bespreek je marketplace-vraag",
       ctaAbout: "Over mij",
-      resultsLabel: "Bewezen resultaten",
+      resultsLabel: "Marketplace-werk in de praktijk",
       results: [
-        "70% marktaandeel op Amazon NL (oordopjescategorie, Nielsen Data)",
-        "20% meer wekelijkse verkopen door een gerichte Back-to-School social-ad-campagne",
-        "Out-of-stock rate onder de 2% dankzij verbeterde forecasting & logistiek",
+        "Marketplace-content en kanaalafstemming",
+        "Campagnes verbonden met de klantreis",
+        "Forecasting en operationele controle",
       ],
       resultsDetail: [
-        "Uitdaging: Concurrerende oordoppencategorie op Amazon NL (Alpine Hearing Protection). Actie: Listings herbouwd, A+ content, A/B-tests op afbeeldingen en Buy Box-afstemming met B2B-kanalen. Resultaat: 70% categoriemarktaandeel (Nielsen, 2023).",
-        "Uitdaging: Vlakke wekelijkse marketplace-omzet rond het schoolseizoen. Actie: Gerichte Back-to-School social-ad-campagne bovenop geoptimaliseerde listings (Alpine Hearing Protection). Resultaat: 20% meer wekelijkse verkopen.",
-        "Uitdaging: Frequente stockouts met Buy Box-verlies. Actie: Vraagvoorspellingsmodel gebouwd en logistiek geoptimaliseerd. Resultaat: Out-of-stock rate onder de 2%.",
+        "Voor een Europese consumentenbrand beheerde ik content, campagnes en de afstemming tussen verkoopkanalen op Amazon en Bol.com. Mijn werk omvatte listingverbeteringen, beeldtests en de overstap van vendor naar seller op Bol.com.",
+        "Ik verbond campagnes met de productpagina: heldere productinformatie, relevante beelden en een consistente koopervaring. Campagneresultaten beoordeelde ik samen met conversie en productbeschikbaarheid.",
+        "Ik verbeterde demand forecasting en de afstemming tussen marketplace-verkoop, logistiek en klantenservice. De nadruk lag op het signaleren van beschikbaarheidsrisico's en duidelijke verantwoordelijkheden.",
       ],
       whoIHelpLabel: "Voor wie ik werk",
       whoIHelpHeading: "Merken waarmee ik werk",
@@ -743,9 +790,9 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Work ── */
     work: {
       label: "Portfolio",
-      heading: "Design, UX & e-commerce werk",
+      heading: "Marketplace-cases & creatief werk",
       description:
-        "Tien jaar design-gedreven e-commerce. UX- en interactieontwerp, 3D-, VR- en creatief werk, naast Amazon NL & Bol.com cases met meetbaar resultaat.",
+        "Eerst marketplace-operaties en productdatawerk, daarna UX-, design- en creatieve projecten als aparte categorie.",
       projectSingular: "project",
       projectPlural: "projecten",
       matching: "gevonden",
@@ -757,6 +804,30 @@ export const translations: Record<Lang, TranslationStrings> = {
       linkAbout: "Over Hans",
       linkAmazonNl: "Amazon NL specialist",
       linkBolCom: "Bol.com consultant",
+      casesHeading: "Marketplace-cases",
+      casesIntro: "Probleem, rol, ontwerpkeuzes en deliverables. Klantspecifieke volumes en prestatiecijfers worden niet gepubliceerd.",
+      readCase: "Lees de case",
+      creativeHeading: "UX, design & creatief werk",
+      creativeIntro: "Eerder interactie-, web-, 3D- en campagnewerk.",
+      loadError: "De creatieve projecten konden niet worden geladen.",
+      retry: "Opnieuw proberen",
+      categoryLabels: {
+        "E-commerce / UX": "E-commerce / UX",
+        "Creative / Campaign": "Creatief / campagne",
+        "Game Design": "Gamedesign",
+        "3D / Creative": "3D / creatief",
+        "Infographic": "Infographic",
+        "VR / Game Design": "VR / gamedesign",
+        "3D Design": "3D-design",
+        "Typography": "Typografie",
+        "Web Design": "Webdesign",
+      },
+      filterLabels: {
+        all: { label: "Alles", description: "Volledig portfolio" },
+        "web-ux": { label: "UX & e-commerce", description: "Interactie-, web- en shopdesign" },
+        "3d-vr": { label: "3D, VR & games", description: "Cinema 4D, VR- en gameconcepten" },
+        visual: { label: "Merk & visueel", description: "Campagnes, typografie en infographics" },
+      },
     },
 
     /* ── Privacy ── */
@@ -837,17 +908,24 @@ export const translations: Record<Lang, TranslationStrings> = {
       send: "Verstuur bericht",
       sending: "Verzenden…",
       successMessage: "Bericht verzonden! Ik neem snel contact op.",
-      errorMessage: "Er ging iets mis. Probeer het opnieuw.",
+      errorMessage: "Je bericht is niet verstuurd. Probeer het opnieuw of mail me direct.",
+      required: "Dit veld is verplicht",
+      invalidEmail: "Vul een geldig e-mailadres in",
+      errorSummary: "Controleer de gemarkeerde velden.",
+      previewNotSent: "Previewomgeving: dit bericht is niet verstuurd.",
+      limitedMessage: "Te veel berichten in korte tijd. Probeer het later opnieuw of mail me direct.",
+      captchaMessage: "De spamcontrole is niet afgerond. Wacht even en probeer het opnieuw, of mail me direct.",
+      emailFallback: "Liever mailen? Stuur me direct een e-mail",
     },
 
     /* ── SEO ── */
     seo: {
       homeTitle: "Hans van Leeuwen — freelance e-commerce manager inhuren",
-      homeDescription: "Freelance e-commerce & marketplace manager inhuren voor Amazon NL/DE en Bol.com. 10+ jaar, 70% marktaandeel (Nielsen 2023), AI-automatisering. Amersfoort.",
+      homeDescription: "Freelance e-commerce & marketplace manager inhuren voor Amazon NL/DE en Bol.com: productdata, listings, ads en controleerbare AI-workflows. Amersfoort.",
       writingTitle: "E-commerce inzichten Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
       workTitle: "Amazon & Bol.com case studies | Hans van Leeuwen",
-      workDescription: "Gedocumenteerde marktplaatsresultaten van Hans van Leeuwen: case studies Amazon NL/DE, Bol.com en e-commerce, waaronder Connect Car Parts en Alpine.",
+      workDescription: "Marketplace-operaties en productdatawerk van Hans van Leeuwen, naast UX-, design- en creatieve projecten.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
       privacyDescription: "Lees het privacybeleid van hansvanleeuwen.com – hoe we omgaan met je gegevens, cookies en analytics.",
       aboutTitle: "Over Hans van Leeuwen – Interim E-commerce Manager",

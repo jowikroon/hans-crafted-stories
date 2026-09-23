@@ -41,8 +41,10 @@ if (!fs.existsSync(templatePath)) {
 let template = fs.readFileSync(templatePath, "utf8");
 
 // Load server bundle (built with vite build --ssr src/entry-server.tsx)
-const entryJs = path.join(distDir, "entry-server.js");
-const entryMjs = path.join(distDir, "entry-server.mjs");
+// SSR-bundle staat in dist-ssr/ (niet in de publieke output dist/).
+const ssrDir = path.resolve(__dirname, "..", "dist-ssr");
+const entryJs = path.join(ssrDir, "entry-server.js");
+const entryMjs = path.join(ssrDir, "entry-server.mjs");
 const entryPath = fs.existsSync(entryMjs) ? entryMjs : fs.existsSync(entryJs) ? entryJs : null;
 if (!entryPath) {
   console.error("[prerender] dist/entry-server.js or .mjs not found. Run: vite build --ssr src/entry-server.tsx");
@@ -54,6 +56,7 @@ const {
   getHeroPost,
   HERO_SLUGS,
   getBlogPosts,
+  getCaseStudies,
   getBlogPostHead,
   getBlogPostJsonLd,
   clearRootHtml,
@@ -65,6 +68,7 @@ const {
   SERVICE_PAGES,
   SERVICE_PAGES_UPDATED,
   EXPERIENCE_STRIP,
+  MARKETPLACE_CASES,
   RATES_PAGE,
   PRICING_NL,
   PRICING_EN,
@@ -164,41 +168,30 @@ const ABOUT_PERSON_ENTITY = {
 const WORK_HEAD_EN = {
   title: "Amazon & Bol.com Case Studies | Hans van Leeuwen",
   description:
-    "Documented marketplace results by Hans van Leeuwen: Amazon NL/DE, Bol.com and e-commerce operations case studies, including Connect Car Parts and Alpine.",
+    "Marketplace operations and product-data work by Hans van Leeuwen, alongside UX, design and creative projects.",
   intro: [
-    "This portfolio brings together hands-on marketplace and e-commerce work by Hans van Leeuwen, e-commerce & marketplace manager based in Amersfoort. The case studies focus on the operational work behind growth: product data, marketplace listings, advertising, stock planning, reporting and automation across Amazon, Bol.com, eBay and own webstores. Every case shows the starting point, the intervention and the measurable commercial or operational result.",
-    "The featured Connect Car Parts case describes a Dutch automotive parts operation selling A.B.S. brake parts through Magento, Amazon DE and eBay DE, with catalogue quality, vehicle fitment data, Channable feed management, listing optimisation, advertising and recurring performance reviews. Other documented results: 70% market share in an Amazon NL earplug category (Nielsen 2023), out-of-stock below 2% after improving demand forecasting, and 20% more weekly sales from a targeted social ad campaign, all at Alpine Hearing Protection. On Bol.com the same brand moved from vendor to seller after a per-product-group calculation, documented in the article 'Vendor or seller on Bol.com: how I ran the numbers at Alpine'.",
+    "This portfolio brings together hands-on marketplace and e-commerce work by Hans van Leeuwen, e-commerce & marketplace manager based in Amersfoort. The marketplace cases focus on the operational work behind a channel: product data, listings, advertising, stock planning, reporting and automation across Amazon, Bol.com, eBay and own webstores. Each case describes the problem, my role, the design choices and the deliverables; client-specific volumes and performance figures are not published.",
+    "Below the marketplace cases you will find UX, design and creative projects as a separate category.",
   ],
 };
 const WORK_HEAD_NL = {
   title: "Amazon & Bol.com case studies | Hans van Leeuwen",
   description:
-    "Gedocumenteerde marktplaatsresultaten van Hans van Leeuwen: case studies Amazon NL/DE, Bol.com en e-commerce, waaronder Connect Car Parts en Alpine.",
+    "Marketplace-operaties en productdatawerk van Hans van Leeuwen, naast UX-, design- en creatieve projecten.",
   intro: [
-    "Dit portfolio bundelt praktisch marktplaats- en e-commercewerk van Hans van Leeuwen, e-commerce & marketplace manager uit Amersfoort. De case studies richten zich op het operationele werk achter groei: productdata, listings, advertising, voorraadplanning, rapportage en automatisering over Amazon, Bol.com, eBay en eigen webshops. Elke case toont het startpunt, de ingreep en het meetbare commerciële of operationele resultaat.",
-    "De uitgelichte Connect Car Parts-case beschrijft een Nederlandse operatie in auto-onderdelen die A.B.S.-remonderdelen verkoopt via Magento, Amazon DE en eBay DE, met cataloguskwaliteit, voertuig-fitmentdata, feedmanagement via Channable, listingoptimalisatie, advertising en terugkerende performance reviews. Andere gedocumenteerde resultaten: 70% marktaandeel in een oordoppencategorie op Amazon NL (Nielsen 2023), out-of-stock onder 2% na betere demand forecasting en 20% meer wekelijkse verkopen door een gerichte social-ad-campagne, alle bij Alpine Hearing Protection.",
+    "Dit portfolio bundelt praktisch marketplace- en e-commercewerk van Hans van Leeuwen, e-commerce & marketplace manager uit Amersfoort. De marketplace-cases gaan over het operationele werk achter een kanaal: productdata, listings, advertising, voorraadplanning, rapportage en automatisering over Amazon, Bol.com, eBay en eigen webshops. Elke case beschrijft het probleem, mijn rol, de ontwerpkeuzes en de deliverables; klantspecifieke volumes en prestatiecijfers worden niet gepubliceerd.",
+    "Onder de marketplace-cases staan UX-, design- en creatieve projecten als aparte categorie.",
   ],
 };
 
-const CASE_CCP_HEAD_EN = {
-  title: "Connect Car Parts Case Study | Hans van Leeuwen",
-  description:
-    "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: ~400 A.B.S. brake-part SKUs on Amazon DE, eBay DE and Magento, Channable and n8n.",
-  intro: [
-    "Connect Car Parts is a Dutch automotive e-commerce operation selling A.B.S. brake parts (discs, pads, hoses and wheel-bearing kits) through its own Magento storefront and on Amazon DE and eBay DE. The active catalogue covers roughly 400 SKUs with vehicle-fitment data (K-types) and OE cross-references; the wider A.B.S. assortment being rolled out to eBay DE and Bol.com runs into the thousands of references.",
-    "Hans van Leeuwen runs the marketplace side end to end: catalogue and product-data quality, feed management via Channable, listing optimisation, marketplace advertising and the operational reporting loop across the Dutch and German markets. The operation is automation-first: orders are monitored every 30 minutes through an n8n pipeline with failure alerts, a daily radar checks Channable feed quality and marketplace rule changes, an automated VIN-based parts lookup (a first in the industry) drives the storefront, and listing content is generated through an AI-assisted pipeline with human review on pricing, brand voice and compliance.",
-    "Current expansion work: the Amazon DE catalogue launch including German VAT registration, and rolling the full A.B.S. assortment out to eBay DE and Bol.com with marketplace-specific content rules and vehicle compatibility files.",
-  ],
-};
-const CASE_CCP_HEAD_NL = {
-  title: "Case study Connect Car Parts | Hans van Leeuwen",
-  description:
-    "Hoe Hans van Leeuwen de marketplace-operatie van Connect Car Parts runt: ~400 A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento met Channable en n8n.",
-  intro: [
-    "Connect Car Parts is een Nederlandse e-commerce-operatie in auto-onderdelen die A.B.S.-remonderdelen (schijven, blokken, slangen en wiellagersets) verkoopt via een eigen Magento-webshop en op Amazon DE en eBay DE. De actieve catalogus omvat circa 400 SKU's met voertuig-fitmentdata (K-types) en OE-kruisverwijzingen; het bredere A.B.S.-assortiment dat naar eBay DE en Bol.com wordt uitgerold loopt in de duizenden referenties.",
-    "Hans van Leeuwen runt de marketplace-kant van begin tot eind: catalogus- en productdatakwaliteit, feedmanagement via Channable, listingoptimalisatie, marketplace-advertising en de operationele rapportagecyclus over de Nederlandse en Duitse markt. De operatie is automation-first: orders worden elke 30 minuten bewaakt via een n8n-pipeline met alerts, een dagelijkse radar controleert de Channable-feedkwaliteit en marketplace-regelwijzigingen, een geautomatiseerde VIN-zoekfunctie (een primeur in de branche) stuurt de webshop aan en listingcontent komt uit een AI-ondersteunde pipeline met menselijke controle op prijs, merkstem en compliance.",
-    "Lopende uitbreiding: de lancering van de Amazon DE-catalogus inclusief Duitse btw-registratie, en de uitrol van het volledige A.B.S.-assortiment naar eBay DE en Bol.com met marketplace-specifieke contentregels en voertuigcompatibiliteitsbestanden.",
-  ],
+// Head + fallback van zakelijke cases komen uit data/marketplaceCases.ts (twin van CaseStudyDetail.tsx).
+const caseHead = (mcase, lang) => {
+  const c = mcase.copy[lang];
+  return {
+    title: lang === "nl" ? "Case: marketplace-productdata | Hans van Leeuwen" : "Case: Marketplace Product Data | Hans van Leeuwen",
+    description: c.description,
+    intro: [...c.body, c.disclaimer],
+  };
 };
 
 // /writing is sinds de i18n-audit (2026-09-22) een gelokaliseerde route: /writing (EN)
@@ -440,6 +433,13 @@ try {
 } catch (err) {
   console.warn("[prerender] Could not pre-fetch published blog posts:", err.message);
 }
+// Sinds de /writing/:slug-rewrite weg is (echte 404 voor onbekende slugs) betekent een mislukte of
+// lege CMS-fetch dat élk artikel in productie 404 geeft. Dan liever de build laten falen: Vercel
+// houdt de vorige deployment live. Alleen bewust overslaan met PRERENDER_ALLOW_EMPTY_BLOG=1.
+if (publishedPosts.length === 0 && process.env.PRERENDER_ALLOW_EMPTY_BLOG !== "1") {
+  console.error("[prerender] 0 gepubliceerde blogposts opgehaald — build gestopt om massale 404's te voorkomen (zet PRERENDER_ALLOW_EMPTY_BLOG=1 om bewust door te gaan).");
+  process.exit(1);
+}
 
 const postBySlug = new Map();
 for (const post of publishedPosts) {
@@ -556,20 +556,37 @@ writeLocalizedPage("/about", {
 });
 
 /* ───────────────────────────── /work ───────────────────────────── */
-const workExtra = (lang) => lang === "nl"
-  ? `
-          <h2>Case studies Amazon NL, DE &amp; Bol.com</h2>
-          <ul><li><a href="/nl/work/connect-car-parts">Connect Car Parts: A.B.S.-remonderdelen op Amazon DE, eBay DE &amp; Magento</a></li></ul>
+// Zakelijke cases uit dezelfde bron als de client (data/marketplaceCases.ts).
+const workExtra = (lang) => {
+  const p = lang === "nl" ? "/nl" : "";
+  const items = MARKETPLACE_CASES.map((c) => `<li><a href="${p}${c.path}">${escapeHtml(c.copy[lang].title)}</a>: ${escapeHtml(c.copy[lang].cardSummary)}</li>`).join("");
+  return lang === "nl"
+    ? `
+          <h2>Marketplace-cases</h2>
+          <ul>${items}</ul>
           <p>Zie ook <a href="/nl/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/nl/bol-com-consultant">Bol.com consultant</a> en <a href="/nl/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`
-  : `
-          <h2>Amazon NL, DE &amp; Bol.com case studies</h2>
-          <ul><li><a href="/work/connect-car-parts">Connect Car Parts: A.B.S. brake parts on Amazon DE, eBay DE &amp; Magento</a></li></ul>
+    : `
+          <h2>Marketplace cases</h2>
+          <ul>${items}</ul>
           <p>See also <a href="/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/bol-com-consultant">Bol.com consultant</a> and <a href="/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`;
+};
+// /work rendert nu via SSR met dezelfde CMS-projecten als de client (F2.6): de prerender
+// haalt case_studies op en geeft ze als __PRELOADED__ mee. Mislukt die query, dan geen
+// preload (null) zodat de client zelf laadt en een foutmelding + retry kan tonen.
+let workCaseStudies = null;
+try {
+  workCaseStudies = await getCaseStudies(true);
+} catch (err) {
+  console.warn("[prerender] Could not pre-fetch case studies for /work:", err.message);
+}
+const workPreloadScript = workCaseStudies
+  ? `<script id="__PRELOADED__" type="application/json">${serializeJsonForHtmlScript({ caseStudies: workCaseStudies })}</script>`
+  : "";
 writeLocalizedPage("/work", {
   buildHead: (lang) => (lang === "nl" ? WORK_HEAD_NL : WORK_HEAD_EN),
-  // /work laadt zijn cases client-side en heeft geen SSR-h1 (HAN-134/123): de
-  // root krijgt daarom de statische fallback met h1, net als vóór deze refactor.
-  rootHtml: (lang, head) => buildStaticPageFallback(head, workExtra(lang), "h1", lang),
+  renderOptions: { preloadedCaseStudies: workCaseStudies },
+  postProcess: (page) => (workPreloadScript ? page.replace("</body>", `${workPreloadScript}
+  </body>`) : page),
   buildJsonLd: (lang, head) => ({
     "@context": "https://schema.org",
     "@graph": [
@@ -590,12 +607,12 @@ writeLocalizedPage("/work", {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) },
-          { "@type": "ListItem", position: 2, name: lang === "nl" ? "Case studies" : "Work", item: head.canonical },
+          { "@type": "ListItem", position: 2, name: "Portfolio", item: head.canonical },
         ],
       },
     ],
   }),
-  fallbackHtml: () => "",
+  fallbackHtml: (lang, head) => buildStaticPageFallback(head, workExtra(lang), "h2", lang),
 });
 
 /* ───────────────────────────── /writing (EN) + /nl/writing (NL) ───────────────────────────── */
@@ -693,9 +710,9 @@ for (const def of SERVICE_PAGES) {
   });
 }
 
-/* ───────────────────────────── /work/connect-car-parts ───────────────────────────── */
-writeLocalizedPage("/work/connect-car-parts", {
-  buildHead: (lang) => (lang === "nl" ? CASE_CCP_HEAD_NL : CASE_CCP_HEAD_EN),
+/* ───────────────────────────── zakelijke marketplace-cases (data/marketplaceCases.ts) ───────────────────────────── */
+for (const mcase of MARKETPLACE_CASES) writeLocalizedPage(mcase.path, {
+  buildHead: (lang) => caseHead(mcase, lang),
   buildJsonLd: (lang, head) => ({
     "@context": "https://schema.org",
     "@graph": [
@@ -708,7 +725,7 @@ writeLocalizedPage("/work/connect-car-parts", {
         isPartOf: { "@id": `${BASE}/#website` },
         about: { "@id": `${BASE}/#person` },
         author: { "@id": `${BASE}/#person` },
-        dateModified: SERVICE_PAGES_UPDATED,
+        dateModified: mcase.dateModified,
         inLanguage: lang,
       },
       WEBSITE_ENTITY,
@@ -718,8 +735,8 @@ writeLocalizedPage("/work/connect-car-parts", {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) },
-          { "@type": "ListItem", position: 2, name: lang === "nl" ? "Case studies" : "Case Studies", item: absoluteUrl("/work", lang) },
-          { "@type": "ListItem", position: 3, name: "Connect Car Parts", item: head.canonical },
+          { "@type": "ListItem", position: 2, name: lang === "nl" ? "Werk" : "Work", item: absoluteUrl("/work", lang) },
+          { "@type": "ListItem", position: 3, name: mcase.copy[lang].breadcrumb, item: head.canonical },
         ],
       },
     ],
@@ -841,6 +858,28 @@ for (const song of songs.filter((sg) => sg.provider !== "soundcloud")) {
   const outPath = path.join(distDir, "404.html");
   fs.writeFileSync(outPath, page, "utf8");
   console.log(`[prerender] 404 -> ${outPath}`);
+}
+
+/* ───────────────────────────── private.html (portal/werkruimtes: noindex in de response) ───────────────────────────── */
+{
+  // vercel.json herschrijft /portal, /write, /samantha, /wiki, /dashboards, ... naar dit
+  // shell i.p.v. index.html (die de homepage-head met index,follow + canonical draagt).
+  // Noindex is geen toegangscontrole: auth/RLS blijven de beveiliging.
+  let page = template;
+  page = page.replace(/<title>[\s\S]*?<\/title>/, "<title>Private workspace | Hans van Leeuwen</title>");
+  page = page.replace(/<meta name="description" content="[^"]*"/, '<meta name="description" content="Private workspace sign-in."');
+  page = page.replace(/<meta name="robots" content="[^"]*"/, '<meta name="robots" content="noindex, nofollow"');
+  page = page.replace(/[ \t]*<link rel="canonical" href="[^"]*" \/>\n?/, "");
+  page = page.replace(/[ \t]*<meta property="og:url" content="[^"]*" \/>\n?/, "");
+  page = page.replace(/<meta property="og:title" content="[^"]*"/, '<meta property="og:title" content="Private workspace | Hans van Leeuwen"');
+  page = applyLang(page, "en");
+  page = setHreflang(page, null);
+  page = setJsonLd(page, { "@context": "https://schema.org", "@type": "WebPage", name: "Private workspace", inLanguage: "en" });
+  page = replaceSsrFallbackHtml(page, `
+      <main><article><h2>Private workspace</h2><p>Sign in to continue.</p><p><a href="/">Back to the homepage</a></p></article></main>`);
+  const outPath = path.join(distDir, "private.html");
+  fs.writeFileSync(outPath, page, "utf8");
+  console.log(`[prerender] private shell -> ${outPath}`);
 }
 
 console.log("[prerender] Done.");

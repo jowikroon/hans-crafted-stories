@@ -1,3 +1,11 @@
+# CMS-backups/rollbacks bevatten originele (vertrouwelijke) teksten: nooit committen (2026-09-23)
+**/cms-patch*/
+**/backup.json
+*.rollback.sql
+DIFF.md
+# Interne werkdocumenten (CCP/cowork): nooit in de repo of de publieke webroot (security 2026-09-23)
+.private/
+
 # Secrets
 .env
 .env.local

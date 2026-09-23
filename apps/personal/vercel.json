@@ -161,7 +161,17 @@
     },
     {
       "source": "/cases/connect-car-parts",
-      "destination": "/work/connect-car-parts",
+      "destination": "/work/marketplace-product-data-automation",
+      "permanent": true
+    },
+    {
+      "source": "/work/connect-car-parts",
+      "destination": "/work/marketplace-product-data-automation",
+      "permanent": true
+    },
+    {
+      "source": "/nl/work/connect-car-parts",
+      "destination": "/nl/work/marketplace-product-data-automation",
       "permanent": true
     },
     {
@@ -174,34 +184,30 @@
   "rewrites": [
     {
       "source": "/(portal|wiki|god-structure|samantha|release-set|music-cms|write)",
-      "destination": "/index.html"
+      "destination": "/private.html"
     },
     {
       "source": "/(write|music-cms)/:id",
-      "destination": "/index.html"
+      "destination": "/private.html"
     },
     {
       "source": "/dashboards",
-      "destination": "/index.html"
+      "destination": "/private.html"
     },
     {
       "source": "/dashboards/:path*",
-      "destination": "/index.html"
+      "destination": "/private.html"
     },
     {
       "source": "/blog-cms/:path*",
-      "destination": "/index.html"
+      "destination": "/private.html"
     },
     {
       "source": "/auth/:path*",
-      "destination": "/index.html"
+      "destination": "/private.html"
     },
     {
       "source": "/muziek/artist-radar",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/writing/:slug",
       "destination": "/index.html"
     },
     {
@@ -242,6 +248,42 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/(portal|wiki|god-structure|samantha|release-set|music-cms|write|blog-cms|dashboards|auth|empire|extensions)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(portal|wiki|god-structure|samantha|release-set|music-cms|write|blog-cms|dashboards|auth|empire|extensions)/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/cowork/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(ccp-dashboard.html|entry-server.js|private.html|404.html)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
         }
       ]
     }

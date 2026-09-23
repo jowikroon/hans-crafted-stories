@@ -98,9 +98,13 @@ export function localizeBlogPost<T extends Pick<BlogPostRow, "title" | "excerpt"
 
 export function getBlogPostHead(input: BlogPostRow, lang?: "nl" | "en"): SeoHead {
   const post = localizeBlogPost(input, lang);
-  const metaTitle = clean(post.meta_title);
+  // meta_title/meta_description zijn eentalig (geschreven in de primaire artikeltaal).
+  // Bij de andere taalversie (?lang=en op een NL-artikel) niet gebruiken: anders een
+  // Nederlandse <title> boven een Engelse <h1> (i18n-audit R5).
+  const useMeta = !lang || lang === primaryBlogPostLang(input);
+  const metaTitle = useMeta ? clean(post.meta_title) : "";
   const title = metaTitle || `${post.title} | Hans van Leeuwen`;
-  const description = clean(post.meta_description) || clean(post.excerpt) || DEFAULT_DESCRIPTION;
+  const description = (useMeta ? clean(post.meta_description) : "") || clean(post.excerpt) || DEFAULT_DESCRIPTION;
 
   return {
     title,
