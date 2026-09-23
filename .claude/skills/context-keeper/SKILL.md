@@ -10,7 +10,7 @@ Run after any infrastructure change, new environment variable, or file structure
 claude skill context-keeper
 
 # Via n8n (automated, after git push)
-POST https://hansvanleeuwen.app.n8n.cloud/webhook/context-keeper
+POST https://n8n.srv1402218.hstgr.cloud/webhook/context-keeper
 ```
 
 ## What This Skill Does

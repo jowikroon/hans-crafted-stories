@@ -105,7 +105,7 @@ You must set the rest (same names the code uses):
 | Secret | Used by | Where to get it |
 |--------|--------|------------------|
 | `LOVABLE_API_KEY` | hansai-chat, n8n-agent, intent-router, ai-content-suggest, keyword-research, google-agent | Lovable dashboard (if you still have it) or replace with your own LLM/API key and adjust code later |
-| `N8N_BASE_URL` | n8n-create-workflow, n8n-filter-proxy | Your n8n instance (e.g. `https://hansvanleeuwen.app.n8n.cloud`) |
+| `N8N_BASE_URL` | n8n-create-workflow, n8n-filter-proxy | Your n8n instance (e.g. `https://n8n.srv1402218.hstgr.cloud`) |
 | `N8N_API_KEY` | n8n-create-workflow, n8n-filter-proxy | n8n API key from your n8n instance |
 | `GEMINI_API_KEY` | hansai-chat, google-agent | Google AI Studio |
 | `OPENAI_API_KEY` | llm-resume | OpenAI |
