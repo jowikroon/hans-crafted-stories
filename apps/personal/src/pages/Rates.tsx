@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
+import DisplayHeading from "@/components/DisplayHeading";
 import { ArrowRight, CheckCircle, ChevronRight, Home, Receipt, XCircle } from "lucide-react";
 import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
+import { personEntityFor, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
 import { absoluteUrl, BASE_URL } from "@/lib/i18n/routes";
 import { PRICING_EN, PRICING_NL, RATES_PAGE, SERVICE_PAGES_UPDATED } from "@/data/servicePages";
 
@@ -30,7 +31,7 @@ const Rates = () => {
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
-        PERSON_ENTITY,
+        personEntityFor(lang === "nl" ? "nl" : "en"),
         PROFESSIONAL_SERVICE_ENTITY,
         { "@type": "WebPage", "@id": `${canonical}#webpage`, url: canonical, name: t.title, description: t.metaDesc, isPartOf: { "@id": `${BASE_URL}/#website` }, about: { "@id": `${BASE_URL}/#person` }, dateModified: SERVICE_PAGES_UPDATED, inLanguage: lang },
         { "@type": "BreadcrumbList", itemListElement: [ { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) }, { "@type": "ListItem", position: 2, name: t.breadcrumb, item: canonical } ] },
@@ -52,7 +53,7 @@ const Rates = () => {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><Receipt size={20} /></div>
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{t.breadcrumb}</p>
         </div>
-        <h1 className="mb-6 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">{t.h1}</h1>
+        <DisplayHeading as="h1" className="mb-6">{t.h1}</DisplayHeading>
         <p className="mb-12 max-w-3xl text-lg leading-relaxed text-foreground/90">{t.intro}</p>
       </motion.div>
 

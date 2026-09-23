@@ -9,7 +9,7 @@ const content = {
     deliverables: [
       "Marketplace audit & growth roadmap",
       "Product listing optimization (SEO, A+ Content, images)",
-      "Amazon & Bol.com advertising management (PPC)",
+      "Advertising on Amazon and bol (PPC)",
       "Conversion rate optimization & A/B testing",
       "Catalog management & inventory forecasting",
       "Monthly performance reporting & insights",
@@ -41,7 +41,7 @@ const content = {
     deliverables: [
       "Marketplace audit & groeiroadmap",
       "Product listing optimalisatie (SEO, A+ Content, afbeeldingen)",
-      "Amazon & Bol.com advertentiebeheer (PPC)",
+      "Adverteren op Amazon en bol (PPC)",
       "Conversie-optimalisatie & A/B-testen",
       "Catalogusbeheer & voorraadbeheer",
       "Maandelijkse prestatierapportage & inzichten",
@@ -140,21 +140,21 @@ const ServiceDetails = () => {
         </div>
       </section>
 
-      {/* Service Area — captures high-intent keyword variants */}
-      <section className="section-container pb-12 pt-0" aria-label={lang === "nl" ? "Interim E-commerce Manager" : "Interim E-commerce Manager"}>
+      {/* Interim & freelance: marketplace manager primair, e-commerce als breder vakgebied */}
+      <section className="section-container pb-12 pt-0" aria-label={lang === "nl" ? "Interim en freelance" : "Interim and freelance"}>
         <motion.div {...fadeUp}>
           <h2 className="mb-2 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {lang === "nl" ? "Interim & Freelance" : "Interim & Freelance"}
           </h2>
           <p className="mb-4 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
             {lang === "nl"
-              ? "Interim E-commerce Manager voor Amazon NL & Bol.com"
-              : "Interim E-commerce Manager for Amazon NL & Bol.com"}
+              ? "Interim marketplace manager voor Amazon en bol"
+              : "Interim marketplace manager for Amazon and bol"}
           </p>
           <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
             {lang === "nl"
-              ? "Op zoek naar een hands-on interim e-commerce manager of freelance marketplace consultant? Ik werk als interim lead, account manager en marketplace specialist voor merken die structurele groei zoeken op Amazon Nederland en Bol.com. Van strategie tot dagelijkse uitvoering, flexibel inzetbaar per project of op contractbasis."
-              : "Looking for a hands-on interim e-commerce manager or freelance marketplace consultant? I work as an interim lead, account manager, and marketplace specialist for brands seeking structural growth on Amazon Netherlands and Bol.com. From strategy to day-to-day execution, available per project or on contract."}
+              ? "Tijdelijk iemand nodig die het marketplace-werk overneemt of versterkt? Ik werk als interim marketplace manager, projectlead of accountmanager voor merken en retailers op Amazon en bol. Ook bredere e-commercevragen, zoals productdata en conversie, pak ik op waar ze het marketplace-werk raken. Inzetbaar per project of op contractbasis."
+              : "Need someone to take over or strengthen your marketplace work for a while? I work as an interim marketplace manager, project lead or account manager for brands and retailers on Amazon and bol. Broader e-commerce questions, such as product data and conversion, are part of the job where they affect the marketplace work. Available per project or on contract."}
           </p>
         </motion.div>
       </section>

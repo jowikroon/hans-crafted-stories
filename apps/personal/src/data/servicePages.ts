@@ -85,14 +85,14 @@ export const SERVICE_PAGES_UPDATED = "2026-09-22";
 const BYLINE = {
   nl: {
     name: "Hans van Leeuwen",
-    role: "Freelance e-commerce & marketplace manager, Amersfoort",
+    role: "Freelance en interim marketplace manager, Amersfoort",
     updated: "Laatst bijgewerkt",
     about: "Over Hans en zijn loopbaan",
     linkedin: "LinkedIn-profiel",
   },
   en: {
     name: "Hans van Leeuwen",
-    role: "Freelance e-commerce & marketplace manager, Amersfoort (NL)",
+    role: "Freelance and interim marketplace manager, Amersfoort (NL)",
     updated: "Last updated",
     about: "About Hans and his track record",
     linkedin: "LinkedIn profile",

@@ -11,19 +11,22 @@ import MusicSong from "@/pages/MusicSong";
 import ArtistRadar from "@/pages/ArtistRadar";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
-import Portal from "@/pages/Portal";
-import Wiki from "@/pages/Wiki";
 import Privacy from "@/pages/Privacy";
 import Rates from "@/pages/Rates";
-import AuthCallback from "@/pages/AuthCallback";
 import NotFound from "@/pages/NotFound";
 import AmazonNlSpecialist from "@/pages/AmazonNlSpecialist";
 import BolComConsultant from "@/pages/BolComConsultant";
 import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
 import AiEcommerceAutomation from "@/pages/AiEcommerceAutomation";
 import CaseStudyDetail from "@/pages/CaseStudyDetail";
-import GodStructure from "@/pages/GodStructure";
-import SamanthaAI from "@/pages/SamanthaAI";
+
+/* Private/admin-schermen (niet geprerenderd): lazy, zodat tiptap/ProseMirror/turndown/recharts niet
+   meer in de startbundel van élke publieke pagina zitten (perf 2026-09-24: App-chunk was 1,67 MB). */
+const Portal = lazy(() => import("@/pages/Portal"));
+const Wiki = lazy(() => import("@/pages/Wiki"));
+const GodStructure = lazy(() => import("@/pages/GodStructure"));
+const SamanthaAI = lazy(() => import("@/pages/SamanthaAI"));
+const AuthCallback = lazy(() => import("@/pages/AuthCallback"));
 
 /* WriteCMS is lazy-loaded — full Blog CMS shell at /write (3-mode: Write/Manage/Analytics).
    BlogCMS is kept for /blog-cms/voice/:id route only (VoiceTemplateEditor still uses it). */
@@ -51,6 +54,8 @@ const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-templa
 const LANG_PREFIXES = ["", "/nl"] as const;
 
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
+/* Lichte werkruimtes (dashboards, portal, wiki) starten licht: geen donkere flits tijdens chunk-laden. */
+const WorkspaceFallback = () => <div className="min-h-screen bg-background" />;
 
 /* /blog-cms is retired — React CMS shell at /write is canonical.
    /write is now a React route (write-src.html is the archived static prototype). */
@@ -112,22 +117,22 @@ const AnimatedRoutes = () => {
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/ai-ecommerce-automation`} path={`${prefix}/ai-ecommerce-automation`} element={<PageTransition><AiEcommerceAutomation /></PageTransition>} />
         ))}
-        <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
+        <Route path="/portal" element={<PageTransition><Suspense fallback={<WorkspaceFallback />}><Portal /></Suspense></PageTransition>} />
         <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/write/:id" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/music-cms" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
         <Route path="/music-cms/:id" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
         <Route path="/release-set" element={<Suspense fallback={<BlogCMSFallback />}><ReleaseSet /></Suspense>} />
-        <Route path="/dashboards" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsVandaag /></Suspense>} />
-        <Route path="/dashboards/operatie" element={<Suspense fallback={<BlogCMSFallback />}><Dashboards /></Suspense>} />
-        <Route path="/dashboards/ccp" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsCcp /></Suspense>} />
-        <Route path="/dashboards/hvl" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsHvl /></Suspense>} />
-        <Route path="/dashboards/mpg" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsMpg /></Suspense>} />
+        <Route path="/dashboards" element={<Suspense fallback={<WorkspaceFallback />}><DashboardsVandaag /></Suspense>} />
+        <Route path="/dashboards/operatie" element={<Suspense fallback={<WorkspaceFallback />}><Dashboards /></Suspense>} />
+        <Route path="/dashboards/ccp" element={<Suspense fallback={<WorkspaceFallback />}><DashboardsCcp /></Suspense>} />
+        <Route path="/dashboards/hvl" element={<Suspense fallback={<WorkspaceFallback />}><DashboardsHvl /></Suspense>} />
+        <Route path="/dashboards/mpg" element={<Suspense fallback={<WorkspaceFallback />}><DashboardsMpg /></Suspense>} />
         <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
-        <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
-        <Route path="/god-structure" element={<GodStructure />} />
-        <Route path="/samantha" element={<SamanthaAI />} />
+        <Route path="/wiki" element={<PageTransition><Suspense fallback={<WorkspaceFallback />}><Wiki /></Suspense></PageTransition>} />
+        <Route path="/god-structure" element={<Suspense fallback={<BlogCMSFallback />}><GodStructure /></Suspense>} />
+        <Route path="/samantha" element={<Suspense fallback={<BlogCMSFallback />}><SamanthaAI /></Suspense>} />
         <Route path="/empire" element={<Navigate to="/samantha" replace />} />
         <Route path="/hansai" element={<Navigate to="/samantha" replace />} />
         <Route path="/hans-ai" element={<Navigate to="/samantha" replace />} />
@@ -138,7 +143,7 @@ const AnimatedRoutes = () => {
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/rates`} path={`${prefix}/rates`} element={<PageTransition><Rates /></PageTransition>} />
         ))}
-        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/callback" element={<Suspense fallback={<WorkspaceFallback />}><AuthCallback /></Suspense>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>

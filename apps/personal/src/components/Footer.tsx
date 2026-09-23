@@ -8,18 +8,18 @@ const socialLinks = [
 
 const internalLinksByLang = {
   en: [
-    { label: "Interim e-commerce manager", to: "/interim-ecommerce-manager" },
     { label: "Amazon NL specialist", to: "/amazon-nl-specialist" },
-    { label: "Bol.com consultant", to: "/bol-com-consultant" },
+    { label: "bol.com consultant", to: "/bol-com-consultant" },
+    { label: "Interim e-commerce manager", to: "/interim-ecommerce-manager" },
     { label: "Rates", to: "/rates" },
     { label: "Case studies", to: "/work" },
     { label: "Articles", to: "/writing" },
     { label: "About Hans", to: "/about" },
   ],
   nl: [
-    { label: "Interim e-commerce manager inhuren", to: "/interim-ecommerce-manager" },
     { label: "Amazon NL specialist inhuren", to: "/amazon-nl-specialist" },
-    { label: "Bol.com consultant inhuren", to: "/bol-com-consultant" },
+    { label: "bol.com consultant inhuren", to: "/bol-com-consultant" },
+    { label: "Interim e-commerce manager inhuren", to: "/interim-ecommerce-manager" },
     { label: "Tarieven", to: "/rates" },
     { label: "Case studies", to: "/work" },
     { label: "Artikelen", to: "/writing" },
@@ -38,7 +38,7 @@ const Footer = () => {
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-10 md:flex-row">
         <div className="text-center md:text-left">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Hans van Leeuwen
+            © {new Date().getFullYear()} Hans van Leeuwen · {isNl ? "Marketplace manager voor Amazon en bol" : "Marketplace manager for Amazon and bol"}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             {isNl

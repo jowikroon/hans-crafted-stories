@@ -24,8 +24,8 @@ GREEN = (28, 122, 72)       # #1C7A48 editorial green (site --primary)
 LINE = (218, 213, 199)      # #DAD5C7
 
 NAME = "Hans van Leeuwen"
-TITLE = "Freelance & Interim\nE-commerce Manager"
-SUB = "Amazon NL/DE · Bol.com · AI-assisted operations"
+TITLE = "Freelance and interim\nmarketplace manager"  # positionering 2026-09-24
+SUB = "Amazon · bol · recently also eBay"
 DOMAIN = "hansvanleeuwen.com"
 LOC = "Amersfoort, NL · working across NL/EU"
 
@@ -44,8 +44,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--font-dir", default=os.environ.get("OG_FONT_DIR", "/tmp/fonts"))
     a = ap.parse_args()
-    bold = [os.path.join(a.font_dir, "inter-2.ttf"), os.path.join(a.font_dir, "Inter-Bold.ttf")]
-    medium = [os.path.join(a.font_dir, "inter-1.ttf"), os.path.join(a.font_dir, "Inter-Medium.ttf")]
+    # Windows-fallback (Segoe UI) wanneer Inter niet lokaal staat; geen download nodig.
+    win = os.path.join(os.environ.get("WINDIR", "C:/Windows"), "Fonts")
+    bold = [os.path.join(a.font_dir, "inter-2.ttf"), os.path.join(a.font_dir, "Inter-Bold.ttf"), os.path.join(win, "segoeuib.ttf")]
+    medium = [os.path.join(a.font_dir, "inter-1.ttf"), os.path.join(a.font_dir, "Inter-Medium.ttf"), os.path.join(win, "seguisb.ttf"), os.path.join(win, "segoeui.ttf")]
 
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
@@ -73,7 +75,7 @@ def main():
     f_domain = font(bold, 26)
 
     d.rectangle([x, y + 9, x + 28, y + 11], fill=GREEN)
-    d.text((x + 40, y), "E-COMMERCE & MARKETPLACES", font=f_eyebrow, fill=GREEN)
+    d.text((x + 40, y), "MARKETPLACE MANAGEMENT", font=f_eyebrow, fill=GREEN)
     y += 52
     d.text((x, y), NAME, font=f_name, fill=INK)
     y += 86
@@ -86,7 +88,7 @@ def main():
     # Proof line
     y += 66
     d.rectangle([x, y, x + 6, y + 32], fill=GREEN)  # één regel: geen klantcijfers (anonimisering 2026-09-23)
-    d.multiline_text((x + 22, y - 2), "10+ years on marketplaces", font=f_sub, fill=INK, spacing=10)
+    d.multiline_text((x + 22, y - 2), "10+ years in e-commerce", font=f_sub, fill=INK, spacing=10)
 
     # Footer domain
     d.rectangle([x, H - 92, W - 64, H - 91], fill=LINE)

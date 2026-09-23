@@ -14,6 +14,8 @@ import { SERVICE_PAGES, SERVICE_PAGES_UPDATED, SERVICE_BYLINE, EXPERIENCE_STRIP,
 import { translations } from "@/data/translations";
 import { MARKETPLACE_CASES } from "@/data/marketplaceCases";
 import { songs } from "@/data/music";
+import { HOME_FAQ, homeFaqJsonLd } from "@/data/homeFaq";
+import { IDENTITY } from "@/lib/seo/identity";
 import { LOCALIZED_ROUTES, alternatesFor, absoluteUrl, localizePath, OG_LOCALE } from "@/lib/i18n/routes";
 
 export interface RenderOptions {
@@ -68,6 +70,9 @@ export {
   PRICING_EN,
   translations,
   songs,
+  HOME_FAQ,
+  homeFaqJsonLd,
+  IDENTITY,
   LOCALIZED_ROUTES,
   alternatesFor,
   absoluteUrl,

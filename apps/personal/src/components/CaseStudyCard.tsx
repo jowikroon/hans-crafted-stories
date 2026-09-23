@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import DisplayHeading from "@/components/DisplayHeading";
 import { ExternalLink } from "lucide-react";
 import { Link } from "@/components/LocalizedLink";
 import { CaseStudy } from "@/data/types";
@@ -62,9 +63,9 @@ const CaseStudyCard = ({ study, index }: { study: CaseStudy; index: number }) =>
               {study.category}
             </span>
           </div>
-          <h3 className="mb-1 font-display text-base font-medium leading-snug text-foreground line-clamp-1">
+          <DisplayHeading as="h3" size="card" className="mb-1 line-clamp-1">
             {displayTitle}
-          </h3>
+          </DisplayHeading>
           <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2" lang={lang === "nl" && !study.descriptionNl ? "en" : undefined}>{displayDescription}</p>
         </div>
       </Wrapper>

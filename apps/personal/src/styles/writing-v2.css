@@ -938,7 +938,7 @@
 .writing-v2 .pill .pill__count {
   margin-left: 4px;
   font-variant-numeric: tabular-nums;
-  opacity: 0.65;
+  /* a11y 2026-09-24: geen opacity meer (was 3,6:1); erft de pilkleur, die AA haalt. */
 }
 .writing-v2 .pill--clear {
   border-style: dashed;

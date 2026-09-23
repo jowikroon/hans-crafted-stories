@@ -12,6 +12,10 @@ import { translations } from "@/data/translations";
 import { usePageElements } from "@/hooks/usePageElements";
 import { useSEO } from "@/hooks/useSEO";
 import { usePageContent } from "@/hooks/usePageContent";
+import DisplayHeading from "@/components/DisplayHeading";
+import { IDENTITY } from "@/lib/seo/identity";
+
+import { ABOUT_CODE_OWNED_KEYS } from "@/data/codeOwnedCms";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -27,7 +31,11 @@ const About = () => {
   const { lang } = useLang();
   const t = translations[lang];
   const { isVisible } = usePageElements("about");
-  const { getValue } = usePageContent("about");
+  const { getValue: getCmsValue } = usePageContent("about");
+  // Positionering 2026-09-24: gewijzigde velden zijn code-eigendom, zodat een oude CMS-rij de
+  // nieuwe copy na het laden niet terugzet (prerender en browser tonen dezelfde tekst).
+  const getValue = (key: string, fallback: string, opts?: { neutral?: boolean }) =>
+    ABOUT_CODE_OWNED_KEYS.has(key) ? fallback : getCmsValue(key, fallback, opts);
   const location = useLocation();
   const reduceMotion = useReducedMotion();
   const contactHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -52,22 +60,22 @@ const About = () => {
   // SAME localized array, so schema always matches visible content (Codex
   // review on PR #272).
   const aboutFaq = lang === "nl" ? [
-    { q: "Wat doet een freelance e-commerce manager?",
-      a: "Ik neem tijdelijk de e-commerce operatie over: marketplace-strategie, listings, advertising, pricing, forecasting en rapportages. Ik werk hands-on binnen jullie team en tool-stack." },
+    { q: "Wat doet een freelance marketplace manager?",
+      a: "Ik neem tijdelijk het marketplace-werk over of versterk het: strategie, listings, advertenties, prijzen, forecasting en rapportage op Amazon en bol. Ik werk hands-on binnen jullie team en tools." },
     { q: "Wat kost freelance marketplace-management?",
       a: "Retainer voor doorlopend Amazon/Bol-beheer, projectprijs voor een audit of lancering, dagtarief voor interim. Exact bedrag hangt af van scope en channel-mix; een 30-min intake geeft binnen 1 werkdag een schriftelijke offerte." },
-    { q: "Vendor of Seller op Bol.com — wat past beter?",
+    { q: "Vendor of seller op bol: wat past beter?",
       a: "Seller houdt marge en controle maar vraagt actief accountwerk. Vendor bespaart operatie maar levert marge en pricing-controle in. Ik help beide modellen te modelleren op EBITDA, niet alleen omzet." },
     { q: "Hoe verlaag je out-of-stock rates?",
       a: "Een demand-forecasting model op recente sell-through, seizoen en promotie-lift, gekoppeld aan supplier lead-times, plus duidelijke afspraken met logistiek over wie ingrijpt bij een risico." },
     { q: "Doe je ook Amazon Ads en Bol Ads?",
       a: "Ja. Sponsored Products, Sponsored Brands, Display en Bol Ads met wekelijkse bidsturing en negative harvesting; ACOS/TACOS als primaire KPI\u2019s." },
   ] : [
-    { q: "What does a freelance e-commerce manager do?",
-      a: "I temporarily lead the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." },
+    { q: "What does a freelance marketplace manager do?",
+      a: "I temporarily take over or strengthen the marketplace work: strategy, listings, advertising, pricing, forecasting and reporting on Amazon and bol. Hands-on inside your existing team and tools." },
     { q: "How much does marketplace management cost?",
       a: "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. Actual number depends on scope; a 30-min intake produces a written quote within one working day." },
-    { q: "Bol.com — vendor or seller?",
+    { q: "Vendor or seller on bol?",
       a: "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. I model both routes on EBITDA, not just revenue." },
     { q: "How do you reduce out-of-stock rates?",
       a: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times, plus clear agreements with logistics on who acts when a risk appears." },
@@ -78,7 +86,7 @@ const About = () => {
   useSEO({
     title: seo.aboutTitle,
     description: seo.aboutDescription,
-    imageAlt: lang === "nl" ? "Hans van Leeuwen – Interim E-commerce Manager & Marketplace-specialist" : "Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
+    imageAlt: lang === "nl" ? "Hans van Leeuwen, marketplace manager voor Amazon en bol" : "Hans van Leeuwen, marketplace manager for Amazon and bol",
     path: "/about",
     lang,
     jsonLd: {
@@ -96,15 +104,15 @@ const About = () => {
           "@id": "https://hansvanleeuwen.com/#person",
           name: "Hans van Leeuwen",
           url: "https://hansvanleeuwen.com/about",
-          jobTitle: "Freelance & Interim E-commerce Manager",
+          jobTitle: IDENTITY.jobTitle[lang === "nl" ? "nl" : "en"],
           alternateName: "Jowikroon",
-          description: "Freelance e-commerce manager & UX designer with 10+ years of experience in marketplace strategy, Amazon, Bol.com, AI-assisted automation, and digital commerce.",
+          description: IDENTITY.personDescription[lang === "nl" ? "nl" : "en"],
           image: {
             "@type": "ImageObject",
             url: `https://hansvanleeuwen.com${hansProfile}`,
-            caption: "Hans van Leeuwen – Freelance E-commerce Manager",
+            caption: lang === "nl" ? "Hans van Leeuwen, marketplace manager voor Amazon en bol" : "Hans van Leeuwen, marketplace manager for Amazon and bol",
           },
-          knowsAbout: ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Interaction design", "AI-assisted e-commerce automation", "Conversion optimization", "Digital commerce", "SEO", "Amazon Ads", "Bol Ads"],
+          knowsAbout: [...IDENTITY.knowsAbout, "UX design"],
           address: {
             "@type": "PostalAddress",
             addressLocality: "Amersfoort",
@@ -193,7 +201,7 @@ const About = () => {
               <div className="relative">
                 <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-primary/10 via-transparent to-primary/5 blur-sm" />
                 <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted ring-1 ring-border/50">
-                  <img src={hansProfile} alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands" width={600} height={800} loading="eager" {...{ fetchpriority: "high" }} decoding="async" className="h-full w-full object-cover object-top" />
+                  <img src={hansProfile} alt={lang === "nl" ? "Hans van Leeuwen, freelance en interim marketplace manager voor Amazon en bol, Amersfoort" : "Hans van Leeuwen, freelance and interim marketplace manager for Amazon and bol, Amersfoort"} width={600} height={800} loading="eager" {...{ fetchpriority: "high" }} decoding="async" className="h-full w-full object-cover object-top" />
                   <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background/40 to-transparent" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 flex items-center gap-0.5 rounded-full border border-primary/20 bg-background px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-primary shadow-sm">
@@ -210,9 +218,9 @@ const About = () => {
                 <div className="h-px w-8 bg-primary/60" />
                 <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{getValue("about_label", t.about)}</p>
               </div>
-              <h1 className="mb-2 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                {getValue("about_h1", lang === "nl" ? "Interim E-commerce Manager & Marketplace-specialist (Amazon & Bol.com)" : "Interim E-commerce Manager & Marketplace Specialist (Amazon & Bol.com)")}
-              </h1>
+              <DisplayHeading as="h1" className="mb-2">
+                {getValue("about_h1", lang === "nl" ? "Marketplace manager voor Amazon en bol" : "Marketplace manager for Amazon and bol")}
+              </DisplayHeading>
               <p className="mb-6 font-display text-lg font-medium text-muted-foreground md:text-xl">
                 {getValue("about_name", "Hans van Leeuwen", { neutral: true })} · {getValue("about_location", "Amersfoort, NL", { neutral: true })}
               </p>
@@ -286,7 +294,7 @@ const About = () => {
             <p className="mb-6 max-w-3xl text-base leading-relaxed text-muted-foreground">
               {getValue("about_methodology_intro", lang === "nl"
                 ? "Elke opdracht doorloopt vier fases. Compact en meetbaar, geen abstract framework, maar exact wat er per week gebeurt en welke KPI’s bewegen."
-                : "Every engagement runs through four phases. Compact and measurable, no abstract framework — just what happens each week and which KPIs move.")}
+                : "Every engagement runs through four phases. Compact and measurable: no abstract framework, just what happens each week and which KPIs move.")}
             </p>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {[
@@ -295,9 +303,9 @@ const About = () => {
                 { k: "strategy", label: lang === "nl" ? "Strategie" : "Strategy",
                   copy: lang === "nl" ? "Actieplan met KPI\u2019s, tijdlijn en eigenaarschap per hefboom." : "Action plan with KPIs, timelines and clear ownership per lever." },
                 { k: "execution", label: lang === "nl" ? "Executie" : "Execution",
-                  copy: lang === "nl" ? "Hands-on: listings, A+ content, Amazon Ads en Bol Ads, met wekelijkse check-ins." : "Hands-on: listings, A+ content, Amazon Ads and Bol Ads, with weekly check-ins." },
+                  copy: lang === "nl" ? "Hands-on: listings, A+-content, Amazon Ads en adverteren op bol, met wekelijkse check-ins." : "Hands-on: listings, A+ content, Amazon Ads and advertising on bol, with weekly check-ins." },
                 { k: "scale", label: lang === "nl" ? "Schalen" : "Scale",
-                  copy: lang === "nl" ? "Itereren op data, nieuwe kanalen (DE, FR) en compound results." : "Iterate based on data, expand to new channels (DE, FR) and compound results." },
+                  copy: lang === "nl" ? "Bijsturen op data en uitbreiden naar nieuwe kanalen, zoals Amazon DE." : "Adjust based on data and expand to new channels, such as Amazon DE." },
               ].map((step, i) => (
                 <div key={step.k} className="rounded-xl border border-border/40 bg-card p-4">
                   <div className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">{i + 1}</div>

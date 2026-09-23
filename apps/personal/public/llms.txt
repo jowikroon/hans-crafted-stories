@@ -1,21 +1,24 @@
 # Hans van Leeuwen
 
-> Freelance e-commerce manager and marketplace specialist (Amazon & Bol.com), based in Amersfoort, the Netherlands. 10+ years of experience in marketplace strategy, listing optimization, marketplace advertising (Amazon Ads, Bol Ads), conversion rate optimization, UX and digital commerce for brands in the Netherlands and EU.
+> Freelance and interim marketplace manager for Amazon and bol, based in Amersfoort, the Netherlands. Works on marketplace strategy and day-to-day operations: product content, advertising, assortment and operational coordination. More recently also works with eBay. 10+ years in e-commerce.
 
-Hans van Leeuwen helps brands grow on Amazon and Bol.com: marketplace audits, product listing optimization (SEO, A+ Content), PPC management, catalog management, inventory forecasting and monthly performance reporting. He combines hands-on marketplace management with a UX background and AI-assisted workflows whose output can be checked. Client-specific performance figures are not published.
+Hans van Leeuwen helps brands and retailers sell on Amazon (NL and DE) and bol: marketplace audits, listings and A+ content, advertising (Amazon Ads, advertising on bol), catalogue and assortment management, demand forecasting and reporting. E-commerce is the wider field; marketplace management is the specialism. Client-specific performance figures are not published.
 
 ## Services
 
-- [Amazon NL Specialist](https://hansvanleeuwen.com/amazon-nl-specialist): Freelance Amazon Netherlands account management — listings, A+ content, Amazon Ads, growth.
-- [Bol.com Consultant](https://hansvanleeuwen.com/bol-com-consultant): Bol.com content optimization, Bol Ads management and marketplace growth strategy.
-- [Interim E-commerce Manager](https://hansvanleeuwen.com/interim-ecommerce-manager): Interim marketplace leadership for NL/EU brands — strategy, operations, execution.
+- [Amazon NL specialist](https://hansvanleeuwen.com/amazon-nl-specialist): Amazon Netherlands and Germany account management: listings, A+ content, Amazon Ads and operations.
+- [bol.com consultant](https://hansvanleeuwen.com/bol-com-consultant): Product content, advertising on bol and catalogue management for sellers and vendors.
+- [Interim e-commerce manager](https://hansvanleeuwen.com/interim-ecommerce-manager): Interim marketplace and e-commerce management: priorities, day-to-day execution and handover.
+- [AI e-commerce automation](https://hansvanleeuwen.com/ai-ecommerce-automation): Automating marketplace operations with n8n, Channable and Claude, with a human on sensitive decisions.
+- [Rates](https://hansvanleeuwen.com/rates): Pricing models (retainer, project, day rate).
 
 ## Key pages
 
-- [About Hans van Leeuwen](https://hansvanleeuwen.com/about): Background, experience and contact.
+- [About Hans van Leeuwen](https://hansvanleeuwen.com/about): Background, experience and contact form.
 - [Work](https://hansvanleeuwen.com/work): Marketplace cases (anonymised; no client performance figures) alongside UX, design and creative projects.
 - [Marketplace product-data case](https://hansvanleeuwen.com/work/marketplace-product-data-automation): Product data, feeds, channel-specific validation and human approval for an automotive-parts retailer.
-- [Articles](https://hansvanleeuwen.com/writing): Essays and practical insights on e-commerce strategy, Amazon vs Bol.com, marketplace optimization and AI in e-commerce.
+- [Articles](https://hansvanleeuwen.com/writing): Essays and practical insights on marketplaces, Amazon vs bol and AI in e-commerce.
+- Dutch versions: https://hansvanleeuwen.com/nl, https://hansvanleeuwen.com/nl/about, https://hansvanleeuwen.com/nl/work
 
 ## Articles
 
@@ -25,5 +28,6 @@ Hans van Leeuwen helps brands grow on Amazon and Bol.com: marketplace audits, pr
 
 ## Contact
 
+- Contact form: https://hansvanleeuwen.com/about#contact
 - LinkedIn: https://www.linkedin.com/in/hansvl3
 - Website: https://hansvanleeuwen.com

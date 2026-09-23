@@ -8,6 +8,8 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageContent } from "@/hooks/usePageContent";
 import Magnetic from "@/components/Magnetic";
+import DisplayHeading from "@/components/DisplayHeading";
+import { HOME_CODE_OWNED_KEYS } from "@/data/codeOwnedCms";
 import hansProfile from "@/assets/hans-profile.jpg";
 import { SERVICE_BYLINE, SERVICE_PAGES_UPDATED } from "@/data/servicePages";
 
@@ -29,7 +31,12 @@ const Hero = () => {
   const isNl = lang === "nl";
   const t = translations[lang].hero;
   const byline = SERVICE_BYLINE[lang];
-  const { getValue } = usePageContent("home");
+  const { getValue: getCmsValue } = usePageContent("home");
+  // Positionering 2026-09-24: deze velden zijn code-eigendom. Een oude CMS-rij mag de nieuwe
+  // copy na het laden niet terugzetten; prerender (zonder CMS) en browser tonen zo dezelfde tekst.
+  // Pas de copy aan in translations.ts; de bijbehorende CMS-patch staat in docs/growth-2026-09-24.
+  const getValue = (key: string, fallback: string) =>
+    HOME_CODE_OWNED_KEYS.has(key) ? fallback : getCmsValue(key, fallback);
 
   const expertise = [
     { title: getValue("expertise_1_title", t.expertise[0].title), description: getValue("expertise_1_desc", t.expertise[0].description) },
@@ -39,7 +46,8 @@ const Hero = () => {
   ];
 
   return (
-    <main>
+    // Geen tweede <main>: App.tsx levert al het main-landmark (a11y: één main per pagina).
+    <div>
       {/* Hero Section */}
       <section
         className="section-container flex min-h-[78vh] flex-col justify-center pt-10"
@@ -55,9 +63,10 @@ const Hero = () => {
             {getValue("hero_subtitle", t.subtitle)}
           </p>
           {/* Korte hero (audit F4.1/F6.1): naam blijft in de H1 (#345), max. twee zinnen subcopy, CTA's direct eronder; context volgt daarna. */}
-          <h1 className="mb-5 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
-            Hans van Leeuwen — {t.heading} <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em> {t.headingEnd}
-          </h1>
+          <DisplayHeading as="h1" className="mb-5">
+            <span className="block">Hans van Leeuwen</span>
+            <span className="block text-primary">{t.heading}</span>
+          </DisplayHeading>
           <p className="mb-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
             {getValue("hero_description", t.description)}
           </p>
@@ -86,13 +95,13 @@ const Hero = () => {
             {isNl ? " · Reactie binnen 48 uur · Vrijblijvend" : " · Response within 48h · No obligation"}
           </p>
           <p className="mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            {isNl ? "Bekijk mijn " : "Explore my "}
+            {isNl ? "Bekijk mijn " : "See my "}
             <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
-              {isNl ? "marketplace-cases voor Amazon & Bol.com" : "Amazon & Bol.com marketplace cases"}
+              {isNl ? "marketplace-cases voor Amazon en bol" : "marketplace cases for Amazon and bol"}
             </Link>
             {isNl ? " of lees " : " or read "}
             <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
-              {isNl ? "artikelen over Amazon & Bol.com" : "articles on Amazon & Bol.com"}
+              {isNl ? "artikelen over Amazon en bol" : "articles on Amazon and bol"}
             </Link>
             .
           </p>
@@ -104,11 +113,16 @@ const Hero = () => {
         {/* Portrait: echte foto (E-E-A-T), eager + fetchpriority want boven de vouw op md+; op mobiel verborgen zodat de H1 de LCP blijft. SEO-run april-items "zero images". */}
         <figure className="hidden md:block">
           <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-muted ring-1 ring-border/50">
+            {/* Alleen vanaf md zichtbaar: op mobiel matcht geen <source> en blijft het een 1x1-placeholder,
+                zodat daar geen portret (met fetchpriority=high) meeconcurreert met de H1 als LCP. WebP 20 KB i.p.v. JPEG 51 KB. */}
+            <picture>
+            <source media="(min-width: 768px)" srcSet="/hans-profile.webp" type="image/webp" />
+            <source media="(min-width: 768px)" srcSet={hansProfile} />
             <img
-              src={hansProfile}
+              src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
               alt={isNl
-                ? "Hans van Leeuwen, freelance en interim e-commerce manager voor Amazon NL/DE en Bol.com, Amersfoort"
-                : "Hans van Leeuwen, freelance and interim e-commerce manager for Amazon NL/DE and Bol.com, Amersfoort"}
+                ? "Hans van Leeuwen, freelance en interim marketplace manager voor Amazon en bol, Amersfoort"
+                : "Hans van Leeuwen, freelance and interim marketplace manager for Amazon and bol, Amersfoort"}
               width={600}
               height={800}
               loading="eager"
@@ -116,6 +130,7 @@ const Hero = () => {
               {...{ fetchpriority: "high" }}
               className="h-full w-full object-cover object-top"
             />
+            </picture>
           </div>
           <figcaption className="mt-2 text-center text-xs text-muted-foreground">{byline.name} · {isNl ? "Amersfoort" : "Amersfoort, NL"}</figcaption>
         </figure>
@@ -266,9 +281,9 @@ const Hero = () => {
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
                 {icons[i]}
               </div>
-              <h3 className="mb-1.5 text-sm font-bold text-foreground">
+              <DisplayHeading as="h3" size="card" className="mb-1.5">
                 <Link to={SERVICE_PATHS[i]} className="underline-offset-4 hover:underline">{item.title}</Link>
-              </h3>
+              </DisplayHeading>
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {item.description}
               </p>
@@ -284,14 +299,14 @@ const Hero = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
         >
-          <Link to="/interim-ecommerce-manager" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "Interim e-commerce manager inhuren →" : "Interim e-commerce manager →"}
-          </Link>
           <Link to="/amazon-nl-specialist" className="font-semibold transition-colors hover:text-foreground">
             {isNl ? "Amazon NL specialist inhuren →" : "Amazon NL specialist →"}
           </Link>
           <Link to="/bol-com-consultant" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "Bol.com consultant inhuren →" : "Bol.com consultant →"}
+            {isNl ? "bol.com consultant inhuren →" : "bol.com consultant →"}
+          </Link>
+          <Link to="/interim-ecommerce-manager" className="font-semibold transition-colors hover:text-foreground">
+            {isNl ? "Interim e-commerce manager inhuren →" : "Interim e-commerce manager →"}
           </Link>
           <Link to="/ai-ecommerce-automation" className="font-semibold transition-colors hover:text-foreground">
             {isNl ? "AI e-commerce automation →" : "AI e-commerce automation →"}
@@ -316,7 +331,7 @@ const Hero = () => {
 
       {/* Featured Articles */}
       <FeaturedArticles />
-    </main>
+    </div>
   );
 };
 
