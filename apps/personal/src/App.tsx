@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { installContactCtaTracking } from "@/lib/analytics/leadEvents";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -67,6 +69,8 @@ const AppShell = ({ initialLang }: AppShellProps) => {
   const isCompact = location.pathname === "/samantha";
   const isDarkPage = isCompact || location.pathname === "/god-structure" || location.pathname.startsWith("/blog-cms") || location.pathname === "/music" || location.pathname.startsWith("/music/") || location.pathname === "/muziek/artist-radar" || location.pathname === "/release-set";
   const mainBg = mainBackgroundFor(location.pathname);
+  // Lead-meting: één gedelegeerde listener voor alle #contact-/mailto-CTA's (geen PII).
+  useEffect(() => installContactCtaTracking(), []);
 
   return (
     <ThemeProvider>

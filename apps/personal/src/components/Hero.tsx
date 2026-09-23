@@ -65,6 +65,7 @@ const Hero = () => {
             <Magnetic>
               <Link
                 to="/about#contact"
+                data-cta="hero_primary"
                 className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
               >
                 {getValue("hero_cta_consult", t.ctaConsult)}

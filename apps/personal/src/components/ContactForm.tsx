@@ -19,6 +19,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { isProductionHost } from "@/lib/config/productionHost";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
+import { pushLeadEvent, safePath } from "@/lib/analytics/leadEvents";
 
 type ContactT = (typeof translations)["en"]["contact"];
 
@@ -69,6 +70,14 @@ const ContactForm = () => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const formRef = useRef<HTMLFormElement>(null);
+  const startedRef = useRef(false);
+  const leadCtx = () => ({ lang, page_path: typeof window !== "undefined" ? safePath(window.location.pathname) : "" });
+  // contact_form_start: eerste interactie, één keer per mount (geen veldinhoud).
+  const markStarted = () => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    pushLeadEvent("contact_form_start", leadCtx());
+  };
   const [form, setForm] = useState<ContactData>({
     name: "",
     email: "",
@@ -108,6 +117,7 @@ const ContactForm = () => {
       });
       setErrors(fieldErrors);
       setStatus({ kind: "invalid", text: t.errorSummary });
+      pushLeadEvent("contact_form_submit", { ...leadCtx(), result: "invalid" });
       const first = FIELD_ORDER.find((f) => fieldErrors[f]);
       if (first) formRef.current?.querySelector<HTMLElement>(`#${FIELD_IDS[first]}`)?.focus();
       return;
@@ -121,6 +131,9 @@ const ContactForm = () => {
     } finally {
       setLoading(false);
     }
+
+    // Alleen "sent" is een bevestigde aanvraag (insert zonder error); de rest is diagnose.
+    pushLeadEvent("contact_form_submit", { ...leadCtx(), result: outcome, reason_category: outcome === "sent" ? result.data.reason : undefined });
 
     if (outcome === "error") {
       // Formulierwaarden blijven staan zodat de bezoeker opnieuw kan proberen.
@@ -144,6 +157,7 @@ const ContactForm = () => {
     <motion.form
       ref={formRef}
       onSubmit={handleSubmit}
+      onFocusCapture={markStarted}
       noValidate
       aria-busy={loading}
       initial={{ opacity: 0, y: 20 }}
