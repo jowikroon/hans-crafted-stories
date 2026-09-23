@@ -324,7 +324,7 @@ const WritingV2 = () => {
                   key={p.tag}
                   href={p.tag === "all" ? "/writing" : `/writing?tag=${p.tag}`}
                   className={`pill ${filter === p.tag ? "on" : ""}`}
-                  aria-pressed={filter === p.tag}
+                  aria-current={filter === p.tag ? "true" : undefined}
                   aria-label={`${p.label} (${pillCount})`}
                   onClick={(e) => { e.preventDefault(); setFilter(p.tag); }}
                 >

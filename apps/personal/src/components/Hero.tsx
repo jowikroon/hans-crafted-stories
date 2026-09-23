@@ -46,7 +46,8 @@ const Hero = () => {
   ];
 
   return (
-    <main>
+    // Geen tweede <main>: App.tsx levert al het main-landmark (a11y: één main per pagina).
+    <div>
       {/* Hero Section */}
       <section
         className="section-container flex min-h-[78vh] flex-col justify-center pt-10"
@@ -330,7 +331,7 @@ const Hero = () => {
 
       {/* Featured Articles */}
       <FeaturedArticles />
-    </main>
+    </div>
   );
 };
 

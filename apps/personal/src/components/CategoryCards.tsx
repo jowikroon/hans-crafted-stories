@@ -61,7 +61,7 @@ const CategoryCards = ({ cards, activeValue, getCount, onSelect }: CategoryCards
               </span>
             </div>
             <p className="mt-3 text-sm font-semibold">{card.label}</p>
-            <p className="mt-0.5 text-[11px] opacity-60">{card.description}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">{card.description}</p>
             {isActive && (
               <motion.div
                 layoutId="categoryIndicator"
