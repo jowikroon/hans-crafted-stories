@@ -166,7 +166,9 @@ const ContactForm = () => {
     setStatus({ kind: "idle" });
     let outcome: SubmitOutcome = "error";
     try {
-      outcome = await submitContact(result.data, { turnstileToken, website });
+      // Productie zonder Turnstile-sitekey kan nooit slagen (server is fail-closed): meteen fout + e-mailuitwijk,
+      // i.p.v. "probeer opnieuw" (captcha) waardoor bezoekers blijven herhalen.
+      outcome = production && !siteKey ? "error" : await submitContact(result.data, { turnstileToken, website });
     } finally {
       setLoading(false);
       // Een Turnstile-token is eenmalig: na elke poging een nieuw token laten ophalen.
