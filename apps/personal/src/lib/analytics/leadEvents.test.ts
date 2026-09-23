@@ -27,8 +27,9 @@ describe("lead events", () => {
       <a id="c" href="/work">z</a>`;
     for (const id of ["a", "b", "c"]) document.getElementById(id)!.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
     off();
-    expect(window.dataLayer).toHaveLength(2);
-    expect(window.dataLayer[0]).toMatchObject({ event: "contact_cta_click", cta_id: "hero", cta_target: "contact_form" });
-    expect(window.dataLayer[1]).toMatchObject({ event: "contact_cta_click", cta_id: "unlabeled", cta_target: "email" });
+    const dl = window.dataLayer ?? [];
+    expect(dl).toHaveLength(2);
+    expect(dl[0]).toMatchObject({ event: "contact_cta_click", cta_id: "hero", cta_target: "contact_form" });
+    expect(dl[1]).toMatchObject({ event: "contact_cta_click", cta_id: "unlabeled", cta_target: "email" });
   });
 });

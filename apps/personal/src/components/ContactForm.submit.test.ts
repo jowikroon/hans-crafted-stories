@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import contactFormSource from "./ContactForm.tsx?raw";
 
 import { contactEndpoint, makeContactSchema, submitContact } from "./ContactForm";
 import { translations } from "@/data/translations";
@@ -49,7 +48,7 @@ describe("submitContact", () => {
   });
 
   it("no longer references a direct contact_submissions insert from the browser", () => {
-    const src = readFileSync(resolve(__dirname, "ContactForm.tsx"), "utf8");
+    const src = contactFormSource;
     expect(src).not.toMatch(/\.from\(\s*["']contact_submissions/);
     expect(src).not.toMatch(/\.insert\(/);
   });
