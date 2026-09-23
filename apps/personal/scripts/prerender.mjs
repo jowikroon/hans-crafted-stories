@@ -54,6 +54,7 @@ const {
   getHeroPost,
   HERO_SLUGS,
   getBlogPosts,
+  getCaseStudies,
   getBlogPostHead,
   getBlogPostJsonLd,
   clearRootHtml,
@@ -560,11 +561,23 @@ const workExtra = (lang) => {
           <ul>${items}</ul>
           <p>See also <a href="/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/bol-com-consultant">Bol.com consultant</a> and <a href="/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`;
 };
+// /work rendert nu via SSR met dezelfde CMS-projecten als de client (F2.6): de prerender
+// haalt case_studies op en geeft ze als __PRELOADED__ mee. Mislukt die query, dan geen
+// preload (null) zodat de client zelf laadt en een foutmelding + retry kan tonen.
+let workCaseStudies = null;
+try {
+  workCaseStudies = await getCaseStudies(true);
+} catch (err) {
+  console.warn("[prerender] Could not pre-fetch case studies for /work:", err.message);
+}
+const workPreloadScript = workCaseStudies
+  ? `<script id="__PRELOADED__" type="application/json">${serializeJsonForHtmlScript({ caseStudies: workCaseStudies })}</script>`
+  : "";
 writeLocalizedPage("/work", {
   buildHead: (lang) => (lang === "nl" ? WORK_HEAD_NL : WORK_HEAD_EN),
-  // /work laadt zijn cases client-side en heeft geen SSR-h1 (HAN-134/123): de
-  // root krijgt daarom de statische fallback met h1, net als vóór deze refactor.
-  rootHtml: (lang, head) => buildStaticPageFallback(head, workExtra(lang), "h1", lang),
+  renderOptions: { preloadedCaseStudies: workCaseStudies },
+  postProcess: (page) => (workPreloadScript ? page.replace("</body>", `${workPreloadScript}
+  </body>`) : page),
   buildJsonLd: (lang, head) => ({
     "@context": "https://schema.org",
     "@graph": [
@@ -585,12 +598,12 @@ writeLocalizedPage("/work", {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) },
-          { "@type": "ListItem", position: 2, name: lang === "nl" ? "Case studies" : "Work", item: head.canonical },
+          { "@type": "ListItem", position: 2, name: "Portfolio", item: head.canonical },
         ],
       },
     ],
   }),
-  fallbackHtml: () => "",
+  fallbackHtml: (lang, head) => buildStaticPageFallback(head, workExtra(lang), "h2", lang),
 });
 
 /* ───────────────────────────── /writing (EN) + /nl/writing (NL) ───────────────────────────── */
@@ -836,6 +849,28 @@ for (const song of songs.filter((sg) => sg.provider !== "soundcloud")) {
   const outPath = path.join(distDir, "404.html");
   fs.writeFileSync(outPath, page, "utf8");
   console.log(`[prerender] 404 -> ${outPath}`);
+}
+
+/* ───────────────────────────── private.html (portal/werkruimtes: noindex in de response) ───────────────────────────── */
+{
+  // vercel.json herschrijft /portal, /write, /samantha, /wiki, /dashboards, ... naar dit
+  // shell i.p.v. index.html (die de homepage-head met index,follow + canonical draagt).
+  // Noindex is geen toegangscontrole: auth/RLS blijven de beveiliging.
+  let page = template;
+  page = page.replace(/<title>[\s\S]*?<\/title>/, "<title>Private workspace | Hans van Leeuwen</title>");
+  page = page.replace(/<meta name="description" content="[^"]*"/, '<meta name="description" content="Private workspace sign-in."');
+  page = page.replace(/<meta name="robots" content="[^"]*"/, '<meta name="robots" content="noindex, nofollow"');
+  page = page.replace(/[ \t]*<link rel="canonical" href="[^"]*" \/>\n?/, "");
+  page = page.replace(/[ \t]*<meta property="og:url" content="[^"]*" \/>\n?/, "");
+  page = page.replace(/<meta property="og:title" content="[^"]*"/, '<meta property="og:title" content="Private workspace | Hans van Leeuwen"');
+  page = applyLang(page, "en");
+  page = setHreflang(page, null);
+  page = setJsonLd(page, { "@context": "https://schema.org", "@type": "WebPage", name: "Private workspace", inLanguage: "en" });
+  page = replaceSsrFallbackHtml(page, `
+      <main><article><h2>Private workspace</h2><p>Sign in to continue.</p><p><a href="/">Back to the homepage</a></p></article></main>`);
+  const outPath = path.join(distDir, "private.html");
+  fs.writeFileSync(outPath, page, "utf8");
+  console.log(`[prerender] private shell -> ${outPath}`);
 }
 
 console.log("[prerender] Done.");
