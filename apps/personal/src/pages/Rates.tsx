@@ -4,7 +4,7 @@ import { ArrowRight, CheckCircle, ChevronRight, Home, Receipt, XCircle } from "l
 import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
+import { personEntityFor, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
 import { absoluteUrl, BASE_URL } from "@/lib/i18n/routes";
 import { PRICING_EN, PRICING_NL, RATES_PAGE, SERVICE_PAGES_UPDATED } from "@/data/servicePages";
 
@@ -31,7 +31,7 @@ const Rates = () => {
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
-        PERSON_ENTITY,
+        personEntityFor(lang === "nl" ? "nl" : "en"),
         PROFESSIONAL_SERVICE_ENTITY,
         { "@type": "WebPage", "@id": `${canonical}#webpage`, url: canonical, name: t.title, description: t.metaDesc, isPartOf: { "@id": `${BASE_URL}/#website` }, about: { "@id": `${BASE_URL}/#person` }, dateModified: SERVICE_PAGES_UPDATED, inLanguage: lang },
         { "@type": "BreadcrumbList", itemListElement: [ { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) }, { "@type": "ListItem", position: 2, name: t.breadcrumb, item: canonical } ] },

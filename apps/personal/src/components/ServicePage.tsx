@@ -4,7 +4,7 @@ import { ArrowRight, Bot, Briefcase, CheckCircle, ChevronRight, Home, ShoppingCa
 import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
+import { personEntityFor, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
 import { absoluteUrl, BASE_URL } from "@/lib/i18n/routes";
 import { EXPERIENCE_STRIP, SERVICE_BYLINE, SERVICE_PAGES_UPDATED, type ServicePageDef } from "@/data/servicePages";
 import hansProfile from "@/assets/hans-profile.jpg";
@@ -44,7 +44,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
-        PERSON_ENTITY,
+        personEntityFor(lang === "nl" ? "nl" : "en"),
         PROFESSIONAL_SERVICE_ENTITY,
         {
           "@type": "WebPage",

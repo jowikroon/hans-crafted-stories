@@ -139,7 +139,7 @@ const PROFESSIONAL_SERVICE_ENTITY = {
 // Static page SEO — per taal. Dienstenpagina's komen uit data/servicePages.ts.
 /** Person-entity met beschrijving in de paginataal (NL-pagina's droegen een Engelse description). */
 const PERSON_DESCRIPTION_NL = IDENTITY.personDescription.nl;
-const personEntity = (lang) => (lang === "nl" ? { ...PERSON_ENTITY, description: PERSON_DESCRIPTION_NL } : PERSON_ENTITY);
+const personEntity = (lang) => (lang === "nl" ? { ...PERSON_ENTITY, jobTitle: IDENTITY.jobTitle.nl, description: PERSON_DESCRIPTION_NL } : PERSON_ENTITY);
 
 const ABOUT_PERSON_ENTITY = {
   ...PERSON_ENTITY,
@@ -493,7 +493,9 @@ for (const [slug, blogPost] of postBySlug) {
       const faqLd = serializeJsonForHtmlScript({ "@context": "https://schema.org", ...homeFaqJsonLd(lang) });
       page = page.replace("</head>", `    <script type="application/ld+json" id="home-faq-jsonld">${faqLd}</script>\n</head>`);
       return lang === "nl"
-        ? page.replace(/"description":\s*"Hans van Leeuwen is a freelance and interim marketplace manager[^"]*"/g, `"description": ${JSON.stringify(PERSON_DESCRIPTION_NL)}`)
+        ? page
+            .replace(/"description":\s*"Hans van Leeuwen is a freelance and interim marketplace manager[^"]*"/g, `"description": ${JSON.stringify(PERSON_DESCRIPTION_NL)}`)
+            .replace(`"jobTitle": ${JSON.stringify(IDENTITY.jobTitle.en)}`, `"jobTitle": ${JSON.stringify(IDENTITY.jobTitle.nl)}`)
         : page;
     },
     fallbackHtml: (lang, head) => buildStaticPageFallback({ ...head, intro: [] }, "", "h2", lang),
@@ -528,7 +530,7 @@ writeLocalizedPage("/about", {
         dateModified: SERVICE_PAGES_UPDATED,
       },
       WEBSITE_ENTITY,
-      { ...ABOUT_PERSON_ENTITY, description: personEntity(lang).description },
+      { ...ABOUT_PERSON_ENTITY, jobTitle: personEntity(lang).jobTitle, description: personEntity(lang).description },
       PROFESSIONAL_SERVICE_ENTITY,
       {
         "@type": "BreadcrumbList",
