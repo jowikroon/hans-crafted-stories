@@ -173,7 +173,7 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(portal|wiki|god-structure|samantha|release-set|music-cms|write)",
+      "source": "/(portal|bijlagen|wiki|god-structure|samantha|release-set|music-cms|write)",
       "destination": "/index.html"
     },
     {
