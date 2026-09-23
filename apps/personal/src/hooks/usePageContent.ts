@@ -15,13 +15,14 @@ export function usePageContent(page: string) {
   }, [page]);
 
   const getValue = useCallback(
-    (key: string, fallback: string) => {
-      // Try lang-suffixed key first (e.g. hero_heading_nl)
-      if (lang !== "en") {
+    (key: string, fallback: string, opts?: { neutral?: boolean }) => {
+      // Niet-Engels: alleen een taal-specifieke CMS-rij (bv. about_h1_nl) mag de
+      // (gelokaliseerde) code-fallback vervangen. De basis-rij is Engels; die viel
+      // eerder vóór de NL-fallback, waardoor /nl/about een Engelse H1 toonde (F2.10).
+      if (lang !== "en" && !opts?.neutral) {
         const langRow = rows.find((r) => r.content_key === `${key}_${lang}`);
-        if (langRow?.content_value) return langRow.content_value;
+        return langRow?.content_value || fallback;
       }
-      // Fall back to base key (English default)
       const row = rows.find((r) => r.content_key === key);
       return row?.content_value || fallback;
     },

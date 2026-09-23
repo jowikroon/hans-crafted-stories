@@ -8,7 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { LangProvider } from "@/hooks/useLang";
 import { PreloadedDataProvider, type PreloadedData } from "@/contexts/PreloadedDataContext";
-import type { BlogPostRow } from "@/lib/api/content";
+import type { BlogPostRow, CaseStudyRow } from "@/lib/api/content";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollProgress from "./components/ScrollProgress";
@@ -104,6 +104,8 @@ export interface AppProps {
     preloadedBlogPost?: BlogPostRow | null;
     /** Pre-fetched blog posts for /writing prerender. */
     preloadedBlogPosts?: BlogPostRow[] | null;
+    /** Pre-fetched CMS case studies for /work prerender. */
+    preloadedCaseStudies?: CaseStudyRow[] | null;
     /** Initial language for SSR (e.g. "en" for /about prerender). */
     initialLang?: "en" | "nl";
   };
@@ -116,10 +118,12 @@ const App = ({ preloadedData, serverContext }: AppProps) => {
     ? {
         blogPost: serverContext.preloadedBlogPost ?? null,
         blogPosts: serverContext.preloadedBlogPosts ?? null,
+        caseStudies: serverContext.preloadedCaseStudies ?? null,
       }
     : {
         blogPost: (preloadedData as { blogPost?: BlogPostRow } | null | undefined)?.blogPost ?? null,
         blogPosts: (preloadedData as { blogPosts?: BlogPostRow[] } | null | undefined)?.blogPosts ?? null,
+        caseStudies: (preloadedData as { caseStudies?: CaseStudyRow[] } | null | undefined)?.caseStudies ?? null,
       };
 
   return (
