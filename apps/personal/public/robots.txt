@@ -1,5 +1,6 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /bijlagen
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -11,6 +12,7 @@ Disallow: /blog-cms
 
 User-agent: Bingbot
 Allow: /
+Disallow: /bijlagen
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -29,6 +31,7 @@ Allow: /
 # AI crawlers — explicitly allowed for GEO / AI visibility
 User-agent: GPTBot
 Allow: /
+Disallow: /bijlagen
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -40,6 +43,7 @@ Disallow: /blog-cms
 
 User-agent: CCBot
 Allow: /
+Disallow: /bijlagen
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -51,6 +55,7 @@ Disallow: /blog-cms
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /bijlagen
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -80,6 +85,7 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /bijlagen
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha

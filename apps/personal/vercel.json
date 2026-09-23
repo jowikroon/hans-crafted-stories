@@ -4,6 +4,11 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/dashboards/attachments",
+      "destination": "/bijlagen",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
@@ -173,7 +178,7 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(portal|wiki|god-structure|samantha|release-set|music-cms|write)",
+      "source": "/(portal|bijlagen|wiki|god-structure|samantha|release-set|music-cms|write)",
       "destination": "/index.html"
     },
     {
@@ -210,6 +215,10 @@
     }
   ],
   "headers": [
+    {
+      "source": "/bijlagen",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [

@@ -9,7 +9,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
   ChevronDown, Network, Sparkles, PenLine, Disc3, BarChart3,
-  AudioLines,
+  AudioLines, ExternalLink, Paperclip,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -113,6 +113,7 @@ const Navbar = (_props: NavbarProps) => {
             ? [
                 { to: "/god-structure", label: t.workspace.dashboard, keywords: ["dashboard", "god", "structure", "admin", "infrastructure"] },
                 { to: "/dashboards", label: "Dashboards", keywords: ["dashboards", "ccp", "connectcarparts", "sales", "ebay", "klanten"] },
+                { to: "/bijlagen", label: "Bijlagen", keywords: ["attachments", "cowork", "bestanden", "documenten"] },
               ]
             : []),
         ]
@@ -134,7 +135,7 @@ const Navbar = (_props: NavbarProps) => {
      light there too — never inherit the visitor's dark toggle. */
   const isLightSurface =
     isCommandCenter ||
-    ["/music-cms", "/portal", "/wiki", "/dashboards", "/blog-cms"].some((p) =>
+    ["/music-cms", "/portal", "/wiki", "/dashboards", "/blog-cms", "/bijlagen"].some((p) =>
       location.pathname.startsWith(p)
     );
 
@@ -385,7 +386,7 @@ const Navbar = (_props: NavbarProps) => {
               {/* Account chip (logged-in) or Login pill */}
               {user ? (
                 <div className="relative hidden sm:block">
-                  <button onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? `border-[#2D9255] ${barChip}` : `${barBord} ${barInk} ${barHovBg}`}`}>
+                  <button aria-label="Profielmenu" aria-expanded={profileOpen} onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? `border-[#2D9255] ${barChip}` : `${barBord} ${barInk} ${barHovBg}`}`}>
                     <span className={`grid h-6 w-6 place-items-center rounded-full ${barAvatar} text-[11px] font-mono font-semibold`}>{firstName.charAt(0).toLowerCase()}</span>
                     <span className="max-w-[90px] truncate">{firstName}</span>
                     <ChevronDown size={12} className={`transition-transform ${profileOpen ? "rotate-180" : ""}`} />
@@ -394,13 +395,15 @@ const Navbar = (_props: NavbarProps) => {
                     {profileOpen && (
                       <>
                         <div className="fixed inset-0 z-40" onClick={closeProfile} />
-                        <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-2 z-50 w-60 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl overflow-hidden">
+                        <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-2 z-50 w-60 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl max-h-[calc(100dvh-7rem)] overflow-y-auto">
                           <div className="px-4 py-3 border-b border-black/[0.07]">
                             <p className="text-sm font-medium truncate text-[#15140F]">{user.user_metadata?.full_name || "User"}</p>
                             <p className="text-xs truncate text-[#7E7A6F]">{user.email}</p>
                           </div>
                           <p className="px-4 pt-2.5 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F]">{t.workspace.label}</p>
                           <div className="pb-1">
+                            {isAdmin && <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer" onClick={closeProfile} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Sparkles size={15} /> Cowork <ExternalLink size={12} className="ml-auto" aria-hidden="true" /></a>}
+                            {isAdmin && <Link to="/bijlagen" onClick={closeProfile} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Paperclip size={15} /> Bijlagen</Link>}
                             {isAdmin && <Link to="/write" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><PenLine size={15} /> {t.workspace.blogCms}</Link>}
                             {isAdmin && <Link to="/release-set" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Disc3 size={15} /> Release Set</Link>}
                             {isAdmin && <Link to="/music-cms?mode=productie" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><AudioLines size={15} /> Muziek Productie</Link>}
@@ -508,6 +511,8 @@ const Navbar = (_props: NavbarProps) => {
                 {user ? (
                   <>
                     <p className={`px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold ${barMut}`}>{t.workspace.label}</p>
+                    {isAdmin && <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Sparkles size={14} /> Cowork <ExternalLink size={12} aria-hidden="true" /></a>}
+                    {isAdmin && <Link to="/bijlagen" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Paperclip size={14} /> Bijlagen</Link>}
                     {isAdmin && <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><PenLine size={14} /> {t.workspace.blogCms}</Link>}
                     {isAdmin && <Link to="/release-set" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Disc3 size={14} /> Release Set</Link>}
                     {isAdmin && <Link to="/music-cms?mode=productie" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><AudioLines size={14} /> Muziek Productie</Link>}
