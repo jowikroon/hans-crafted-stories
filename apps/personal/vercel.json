@@ -4,6 +4,11 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/dashboards/attachments",
+      "destination": "/bijlagen",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
@@ -210,6 +215,10 @@
     }
   ],
   "headers": [
+    {
+      "source": "/bijlagen",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [
