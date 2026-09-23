@@ -17,11 +17,12 @@
         "text": "Run the hourly hansvanleeuwen.com edge health and cache warm check. Warm https://hansvanleeuwen.com and https://marketplacegrowth.nl for /, /writing, /work and /about, then POST a compact health result to the configured empire-health endpoint. Report only failures or material degradation."
       },
       "replaces": [
-        "workers/scheduled/wrangler.toml hvl-edge-cron"
+        "Cloudflare cron trigger for the edge worker (never enabled; root wrangler.toml ships Worker hans-crafted-stories without [triggers])"
       ],
       "cutover": {
         "oldScheduler": "Cloudflare Workers scheduled trigger",
-        "disableAfterOpenClawVerification": true
+        "disableAfterOpenClawVerification": true,
+        "note": "The Worker stays deployed as an HTTP endpoint (workers/scheduled/src/index.ts); this job is the only clock."
       }
     },
     {
