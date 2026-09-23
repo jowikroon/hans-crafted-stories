@@ -45,6 +45,7 @@ browser (alleen productiedomein, na Turnstile)
    mkdir -p /tmp/cs/supabase/functions && cp -r supabase/functions-draft/contact-submit /tmp/cs/supabase/functions/
    supabase functions deploy contact-submit --project-ref pesfakewujjwkyybwaom --no-verify-jwt --workdir /tmp/cs
    ```
+   **Niet getest:** een `--workdir` zonder eigen `config.toml` wordt mogelijk geweigerd. Alternatief: de Supabase-MCP/Management-API `deploy_edge_function` met expliciet `project_id = pesfakewujjwkyybwaom`, `verify_jwt = false`, en de bestanden `index.ts` plus `handler.ts`.
    Het endpoint gebruikt `--no-verify-jwt`, omdat de browser geen gebruikers-JWT heeft. De autorisatie loopt via Turnstile plus Origin, en de databasekant via de RPC-rechten.
 5. Vercel production-env: `VITE_TURNSTILE_SITE_KEY` (publieke sitekey). Pas daarna de frontend releasen.
 6. Smoke test, één keer, met een eigen adres: verwacht één lead zichtbaar voor de admin. Een tweede poging zonder token moet 403 geven.
