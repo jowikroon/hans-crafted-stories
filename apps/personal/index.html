@@ -3,12 +3,14 @@
   <head>
     <meta charset="utf-8">
     <!-- Skin preset init, set data-skin on <html> before paint to avoid FOUC.
-         Source of truth = localStorage 'writing_skin'. Default 'editorial-light' (base). -->
+         Source of truth = localStorage 'writing_skin'. Default 'editorial-light' (base).
+         Altijd licht starten: een opgeslagen donkere skin (mono-dark) wordt bij het laden genegeerd.
+         Twin: src/hooks/useSkin.ts (LIGHT_SKINS). -->
     <script>
       (function(){
         try{
           var s = localStorage.getItem('writing_skin');
-          if (s && s !== 'editorial-light') document.documentElement.setAttribute('data-skin', s);
+          if (s === 'paper' || s === 'slate' || s === 'comfy') document.documentElement.setAttribute('data-skin', s);
         }catch(e){}
       })();
     </script>
@@ -379,24 +381,20 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#FAF8F2" />
+    <meta name="color-scheme" content="light" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="format-detection" content="telephone=no" />
     <script>
-      /* Theme guard, paints light/dark before first render (no flash).
-         Kept in sync with src/hooks/useTheme.tsx (key "site_theme"). */
+      /* Theme guard: ALTIJD LICHT STARTEN. Elk nieuw document, refresh en deep link begint licht,
+         ongeacht OS-voorkeur of een eerder opgeslagen keuze (geen localStorage-read nodig, dus ook
+         veilig bij geblokkeerde opslag). Twin: src/hooks/useTheme.tsx (START_THEME). */
       (function () {
-        try {
-          var t = localStorage.getItem("site_theme");
-          if (t !== "dark" && t !== "light") {
-            t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-          }
-          var el = document.documentElement;
-          el.classList.toggle("dark", t === "dark");
-          el.style.colorScheme = t;
-          var m = document.querySelector('meta[name="theme-color"]');
-          if (m) m.setAttribute("content", t === "dark" ? "#08080A" : "#FAF8F2");
-        } catch (e) {}
+        var el = document.documentElement;
+        el.classList.remove("dark");
+        el.style.colorScheme = "light";
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute("content", "#FAF8F2");
       })();
     </script>
     <!-- speculationrules removed (Codex PR #271): React Router intercepts clicks (no document navigation), so speculative prerenders were downloaded and discarded — pure waste. -->

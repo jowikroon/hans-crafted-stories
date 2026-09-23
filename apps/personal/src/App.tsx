@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
 import { AuthProvider } from "@/hooks/useAuth";
-import { ThemeProvider } from "@/hooks/useTheme";
+import { ThemeProvider, useLightOnRouteChange } from "@/hooks/useTheme";
 import { LangProvider } from "@/hooks/useLang";
 import { PreloadedDataProvider, type PreloadedData } from "@/contexts/PreloadedDataContext";
 import type { BlogPostRow, CaseStudyRow } from "@/lib/api/content";
@@ -64,6 +64,12 @@ const mainBackgroundFor = (pathname: string): string | undefined => {
   return undefined;
 };
 
+/* Altijd licht starten: iedere echte routewissel begint licht (zie useTheme). */
+const LightOnRouteChange = ({ pathname }: { pathname: string }) => {
+  useLightOnRouteChange(pathname);
+  return null;
+};
+
 const AppShell = ({ initialLang }: AppShellProps) => {
   const location = useLocation();
   const isCompact = location.pathname === "/samantha";
@@ -74,6 +80,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
 
   return (
     <ThemeProvider>
+    <LightOnRouteChange pathname={location.pathname} />
     <AuthProvider>
       <LangProvider initialLang={initialLang}>
         <EditOverlayProvider>
