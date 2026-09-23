@@ -8,7 +8,8 @@
       "mcp__Supabase__get_edge_function",
       "Bash(npm run test)",
       "mcp__Vercel__list_deployments",
-      "mcp__Vercel__get_deployment_build_logs"
+      "mcp__Vercel__get_deployment_build_logs",
+      "mcp__Supabase__list_projects"
     ]
   }
 }
