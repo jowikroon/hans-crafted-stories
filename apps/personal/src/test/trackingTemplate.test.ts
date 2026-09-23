@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
-import fs from "node:fs";
-import path from "node:path";
+import html from "../../index.html?raw";
 
 // Review R3: zonder JavaScript mag de HTML geen tracking laden (geen host-check, geen consent mogelijk).
-const html = fs.readFileSync(path.resolve(__dirname, "../../index.html"), "utf8");
 const noscriptBlocks = [...html.matchAll(/<noscript>([\s\S]*?)<\/noscript>/gi)].map((m) => m[1]);
 
 describe("index.html tracking template", () => {
