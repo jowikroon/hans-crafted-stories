@@ -1,5 +1,11 @@
 [
   {
+    "name": "CCP-Command-Dashboard.html",
+    "size": 108250,
+    "modified": "2026-08-30T00:41:19.000Z",
+    "url": "/cowork/ccp-ebay-de/CCP-Command-Dashboard.html"
+  },
+  {
     "name": "ABS-Matching-Quality-BER461-2026.pdf",
     "size": 5053675,
     "modified": "2026-08-23T18:55:12.238Z",
@@ -340,12 +346,6 @@
     "size": 22361,
     "modified": "2026-07-26T01:14:22.135Z",
     "url": "/cowork/ccp-ebay-de/CCP-Package-Flow.html"
-  },
-  {
-    "name": "CCP-Command-Dashboard.html",
-    "size": 61183,
-    "modified": "2026-07-26T01:14:03.801Z",
-    "url": "/cowork/ccp-ebay-de/CCP-Command-Dashboard.html"
   },
   {
     "name": "CCP-Management-Dashboard-STATUS-2026-07-25.md",

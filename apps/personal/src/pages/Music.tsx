@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { songs, featuredRelease, previousRelease, type Song } from "@/data/music";
@@ -114,16 +114,11 @@ const Music = () => {
   const shownSongs = genre === "All" ? visibleSongs : visibleSongs.filter((sg) => sg.genre === genre);
 
   useSEO({
-    title: "Music: After Hours | Hans van Leeuwen",
+    title: "Music: Songs & Production Notes | Hans van Leeuwen",
     description: "Tracks recorded after midnight, a tape machine, soft synths, and whatever the night left behind. Press play, and read the notes for every song.",
     imageAlt: "Hans van Leeuwen music: original songs and production notes (Lo-fi, Electronic, Ambient)",
     url: "https://hansvanleeuwen.com/music",
     type: "music.playlist",
-    hreflang: [
-      { lang: "en", href: "https://hansvanleeuwen.com/music" },
-      { lang: "nl", href: "https://hansvanleeuwen.com/music" },
-      { lang: "x-default", href: "https://hansvanleeuwen.com/music" },
-    ],
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
@@ -371,7 +366,7 @@ const Music = () => {
 
       {/* release timeline studio (folded into the page) */}
       <section className="mn-wrap mn-rv" aria-label="Release timeline">
-        <ReleaseTimeline />
+        <ReleaseTimeline canEdit={!!user} />
       </section>
 
       {/* outro */}

@@ -14,6 +14,7 @@ import BlogLibrary from "../write/BlogLibrary";
 import SCBriefs from "../write/SCBriefs";
 import OutlinePanel from "../write/OutlinePanel";
 import IdeaBubble from "../write/IdeaBubble";
+import VoiceTemplatePicker from "../write/VoiceTemplatePicker";
 
 function StatusPill({ status, published }: { status: string; published: boolean }) {
   const cls = status === "published" || published ? "live" : status === "scheduled" ? "scheduled" : status === "review" ? "review" : "draft";
@@ -52,7 +53,7 @@ export default function WriteMode({ postId }: { postId?: string }) {
     if (editors.status === "done") reviewsHook.refetch();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editors.status]);
-  const { template: voiceTemplate } = useVoiceTemplate(post?.category);
+  const { template: voiceTemplate } = useVoiceTemplate(post?.category, post?.voice_template_id);
   const [showSchedule, setShowSchedule] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
@@ -174,6 +175,13 @@ export default function WriteMode({ postId }: { postId?: string }) {
               <StatusPill status={post!.status} published={post!.published} />
               <span className="sep">·</span>
               <span>{post!.category}</span>
+              <span className="sep">·</span>
+              <VoiceTemplatePicker
+                postId={post!.id}
+                activeTemplate={voiceTemplate}
+                assignedTemplateId={post!.voice_template_id}
+                onChanged={state.refetch}
+              />
               {post!.word_count != null && (
                 <>
                   <span className="sep">·</span>

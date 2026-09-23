@@ -15,7 +15,7 @@
   --w2-paper-2: #F3F1EC;
   --w2-ink: #17150F;
   --w2-ink-2: #46443C;
-  --w2-muted: #8A877C;
+  --w2-muted: #747167; /* was #8A877C (3.4:1 op paper); nu 4.6:1 (HAN-145) */
   --w2-hair: rgba(23, 21, 15, .10);
   --w2-hair-2: rgba(23, 21, 15, .06);
   --w2-card: #FFFFFF;

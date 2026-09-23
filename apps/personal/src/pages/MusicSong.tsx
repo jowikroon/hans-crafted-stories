@@ -15,7 +15,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
@@ -140,10 +141,10 @@ export default function MusicSong() {
   useSEO({
     enabled: true,
     title: song
-      ? `${song.title}: Song & Production Notes | Hans van Leeuwen`
+      ? `${song.title}: Song & Notes | Hans van Leeuwen`
       : "Song not found | Hans van Leeuwen",
     description: song
-      ? `Listen to ${song.title} by Hans van Leeuwen and read the full production notes: how the track was made, the gear and DAW used, plus the complete lyrics.`
+      ? `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): listen on Spotify and read how the track was made, the gear used and the lyrics.`
       : "This track could not be found.",
     url: song ? `https://hansvanleeuwen.com/music/${song.slug}` : "https://hansvanleeuwen.com/music",
     type: "music.song",

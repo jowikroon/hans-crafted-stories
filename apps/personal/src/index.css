@@ -26,7 +26,7 @@
     --secondary-foreground: 48 8% 25%;
 
     --muted: 43 23% 94%;
-    --muted-foreground: 47 6% 51%; /* #8A877C */
+    --muted-foreground: 47 6% 39%; /* #69675D — 5.7:1 op #FFF, 5.1:1 op #F6F4EF (muted-kaart), 5.0:1 op #EEF1E9 (primary/5 op paper), 4.8:1 op primary/10. Was 47 6% 43% = #747167: 4.88 op wit maar 4.27–4.44 op de getinte kaarten (Kernel-scan 2026-09-11: 36 fails/9 routes, 1 oorzaak). Historie: 47 6% 51% = #8A877C @ 3.39 (HAN-145). Guard 14 rekent nu alle oppervlakken door. */
 
     --accent: 148 63% 29%;         /* editorial green */
     --accent-foreground: 45 33% 98%;
@@ -49,8 +49,8 @@
     --sidebar-border: 35 15% 88%;
     --sidebar-ring: 16 55% 52%;
 
-    --font-display: 'Switzer', 'Inter', system-ui, sans-serif;
-    --font-body: 'Switzer', 'Inter', system-ui, sans-serif;
+    --font-display: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, sans-serif; /* fallback met metric-overrides: zie index.html (CLS-fix 2026-09-11) */
+    --font-body: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
     /* Blog CMS instrument tokens (light fallback) */

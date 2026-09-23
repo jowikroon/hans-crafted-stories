@@ -38,11 +38,66 @@ export function detectBlogPostLang(
   return hits >= 8 ? "nl" : "en";
 }
 
+/**
+ * Primaire taal van een artikel-URL: Nederlands zodra er een NL-versie is (de
+ * doelmarkt), anders de gedetecteerde taal van de EN-velden. Eén URL = één
+ * taal; de EN-versie is bereikbaar via ?lang=en zonder eigen canonical (HAN-167).
+ */
+export function primaryBlogPostLang(
+  post: Pick<BlogPostRow, "title" | "excerpt" | "content"> & { content_nl?: string | null },
+): "nl" | "en" {
+  if (post.content_nl && clean(post.content_nl).length > 0) return "nl";
+  return detectBlogPostLang(post);
+}
+
+const normalizeBody = (value: string | null | undefined): string => clean(value).replace(/\s+/g, " ");
+
+/**
+ * Bestaat er een échte Engelse versie van dit artikel? (i18n-audit 2026-09-22)
+ *
+ * De CMS-pipeline schreef maandenlang dezelfde Nederlandse tekst in `content` én
+ * `content_nl` ("content = content_nl, identiek"); `translation_status` wordt door
+ * de site niet bijgehouden. Daardoor toonde de ENG-schakelaar een Engelse kop
+ * boven een Nederlandse tekst. Een EN-versie telt alleen als `content` gevuld is
+ * én inhoudelijk afwijkt van `content_nl`. Zonder NL-veld is `content` de enige
+ * versie: die is Engels als de detectie dat zegt (dan is er geen NL-versie, de
+ * schakelaar heeft dan niets om naar te wisselen).
+ */
+export function hasEnglishVersion(
+  post: Pick<BlogPostRow, "title" | "excerpt" | "content"> & { content_nl?: string | null },
+): boolean {
+  const en = normalizeBody(post.content);
+  if (!en) return false;
+  const nl = normalizeBody(post.content_nl);
+  if (!nl) return detectBlogPostLang(post) === "en";
+  return en !== nl;
+}
+
 export function getBlogPostCanonical(post: Pick<BlogPostRow, "slug" | "canonical_url">): string {
   return clean(post.canonical_url) || `${BASE_URL}/writing/${post.slug}`;
 }
 
-export function getBlogPostHead(post: BlogPostRow): SeoHead {
+/**
+ * De taalversie van een artikel zoals de URL die serveert: title/excerpt/content
+ * uit de *_nl-velden wanneer de artikeltaal NL is (en die velden gevuld zijn),
+ * anders de EN-basisvelden. Head, JSON-LD en prerender-fallback lezen hier
+ * allemaal doorheen zodat ze nooit een andere taal tonen dan de <h1>.
+ */
+export function localizeBlogPost<T extends Pick<BlogPostRow, "title" | "excerpt" | "content"> & { title_nl?: string | null; excerpt_nl?: string | null; content_nl?: string | null }>(
+  post: T,
+  lang: "nl" | "en" = primaryBlogPostLang(post),
+): T {
+  if (lang !== "nl") return post;
+  return {
+    ...post,
+    title: clean(post.title_nl) || post.title,
+    excerpt: clean(post.excerpt_nl) || post.excerpt,
+    content: clean(post.content_nl) || post.content,
+  };
+}
+
+export function getBlogPostHead(input: BlogPostRow, lang?: "nl" | "en"): SeoHead {
+  const post = localizeBlogPost(input, lang);
   const metaTitle = clean(post.meta_title);
   const title = metaTitle || `${post.title} | Hans van Leeuwen`;
   const description = clean(post.meta_description) || clean(post.excerpt) || DEFAULT_DESCRIPTION;
@@ -54,8 +109,10 @@ export function getBlogPostHead(post: BlogPostRow): SeoHead {
   };
 }
 
-export function getBlogPostJsonLd(post: BlogPostRow): Record<string, unknown> {
-  const head = getBlogPostHead(post);
+export function getBlogPostJsonLd(input: BlogPostRow, lang?: "nl" | "en"): Record<string, unknown> {
+  const articleLang = lang ?? primaryBlogPostLang(input);
+  const post = localizeBlogPost(input, articleLang);
+  const head = getBlogPostHead(input, articleLang);
   const url = head.canonical;
   const content = clean(post.content);
   const wordCount = content ? content.split(/\s+/).length : 0;
@@ -85,6 +142,6 @@ export function getBlogPostJsonLd(post: BlogPostRow): Record<string, unknown> {
     articleSection: post.category,
     keywords: post.tags.join(", "),
     ...(wordCount > 0 ? { wordCount } : {}),
-    inLanguage: detectBlogPostLang(post),
+    inLanguage: articleLang,
   };
 }

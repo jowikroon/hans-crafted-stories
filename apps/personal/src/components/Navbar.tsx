@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link as RouterLink } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
+import { localizePath, parsePath } from "@/lib/i18n/routes";
+import { useArticleHasEnglish } from "@/lib/i18n/articleLang";
+import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
+import { hasEnglishVersion } from "@/lib/seo/blogPostHead";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
@@ -35,7 +40,7 @@ interface NavbarProps {
 const Navbar = (_props: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { lang, setLang } = useLang();
+  const { lang } = useLang();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
   const t = translations[lang].nav;
@@ -46,15 +51,37 @@ const Navbar = (_props: NavbarProps) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [musicOpen, setMusicOpen] = useState(false);
+  const [dashOpen, setDashOpen] = useState(false);
+  const isCoarsePointer = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const musicCloseTimer = useRef<number | null>(null);
+  /* Eigen timer: hergebruik van musicCloseTimer laat twee menu's om dezelfde handle vechten. */
+  const dashCloseTimer = useRef<number | null>(null);
   const prefersReduced = useReducedMotion();
 
   /* Theme toggle still controls page-content dark mode; the bar stays light.
      State lives in the site-wide ThemeProvider (src/hooks/useTheme). */
   const { theme: siteTheme, toggleTheme } = useTheme();
+  /* Artikelen hebben één URL per artikel (HAN-167): de taalwissel gebruikt daar
+     ?lang=en in plaats van een /nl-prefix, zodat de NL-canonical intact blijft. */
+  const isArticle = /^\/writing\/[^/]+$/.test(parsePath(location.pathname).path);
+  const langTarget = (l: "nl" | "en") =>
+    isArticle ? (l === "en" ? `${location.pathname}?lang=en` : location.pathname) : localizePath(location.pathname, l);
+  /* ENG alleen aanbieden als het artikel een Engelse versie heeft (i18n-audit
+     2026-09-22, R2). Bron: de prerender-/SSR-preload (direct load) of de store
+     die BlogPostPage vult na het laden (client-side navigatie). Onbekend = tonen. */
+  const articleSlug = isArticle ? parsePath(location.pathname).path.split("/")[2] : undefined;
+  const preloadedArticle = usePreloadedBlogPost(articleSlug);
+  const storedHasEn = useArticleHasEnglish(articleSlug);
+  const articleHasEn = !isArticle || (storedHasEn ?? (preloadedArticle ? hasEnglishVersion(preloadedArticle) : true));
+  const engUnavailableTitle = "Alleen in het Nederlands beschikbaar / Only available in Dutch";
+  /* /music en /music/:slug bestaan alleen in het Engels (geen NL-copy); een
+     NL-knop die naar dezelfde URL wijst deed niets (i18n-audit 2026-09-22). */
+  const basePathNow = parsePath(location.pathname).path;
+  const isEnglishOnly = basePathNow === "/music" || basePathNow.startsWith("/music/");
+  const nlUnavailableTitle = "Only available in English / Alleen in het Engels beschikbaar";
 
   /* ── Nav model ── */
   /* Editable header menu (Design mode in /write); defaults mirror the old
@@ -147,16 +174,18 @@ const Navbar = (_props: NavbarProps) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isActive = (to: string) => location.pathname === to;
-  const isWorkActive = location.pathname.startsWith("/work")
-    || ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager"].includes(location.pathname);
-  const isMusicActive = location.pathname === "/music" || location.pathname.startsWith("/music/") || location.pathname.startsWith("/muziek");
+  // Actieve staat op het EN-basispad, zodat /nl/about en /about dezelfde tab oplichten.
+  const basePath = parsePath(location.pathname).path;
+  const isActive = (to: string) => basePath === to;
+  const isWorkActive = basePath.startsWith("/work")
+    || ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager"].includes(basePath);
+  const isMusicActive = basePath === "/music" || basePath.startsWith("/music/") || basePath.startsWith("/muziek");
 
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((i) => Math.min(i + 1, filteredPages.length - 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIndex((i) => Math.max(i - 1, 0)); }
-    else if (e.key === "Enter" && filteredPages[selectedIndex]) { navigate(filteredPages[selectedIndex].to); setSearchOpen(false); }
+    else if (e.key === "Enter" && filteredPages[selectedIndex]) { navigate(localizePath(filteredPages[selectedIndex].to, lang)); setSearchOpen(false); }
   };
 
   const firstName = user?.user_metadata?.full_name?.split(" ")[0] || t.portal;
@@ -193,6 +222,23 @@ const Navbar = (_props: NavbarProps) => {
   const musicItemV = prefersReduced
     ? { hidden: { opacity: 0 }, show: { opacity: 1 } }
     : { hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.26, ease: [0.22, 1, 0.36, 1] as const } } };
+  /* Dashboards-submenu. Inline uitklap, geen absolute flyout: het profielpaneel
+     heeft overflow-hidden en zou een flyout afknippen. */
+  const DASHBOARD_LINKS = [
+    { to: "/dashboards/ccp", label: t.workspace.dashCcp, hint: "eBay DE · Channable · Magento" },
+    { to: "/dashboards/hvl", label: t.workspace.dashHvl, hint: "zichtbaarheid & content" },
+    { to: "/dashboards/mpg", label: t.workspace.dashMpg, hint: "advisory & roadmap" },
+  ];
+  const openDash = () => {
+    if (dashCloseTimer.current) { window.clearTimeout(dashCloseTimer.current); dashCloseTimer.current = null; }
+    setDashOpen(true);
+  };
+  const closeDashSoon = () => {
+    if (dashCloseTimer.current) window.clearTimeout(dashCloseTimer.current);
+    dashCloseTimer.current = window.setTimeout(() => setDashOpen(false), 300);
+  };
+  const closeProfile = () => { setDashOpen(false); setProfileOpen(false); };
+
   const musicItemCls = "block px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 rounded-lg transition-colors dark:text-[#C9BFB0] dark:hover:text-white dark:hover:bg-white/5";
   const MusicNav = ({ label }: { label: string }) => (
     <div
@@ -262,7 +308,7 @@ const Navbar = (_props: NavbarProps) => {
                   <p className="px-4 py-6 text-center text-sm text-[#7E7A6F]">{t.noResults}</p>
                 ) : (
                   filteredPages.map((page, i) => (
-                    <button key={page.to} onClick={() => { navigate(page.to); setSearchOpen(false); }} onMouseEnter={() => setSelectedIndex(i)} className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${i === selectedIndex ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#15140F] hover:bg-[#E5DFCE]/60"}`}>
+                    <button key={page.to} onClick={() => { navigate(localizePath(page.to, lang)); setSearchOpen(false); }} onMouseEnter={() => setSelectedIndex(i)} className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${i === selectedIndex ? "bg-[#E5DFCE] text-[#15140F]" : "text-[#15140F] hover:bg-[#E5DFCE]/60"}`}>
                       <span className="font-medium">{page.label}</span>
                       <span className="ml-auto text-xs text-[#7E7A6F]">{page.to}</span>
                     </button>
@@ -323,9 +369,17 @@ const Navbar = (_props: NavbarProps) => {
                 {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               <div className="hidden sm:flex items-center gap-0.5 font-mono text-xs">
-                <button onClick={() => setLang("nl")} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</button>
+                {isEnglishOnly ? (
+                  <span aria-disabled="true" title={nlUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>NL</span>
+                ) : (
+                  <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
+                )}
                 <span className={barSep}>|</span>
-                <button onClick={() => setLang("en")} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</button>
+                {articleHasEn ? (
+                  <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
+                ) : (
+                  <span aria-disabled="true" title={engUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>ENG</span>
+                )}
               </div>
 
               {/* Account chip (logged-in) or Login pill */}
@@ -339,7 +393,7 @@ const Navbar = (_props: NavbarProps) => {
                   <AnimatePresence>
                     {profileOpen && (
                       <>
-                        <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                        <div className="fixed inset-0 z-40" onClick={closeProfile} />
                         <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-2 z-50 w-60 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl overflow-hidden">
                           <div className="px-4 py-3 border-b border-black/[0.07]">
                             <p className="text-sm font-medium truncate text-[#15140F]">{user.user_metadata?.full_name || "User"}</p>
@@ -354,7 +408,53 @@ const Navbar = (_props: NavbarProps) => {
                             <Link to="/portal" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><LayoutDashboard size={15} /> {t.workspace.portal}</Link>
                             {isAdmin && <Link to="/wiki" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BookOpen size={15} /> {t.workspace.docs}</Link>}
                             {isAdmin && <Link to="/god-structure" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Network size={15} /> {t.workspace.dashboard}</Link>}
-                            {isAdmin && <Link to="/dashboards" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BarChart3 size={15} /> Dashboards</Link>}
+                            {isAdmin && (
+                              <div
+                                onMouseEnter={openDash}
+                                onMouseLeave={closeDashSoon}
+                                onFocusCapture={openDash}
+                                onBlurCapture={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) closeDashSoon(); }}
+                                onKeyDown={(e) => { if (e.key === "Escape") { setDashOpen(false); (e.currentTarget.querySelector("a") as HTMLElement | null)?.focus(); } }}
+                              >
+                                <Link
+                                  to="/dashboards"
+                                  role="menuitem"
+                                  aria-haspopup="true"
+                                  aria-expanded={dashOpen}
+                                  onClick={(e) => { if (!dashOpen && isCoarsePointer) { e.preventDefault(); openDash(); return; } closeProfile(); }}
+                                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"
+                                >
+                                  <BarChart3 size={15} /> {t.workspace.dashboards}
+                                  <ChevronDown size={12} className={`ml-auto transition-transform duration-200 ${dashOpen ? "rotate-180" : ""}`} />
+                                </Link>
+                                <AnimatePresence initial={false}>
+                                  {dashOpen && (
+                                    <motion.div
+                                      role="menu"
+                                      aria-label={t.workspace.dashboards}
+                                      initial={prefersReduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                                      animate={prefersReduced ? { opacity: 1 } : { opacity: 1, height: "auto" }}
+                                      exit={prefersReduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                                      transition={{ duration: prefersReduced ? 0.12 : 0.18, ease: [0.22, 1, 0.36, 1] }}
+                                      className="overflow-hidden bg-[#F4EFE2]/60"
+                                    >
+                                      {DASHBOARD_LINKS.map((d) => (
+                                        <Link
+                                          key={d.to}
+                                          role="menuitem"
+                                          to={d.to}
+                                          onClick={closeProfile}
+                                          className="flex flex-col gap-0.5 py-2 pl-11 pr-4 text-sm text-[#4B4842] hover:bg-[#E5DFCE]/70 hover:text-[#15140F] transition-colors"
+                                        >
+                                          <span>{d.label}</span>
+                                          <span className="text-[11px] text-[#7E7A6F]">{d.hint}</span>
+                                        </Link>
+                                      ))}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            )}
                           </div>
                           <div className="border-t border-black/[0.07] py-1">
                             <button onClick={() => { signOut(); setProfileOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#C2410C] hover:bg-[#C2410C]/10 transition-colors"><LogOut size={15} /> {t.workspace.signOut}</button>
@@ -392,9 +492,17 @@ const Navbar = (_props: NavbarProps) => {
 
                 <div className={`my-1 h-px ${barDark ? "bg-white/10" : "bg-black/10"}`} />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
-                  <button onClick={() => setLang("nl")} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</button>
+                  {isEnglishOnly ? (
+                    <span aria-disabled="true" title={nlUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>NL</span>
+                  ) : (
+                    <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" onClick={() => setMobileOpen(false)} aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
+                  )}
                   <span className={barSep}>|</span>
-                  <button onClick={() => setLang("en")} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</button>
+                  {articleHasEn ? (
+                    <RouterLink to={langTarget("en")} hrefLang="en" lang="en" onClick={() => setMobileOpen(false)} aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
+                  ) : (
+                    <span aria-disabled="true" title={engUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>ENG</span>
+                  )}
                 </div>
 
                 {user ? (
@@ -407,7 +515,10 @@ const Navbar = (_props: NavbarProps) => {
                     <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><LayoutDashboard size={14} /> {t.workspace.portal}</Link>
                     {isAdmin && <Link to="/wiki" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BookOpen size={14} /> {t.workspace.docs}</Link>}
                     {isAdmin && <Link to="/god-structure" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Network size={14} /> {t.workspace.dashboard}</Link>}
-                    {isAdmin && <Link to="/dashboards" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BarChart3 size={14} /> Dashboards</Link>}
+                    {isAdmin && <Link to="/dashboards" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BarChart3 size={14} /> {t.workspace.dashboards}</Link>}
+                    {isAdmin && DASHBOARD_LINKS.map((d) => (
+                      <Link key={d.to} to={d.to} onClick={() => setMobileOpen(false)} className={`rounded-lg py-2 pl-9 pr-3 text-sm ${barMut} ${barHovBg} ${barHovInk}`}>{d.label}</Link>
+                    ))}
                     <button onClick={() => { signOut(); setMobileOpen(false); }} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#C2410C] hover:bg-[#C2410C]/10 w-full text-left"><LogOut size={14} /> {t.workspace.signOut}</button>
                   </>
                 ) : (

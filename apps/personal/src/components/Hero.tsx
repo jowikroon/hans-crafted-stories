@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import FeaturedArticles from "@/components/FeaturedArticles";
 import HomeFAQ from "@/components/HomeFAQ";
 import ServiceDetails from "@/components/ServiceDetails";
@@ -8,6 +8,8 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageContent } from "@/hooks/usePageContent";
 import Magnetic from "@/components/Magnetic";
+import hansProfile from "@/assets/hans-profile.jpg";
+import { SERVICE_BYLINE, SERVICE_PAGES_UPDATED } from "@/data/servicePages";
 
 const icons = [
   <ShoppingCart size={20} />,
@@ -16,10 +18,17 @@ const icons = [
   <Search size={20} />,
 ];
 
+// Volgorde = translations.hero.expertise; elke kaart linkt exact-match naar zijn dienstenpagina (plan Q4, werkstroom A).
+const SERVICE_PATHS = ["/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation"];
+
+const formatDate = (iso: string, lang: "nl" | "en") =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString(lang === "nl" ? "nl-NL" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
+
 const Hero = () => {
   const { lang } = useLang();
   const isNl = lang === "nl";
   const t = translations[lang].hero;
+  const byline = SERVICE_BYLINE[lang];
   const { getValue } = usePageContent("home");
 
   const expertise = [
@@ -36,6 +45,7 @@ const Hero = () => {
         className="section-container flex min-h-[78vh] flex-col justify-center pt-10"
         aria-label="Introduction"
       >
+        <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_260px] lg:grid-cols-[minmax(0,1fr)_300px]">
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0 }}
@@ -46,8 +56,8 @@ const Hero = () => {
           </p>
           <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
             {isNl
-              ? <>E-commerce &amp; Marketplace Manager (Amazon &amp; Bol.com) <em className="text-primary">strategie</em>, groei &amp; AI-operations</>
-              : <>E-commerce &amp; Marketplace Manager (Amazon &amp; Bol.com) <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
+              ? <>Hans van Leeuwen — E-commerce &amp; Marketplace Manager (Amazon &amp; Bol.com): <em className="text-primary">strategie</em>, groei &amp; AI-operations</>
+              : <>Hans van Leeuwen — E-commerce &amp; Marketplace Manager (Amazon &amp; Bol.com): <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
             }
           </h1>
           <p className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
@@ -67,7 +77,7 @@ const Hero = () => {
             </Link>
             .
           </p>
-          <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground/70">
+          <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground">
             <MapPin size={13} className="shrink-0 text-primary/60" />
             {getValue("hero_location", t.location)}
           </p>
@@ -92,12 +102,31 @@ const Hero = () => {
               </Link>
             </Magnetic>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground/60">
+          <p className="mt-3 text-xs text-muted-foreground">
             {isNl
               ? "Reactie binnen 48 uur · Vrijblijvend · Voor merken en retailers op Amazon NL & Bol.com"
               : "Response within 48h · No obligation · For brands & retailers on Amazon NL & Bol.com"}
           </p>
         </motion.div>
+        {/* Portrait: echte foto (E-E-A-T), eager + fetchpriority want boven de vouw op md+; op mobiel verborgen zodat de H1 de LCP blijft. SEO-run april-items "zero images". */}
+        <figure className="hidden md:block">
+          <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-muted ring-1 ring-border/50">
+            <img
+              src={hansProfile}
+              alt={isNl
+                ? "Hans van Leeuwen, freelance en interim e-commerce manager voor Amazon NL/DE en Bol.com, Amersfoort"
+                : "Hans van Leeuwen, freelance and interim e-commerce manager for Amazon NL/DE and Bol.com, Amersfoort"}
+              width={600}
+              height={800}
+              loading="eager"
+              decoding="async"
+              {...{ fetchpriority: "high" }}
+              className="h-full w-full object-cover object-top"
+            />
+          </div>
+          <figcaption className="mt-2 text-center text-xs text-muted-foreground">{byline.name} · {isNl ? "Amersfoort" : "Amersfoort, NL"}</figcaption>
+        </figure>
+        </div>
       </section>
 
       {/* Results / Proof Section, enriched mini case studies */}
@@ -127,6 +156,14 @@ const Hero = () => {
             </Link>
           ))}
           </div>
+          {/* Byline + zichtbare revisiedatum (freshness + E-E-A-T; april-items "last updated"). Twin: dateModified in prerender.mjs (home). */}
+          <p className="mt-8 border-t border-border/40 pt-4 text-xs text-muted-foreground">
+            {byline.updated}: <time dateTime={SERVICE_PAGES_UPDATED}>{formatDate(SERVICE_PAGES_UPDATED, lang)}</time>
+            {" · "}
+            <Link to="/about" className="underline hover:text-foreground">{byline.about}</Link>
+            {" · "}
+            <a href="https://www.linkedin.com/in/hansvl3" rel="me noopener noreferrer" target="_blank" className="underline hover:text-foreground">{byline.linkedin}</a>
+          </p>
         </motion.div>
       </section>
 
@@ -237,7 +274,7 @@ const Hero = () => {
                 {icons[i]}
               </div>
               <h3 className="mb-1.5 text-sm font-bold text-foreground">
-                {item.title}
+                <Link to={SERVICE_PATHS[i]} className="underline-offset-4 hover:underline">{item.title}</Link>
               </h3>
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {item.description}
@@ -254,17 +291,17 @@ const Hero = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
         >
+          <Link to="/interim-ecommerce-manager" className="font-semibold transition-colors hover:text-foreground">
+            {isNl ? "Interim e-commerce manager inhuren →" : "Interim e-commerce manager →"}
+          </Link>
           <Link to="/amazon-nl-specialist" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "Amazon NL specialist →" : "Amazon NL specialist →"}
+            {isNl ? "Amazon NL specialist inhuren →" : "Amazon NL specialist →"}
           </Link>
           <Link to="/bol-com-consultant" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "Bol.com consultant →" : "Bol.com consultant →"}
-          </Link>
-          <Link to="/interim-ecommerce-manager" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "Interim e-commerce manager →" : "Interim e-commerce manager →"}
+            {isNl ? "Bol.com consultant inhuren →" : "Bol.com consultant →"}
           </Link>
           <Link to="/ai-ecommerce-automation" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "AI e-commerce automatisering →" : "AI e-commerce automation →"}
+            {isNl ? "AI e-commerce automation →" : "AI e-commerce automation →"}
           </Link>
           <Link to="/work" className="font-semibold transition-colors hover:text-foreground">
             {t.linkCases}

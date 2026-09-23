@@ -15,6 +15,11 @@
       "permanent": true
     },
     {
+      "source": "/writing/freelance-e-commerce-manager-inhuren",
+      "destination": "/writing/waarom-marketplace-listings-niet-converteren",
+      "permanent": true
+    },
+    {
       "source": "/writing/one-man-just-liberated-fable-and-now-it-s-illegal",
       "destination": "/writing",
       "permanent": true
@@ -113,12 +118,94 @@
       "source": "/writing/untitled",
       "destination": "/writing",
       "permanent": true
+    },
+    {
+      "source": "/portfolio",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/empire",
+      "destination": "/samantha",
+      "permanent": true
+    },
+    {
+      "source": "/hansai",
+      "destination": "/samantha",
+      "permanent": true
+    },
+    {
+      "source": "/hans-ai",
+      "destination": "/samantha",
+      "permanent": true
+    },
+    {
+      "source": "/command",
+      "destination": "/samantha",
+      "permanent": true
+    },
+    {
+      "source": "/nl/tarieven",
+      "destination": "/nl/rates",
+      "permanent": true
+    },
+    {
+      "source": "/tarieven",
+      "destination": "/nl/rates",
+      "permanent": true
+    },
+    {
+      "source": "/cases",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/cases/connect-car-parts",
+      "destination": "/work/connect-car-parts",
+      "permanent": true
+    },
+    {
+      "source": "/cowork",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/(portal|wiki|god-structure|samantha|release-set|music-cms|write)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(write|music-cms)/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboards",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboards/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog-cms/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/muziek/artist-radar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/writing/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/music/(teacher-leave|hanging-on|beat-between-our-years|new-level)",
       "destination": "/index.html"
     }
   ],

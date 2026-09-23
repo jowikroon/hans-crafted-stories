@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 
@@ -6,12 +6,26 @@ const socialLinks = [
   { label: "LinkedIn", href: "https://www.linkedin.com/in/hansvl3" },
 ];
 
-const internalLinks = [
-  { label: "Portfolio", to: "/work" },
-  { label: "Optimization Articles", to: "/writing" },
-  { label: "Music", to: "/music" },
-  { label: "About Hans", to: "/about" },
-];
+const internalLinksByLang = {
+  en: [
+    { label: "Interim e-commerce manager", to: "/interim-ecommerce-manager" },
+    { label: "Amazon NL specialist", to: "/amazon-nl-specialist" },
+    { label: "Bol.com consultant", to: "/bol-com-consultant" },
+    { label: "Rates", to: "/rates" },
+    { label: "Case studies", to: "/work" },
+    { label: "Articles", to: "/writing" },
+    { label: "About Hans", to: "/about" },
+  ],
+  nl: [
+    { label: "Interim e-commerce manager inhuren", to: "/interim-ecommerce-manager" },
+    { label: "Amazon NL specialist inhuren", to: "/amazon-nl-specialist" },
+    { label: "Bol.com consultant inhuren", to: "/bol-com-consultant" },
+    { label: "Tarieven", to: "/rates" },
+    { label: "Case studies", to: "/work" },
+    { label: "Artikelen", to: "/writing" },
+    { label: "Over Hans", to: "/about" },
+  ],
+} as const;
 
 const Footer = () => {
   const { lang } = useLang();
@@ -26,17 +40,17 @@ const Footer = () => {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Hans van Leeuwen
           </p>
-          <p className="mt-1 text-xs text-muted-foreground/60">
+          <p className="mt-1 text-xs text-muted-foreground">
             {isNl
               ? "Werkzaam in heel Nederland (Amersfoort, Utrecht, Amsterdam, Rotterdam) en de EU."
               : "Working across the Netherlands (Amersfoort, Utrecht, Amsterdam, Rotterdam) and EU."}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground/60 tabular-nums">
+          <p className="mt-1 text-xs text-muted-foreground tabular-nums">
             KvK 85382590 &middot; BTW NL004089286B45
           </p>
         </div>
-        <div className="flex items-center gap-6">
-          {internalLinks.map((link) => (
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 md:justify-end">
+          {internalLinksByLang[lang].map((link) => (
             <Link
               key={link.to}
               to={link.to}

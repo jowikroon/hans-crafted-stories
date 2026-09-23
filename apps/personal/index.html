@@ -46,7 +46,7 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-K22B6627');</script>
     <!-- End Google Tag Manager -->
-    <!-- Note: GA4 (G-6E713E94JW) is configured inside GTM, no standalone gtag.js needed -->
+    <!-- Note: GA4 is configured inside GTM (dual: G-2YX26R0RZK = HVL property/primair, G-6E713E94JW = Marketplacegrowth/legacy), no standalone gtag.js needed -->
     <!-- Hotjar (hjid:6659262) is loaded via TrackingScriptInjector after first user interaction -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="content-language" content="en" />
@@ -69,15 +69,18 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Hans van Leeuwen – Freelance E-commerce Manager" />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content="nl_NL" />
+    <link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/" />
+    <link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@hansvl3" />
     <meta name="twitter:creator" content="@hansvl3" />
     <meta name="twitter:url" content="https://hansvanleeuwen.com/" />
-    <meta name="twitter:title" content="E-commerce &amp; Marketplace Manager (Amazon, Bol.com &amp; AI) | Hans van Leeuwen" />
-    <meta name="twitter:description" content="E-commerce &amp; marketplace manager, 10+ years on Amazon NL/DE &amp; Bol.com: 70% category share (Nielsen), OOS under 2%, AI-assisted operations on n8n, Channable &amp; Claude. Amersfoort, NL/EU." />
+    <meta name="twitter:title" content="Freelance E-commerce Manager (Amazon &amp; Bol.com) | Hans van Leeuwen" />
+    <meta name="twitter:description" content="10+ years growing Amazon NL &amp; Bol.com revenue. Listings, ads, CRO &amp; forecasting. Based in Amersfoort — NL/EU." />
     <meta name="twitter:image" content="https://hansvanleeuwen.com/og-image.png" />
     <meta name="twitter:image:alt" content="Hans van Leeuwen – E-commerce Manager &amp; Marketplace Specialist" />
 
@@ -92,7 +95,7 @@
           "name": "Hans van Leeuwen",
           "url": "https://hansvanleeuwen.com/",
           "description": "Freelance e-commerce manager specializing in Amazon & Bol.com marketplace growth, CRO, UX strategy, and digital commerce optimization.",
-          "inLanguage": "en",
+          "inLanguage": "nl",
           "image": "https://hansvanleeuwen.com/og-image.png",
           "publisher": { "@id": "https://hansvanleeuwen.com/#person" }
         },
@@ -103,7 +106,7 @@
           "name": "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen",
           "isPartOf": { "@id": "https://hansvanleeuwen.com/#website" },
           "about": { "@id": "https://hansvanleeuwen.com/#person" },
-          "inLanguage": "en",
+          "inLanguage": "nl",
           "speakable": {
             "@type": "SpeakableSpecification",
             "cssSelector": ["h1", "[aria-label=\"Introduction\"] p.text-lg", "dl dd"]
@@ -121,7 +124,7 @@
           "name": "Hans van Leeuwen",
           "url": "https://hansvanleeuwen.com/about",
           "mainEntityOfPage": { "@id": "https://hansvanleeuwen.com/#webpage" },
-          "jobTitle": "E-commerce & Marketplace Manager",
+          "jobTitle": "Freelance & Interim E-commerce Manager",
           "alternateName": "Jowikroon",
           "hasOccupation": {
             "@type": "Occupation",
@@ -339,9 +342,7 @@
     }
     </script>
 
-    <!-- hreflang: single-locale site, self-referencing (rewritten per page by prerender) -->
-    <link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/" />
-    <link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/" />
+    <!-- hreflang: één wederkerige set per pagina, gezet door scripts/prerender.mjs (na og:locale) -->
 
     <!-- Sitemap reference (SEO audit 2026-07-21) -->
     <link rel="sitemap" type="application/xml" href="https://hansvanleeuwen.com/sitemap.xml" />
@@ -363,8 +364,12 @@
          pages from fetching fonts they never render. -->
     <style>
       /* Critical font-display fallback so text is visible while fonts load */
-      body { font-family: 'Switzer', 'Inter', system-ui, -apple-system, sans-serif; }
-      .font-display { font-family: 'Switzer', 'Inter', system-ui, sans-serif; }
+      /* CLS-fix 2026-09-11: 'Switzer Fallback' is Arial/Helvetica/Liberation met metrics gematcht op Switzer 500
+         (Kernel-meting: breedte 0.912×, ascent 0.98em, descent 0.25em). Zonder deze override sprong de hero-H1
+         bij font-swap van 4 naar 3 regels (LAB-CLS 0.08 mobiel, 2 runs). Overrides zijn relatief aan size-adjust. */
+      @font-face { font-family: 'Switzer Fallback'; src: local('Arial'), local('Helvetica Neue'), local('Helvetica'), local('Liberation Sans'); size-adjust: 91.2%; ascent-override: 107.5%; descent-override: 27.4%; line-gap-override: 0%; }
+      body { font-family: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, -apple-system, sans-serif; }
+      .font-display { font-family: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, sans-serif; }
     </style>
 
     <!-- Favicon set -->

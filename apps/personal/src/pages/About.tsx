@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home, Calendar } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
-import { Link } from "react-router-dom";
+import { Link } from "@/components/LocalizedLink";
 import hansProfile from "@/assets/hans-profile.jpg";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/hooks/useLang";
@@ -59,12 +59,9 @@ const About = () => {
   useSEO({
     title: seo.aboutTitle,
     description: seo.aboutDescription,
-    url: "https://hansvanleeuwen.com/about",
-    hreflang: [
-      { lang: "en", href: "https://hansvanleeuwen.com/about" },
-      { lang: "nl", href: "https://hansvanleeuwen.com/about" },
-      { lang: "x-default", href: "https://hansvanleeuwen.com/about" },
-    ],
+    imageAlt: lang === "nl" ? "Hans van Leeuwen – Interim E-commerce Manager & Marketplace-specialist" : "Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
+    path: "/about",
+    lang,
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
@@ -97,6 +94,9 @@ const About = () => {
           sameAs: [
             "https://www.linkedin.com/in/hansvl3",
             "https://x.com/hansvl3",
+            "https://github.com/jowikroon",
+            "https://www.youtube.com/@jowikroon1990",
+            "https://soundcloud.com/jowikroon",
           ],
         },
         {
@@ -174,7 +174,7 @@ const About = () => {
               <div className="relative">
                 <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-primary/10 via-transparent to-primary/5 blur-sm" />
                 <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted ring-1 ring-border/50">
-                  <img src={hansProfile} alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands" width={600} height={800} loading="eager" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-top" />
+                  <img src={hansProfile} alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands" width={600} height={800} loading="eager" {...{ fetchpriority: "high" }} decoding="async" className="h-full w-full object-cover object-top" />
                   <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background/40 to-transparent" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 flex items-center gap-0.5 rounded-full border border-primary/20 bg-background px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-primary shadow-sm">
