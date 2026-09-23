@@ -431,6 +431,13 @@ try {
 } catch (err) {
   console.warn("[prerender] Could not pre-fetch published blog posts:", err.message);
 }
+// Sinds de /writing/:slug-rewrite weg is (echte 404 voor onbekende slugs) betekent een mislukte of
+// lege CMS-fetch dat élk artikel in productie 404 geeft. Dan liever de build laten falen: Vercel
+// houdt de vorige deployment live. Alleen bewust overslaan met PRERENDER_ALLOW_EMPTY_BLOG=1.
+if (publishedPosts.length === 0 && process.env.PRERENDER_ALLOW_EMPTY_BLOG !== "1") {
+  console.error("[prerender] 0 gepubliceerde blogposts opgehaald — build gestopt om massale 404's te voorkomen (zet PRERENDER_ALLOW_EMPTY_BLOG=1 om bewust door te gaan).");
+  process.exit(1);
+}
 
 const postBySlug = new Map();
 for (const post of publishedPosts) {

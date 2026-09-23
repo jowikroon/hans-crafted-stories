@@ -320,9 +320,21 @@ for (const route of seen) {
   }
 }
 
+// 18. Artikelvloer (2026-09-23): zonder /writing/:slug-rewrite geeft een ontbrekend geprerenderd
+//     artikel een echte 404. Minder dan MIN_PRERENDERED_ARTICLES artikelpagina's = waarschijnlijk een
+//     mislukte CMS-fetch → build faalt i.p.v. de blog te deïndexeren.
+{
+  const writingDir = path.join(distDir, "writing");
+  const articleCount = fs.existsSync(writingDir)
+    ? fs.readdirSync(writingDir, { withFileTypes: true }).filter((d) => d.isDirectory() && fs.existsSync(path.join(writingDir, d.name, "index.html"))).length
+    : 0;
+  const min = Number(process.env.MIN_PRERENDERED_ARTICLES ?? 5);
+  if (articleCount < min) failures.push(`dist/writing: ${articleCount} geprerenderde artikelen (< ${min}); CMS-fetch mislukt? Zonder rewrite zou elk artikel 404 geven.`);
+}
+
 if (failures.length) {
   console.error(`[seo-guard] ${failures.length} SEO-regressie(s):`);
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK — ${seen.size} pagina's voldoen (17 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit).`);
+console.log(`[seo-guard] OK — ${seen.size} pagina's voldoen (18 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/artikelvloer).`);
