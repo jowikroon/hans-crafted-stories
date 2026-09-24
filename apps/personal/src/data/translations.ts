@@ -47,7 +47,7 @@ type TranslationStrings = {
     subtitle: string;
     heading: string;
     headingEmphasis: string;
-    /** Slot van de H1 na de nadruk ("to reliable operations."). */
+    /** Slot van de H1 na de nadruk ("growth & AI operations"); Hero.tsx zet ", " ervoor, dus geen eigen komma of slotpunt. */
     headingEnd: string;
     /** Beschikbaarheid — aanname uit de opdracht (1 december 2026); Hans bevestigt vóór release. */
     availability: string;
@@ -330,9 +330,9 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Hero ── */
     hero: {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
-      heading: "Hands-on marketplace leadership.",
-      headingEmphasis: "From strategy",
-      headingEnd: "to reliable operations.",
+      heading: "Marketplace Manager (Amazon & Bol.com):",
+      headingEmphasis: "strategy",
+      headingEnd: "growth & AI operations",
       availability: "Available from 1 December 2026",
       freelanceH2: "Grow Amazon NL & Bol.com revenue with a hands-on interim marketplace lead",
       description:
@@ -674,9 +674,9 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Hero ── */
     hero: {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
-      heading: "Hands-on marketplace-management.",
-      headingEmphasis: "Van strategie",
-      headingEnd: "tot betrouwbare uitvoering.",
+      heading: "Marketplace Manager (Amazon & Bol.com):",
+      headingEmphasis: "strategie",
+      headingEnd: "groei & AI-operations",
       availability: "Beschikbaar vanaf 1 december 2026",
       freelanceH2: "Groei Amazon NL & Bol.com omzet met een hands-on interim marktplaatsmanager",
       description:

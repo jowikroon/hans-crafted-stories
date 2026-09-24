@@ -24,7 +24,7 @@ const STATIC_CONTENT = `<header>
   <main>
     <section aria-label="Introduction">
       <p>Freelance E-commerce Manager &middot; Amazon &amp; Bol.com Specialist</p>
-      <h2>Hands-on marketplace leadership. From strategy to reliable operations.</h2>
+      <h2>Hans van Leeuwen &mdash; Marketplace Manager (Amazon &amp; Bol.com): strategy, growth &amp; AI operations</h2>
       <p>I'm Hans van Leeuwen. I help brands run Amazon and Bol.com with clearer product data, better customer journeys and AI-assisted workflows whose output can be checked.</p>
       <a href="/about#contact">Discuss your marketplace challenge</a>
       <a href="/work">View marketplace cases</a>

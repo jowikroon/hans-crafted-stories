@@ -54,9 +54,11 @@ const Hero = () => {
           <p className="mb-4 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {getValue("hero_subtitle", t.subtitle)}
           </p>
-          {/* Korte hero (audit F4.1/F6.1): naam blijft in de H1 (#345), max. twee zinnen subcopy, CTA's direct eronder; context volgt daarna. */}
+          {/* Korte hero (audit F4.1/F6.1): naam blijft in de H1 (#345), max. twee zinnen subcopy, CTA's direct eronder; context volgt daarna.
+              Woordkeus H1 volgt #364 (Hans, 2026-09-24): "Marketplace Manager", zonder "E-commerce &". NL-nadruk komt, net als op main,
+              rechtstreeks uit de vertaling: de CMS-sleutel valt zonder _nl-rij terug op Engels. */}
           <h1 className="mb-5 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
-            Hans van Leeuwen — {t.heading} <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em> {t.headingEnd}
+            Hans van Leeuwen — {t.heading} <em className="text-primary">{isNl ? t.headingEmphasis : getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, {t.headingEnd}
           </h1>
           <p className="mb-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
             {getValue("hero_description", t.description)}
