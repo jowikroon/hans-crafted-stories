@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { stripEmDashFields } from "@/lib/noEmDash";
 
 export interface BlogPostRow {
   id: string;
@@ -74,6 +75,10 @@ export interface CaseStudyRow {
 
 // ── Blog Posts ───────────────────────────────────────────
 
+/** Public text fields of a post; em dashes are stripped on the public read path (see lib/noEmDash). */
+const PUBLIC_TEXT_FIELDS = ["title", "title_nl", "excerpt", "excerpt_nl", "content", "content_nl", "meta_title", "meta_description", "og_title", "og_description"] as const;
+const cleanPost = (row: BlogPostRow): BlogPostRow => stripEmDashFields(row, PUBLIC_TEXT_FIELDS);
+
 /**
  * Fetch blog posts. By default returns only published posts (status='published',
  * published=true). When Hans is authenticated, also returns drafts so /writing
@@ -103,7 +108,8 @@ export async function getBlogPosts(publishedOnly = true): Promise<BlogPostRow[]>
 
   const { data, error } = await query;
   if (error) throw error;
-  return (data as unknown as BlogPostRow[]) || [];
+  const rows = (data as unknown as BlogPostRow[]) || [];
+  return publishedOnly ? rows.map(cleanPost) : rows;
 }
 
 export async function getBlogPost(slug: string, publishedOnly = true): Promise<BlogPostRow | null> {
@@ -121,7 +127,8 @@ export async function getBlogPost(slug: string, publishedOnly = true): Promise<B
 
   const { data, error } = await query.maybeSingle();
   if (error) throw error;
-  return data as unknown as BlogPostRow | null;
+  const row = data as unknown as BlogPostRow | null;
+  return row && publishedOnly ? cleanPost(row) : row;
 }
 
 export async function createBlogPost(post: Partial<BlogPostRow>): Promise<BlogPostRow> {

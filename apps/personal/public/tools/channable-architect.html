@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Channable Campaign Architect — Performance Marketer</title>
+  <title>Channable Campaign Architect | Performance Marketer</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -919,9 +919,9 @@ function activeRulesCount(){
 function quickMeta(){
   const v = state.values;
   return [
-    { k:'Kanaal', v: v.channel_type || '—' },
-    { k:'Land', v: v.campaign_country || '—' },
-    { k:'Bidding', v: v.bid_strategy || '—' },
+    { k:'Kanaal', v: v.channel_type || '-' },
+    { k:'Land', v: v.campaign_country || '-' },
+    { k:'Bidding', v: v.bid_strategy || '-' },
     { k:'Rules', v: activeRulesCount() + ' on' }
   ];
 }
@@ -1013,7 +1013,7 @@ function renderMain(){
       <section class="step-panel ${i===state.currentStep?'active':''}" data-step="${i}">
         <div class="step-head">
           <div>
-            <div class="step-tag">${escapeHtml(s.tag)} — ${escapeHtml(s.label)}</div>
+            <div class="step-tag">${escapeHtml(s.tag)}: ${escapeHtml(s.label)}</div>
             <div class="step-h2">${escapeHtml(s.title)}</div>
             <div class="step-desc">${escapeHtml(s.desc)}</div>
           </div>
@@ -1221,17 +1221,17 @@ function renderRules(f){
 function renderPreview(){
   const v = state.values;
   const lines = [
-    ['Kanaal', v.channel_type || '—'],
-    ['Project', v.project_name || '—'],
-    ['Primary Key', v.primary_key || '—'],
+    ['Kanaal', v.channel_type || '-'],
+    ['Project', v.project_name || '-'],
+    ['Primary Key', v.primary_key || '-'],
     ['Campagne', (v.campaign_name_text || '') + '{' + (v.campaign_name_attr || '…') + '}'],
-    ['Type', v.campaign_type || '—'],
-    ['Land', v.campaign_country || '—'],
-    ['Budget/dag', v.daily_budget ? '€' + v.daily_budget : '—'],
-    ['Biedstrategie', v.bid_strategy || '—'],
-    ['Groepering', v.grouping_strategy || '—'],
+    ['Type', v.campaign_type || '-'],
+    ['Land', v.campaign_country || '-'],
+    ['Budget/dag', v.daily_budget ? '€' + v.daily_budget : '-'],
+    ['Biedstrategie', v.bid_strategy || '-'],
+    ['Groepering', v.grouping_strategy || '-'],
     ['Adgroup', (v.adgroup_name_text || '') + '{' + (v.adgroup_name_attr || '…') + '}'],
-    ['Default CPC', v.default_cpc ? '€' + v.default_cpc : '—'],
+    ['Default CPC', v.default_cpc ? '€' + v.default_cpc : '-'],
     ['UTM', (v.utm_params_text || '') + '{' + (v.utm_params_attr || '…') + '}'],
   ];
 
@@ -1266,7 +1266,7 @@ function renderPreview(){
           <span class="pv-k">Campaign count:</span> <span class="pv-v">${escapeHtml(impact.campaigns)}</span><br>
           <span class="pv-k">Ad groups:</span> <span class="pv-v">${escapeHtml(impact.adgroups)}</span><br>
           <span class="pv-k">Budget total/day:</span> <span class="pv-v">${escapeHtml(impact.budgetTotal)}</span><br>
-          <span class="pv-d">Note: schatting — exacte aantallen komen uit feed distincts.</span>
+          <span class="pv-d">Note: schatting, exacte aantallen komen uit feed distincts.</span>
         </div>
       </div>
     </div>
@@ -1275,15 +1275,15 @@ function renderPreview(){
 
 function estimateImpact(){
   const v = state.values;
-  const splitField = v.campaign_name_attr || '—';
-  const structure = v.grouping_strategy === 'item_id' ? 'SPAG' : (v.grouping_strategy === 'parent_id' ? 'Variant groups' : '—');
+  const splitField = v.campaign_name_attr || '-';
+  const structure = v.grouping_strategy === 'item_id' ? 'SPAG' : (v.grouping_strategy === 'parent_id' ? 'Variant groups' : '-');
 
   // Heuristic placeholders: we cannot know distinct values without feed.
   // Provide realistic "unknown until feed" language for internal users.
-  const campaigns = splitField && splitField !== '—' ? `~ distinct(${splitField})` : '—';
+  const campaigns = splitField && splitField !== '-' ? `~ distinct(${splitField})` : '-';
   const adgroups = structure === 'SPAG' ? '~ products' : '~ variant groups';
 
-  let budgetTotal = '—';
+  let budgetTotal = '-';
   const b = parseFloat((v.daily_budget || '').replace(',','.'));
   if (!Number.isNaN(b) && b > 0) budgetTotal = `€${b} × campaigns`;
 
@@ -1384,7 +1384,7 @@ function showToast(msg){
 function exportConfig(){
   const config = {
     generated: new Date().toISOString(),
-    tool: 'Channable Campaign Architect — Performance Marketer',
+    tool: 'Channable Campaign Architect | Performance Marketer',
     settings: state.values,
     rules: state.rules,
     checks_completed: checksDoneCount() + '/' + CHECKS.length
@@ -1401,7 +1401,7 @@ function exportConfig(){
 
 function publish(){
   if(!canPublish()){
-    showToast('⛔ Publish blocked — complete required steps + 10/10 checks.');
+    showToast('⛔ Publish blocked: complete required steps + 10/10 checks.');
     return;
   }
   showToast('🚀 Ready for sync (config validated)');

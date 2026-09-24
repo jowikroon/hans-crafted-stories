@@ -24,6 +24,25 @@ import { HeaderProvider } from "@/contexts/HeaderContext";
 import { FontProvider } from "@/contexts/FontContext";
 import { NavMenuProvider } from "@/contexts/NavMenuContext";
 import { NAV_SETTING_KEY, parseNavSetting, serializeNavSetting, type NavMenuItem } from "@/lib/navMenu";
+import { useLang } from "@/hooks/useLang";
+import { parsePath } from "@/lib/i18n/routes";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  applyTextPreservingMarkup,
+  collectSegments,
+  fullText,
+  resolveTextEdit,
+  type Resolution,
+} from "@/lib/editSource/resolve";
+import {
+  createSourceEdit,
+  findPageContentByValue,
+  getSourceEdit,
+  listRecentSourceEdits,
+  loadSourceMap,
+  watchSourceEdit,
+  type SourceEdit,
+} from "@/lib/api/sourceEdits";
 
 const STYLE_TAG_ID = "page-overrides-style";
 
@@ -72,7 +91,7 @@ export function computeCssPath(el: Element): string {
   return "body > " + parts.join(" > ");
 }
 
-/** Resolve a stable key + selector for an element (prefers lovable-tagger id). */
+/** Resolve a stable key + selector for an element (prefers lovable-tagger id). Used for STYLE overrides. */
 export function keyForElement(el: Element): { key: string; selector: string } {
   const lovId = el.getAttribute("data-lov-id");
   if (lovId) return { key: lovId, selector: `[data-lov-id="${lovId}"]` };
@@ -80,7 +99,33 @@ export function keyForElement(el: Element): { key: string; selector: string } {
   return { key: path, selector: path };
 }
 
+/**
+ * Key + selector for a TEXT override. Language-scoped (HAN-177: a NL text must
+ * never overwrite the EN page) and anchored on the build-time source tag
+ * (data-src) when that tag is unique on the page — CSS paths break as soon as
+ * the layout changes.
+ */
+export function textKeyForElement(el: Element, lang: string): { key: string; selector: string; dataSrc: string | null } {
+  const dataSrc = el.getAttribute("data-src");
+  if (dataSrc && typeof document !== "undefined") {
+    const selector = `[data-src="${dataSrc.replace(/["\\]/g, "\\$&")}"]`;
+    if (document.querySelectorAll(selector).length === 1) return { key: `src:${dataSrc}@${lang}`, selector, dataSrc };
+  }
+  const path = computeCssPath(el);
+  return { key: `${path}@${lang}`, selector: path, dataSrc };
+}
+
+/** Result of a text save, for the panel UI. */
+export interface TextSaveResult {
+  kind: "noop" | "github" | "page_content" | "overlay_only";
+  job: SourceEdit | null;
+  reason?: string;
+}
+
 const LOGO_MOTION_KEY = "__site__:logoMotion";
+
+/** Routes (EN base path) whose copy can come from page_content, and their page key. */
+const PAGE_CONTENT_PAGES: Record<string, string> = { "/": "home", "/about": "about", "/work": "work" };
 
 interface EditOverlayValue {
   editing: boolean;
@@ -90,7 +135,19 @@ interface EditOverlayValue {
   selectedEl: HTMLElement | null;
   select: (el: HTMLElement | null) => void;
   saveStyle: (patch: OverrideStyle) => Promise<void>;
-  saveText: (text: string | null) => Promise<void>;
+  /** Save a text edit: live overlay for everyone + write-back to its source (code via PR, or CMS row). */
+  saveText: (text: string) => Promise<TextSaveResult>;
+  /** Remove the runtime text override of the selected element (does not touch the source). */
+  revertText: () => Promise<void>;
+  /** Text override currently applied to the selected element (current language). */
+  selectedTextOverride: PageOverride | null;
+  /** Latest write-back job per text-override key. */
+  sourceJobs: Map<string, SourceEdit>;
+  /** Last write-back jobs site-wide (newest first). */
+  recentJobs: SourceEdit[];
+  refreshRecentJobs: () => Promise<void>;
+  /** Current page language ("nl" | "en"). */
+  lang: string;
   revert: () => Promise<void>;
   /** Maak de laatste wijziging in deze sessie ongedaan (undo-stack). */
   undoLast: () => Promise<boolean>;
@@ -130,6 +187,20 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
   const [overrides, setOverrides] = useState<Map<string, PageOverride>>(new Map());
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [selectedEl, setSelectedEl] = useState<HTMLElement | null>(null);
+  const { lang } = useLang();
+
+  // Source-rendered text per text node, captured before a text override touches
+  // it. The write-back diff is always "source text -> new text", never
+  // "override -> new text".
+  const originals = useRef(new WeakMap<Text, { orig: string; applied: string }>());
+  const originalOf = useCallback((t: Text): string | undefined => {
+    const rec = originals.current.get(t);
+    return rec && t.data === rec.applied ? rec.orig : undefined;
+  }, []);
+
+  // Write-back jobs (overlay_source_edits), keyed by text-override key.
+  const [sourceJobs, setSourceJobs] = useState<Map<string, SourceEdit>>(new Map());
+  const [recentJobs, setRecentJobs] = useState<SourceEdit[]>([]);
 
   // ── Sessie-undo-stack: vorige staat per gewijzigde key (null = key bestond niet) ──
   const undoStack = useRef<{ key: string; prev: PageOverride | null }[]>([]);
@@ -182,6 +253,8 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
   }, [overrides, routePath]);
 
   // ── Apply TEXT overrides via DOM (best-effort; re-applied on DOM mutations) ──
+  // Only the text nodes that differ are touched, so inline markup (<em>, links,
+  // icons) survives; overrides with a language only apply in that language.
   useEffect(() => {
     if (typeof document === "undefined") return;
     const applyText = () => {
@@ -189,8 +262,15 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
         if (o.element_key.startsWith("__site__:")) return; // site settings, not DOM text
         if (!overrideAppliesHere(o.page_path, routePath)) return;
         if (o.text_override == null || o.text_override === "") return;
+        if (o.lang && o.lang !== lang) return; // HAN-177: never cross languages
         const sel = o.selector || `[data-lov-id="${o.element_key}"]`;
-        document.querySelectorAll(sel).forEach((el) => {
+        let nodes: NodeListOf<Element>;
+        try {
+          nodes = document.querySelectorAll(sel);
+        } catch {
+          return; // malformed legacy selector
+        }
+        nodes.forEach((el) => {
           // Guardrail (2026-07-03 incident): een text-override op een structureel
           // container-element (zoals #root) vervangt de hele DOM-boom door platte
           // tekst en sloopt de site. Sla overrides op containers en extreem lange
@@ -198,7 +278,21 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
           if (el.id === "root" || el.tagName === "BODY" || el.tagName === "HTML") return;
           if (el.children.length > 3) return;
           if ((o.text_override as string).length > 2000) return;
-          if (el.textContent !== o.text_override) el.textContent = o.text_override!;
+          const cur = el.textContent ?? "";
+          const lead = cur.length - cur.trimStart().length;
+          const trail = cur.length - cur.trimEnd().length;
+          const target = cur.slice(0, lead) + o.text_override + (trail ? cur.slice(cur.length - trail) : "");
+          if (cur === target) return;
+          // remember the source text of every node before we change it
+          collectSegments(el, (t) => t.data).forEach(({ node }) => {
+            const rec = originals.current.get(node);
+            if (!rec || node.data !== rec.applied) originals.current.set(node, { orig: node.data, applied: node.data });
+          });
+          applyTextPreservingMarkup(el, target);
+          collectSegments(el, (t) => t.data).forEach(({ node }) => {
+            const rec = originals.current.get(node);
+            if (rec) rec.applied = node.data;
+          });
         });
       });
     };
@@ -209,7 +303,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     });
     obs.observe(document.body, { childList: true, subtree: true, characterData: true });
     return () => obs.disconnect();
-  }, [overrides, routePath]);
+  }, [overrides, routePath, lang]);
 
   const select = useCallback((el: HTMLElement | null) => {
     if (!el) {
@@ -250,25 +344,171 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
     [selectedEl, overrides, upsertLocal, pushUndo]
   );
 
+  const trackJob = useCallback((key: string, job: SourceEdit) => {
+    setSourceJobs((prev) => {
+      const next = new Map(prev);
+      next.set(key, job);
+      return next;
+    });
+    setRecentJobs((prev) => [job, ...prev.filter((j) => j.id !== job.id)].slice(0, 6));
+  }, []);
+
+  const refreshRecentJobs = useCallback(async () => {
+    setRecentJobs(await listRecentSourceEdits(6));
+  }, []);
+
+  /** Follow one job until it settles (realtime + polling fallback). */
+  const followJob = useCallback(
+    (key: string, job: SourceEdit) => {
+      const settled = (st: string) => ["live", "done", "needs_manual", "failed", "cancelled"].includes(st);
+      if (settled(job.status)) return;
+      let stopped = false;
+      const onRow = (row: SourceEdit) => {
+        if (stopped) return;
+        trackJob(key, row);
+        if (row.status === "live" || row.status === "done") void reloadOverrides();
+        if (settled(row.status)) stop();
+      };
+      const unwatch = watchSourceEdit(job.id, onRow);
+      const started = Date.now();
+      const timer = window.setInterval(async () => {
+        if (Date.now() - started > 15 * 60 * 1000) return stop();
+        const row = await getSourceEdit(job.id);
+        if (row) onRow(row);
+      }, 5000);
+      function stop() {
+        stopped = true;
+        unwatch();
+        window.clearInterval(timer);
+      }
+    },
+    [trackJob, reloadOverrides]
+  );
+
   const saveText = useCallback(
-    async (text: string | null) => {
-      if (!selectedEl) return;
-      const { key, selector } = keyForElement(selectedEl);
+    async (text: string): Promise<TextSaveResult> => {
+      if (!selectedEl) return { kind: "noop", job: null };
+      const el = selectedEl;
+      const nextText = text.trim();
+      const { key, selector, dataSrc } = textKeyForElement(el, lang);
+      const segments = collectSegments(el, originalOf);
+      const original = fullText(segments);
+      const lead = original.length - original.trimStart().length;
+      const trail = original.length - original.trimEnd().length;
+      const newFull = original.slice(0, lead) + nextText + (trail ? original.slice(original.length - trail) : "");
+      const map = await loadSourceMap();
+      const res: Resolution = resolveTextEdit({ el, segments, newFull, map, lang });
+      if (res.status === "noop") return { kind: "noop", job: null };
+
+      const page_path = window.location.pathname;
+      const base = {
+        page_path,
+        lang,
+        element_key: key,
+        data_src: res.owner ?? dataSrc,
+        old_text: original.trim(),
+        new_text: nextText,
+      };
+
+      // 1) CMS-backed copy (page_content): the database row IS the source.
+      //    Only for pages that read page_content (usePageContent("home"|"about"|"work")).
+      const cmsPage = PAGE_CONTENT_PAGES[parsePath(page_path).path];
+      if (res.segment && cmsPage) {
+        const rows = (await findPageContentByValue(res.segment.text)).filter((r) => r.page === cmsPage);
+        const row =
+          rows.find((r) => r.content_key.endsWith(`_${lang}`)) ??
+          rows.find((r) => !/_(nl|en)$/.test(r.content_key)) ??
+          null;
+        if (row && res.a != null && res.b != null) {
+          const newValue = row.content_value.slice(0, res.a) + (res.insert ?? "") + row.content_value.slice(res.b);
+          const { data: auth } = await supabase.auth.getUser();
+          const uid = auth.user?.id ?? null;
+          const useLangRow = lang !== "en" && !row.content_key.endsWith(`_${lang}`);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const sdb = supabase as any;
+          let rowId = row.id;
+          let contentKey = row.content_key;
+          if (useLangRow) {
+            // NL edit of an EN-only row: add a *_nl row instead of changing EN.
+            contentKey = `${row.content_key}_${lang}`;
+            const { data: created, error } = await sdb
+              .from("page_content")
+              .insert({ page: row.page, content_key: contentKey, content_value: newValue, content_group: row.content_group, content_label: `${row.content_label} (${lang.toUpperCase()})`, content_type: row.content_type, sort_order: row.sort_order })
+              .select("id")
+              .single();
+            if (error) throw error;
+            rowId = created.id;
+          } else {
+            await sdb.from("page_content_versions").insert({ content_id: row.id, page: row.page, content_key: row.content_key, content_value: row.content_value, content_group: row.content_group, content_label: row.content_label, changed_by: uid });
+            const { error } = await sdb.from("page_content").update({ content_value: newValue }).eq("id", row.id);
+            if (error) throw error;
+          }
+          applyTextPreservingMarkup(el, newFull);
+          const job = await createSourceEdit({
+            ...base,
+            patch: { kind: "page_content", id: rowId, page: row.page, content_key: contentKey, created_key: useLangRow },
+            status: "done",
+            target: `page_content:${row.page}/${contentKey}`,
+          });
+          trackJob(key, job);
+          return { kind: "page_content", job };
+        }
+      }
+
+      // 2) Runtime override: the change is live for every visitor right away.
       const existing = overrides.get(key);
       pushUndo(key, existing ?? null);
       const merged: PageOverride = {
         element_key: key,
         selector,
-        page_path: window.location.pathname,
-        label: existing?.label ?? labelFor(selectedEl),
-        text_override: text,
+        page_path,
+        label: existing?.label ?? labelFor(el),
+        text_override: nextText,
         style: existing?.style || {},
+        lang,
+        data_src: dataSrc,
+        original_text: existing?.original_text ?? original.trim(),
       };
       upsertLocal(merged);
       await apiSave(merged);
+
+      // 3) Write-back job: resolved -> worker commits to GitHub; otherwise flagged.
+      const job = await createSourceEdit({
+        ...base,
+        patch: res.patch,
+        status: res.status === "resolved" ? "queued" : "needs_manual",
+        target: res.status === "resolved" ? `github:${res.patch.file}:${res.patch.line}` : null,
+        error: res.status === "resolved" ? null : res.patch.reason,
+      });
+      trackJob(key, job);
+      followJob(key, job);
+      return res.status === "resolved"
+        ? { kind: "github", job }
+        : { kind: "overlay_only", job, reason: res.patch.reason };
     },
-    [selectedEl, overrides, upsertLocal, pushUndo]
+    [selectedEl, lang, originalOf, overrides, upsertLocal, pushUndo, trackJob, followJob]
   );
+
+  const revertText = useCallback(async () => {
+    if (!selectedEl) return;
+    const { key } = textKeyForElement(selectedEl, lang);
+    const existing = overrides.get(key);
+    if (!existing) return;
+    pushUndo(key, existing);
+    // put the source text back into the DOM right away
+    collectSegments(selectedEl, (t) => t.data).forEach(({ node }) => {
+      const orig = originalOf(node);
+      if (orig != null) node.data = orig;
+    });
+    setOverrides((prev) => {
+      const next = new Map(prev);
+      next.delete(key);
+      return next;
+    });
+    await apiDelete(key);
+  }, [selectedEl, lang, overrides, pushUndo, originalOf]);
+
+  const selectedTextOverride = selectedEl ? overrides.get(textKeyForElement(selectedEl, lang).key) ?? null : null;
 
   const revert = useCallback(async () => {
     if (!selectedKey) return;
@@ -441,6 +681,12 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       select,
       saveStyle,
       saveText,
+      revertText,
+      selectedTextOverride,
+      sourceJobs,
+      recentJobs,
+      refreshRecentJobs,
+      lang,
       revert,
       undoLast,
       undoCount,
@@ -458,7 +704,7 @@ export function EditOverlayProvider({ children }: { children: React.ReactNode })
       logoMotion,
       setLogoMotion,
     }),
-    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revert, undoLast, undoCount, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeRadarId, setActiveRadar, activeFontId, setActiveFont, navItems, setNavItems, logoMotion, setLogoMotion]
+    [editing, overrides, selectedKey, selectedEl, select, saveStyle, saveText, revertText, selectedTextOverride, sourceJobs, recentJobs, refreshRecentJobs, lang, revert, undoLast, undoCount, reloadOverrides, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeRadarId, setActiveRadar, activeFontId, setActiveFont, navItems, setNavItems, logoMotion, setLogoMotion]
   );
 
   return (

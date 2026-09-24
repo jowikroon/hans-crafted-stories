@@ -1,7 +1,7 @@
 /*
   write-cms.css
   All styles scoped to .write-cms wrapper.
-  Ported from public/write-src.html. Do not edit that file for production.
+  Ported from docs/archive/write-src.html. Do not edit that file for production.
 
   Scoping rules applied from the original:
     :root[data-theme="*"]  →  .write-cms[data-theme="*"]
