@@ -28,13 +28,24 @@ export interface PageOverride {
   label?: string | null;
   text_override?: string | null;
   style: OverrideStyle;
+  /** "nl" | "en": text overrides only apply in this language (null = legacy, all). */
+  lang?: string | null;
+  /** build-time source tag of the element (vite-plugins/editSourceMap.ts). */
+  data_src?: string | null;
+  /** text as the source rendered it when the override was made. */
+  original_text?: string | null;
 }
+
+const BASE_COLS = "element_key,page_path,selector,label,text_override,style";
 
 /** All overrides — fetched once on load for every visitor. */
 export async function getOverrides(): Promise<PageOverride[]> {
-  const { data, error } = await db
-    .from("page_overrides")
-    .select("element_key,page_path,selector,label,text_override,style");
+  let { data, error } = await db.from("page_overrides").select(`${BASE_COLS},lang,data_src,original_text`);
+  if (error) {
+    // Pre-migration database: fall back to the legacy columns so site
+    // settings (logo, header, font) never disappear for visitors.
+    ({ data, error } = await db.from("page_overrides").select(BASE_COLS));
+  }
   if (error) {
     console.warn("[overrides] fetch failed", error.message);
     return [];
@@ -54,6 +65,9 @@ export async function saveOverride(o: PageOverride): Promise<void> {
         label: o.label ?? null,
         text_override: o.text_override ?? null,
         style: o.style ?? {},
+        ...(o.lang !== undefined ? { lang: o.lang } : {}),
+        ...(o.data_src !== undefined ? { data_src: o.data_src } : {}),
+        ...(o.original_text !== undefined ? { original_text: o.original_text } : {}),
         updated_by: (await supabase.auth.getUser()).data.user?.id ?? null,
         updated_at: new Date().toISOString(),
       },
