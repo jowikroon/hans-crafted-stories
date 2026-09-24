@@ -54,7 +54,7 @@ const LANG_PREFIXES = ["", "/nl"] as const;
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
 
 /* /blog-cms is retired — React CMS shell at /write is canonical.
-   /write is now a React route (write-src.html is the archived static prototype). */
+   /write is now a React route (docs/archive/write-src.html is the archived static prototype). */
 const BlogCMSToWriteRedirect = () => {
   if (typeof window !== "undefined") {
     window.location.replace("/write");

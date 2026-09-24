@@ -32,9 +32,9 @@ const STATIC_CONTENT = `<header>
     </section>
     <section aria-label="Marketplace work in practice">
       <ul>
-        <li><strong>Marketplace content and channel coordination</strong> &mdash; Amazon and Bol.com content, campaign activity and coordination between sales channels for a European consumer brand.</li>
-        <li><strong>Campaigns connected to the customer journey</strong> &mdash; clearer product information, relevant imagery and a consistent buying experience.</li>
-        <li><strong>Forecasting and operational control</strong> &mdash; coordination between marketplace sales, logistics and customer service.</li>
+        <li><strong>Marketplace content and channel coordination</strong>: Amazon and Bol.com content, campaign activity and coordination between sales channels for a European consumer brand.</li>
+        <li><strong>Campaigns connected to the customer journey</strong>: clearer product information, relevant imagery and a consistent buying experience.</li>
+        <li><strong>Forecasting and operational control</strong>: coordination between marketplace sales, logistics and customer service.</li>
       </ul>
     </section>
     <section aria-label="Who I help">
@@ -60,19 +60,19 @@ const STATIC_CONTENT = `<header>
     <section aria-label="What I do">
       <h2>Amazon &amp; Bol.com Marketplace Management (NL/EU)</h2>
       <ul>
-        <li><strong>Amazon Marketplace Management</strong> &mdash; Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations. Your Amazon NL specialist for scalable growth.</li>
-        <li><strong>Bol.com Optimization</strong> &mdash; Content optimization, Bol Ads management, catalog management, and performance analytics. Hands-on Bol.com consultant for the Netherlands&rsquo; largest marketplace.</li>
-        <li><strong>Marketplace CRO &amp; Growth</strong> &mdash; Data-driven conversion rate optimization, A/B testing, and revenue scaling. Reduce friction, improve Buy Box win rate, and grow profitably.</li>
-        <li><strong>SEO &amp; Content Strategy</strong> &mdash; Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction and increasing conversions.</li>
+        <li><strong>Amazon Marketplace Management</strong>: Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations. Your Amazon NL specialist for scalable growth.</li>
+        <li><strong>Bol.com Optimization</strong>: Content optimization, Bol Ads management, catalog management, and performance analytics. Hands-on Bol.com consultant for the Netherlands&rsquo; largest marketplace.</li>
+        <li><strong>Marketplace CRO &amp; Growth</strong>: Data-driven conversion rate optimization, A/B testing, and revenue scaling. Reduce friction, improve Buy Box win rate, and grow profitably.</li>
+        <li><strong>SEO &amp; Content Strategy</strong>: Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction and increasing conversions.</li>
       </ul>
     </section>
     <section aria-label="Engagement Model">
       <h2>Engagement Model</h2>
       <ol>
-        <li><strong>Discovery</strong> &mdash; Audit your current marketplace presence, identify quick wins and long-term growth levers.</li>
-        <li><strong>Strategy</strong> &mdash; Build a tailored action plan with KPIs, timelines, and clear ownership.</li>
-        <li><strong>Execution</strong> &mdash; Hands-on implementation from listing optimization to ad campaigns with weekly check-ins.</li>
-        <li><strong>Scale</strong> &mdash; Iterate based on data, expand to new channels, and compound results over time.</li>
+        <li><strong>Discovery</strong>: Audit your current marketplace presence, identify quick wins and long-term growth levers.</li>
+        <li><strong>Strategy</strong>: Build a tailored action plan with KPIs, timelines, and clear ownership.</li>
+        <li><strong>Execution</strong>: Hands-on implementation from listing optimization to ad campaigns with weekly check-ins.</li>
+        <li><strong>Scale</strong>: Iterate based on data, expand to new channels, and compound results over time.</li>
       </ol>
     </section>
     <section aria-label="FAQ">

@@ -587,7 +587,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
           },
           {
             title: "Vendor of seller op Bol.com: zo maak je de afweging per productgroep",
-            summary: "Bij een Europese consumentenbrand heb ik de overstap van vendor naar seller doorgerekend en begeleid. In mijn artikel staat de rekensom per productgroep (verkoopprijs minus inkoopkorting en promotiebijdrage tegenover commissie, logistiek, retouren én eigen uren), wat ik onderschatte — retourstroom, Buy Box, content — en wanneer ik het nu bij vendor zou laten.",
+            summary: "Bij een Europese consumentenbrand heb ik de overstap van vendor naar seller doorgerekend en begeleid. In mijn artikel staat de rekensom per productgroep (verkoopprijs minus inkoopkorting en promotiebijdrage tegenover commissie, logistiek, retouren én eigen uren), wat ik onderschatte (retourstroom, Buy Box, content) en wanneer ik het nu bij vendor zou laten.",
             href: "/writing/vendor-of-seller-bol-com-alpine",
             linkLabel: "Lees de vendor-versus-seller-rekensom",
           },
@@ -669,7 +669,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
           },
           {
             title: "Vendor or seller on Bol.com: weighing it per product group",
-            summary: "For a European consumer brand I modelled and guided the move from vendor to seller on Bol.com. The article walks through the calculation per product group (sales price minus purchase discount and promo contribution versus commission, logistics, returns and your own hours), what I underestimated — returns, Buy Box, content — and when I would stay vendor today.",
+            summary: "For a European consumer brand I modelled and guided the move from vendor to seller on Bol.com. The article walks through the calculation per product group (sales price minus purchase discount and promo contribution versus commission, logistics, returns and your own hours), what I underestimated (returns, Buy Box, content) and when I would stay vendor today.",
             href: "/writing/vendor-of-seller-bol-com-alpine",
             linkLabel: "Read the vendor-versus-seller calculation (Dutch)",
           },
