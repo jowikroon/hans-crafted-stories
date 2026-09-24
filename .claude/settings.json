@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "mcp__github__pull_request_read"
+      "mcp__github__pull_request_read",
+      "Bash(npm run test --workspace=@hans/personal)",
+      "Bash(npm run typecheck --workspace=@hans/personal)",
+      "Bash(npm run lint --workspace=@hans/personal)",
+      "mcp__Supabase__get_edge_function",
+      "Bash(npm run test)",
+      "mcp__Vercel__list_deployments",
+      "mcp__Vercel__get_deployment_build_logs",
+      "mcp__Supabase__list_projects"
     ]
   }
 }

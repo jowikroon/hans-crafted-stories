@@ -919,6 +919,12 @@
   border-right: 1px solid var(--line);
 }
 .write-cms .metric-cell:last-child { border-right: 0; }
+/* Live-hero met 5 tegels (HAN-93: "Indexed pages"); op 4 kolommen stond de 5e alleen op een 2e rij. */
+.write-cms .analytics-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 720px) {
+  .write-cms .analytics-grid.cols-5 { grid-template-columns: 1fr 1fr; }
+  .write-cms .analytics-grid.cols-5 .metric-cell { border-bottom: 1px solid var(--line); }
+}
 .write-cms .metric-cell .k {
   font-family: var(--font-mono); font-size: 10px;
   text-transform: uppercase; letter-spacing: 0.1em;
