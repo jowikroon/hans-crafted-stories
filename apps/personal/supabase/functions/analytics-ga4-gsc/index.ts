@@ -29,6 +29,7 @@ import {
   coverageStatus,
   dedupeSitemaps,
   inspectableUrls,
+  isOwnGscProperty,
   parseSitemapLocs,
   rankTopQueries,
   selectInspectionWindow,
@@ -240,7 +241,9 @@ async function resolveGscSite(token: string): Promise<string> {
   const ld = await lr.json();
   if (!lr.ok) throw new Error(`gsc sites: ${JSON.stringify(ld).slice(0, 200)}`);
   const e = ld.siteEntry || [];
-  const site = (e.find((x: any) => x.siteUrl === "sc-domain:hansvanleeuwen.com") || e.find((x: any) => (x.siteUrl || "").includes("hansvanleeuwen.com")) || {}).siteUrl || "";
+  // Domeinproperty eerst, dan een URL-prefix-property op exact deze host (isOwnGscProperty, getest);
+  // v8's `.includes("hansvanleeuwen.com")` accepteerde ook hansvanleeuwen.com.evil.example.
+  const site = (e.find((x: any) => x.siteUrl === "sc-domain:hansvanleeuwen.com") || e.find((x: any) => isOwnGscProperty(x.siteUrl || "")) || {}).siteUrl || "";
   if (!site) throw new Error("gsc: geen hansvanleeuwen.com property");
   return site;
 }

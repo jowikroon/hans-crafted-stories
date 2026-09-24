@@ -176,6 +176,29 @@ export function dedupeSitemaps(lists: SitemapEntry[][]): SitemapEntry[] {
 }
 
 // ---------------------------------------------------------------------------
+// Which GSC property is ours
+// ---------------------------------------------------------------------------
+
+/**
+ * Is this `sites.list` entry a property for this site? The domain property
+ * (`sc-domain:hansvanleeuwen.com`) or a URL-prefix property whose parsed host
+ * is the site or its www alias. A substring test (`includes("hansvanleeuwen.com")`)
+ * would also accept "https://hansvanleeuwen.com.evil.example/" or
+ * "https://evil.example/hansvanleeuwen.com" — CodeQL's "incomplete URL
+ * substring sanitization".
+ */
+export function isOwnGscProperty(siteUrl: string): boolean {
+  const host = new URL(SITE_ORIGIN).hostname;
+  if (siteUrl === `sc-domain:${host}`) return true;
+  try {
+    const h = new URL(siteUrl).hostname;
+    return h === host || h === `www.${host}`;
+  } catch {
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Which URLs to run through URL Inspection
 // ---------------------------------------------------------------------------
 

@@ -4,6 +4,7 @@ import {
   dedupeSitemaps,
   parseSitemapLocs,
   inspectableUrls,
+  isOwnGscProperty,
   selectInspectionWindow,
   rankTopQueries,
   timingSafeEqualStr,
@@ -388,5 +389,22 @@ describe("coverageFields", () => {
     // Absent, not zero: the dashboard must render "–", never "0 indexed".
     const { gsc } = coverageFields(null, "missing", "denied");
     expect(gsc).toEqual({ coverage_status: "missing", coverage_blocked: "denied" });
+  });
+});
+
+describe("isOwnGscProperty", () => {
+  it("accepts the domain property and URL-prefix properties on this host", () => {
+    expect(isOwnGscProperty("sc-domain:hansvanleeuwen.com")).toBe(true);
+    expect(isOwnGscProperty("https://hansvanleeuwen.com/")).toBe(true);
+    expect(isOwnGscProperty("https://www.hansvanleeuwen.com/")).toBe(true);
+    expect(isOwnGscProperty("https://hansvanleeuwen.com/writing/")).toBe(true);
+  });
+
+  it("rejects lookalikes a substring match would accept", () => {
+    expect(isOwnGscProperty("https://hansvanleeuwen.com.evil.example/")).toBe(false);
+    expect(isOwnGscProperty("https://evil.example/hansvanleeuwen.com")).toBe(false);
+    expect(isOwnGscProperty("sc-domain:hansvanleeuwen.com.evil.example")).toBe(false);
+    expect(isOwnGscProperty("https://nothansvanleeuwen.com/")).toBe(false);
+    expect(isOwnGscProperty("")).toBe(false);
   });
 });
