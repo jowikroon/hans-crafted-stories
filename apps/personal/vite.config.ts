@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { editSourceMap } from "./vite-plugins/editSourceMap";
 
 /** Replace build-time placeholders in index.html (e.g. {{CURRENT_YEAR}}) */
 function htmlPlaceholders(): Plugin {
@@ -27,7 +28,9 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react(), htmlPlaceholders(), componentTagger()].filter(Boolean),
+  // editSourceMap: data-src tags + /__edit/source-map.json for the edit overlay's
+  // write-back to source (see src/lib/editSource/). Text only, no DOM/visual change.
+  plugins: [editSourceMap({ root: __dirname }), react(), htmlPlaceholders(), componentTagger()].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
