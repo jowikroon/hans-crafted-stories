@@ -11,9 +11,34 @@ import { Badge } from "@/components/ui/badge";
 import { portalApi, SiteAuditResult } from "@/lib/api/portal";
 import {
   SeoAudit, saveAudit, getAuditDomains, getAuditsByDomain, getAuditHistory,
-  deleteAudit, extractDomain, extractPath, computeSeoScore, categorizePath,
+  deleteAudit, extractDomain, computeSeoScore, categorizePath, normalizeUrl, countTodaysScans,
 } from "@/lib/api/seoAudits";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+
+const DAILY_SCAN_LIMIT = 10;
+const CATEGORY_ORDER = ["homepage", "blog", "product", "category", "about", "contact", "legal", "other"];
+
+/** Tiny inline score-trend sparkline (chronological, last 20 scans) */
+function ScoreSparkline({ audits }: { audits: SeoAudit[] }) {
+  const points = [...audits]
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    .slice(-20)
+    .map((a) => a.seo_score);
+  if (points.length < 2) return null;
+  const w = 120, h = 28, pad = 2;
+  const min = Math.min(...points), max = Math.max(...points);
+  const range = max - min || 1;
+  const coords = points
+    .map((v, i) => `${pad + (i * (w - 2 * pad)) / (points.length - 1)},${h - pad - ((v - min) * (h - 2 * pad)) / range}`)
+    .join(" ");
+  const up = points[points.length - 1] >= points[0];
+  return (
+    <svg width={w} height={h} className="shrink-0" aria-label="Score trend">
+      <polyline points={coords} fill="none" strokeWidth="1.5" className={up ? "stroke-emerald-500" : "stroke-red-500"} />
+    </svg>
+  );
+}
 
 interface SiteAuditModalProps {
   open: boolean;
@@ -42,6 +67,7 @@ function relTime(iso: string): string {
 }
 
 const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
+  const { user } = useAuth();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SiteAuditResult | null>(null);
@@ -95,17 +121,25 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
+    if (user) {
+      const used = await countTodaysScans(user.id);
+      if (used >= DAILY_SCAN_LIMIT) {
+        toast({ title: "Daily limit reached", description: `Max ${DAILY_SCAN_LIMIT} scans per day. Try again tomorrow.`, variant: "destructive" });
+        return;
+      }
+    }
+    const norm = normalizeUrl(url);
     setLoading(true); setResult(null); setSavedAudit(null); setPrevAudit(null);
     try {
-      const res = await portalApi.runSiteAudit(url);
+      const res = await portalApi.runSiteAudit(norm.url);
       if (res.success && res.data) {
         setResult(res.data);
-        const domain = extractDomain(url);
-        const path = extractPath(url);
+        const domain = norm.domain;
+        const path = norm.path;
         const scores = computeSeoScore(res.data);
         try {
           const saved = await saveAudit({
-            url: url.trim(), domain, path,
+            url: norm.url, domain, path,
             title: res.data.title || "", title_length: res.data.titleLength || 0,
             meta_description: res.data.metaDescription || "", meta_description_length: res.data.metaDescriptionLength || 0,
             h1_count: res.data.h1Count || 0, headings: res.data.headings || [],
@@ -115,6 +149,7 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
             critical_count: scores.critical, warning_count: scores.warning, passed_count: scores.passed,
             technical_audit: "", content_audit: "", audited_by: "portal",
             category: categorizePath(path),
+            requested_by: user?.id ?? null,
           });
           setSavedAudit(saved);
           try {
@@ -125,7 +160,13 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
           toast({ title: "Audit saved", description: `Stored under ${domain}` });
         } catch (saveErr: unknown) { console.error("Failed to save audit:", saveErr); }
       } else {
-        toast({ title: "Audit failed", description: res.error || "Unknown error", variant: "destructive" });
+        const msg = res.error || "Unknown error";
+        const blocked = /403|401|robot|blocked|denied|forbidden|captcha/i.test(msg);
+        toast({
+          title: blocked ? "Site blocks the scanner" : "Audit failed",
+          description: blocked ? "This site refuses automated crawlers (robots/403). Nothing was saved." : msg,
+          variant: "destructive",
+        });
       }
     } catch { toast({ title: "Error", description: "Failed to run audit", variant: "destructive" }); }
     finally { setLoading(false); }
@@ -171,6 +212,20 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
                 <Input type="text" placeholder="https://hansvanleeuwen.com/writing/seo-guide" value={url} onChange={(e) => setUrl(e.target.value)} className="flex-1" />
                 <Button type="submit" disabled={loading} className="shrink-0">{loading ? <Loader2 size={16} className="animate-spin" /> : "Audit"}</Button>
               </form>
+
+              {!loading && !result && url.trim() && (() => {
+                const typed = extractDomain(url);
+                const known = domains.find((d) => d.domain === typed);
+                if (!known) return null;
+                return (
+                  <button type="button" onClick={() => { setView("history"); loadDomainAudits(known.domain); }}
+                    className="mb-4 flex w-full items-center gap-2 rounded-lg border border-border bg-secondary/20 px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground">
+                    <FolderOpen size={13} className="shrink-0" />
+                    <span><span className="font-medium text-foreground">{known.domain}</span> was scanned before — {known.count} audit{known.count !== 1 ? "s" : ""}, last {relTime(known.latest)}</span>
+                    <ChevronRight size={13} className="ml-auto shrink-0" />
+                  </button>
+                );
+              })()}
 
               {loading && (<div className="flex flex-col items-center gap-3 py-12 text-muted-foreground"><Loader2 size={28} className="animate-spin" /><p className="text-sm">Crawling and analyzing…</p></div>)}
 
@@ -301,13 +356,35 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
                     ) : domainAudits.length === 0 ? (
                       <p className="text-center text-sm text-muted-foreground py-8">No audits for this domain.</p>
                     ) : (
-                      <div className="space-y-2">
-                        {domainAudits.map((a) => (
+                      <div className="space-y-4">
+                        {/* Domein-dashboard: trend + kerncijfers */}
+                        <div className="flex items-center gap-4 rounded-lg border border-border bg-card/30 px-4 py-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60">Score trend</p>
+                            <div className="mt-1 flex items-center gap-3">
+                              <ScoreSparkline audits={domainAudits} />
+                              <ScoreBadge score={domainAudits[0].seo_score} />
+                              <span className="text-[10px] text-muted-foreground/60">latest</span>
+                            </div>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <p className="text-lg font-semibold tabular-nums text-foreground">{[...new Set(domainAudits.map((x) => x.path))].length}</p>
+                            <p className="text-[10px] text-muted-foreground/60">pages tracked</p>
+                          </div>
+                        </div>
+
+                        {CATEGORY_ORDER.filter((cat) => domainAudits.some((x) => (x.category || "other") === cat)).map((cat) => (
+                          <div key={cat}>
+                            <div className="mb-1.5 flex items-center gap-2">
+                              <Badge variant="secondary" className="text-[9px] uppercase tracking-wide">{cat}</Badge>
+                              <span className="text-[10px] text-muted-foreground/50">{domainAudits.filter((x) => (x.category || "other") === cat).length}</span>
+                            </div>
+                            <div className="space-y-2">
+                        {domainAudits.filter((x) => (x.category || "other") === cat).map((a) => (
                           <div key={a.id} className="group flex items-center gap-3 rounded-lg border border-border bg-card/30 p-3 transition-all hover:border-primary/30">
                             <ScoreBadge score={a.seo_score} />
                             <div className="min-w-0 flex-1">
                               <code className="truncate text-xs font-mono text-foreground/80">{a.path}</code>
-                              {a.category && <Badge variant="secondary" className="ml-2 align-middle text-[9px] capitalize">{a.category}</Badge>}
                               <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground/50">
                                 <Clock size={9} /><span>{new Date(a.created_at).toLocaleString()}</span>
                                 <span>·</span><span>{a.word_count} words</span>
@@ -319,6 +396,9 @@ const SiteAuditModal = ({ open, onClose }: SiteAuditModalProps) => {
                             <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button onClick={() => viewSavedAudit(a)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/40 hover:bg-secondary/60 hover:text-foreground" title="View"><ExternalLink size={12} /></button>
                               <button onClick={() => handleDeleteAudit(a.id)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/40 hover:bg-red-500/10 hover:text-red-500" title="Delete"><Trash2 size={12} /></button>
+                            </div>
+                          </div>
+                        ))}
                             </div>
                           </div>
                         ))}

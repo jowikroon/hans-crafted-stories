@@ -24,6 +24,8 @@ export interface SeoAudit {
   content_audit: string;
   audited_by: string;
   category?: string | null;
+  requested_by?: string | null;
+  share_slug?: string | null;
   created_at: string;
 }
 
@@ -35,6 +37,42 @@ export function extractDomain(url: string): string {
   } catch {
     return url.split("/")[0].replace(/^www\./, "");
   }
+}
+
+/**
+ * Normalize a user-typed URL so the same page always lands on the same
+ * (domain, path) history: force https, lowercase host, strip www + hash,
+ * strip trailing slash (except root). Query strings are preserved.
+ */
+export function normalizeUrl(input: string): { url: string; domain: string; path: string } {
+  const raw = input.trim();
+  let u: URL;
+  try {
+    u = new URL(raw.startsWith("http") ? raw : `https://${raw}`);
+  } catch {
+    return { url: raw, domain: extractDomain(raw), path: extractPath(raw) };
+  }
+  u.protocol = "https:";
+  u.hostname = u.hostname.toLowerCase();
+  u.hash = "";
+  let path = u.pathname.replace(/\/{2,}/g, "/");
+  if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+  u.pathname = path;
+  const domain = u.hostname.replace(/^www\./, "");
+  return { url: u.toString(), domain, path: path || "/" };
+}
+
+/** Count scans this user ran today (client-side daily limit) */
+export async function countTodaysScans(userId: string): Promise<number> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const { count, error } = await supabase
+    .from("seo_audits" as unknown)
+    .select("id", { count: "exact", head: true })
+    .eq("requested_by", userId)
+    .gte("created_at", today.toISOString());
+  if (error) return 0;
+  return count ?? 0;
 }
 
 /** Categorize a page path for domain-level grouping (homepage/blog/product/…) */
