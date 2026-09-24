@@ -108,7 +108,7 @@ export function keyForElement(el: Element): { key: string; selector: string } {
 export function textKeyForElement(el: Element, lang: string): { key: string; selector: string; dataSrc: string | null } {
   const dataSrc = el.getAttribute("data-src");
   if (dataSrc && typeof document !== "undefined") {
-    const selector = `[data-src="${dataSrc.replace(/"/g, '\\"')}"]`;
+    const selector = `[data-src="${dataSrc.replace(/["\\]/g, "\\$&")}"]`;
     if (document.querySelectorAll(selector).length === 1) return { key: `src:${dataSrc}@${lang}`, selector, dataSrc };
   }
   const path = computeCssPath(el);
