@@ -4,7 +4,7 @@
  * Input: the selected element, its original text (as the source renders it,
  * i.e. before any runtime override) and the new text. Output: which literal
  * in which file must change, as a raw find/replace pair that the write-back
- * worker applies to the file on GitHub. Anything ambiguous or not encodable is
+ * worker (n8n "Overlay Source Sync") applies on GitHub. Anything ambiguous or not encodable is
  * returned as "unresolved" with a reason — the overlay then only keeps the
  * runtime override and flags the edit for manual follow-up.
  */
