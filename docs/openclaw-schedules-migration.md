@@ -188,7 +188,7 @@ openclaw cron runs --id <job-id>
 
 After each OpenClaw job has one successful manual run and appears in `openclaw cron list`:
 
-- Cloudflare: remove or disable the scheduled trigger for `hvl-edge-cron`.
+- Cloudflare: nothing to disable — the edge worker (`hans-crafted-stories`, root `wrangler.toml`) ships without a cron trigger; keep it that way so this job stays the only clock.
 - Cowork: disable `ebay-de-launch-order-watch` and the daily go-live audit in the scheduled-tasks registry.
 - n8n: disable only the Schedule Trigger node for AutoSEO; keep webhook/manual execution intact.
 

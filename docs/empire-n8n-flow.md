@@ -43,7 +43,7 @@ The Sovereign AI Empire is a 7-layer system. N8N sits at **Layer 3 (Brain)** and
           ▼                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                N8N ORCHESTRATION (Layer 3 — Brain)                   │
-│                https://hansvanleeuwen.app.n8n.cloud                 │
+│                https://n8n.srv1402218.hstgr.cloud                 │
 │                                                                     │
 │  /webhook/autoseo         AutoSEO Brain (Claude + Sheets)          │
 │  /webhook/product-titles  Product Title Optimizer (Sheets)          │
@@ -86,12 +86,12 @@ Three pages serve as the command surface for triggering N8N automations.
 
 | Name | Label | Webhook URL |
 |------|-------|-------------|
-| `autoseo` | AutoSEO Brain | `https://hansvanleeuwen.app.n8n.cloud/webhook/autoseo` |
-| `product-titles` | Product Title Optimizer | `https://hansvanleeuwen.app.n8n.cloud/webhook/product-titles` |
-| `health-check` | Health Check | `https://hansvanleeuwen.app.n8n.cloud/webhook/health-check` |
-| `product-feed` | Product Feed Optimizer | `https://hansvanleeuwen.app.n8n.cloud/webhook/product-feed` |
-| `campaign` | Campaign Generator | `https://hansvanleeuwen.app.n8n.cloud/webhook/campaign` |
-| `scraper` | Web Scraper | `https://hansvanleeuwen.app.n8n.cloud/webhook/scraper` |
+| `autoseo` | AutoSEO Brain | `https://n8n.srv1402218.hstgr.cloud/webhook/autoseo` |
+| `product-titles` | Product Title Optimizer | `https://n8n.srv1402218.hstgr.cloud/webhook/product-titles` |
+| `health-check` | Health Check | `https://n8n.srv1402218.hstgr.cloud/webhook/health-check` |
+| `product-feed` | Product Feed Optimizer | `https://n8n.srv1402218.hstgr.cloud/webhook/product-feed` |
+| `campaign` | Campaign Generator | `https://n8n.srv1402218.hstgr.cloud/webhook/campaign` |
+| `scraper` | Web Scraper | `https://n8n.srv1402218.hstgr.cloud/webhook/scraper` |
 
 ### 1B. Empire Dashboard (`/empire`)
 
@@ -134,7 +134,7 @@ Three pages serve as the command surface for triggering N8N automations.
 - **Checks (in parallel):**
   - Shield — `https://cloudflare.com/cdn-cgi/trace`
   - Portal — `https://hansvanleeuwen.com`
-  - Brain — `https://hansvanleeuwen.app.n8n.cloud/healthz`
+  - Brain — `https://n8n.srv1402218.hstgr.cloud/healthz`
   - Memory — Supabase REST API
   - Immune — Edge Functions (`site-audit`)
   - Muscle — Claude Code CLI (manual status)
@@ -166,7 +166,7 @@ Three pages serve as the command surface for triggering N8N automations.
 
 ## Category 3: N8N Workflows (Brain Layer)
 
-All workflows are hosted at `https://hansvanleeuwen.app.n8n.cloud` (n8n Cloud).
+All workflows are hosted at `https://n8n.srv1402218.hstgr.cloud` (self-hosted on VPS1).
 
 ### 3A. AutoSEO Brain (`/webhook/autoseo`)
 

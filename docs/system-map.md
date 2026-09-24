@@ -28,7 +28,7 @@ This document describes the system architecture, entry points, universal chat ro
 
 ## Part 3 — n8n
 
-- **n8n instance:** `https://hansvanleeuwen.app.n8n.cloud` (n8n Cloud; or configured `N8N_BASE_URL`). Env vars **N8N_API_KEY** and **N8N_BASE_URL** are set in Supabase secrets and are never exposed to the client.
+- **n8n instance:** `https://n8n.srv1402218.hstgr.cloud` (n8n Cloud; or configured `N8N_BASE_URL`). Env vars **N8N_API_KEY** and **N8N_BASE_URL** are set in Supabase secrets and are never exposed to the client.
 - **create-n8n-workflow:** Edge Function `n8n-create-workflow` creates workflows in n8n via the REST API. Used when the AI outputs a workflow JSON block; the client calls this with the user’s JWT.
 - **n8n-filter-proxy:** Edge Function `n8n-filter-proxy` proxies GET requests to n8n (e.g. list workflows). Used by the Command Center to power the right-hand “n8n workflow cards” pane and the status line “n8n: N workflows loaded.” All n8n API access goes through this proxy so the client never sees API keys.
 

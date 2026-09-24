@@ -22,10 +22,21 @@ inline defaults. Until bound it uses the inline map (identical behaviour).
    `npx wrangler kv key put --namespace-id 1735f72eb6f84347ae5efd441db18906 redirects '{"/old":"/new"}'`
    `npx wrangler kv key put --namespace-id 1735f72eb6f84347ae5efd441db18906 meta '{"/x":{"t":"..","d":".."}}'`
 
-## C — Hourly cron worker (cache-warm + health ping) — code ready, deploy pending
-`workers/scheduled/` (isolated; does NOT duplicate cowork-dispatch SEO/radar).
-Deploy: `cd workers/scheduled && CLOUDFLARE_API_TOKEN=… npx wrangler deploy`
-(add `@cloudflare/workers-types` for local typecheck; wrangler bundles TS).
+## C — Edge worker (cache-warm + health ping) — LIVE via Workers Builds
+`workers/scheduled/src/index.ts` (isolated; does NOT duplicate cowork-dispatch
+SEO/radar). Config is the **repo-root `wrangler.toml`**, name
+`hans-crafted-stories` — the Worker that Cloudflare Workers Builds already
+targets through its Git integration on this repo. Every push to `main` ships
+it (default deploy command `npx wrangler deploy`); PR branches only upload a
+preview version (`npx wrangler versions upload`). No `CLOUDFLARE_API_TOKEN`
+is needed anywhere.
+
+**No Cloudflare cron trigger.** OpenClaw owns scheduling
+(`ops/openclaw/cron-jobs.json`, job `hvl-edge-health-warm`, hourly) and calls
+the Worker's HTTP endpoint (`workers_dev = true`); one GET runs the full
+warm + health cycle at the edge and POSTs the result to empire-health.
+Adding `[triggers] crons` back would double-run it.
+(Add `@cloudflare/workers-types` for local typecheck; wrangler bundles TS.)
 
 ## D — R2 media serving — code live, binding pending
 `apps/personal/functions/media/[[path]].js` serves `/media/*` from R2; 404s until
@@ -34,9 +45,14 @@ bound (touches no existing route).
    `BLOG_MEDIA` → bucket `hvl-blog-media`.
 2. Upload objects: `npx wrangler r2 object put hvl-blog-media/hero/x.jpg --file x.jpg`.
 
-## Cleanup (kills the red "Workers Builds" check)
-Delete the stray Workers (Pages-based site, no Worker needed):
-- `hans-crafted-stories` (Hello-world stub — source of the failing build)
+## Cleanup
+The red "Workers Builds" check is fixed at the source: the Worker
+`hans-crafted-stories` (created 2026-03-02 as a Hello-world stub when the repo
+was connected, and failing on every commit because no config carried its name)
+now hosts item C via the root `wrangler.toml`. Do **not** delete it — deleting
+it would bring the failing check back and remove the edge endpoint OpenClaw calls.
+
+Still safe to delete from the dashboard (nothing in this repo references them):
 - `hello-world-purple-dew-00fa` (2023 demo)
 - `llm-chat-app-template` (unused template)
 Keep `n8n-relay-proxy`.

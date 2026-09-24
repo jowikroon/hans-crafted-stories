@@ -23,7 +23,8 @@ export interface RouteResult {
   alternatives?: WorkflowDef[];
 }
 
-export const N8N_BASE = "https://hansvanleeuwen.app.n8n.cloud";
+/** Self-hosted n8n op Hostinger VPS (srv1402218) — spiegelt src/lib/config/workflows.ts */
+export const N8N_BASE = Deno.env.get("N8N_BASE") || "https://n8n.srv1402218.hstgr.cloud";
 
 export const WORKFLOWS: WorkflowDef[] = [
   {
