@@ -34,7 +34,7 @@ interface Channel {
 }
 
 const INITIAL_CHANNELS: Channel[] = [
-  { id: "distrokid", name: "DistroKid", role: "Distributie — audio naar alle streamingdiensten", items: ["Audio master (WAV)", "Cover 1a", "Metadata + ISRC"], when: "10.07.2026 · 09:00", enabled: true, status: "gepland" },
+  { id: "distrokid", name: "DistroKid", role: "Distributie: audio naar alle streamingdiensten", items: ["Audio master (WAV)", "Cover 1a", "Metadata + ISRC"], when: "10.07.2026 · 09:00", enabled: true, status: "gepland" },
   { id: "spotify", name: "Spotify for Artists", role: "Canvas, playlist-pitch & artiestprofiel", items: ["Canvas-loop 9:16", "Playlist-pitch (1e)", "Cover 1a"], when: "10.07.2026 · 10:00", enabled: true, status: "gepland" },
   { id: "instagram", name: "Instagram", role: "Feed-post + story met pre-save link", items: ["Cover 1a", "Story 1c", "Caption 1e"], when: "17.07.2026 · 18:00", enabled: true, status: "gepland" },
   { id: "tiktok", name: "TikTok", role: "Teaser-clip met audio-snippet", items: ["Teaser 15s", "Story-visual 1c", "Ad-copy kort 1e"], when: "18.07.2026 · 12:00", enabled: true, status: "gepland" },
@@ -45,13 +45,13 @@ const INITIAL_CHANNELS: Channel[] = [
 ];
 
 const CHANNEL_COPY: Record<string, string> = {
-  distrokid: "Neon House of Glass — single, 24.07.2026, Glashuis Records. Master en metadata aangeleverd voor alle streamingdiensten.",
+  distrokid: "Neon House of Glass, single, 24.07.2026, Glashuis Records. Master en metadata aangeleverd voor alle streamingdiensten.",
   spotify: "Playlist-pitch: koele synths en glasheldere vocals; voor fans van moderne synth-pop. Canvas-loop gekoppeld.",
-  instagram: "Glas breekt. Neon niet. Neon House of Glass — uit 24 juli. Pre-save via de link in bio. #neonhouseofglass #newmusic",
+  instagram: "Glas breekt. Neon niet. Neon House of Glass, uit 24 juli. Pre-save via de link in bio. #neonhouseofglass #newmusic",
   tiktok: "Dit hoor je straks overal: Neon House of Glass, uit 24 juli. #neonhouseofglass #nieuwemuziek",
-  youtube: "Neon House of Glass (Official Audio) — vanaf 24 juli overal te streamen.",
-  meta: "Een huis van glas, verlicht door neon. De nieuwe single van ARTIESTNAAM — luister vanaf 24 juli.",
-  display: "Neon House of Glass — de nieuwe single. Uit 24.07.2026. Luister nu.",
+  youtube: "Neon House of Glass (Official Audio). Vanaf 24 juli overal te streamen.",
+  meta: "Een huis van glas, verlicht door neon. De nieuwe single van ARTIESTNAAM. Luister vanaf 24 juli.",
+  display: "Neon House of Glass: de nieuwe single. Uit 24.07.2026. Luister nu.",
   pers: 'ARTIESTNAAM kondigt nieuwe single "Neon House of Glass" aan, uit op 24 juli 2026 via Glashuis Records.',
 };
 
@@ -179,7 +179,7 @@ const ReleaseSet = () => {
     for (const i of idxs) {
       if (!mounted.current) return;
       const c = channelsRef.current[i];
-      const t = CHANNEL_COPY[c.id] || "Neon House of Glass — uit 24.07.2026.";
+      const t = CHANNEL_COPY[c.id] || "Neon House of Glass, uit 24.07.2026.";
       setChannels((st) => st.map((ch, j) => (j === i ? { ...ch, generated: t, status: "geplaatst" as ChannelStatus } : ch)));
       await sleep(300);
     }
@@ -234,7 +234,7 @@ const ReleaseSet = () => {
   const done = on.filter((c) => c.status === "geplaatst").length;
   const allDone = on.length > 0 && done === on.length;
   const progressPct = on.length ? Math.round((done / on.length) * 100) : 0;
-  const publishLabel = publishing ? "Achtergrondproces bezig…" : allDone ? "Alles staat live" : "Plaats release — 1 klik";
+  const publishLabel = publishing ? "Achtergrondproces bezig…" : allDone ? "Alles staat live" : "Plaats release (1 klik)";
 
   return (
     <div style={{ minHeight: "100vh", background: "#07080C", fontFamily: FONT_BODY }}>
@@ -244,7 +244,7 @@ const ReleaseSet = () => {
           <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 800, fontSize: 28, color: "#F4F7FF", textTransform: "uppercase" }}>
             Neon House <span style={{ color: N1, textShadow: `0 0 ${GB} ${N1}` }}>of Glass</span>
           </div>
-          <div style={{ color: "#8A8FA0", fontSize: 14 }}>ARTIESTNAAM · single · uit 24.07.2026 · Glashuis Records — release set &amp; automator</div>
+          <div style={{ color: "#8A8FA0", fontSize: 14 }}>ARTIESTNAAM · single · uit 24.07.2026 · Glashuis Records · release set &amp; automator</div>
         </section>
 
         {/* ═══ Turn 2 — Distributie & automatisering ═══ */}
@@ -253,7 +253,7 @@ const ReleaseSet = () => {
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "flex-start" }}>
             <div id="2a" style={{ display: "flex", flexDirection: "column", gap: 12, flex: "1 1 720px", minWidth: 0 }}>
-              <Tag id="2a" label="Release Automator — automatische plaatsing per kanaal (prototype, koppelingen gesimuleerd)" />
+              <Tag id="2a" label="Release Automator: automatische plaatsing per kanaal (prototype, koppelingen gesimuleerd)" />
 
               <div style={{ width: "100%", maxWidth: 1360, background: "#0C0E15", border: "1px solid #191C26", borderRadius: 14, overflow: "hidden" }}>
                 {/* header */}
@@ -284,14 +284,14 @@ const ReleaseSet = () => {
 
                 {autoCountdown > 0 && (
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "14px 28px", background: "rgba(0,232,255,0.05)", borderBottom: "1px solid #191C26" }}>
-                    <div style={{ color: N1, fontSize: 14, fontWeight: 700 }}>Automatische plaatsing start over {autoCountdown} s — geen klik nodig</div>
+                    <div style={{ color: N1, fontSize: 14, fontWeight: 700 }}>Automatische plaatsing start over {autoCountdown} s, geen klik nodig</div>
                     <button onClick={cancelAuto} style={{ padding: "8px 18px", background: "transparent", border: "1px solid #232634", borderRadius: 999, color: "#8A8FA0", fontFamily: FONT_BODY, fontSize: 13, cursor: "pointer" }}>Annuleer</button>
                   </div>
                 )}
 
                 {allDone && (
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "14px 28px", background: "rgba(123,232,123,0.06)", borderBottom: "1px solid #191C26" }}>
-                    <div style={{ color: "#7BE87B", fontSize: 14, fontWeight: 700, textShadow: "0 0 14px rgba(123,232,123,0.6)" }}>Live op {on.length} kanalen — sterk werk!</div>
+                    <div style={{ color: "#7BE87B", fontSize: 14, fontWeight: 700, textShadow: "0 0 14px rgba(123,232,123,0.6)" }}>Live op {on.length} kanalen. Sterk werk!</div>
                     <div style={{ color: "#8A8FA0", fontSize: 13 }}>Volgende kleine stap: <span style={{ color: "#9BE8F5" }}>deel de story óók even op je persoonlijke account</span></div>
                   </div>
                 )}
@@ -340,7 +340,7 @@ const ReleaseSet = () => {
 
             {/* 2b — BJ Fogg */}
             <div id="2b" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <Tag id="2b" label="Toegepaste gedragsprincipes — BJ Fogg" />
+              <Tag id="2b" label="Toegepaste gedragsprincipes: BJ Fogg" />
               <div style={{ width: 440, maxWidth: "100%", background: "#0C0E15", border: "1px solid #191C26", borderRadius: 14, padding: 28, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 20, color: "#DDE3F2", fontSize: 14, lineHeight: 1.6 }}>
                 <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 800, fontSize: 16, color: "#F4F7FF", textTransform: "uppercase" }}>Gedrag = <span style={{ color: N1 }}>M</span> × <span style={{ color: "#FFB347" }}>A</span> × <span style={{ color: N2 }}>P</span></div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -349,15 +349,15 @@ const ReleaseSet = () => {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <div style={{ color: "#FFB347", fontSize: 12, letterSpacing: "0.24em", textTransform: "uppercase" }}>Ability</div>
-                  <div>Nul configuratie: kanalen en content zijn vooraf gekoppeld, defaults staan aan. De hele actie kost 1 klik en ±30 seconden — onder de "simplicity threshold".</div>
+                  <div>Nul configuratie: kanalen en content zijn vooraf gekoppeld, defaults staan aan. De hele actie kost 1 klik en ±30 seconden, onder de "simplicity threshold".</div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <div style={{ color: N1, fontSize: 12, letterSpacing: "0.24em", textTransform: "uppercase" }}>Motivatie</div>
-                  <div>De uitkomst is vooraf concreet (wat, waar, wanneer per kanaal) en de voortgang is live zichtbaar per stap — geen black box.</div>
+                  <div>De uitkomst is vooraf concreet (wat, waar, wanneer per kanaal) en de voortgang is live zichtbaar per stap. Geen black box.</div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <div style={{ color: "#7BE87B", fontSize: 12, letterSpacing: "0.24em", textTransform: "uppercase" }}>Celebration ("Shine")</div>
-                  <div>Direct een succesmoment na afronden, gevolgd door één kleine vervolgstap — zo groeit een publicatiegewoonte (Tiny Habits).</div>
+                  <div>Direct een succesmoment na afronden, gevolgd door één kleine vervolgstap. Zo groeit een publicatiegewoonte (Tiny Habits).</div>
                 </div>
               </div>
             </div>
@@ -371,7 +371,7 @@ const ReleaseSet = () => {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "flex-start" }}>
             {/* 1a Cover A */}
             <div id="1a" style={{ display: "flex", flexDirection: "column", gap: 12, flex: "1 1 480px", minWidth: 0 }}>
-              <Tag id="1a" label="Cover art A — 1080×1080" />
+              <Tag id="1a" label="Cover art A, 1080×1080" />
               <ScaledBoard designW={1080} designH={1080}>
                 <div style={{ width: 1080, height: 1080, position: "relative", overflow: "hidden", background: "#05060A", border: "1px solid #191C26" }}>
                   <img src={coverImg} alt="Neon House of Glass cover" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
@@ -393,7 +393,7 @@ const ReleaseSet = () => {
 
             {/* 1b Cover B */}
             <div id="1b" style={{ display: "flex", flexDirection: "column", gap: 12, flex: "1 1 480px", minWidth: 0 }}>
-              <Tag id="1b" label="Cover art B — 1080×1080, minimaal glas" />
+              <Tag id="1b" label="Cover art B, 1080×1080, minimaal glas" />
               <ScaledBoard designW={1080} designH={1080}>
                 <div style={{ width: 1080, height: 1080, position: "relative", overflow: "hidden", background: "linear-gradient(180deg, #0A0C12 0%, #07080C 100%)", border: "1px solid #191C26", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 48 }}>
                   <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.015) 60px, rgba(255,255,255,0.06) 120px)" }} />
@@ -411,7 +411,7 @@ const ReleaseSet = () => {
 
             {/* 1c Story */}
             <div id="1c" style={{ display: "flex", flexDirection: "column", gap: 12, flex: "1 1 380px", minWidth: 0 }}>
-              <Tag id="1c" label="Instagram story — 1080×1920" />
+              <Tag id="1c" label="Instagram story, 1080×1920" />
               <ScaledBoard designW={1080} designH={1920}>
                 <div style={{ width: 1080, height: 1920, position: "relative", overflow: "hidden", background: "#05060A", border: "1px solid #191C26", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", gap: 52, paddingBottom: 110, boxSizing: "border-box" }}>
                   <img src={coverImg} alt="" style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1080, objectFit: "cover" }} />
@@ -431,7 +431,7 @@ const ReleaseSet = () => {
 
             {/* 1d Banners */}
             <div id="1d" style={{ display: "flex", flexDirection: "column", gap: 12, flex: "1 1 728px", minWidth: 0 }}>
-              <Tag id="1d" label="Display-banners — 728×90 · 300×250 · 300×600" />
+              <Tag id="1d" label="Display-banners: 728×90 · 300×250 · 300×600" />
               <div style={{ display: "flex", flexDirection: "column", gap: 24, alignItems: "flex-start" }}>
                 <ScaledBoard designW={728} designH={90}>
                   <div style={{ width: 728, height: 90, background: "#05060A", border: "1px solid #191C26", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px 0 114px", boxSizing: "border-box", position: "relative", overflow: "hidden" }}>
@@ -469,11 +469,11 @@ const ReleaseSet = () => {
               <div style={{ width: "100%", maxWidth: 680, background: "#0C0E15", border: "1px solid #191C26", padding: 40, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 28, color: "#DDE3F2", fontSize: 16, lineHeight: 1.6 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={copyBlockLabel}>Instagram-caption</div>
-                  <div>Glas breekt. Neon niet. 🔊 'Neon House of Glass' — de nieuwe single van ARTIESTNAAM — is uit op 24 juli. Pre-save via de link in bio en hoor hem als eerste.</div>
+                  <div>Glas breekt. Neon niet. 🔊 'Neon House of Glass', de nieuwe single van ARTIESTNAAM, is uit op 24 juli. Pre-save via de link in bio en hoor hem als eerste.</div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={copyBlockLabel}>Ad-copy kort</div>
-                  <div>Neon House of Glass — de nieuwe single van ARTIESTNAAM. Uit 24 juli. Luister nu.</div>
+                  <div>Neon House of Glass: de nieuwe single van ARTIESTNAAM. Uit 24 juli. Luister nu.</div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={copyBlockLabel}>Ad-copy lang</div>
@@ -488,18 +488,18 @@ const ReleaseSet = () => {
 
             {/* 1f AI prompts */}
             <div id="1f" style={{ display: "flex", flexDirection: "column", gap: 12, flex: "1 1 480px", minWidth: 0 }}>
-              <Tag id="1f" label="AI image-prompts (Engels — werkt het best in image-tools)" />
+              <Tag id="1f" label="AI image-prompts (Engels, werkt het best in image-tools)" />
               <div style={{ width: "100%", maxWidth: 680, background: "#0C0E15", border: "1px solid #191C26", padding: 40, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 28 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div style={promptLabel}>Prompt 1 — cover-achtergrond</div>
+                  <div style={promptLabel}>Prompt 1: cover-achtergrond</div>
                   <div style={promptBox}>a translucent glass house at night, glowing neon cyan and magenta light refracting through frosted glass walls, dark void background, volumetric fog, cinematic lighting, ultra detailed, photorealistic 3D render, square format --ar 1:1 --style raw</div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div style={promptLabel}>Prompt 2 — story-achtergrond</div>
+                  <div style={promptLabel}>Prompt 2: story-achtergrond</div>
                   <div style={promptBox}>extreme close-up of shattered glass shards suspended mid-air, neon cyan and magenta rim lighting on every edge, pitch black background, shallow depth of field, macro photography, vertical composition --ar 9:16 --style raw</div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div style={promptLabel}>Prompt 3 — banner-textuur</div>
+                  <div style={promptLabel}>Prompt 3: banner-textuur</div>
                   <div style={promptBox}>abstract texture of rippled architectural glass, thin neon light strips glowing behind it, cyan and magenta gradient bokeh, dark moody atmosphere, wide panoramic crop, high detail 3D render --ar 8:1</div>
                 </div>
               </div>

@@ -292,7 +292,7 @@
   <div class="card">
     <div class="card-title">Title Pattern</div>
 
-    <label>Click tokens to build your pattern — or type freely</label>
+    <label>Click tokens to build your pattern, or type freely</label>
     <div class="pattern-builder">
       <div class="token" onclick="insertToken('{brand}')">&#123;brand&#125;</div>
       <div class="token" onclick="insertToken('{product_name}')">&#123;product_name&#125;</div>
@@ -309,7 +309,7 @@
       value="{brand} {product_name} {color} {size} | {category}"
       placeholder="{brand} {product_name} {color} - {category}"
       oninput="updatePatternPreview()">
-    <div class="char-hint">Pattern preview: <span id="pattern-preview" style="color:var(--text)">—</span></div>
+    <div class="char-hint">Pattern preview: <span id="pattern-preview" style="color:var(--text)">-</span></div>
   </div>
 
   <!-- Global Defaults -->
@@ -359,7 +359,7 @@
   <div id="results-section" style="display:none; margin-top:28px;">
     <div class="card">
       <div class="results-header">
-        <div class="card-title" style="margin:0">Results — <span id="result-count">0</span> titles</div>
+        <div class="card-title" style="margin:0">Results: <span id="result-count">0</span> titles</div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost" onclick="copyAll()">Copy All</button>
           <button class="btn btn-ghost" onclick="exportCSV()">Export CSV</button>
@@ -368,7 +368,7 @@
       </div>
 
       <div style="font-size:11px;color:var(--muted);margin-bottom:14px;font-family:'DM Mono',monospace;">
-        Titles are editable — click to modify inline
+        Titles are editable: click to modify inline
       </div>
 
       <div id="results-list"></div>
@@ -412,7 +412,7 @@ function updatePatternPreview() {
     material: 'Cotton',
     ...g
   });
-  document.getElementById('pattern-preview').textContent = preview || '—';
+  document.getElementById('pattern-preview').textContent = preview || '-';
 }
 
 function applyPattern(pattern, data) {

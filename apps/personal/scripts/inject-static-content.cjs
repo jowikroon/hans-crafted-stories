@@ -33,7 +33,7 @@ const STATIC_CONTENT = `<header>
     </section>
     <section aria-label="Proven results">
       <ul>
-        <li><strong>70% market share on Amazon NL</strong> (earplug category, Nielsen Data) &mdash; Listing overhaul, A+ content, A/B-tested images and Buy Box alignment (Alpine Hearing Protection, Nielsen 2023).</li>
+        <li><strong>70% market share on Amazon NL</strong> (earplug category, Nielsen Data): Listing overhaul, A+ content, A/B-tested images and Buy Box alignment (Alpine Hearing Protection, Nielsen 2023).</li>
         <li><strong>20% weekly sales increase</strong> from a targeted Back-to-School social ad campaign on top of optimised listings (Alpine Hearing Protection).</li>
         <li><strong>Out-of-stock rates below 2%</strong> through demand forecasting and optimized logistics.</li>
       </ul>
@@ -61,19 +61,19 @@ const STATIC_CONTENT = `<header>
     <section aria-label="What I do">
       <h2>Amazon &amp; Bol.com Marketplace Management (NL/EU)</h2>
       <ul>
-        <li><strong>Amazon Marketplace Management</strong> &mdash; Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations. Your Amazon NL specialist for scalable growth.</li>
-        <li><strong>Bol.com Optimization</strong> &mdash; Content optimization, Bol Ads management, catalog management, and performance analytics. Hands-on Bol.com consultant for the Netherlands&rsquo; largest marketplace.</li>
-        <li><strong>Marketplace CRO &amp; Growth</strong> &mdash; Data-driven conversion rate optimization, A/B testing, and revenue scaling. Reduce friction, improve Buy Box win rate, and grow profitably.</li>
-        <li><strong>SEO &amp; Content Strategy</strong> &mdash; Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction and increasing conversions.</li>
+        <li><strong>Amazon Marketplace Management</strong>: Listing optimization, A+ content, Amazon Ads (Sponsored Products, Brands, Display), pricing strategy, and operations. Your Amazon NL specialist for scalable growth.</li>
+        <li><strong>Bol.com Optimization</strong>: Content optimization, Bol Ads management, catalog management, and performance analytics. Hands-on Bol.com consultant for the Netherlands&rsquo; largest marketplace.</li>
+        <li><strong>Marketplace CRO &amp; Growth</strong>: Data-driven conversion rate optimization, A/B testing, and revenue scaling. Reduce friction, improve Buy Box win rate, and grow profitably.</li>
+        <li><strong>SEO &amp; Content Strategy</strong>: Search-first content strategies that drive organic traffic and improve marketplace rankings. UX design focused on reducing friction and increasing conversions.</li>
       </ul>
     </section>
     <section aria-label="Engagement Model">
       <h2>Engagement Model</h2>
       <ol>
-        <li><strong>Discovery</strong> &mdash; Audit your current marketplace presence, identify quick wins and long-term growth levers.</li>
-        <li><strong>Strategy</strong> &mdash; Build a tailored action plan with KPIs, timelines, and clear ownership.</li>
-        <li><strong>Execution</strong> &mdash; Hands-on implementation from listing optimization to ad campaigns with weekly check-ins.</li>
-        <li><strong>Scale</strong> &mdash; Iterate based on data, expand to new channels, and compound results over time.</li>
+        <li><strong>Discovery</strong>: Audit your current marketplace presence, identify quick wins and long-term growth levers.</li>
+        <li><strong>Strategy</strong>: Build a tailored action plan with KPIs, timelines, and clear ownership.</li>
+        <li><strong>Execution</strong>: Hands-on implementation from listing optimization to ad campaigns with weekly check-ins.</li>
+        <li><strong>Scale</strong>: Iterate based on data, expand to new channels, and compound results over time.</li>
       </ol>
     </section>
     <section aria-label="FAQ">

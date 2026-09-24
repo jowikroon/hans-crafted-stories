@@ -586,7 +586,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
           },
           {
             title: "Vendor of seller op Bol.com: zo rekende ik het door bij Alpine",
-            summary: "Bij Alpine Hearing Protection stapten we over van vendor naar seller. In mijn artikel staat de rekensom per productgroep (verkoopprijs minus inkoopkorting en promotiebijdrage tegenover commissie, logistiek, retouren én eigen uren), wat ik onderschatte — retourstroom, Buy Box, content — en wanneer ik het nu bij vendor zou laten.",
+            summary: "Bij Alpine Hearing Protection stapten we over van vendor naar seller. In mijn artikel staat de rekensom per productgroep (verkoopprijs minus inkoopkorting en promotiebijdrage tegenover commissie, logistiek, retouren én eigen uren), wat ik onderschatte (retourstroom, Buy Box, content) en wanneer ik het nu bij vendor zou laten.",
             href: "/writing/vendor-of-seller-bol-com-alpine",
             linkLabel: "Lees de vendor-versus-seller-rekensom",
           },
@@ -668,7 +668,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
           },
           {
             title: "Vendor or seller on Bol.com: how I ran the numbers at Alpine",
-            summary: "At Alpine Hearing Protection we moved from vendor to seller on Bol.com. The article walks through the calculation per product group (sales price minus purchase discount and promo contribution versus commission, logistics, returns and your own hours), what I underestimated — returns, Buy Box, content — and when I would stay vendor today.",
+            summary: "At Alpine Hearing Protection we moved from vendor to seller on Bol.com. The article walks through the calculation per product group (sales price minus purchase discount and promo contribution versus commission, logistics, returns and your own hours), what I underestimated (returns, Buy Box, content) and when I would stay vendor today.",
             href: "/writing/vendor-of-seller-bol-com-alpine",
             linkLabel: "Read the vendor-versus-seller calculation (Dutch)",
           },
