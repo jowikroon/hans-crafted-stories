@@ -87,6 +87,32 @@
         "oldScheduler": "n8n internal schedule trigger",
         "disableAfterOpenClawVerification": true
       }
+    },
+    {
+      "id": "hansai-memory-cleanup-weekly",
+      "name": "HansAI memory cleanup weekly audit",
+      "schedule": {
+        "type": "cron",
+        "expression": "40 7 * * 0",
+        "timezone": "Europe/Amsterdam"
+      },
+      "runtime": {
+        "requiresPath": "/home/openclaw",
+        "note": "Must run on the host where the openclaw user's Claude Code auto-memory lives. A cloud Claude Code environment that clones this repo does not have these paths and will report every file as missing."
+      },
+      "payload": {
+        "type": "message",
+        "session": "agent:connectcarparts:main",
+        "text": "You are the HansAI Memory Cleanup agent. You run weekly to keep the Claude Code memory system lean and non-redundant. All paths are absolute under /home/openclaw; never assume the current working directory.\n\nSTEP 0 - PRECHECK: Confirm /home/openclaw/.claude/projects/-home-openclaw/memory/ exists. If it does not, stop and report exactly: 'HansAI Memory Cleanup - weekly audit: memory directory /home/openclaw/.claude/projects/-home-openclaw/memory/ not found on this host; audit not run.' Do not guess alternative locations.\n\nSTEP 1 - READ CONTEXT FILES: Read every file that exists from: /home/openclaw/CLAUDE.md, /home/openclaw/openclaw/CLAUDE.md, /home/openclaw/openclaw/.claude.local.md, /home/openclaw/hcs/CLAUDE.md, /home/openclaw/marketplacegrowth/CLAUDE.md. Also run: find /home/openclaw -maxdepth 3 ( -name CLAUDE.md -o -name .claude.local.md ) -not -path '*/node_modules/*' and read any extra matches. List any expected file that is missing; do not treat a missing file as an error.\n\nSTEP 2 - READ MEMORY INDEX: Read /home/openclaw/.claude/projects/-home-openclaw/memory/MEMORY.md. If MEMORY.md is missing, list the *.md files in that directory instead and say the index is missing.\n\nSTEP 3 - READ EACH MEMORY FILE listed in the index (or found in the directory).\n\nSTEP 4 - CHECK FOR REDUNDANCY. For each memory file: (1) redundant if already covered by any CLAUDE.md or .claude.local.md; (2) stale if it references things that no longer exist, outdated versions, or completed projects; (3) duplicate if it repeats another memory file; (4) derivable if it only contains code patterns, file paths, or architecture details readable from the current codebase.\n\nSTEP 5 - REPORT: DM Hans on Slack if a Slack tool is available; otherwise deliver the report as this run's announced output. Format:\n\nHansAI Memory Cleanup - weekly audit\nMemory files checked: X\nREDUNDANT (covered by CLAUDE.md): filename.md - reason\nSTALE (outdated info): filename.md - reason\nDUPLICATES: filename.md duplicates filename2.md\nHEALTHY: X files are unique and current\nRecommended removals: X files\n\nIf all files are healthy send one line: 'HansAI Memory Cleanup - weekly audit: all X memory files are unique, current, and non-redundant.'\n\nCONSTRAINTS: NEVER delete or modify memory files, only report. NEVER fabricate findings; if you cannot read a file, say so. Keep the report concise, one line per finding."
+      },
+      "replaces": [
+        "claude.ai scheduled routine 'HansAI Memory Cleanup' attached to the hans-crafted-stories cloud environment"
+      ],
+      "cutover": {
+        "oldScheduler": "claude.ai Claude Code scheduled routine (cloud environment)",
+        "disableAfterOpenClawVerification": true,
+        "reason": "The cloud environment clones hans-crafted-stories and has no /home/openclaw; every audit run there reports all files missing."
+      }
     }
   ]
 }
