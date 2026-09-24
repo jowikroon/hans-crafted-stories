@@ -27,6 +27,10 @@ export const LOCALIZED_ROUTES: readonly string[] = [
   "/ai-ecommerce-automation",
   "/privacy",
   "/rates",
+  // De artikelenindex bestaat in beide talen (/writing EN, /nl/writing NL) sinds de
+  // i18n-audit van 2026-09-22: de prerender leverde NL, de client rendert EN en de
+  // taalschakelaar wees naar dezelfde URL. Artikelen zelf blijven één URL (?lang=en).
+  "/writing",
 ] as const;
 
 const normalize = (p: string): string => {

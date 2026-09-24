@@ -6,7 +6,8 @@ import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { getBlogPostHead, getBlogPostJsonLd, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+import { getBlogPostHead, getBlogPostJsonLd, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+import { setArticleLangInfo } from "@/lib/i18n/articleLang";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
 import "@/styles/article-v2.css";
@@ -414,7 +415,14 @@ const BlogPostPage = () => {
   // Engelse versie op dezelfde URL zonder eigen canonical.
   const routerLocation = useLocation();
   const wantsEn = new URLSearchParams(routerLocation.search).get("lang") === "en";
-  const articleLang: "nl" | "en" = post ? (wantsEn && post.content ? "en" : primaryBlogPostLang(post)) : lang;
+  // ?lang=en alleen honoreren als er een echte Engelse versie is; anders bleef de
+  // Nederlandse tekst onder een Engelse kop staan (i18n-audit 2026-09-22, R2).
+  const hasEn = post ? hasEnglishVersion(post) : false;
+  const articleLang: "nl" | "en" = post ? (wantsEn && hasEn ? "en" : primaryBlogPostLang(post)) : lang;
+  const englishUnavailable = !!post && wantsEn && !hasEn && articleLang === "nl";
+  useEffect(() => {
+    if (post) setArticleLangInfo(post.slug, { hasEn, lang: primaryBlogPostLang(post) });
+  }, [post, hasEn]);
   const displayTitle = post ? (articleLang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
   const displayExcerpt = post ? (articleLang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";
   const displayContent = post ? (articleLang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
@@ -489,7 +497,9 @@ const BlogPostPage = () => {
     lang: articleLang,
     type: "article",
     jsonLd: post && !isDraft ? getBlogPostJsonLd(post, articleLang) : undefined,
-    noindex: isDraft,
+    // 2026-09-11: een niet-bestaand artikel (post === null) rendert "Post not found" met HTTP 200
+    // via de /writing/:slug-rewrite; zonder noindex is dat een indexeerbare soft-404 met self-canonical.
+    noindex: isDraft || post === null,
   });
 
   /* ── TOC scroll-spy + reading-progress bar (prerender-safe) ── */
@@ -660,6 +670,9 @@ const BlogPostPage = () => {
         {/* Head */}
         <div className="ahead">
           <div className="ahead__cat">{catLine} <span className="langtag">{articleLang.toUpperCase()}</span></div>
+          {englishUnavailable && (
+            <p className="adek" lang="en" role="status">This article is only available in Dutch. <span lang="nl">Dit artikel is alleen in het Nederlands beschikbaar.</span></p>
+          )}
           <h1 className="atitle">{displayTitle}</h1>
           {displayExcerpt && <p className="adek">{displayExcerpt}</p>}
           <div className="byline">

@@ -5,6 +5,7 @@ import { Link } from "@/components/LocalizedLink";
 import { getBlogPosts, isHansSession, BlogPostRow } from "@/lib/api/content";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
+import { absoluteUrl } from "@/lib/i18n/routes";
 import { translations } from "@/data/translations";
 import { usePreloadedBlogPosts } from "@/contexts/PreloadedDataContext";
 import "@/styles/writing-v2.css";
@@ -98,29 +99,34 @@ const WritingV2 = () => {
     [blogPosts],
   );
 
+  // Eén URL per taal (HAN-167): /writing (EN) en /nl/writing (NL) dragen elk hun
+  // eigen CollectionPage-@id, url en broodkruimels; de artikel-URL's zijn taalloos.
+  const pageUrl = absoluteUrl("/writing", lang);
+  const homeUrl = absoluteUrl("/", lang);
   const writingJsonLd = useMemo(() => ({
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "CollectionPage",
-        "@id": "https://hansvanleeuwen.com/writing#page",
+        "@id": `${pageUrl}#page`,
         name: t.heading,
         description: seo.writingDescription,
-        url: "https://hansvanleeuwen.com/writing",
+        url: pageUrl,
+        inLanguage: lang === "nl" ? "nl-NL" : "en",
         isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
         author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
       },
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-          { "@type": "ListItem", position: 2, name: t.label, item: "https://hansvanleeuwen.com/writing" },
+          { "@type": "ListItem", position: 1, name: "Home", item: homeUrl },
+          { "@type": "ListItem", position: 2, name: t.label, item: pageUrl },
         ],
       },
       ...(publicPostsForLd.length
         ? [{
             "@type": "ItemList",
-            "@id": "https://hansvanleeuwen.com/writing#articles",
+            "@id": `${pageUrl}#articles`,
             itemListElement: publicPostsForLd.slice(0, 20).map((p, i) => ({
               "@type": "ListItem",
               position: i + 1,
@@ -140,12 +146,14 @@ const WritingV2 = () => {
           }]
         : []),
     ],
-  }), [publicPostsForLd, t.heading, t.label, seo.writingDescription]);
+  }), [publicPostsForLd, t.heading, t.label, seo.writingDescription, pageUrl, homeUrl, lang]);
 
   useSEO({
     title: seo.writingTitle,
     description: seo.writingDescription,
-    url: "https://hansvanleeuwen.com/writing",
+    // path + lang: canonical, hreflang (en/nl/x-default) en og:locale volgen de URL.
+    path: "/writing",
+    lang,
     robots: isFilteredView ? "noindex,follow" : undefined,
     jsonLd: writingJsonLd,
   });
@@ -458,7 +466,7 @@ const WritingV2 = () => {
                           width={1200}
                           height={800}
                           loading="eager"
-                          fetchPriority="high"
+                          {...{ fetchpriority: "high" }}
                           decoding="async"
                         />
                       </div>

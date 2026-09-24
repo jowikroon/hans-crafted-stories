@@ -28,6 +28,7 @@
  *      de bewust gedeelde blokken (tarief, byline, ervaring) — sjabloon-variatie
  *  14. CSS-tokens uit index.css: muted-foreground op background/card ≥ 4.5:1 en
  *      --w2-muted op --w2-paper ≥ 4.5:1 (HAN-145, zonder browser)
+ *  17. homepage-<title> (/, /nl) = translations.seo.homeTitle, merk-eerst, og/twitter:title gelijk
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -247,9 +248,15 @@ else {
     const css = fs.readFileSync(path.join(appDir, "src", "index.css"), "utf8");
     const root = css.match(/:root\s*\{([\s\S]*?)\}/)[1];
     const tok = (name) => { const m = root.match(new RegExp(`--${name}:\\s*([\\d.]+)\\s+([\\d.]+)%\\s+([\\d.]+)%`)); return m ? hslToRgb(+m[1], +m[2], +m[3]) : null; };
-    const fg = tok("muted-foreground"), bg = tok("background"), card = tok("card");
-    for (const [label, surface] of [["background", bg], ["card", card]]) {
-      if (fg && surface) { const r = ratio(fg, surface); if (r < 4.5) failures.push(`index.css: --muted-foreground op --${label} = ${r.toFixed(2)}:1 (< 4.5, HAN-145)`); }
+    const fg = tok("muted-foreground"), bg = tok("background"), card = tok("card"), mutedSurf = tok("muted"), secondary = tok("secondary"), primary = tok("primary");
+    // 2026-09-11: de Kernel-scan vond 36 fails/9 routes op twee GETINTE oppervlakken die deze check
+    // niet kende: de muted-kaart (--muted) en primary/5 over --background (CTA-blokken). Alle
+    // oppervlakken waar muted-foreground op staat tellen nu mee, inclusief de alpha-blend.
+    const blend = (top, alpha, under) => top.map((v, i) => Math.round(v * alpha + under[i] * (1 - alpha)));
+    const surfaces = [["background", bg], ["card", card], ["muted", mutedSurf], ["secondary", secondary]];
+    if (primary && bg) surfaces.push(["primary/5 op background", blend(primary, 0.05, bg)], ["primary/10 op background", blend(primary, 0.10, bg)]);
+    for (const [label, surface] of surfaces) {
+      if (fg && surface) { const r = ratio(fg, surface); if (r < 4.5) failures.push(`index.css: --muted-foreground op ${label} = ${r.toFixed(2)}:1 (< 4.5, HAN-145)`); }
     }
     const w2 = fs.readFileSync(path.join(appDir, "src", "styles", "writing-v2.css"), "utf8");
     const first = w2.slice(0, w2.indexOf("--w2-muted:") + 40);
@@ -271,6 +278,40 @@ else {
   if (!/postLang = primaryBlogPostLang\(/.test(pr)) failures.push("prerender.mjs: postLang niet via primaryBlogPostLang");
 }
 
+// 16. Niet-bestaand artikel = noindex (2026-09-11): /writing/:slug valt via de rewrite terug op de
+//     SPA; een onbekende slug rendert "Post not found" met HTTP 200. Zonder noindex is dat een
+//     indexeerbare soft-404 met self-canonical (Kernel-render /writing/index, run 2026-09-11).
+{
+  const appDir = path.resolve(distDir, "..");
+  const bp = fs.readFileSync(path.join(appDir, "src", "pages", "BlogPostPage.tsx"), "utf8");
+  if (!/noindex:\s*isDraft\s*\|\|\s*post === null/.test(bp)) failures.push("BlogPostPage.tsx: niet-gevonden artikel (post === null) krijgt geen noindex — indexeerbare soft-404");
+}
+
+// 17. Homepage-<title> in de prerender = translations[lang].seo.homeTitle (2026-09-22): de prerender
+//     had een eigen, oudere titel terwijl Index.tsx via useSEO een merk-eerst-titel zette. Google
+//     indexeert de prerender (SERP 09-18 toonde de oude titel), dus de titel-hefboom voor de
+//     naamquery (plan A.1) was 17 dagen dood zonder dat een guard het zag. Bovendien: merk-eerst.
+{
+  const appDir = path.resolve(distDir, "..");
+  const decode = (t) => t.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d)).replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+  const tr = fs.readFileSync(path.join(appDir, "src", "data", "translations.ts"), "utf8");
+  const titles = [...tr.matchAll(/homeTitle:\s*"([^"]+)"/g)].map((m) => m[1]);
+  if (titles.length !== 2) failures.push(`translations.ts: verwacht 2 seo.homeTitle-waarden (en, nl), gevonden ${titles.length}`);
+  for (const [file, idx, label] of [[path.join(distDir, "index.html"), 0, "index.html"], [path.join(distDir, "nl", "index.html"), 1, "nl/index.html"]]) {
+    if (!fs.existsSync(file)) continue;
+    const html = fs.readFileSync(file, "utf8");
+    const t = html.match(/<title>([\s\S]*?)<\/title>/);
+    const got = t ? decode(t[1]).trim() : "";
+    const want = titles[idx];
+    if (want && got !== want) failures.push(`${label}: <title> "${got}" ≠ translations.seo.homeTitle "${want}" (prerender en component uit elkaar)`);
+    if (!/^Hans van Leeuwen/.test(got)) failures.push(`${label}: homepage-<title> begint niet met "Hans van Leeuwen" (merk-eerst, plan A.1)`);
+    for (const re of [/<meta property="og:title" content="([^"]*)"/, /<meta name="twitter:title" content="([^"]*)"/]) {
+      const m = html.match(re);
+      if (m && decode(m[1]).trim() !== got) failures.push(`${label}: og/twitter:title ≠ <title>`);
+    }
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /nl-pagina heeft een EN-tweeling en andersom.
 for (const route of seen) {
   if (route === "/nl" || route.startsWith("/nl/")) {
@@ -284,4 +325,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK — ${seen.size} pagina's voldoen (15 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal).`);
+console.log(`[seo-guard] OK — ${seen.size} pagina's voldoen (17 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit).`);

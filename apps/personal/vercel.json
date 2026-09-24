@@ -4,6 +4,11 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/dashboards/attachments",
+      "destination": "/bijlagen",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
@@ -153,12 +158,27 @@
       "source": "/tarieven",
       "destination": "/nl/rates",
       "permanent": true
+    },
+    {
+      "source": "/cases",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/cases/connect-car-parts",
+      "destination": "/work/connect-car-parts",
+      "permanent": true
+    },
+    {
+      "source": "/cowork",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(portal|wiki|god-structure|samantha|release-set|music-cms|write)",
+      "source": "/(portal|bijlagen|wiki|god-structure|samantha|release-set|music-cms|write)",
       "destination": "/index.html"
     },
     {
@@ -195,6 +215,10 @@
     }
   ],
   "headers": [
+    {
+      "source": "/bijlagen",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [

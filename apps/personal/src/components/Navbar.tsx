@@ -2,11 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Link as RouterLink } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { localizePath, parsePath } from "@/lib/i18n/routes";
+import { useArticleHasEnglish } from "@/lib/i18n/articleLang";
+import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
+import { hasEnglishVersion } from "@/lib/seo/blogPostHead";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
   ChevronDown, Network, Sparkles, PenLine, Disc3, BarChart3,
-  AudioLines,
+  AudioLines, ExternalLink, Paperclip,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -66,6 +69,19 @@ const Navbar = (_props: NavbarProps) => {
   const isArticle = /^\/writing\/[^/]+$/.test(parsePath(location.pathname).path);
   const langTarget = (l: "nl" | "en") =>
     isArticle ? (l === "en" ? `${location.pathname}?lang=en` : location.pathname) : localizePath(location.pathname, l);
+  /* ENG alleen aanbieden als het artikel een Engelse versie heeft (i18n-audit
+     2026-09-22, R2). Bron: de prerender-/SSR-preload (direct load) of de store
+     die BlogPostPage vult na het laden (client-side navigatie). Onbekend = tonen. */
+  const articleSlug = isArticle ? parsePath(location.pathname).path.split("/")[2] : undefined;
+  const preloadedArticle = usePreloadedBlogPost(articleSlug);
+  const storedHasEn = useArticleHasEnglish(articleSlug);
+  const articleHasEn = !isArticle || (storedHasEn ?? (preloadedArticle ? hasEnglishVersion(preloadedArticle) : true));
+  const engUnavailableTitle = "Alleen in het Nederlands beschikbaar / Only available in Dutch";
+  /* /music en /music/:slug bestaan alleen in het Engels (geen NL-copy); een
+     NL-knop die naar dezelfde URL wijst deed niets (i18n-audit 2026-09-22). */
+  const basePathNow = parsePath(location.pathname).path;
+  const isEnglishOnly = basePathNow === "/music" || basePathNow.startsWith("/music/");
+  const nlUnavailableTitle = "Only available in English / Alleen in het Engels beschikbaar";
 
   /* ── Nav model ── */
   /* Editable header menu (Design mode in /write); defaults mirror the old
@@ -97,6 +113,7 @@ const Navbar = (_props: NavbarProps) => {
             ? [
                 { to: "/god-structure", label: t.workspace.dashboard, keywords: ["dashboard", "god", "structure", "admin", "infrastructure"] },
                 { to: "/dashboards", label: "Dashboards", keywords: ["dashboards", "ccp", "connectcarparts", "sales", "ebay", "klanten"] },
+                { to: "/bijlagen", label: "Bijlagen", keywords: ["attachments", "cowork", "bestanden", "documenten"] },
               ]
             : []),
         ]
@@ -118,7 +135,7 @@ const Navbar = (_props: NavbarProps) => {
      light there too — never inherit the visitor's dark toggle. */
   const isLightSurface =
     isCommandCenter ||
-    ["/music-cms", "/portal", "/wiki", "/dashboards", "/blog-cms"].some((p) =>
+    ["/music-cms", "/portal", "/wiki", "/dashboards", "/blog-cms", "/bijlagen"].some((p) =>
       location.pathname.startsWith(p)
     );
 
@@ -353,15 +370,23 @@ const Navbar = (_props: NavbarProps) => {
                 {siteTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               <div className="hidden sm:flex items-center gap-0.5 font-mono text-xs">
-                <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
+                {isEnglishOnly ? (
+                  <span aria-disabled="true" title={nlUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>NL</span>
+                ) : (
+                  <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
+                )}
                 <span className={barSep}>|</span>
-                <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
+                {articleHasEn ? (
+                  <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
+                ) : (
+                  <span aria-disabled="true" title={engUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>ENG</span>
+                )}
               </div>
 
               {/* Account chip (logged-in) or Login pill */}
               {user ? (
                 <div className="relative hidden sm:block">
-                  <button onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? `border-[#2D9255] ${barChip}` : `${barBord} ${barInk} ${barHovBg}`}`}>
+                  <button aria-label="Profielmenu" aria-expanded={profileOpen} onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? `border-[#2D9255] ${barChip}` : `${barBord} ${barInk} ${barHovBg}`}`}>
                     <span className={`grid h-6 w-6 place-items-center rounded-full ${barAvatar} text-[11px] font-mono font-semibold`}>{firstName.charAt(0).toLowerCase()}</span>
                     <span className="max-w-[90px] truncate">{firstName}</span>
                     <ChevronDown size={12} className={`transition-transform ${profileOpen ? "rotate-180" : ""}`} />
@@ -370,13 +395,15 @@ const Navbar = (_props: NavbarProps) => {
                     {profileOpen && (
                       <>
                         <div className="fixed inset-0 z-40" onClick={closeProfile} />
-                        <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-2 z-50 w-60 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl overflow-hidden">
+                        <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-2 z-50 w-60 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl max-h-[calc(100dvh-7rem)] overflow-y-auto">
                           <div className="px-4 py-3 border-b border-black/[0.07]">
                             <p className="text-sm font-medium truncate text-[#15140F]">{user.user_metadata?.full_name || "User"}</p>
                             <p className="text-xs truncate text-[#7E7A6F]">{user.email}</p>
                           </div>
                           <p className="px-4 pt-2.5 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F]">{t.workspace.label}</p>
                           <div className="pb-1">
+                            {isAdmin && <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer" onClick={closeProfile} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Sparkles size={15} /> Cowork <ExternalLink size={12} className="ml-auto" aria-hidden="true" /></a>}
+                            {isAdmin && <Link to="/bijlagen" onClick={closeProfile} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Paperclip size={15} /> Bijlagen</Link>}
                             {isAdmin && <Link to="/write" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><PenLine size={15} /> {t.workspace.blogCms}</Link>}
                             {isAdmin && <Link to="/release-set" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Disc3 size={15} /> Release Set</Link>}
                             {isAdmin && <Link to="/music-cms?mode=productie" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><AudioLines size={15} /> Muziek Productie</Link>}
@@ -468,14 +495,24 @@ const Navbar = (_props: NavbarProps) => {
 
                 <div className={`my-1 h-px ${barDark ? "bg-white/10" : "bg-black/10"}`} />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
-                  <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
+                  {isEnglishOnly ? (
+                    <span aria-disabled="true" title={nlUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>NL</span>
+                  ) : (
+                    <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" onClick={() => setMobileOpen(false)} aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
+                  )}
                   <span className={barSep}>|</span>
-                  <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
+                  {articleHasEn ? (
+                    <RouterLink to={langTarget("en")} hrefLang="en" lang="en" onClick={() => setMobileOpen(false)} aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
+                  ) : (
+                    <span aria-disabled="true" title={engUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>ENG</span>
+                  )}
                 </div>
 
                 {user ? (
                   <>
                     <p className={`px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold ${barMut}`}>{t.workspace.label}</p>
+                    {isAdmin && <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Sparkles size={14} /> Cowork <ExternalLink size={12} aria-hidden="true" /></a>}
+                    {isAdmin && <Link to="/bijlagen" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Paperclip size={14} /> Bijlagen</Link>}
                     {isAdmin && <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><PenLine size={14} /> {t.workspace.blogCms}</Link>}
                     {isAdmin && <Link to="/release-set" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Disc3 size={14} /> Release Set</Link>}
                     {isAdmin && <Link to="/music-cms?mode=productie" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><AudioLines size={14} /> Muziek Productie</Link>}

@@ -9,6 +9,10 @@
  *
  * SSR-safe: localStorage and IntersectionObserver are only touched in effects
  * (client-only), and the first render uses BASE_RELEASES so prerender works.
+ *
+ * The "Add a release" composer is owner-only (`canEdit`, i.e. logged in). It is
+ * not rendered for visitors or in the prerender, so no form fields or editing
+ * instructions land in the public HTML (SEO-run 2026-09-22, /music P1).
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -60,7 +64,7 @@ const XIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
 );
 
-const ReleaseTimeline = () => {
+const ReleaseTimeline = ({ canEdit = false }: { canEdit?: boolean }) => {
   const [userReleases, setUserReleases] = useState<Release[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
   const [toast, setToast] = useState("");
@@ -144,7 +148,7 @@ const ReleaseTimeline = () => {
     <div className="mn-studio">
       <span className="mn-studio__eyebrow">Music Studio · Release timeline</span>
       <h2 className="mn-studio__title">The discography, in order</h2>
-      <p className="mn-studio__sub">Every <strong>single, EP and album</strong> on one growing timeline, anchored to the first release and stretching down with each new one. Add a release and watch the page get longer.</p>
+      <p className="mn-studio__sub">Every <strong>single, EP and album</strong> on one growing timeline, anchored to the first release and stretching down with each new one.{canEdit ? " Add a release and watch the page get longer." : ""}</p>
 
       <div className="mn-studio__stats">
         <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.total}</span><span className="mn-studio__stat-l">Releases</span></div>
@@ -153,13 +157,16 @@ const ReleaseTimeline = () => {
         <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.albums}</span><span className="mn-studio__stat-l">EPs &amp; albums</span></div>
       </div>
 
+      {canEdit && (
       <div className="mn-studio__actions">
         <button className="mn-sbtn mn-sbtn--primary" type="button" onClick={() => setComposerOpen((o) => !o)}>
           <PlusIcon /> Add a release
         </button>
       </div>
+      )}
 
-      {/* composer */}
+      {/* composer (owner-only) */}
+      {canEdit && (
       <div className={`mn-composer${composerOpen ? " open" : ""}`}>
         <div className="mn-composer__inner">
           <div className="mn-composer__h">Add a release</div>
@@ -182,6 +189,7 @@ const ReleaseTimeline = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* timeline */}
       <div className="mn-tl" ref={rootRef}>

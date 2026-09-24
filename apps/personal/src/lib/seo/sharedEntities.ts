@@ -3,7 +3,7 @@ export const PERSON_ENTITY = {
   "@id": "https://hansvanleeuwen.com/#person",
   name: "Hans van Leeuwen",
   url: "https://hansvanleeuwen.com/about",
-  jobTitle: "Freelance E-commerce Manager",
+  jobTitle: "Freelance & Interim E-commerce Manager",
   sameAs: [
     "https://www.linkedin.com/in/hansvl3",
     "https://github.com/jowikroon",

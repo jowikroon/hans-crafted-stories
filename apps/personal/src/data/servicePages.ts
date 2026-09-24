@@ -79,7 +79,7 @@ export interface ServicePageDef {
 }
 
 /** Datum van de laatste inhoudelijke revisie; zichtbaar op elke dienstenpagina. */
-export const SERVICE_PAGES_UPDATED = "2026-09-05";
+export const SERVICE_PAGES_UPDATED = "2026-09-22";
 
 const BYLINE = {
   nl: {
@@ -186,9 +186,9 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "briefcase",
     copy: {
       nl: {
-        title: "Interim E-commerce Manager inhuren (Amazon & Bol.com) | Hans van Leeuwen",
+        title: "Interim E-commerce Manager inhuren | Hans van Leeuwen",
         metaDesc:
-          "Interim e-commerce manager inhuren voor Amazon NL/DE en Bol.com. 10+ jaar, 70% marktaandeel (Nielsen), €2M+ marketplace-omzet, out-of-stock onder 2%. Amersfoort, NL/EU.",
+          "Interim e-commerce manager inhuren voor Amazon NL/DE en Bol.com. 10+ jaar, 70% marktaandeel (Nielsen), €2M+ marketplace-omzet beheerd. Amersfoort, NL/EU.",
         breadcrumb: "Interim E-commerce Manager",
         eyebrow: "Interim & freelance",
         h1: "Interim e-commerce manager inhuren",
@@ -237,6 +237,12 @@ export const SERVICE_PAGES: ServicePageDef[] = [
             href: "/writing/ai-agent-verzint-succes",
             linkLabel: "Lees waarom rapportage bewijs nodig heeft",
           },
+          {
+            title: "Wat kost een interim e-commerce manager in 2026?",
+            summary: "Dagtarief, projectprijs of maandbedrag: in mijn artikel leg ik uit welke vorm bij welk werk past, wat er wél en niet in een dag zit (tooling en automatiseringen uit eerdere opdrachten wel; advertentiebudget, fees, fotografie niet) en wanneer een vaste hire goedkoper is.",
+            href: "/writing/wat-kost-een-interim-ecommerce-manager-2026",
+            linkLabel: "Lees hoe de tarieven zijn opgebouwd",
+          },
         ],
         approachHeading: "De eerste 30 dagen",
         approach: [
@@ -263,15 +269,15 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.ai, RELATED.nl.work],
       },
       en: {
-        title: "Interim E-commerce Manager for Amazon & Bol.com (NL/EU) | Hans van Leeuwen",
+        title: "Interim E-commerce Manager (NL/EU) | Hans van Leeuwen",
         metaDesc:
-          "Hire an interim e-commerce manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen), €2M+ marketplace revenue managed, out-of-stock below 2%. Amersfoort, NL/EU.",
+          "Hire an interim e-commerce manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen), €2M+ marketplace revenue managed. Amersfoort.",
         breadcrumb: "Interim E-commerce Manager",
         eyebrow: "Interim & freelance",
         h1: "Interim e-commerce manager",
         subtitle: "Temporary leadership of your marketplace operation: strategy, execution and handover",
         intro:
-          "I'm Hans van Leeuwen, an interim e-commerce manager based in Amersfoort, the Netherlands. I take temporary charge of your Amazon and Bol.com operation when your manager leaves, growth outpaces the team, or you open a new channel. At Alpine Hearing Protection I grew the earplug category on Amazon NL to a 70% market share (Nielsen, 2023) and brought out-of-stock below 2%; at ABS All Brake Systems I connected eBay, Amazon and Bol.com into a single operation. In total I have managed more than €2 million in marketplace revenue and teams of 6+ FTE.",
+          "I'm Hans van Leeuwen, an interim e-commerce manager and freelance marketplace lead based in Amersfoort, the Netherlands. I take temporary charge of your Amazon and Bol.com operation when your manager leaves, growth outpaces the team, or you open a new channel. At Alpine Hearing Protection I grew the earplug category on Amazon NL to a 70% market share (Nielsen, 2023) and brought out-of-stock below 2%; at ABS All Brake Systems I connected eBay, Amazon and Bol.com into a single operation. In total I have managed more than €2 million in marketplace revenue and teams of 6+ FTE.",
         whenHeading: "When to bring in an interim e-commerce manager",
         when: [
           "Your e-commerce manager has left and the marketplace operation cannot stall during recruitment",
@@ -314,6 +320,12 @@ export const SERVICE_PAGES: ServicePageDef[] = [
             href: "/writing/ai-agent-verzint-succes",
             linkLabel: "Read why reporting needs proof (Dutch)",
           },
+          {
+            title: "What does an interim e-commerce manager cost in 2026?",
+            summary: "Day rate, project price or monthly fee: the article explains which model fits which kind of work, what a day does and does not include (tooling and automations from earlier engagements yes; ad budget, marketplace fees and photography no) and when a permanent hire is the cheaper option.",
+            href: "/writing/wat-kost-een-interim-ecommerce-manager-2026",
+            linkLabel: "Read how the rates are built up (Dutch)",
+          },
         ],
         approachHeading: "The first 30 days",
         approach: [
@@ -349,9 +361,9 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "cart",
     copy: {
       nl: {
-        title: "Amazon NL Specialist inhuren: freelance Amazon accountmanager | Hans van Leeuwen",
+        title: "Amazon NL Specialist inhuren | Hans van Leeuwen",
         metaDesc:
-          "Freelance Amazon NL specialist inhuren. Listings, A+ Content, Amazon Ads en Buy Box voor Amazon.nl en Amazon.de. 70% categoriemarktaandeel (Nielsen 2023). Amersfoort.",
+          "Freelance Amazon NL specialist inhuren: listings, A+ Content, Amazon Ads en Buy Box voor Amazon.nl en Amazon.de. 70% categoriemarktaandeel (Nielsen 2023).",
         breadcrumb: "Amazon NL Specialist",
         eyebrow: "Amazon Nederland & Duitsland",
         h1: "Amazon NL specialist inhuren",
@@ -431,9 +443,9 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.bol, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.work],
       },
       en: {
-        title: "Amazon NL Specialist: Freelance Amazon Netherlands Account Manager | Hans van Leeuwen",
+        title: "Amazon NL Specialist & Account Manager | Hans van Leeuwen",
         metaDesc:
-          "Freelance Amazon NL specialist for hire. Listings, A+ Content, Amazon Ads and Buy Box on Amazon.nl and Amazon.de. 70% category market share (Nielsen 2023). Based in Amersfoort.",
+          "Freelance Amazon NL specialist for hire: listings, A+ Content, Amazon Ads and Buy Box on Amazon.nl and Amazon.de. 70% category share (Nielsen 2023).",
         breadcrumb: "Amazon NL Specialist",
         eyebrow: "Amazon Netherlands & Germany",
         h1: "Amazon NL specialist",
@@ -522,9 +534,9 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "store",
     copy: {
       nl: {
-        title: "Bol.com Consultant inhuren: freelance Bol.com specialist & Ads | Hans van Leeuwen",
+        title: "Bol.com Consultant & Ads inhuren | Hans van Leeuwen",
         metaDesc:
-          "Freelance Bol.com consultant inhuren voor content, Bol Ads, Buy Block en vendor-naar-seller. Zelf een Bol.com-sellerkanaal gelanceerd bij Alpine Hearing Protection. Amersfoort.",
+          "Freelance Bol.com consultant inhuren voor content, Bol Ads, Buy Block en vendor-naar-seller. Zelf een Bol.com-sellerkanaal gelanceerd bij Alpine Hearing.",
         breadcrumb: "Bol.com Consultant",
         eyebrow: "Bol.com Nederland & België",
         h1: "Bol.com consultant inhuren",
@@ -572,6 +584,12 @@ export const SERVICE_PAGES: ServicePageDef[] = [
             href: "/writing/amazon-vs-bol-com-2026-nederland",
             linkLabel: "Lees het beslisframework",
           },
+          {
+            title: "Vendor of seller op Bol.com: zo rekende ik het door bij Alpine",
+            summary: "Bij Alpine Hearing Protection stapten we over van vendor naar seller. In mijn artikel staat de rekensom per productgroep (verkoopprijs minus inkoopkorting en promotiebijdrage tegenover commissie, logistiek, retouren én eigen uren), wat ik onderschatte — retourstroom, Buy Box, content — en wanneer ik het nu bij vendor zou laten.",
+            href: "/writing/vendor-of-seller-bol-com-alpine",
+            linkLabel: "Lees de vendor-versus-seller-rekensom",
+          },
         ],
         approachHeading: "Hoe een Bol.com-opdracht verloopt",
         approach: [
@@ -598,9 +616,9 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.work],
       },
       en: {
-        title: "Bol.com Consultant: Freelance Bol.com Specialist & Ads Manager | Hans van Leeuwen",
+        title: "Bol.com Consultant & Ads Specialist | Hans van Leeuwen",
         metaDesc:
-          "Freelance Bol.com consultant for content, Bol Ads, Buy Block and vendor-to-seller transitions. Launched a Bol.com seller channel at Alpine Hearing Protection. Based in Amersfoort.",
+          "Freelance Bol.com consultant for content, Bol Ads, Buy Block and vendor-to-seller transitions. Launched a Bol.com seller channel at Alpine Hearing.",
         breadcrumb: "Bol.com Consultant",
         eyebrow: "Bol.com Netherlands & Belgium",
         h1: "Bol.com consultant",
@@ -648,6 +666,12 @@ export const SERVICE_PAGES: ServicePageDef[] = [
             href: "/writing/amazon-vs-bol-com-2026-nederland",
             linkLabel: "Read the decision framework (Dutch)",
           },
+          {
+            title: "Vendor or seller on Bol.com: how I ran the numbers at Alpine",
+            summary: "At Alpine Hearing Protection we moved from vendor to seller on Bol.com. The article walks through the calculation per product group (sales price minus purchase discount and promo contribution versus commission, logistics, returns and your own hours), what I underestimated — returns, Buy Box, content — and when I would stay vendor today.",
+            href: "/writing/vendor-of-seller-bol-com-alpine",
+            linkLabel: "Read the vendor-versus-seller calculation (Dutch)",
+          },
         ],
         approachHeading: "How a Bol.com engagement runs",
         approach: [
@@ -683,15 +707,15 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "bot",
     copy: {
       nl: {
-        title: "AI E-commerce Automation specialist inhuren (n8n, Claude) | Hans van Leeuwen",
+        title: "AI E-commerce Automation inhuren | Hans van Leeuwen",
         metaDesc:
-          "Freelance AI e-commerce automation specialist. Automatiseer productdata, orders, advertising en rapportage voor Amazon en Bol.com met n8n, Supabase en Claude. Praktijkcijfers uit eigen stack.",
+          "Freelance AI e-commerce automation specialist: productdata, orders, ads en rapportage voor Amazon en Bol.com geautomatiseerd met n8n, Supabase en Claude.",
         breadcrumb: "AI E-commerce Automation",
         eyebrow: "AI & automatisering",
         h1: "AI e-commerce automation specialist inhuren",
         subtitle: "Pipelines die repetitief marketplace-werk overnemen, met de mens op de gevoelige knoppen",
         intro:
-          "Ik ben Hans van Leeuwen, freelance e-commerce manager die zijn eigen marketplace-operatie grotendeels heeft geautomatiseerd. Bij ABS All Brake Systems automatiseerde ik het VIN-zoekproces voor onderdelen, een primeur in de branche, en koppelde ik eBay, Amazon en Bol.com tot één operatie; bij Alpine Hearing Protection automatiseerde ik de marketplace-content via Channable en bracht geautomatiseerde demand forecasting het out-of-stockpercentage onder de 2%. De stack is n8n voor orchestratie, Supabase als datalaag, Claude voor content en analyse en Channable voor feeds. Wat ik lever is geen 'AI die je winkel runt', maar concrete, gemonitorde workflows waarvan elke succesmelding te bewijzen is.",
+          "Ik ben Hans van Leeuwen, freelance e-commerce manager die zijn eigen marketplace-operatie grotendeels heeft geautomatiseerd. Bij ABS All Brake Systems automatiseerde ik het VIN-zoekproces voor onderdelen, een primeur in de branche, en koppelde ik eBay, Amazon en Bol.com tot één operatie; bij Alpine Hearing Protection automatiseerde ik de marketplace-content via Channable en bracht geautomatiseerde demand forecasting het out-of-stockpercentage onder de 2%. De stack is zelf gehoste n8n op een Hostinger-VPS voor orchestratie (ordermonitoring elke 30 minuten, feed-, voorraad- en prijsruns), Supabase Postgres als datalaag met row-level security, Claude via de Anthropic API voor listingcontent en analyse achter een menselijke reviewstap, en Channable voor feeddistributie naar Amazon, Bol.com en eBay. Wat ik lever is geen 'AI die je winkel runt', maar concrete, gemonitorde workflows waarvan elke succesmelding te bewijzen is.",
         whenHeading: "Voor wie automatisering nu loont",
         when: [
           "Teams die elke week dezelfde exports, controles en rapportages met de hand maken",
@@ -765,15 +789,15 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.interim, RELATED.nl.work],
       },
       en: {
-        title: "AI E-commerce Automation Specialist (n8n, Claude) | Hans van Leeuwen",
+        title: "AI E-commerce Automation Specialist | Hans van Leeuwen",
         metaDesc:
-          "Freelance AI e-commerce automation specialist. Automate product data, orders, advertising and reporting for Amazon and Bol.com with n8n, Supabase and Claude. Real numbers from my own stack.",
+          "Freelance AI e-commerce automation specialist: product data, orders, ads and reporting for Amazon and Bol.com automated with n8n, Supabase and Claude.",
         breadcrumb: "AI E-commerce Automation",
         eyebrow: "AI & automation",
         h1: "AI e-commerce automation specialist",
         subtitle: "Pipelines that take over repetitive marketplace work, with a human on the sensitive decisions",
         intro:
-          "I'm Hans van Leeuwen, a freelance e-commerce manager who has automated most of his own marketplace operation. At ABS All Brake Systems I automated the VIN-based parts lookup, a first in the industry, and connected eBay, Amazon and Bol.com into a single operation; at Alpine Hearing Protection I automated marketplace content through Channable and automated demand forecasting brought out-of-stock below 2%. The stack is n8n for orchestration, Supabase as the data layer, Claude for content and analysis and Channable for feeds. What I deliver is not 'an AI that runs your store' but concrete, monitored workflows where every success message can be proven.",
+          "I'm Hans van Leeuwen, a freelance e-commerce manager who has automated most of his own marketplace operation. At ABS All Brake Systems I automated the VIN-based parts lookup, a first in the industry, and connected eBay, Amazon and Bol.com into a single operation; at Alpine Hearing Protection I automated marketplace content through Channable and automated demand forecasting brought out-of-stock below 2%. The stack is self-hosted n8n on a Hostinger VPS for orchestration (order monitoring every 30 minutes, feed, stock and price runs), Supabase Postgres as the data layer with row-level security, Claude through the Anthropic API for listing content and analysis behind a human review gate, and Channable for feed distribution to Amazon, Bol.com and eBay. What I deliver is not 'an AI that runs your store' but concrete, monitored workflows where every success message can be proven.",
         whenHeading: "Who automation pays off for now",
         when: [
           "Teams that build the same exports, checks and reports by hand every week",
@@ -857,8 +881,8 @@ export const getServicePage = (path: string): ServicePageDef | undefined =>
 /** /nl/tarieven en /rates — de tariefvraag is een eigen zoekintentie ("freelance e-commerce manager tarief"). */
 export const RATES_PAGE = {
   nl: {
-    title: "Tarieven freelance e-commerce manager: dagtarief, project en retainer | Hans van Leeuwen",
-    metaDesc: "Wat kost een freelance of interim e-commerce manager? Indicatieve tarieven van Hans van Leeuwen: €760 per dag, projecten vanaf €2.500, retainer vanaf €1.750 per maand. Excl. btw, per maand opzegbaar, offerte binnen één werkdag.",
+    title: "Tarieven freelance e-commerce manager | Hans van Leeuwen",
+    metaDesc: "Wat kost een freelance of interim e-commerce manager? Hans van Leeuwen: €760 per dag, projecten vanaf €2.500, retainer vanaf €1.750 per maand. Excl. btw.",
     breadcrumb: "Tarieven",
     h1: "Wat kost een freelance e-commerce manager?",
     intro: "Drie samenwerkingsvormen, elk met een indicatief tarief. Dit zijn mijn eigen bedragen, niet een marktgemiddelde: freelance e-commerce managers in Nederland rekenen tussen €50 en €195 per uur, afhankelijk van ervaring en specialisatie. Ik zit daar met circa €95 per uur in het midden, met 10+ jaar marketplace-ervaring (Amazon NL/DE, Bol.com) en meer dan €2 miljoen aangestuurde marketplace-omzet. Definitieve bedragen staan in de offerte die je binnen één werkdag na een kennismaking ontvangt.",
@@ -898,8 +922,8 @@ export const RATES_PAGE = {
     ctaButton: "Plan een kennismaking",
   },
   en: {
-    title: "Freelance E-commerce Manager Rates: Day Rate, Project and Retainer | Hans van Leeuwen",
-    metaDesc: "What does a freelance or interim e-commerce manager cost? Indicative rates from Hans van Leeuwen: €760 per day, projects from €2,500, retainer from €1,750 per month. Excl. VAT, cancellable monthly, written quote within one working day.",
+    title: "Freelance E-commerce Manager Rates | Hans van Leeuwen",
+    metaDesc: "What does a freelance or interim e-commerce manager cost? Hans van Leeuwen: €760 per day, projects from €2,500, retainer from €1,750 per month. Excl. VAT.",
     breadcrumb: "Rates",
     h1: "What does a freelance e-commerce manager cost?",
     intro: "Three ways of working, each with an indicative rate. These are my own numbers, not a market average: freelance e-commerce managers in the Netherlands charge between €50 and €195 per hour depending on experience and specialisation. At roughly €95 per hour I sit in the middle, with 10+ years of marketplace experience (Amazon NL/DE, Bol.com) and more than €2 million in marketplace revenue managed. Final amounts are in the quote you receive within one working day after an intro call.",

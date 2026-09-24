@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { usePortalAccess } from "@/hooks/usePortalAccess";
-import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Search, Sparkles } from "lucide-react";
+import { LogOut, Wrench, FileText, Activity, ShieldAlert, Users, Loader2, LayoutDashboard, Search, Sparkles, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import PortalToolsTab from "@/components/portal/PortalToolsTab";
 import PortalContentTab from "@/components/portal/PortalContentTab";
@@ -237,6 +237,20 @@ const Portal = () => {
               </button>
             );
           })}
+          {isAdmin && (
+            <a
+              href="https://claude.ai/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open Claude Cowork in a new tab"
+              title="Open Claude Cowork in a new tab"
+              className="flex min-h-[44px] shrink-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-0 sm:py-2"
+            >
+              <Sparkles size={14} aria-hidden="true" />
+              <span>Cowork</span>
+              <ExternalLink size={12} aria-hidden="true" />
+            </a>
+          )}
         </div>
         <nav className="mb-6 flex items-center overflow-x-auto">
           {subMenuItems[activeTab].map((item, i) => {

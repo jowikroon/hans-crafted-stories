@@ -2,6 +2,7 @@ import { Routes, Route, useLocation, Navigate, useParams } from "react-router-do
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense, type ComponentType } from "react";
 import PageTransition from "./PageTransition";
+import RouteErrorBoundary from "./RouteErrorBoundary";
 import Index from "@/pages/Index";
 import Work from "@/pages/Work";
 import Writing from "@/pages/Writing";
@@ -38,6 +39,7 @@ const ReleaseSet = lazy(() => import(/* webpackChunkName: "release-set" */ "@/pa
 /* Dashboards — klant-dashboards (ConnectCarParts) achter login, via profielmenu. */
 const DashboardsVandaag = lazy(() => import(/* webpackChunkName: "dashboards-vandaag" */ "@/pages/dashboards/Vandaag"));
 const Dashboards = lazy(() => import(/* webpackChunkName: "dashboards" */ "@/pages/Dashboards"));
+const Bijlagen = lazy(() => import("@/pages/Bijlagen"));
 const DashboardsCcp = lazy(() => import(/* webpackChunkName: "dashboards-ccp" */ "@/pages/dashboards/DashboardsCcp"));
 const DashboardsHvl = lazy(() => import(/* webpackChunkName: "dashboards-hvl" */ "@/pages/dashboards/DashboardsHvl"));
 const DashboardsMpg = lazy(() => import(/* webpackChunkName: "dashboards-mpg" */ "@/pages/dashboards/DashboardsMpg"));
@@ -72,6 +74,7 @@ const AnimatedRoutes = () => {
   const location = useLocation();
 
   return (
+    <RouteErrorBoundary>
     <AnimatePresence initial={false}>
       <Routes location={location} key={location.pathname}>
         {/* Eén URL per taal (HAN-167/HAN-83): elke gelokaliseerde route bestaat als
@@ -86,7 +89,9 @@ const AnimatedRoutes = () => {
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/work/connect-car-parts`} path={`${prefix}/work/connect-car-parts`} element={<PageTransition><CaseStudyDetail /></PageTransition>} />
         ))}
-        <Route path="/writing" element={<PageTransition><Writing /></PageTransition>} />
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/writing`} path={`${prefix}/writing`} element={<PageTransition><Writing /></PageTransition>} />
+        ))}
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
         <Route path="/blog" element={<Navigate to="/writing" replace />} />
         <Route path="/blog/:slug" element={<LegacyBlogRedirect />} />
@@ -115,6 +120,8 @@ const AnimatedRoutes = () => {
         <Route path="/music-cms/:id" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
         <Route path="/release-set" element={<Suspense fallback={<BlogCMSFallback />}><ReleaseSet /></Suspense>} />
         <Route path="/dashboards" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsVandaag /></Suspense>} />
+        <Route path="/bijlagen" element={<Suspense fallback={<BlogCMSFallback />}><Bijlagen /></Suspense>} />
+        <Route path="/dashboards/attachments" element={<Navigate to="/bijlagen" replace />} />
         <Route path="/dashboards/operatie" element={<Suspense fallback={<BlogCMSFallback />}><Dashboards /></Suspense>} />
         <Route path="/dashboards/ccp" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsCcp /></Suspense>} />
         <Route path="/dashboards/hvl" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsHvl /></Suspense>} />
@@ -138,6 +145,7 @@ const AnimatedRoutes = () => {
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
+    </RouteErrorBoundary>
   );
 };
 

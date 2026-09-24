@@ -1,0 +1,28 @@
+# Root Wrangler config — gebouwd en gedeployed door Cloudflare Workers Builds
+# (Git-integratie op deze repo, Worker "hans-crafted-stories").
+#
+# Waarom hier: de Worker `hans-crafted-stories` werd op 2026-03-02 aangemaakt
+# als Hello-world-stub bij het koppelen van de repo. Zonder config op de root
+# faalde Workers Builds op elke commit. Deze config geeft die Worker de
+# edge cache-warm + health-ping uit workers/scheduled/ (cloudflare/STAGED.md,
+# item C) — zo hoeft er geen CLOUDFLARE_API_TOKEN meer ergens te staan.
+#
+# Bewust GEEN [triggers]/crons: OpenClaw is de scheduling-eigenaar
+# (ops/openclaw/cron-jobs.json → job `hvl-edge-health-warm`, elk uur). Die job
+# roept dit Worker-endpoint aan; de Worker doet het werk aan de edge en POST
+# het resultaat naar empire-health. Een eigen Cloudflare-schedule zou de
+# OpenClaw-run dupliceren.
+#
+# De site zelf draait op Vercel (apps/personal); deze Worker serveert géén
+# pagina's. Cloudflare Pages (project "hansvanleeuwen") negeert dit bestand:
+# het bevat bewust geen `pages_build_output_dir`.
+
+name = "hans-crafted-stories"
+main = "workers/scheduled/src/index.ts"
+compatibility_date = "2026-06-01"
+workers_dev = true
+
+[vars]
+HEALTH_URLS = "https://hansvanleeuwen.com,https://marketplacegrowth.nl"
+WARM_PATHS = "/,/writing,/work,/about"
+EMPIRE_HEALTH_URL = "https://pesfakewujjwkyybwaom.functions.supabase.co/empire-health"

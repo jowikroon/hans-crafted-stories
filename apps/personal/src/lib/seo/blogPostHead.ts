@@ -50,6 +50,29 @@ export function primaryBlogPostLang(
   return detectBlogPostLang(post);
 }
 
+const normalizeBody = (value: string | null | undefined): string => clean(value).replace(/\s+/g, " ");
+
+/**
+ * Bestaat er een échte Engelse versie van dit artikel? (i18n-audit 2026-09-22)
+ *
+ * De CMS-pipeline schreef maandenlang dezelfde Nederlandse tekst in `content` én
+ * `content_nl` ("content = content_nl, identiek"); `translation_status` wordt door
+ * de site niet bijgehouden. Daardoor toonde de ENG-schakelaar een Engelse kop
+ * boven een Nederlandse tekst. Een EN-versie telt alleen als `content` gevuld is
+ * én inhoudelijk afwijkt van `content_nl`. Zonder NL-veld is `content` de enige
+ * versie: die is Engels als de detectie dat zegt (dan is er geen NL-versie, de
+ * schakelaar heeft dan niets om naar te wisselen).
+ */
+export function hasEnglishVersion(
+  post: Pick<BlogPostRow, "title" | "excerpt" | "content"> & { content_nl?: string | null },
+): boolean {
+  const en = normalizeBody(post.content);
+  if (!en) return false;
+  const nl = normalizeBody(post.content_nl);
+  if (!nl) return detectBlogPostLang(post) === "en";
+  return en !== nl;
+}
+
 export function getBlogPostCanonical(post: Pick<BlogPostRow, "slug" | "canonical_url">): string {
   return clean(post.canonical_url) || `${BASE_URL}/writing/${post.slug}`;
 }

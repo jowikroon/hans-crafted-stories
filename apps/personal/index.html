@@ -124,7 +124,7 @@
           "name": "Hans van Leeuwen",
           "url": "https://hansvanleeuwen.com/about",
           "mainEntityOfPage": { "@id": "https://hansvanleeuwen.com/#webpage" },
-          "jobTitle": "E-commerce & Marketplace Manager",
+          "jobTitle": "Freelance & Interim E-commerce Manager",
           "alternateName": "Jowikroon",
           "hasOccupation": {
             "@type": "Occupation",
@@ -364,8 +364,12 @@
          pages from fetching fonts they never render. -->
     <style>
       /* Critical font-display fallback so text is visible while fonts load */
-      body { font-family: 'Switzer', 'Inter', system-ui, -apple-system, sans-serif; }
-      .font-display { font-family: 'Switzer', 'Inter', system-ui, sans-serif; }
+      /* CLS-fix 2026-09-11: 'Switzer Fallback' is Arial/Helvetica/Liberation met metrics gematcht op Switzer 500
+         (Kernel-meting: breedte 0.912×, ascent 0.98em, descent 0.25em). Zonder deze override sprong de hero-H1
+         bij font-swap van 4 naar 3 regels (LAB-CLS 0.08 mobiel, 2 runs). Overrides zijn relatief aan size-adjust. */
+      @font-face { font-family: 'Switzer Fallback'; src: local('Arial'), local('Helvetica Neue'), local('Helvetica'), local('Liberation Sans'); size-adjust: 91.2%; ascent-override: 107.5%; descent-override: 27.4%; line-gap-override: 0%; }
+      body { font-family: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, -apple-system, sans-serif; }
+      .font-display { font-family: 'Switzer', 'Switzer Fallback', 'Inter', system-ui, sans-serif; }
     </style>
 
     <!-- Favicon set -->

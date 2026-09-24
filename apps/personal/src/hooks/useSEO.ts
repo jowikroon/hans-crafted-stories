@@ -34,6 +34,15 @@ interface SEOConfig {
 }
 
 const DEFAULT_TITLE = "Freelance E-commerce Manager (Amazon & Bol.com) | Hans van Leeuwen";
+
+/**
+ * Eigenaar van de <head>. AnimatePresence laat de vertrekkende pagina nog even
+ * gemount; haar cleanup liep dan NA het effect van de nieuwe pagina en zette de
+ * titel terug op DEFAULT_TITLE en verwijderde de canonical (gemeten op / en
+ * /rates na een taalwissel, i18n-audit 2026-09-22). Alleen de laatste schrijver
+ * mag opruimen.
+ */
+let headOwner = 0;
 const DEFAULT_OG_IMAGE = "https://hansvanleeuwen.com/og-image.png";
 const DEFAULT_OG_IMAGE_TYPE = "image/png";
 const DEFAULT_OG_IMAGE_WIDTH = "1200";
@@ -78,6 +87,7 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
 
   useEffect(() => {
     if (!enabled) return;
+    const owner = ++headOwner;
     document.documentElement.lang = resolvedLang;
     setMeta("og:locale", OG_LOCALE[resolvedLang], "property");
     const cl = document.querySelector('meta[http-equiv="content-language"]') as HTMLMetaElement | null;
@@ -147,6 +157,7 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
     }
 
     return () => {
+      if (headOwner !== owner) return; // een nieuwere pagina bezit de head al
       document.title = DEFAULT_TITLE;
       document.getElementById(ldId)?.remove();
       document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());

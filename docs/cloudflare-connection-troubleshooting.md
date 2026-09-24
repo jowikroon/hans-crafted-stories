@@ -106,9 +106,9 @@ If the token was created under a **team**, ensure the script/CLI is using the sa
 
 ---
 
-## 5. n8n (n8n Cloud)
+## 5. n8n (self-hosted op VPS1)
 
-We use **n8n Cloud** at **https://hansvanleeuwen.app.n8n.cloud** (no self-hosted VPS). All webhooks and the UI use this URL. Set **N8N_BASE_URL** in Supabase Edge Function secrets to this value. No Cloudflare proxy or DNS needed for n8n.
+We use the **self-hosted n8n on VPS1** at **https://n8n.srv1402218.hstgr.cloud**. All webhooks and the UI use this URL. The former n8n Cloud instance was retired on 2026-08-19 (404 on `/`, `/healthz` and `/mcp-server/http`); see `ops/mcp/registry.json`. Set **N8N_BASE_URL** in Supabase Edge Function secrets to this value. No Cloudflare proxy or DNS needed for n8n.
 
 ### What’s going on
 - **n8n.hansvanleeuwen.com** resolves to **Cloudflare IPs** (188.114.96.0 / 188.114.97.0). So the subdomain is behind Cloudflare proxy.
@@ -118,10 +118,10 @@ We use **n8n Cloud** at **https://hansvanleeuwen.app.n8n.cloud** (no self-hosted
 ### Verify (from your machine)
 ```powershell
 # Public URL (through Cloudflare) – expect 502 until fixed
-Invoke-WebRequest -Uri "https://hansvanleeuwen.app.n8n.cloud/healthz" -UseBasicParsing
+Invoke-WebRequest -Uri "https://n8n.srv1402218.hstgr.cloud/healthz" -UseBasicParsing
 
 # Hostinger URL (direct to VPS) – should be 200
-Invoke-WebRequest -Uri "https://hansvanleeuwen.app.n8n.cloud/healthz" -UseBasicParsing
+Invoke-WebRequest -Uri "https://n8n.srv1402218.hstgr.cloud/healthz" -UseBasicParsing
 ```
 
 ### Fix in Cloudflare (Option A – recommended)
@@ -132,13 +132,13 @@ Invoke-WebRequest -Uri "https://hansvanleeuwen.app.n8n.cloud/healthz" -UseBasicP
    - If it’s an **A/AAAA record**: set **IPv4 address** to **187.124.1.75** (your Hostinger VPS). Leave “Proxy status” **Proxied** (orange cloud) if you want Cloudflare in front.
    - If you use a **Cloudflare Tunnel**: in **Zero Trust** → **Networks** → **Tunnels**, check the tunnel that serves n8n and ensure its **Public Hostname** for `n8n.hansvanleeuwen.com` points at the correct **Service** (e.g. `http://localhost:5678` or the internal URL of n8n on the VPS). If the tunnel runs on the VPS, the service must be the n8n process (correct host and port).
 5. Save and wait a minute, then retest:  
-   `Invoke-WebRequest -Uri "https://hansvanleeuwen.app.n8n.cloud/healthz" -UseBasicParsing`  
+   `Invoke-WebRequest -Uri "https://n8n.srv1402218.hstgr.cloud/healthz" -UseBasicParsing`  
    You want **200**, not 502.
 
 ### Workaround (Option B)
 Point the app at the Hostinger hostname so webhooks don’t go through Cloudflare:
-- In **Supabase** → **Project Settings** → **Edge Functions** → **Secrets**: set **N8N_BASE_URL** to `https://hansvanleeuwen.app.n8n.cloud`.
-- In code (for any client-side or fallback usage): **src/lib/config/workflows.ts** and **supabase/functions/_shared/workflows.ts** use `N8N_BASE = "https://hansvanleeuwen.app.n8n.cloud"` if you want the app to call Hostinger directly. Then both UI and webhooks use the same URL.
+- In **Supabase** → **Project Settings** → **Edge Functions** → **Secrets**: set **N8N_BASE_URL** to `https://n8n.srv1402218.hstgr.cloud`.
+- In code (for any client-side or fallback usage): **src/lib/config/workflows.ts** and **supabase/functions/_shared/workflows.ts** use `N8N_BASE = "https://n8n.srv1402218.hstgr.cloud"` if you want the app to call Hostinger directly. Then both UI and webhooks use the same URL.
 
 ---
 
