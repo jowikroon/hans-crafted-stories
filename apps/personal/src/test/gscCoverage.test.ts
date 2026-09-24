@@ -5,6 +5,7 @@ import {
   parseSitemapLocs,
   inspectableUrls,
   isOwnGscProperty,
+  mergeIndexingIssues,
   selectInspectionWindow,
   rankTopQueries,
   timingSafeEqualStr,
@@ -406,5 +407,42 @@ describe("isOwnGscProperty", () => {
     expect(isOwnGscProperty("sc-domain:hansvanleeuwen.com.evil.example")).toBe(false);
     expect(isOwnGscProperty("https://nothansvanleeuwen.com/")).toBe(false);
     expect(isOwnGscProperty("")).toBe(false);
+  });
+});
+
+describe("summarizeSitemaps with unresolved indexes", () => {
+  it("makes both totals unknown when an index listed no children, even beside a leaf", () => {
+    const s = summarizeSitemaps(
+      [
+        { path: "/index.xml", isSitemapsIndex: true, contents: [web(500, 400)] },
+        { path: "/feed.xml", contents: [web(10, 8)] },
+      ],
+      { unresolvedIndexes: 1 },
+    );
+    expect(s.submitted_pages).toBeNull(); // not 10
+    expect(s.indexed_pages).toBeNull(); // not 8
+  });
+});
+
+describe("mergeIndexingIssues", () => {
+  const issue = (url: string, verdict = "NEUTRAL") => ({ url, verdict, coverage_state: null, last_crawl: null });
+  const A = "https://hansvanleeuwen.com/a", B = "https://hansvanleeuwen.com/b", C = "https://hansvanleeuwen.com/c";
+
+  it("keeps an earlier issue for a URL this run did not re-check", () => {
+    const r = mergeIndexingIssues([issue(A)], [], [B], [A, B]);
+    expect(r.map((i) => i.url)).toEqual([A]);
+  });
+
+  it("drops an earlier issue once the URL is re-checked and passes", () => {
+    expect(mergeIndexingIssues([issue(A)], [], [A], [A])).toEqual([]);
+  });
+
+  it("replaces an earlier issue with the fresh verdict for the same URL", () => {
+    const r = mergeIndexingIssues([issue(A, "NEUTRAL")], [issue(A, "FAIL")], [A], [A]);
+    expect(r).toEqual([issue(A, "FAIL")]);
+  });
+
+  it("drops issues for URLs no longer in the sitemap", () => {
+    expect(mergeIndexingIssues([issue(C)], [], [], [A, B])).toEqual([]);
   });
 });

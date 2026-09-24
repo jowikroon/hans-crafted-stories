@@ -65,8 +65,9 @@ export interface SitemapSummary {
  *    them double-counts. Index entries never contribute to the totals; the
  *    caller expands each index into its children (`sitemaps.list` with
  *    `sitemapIndex=`) and passes those in as ordinary leaves. An index whose
- *    children GSC has not listed yet therefore contributes nothing, and a
- *    property with no leaves at all reports unknown.
+ *    children GSC has not listed yet is passed as `unresolvedIndexes`, and
+ *    then both totals are unknown — also when unrelated leaves exist, since
+ *    their sum would silently omit the index's pages.
  * 3. `contents` is broken down by type; only `web` entries are pages. An
  *    absent/empty `contents` means "not processed yet" (unknown), while a
  *    non-empty `contents` with no `web` entry is a processed image/video/news
@@ -74,7 +75,7 @@ export interface SitemapSummary {
  * 4. An unprocessed leaf makes BOTH totals partial — its pages are missing
  *    from the submitted sum just as much as from the indexed sum.
  */
-export function summarizeSitemaps(entries: SitemapEntry[]): SitemapSummary {
+export function summarizeSitemaps(entries: SitemapEntry[], opts: { unresolvedIndexes?: number } = {}): SitemapSummary {
   let submitted = 0;
   let indexed = 0;
   let leafCount = 0;
@@ -83,6 +84,7 @@ export function summarizeSitemaps(entries: SitemapEntry[]): SitemapSummary {
   let allIndexedKnown = true;
   let sitemapWarnings = 0;
   let sitemapErrors = 0;
+  const unresolved = (opts.unresolvedIndexes ?? 0) > 0;
 
   const sitemaps = entries.map((s) => {
     const isIndex = !!s.isSitemapsIndex;
@@ -147,8 +149,10 @@ export function summarizeSitemaps(entries: SitemapEntry[]): SitemapSummary {
   });
 
   return {
-    indexed_pages: leafCount > 0 && allIndexedKnown && sawWebContent ? indexed : null,
-    submitted_pages: leafCount > 0 && allSubmittedKnown ? submitted : null,
+    // An index whose children GSC did not list contributes pages we cannot
+    // see, so any total next to it is partial — even when other leaves exist.
+    indexed_pages: leafCount > 0 && allIndexedKnown && sawWebContent && !unresolved ? indexed : null,
+    submitted_pages: leafCount > 0 && allSubmittedKnown && !unresolved ? submitted : null,
     sitemap_warnings: sitemapWarnings,
     sitemap_errors: sitemapErrors,
     sitemaps,
@@ -387,6 +391,27 @@ export interface IndexingResult {
   total: number;
   rotated: boolean;
   issues: IndexingIssue[];
+}
+
+/**
+ * Carry forward issues for URLs this run did not successfully re-check. A URL
+ * outside today's rotation window, or one whose request was skipped, has no
+ * new verdict — dropping its earlier issue would read as "fixed" when it was
+ * merely not looked at. URLs no longer in the sitemap are dropped. Sorted by
+ * URL for a stable display.
+ */
+export function mergeIndexingIssues(
+  prev: IndexingIssue[] | null | undefined,
+  fresh: IndexingIssue[],
+  checkedUrls: Iterable<string>,
+  currentUrls: Iterable<string>,
+): IndexingIssue[] {
+  const checked = new Set(checkedUrls);
+  const current = new Set(currentUrls);
+  const carried = (prev ?? []).filter((i) => !checked.has(i.url) && current.has(i.url));
+  const byUrl = new Map<string, IndexingIssue>();
+  for (const i of [...carried, ...fresh]) byUrl.set(i.url, i);
+  return [...byUrl.values()].sort((a, b) => a.url.localeCompare(b.url));
 }
 
 export interface CoverageSnapshot {

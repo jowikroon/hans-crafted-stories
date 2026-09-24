@@ -147,7 +147,10 @@ export default function AnalyticsMode() {
 
   const ga4 = dash?.ga4;
   const gsc = dash?.gsc;
-  const connected = !!(dash && dash.configured !== false && (ga4 || gsc));
+  // Coverage fields are merged into `gsc` even when the Search Analytics fetch failed, so
+  // "Search Console connected" keys off `gsc.site`, which only the live fetch sets.
+  const gscLive = !!gsc?.site;
+  const connected = !!(dash && dash.configured !== false && (ga4 || gscLive));
   const num = (n: number | null | undefined) => (n == null ? "–" : n.toLocaleString());
   const sessionDays = dash?.range?.days ?? dash?.range_days ?? null;
   const gscDays = daysInclusive(gsc?.range?.from, gsc?.range?.to);
@@ -159,9 +162,9 @@ export default function AnalyticsMode() {
       <div className="manage-stats">
         {connected ? (
           <>
-            <span style={{ color: "var(--accent, #2f7d4f)" }}>● GA4</span>
+            <span style={{ color: ga4 ? "var(--accent, #2f7d4f)" : "var(--ink-3)" }}>{ga4 ? "●" : "○"} GA4</span>
             <span className="sep">·</span>
-            <span style={{ color: "var(--accent, #2f7d4f)" }}>● Search Console</span>
+            <span style={{ color: gscLive ? "var(--accent, #2f7d4f)" : "var(--ink-3)" }}>{gscLive ? "●" : "○"} Search Console</span>
             {dash?.fetched_at && (<><span className="sep">·</span><span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)" }}>synced {new Date(dash.fetched_at).toLocaleString()}</span></>)}
           </>
         ) : (

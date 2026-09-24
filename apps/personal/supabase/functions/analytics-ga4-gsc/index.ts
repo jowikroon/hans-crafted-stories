@@ -30,6 +30,7 @@ import {
   dedupeSitemaps,
   inspectableUrls,
   isOwnGscProperty,
+  mergeIndexingIssues,
   parseSitemapLocs,
   rankTopQueries,
   selectInspectionWindow,
@@ -179,7 +180,7 @@ async function fetchGA4(token: string, R: any) {
 
   const body = {
     requests: [
-      { dateRanges: ranges, dimensions: [{ name: "date" }], metrics: [{ name: "sessions" }], orderBys: [{ dimension: { dimensionName: "date" } }], limit: 400 },
+      { dateRanges: ranges, dimensions: [{ name: "date" }], metrics: [{ name: "sessions" }], orderBys: [{ dimension: { dimensionName: "date" } }], limit: 10000 },
       { dateRanges: [{ startDate: R.from, endDate: R.to }], dimensions: [{ name: "pagePath" }, { name: "pageTitle" }], metrics: [{ name: "sessions" }], orderBys: [{ metric: { metricName: "sessions" }, desc: true }], limit: 10 },
       { dateRanges: [{ startDate: R.from, endDate: R.to }], dimensions: [{ name: "sessionDefaultChannelGroup" }], metrics: [{ name: "sessions" }], orderBys: [{ metric: { metricName: "sessions" }, desc: true }], limit: 10 },
       { dateRanges: ranges, metrics: [{ name: "totalUsers" }, { name: "screenPageViews" }, { name: "bounceRate" }, { name: "averageSessionDuration" }] },
@@ -190,6 +191,7 @@ async function fetchGA4(token: string, R: any) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`ga4: ${JSON.stringify(data).slice(0, 300)}`);
+  // limit was 400: dagen × bereiken, dus YTD met vergelijking (tot ~730 rijen) kapte de sessietotalen af.
   const [trend, pages, channels, tot] = data.reports || [];
 
   const isPrev = (row: any) => {
@@ -335,6 +337,7 @@ async function fetchSitemapCoverage(token: string, site: string): Promise<Sitema
   const top = ((await googleGet(base, token)).sitemap ?? []) as SitemapEntry[];
   const lists: SitemapEntry[][] = [top];
   const expanded = new Set<string>();
+  let unresolved = 0;
   let frontier = top.filter((e) => e.isSitemapsIndex && e.path);
   for (let depth = 0; depth < 2 && frontier.length > 0; depth++) {
     const next: SitemapEntry[] = [];
@@ -342,12 +345,13 @@ async function fetchSitemapCoverage(token: string, site: string): Promise<Sitema
       if (expanded.has(idx.path!)) continue;
       expanded.add(idx.path!);
       const children = ((await googleGet(`${base}?sitemapIndex=${encodeURIComponent(idx.path!)}`, token)).sitemap ?? []) as SitemapEntry[];
+      if (children.length === 0) unresolved++; // index zonder (nog) gelijste kinderen: totalen onvolledig
       lists.push(children);
       next.push(...children.filter((c) => c.isSitemapsIndex && c.path && !expanded.has(c.path)));
     }
     frontier = next;
   }
-  return summarizeSitemaps(dedupeSitemaps(lists));
+  return summarizeSitemaps(dedupeSitemaps(lists), { unresolvedIndexes: unresolved });
 }
 
 // Wat URL Inspection controleert: precies de URL's uit de eigen sitemap.xml (EN + /nl/,
@@ -375,9 +379,10 @@ async function fetchSitemapUrls(): Promise<string[]> {
 // Een mislukt verzoek (403/429/5xx/timeout) is geen bewijs dat de pagina geïndexeerd is, alleen
 // dat we niet konden kijken: `checked` telt alleen echte oordelen, `skipped` de rest, en als
 // álles mislukt gooit dit in plaats van "0 problemen" te melden.
-async function fetchIndexingIssues(token: string, site: string, urls: string[], total: number, rotated: boolean): Promise<IndexingResult> {
+async function fetchIndexingIssues(token: string, site: string, urls: string[], total: number, rotated: boolean): Promise<{ result: IndexingResult; checkedUrls: string[] }> {
   const endpoint = "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect";
   const issues: IndexingIssue[] = [];
+  const checkedUrls: string[] = [];
   let succeeded = 0;
   let failed = 0;
   let next = 0;
@@ -398,6 +403,7 @@ async function fetchIndexingIssues(token: string, site: string, urls: string[], 
         if (!r.ok) { failed++; continue; }
         const d = await r.json();
         succeeded++;
+        checkedUrls.push(url);
         const idx = d?.inspectionResult?.indexStatusResult ?? {};
         const verdict = (idx.verdict as string) ?? "UNKNOWN";
         if (verdict !== "PASS") {
@@ -411,7 +417,7 @@ async function fetchIndexingIssues(token: string, site: string, urls: string[], 
   await Promise.all(Array.from({ length: Math.min(INSPECT_CONCURRENCY, urls.length) }, worker));
   if (urls.length > 0 && succeeded === 0) throw new Error(`url inspection: alle ${failed} verzoeken mislukt`);
   issues.sort((a, b) => a.url.localeCompare(b.url));
-  return { checked: succeeded, skipped: failed, total, rotated, issues };
+  return { result: { checked: succeeded, skipped: failed, total, rotated, issues } as IndexingResult, checkedUrls };
 }
 
 // Beide secties onafhankelijk: een falende sectie houdt haar vorige data, met de fout erbij.
@@ -432,7 +438,11 @@ async function refreshCoverage(token: string, knownSite: string | null, prev: Co
     settle(async () => {
       const all = await fetchSitemapUrls();
       const win = selectInspectionWindow(all, INSPECT_MAX, Math.floor(Date.now() / 86_400_000));
-      return fetchIndexingIssues(token, gscSite, win.urls, win.total, win.rotated);
+      const { result, checkedUrls } = await fetchIndexingIssues(token, gscSite, win.urls, win.total, win.rotated);
+      // Niet (succesvol) gecontroleerde URL's houden hun eerdere probleem: buiten het venster of
+      // overgeslagen is niet hetzelfde als opgelost.
+      result.issues = mergeIndexingIssues(prev?.indexing?.data?.issues, result.issues, checkedUrls, all);
+      return result;
     }),
   ]);
   const snap: CoverageSnapshot = {
