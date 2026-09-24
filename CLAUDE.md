@@ -106,6 +106,7 @@ Every blog post request follows a strict two-phase webhook loop with Hans-in-the
 3. **Never fabricate editorial history.** If the Supabase lookup returns empty, say so explicitly and ask Hans to seed the initial brand voice for that category.
 4. **Never update memory outside the n8n pipeline.** All `hans_blog_memory` writes go through the orchestrator, not direct Supabase calls from Claude.
 5. **One category per execution.** If Hans requests posts across multiple categories, run separate Phase 1 → Phase 2 loops for each.
+6. **No em dashes in content, ever.** Hans treats the em dash (U+2014) as an AI mark that costs credibility (2026-09-24). Use a comma, colon, parentheses or a new sentence instead, and put this rule literally in every `final_article_prompt`. Code and files in `apps/personal/public` fail the build on an em dash (`scripts/seo-guard.mjs`, check 18); database copy is cleaned on read (`src/lib/noEmDash.ts`), but must not contain them in the first place.
 
 ---
 

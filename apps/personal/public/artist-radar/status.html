@@ -25,7 +25,7 @@
   <script>
     var M={
       confirmed:{t:"Je radar staat aan ✅",p:"Vanaf nu mailen we je zodra er een signaal is voor je artiesten in NL of BE. Tot snel!"},
-      already:{t:"Je stond al aan ✅",p:"Je radar was al bevestigd — we houden je artiesten in de gaten."},
+      already:{t:"Je stond al aan ✅",p:"Je radar was al bevestigd. We houden je artiesten in de gaten."},
       unsubscribed:{t:"Uitgeschreven",p:"Je ontvangt geen radar-updates meer. Van gedachten veranderd? Je bent altijd welkom terug."},
       invalid:{t:"Link niet gevonden",p:"Deze link is ongeldig of is al gebruikt."}
     };
@@ -33,7 +33,7 @@
     var m=M[s]||M.invalid;
     document.getElementById("t").textContent=m.t;
     document.getElementById("p").textContent=m.p;
-    document.title="Artist Radar — "+m.t;
+    document.title="Artist Radar | "+m.t;
   </script>
 </body>
 </html>

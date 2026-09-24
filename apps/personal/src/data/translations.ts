@@ -504,7 +504,7 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Hans van Leeuwen — Freelance E-commerce Manager NL/EU",
+      homeTitle: "Hans van Leeuwen | Freelance E-commerce Manager NL/EU",
       homeDescription: "Freelance e-commerce & marketplace manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen 2023), AI-assisted operations. Amersfoort.",
       writingTitle: "E-commerce Insights: Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
@@ -842,7 +842,7 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Hans van Leeuwen — freelance e-commerce manager inhuren",
+      homeTitle: "Hans van Leeuwen | freelance e-commerce manager inhuren",
       homeDescription: "Freelance e-commerce & marketplace manager inhuren voor Amazon NL/DE en Bol.com. 10+ jaar, 70% marktaandeel (Nielsen 2023), AI-automatisering. Amersfoort.",
       writingTitle: "E-commerce inzichten Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",

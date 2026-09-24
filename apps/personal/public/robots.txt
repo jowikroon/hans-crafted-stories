@@ -28,7 +28,7 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-# AI crawlers — explicitly allowed for GEO / AI visibility
+# AI crawlers: explicitly allowed for GEO / AI visibility
 User-agent: GPTBot
 Allow: /
 Disallow: /bijlagen

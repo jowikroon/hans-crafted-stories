@@ -29,6 +29,10 @@
  *  14. CSS-tokens uit index.css: muted-foreground op background/card ≥ 4.5:1 en
  *      --w2-muted op --w2-paper ≥ 4.5:1 (HAN-145, zonder browser)
  *  17. homepage-<title> (/, /nl) = translations.seo.homeTitle, merk-eerst, og/twitter:title gelijk
+ *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
+ *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
+ *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
+ *      want databasetekst gaat bij het lezen al door lib/noEmDash.ts
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -312,6 +316,62 @@ else {
   }
 }
 
+// ── 18. Geen em dash (AI-merkteken). Codestrings en publieke bestanden: build faalt. ──
+const EMDASH = /—|&mdash;|&#8212;|&#x2014;/i;
+const warnings = [];
+try {
+  const appDir = path.resolve(distDir, "..");
+  const mapFile = path.join(distDir, "__edit", "source-map.json");
+  if (!fs.existsSync(mapFile)) {
+    failures.push("check 18: dist/__edit/source-map.json ontbreekt (vite-plugins/editSourceMap)");
+  } else {
+    const map = JSON.parse(fs.readFileSync(mapFile, "utf8"));
+    const hits = [];
+    for (const [key, parts] of Object.entries(map.elements || {})) {
+      const file = key.split(":")[0];
+      for (const part of parts) if (EMDASH.test(part.v ?? "")) hits.push(`src/${file}:${part.l} "${String(part.v).trim().slice(0, 60)}"`);
+    }
+    for (const [value, parts] of Object.entries(map.literals || {})) {
+      if (!EMDASH.test(value)) continue;
+      for (const part of parts) hits.push(`src/${part.f}:${part.l} "${value.trim().slice(0, 60)}"`);
+    }
+    for (const h of [...new Set(hits)].slice(0, 30)) failures.push(`em dash in publieke tekst ${h} (gebruik komma, dubbele punt of punt)`);
+    if (hits.length > 30) failures.push(`em dash: nog ${hits.length - 30} treffers in publieke code`);
+  }
+  const files = [path.join(appDir, "index.html")];
+  const walkPublic = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) { if (e.name !== "cowork") walkPublic(p); }
+      else if (/\.(html?|txt|xml|json|webmanifest|md|css|js|svg)$/i.test(e.name) || e.name === "_redirects" || e.name === "_headers") files.push(p);
+    }
+  };
+  walkPublic(path.join(appDir, "public"));
+  for (const f of files) {
+    fs.readFileSync(f, "utf8").split("\n").forEach((line, i) => {
+      if (EMDASH.test(line)) failures.push(`em dash in ${path.relative(appDir, f)}:${i + 1}`);
+    });
+  }
+  const walkDist = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) { if (!["cowork", "__edit", "assets"].includes(e.name)) walkDist(p); continue; }
+      if (!e.name.endsWith(".html")) continue;
+      const rel = path.relative(distDir, p);
+      if (fs.existsSync(path.join(appDir, "public", rel))) continue;
+      const text = fs.readFileSync(p, "utf8")
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .replace(/<script(?![^>]*application\/ld\+json)[^>]*>[\s\S]*?<\/script>/gi, "")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
+      if (EMDASH.test(text)) warnings.push(rel);
+    }
+  };
+  walkDist(distDir);
+} catch (e) {
+  failures.push(`check 18 kon niet draaien: ${e.message}`);
+}
+if (warnings.length) console.warn(`[seo-guard] let op: em dash in geprerenderde pagina's (databasetekst?): ${warnings.slice(0, 10).join(", ")}`);
+
 // Wederkerigheid vanuit de andere kant: elke /nl-pagina heeft een EN-tweeling en andersom.
 for (const route of seen) {
   if (route === "/nl" || route.startsWith("/nl/")) {
@@ -325,4 +385,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK — ${seen.size} pagina's voldoen (17 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (18 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/geen-em-dash).`);

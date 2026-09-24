@@ -37,7 +37,7 @@ const About = () => {
       a: "Ik neem tijdelijk de e-commerce operatie over: marketplace-strategie, listings, advertising, pricing, forecasting en rapportages. Ik werk hands-on binnen jullie team en tool-stack." },
     { q: "Wat kost freelance marketplace-management?",
       a: "Retainer voor doorlopend Amazon/Bol-beheer, projectprijs voor een audit of lancering, dagtarief voor interim. Exact bedrag hangt af van scope en channel-mix; een 30-min intake geeft binnen 1 werkdag een schriftelijke offerte." },
-    { q: "Vendor of Seller op Bol.com — wat past beter?",
+    { q: "Vendor of Seller op Bol.com: wat past beter?",
       a: "Seller houdt marge en controle maar vraagt actief accountwerk. Vendor bespaart operatie maar levert marge en pricing-controle in. Ik help beide modellen te modelleren op EBITDA, niet alleen omzet." },
     { q: "Hoe verlaag je out-of-stock rates?",
       a: "Een demand-forecasting model op recente sell-through, seizoen en promotie-lift, gekoppeld aan supplier lead-times. In bestaande cases OOS onder 2%." },
@@ -48,7 +48,7 @@ const About = () => {
       a: "I temporarily lead the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." },
     { q: "How much does marketplace management cost?",
       a: "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. Actual number depends on scope; a 30-min intake produces a written quote within one working day." },
-    { q: "Bol.com — vendor or seller?",
+    { q: "Bol.com: vendor or seller?",
       a: "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. I model both routes on EBITDA, not just revenue." },
     { q: "How do you reduce out-of-stock rates?",
       a: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2% OOS." },
@@ -269,7 +269,7 @@ const About = () => {
             <p className="mb-6 max-w-3xl text-base leading-relaxed text-muted-foreground">
               {getValue("about_methodology_intro", lang === "nl"
                 ? "Elke opdracht doorloopt vier fases. Compact en meetbaar, geen abstract framework, maar exact wat er per week gebeurt en welke KPI’s bewegen."
-                : "Every engagement runs through four phases. Compact and measurable, no abstract framework — just what happens each week and which KPIs move.")}
+                : "Every engagement runs through four phases. Compact and measurable, no abstract framework, just what happens each week and which KPIs move.")}
             </p>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {[
