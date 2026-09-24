@@ -37,6 +37,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 
 const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "dist");
 const BASE = "https://hansvanleeuwen.com";
@@ -352,6 +353,20 @@ try {
       if (EMDASH.test(line)) failures.push(`em dash in ${path.relative(appDir, f)}:${i + 1}`);
     });
   }
+  // Zichtbare tekst, titel, meta, JSON-LD en tekst-attributen; interne JSON in <script> telt niet mee.
+  const { JSDOM } = createRequire(import.meta.url)("jsdom");
+  const visibleText = (html) => {
+    const { document } = new JSDOM(html).window;
+    const parts = [document.title];
+    for (const m of document.querySelectorAll("meta[content]")) parts.push(m.getAttribute("content"));
+    for (const s of document.querySelectorAll('script[type="application/ld+json"]')) parts.push(s.textContent);
+    for (const n of document.querySelectorAll("script, style, template")) n.remove();
+    for (const el of document.querySelectorAll("[alt], [aria-label], [title], [placeholder]")) {
+      for (const a of ["alt", "aria-label", "title", "placeholder"]) if (el.hasAttribute(a)) parts.push(el.getAttribute(a));
+    }
+    if (document.body) parts.push(document.body.textContent);
+    return parts.join("\n");
+  };
   const walkDist = (dir) => {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const p = path.join(dir, e.name);
@@ -359,11 +374,7 @@ try {
       if (!e.name.endsWith(".html")) continue;
       const rel = path.relative(distDir, p);
       if (fs.existsSync(path.join(appDir, "public", rel))) continue;
-      const text = fs.readFileSync(p, "utf8")
-        .replace(/<!--[\s\S]*?-->/g, "")
-        .replace(/<script(?![^>]*application\/ld\+json)[^>]*>[\s\S]*?<\/script>/gi, "")
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
-      if (EMDASH.test(text)) warnings.push(rel);
+      if (EMDASH.test(visibleText(fs.readFileSync(p, "utf8")))) warnings.push(rel);
     }
   };
   walkDist(distDir);
