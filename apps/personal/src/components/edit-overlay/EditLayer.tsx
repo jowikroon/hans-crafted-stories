@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAdmin } from "@/hooks/useAdmin";
-import { useEditOverlay, keyForElement } from "./EditOverlayProvider";
+import { useEditOverlay, keyForElement, textKeyForElement } from "./EditOverlayProvider";
+import type { SourceEdit } from "@/lib/api/sourceEdits";
 import { createChangeRequest } from "@/lib/api/overrides";
 import { LOGOS } from "@/lib/logos";
 import { RADAR_VARIANTS, radarVariantById } from "@/lib/radar-variants";
@@ -328,18 +329,75 @@ function Outline({ rect, color, dashed }: { rect: DOMRect; color: string; dashed
 const WEIGHTS = ["400", "500", "600", "700", "800"];
 const ALIGNS = ["left", "center", "right"];
 
+const JOB_LABELS: Record<SourceEdit["status"], string> = {
+  queued: "In wachtrij voor de bron",
+  processing: "Commit naar GitHub…",
+  committed: "Gemerged — wacht op deploy",
+  live: "Live vanuit de bron",
+  done: "Opgeslagen in de bron",
+  needs_manual: "Alleen overlay — handmatig naar bron",
+  failed: "Terugschrijven mislukt",
+  cancelled: "Geannuleerd",
+};
+const JOB_COLORS: Record<SourceEdit["status"], string> = {
+  queued: "#7E7A6F", processing: "#B7791F", committed: "#B7791F", live: "#2D9255", done: "#2D9255",
+  needs_manual: "#C2410C", failed: "#C2410C", cancelled: "#7E7A6F",
+};
+
+function JobStatus({ job }: { job?: SourceEdit }) {
+  if (!job) return null;
+  const target = job.target?.replace(/^github:apps\/personal\/src\//, "").replace(/^page_content:/, "CMS ");
+  return (
+    <div style={{ marginTop: 6, fontSize: 11, lineHeight: 1.45, color: "#4B4842" }}>
+      <span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "50%", background: JOB_COLORS[job.status], marginRight: 6 }} />
+      <strong style={{ color: JOB_COLORS[job.status] }}>{JOB_LABELS[job.status]}</strong>
+      {job.pr_url && (
+        <>
+          {" · "}
+          <a href={job.pr_url} target="_blank" rel="noopener noreferrer" style={{ color: "#15140F" }}>PR #{job.pr_number}</a>
+        </>
+      )}
+      {target && <div style={{ color: "#7E7A6F", fontFamily: '"IBM Plex Mono", monospace', fontSize: 10 }}>{target}</div>}
+      {job.error && <div style={{ color: "#C2410C" }}>{job.error}</div>}
+    </div>
+  );
+}
+
 function EditPanel() {
-  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revert, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeRadarId, setActiveRadar, activeFontId, setActiveFont, logoMotion, setLogoMotion } = useEditOverlay();
+  const { selectedEl, selectedKey, overrides, saveStyle, saveText, revertText, selectedTextOverride, sourceJobs, recentJobs, refreshRecentJobs, lang, revert, activeLogoId, setActiveLogo, activeHeaderId, setActiveHeader, activeRadarId, setActiveRadar, activeFontId, setActiveFont, logoMotion, setLogoMotion } = useEditOverlay();
   const current = selectedKey ? overrides.get(selectedKey) : undefined;
   const [text, setText] = useState("");
+  const [savingText, setSavingText] = useState(false);
   const [instruction, setInstruction] = useState("");
   const [tab, setTab] = useState<"style" | "code">("style");
+  const textKey = selectedEl ? textKeyForElement(selectedEl, lang).key : null;
+  const textJob = textKey ? sourceJobs.get(textKey) : undefined;
+  const srcTag = selectedEl?.closest("[data-src]")?.getAttribute("data-src") ?? null;
 
   useEffect(() => {
     if (!selectedEl) return;
-    setText(current?.text_override ?? (selectedEl.textContent || "").trim());
+    setText(selectedTextOverride?.text_override ?? (selectedEl.textContent || "").trim());
     setInstruction("");
   }, [selectedEl, selectedKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    void refreshRecentJobs();
+  }, [refreshRecentJobs]);
+
+  const onSaveText = useCallback(async () => {
+    setSavingText(true);
+    try {
+      const r = await saveText(text);
+      if (r.kind === "noop") toast("Geen wijziging");
+      else if (r.kind === "github") toast.success("Live gezet. Wordt teruggeschreven naar de broncode (PR + deploy volgen).");
+      else if (r.kind === "page_content") toast.success("Opgeslagen in de CMS-bron (page_content).");
+      else toast.warning(`Live gezet als overlay, niet automatisch naar de bron: ${r.reason}`);
+    } catch (e) {
+      toast.error(`Opslaan mislukt: ${(e as Error).message}`);
+    } finally {
+      setSavingText(false);
+    }
+  }, [saveText, text]);
 
   const sx = current?.style || {};
   const ipt: React.CSSProperties = {
@@ -373,26 +431,8 @@ function EditPanel() {
     }
   }, [instruction, selectedEl]);
 
-  return (
-    <aside
-      data-edit-ui=""
-      style={{
-        position: "fixed",
-        left: 20,
-        bottom: 72,
-        width: 288,
-        maxHeight: "calc(100vh - 140px)",
-        overflowY: "auto",
-        zIndex: Z,
-        background: "#F1ECDF",
-        border: "1px solid rgba(0,0,0,.14)",
-        borderRadius: 12,
-        boxShadow: "0 12px 40px rgba(0,0,0,.22)",
-        padding: 14,
-        font: '13px "Bricolage Grotesque", system-ui, sans-serif',
-        color: "#15140F",
-      }}
-    >
+  const siteSettings = (
+    <>
       {/* ── Logo hover motion (site-wide on/off) ── */}
       <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(0,0,0,.10)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <div>
@@ -553,7 +593,11 @@ function EditPanel() {
           Applies site-wide — main + sub font per style. Add more in <code>src/lib/fonts.ts</code>.
         </small>
       </div>
+    </>
+  );
 
+  const elementEditor = (
+    <>
       {!selectedEl ? (
         <p style={{ margin: 0, color: "#7E7A6F" }}>Click any element on the page to edit it.</p>
       ) : (
@@ -582,9 +626,36 @@ function EditPanel() {
           {tab === "style" ? (
             <>
               <div style={row}>
-                <p style={lbl}>Text</p>
-                <div style={{ ...ipt, minHeight: 44, opacity: 0.6, cursor: "not-allowed", whiteSpace: "pre-wrap", pointerEvents: "none" }}>{text}</div>
-                <small style={{ color: "#7E7A6F", fontSize: 10 }}>Tekst bewerken via de voorkant is uitgeschakeld. Pas teksten aan in Blog CMS &gt; Manage (/write). Hier stel je alleen stijl in.</small>
+                <p style={lbl}>Tekst · {lang.toUpperCase()}</p>
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  rows={Math.min(8, Math.max(2, Math.ceil(text.length / 38)))}
+                  style={{ ...ipt, resize: "vertical", lineHeight: 1.4 }}
+                />
+                <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                  <button
+                    onClick={onSaveText}
+                    disabled={savingText}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 6, border: 0, background: savingText ? "#cfc8b6" : "#15140F", color: "#FBF8F0", cursor: savingText ? "default" : "pointer", font: '600 12px "Bricolage Grotesque"' }}
+                  >
+                    {savingText ? "Opslaan…" : "Opslaan → bron"}
+                  </button>
+                  {selectedTextOverride && (
+                    <button
+                      onClick={() => revertText()}
+                      title="Verwijdert alleen de live overlay-tekst; de broncode blijft zoals hij is"
+                      style={{ padding: "8px 10px", borderRadius: 6, border: "1px solid rgba(194,65,12,.4)", background: "#fff", color: "#C2410C", cursor: "pointer", font: '600 12px "Bricolage Grotesque"' }}
+                    >
+                      Overlay weg
+                    </button>
+                  )}
+                </div>
+                <small style={{ display: "block", marginTop: 6, color: "#7E7A6F", fontSize: 10, lineHeight: 1.4 }}>
+                  Direct live voor bezoekers ({lang.toUpperCase()}); daarna teruggeschreven naar de bron: broncode via PR + auto-merge, of de CMS-rij. Blogartikelen: Blog CMS (/write).
+                  {srcTag && <span style={{ display: "block", fontFamily: '"IBM Plex Mono", monospace' }}>element: {srcTag.replace(/:\d+$/, "")}</span>}
+                </small>
+                <JobStatus job={textJob} />
               </div>
 
               <div style={{ display: "flex", gap: 8 }}>
@@ -666,6 +737,59 @@ function EditPanel() {
             </div>
           )}
         </>
+      )}
+    </>
+  );
+
+  return (
+    <aside
+      data-edit-ui=""
+      style={{
+        position: "fixed",
+        left: 20,
+        bottom: 72,
+        width: 288,
+        maxHeight: "calc(100vh - 140px)",
+        overflowY: "auto",
+        zIndex: Z,
+        background: "#F1ECDF",
+        border: "1px solid rgba(0,0,0,.14)",
+        borderRadius: 12,
+        boxShadow: "0 12px 40px rgba(0,0,0,.22)",
+        padding: 14,
+        font: '13px "Bricolage Grotesque", system-ui, sans-serif',
+        color: "#15140F",
+      }}
+    >
+      {/* Selected element first (text + style); site-wide switches below it. */}
+      {selectedEl ? (
+        <>
+          {elementEditor}
+          <div style={{ marginTop: 14 }}>{siteSettings}</div>
+        </>
+      ) : (
+        <>
+          {siteSettings}
+          {elementEditor}
+        </>
+      )}
+
+
+      {recentJobs.length > 0 && (
+        <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(0,0,0,.10)" }}>
+          <p style={{ ...lbl, display: "flex", justifyContent: "space-between" }}>
+            <span>Bron-wijzigingen</span>
+            <button onClick={() => refreshRecentJobs()} style={{ border: 0, background: "none", color: "#7E7A6F", cursor: "pointer", font: '600 10px "IBM Plex Mono", monospace' }}>↻</button>
+          </p>
+          {recentJobs.map((j) => (
+            <div key={j.id} style={{ marginBottom: 8, fontSize: 11 }}>
+              <div style={{ color: "#15140F", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={`${j.old_text} → ${j.new_text}`}>
+                {j.page_path} · {j.new_text}
+              </div>
+              <JobStatus job={j} />
+            </div>
+          ))}
+        </div>
       )}
     </aside>
   );
