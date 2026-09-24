@@ -44,12 +44,25 @@ describe("blog post SEO head", () => {
       ...basePost,
       meta_title: "Marketplace Strategy: Amazon vs Bol.com",
       meta_description: "SEO description from the CMS.",
-      canonical_url: "https://hansvanleeuwen.com/writing/custom-canonical",
+      canonical_url: "https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland",
     });
 
     expect(head.title).toBe("Marketplace Strategy: Amazon vs Bol.com");
     expect(head.description).toBe("SEO description from the CMS.");
-    expect(head.canonical).toBe("https://hansvanleeuwen.com/writing/custom-canonical");
+    expect(head.canonical).toBe("https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland");
+  });
+
+  it("rejects a stale internal canonical that does not match a suffixed live slug", () => {
+    const head = getBlogPostHead({
+      ...basePost,
+      slug: "tragic-mistake-anthropic-leaks-claude-s-source-code-mnhjf9uo",
+      canonical_url:
+        "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code",
+    });
+
+    expect(head.canonical).toBe(
+      "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code-mnhjf9uo",
+    );
   });
 
   it("emits BlogPosting JSON-LD for the exact post URL", () => {
