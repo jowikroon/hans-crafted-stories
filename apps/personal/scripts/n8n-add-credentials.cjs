@@ -5,7 +5,7 @@
  * Prerequisites:
  * 1. n8n API enabled (e.g. N8N_API_ENABLED=true) and an API key created in n8n: Settings → n8n API.
  * 2. Env loaded from config/all-credentials.export.env (or .env) including:
- *    - N8N_BASE_URL or N8N_URL = your n8n instance (e.g. https://hansvanleeuwen.app.n8n.cloud)
+ *    - N8N_BASE_URL or N8N_URL = your n8n instance (e.g. https://n8n.srv1402218.hstgr.cloud)
  *    - N8N_API_KEY (from n8n Settings → API)
  *    - SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *    - ANTHROPIC_API_KEY, OPENAI_API_KEY, MONDAY_API_TOKEN (optional: FIRECRAWL_API_KEY)

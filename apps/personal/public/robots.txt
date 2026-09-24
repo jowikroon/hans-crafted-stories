@@ -1,4 +1,4 @@
-# Privéroutes (/portal, /write, /samantha, /wiki, /dashboards, /cowork, ...) zijn NIET meer
+# Privéroutes (/portal, /bijlagen, /write, /samantha, /wiki, /dashboards, /cowork, ...) zijn NIET meer
 # gedisallowed: ze sturen X-Robots-Tag/meta noindex, en een crawler moet die kunnen lezen
 # om de URL uit de index te houden. Noindex is geen toegangscontrole; auth blijft de beveiliging.
 

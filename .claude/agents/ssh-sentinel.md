@@ -103,7 +103,7 @@ done
 ### Task 5 — Service Health via Tunnel
 ```bash
 # n8n
-curl -s https://hansvanleeuwen.app.n8n.cloud/healthz
+curl -s https://n8n.srv1402218.hstgr.cloud/healthz
 
 # Ollama (via tunnel)
 curl -s http://localhost:11434/api/tags | jq '.models | length' 2>/dev/null
@@ -180,5 +180,6 @@ INSERT INTO empire_events (event_type, payload, created_at) VALUES (
 
 If primary VPS is unreachable after 3 retries:
 1. Log CRITICAL to empire_events
-2. Trigger n8n webhook: `https://hansvanleeuwen.app.n8n.cloud/webhook/vps-alert`
+2. Trigger n8n webhook: `https://n8n.srv1402218.hstgr.cloud/webhook/vps-alert`
+   (workflow staat nog niet op de host — geeft nu 404; zie ops/mcp/registry.json)
 3. Report to Claude Code session via stderr

@@ -1,8 +1,14 @@
-// hvl-edge-cron — hourly cache-warm + health ping for the live sites.
-// Not deployed automatically: run `npx wrangler deploy` from workers/scheduled/
-// with a Cloudflare API token (CLOUDFLARE_API_TOKEN) in the environment.
+// Edge cache-warm + health ping for the live sites.
+// Shipped automatically by Cloudflare Workers Builds on every push to main,
+// as the Worker "hans-crafted-stories" — config lives in the repo-root
+// wrangler.toml (see cloudflare/STAGED.md, item C). No API token needed.
 //
-// What it does each hour:
+// Scheduling is owned by OpenClaw (ops/openclaw/cron-jobs.json, job
+// `hvl-edge-health-warm`, hourly): it calls this Worker over HTTP. The config
+// deliberately sets no Cloudflare cron trigger, so the `scheduled` handler
+// below only runs if someone adds `[triggers]` back to wrangler.toml.
+//
+// What one run does:
 //   1. Warms the edge cache for key pages on each HEALTH_URL (GET).
 //   2. Health-pings each site root (HEAD) and records status/latency.
 //   3. Pings the empire-health Supabase function so downtime surfaces centrally.
