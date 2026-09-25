@@ -36,6 +36,8 @@
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
  *      want databasetekst gaat bij het lezen al door lib/noEmDash.ts
+ *  20. artikelvloer: minder dan MIN_PRERENDERED_ARTICLES geprerenderde artikelen = build faalt
+ *      (een mislukte CMS-fetch zou zonder /writing/:slug-rewrite elk artikel 404 geven)
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -434,9 +436,21 @@ for (const route of seen) {
   }
 }
 
+// 20. Artikelvloer (2026-09-23): zonder /writing/:slug-rewrite geeft een ontbrekend geprerenderd
+//     artikel een echte 404. Minder dan MIN_PRERENDERED_ARTICLES artikelpagina's = waarschijnlijk een
+//     mislukte CMS-fetch → build faalt i.p.v. de blog te deïndexeren.
+{
+  const writingDir = path.join(distDir, "writing");
+  const articleCount = fs.existsSync(writingDir)
+    ? fs.readdirSync(writingDir, { withFileTypes: true }).filter((d) => d.isDirectory() && fs.existsSync(path.join(writingDir, d.name, "index.html"))).length
+    : 0;
+  const min = Number(process.env.MIN_PRERENDERED_ARTICLES ?? 5);
+  if (articleCount < min) failures.push(`dist/writing: ${articleCount} geprerenderde artikelen (< ${min}); CMS-fetch mislukt? Zonder rewrite zou elk artikel 404 geven.`);
+}
+
 if (failures.length) {
   console.error(`[seo-guard] ${failures.length} SEO-regressie(s):`);
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (19 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (20 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelvloer).`);

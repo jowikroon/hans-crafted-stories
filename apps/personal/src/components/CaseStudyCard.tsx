@@ -65,7 +65,7 @@ const CaseStudyCard = ({ study, index }: { study: CaseStudy; index: number }) =>
           <h3 className="mb-1 font-display text-base font-medium leading-snug text-foreground line-clamp-1">
             {displayTitle}
           </h3>
-          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{displayDescription}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2" lang={lang === "nl" && !study.descriptionNl ? "en" : undefined}>{displayDescription}</p>
         </div>
       </Wrapper>
     </motion.article>

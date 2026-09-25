@@ -112,6 +112,17 @@ type TranslationStrings = {
     linkAbout: string;
     linkAmazonNl: string;
     linkBolCom: string;
+    /** Zakelijke marketplace-cases (data/marketplaceCases.ts) boven de creatieve galerij. */
+    casesHeading: string;
+    casesIntro: string;
+    readCase: string;
+    creativeHeading: string;
+    creativeIntro: string;
+    loadError: string;
+    retry: string;
+    /** NL-labels voor de (Engelstalige) CMS-categorieën en filterkaarten. */
+    categoryLabels: Record<string, string>;
+    filterLabels: Record<string, { label: string; description: string }>;
   };
 
   /* ── Privacy page ── */
@@ -420,9 +431,9 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Work ── */
     work: {
       label: "Portfolio",
-      heading: "Design, UX & e-commerce work",
+      heading: "Marketplace cases & creative work",
       description:
-        "A decade of design-driven e-commerce. UX and interaction design, 3D, VR and creative work, alongside Amazon NL & Bol.com case studies with measurable results.",
+        "Marketplace operations and product-data work first, followed by UX, design and creative projects as a separate category.",
       projectSingular: "project",
       projectPlural: "projects",
       matching: "matching",
@@ -434,6 +445,15 @@ export const translations: Record<Lang, TranslationStrings> = {
       linkAbout: "About Hans",
       linkAmazonNl: "Amazon NL specialist",
       linkBolCom: "Bol.com consultant",
+      casesHeading: "Marketplace cases",
+      casesIntro: "Problem, role, design choices and deliverables. Client-specific volumes and performance figures are not published.",
+      readCase: "Read the case",
+      creativeHeading: "UX, design & creative work",
+      creativeIntro: "Earlier interaction, web, 3D and campaign work.",
+      loadError: "The creative projects could not be loaded.",
+      retry: "Try again",
+      categoryLabels: {},
+      filterLabels: {},
     },
 
     /* ── Privacy ── */
@@ -764,9 +784,9 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Work ── */
     work: {
       label: "Portfolio",
-      heading: "Design, UX & e-commerce werk",
+      heading: "Marketplace-cases & creatief werk",
       description:
-        "Tien jaar design-gedreven e-commerce. UX- en interactieontwerp, 3D-, VR- en creatief werk, naast Amazon NL & Bol.com cases met meetbaar resultaat.",
+        "Eerst marketplace-operaties en productdatawerk, daarna UX-, design- en creatieve projecten als aparte categorie.",
       projectSingular: "project",
       projectPlural: "projecten",
       matching: "gevonden",
@@ -778,6 +798,30 @@ export const translations: Record<Lang, TranslationStrings> = {
       linkAbout: "Over Hans",
       linkAmazonNl: "Amazon NL specialist",
       linkBolCom: "Bol.com consultant",
+      casesHeading: "Marketplace-cases",
+      casesIntro: "Probleem, rol, ontwerpkeuzes en deliverables. Klantspecifieke volumes en prestatiecijfers worden niet gepubliceerd.",
+      readCase: "Lees de case",
+      creativeHeading: "UX, design & creatief werk",
+      creativeIntro: "Eerder interactie-, web-, 3D- en campagnewerk.",
+      loadError: "De creatieve projecten konden niet worden geladen.",
+      retry: "Opnieuw proberen",
+      categoryLabels: {
+        "E-commerce / UX": "E-commerce / UX",
+        "Creative / Campaign": "Creatief / campagne",
+        "Game Design": "Gamedesign",
+        "3D / Creative": "3D / creatief",
+        "Infographic": "Infographic",
+        "VR / Game Design": "VR / gamedesign",
+        "3D Design": "3D-design",
+        "Typography": "Typografie",
+        "Web Design": "Webdesign",
+      },
+      filterLabels: {
+        all: { label: "Alles", description: "Volledig portfolio" },
+        "web-ux": { label: "UX & e-commerce", description: "Interactie-, web- en shopdesign" },
+        "3d-vr": { label: "3D, VR & games", description: "Cinema 4D, VR- en gameconcepten" },
+        visual: { label: "Merk & visueel", description: "Campagnes, typografie en infographics" },
+      },
     },
 
     /* ── Privacy ── */
