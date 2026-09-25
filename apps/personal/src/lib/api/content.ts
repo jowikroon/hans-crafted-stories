@@ -19,6 +19,10 @@ export interface BlogPostRow {
   meta_title: string;
   meta_description: string;
   og_image: string;
+  /** Mirror of og_image kept in sync by trigger sync_blog_posts_cover_image. */
+  cover_image_url?: string | null;
+  /** English header image (blog-header design system); null = fall back to og_image. */
+  og_image_en?: string | null;
   og_title: string;
   og_description: string;
   canonical_url: string;

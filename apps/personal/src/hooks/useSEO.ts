@@ -8,6 +8,11 @@ interface SEOConfig {
   /** Optional page-specific alt text for og:image / twitter:image. Falls back to title. */
   imageAlt?: string;
   /**
+   * Absolute https URL of a page-specific 1200x630 share image (blog headers).
+   * Anything that is not an absolute https URL falls back to the site og-image.png.
+   */
+  image?: string;
+  /**
    * Absolute URL van de pagina. Voor gelokaliseerde routes liever `path` + `lang`
    * gebruiken: dan worden canonical, hreflang en og:locale automatisch consistent.
    */
@@ -77,7 +82,11 @@ const removeMeta = (name: string, attr = "name") => {
   document.querySelector(`meta[${attr}="${name}"]`)?.remove();
 };
 
-export const useSEO = ({ enabled = true, title, description, url: explicitUrl, path, lang, type = "website", hreflang: explicitHreflang, jsonLd, noindex = false, robots, imageAlt }: SEOConfig) => {
+const shareImage = (candidate?: string): string =>
+  candidate && /^https:\/\//i.test(candidate.trim()) ? candidate.trim() : DEFAULT_OG_IMAGE;
+
+export const useSEO = ({ enabled = true, title, description, url: explicitUrl, path, lang, type = "website", hreflang: explicitHreflang, jsonLd, noindex = false, robots, imageAlt, image }: SEOConfig) => {
+  const ogImage = shareImage(image);
   // Eén URL per taal: canonical en hreflang volgen uit (path, lang), nooit uit de
   // bezoeker. Zie lib/i18n/routes.ts (HAN-167 / HAN-83).
   const resolvedLang: Lang = lang ?? (path ? parsePath(path).lang : "en");
@@ -106,14 +115,14 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
     setMeta("og:description", description, "property");
     setMeta("og:url", sameOriginUrl(url), "property");
     setMeta("og:type", type, "property");
-    setMeta("og:image", DEFAULT_OG_IMAGE, "property");
+    setMeta("og:image", ogImage, "property");
     setMeta("og:image:type", DEFAULT_OG_IMAGE_TYPE, "property");
     setMeta("og:image:width", DEFAULT_OG_IMAGE_WIDTH, "property");
     setMeta("og:image:height", DEFAULT_OG_IMAGE_HEIGHT, "property");
     setMeta("og:image:alt", imageAlt || title, "property");
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", title);
-    setMeta("twitter:image", DEFAULT_OG_IMAGE);
+    setMeta("twitter:image", ogImage);
     setMeta("twitter:description", description);
     setMeta("twitter:image:alt", imageAlt || title);
 
@@ -184,5 +193,5 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
       ].forEach((name) => removeMeta(name, "property"));
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- hreflang wordt via hreflangKey (stringified) vergeleken
-  }, [enabled, title, description, url, type, hreflangKey, jsonLd, noindex, robots, imageAlt, resolvedLang]);
+  }, [enabled, title, description, url, type, hreflangKey, jsonLd, noindex, robots, imageAlt, ogImage, resolvedLang]);
 };

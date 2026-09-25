@@ -138,3 +138,16 @@ RLS: anon SELECT, INSERT, UPDATE enabled (n8n is the secure gateway layer).
 - **n8n unreachable:** Report to Hans. Do not attempt to draft without memory context. Suggest checking InfraWacht or VPS1 status.
 - **Empty memory for category:** Inform Hans. Ask him to provide initial brand voice rules. POST those as a seed via the normal Phase 2 flow with `confirmed: true`.
 - **Hans rejects the angle:** Do not POST to `resume_url`. Re-propose based on Hans's feedback. Only POST when Hans confirms.
+
+---
+
+## Git & PR Workflow — Claude merges its own PRs
+
+Hans never merges himself. For every PR Claude opens:
+
+1. Once CI is green (or neutral/skipped), there is no merge conflict and no open blocking review, Claude takes it out of draft and squash-merges it. Do not wait for Hans.
+2. After the merge, check the production deploys on main (Vercel, Cloudflare Pages, Workers Builds) and report the result in one line.
+
+Exceptions, where Claude reports first instead of merging: CI stays red and Claude can't fix it, a conflict where both sides change the same logic, or anything irreversible outside the repo (deleting data, payments, credentials).
+
+Never force-push to main, and never skip or disable checks to get green.

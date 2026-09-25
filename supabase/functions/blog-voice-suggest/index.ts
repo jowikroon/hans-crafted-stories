@@ -6,7 +6,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // a recommendation instantly; this function upgrades the recommendation + the
 // one-line Dutch rationale to Tier-2 (vendor LLM). The client treats this as a
 // best-effort enhancement: if it errors, times out, or the key is missing, the
-// deterministic proposal stands. Same gateway as ai-content-suggest.
+// deterministic proposal stands. Gemini direct (GEMINI_API_KEY), like
+// ai-content-suggest; the Lovable gateway key is no longer valid.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,14 +40,14 @@ serve(async (req) => {
     new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     const { signal, candidates } = (await req.json()) as { signal: Signal; candidates: Candidate[] };
 
     if (!Array.isArray(candidates) || candidates.length === 0) {
       return json({ error: "no candidates" }, 400);
     }
     // No key → let the client keep its deterministic pick (soft signal, not an error).
-    if (!LOVABLE_API_KEY) {
+    if (!GEMINI_API_KEY) {
       return json({ recommended_id: candidates[0].id, reasoning: "", provider: "none" });
     }
 
@@ -82,25 +83,28 @@ serve(async (req) => {
     const timer = setTimeout(() => ctrl.abort(), 12000);
     let content = "";
     try {
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        signal: ctrl.signal,
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          response_format: { type: "json_object" },
-        }),
-      });
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: ctrl.signal,
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+            generationConfig: {
+              maxOutputTokens: 1024,
+              responseMimeType: "application/json",
+              thinkingConfig: { thinkingBudget: 0 },
+            },
+          }),
+        },
+      );
       if (!res.ok) {
-        // Soft-fail to the deterministic top pick on rate-limit/credit/other gateway errors.
-        return json({ recommended_id: candidates[0].id, reasoning: "", provider: "lovable", gateway_status: res.status });
+        return json({ recommended_id: candidates[0].id, reasoning: "", provider: "gemini", gateway_status: res.status });
       }
       const data = await res.json();
-      content = data.choices?.[0]?.message?.content || "";
+      content = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
     } finally {
       clearTimeout(timer);
     }
@@ -118,7 +122,7 @@ serve(async (req) => {
       // keep deterministic fallback
     }
 
-    return json({ recommended_id, reasoning, provider: "lovable" });
+    return json({ recommended_id, reasoning, provider: "gemini" });
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : "unknown" }, 500);
   }

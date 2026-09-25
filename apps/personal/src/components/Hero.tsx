@@ -138,7 +138,7 @@ const Hero = () => {
           <div className="flex flex-wrap gap-6 md:gap-10">
           {t.results.map((result, i) => (
             <Link to="/work" key={i} className="group flex items-start gap-3 transition-colors hover:text-foreground">
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/5 text-[10px] font-bold text-primary">
                 {i + 1}
               </span>
               <div className="max-w-[260px]">
