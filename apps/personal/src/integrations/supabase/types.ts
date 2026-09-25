@@ -40,6 +40,7 @@ export type Database = {
           meta_title: string | null
           og_description: string
           og_image: string | null
+          og_image_en: string | null
           og_title: string
           primary_keyword: string
           published: boolean
@@ -85,6 +86,7 @@ export type Database = {
           meta_title?: string | null
           og_description?: string
           og_image?: string | null
+          og_image_en?: string | null
           og_title?: string
           primary_keyword?: string
           published?: boolean
@@ -130,6 +132,7 @@ export type Database = {
           meta_title?: string | null
           og_description?: string
           og_image?: string | null
+          og_image_en?: string | null
           og_title?: string
           primary_keyword?: string
           published?: boolean
