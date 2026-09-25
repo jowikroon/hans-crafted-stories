@@ -1,9 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Send, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,8 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { isProductionHost } from "@/lib/config/productionHost";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
+import { pushLeadEvent, safePath } from "@/lib/analytics/leadEvents";
+import { loadTurnstile, turnstileSiteKey } from "@/lib/contact/turnstile";
 
 type ContactT = (typeof translations)["en"]["contact"];
 
@@ -42,22 +43,32 @@ const FIELD_IDS: Record<keyof ContactData, string> = {
   message: "contact-message",
 };
 
+export type SubmitOutcome = "sent" | "preview" | "limited" | "captcha" | "error";
+
+export const contactEndpoint = (): string =>
+  `${(import.meta.env.VITE_SUPABASE_URL ?? "").replace(/\/$/, "")}/functions/v1/contact-submit`;
+
 /**
- * Verstuurt een contactaanvraag. Alleen op het productiedomein wordt er
- * werkelijk in `contact_submissions` geschreven; elders (Vercel-preview,
- * localhost) is het resultaat "preview" en gebeurt er niets.
- * Succes = insert zonder error (anon mag niet SELECTen, dus geen .select()).
+ * Verstuurt een contactaanvraag via de Edge Function `contact-submit` (Turnstile + servervalidatie;
+ * de database accepteert geen directe inserts uit de browser). Alleen op het productiedomein wordt
+ * er iets verstuurd; elders (Vercel-preview, localhost) is het resultaat "preview" zonder request.
  */
 export async function submitContact(
   data: ContactData,
-  opts: { isProduction?: boolean } = {},
-): Promise<"sent" | "preview" | "error"> {
+  opts: { isProduction?: boolean; turnstileToken?: string; website?: string; fetchImpl?: typeof fetch } = {},
+): Promise<SubmitOutcome> {
   if (!(opts.isProduction ?? isProductionHost())) return "preview";
+  if (!opts.turnstileToken) return "captcha";
   try {
-    const { error } = await supabase
-      .from("contact_submissions" as unknown)
-      .insert([data] as unknown);
-    return error ? "error" : "sent";
+    const res = await (opts.fetchImpl ?? fetch)(contactEndpoint(), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...data, website: opts.website ?? "", turnstileToken: opts.turnstileToken }),
+    });
+    if (res.ok) return "sent";
+    if (res.status === 429) return "limited";
+    if (res.status === 403) return "captcha";
+    return "error";
   } catch {
     return "error";
   }
@@ -69,6 +80,43 @@ const ContactForm = () => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const formRef = useRef<HTMLFormElement>(null);
+  const startedRef = useRef(false);
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot; mensen zien/gebruiken dit veld niet
+  const production = isProductionHost();
+  const siteKey = turnstileSiteKey();
+  // Turnstile pas laden na de eerste interactie, en alleen op productie met een geconfigureerde sitekey.
+  const [wantCaptcha, setWantCaptcha] = useState(false);
+  useEffect(() => {
+    if (!wantCaptcha || !production || !siteKey || !widgetRef.current || widgetIdRef.current) return;
+    let cancelled = false;
+    loadTurnstile()
+      .then((ts) => {
+        if (cancelled || !widgetRef.current || widgetIdRef.current) return;
+        widgetIdRef.current = ts.render(widgetRef.current, {
+          sitekey: siteKey,
+          action: "contact",
+          appearance: "interaction-only",
+          callback: (token: string) => setTurnstileToken(token),
+          "expired-callback": () => setTurnstileToken(""),
+          "error-callback": () => setTurnstileToken(""),
+        });
+      })
+      .catch(() => setTurnstileToken(""));
+    return () => {
+      cancelled = true;
+    };
+  }, [wantCaptcha, production, siteKey]);
+  const leadCtx = () => ({ lang, page_path: typeof window !== "undefined" ? safePath(window.location.pathname) : "" });
+  // contact_form_start: eerste interactie, één keer per mount (geen veldinhoud).
+  const markStarted = () => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    setWantCaptcha(true);
+    pushLeadEvent("contact_form_start", leadCtx());
+  };
   const [form, setForm] = useState<ContactData>({
     name: "",
     email: "",
@@ -108,6 +156,7 @@ const ContactForm = () => {
       });
       setErrors(fieldErrors);
       setStatus({ kind: "invalid", text: t.errorSummary });
+      pushLeadEvent("contact_form_submit", { ...leadCtx(), result: "invalid" });
       const first = FIELD_ORDER.find((f) => fieldErrors[f]);
       if (first) formRef.current?.querySelector<HTMLElement>(`#${FIELD_IDS[first]}`)?.focus();
       return;
@@ -115,17 +164,28 @@ const ContactForm = () => {
 
     setLoading(true);
     setStatus({ kind: "idle" });
-    let outcome: "sent" | "preview" | "error" = "error";
+    let outcome: SubmitOutcome = "error";
     try {
-      outcome = await submitContact(result.data);
+      // Productie zonder Turnstile-sitekey kan nooit slagen (server is fail-closed): meteen fout + e-mailuitwijk,
+      // i.p.v. "probeer opnieuw" (captcha) waardoor bezoekers blijven herhalen.
+      outcome = production && !siteKey ? "error" : await submitContact(result.data, { turnstileToken, website });
     } finally {
       setLoading(false);
+      // Een Turnstile-token is eenmalig: na elke poging een nieuw token laten ophalen.
+      if (widgetIdRef.current && window.turnstile) {
+        setTurnstileToken("");
+        window.turnstile.reset(widgetIdRef.current);
+      }
     }
 
-    if (outcome === "error") {
+    // Alleen "sent" is een bevestigde aanvraag (server heeft opgeslagen); de rest is diagnose.
+    pushLeadEvent("contact_form_submit", { ...leadCtx(), result: outcome, reason_category: outcome === "sent" ? result.data.reason : undefined });
+
+    if (outcome === "error" || outcome === "limited" || outcome === "captcha") {
       // Formulierwaarden blijven staan zodat de bezoeker opnieuw kan proberen.
-      setStatus({ kind: "error", text: t.errorMessage });
-      toast.error(t.errorMessage);
+      const text = outcome === "limited" ? t.limitedMessage : outcome === "captcha" ? t.captchaMessage : t.errorMessage;
+      setStatus({ kind: "error", text });
+      toast.error(text);
       return;
     }
     if (outcome === "preview") {
@@ -144,6 +204,7 @@ const ContactForm = () => {
     <motion.form
       ref={formRef}
       onSubmit={handleSubmit}
+      onFocusCapture={markStarted}
       noValidate
       aria-busy={loading}
       initial={{ opacity: 0, y: 20 }}
@@ -227,6 +288,15 @@ const ContactForm = () => {
         />
         {errors.message && <p id="contact-message-error" className="text-xs text-destructive">{errors.message}</p>}
       </div>
+
+      {/* Honeypot: buiten beeld en buiten de tabvolgorde; bots vullen het, mensen niet. */}
+      <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+        <label htmlFor="contact-website">Website</label>
+        <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+      </div>
+
+      {/* Turnstile (alleen productie, na eerste interactie) */}
+      {production && siteKey ? <div ref={widgetRef} className="sm:col-span-2" /> : null}
 
       {/* Submit */}
       <div className="sm:col-span-2">

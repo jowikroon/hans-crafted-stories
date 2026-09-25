@@ -9,7 +9,7 @@
  * Scope:
  *  - FAIL: alle HTML buiten /writing/<slug>, plus assets/*.js, llms.txt, sitemap.
  *  - REPORT (geen fail): /writing/<slug> en de /writing-lijst — die tekst komt uit
- *    Supabase (blog_posts) en wordt via de CMS-patch in docs/cms-patches/ opgelost.
+ *    Supabase (blog_posts) en wordt via de CMS-patch (docs/growth-2026-09-23/CMS-PATCHES.md) opgelost.
  *    Zo breekt een merge vóór het toepassen van die patch de productiebuild niet.
  */
 import fs from "node:fs";
@@ -75,7 +75,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     console.log(`[anonymity-guard] let op: ${privateHits.length} treffer(s) in interne werkdocumenten/dashboards (${[...files].join(", ")}) — die horen niet in de publieke webroot.`);
   }
   if (reports.length) {
-    console.log(`[anonymity-guard] ${reports.length} treffer(s) in CMS-content (/writing) — oplossen via docs/cms-patches, geen buildfout:`);
+    console.log(`[anonymity-guard] ${reports.length} treffer(s) in CMS-content (/writing) — oplossen via de CMS-patch (docs/growth-2026-09-23/CMS-PATCHES.md), geen buildfout:`);
     for (const r of reports) console.log(`  ~ ${r.rel} [${r.rule}] "${r.snippet}"`);
   }
   if (failures.length) {

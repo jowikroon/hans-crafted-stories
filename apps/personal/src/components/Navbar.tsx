@@ -477,7 +477,7 @@ const Navbar = (_props: NavbarProps) => {
               )}
 
               {!user && (
-                <Link to="/about#contact" className={`hidden sm:inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${barDark ? "bg-[#F5F1E6] text-[#15140F] hover:opacity-90" : "bg-[#15140F] text-[#F1ECDF] hover:opacity-90"}`}>
+                <Link to="/about#contact" data-cta="nav_desktop" className={`hidden sm:inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${barDark ? "bg-[#F5F1E6] text-[#15140F] hover:opacity-90" : "bg-[#15140F] text-[#F1ECDF] hover:opacity-90"}`}>
                   {t.contact}
                 </Link>
               )}
@@ -503,7 +503,7 @@ const Navbar = (_props: NavbarProps) => {
                 })}
 
                 {!user && (
-                  <Link to="/about#contact" onClick={() => setMobileOpen(false)} className={`mt-1 rounded-lg px-3 py-2.5 text-sm font-semibold ${barDark ? "bg-[#F5F1E6] text-[#15140F]" : "bg-[#15140F] text-[#F1ECDF]"}`}>{t.contact}</Link>
+                  <Link to="/about#contact" data-cta="nav_mobile" onClick={() => setMobileOpen(false)} className={`mt-1 rounded-lg px-3 py-2.5 text-sm font-semibold ${barDark ? "bg-[#F5F1E6] text-[#15140F]" : "bg-[#15140F] text-[#F1ECDF]"}`}>{t.contact}</Link>
                 )}
 
                 <div className={`my-1 h-px ${barDark ? "bg-white/10" : "bg-black/10"}`} />

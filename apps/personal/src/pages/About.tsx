@@ -229,7 +229,7 @@ const About = () => {
                   <span className="inline-flex items-center gap-1.5">
                     <MapPin size={14} className="text-primary" /> {getValue("about_location", "Amersfoort, NL", { neutral: true })}
                   </span>
-                  <a href="#contact" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+                  <a href="#contact" data-cta="about_header" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
                     <Mail size={14} className="text-primary" /> {lang === "nl" ? "Stuur een bericht" : "Send a message"}
                   </a>
                   <ObfuscatedMailto user="hansvl3" domain="gmail.com" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground" aria-label={lang === "nl" ? "E-mail sturen" : "Send email"}>
