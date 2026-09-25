@@ -26,7 +26,16 @@ function clean(value: string | null | undefined): string {
  */
 function absoluteImage(value: string | null | undefined): string {
   const v = clean(value);
-  return /^https?:\/\//i.test(v) ? v : "";
+  if (!v) return "";
+  try {
+    // Rebuild the URL from its parsed parts so only https origin + path survive
+    // (no query, hash or odd characters). Mirrors sameOriginUrl in useSEO.
+    const u = new URL(v);
+    if (u.protocol !== "https:") return "";
+    return `${u.origin}${encodeURI(decodeURI(u.pathname))}`;
+  } catch {
+    return "";
+  }
 }
 
 /**
