@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { useSEO } from "@/hooks/useSEO";
+import { track } from "@/lib/siteTracker";
 
 const NotFound = () => {
   const location = useLocation();
@@ -30,6 +31,7 @@ const NotFound = () => {
     robots.content = "noindex, nofollow";
 
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    track("not_found", { referrer: document.referrer ? document.referrer.slice(0, 200) : null });
 
     return () => {
       if (robots) robots.content = "index, follow";
