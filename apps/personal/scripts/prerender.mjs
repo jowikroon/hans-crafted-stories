@@ -204,15 +204,11 @@ const CASE_CCP_HEAD_NL = {
 // /writing is sinds de i18n-audit (2026-09-22) een gelokaliseerde route: /writing (EN)
 // en /nl/writing (NL). Titels/omschrijvingen = translations.ts seo.writingTitle /
 // seo.writingDescription (taal-twin), zodat prerender en client hetzelfde tonen.
+// 2026-09-25 (HAN-180): niet meer hard-coded maar uit translations.ts, anders lopen prerender
+// en client uit elkaar zoals bij de homepage-titel (HAN-178). Guard 19 bewaakt de pariteit.
 const WRITING_HEADS = {
-  en: {
-    title: "E-commerce Insights: Amazon NL & Bol.com | Hans van Leeuwen",
-    description: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
-  },
-  nl: {
-    title: "E-commerce inzichten Amazon NL & Bol.com | Hans van Leeuwen",
-    description: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
-  },
+  en: { title: translations.en.seo.writingTitle, description: translations.en.seo.writingDescription },
+  nl: { title: translations.nl.seo.writingTitle, description: translations.nl.seo.writingDescription },
 };
 const writingJsonLd = (lang, head) => {
   const url = absoluteUrl("/writing", lang);

@@ -507,7 +507,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       homeTitle: "Hans van Leeuwen | Freelance E-commerce Manager NL/EU",
       homeDescription: "Freelance e-commerce & marketplace manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen 2023), AI-assisted operations. Amersfoort.",
       writingTitle: "E-commerce Insights: Amazon NL & Bol.com | Hans van Leeuwen",
-      writingDescription: "Articles on marketplace strategy, Amazon NL & Bol.com optimization, CRO, and UX. Netherlands/EU.",
+      writingDescription: "Articles by Hans van Leeuwen on marketplace strategy, Amazon NL/DE and Bol.com optimization, CRO and UX, from 10+ years of hands-on e-commerce work in NL/EU.",
       workTitle: "Amazon & Bol.com Case Studies | Hans van Leeuwen",
       workDescription: "Documented marketplace results by Hans van Leeuwen: Amazon NL/DE, Bol.com and e-commerce operations case studies, including Connect Car Parts and Alpine.",
       privacyTitle: "Privacy Policy | Hans van Leeuwen",
@@ -842,10 +842,10 @@ export const translations: Record<Lang, TranslationStrings> = {
 
     /* ── SEO ── */
     seo: {
-      homeTitle: "Hans van Leeuwen | freelance e-commerce manager inhuren",
+      homeTitle: "Hans van Leeuwen | freelance e-commerce & marketplace manager",
       homeDescription: "Freelance e-commerce & marketplace manager inhuren voor Amazon NL/DE en Bol.com. 10+ jaar, 70% marktaandeel (Nielsen 2023), AI-automatisering. Amersfoort.",
       writingTitle: "E-commerce inzichten Amazon NL & Bol.com | Hans van Leeuwen",
-      writingDescription: "Artikelen over marketplace-strategie, Amazon NL & Bol.com optimalisatie, CRO en UX. Nederland/EU.",
+      writingDescription: "Artikelen van Hans van Leeuwen over marketplace-strategie, Amazon NL/DE en Bol.com-optimalisatie, CRO en UX, uit 10+ jaar e-commerce-praktijk in NL/EU.",
       workTitle: "Amazon & Bol.com case studies | Hans van Leeuwen",
       workDescription: "Gedocumenteerde marktplaatsresultaten van Hans van Leeuwen: case studies Amazon NL/DE, Bol.com en e-commerce, waaronder Connect Car Parts en Alpine.",
       privacyTitle: "Privacybeleid | Hans van Leeuwen",
