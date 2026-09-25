@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     // Save the page the user came from; after OAuth the onAuthStateChange
     // listener will read this and navigate back.
-    const returnPath = location.pathname || "/portal";
+    const returnPath = location.pathname ? `${location.pathname}${location.search}${location.hash}` : "/portal";
     localStorage.setItem(AUTH_REDIRECT_KEY, returnPath);
 
     try {
