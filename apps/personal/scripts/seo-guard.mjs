@@ -29,11 +29,14 @@
  *  14. CSS-tokens uit index.css: muted-foreground op background/card ≥ 4.5:1 en
  *      --w2-muted op --w2-paper ≥ 4.5:1 (HAN-145, zonder browser)
  *  17. homepage-<title> (/, /nl) = translations.seo.homeTitle, merk-eerst, og/twitter:title gelijk
+ *  19. intentwoord-scheiding (plan A.1, HAN-180): homepage-<title> (/, /nl) zonder "inhuren"/"hire",
+ *      alle vier /nl-dienstentitels mét "inhuren"; /writing- en /nl/writing-head = translations.seo.writing*
+ *      (pariteit prerender ↔ component) en description ≥ 120 tekens
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
  *      want databasetekst gaat bij het lezen al door lib/noEmDash.ts
- *  19. artikelvloer: minder dan MIN_PRERENDERED_ARTICLES geprerenderde artikelen = build faalt
+ *  20. artikelvloer: minder dan MIN_PRERENDERED_ARTICLES geprerenderde artikelen = build faalt
  *      (een mislukte CMS-fetch zou zonder /writing/:slug-rewrite elk artikel 404 geven)
  */
 import fs from "node:fs";
@@ -319,6 +322,46 @@ else {
   }
 }
 
+// 19. Intentwoord-scheiding (2026-09-25, HAN-180, plan A.1): op 22-09 kreeg de /nl-homepage via een
+//     losse commit weer de titel "… freelance e-commerce manager inhuren" — exact de q2-zin die
+//     /nl/interim-ecommerce-manager moet winnen. Guard 17 zag het niet (die test alleen pariteit +
+//     merk-eerst). Regel: het intentwoord staat op de dienstenpagina's, niet op de homepage. Plus:
+//     de /writing-head komt uit translations.ts (prerender = component) en de description is ≥ 120.
+{
+  const appDir = path.resolve(distDir, "..");
+  const decode = (t) => t.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d)).replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+  const titleOf = (file) => {
+    if (!fs.existsSync(file)) return null;
+    const m = fs.readFileSync(file, "utf8").match(/<title>([\s\S]*?)<\/title>/);
+    return m ? decode(m[1]) : "";
+  };
+  const descOf = (file) => {
+    if (!fs.existsSync(file)) return null;
+    const m = fs.readFileSync(file, "utf8").match(/<meta name="description" content="([^"]*)"/);
+    return m ? decode(m[1]) : "";
+  };
+  for (const [file, label] of [[path.join(distDir, "index.html"), "index.html"], [path.join(distDir, "nl", "index.html"), "nl/index.html"]]) {
+    const t = titleOf(file);
+    if (t !== null && /\b(inhuren|hire)\b/i.test(t)) failures.push(`${label}: homepage-<title> "${t}" bevat het intentwoord — dat hoort alleen op de dienstenpagina's (plan A.1, HAN-180)`);
+  }
+  for (const slug of ["interim-ecommerce-manager", "bol-com-consultant", "amazon-nl-specialist", "ai-ecommerce-automation"]) {
+    const t = titleOf(path.join(distDir, "nl", slug, "index.html"));
+    if (t === null) failures.push(`nl/${slug}/index.html ontbreekt (guard 19)`);
+    else if (!/\binhuren\b/i.test(t)) failures.push(`nl/${slug}: <title> "${t}" mist het intentwoord "inhuren" (plan A.1)`);
+  }
+  const tr = fs.readFileSync(path.join(appDir, "src", "data", "translations.ts"), "utf8");
+  const wt = [...tr.matchAll(/writingTitle:\s*"([^"]+)"/g)].map((m) => m[1]);
+  const wd = [...tr.matchAll(/writingDescription:\s*"([^"]+)"/g)].map((m) => m[1]);
+  if (wt.length !== 2 || wd.length !== 2) failures.push(`translations.ts: verwacht 2x seo.writingTitle en 2x seo.writingDescription, gevonden ${wt.length}/${wd.length}`);
+  for (const [file, idx, label] of [[path.join(distDir, "writing", "index.html"), 0, "writing/index.html"], [path.join(distDir, "nl", "writing", "index.html"), 1, "nl/writing/index.html"]]) {
+    const t = titleOf(file); const d = descOf(file);
+    if (t === null) { failures.push(`${label} ontbreekt (guard 19)`); continue; }
+    if (wt[idx] && t !== wt[idx]) failures.push(`${label}: <title> "${t}" ≠ translations.seo.writingTitle "${wt[idx]}"`);
+    if (wd[idx] && d !== wd[idx]) failures.push(`${label}: description ≠ translations.seo.writingDescription (prerender en component uit elkaar)`);
+    if ((d || "").length < 120) failures.push(`${label}: description ${(d || "").length} tekens (< 120; engine-drempel P2 desc-short)`);
+  }
+}
+
 // ── 18. Geen em dash (AI-merkteken). Codestrings en publieke bestanden: build faalt. ──
 const EMDASH = /—|&mdash;|&#8212;|&#x2014;/i;
 const warnings = [];
@@ -393,7 +436,7 @@ for (const route of seen) {
   }
 }
 
-// 19. Artikelvloer (2026-09-23): zonder /writing/:slug-rewrite geeft een ontbrekend geprerenderd
+// 20. Artikelvloer (2026-09-23): zonder /writing/:slug-rewrite geeft een ontbrekend geprerenderd
 //     artikel een echte 404. Minder dan MIN_PRERENDERED_ARTICLES artikelpagina's = waarschijnlijk een
 //     mislukte CMS-fetch → build faalt i.p.v. de blog te deïndexeren.
 {
@@ -410,4 +453,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (19 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/geen-em-dash/artikelvloer).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (20 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelvloer).`);

@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { getBlogPosts, isHansSession, BlogPostRow } from "@/lib/api/content";
 import { useSEO } from "@/hooks/useSEO";
+import { getBlogPostImage, DEFAULT_OG_IMAGE } from "@/lib/seo/blogPostHead";
 import { useLang } from "@/hooks/useLang";
 import { absoluteUrl } from "@/lib/i18n/routes";
 import { translations } from "@/data/translations";
@@ -137,7 +138,7 @@ const WritingV2 = () => {
                 url: `https://hansvanleeuwen.com/writing/${p.slug}`,
                 datePublished: p.created_at,
                 dateModified: p.updated_at,
-                ...(p.image_url ? { image: p.image_url } : {}),
+                ...(getBlogPostImage(p, lang) !== DEFAULT_OG_IMAGE ? { image: getBlogPostImage(p, lang) } : {}),
                 description: p.meta_description || p.excerpt || undefined,
                 author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
                 publisher: { "@id": "https://hansvanleeuwen.com/#person" },
@@ -184,13 +185,14 @@ const WritingV2 = () => {
         date: p.created_at,
         readTime: p.read_time,
         slug: p.slug,
-        imageUrl: p.image_url || undefined,
+        // Header per UI language: EN header (og_image_en) when present, else the NL header.
+        imageUrl: getBlogPostImage(p, lang) !== DEFAULT_OG_IMAGE ? getBlogPostImage(p, lang) : undefined,
         // Draft = not published. Surfaced to Hans only (RLS gates server-side).
         isDraft: !p.published || (typeof p.status === "string" && p.status === "draft"),
         // Public = exactly what anonymous visitors see (RLS: published + status=published).
         isPublic: p.published === true && p.status === "published",
       })),
-    [blogPosts],
+    [blogPosts, lang],
   );
 
   // Filter & sort

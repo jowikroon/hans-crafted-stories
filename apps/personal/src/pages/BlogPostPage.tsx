@@ -6,7 +6,7 @@ import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { getBlogPostHead, getBlogPostJsonLd, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+import { getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 import { setArticleLangInfo } from "@/lib/i18n/articleLang";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
@@ -426,6 +426,10 @@ const BlogPostPage = () => {
   const displayTitle = post ? (articleLang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
   const displayExcerpt = post ? (articleLang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";
   const displayContent = post ? (articleLang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
+  // Header image follows the article language (EN header in og_image_en, NL in og_image/image_url).
+  // Only a real per-post header is shown as hero; the site-wide og-image.png is share-only.
+  const heroImage = post ? getBlogPostImage(post, articleLang) : "";
+  const showHero = !!post && heroImage !== "https://hansvanleeuwen.com/og-image.png";
 
   const { html: bodyHtml, headings } = useMemo(
     () => renderArticle(displayContent || "", post?.masking, articleLang),
@@ -496,6 +500,8 @@ const BlogPostPage = () => {
     url: seoUrl,
     lang: articleLang,
     type: "article",
+    image: seoHead?.image,
+    imageAlt: seoHead?.imageAlt,
     jsonLd: post && !isDraft ? getBlogPostJsonLd(post, articleLang) : undefined,
     // 2026-09-11: een niet-bestaand artikel (post === null) rendert "Post not found" met HTTP 200
     // via de /writing/:slug-rewrite; zonder noindex is dat een indexeerbare soft-404 met self-canonical.
@@ -687,8 +693,8 @@ const BlogPostPage = () => {
         </div>
 
         {/* Hero */}
-        {post.image_url && (
-          <figure className="ahero"><img src={post.image_url} alt={displayTitle} /></figure>
+        {showHero && (
+          <figure className="ahero"><img src={heroImage} alt={displayTitle} width={1200} height={630} /></figure>
         )}
 
         {/* Reading rail */}

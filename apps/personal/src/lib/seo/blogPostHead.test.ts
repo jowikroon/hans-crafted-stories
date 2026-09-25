@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getBlogPostHead, getBlogPostJsonLd, hasEnglishVersion } from "./blogPostHead";
+import { DEFAULT_OG_IMAGE, getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasEnglishVersion } from "./blogPostHead";
 import type { BlogPostRow } from "@/lib/api/content";
 
 const basePost: BlogPostRow = {
@@ -36,6 +36,44 @@ describe("blog post SEO head", () => {
       title: "Amazon vs Bol.com in 2026 | Hans van Leeuwen",
       description: "A practical comparison for Dutch marketplace teams.",
       canonical: "https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland",
+      image: DEFAULT_OG_IMAGE,
+      imageAlt: "Amazon vs Bol.com in 2026",
+    });
+  });
+
+  describe("share image per language (blog-header design system, 2026-09-25)", () => {
+    const NL = "https://x.supabase.co/storage/v1/object/public/bucket/blog-images/post-header-20260925.png";
+    const EN = "https://x.supabase.co/storage/v1/object/public/bucket/blog-images/post-header-en-20260925.png";
+    const bilingual = {
+      ...basePost,
+      title_nl: "Amazon versus Bol.com in 2026",
+      excerpt_nl: "Een praktische vergelijking.",
+      content_nl: "Nederlandse tekst van het artikel.",
+      og_image: NL,
+      og_image_en: EN,
+    };
+
+    it("uses the NL header for the NL version and the EN header for the EN version", () => {
+      expect(getBlogPostImage(bilingual, "nl")).toBe(NL);
+      expect(getBlogPostImage(bilingual, "en")).toBe(EN);
+      expect(getBlogPostHead(bilingual, "nl").image).toBe(NL);
+      expect(getBlogPostHead(bilingual, "en").image).toBe(EN);
+      expect(getBlogPostHead(bilingual, "nl").imageAlt).toBe("Amazon versus Bol.com in 2026");
+    });
+
+    it("falls back from EN header to NL header, then to the site image", () => {
+      expect(getBlogPostImage({ ...bilingual, og_image_en: null }, "en")).toBe(NL);
+      expect(getBlogPostImage({ ...bilingual, og_image: "", og_image_en: null, image_url: "" }, "en")).toBe(DEFAULT_OG_IMAGE);
+      expect(getBlogPostImage({ ...bilingual, og_image: "", cover_image_url: NL }, "nl")).toBe(NL);
+    });
+
+    it("never emits a relative or empty og:image", () => {
+      expect(getBlogPostImage({ ...bilingual, og_image: "/blog-images/x.png", og_image_en: " ", image_url: "" }, "en")).toBe(DEFAULT_OG_IMAGE);
+    });
+
+    it("keeps JSON-LD image in sync with the head image", () => {
+      expect(getBlogPostJsonLd(bilingual, "en").image).toBe(EN);
+      expect(getBlogPostJsonLd(bilingual, "nl").image).toBe(NL);
     });
   });
 

@@ -66,16 +66,18 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const [cloudflare, website, n8nVps, database] = await Promise.all([
+    const [cloudflare, website, n8nVps, database, marketplacegrowth] = await Promise.all([
       checkEndpoint("https://cloudflare.com/cdn-cgi/trace"),
       checkEndpoint("https://hansvanleeuwen.com"),
       checkEndpoint("https://n8n.srv1402218.hstgr.cloud/healthz", undefined, 5000),
       checkDatabase(supabaseUrl, supabaseKey),
+      checkEndpoint("https://marketplacegrowth.nl"),
     ]);
 
     const services: Record<string, any> = {
       "Cloudflare CDN": cloudflare,
       "hansvanleeuwen.com": website,
+      "marketplacegrowth.nl": marketplacegrowth,
       "n8n Hostinger VPS": n8nVps,
       "Supabase Database": database,
     };
