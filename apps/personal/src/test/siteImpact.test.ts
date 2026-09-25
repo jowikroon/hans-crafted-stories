@@ -3,7 +3,7 @@ import {
   addDays, deployDay, evaluate, totals, valueOf, windowsFor,
   type ChangeInput, type DailyRow,
 } from "../../supabase/functions/site-metrics/impact";
-import { isSkippable, kindOf, linearIssues, parseMeasure, planPr } from "../../supabase/functions/site-metrics/prs";
+import { isSkippable, kindOf, linearIssues, looksInternal, parseMeasure, planPr } from "../../supabase/functions/site-metrics/prs";
 
 const change = (over: Partial<ChangeInput> = {}): ChangeInput => ({
   deployed_at: "2026-09-01T10:00:00Z",
@@ -146,6 +146,7 @@ describe("PR parsing", () => {
     expect(parseMeasure("Measure: metric=search_position paths=/x")?.expect).toBe("down");
     expect(parseMeasure("Measure: metric=revenue")).toBeNull();
     expect(parseMeasure("Measure: metric=search_impressions paths=/example expect=up days=28")).toBeNull();
+    expect(parseMeasure("Measure: metric=search_position paths= expect=up days=42")).toMatchObject({ paths: [], expect: "up", days: 42 });
     expect(parseMeasure("Measure: metric=visits paths=https://evil.example,/ok")?.paths).toEqual(["/ok"]);
   });
 
@@ -167,10 +168,16 @@ describe("PR parsing", () => {
       "feat(edit-overlay): tekst-edits live",
       "feat(dashboards): periodefilter",
       "ops: content-redeploy watch",
-    ]) expect(isSkippable({ number: 1, title, user: u })).toBe(true);
+    ]) expect(looksInternal({ number: 1, title, user: u })).toBe(true);
     for (const title of ["content(home): H1 -> 'Marketplace Manager'", "SEO run 2026-09-11: contrasttoken", "fix(i18n): localise /writing"]) {
-      expect(isSkippable({ number: 1, title, user: u })).toBe(false);
+      expect(looksInternal({ number: 1, title, user: u })).toBe(false);
     }
+  });
+
+  it("measures an internal-looking PR when it declares a Measure line", () => {
+    const pr = { number: 371, title: "feat(analytics): site measurement and insights dashboard", merged_at: "2026-09-25T10:00:00Z", user: { login: "jowikroon" } };
+    expect(planPr(pr, new Set())).toEqual({ type: "skip" });
+    expect(planPr({ ...pr, body: "Measure: metric=leads paths= expect=up days=28" }, new Set())).toMatchObject({ type: "insert", status: "measuring", measure: { metric: "leads", paths: [] } });
   });
 
   it("activates a planned change for a referenced issue, else inserts", () => {

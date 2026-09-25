@@ -28,7 +28,7 @@ export function parseMeasure(body: string | null | undefined): Measure | null {
   const line = body.split(/\r?\n/).find((l) => /^\s*[-*]?\s*\**measure\**\s*:/i.test(l));
   if (!line) return null;
   const kv: Record<string, string> = {};
-  for (const m of line.replace(/^[^:]*:/, "").matchAll(/([a-z_]+)\s*=\s*([^\s]+)/gi)) kv[m[1].toLowerCase()] = m[2].replace(/`/g, "");
+  for (const m of line.replace(/^[^:]*:/, "").matchAll(/([a-z_]+)=(\S*)/gi)) kv[m[1].toLowerCase()] = m[2].replace(/`/g, "");
   const metric = kv.metric as Metric;
   if (!METRICS.includes(metric)) return null;
   // The PR template's placeholder, left unedited: not a measurement.
@@ -68,12 +68,15 @@ export function isSkippable(pr: PrLike): boolean {
   const login = (pr.user?.login ?? "").toLowerCase();
   if (pr.user?.type === "Bot" || login.includes("dependabot") || login.endsWith("[bot]")) return true;
   if (/^(chore|build|ci)\(deps/i.test(pr.title) || /^bump /i.test(pr.title)) return true;
-  // Changes that never reach a public page: docs, CI, ops, and the admin tools behind login.
-  if (/^(docs|ci|build|test|ops|chore\(claude\))\b/i.test(pr.title)) return true;
-  if (/\b(portal|cowork|mcp|empire[- ]health|dashboards?|write ?cms|voice template|bijlagen|edit[- ]overlay|overlay|samantha|claude|lovable|gateway)\b/i.test(pr.title)
-    && !/\b(seo|sitemap|hreflang|homepage|landing|rates|tarieven)\b/i.test(pr.title)) return true;
   if ((pr.base?.ref ?? "main") !== "main") return true;
   return false;
+}
+
+/** Guess from the title that a PR never reaches a public page (docs, CI, ops, admin tools). */
+export function looksInternal(pr: PrLike): boolean {
+  if (/^(docs|ci|build|test|ops|chore\(claude\))\b/i.test(pr.title)) return true;
+  return /\b(portal|cowork|mcp|empire[- ]health|dashboards?|write ?cms|voice template|bijlagen|edit[- ]overlay|overlay|samantha|claude|lovable|gateway)\b/i.test(pr.title)
+    && !/\b(seo|sitemap|hreflang|homepage|landing|rates|tarieven)\b/i.test(pr.title);
 }
 
 export function kindOf(pr: PrLike): Kind {
@@ -94,6 +97,8 @@ export type PrAction =
 export function planPr(pr: PrLike, plannedIssues: Set<string>): PrAction {
   if (!pr.merged_at || isSkippable(pr)) return { type: "skip" };
   const measure = parseMeasure(pr.body);
+  // An explicit Measure line always wins over the title guess.
+  if (!measure && looksInternal(pr)) return { type: "skip" };
   const issues = linearIssues(pr.title, pr.body, pr.head?.ref);
   const planned = issues.filter((i) => plannedIssues.has(i));
   if (planned.length > 0) return { type: "activate", issues: planned, measure };
