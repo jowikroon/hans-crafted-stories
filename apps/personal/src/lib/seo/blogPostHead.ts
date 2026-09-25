@@ -8,10 +8,50 @@ export interface SeoHead {
   title: string;
   description: string;
   canonical: string;
+  /** Absolute URL of the 1200x630 header for og:image / twitter:image; never empty. */
+  image: string;
+  /** Alt text for the header image: the localized post title. */
+  imageAlt: string;
 }
+
+export const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
 
 function clean(value: string | null | undefined): string {
   return (value ?? "").trim();
+}
+
+/**
+ * Only absolute https URLs are usable as og:image (crawlers do not resolve
+ * relative paths against the page). Anything else falls back to the site image.
+ */
+function absoluteImage(value: string | null | undefined): string {
+  const v = clean(value);
+  if (!v) return "";
+  try {
+    // Rebuild the URL from its parsed parts so only https origin + path survive
+    // (no query, hash or odd characters). Mirrors sameOriginUrl in useSEO.
+    const u = new URL(v);
+    if (u.protocol !== "https:") return "";
+    return `${u.origin}${encodeURI(decodeURI(u.pathname))}`;
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Header image per language (blog-header design system, 2026-09-25). Every post
+ * carries an NL header in og_image / cover_image_url / image_url and, when made,
+ * an EN header in og_image_en. The EN switch falls back to the NL header, and
+ * a post without any header falls back to the site-wide og-image.png, so
+ * sharing never shows an empty card.
+ */
+export function getBlogPostImage(
+  post: Pick<BlogPostRow, "og_image" | "image_url"> & { og_image_en?: string | null; cover_image_url?: string | null },
+  lang: "nl" | "en" = "nl",
+): string {
+  const primary = absoluteImage(post.og_image) || absoluteImage(post.cover_image_url) || absoluteImage(post.image_url);
+  if (lang === "en") return absoluteImage(post.og_image_en) || primary || DEFAULT_OG_IMAGE;
+  return primary || DEFAULT_OG_IMAGE;
 }
 
 const NL_STOPWORDS = new Set([
@@ -97,7 +137,8 @@ export function localizeBlogPost<T extends Pick<BlogPostRow, "title" | "excerpt"
 }
 
 export function getBlogPostHead(input: BlogPostRow, lang?: "nl" | "en"): SeoHead {
-  const post = localizeBlogPost(input, lang);
+  const articleLang = lang ?? primaryBlogPostLang(input);
+  const post = localizeBlogPost(input, articleLang);
   const metaTitle = clean(post.meta_title);
   const title = metaTitle || `${post.title} | Hans van Leeuwen`;
   const description = clean(post.meta_description) || clean(post.excerpt) || DEFAULT_DESCRIPTION;
@@ -106,6 +147,8 @@ export function getBlogPostHead(input: BlogPostRow, lang?: "nl" | "en"): SeoHead
     title,
     description,
     canonical: getBlogPostCanonical(post),
+    image: getBlogPostImage(input, articleLang),
+    imageAlt: clean(post.title) || title,
   };
 }
 
@@ -138,7 +181,7 @@ export function getBlogPostJsonLd(input: BlogPostRow, lang?: "nl" | "en"): Recor
       name: "Hans van Leeuwen \u2013 E-commerce & Marketplace Management",
       url: BASE_URL,
     },
-    image: clean(post.og_image) || clean(post.image_url) || `${BASE_URL}/og-image.png`,
+    image: head.image,
     articleSection: post.category,
     keywords: post.tags.join(", "),
     ...(wordCount > 0 ? { wordCount } : {}),

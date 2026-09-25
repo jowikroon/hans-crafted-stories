@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "@/components/LocalizedLink";
 import { ArrowRight } from "lucide-react";
 import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
+import { getBlogPostImage, DEFAULT_OG_IMAGE } from "@/lib/seo/blogPostHead";
 import { useLang } from "@/hooks/useLang";
 import "@/styles/writing-v2.css";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
@@ -70,12 +71,15 @@ const FeaturedArticles = () => {
           {posts.map((post) => {
             const title = isNl && post.title_nl ? post.title_nl : post.title;
             const excerpt = isNl && post.excerpt_nl ? post.excerpt_nl : post.excerpt;
+            // Card image follows the UI language (EN header when present, else NL header).
+            const cardImage = getBlogPostImage(post, isNl ? "nl" : "en");
+            const hasImage = cardImage !== DEFAULT_OG_IMAGE;
             return (
               <Link key={post.id} to={`/writing/${post.slug}`} className="post">
                 <div className="post__thumb">
-                  {post.image_url ? (
+                  {hasImage ? (
                     <img
-                      src={post.image_url}
+                      src={cardImage}
                       alt={title}
                       width={600}
                       height={400}

@@ -257,8 +257,20 @@ function renderQuietly(...args) {
   }
 }
 
-function setHead(html, { title, description, canonical, ogImageAlt }) {
+function setHead(html, { title, description, canonical, ogImageAlt, image }) {
   let out = html;
+  // Per-page share image (blog headers). Only absolute https URLs; otherwise the
+  // template keeps the site-wide og-image.png.
+  if (image && /^https:\/\//i.test(image)) {
+    out = out.replace(
+      /<meta property="og:image" content="[^"]*"/,
+      `<meta property="og:image" content="${escapeHtml(image)}"`
+    );
+    out = out.replace(
+      /<meta name="twitter:image" content="[^"]*"/,
+      `<meta name="twitter:image" content="${escapeHtml(image)}"`
+    );
+  }
   out = out.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(title)}</title>`);
   out = out.replace(
     /<meta name="description" content="[^"]*"/,
@@ -454,13 +466,13 @@ for (const slug of HERO_SLUGS) {
 
 for (const [slug, blogPost] of postBySlug) {
   const route = `/writing/${slug}`;
-  const head = getBlogPostHead(blogPost);
-
   // Eén URL = één taal: NL zodra er een NL-versie is (doelmarkt); EN-versie via ?lang=en.
   const postLang = primaryBlogPostLang(blogPost);
+  // Head in de taal van de URL: og:image is de header van die taal (og_image / og_image_en).
+  const head = getBlogPostHead(blogPost, postLang);
   const { html } = renderQuietly(route, blogPost, { initialLang: postLang });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
-  page = setHead(page, head);
+  page = setHead(page, { ...head, ogImageAlt: head.imageAlt });
   // HAN-159: zelfstandige graph per artikel — volledige Person/WebSite/Organization
   // nodes naast de BlogPosting, zodat @id-referenties in dit document resolven.
   const { "@context": _articleCtx, ...articleNode } = getBlogPostJsonLd(blogPost);
