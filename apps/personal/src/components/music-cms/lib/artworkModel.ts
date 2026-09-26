@@ -22,6 +22,14 @@ export interface ArtworkAsset {
 export interface ArtworkFilters { search: string; category: string; channel: string; album: string; song: string; collection: string; edition: string }
 export const EMPTY_FILTERS: ArtworkFilters = { search: "", category: "", channel: "", album: "", song: "", collection: "", edition: "" };
 
+export function changeArtworkCategory(assets: ArtworkAsset[], filters: ArtworkFilters, category: string): ArtworkFilters {
+  const next = { ...filters, category };
+  // Keep useful combinations, but don't carry a song/collection constraint into
+  // a category where it hides every asset. The UI announces this reset.
+  if (filterArtwork(assets, next).length || !filterArtwork(assets, { ...EMPTY_FILTERS, category }).length) return next;
+  return { ...EMPTY_FILTERS, category };
+}
+
 export function filterArtwork(assets: ArtworkAsset[], filters: ArtworkFilters): ArtworkAsset[] {
   const terms = filters.search.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
   return assets.filter(a => {
