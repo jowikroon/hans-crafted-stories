@@ -101,11 +101,11 @@ def classify(row, aliases):
         side = 'back' if matches(r'back') else 'front'
         title = 'NEON — ' + side + ' cover'
         family = ('pulse-' if pulse else '') + 'album-' + side
-    elif song:
-        family = ('pulse-' if pulse else 'social-' if social else '') + slug(song)
     elif pages:
         family = origins[0]['collection'] + '-' + slug(names[0])
         title = ('The Signal Between' if 'signal-between-story' in packs else 'Island Sessions') + ' — ' + ('pagina ' if paths[0].startswith('pages/') else '') + names[0]
+    elif song:
+        family = ('pulse-' if pulse else 'social-' if social else '') + slug(song)
     elif board:
         family = origins[0]['collection'] + '-' + slug(re.sub(r'-preview$', '', names[0]))
 

@@ -71,6 +71,13 @@ class ClassificationTest(unittest.TestCase):
             self.assertEqual(result[key], row[key])
         self.assertIn('TikTok', result['channels'])
 
+    def test_song_specific_story_page_does_not_replace_square_cover(self):
+        row = asset('pages/03.png', 'jowikroon-signal-between-story-v14')
+        row['origins'].append(dict(collection='_ARTWORK', file='Per song/Beat Drop/02 story frame/chapter.png'))
+        result = classify(row, ALIASES)
+        self.assertEqual(result['song'], 'Beat Drop')
+        self.assertEqual(result['family_key'], 'jowikroon-signal-between-story-v14-03')
+
 
 if __name__ == '__main__':
     unittest.main()
