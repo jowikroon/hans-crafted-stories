@@ -1,4 +1,8 @@
 export interface ArtworkAsset {
+  media_type?: "image" | "video";
+  duration_seconds?: number | null;
+  playback_path?: string | null;
+  original_parts?: string[];
   id: string;
   title: string;
   family_key: string;
@@ -19,8 +23,8 @@ export interface ArtworkAsset {
   source_modified: string;
 }
 
-export interface ArtworkFilters { search: string; category: string; channel: string; album: string; song: string; collection: string; edition: string }
-export const EMPTY_FILTERS: ArtworkFilters = { search: "", category: "", channel: "", album: "", song: "", collection: "", edition: "" };
+export interface ArtworkFilters { search: string; category: string; channel: string; album: string; song: string; collection: string; edition: string; media: string; role: string }
+export const EMPTY_FILTERS: ArtworkFilters = { search: "", category: "", channel: "", album: "", song: "", collection: "", edition: "", media: "", role: "" };
 
 export function changeArtworkCategory(assets: ArtworkAsset[], filters: ArtworkFilters, category: string): ArtworkFilters {
   const next = { ...filters, category };
@@ -35,6 +39,8 @@ export function filterArtwork(assets: ArtworkAsset[], filters: ArtworkFilters): 
   return assets.filter(a => {
     const haystack = [a.title, a.song, a.album, a.format, a.role, ...a.categories, ...a.channels, ...a.collections, ...a.origins.map(o => o.file)].join(" ").toLocaleLowerCase();
     return terms.every(t => haystack.includes(t)) &&
+      (!filters.media || (a.media_type ?? "image") === filters.media) &&
+      (!filters.role || a.role === filters.role) &&
       (!filters.category || a.categories.includes(filters.category)) &&
       (!filters.channel || a.channels.includes(filters.channel)) &&
       (!filters.album || a.album === filters.album) &&
@@ -61,3 +67,9 @@ export function groupArtwork(assets: ArtworkAsset[]): ArtworkAsset[] {
 
 export const collectionLabel = (value: string) => value.replace(/^jowikroon-/, "").replaceAll("-", " ");
 export const dimensions = (a: ArtworkAsset) => a.width && a.height ? `${a.width} × ${a.height}` : "Vector";
+
+export function durationLabel(seconds?: number | null): string {
+  if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return "";
+  const n = Math.round(seconds);
+  return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, "0")}`;
+}

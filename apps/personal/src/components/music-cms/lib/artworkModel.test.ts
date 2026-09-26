@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { artworkVersions, changeArtworkCategory, EMPTY_FILTERS, filterArtwork, groupArtwork, type ArtworkAsset } from "./artworkModel";
+import { durationLabel, artworkVersions, changeArtworkCategory, EMPTY_FILTERS, filterArtwork, groupArtwork, type ArtworkAsset } from "./artworkModel";
 
 const asset = (overrides: Partial<ArtworkAsset>): ArtworkAsset => ({
   id: "one", title: "HelloGoodbye", family_key: "hellogoodbye", album: "NEON", song: "HelloGoodbye",
@@ -48,5 +48,28 @@ describe("artwork archive discovery", () => {
       const row = asset({ categories: [category] });
       expect(filterArtwork([row], changeArtworkCategory([row], { ...EMPTY_FILTERS, search: "missing" }, category))).toEqual([row]);
     }
+  });
+});
+
+
+describe("video archive discovery", () => {
+  const image = asset({ id: "image" });
+  const video = asset({ id: "video", media_type: "video", family_key: "video-hello", categories: ["Video", "Song"], role: "Video export", format: "MP4" });
+  const segment = asset({ id: "segment", media_type: "video", family_key: "video-fragment", categories: ["Video", "Studio"], role: "Editing segment", is_current: false });
+  it("combines media and usage filters without treating legacy images as videos", () => {
+    expect(filterArtwork([image, video, segment], { ...EMPTY_FILTERS, media: "video", role: "Video export" })).toEqual([video]);
+    expect(filterArtwork([image, video], { ...EMPTY_FILTERS, media: "image" })).toEqual([image]);
+  });
+  it("keeps a song's video versions separate from its cover artwork", () => {
+    expect(groupArtwork([image, video])).toHaveLength(2);
+    expect(artworkVersions([image, video], video)).toEqual([video]);
+  });
+  it("clears an image-only constraint when opening Video", () => {
+    expect(changeArtworkCategory([image, video], { ...EMPTY_FILTERS, media: "image" }, "Video")).toEqual({ ...EMPTY_FILTERS, category: "Video" });
+  });
+  it("formats video durations across minute boundaries", () => {
+    expect(durationLabel(164.29)).toBe("2:44");
+    expect(durationLabel(59.9)).toBe("1:00");
+    expect(durationLabel(null)).toBe("");
   });
 });
