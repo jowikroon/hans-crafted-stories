@@ -28,5 +28,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  /* Node-only tests (fs/child_process/os) worden getypecheckt via tsconfig.node-tests.json */
+  "exclude": ["src/test/publicWebrootGuard.test.ts"]
 }
