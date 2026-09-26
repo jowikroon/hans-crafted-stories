@@ -28,8 +28,48 @@ export async function previewUrls(assets: ArtworkAsset[]): Promise<Record<string
   return Object.fromEntries((data ?? []).filter(p => p.signedUrl && !p.error).map(p => [p.path, p.signedUrl]));
 }
 
-export async function downloadArtwork(asset: ArtworkAsset): Promise<void> {
+export async function playbackUrl(asset: ArtworkAsset): Promise<string> {
+  if (asset.media_type !== "video" || !asset.playback_path) throw new Error("Geen videopreview beschikbaar.");
+  const { data, error } = await db.storage.from(BUCKET).createSignedUrl(asset.playback_path, 3600);
+  if (error || !data) throw new Error("De video kon niet worden geladen. Probeer opnieuw.");
+  return data.signedUrl;
+}
+
+export async function originalVideoBlob(asset: ArtworkAsset, onProgress?: (percent: number) => void): Promise<Blob> {
+  const parts = asset.original_parts ?? [];
+  if (!parts.length) throw new Error("Geen originele videodelen beschikbaar.");
+  const buffers: ArrayBuffer[] = [];
+  let received = 0;
+  for (const path of parts) {
+    const { data, error } = await db.storage.from(BUCKET).createSignedUrl(path, 300);
+    if (error || !data) throw new Error("Het originele bestand kon niet worden opgehaald.");
+    const response = await fetch(data.signedUrl);
+    if (!response.ok) throw new Error("Download onderbroken. Probeer opnieuw.");
+    const buffer = await response.arrayBuffer();
+    buffers.push(buffer); received += buffer.byteLength;
+    onProgress?.(Math.min(99, Math.round(received / asset.bytes * 100)));
+  }
+  if (received !== asset.bytes) throw new Error("Het bestand is onvolledig. Probeer opnieuw.");
+  const blob = new Blob(buffers, { type: "video/mp4" });
+  // Imported IDs are SHA-256 hashes of the unchanged original bytes.
+  const digest = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
+  const hash = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
+  if (hash !== asset.id) throw new Error("Bestandscontrole mislukt. Probeer opnieuw.");
+  onProgress?.(100);
+  return blob;
+}
+
+export async function downloadArtwork(asset: ArtworkAsset, onProgress?: (percent: number) => void): Promise<void> {
   const filename = `${asset.family_key}-${asset.id.slice(0, 8)}.${asset.format.toLowerCase()}`;
+  if (asset.original_parts?.length) {
+    const blob = await originalVideoBlob(asset, onProgress);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url; link.download = filename;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    return;
+  }
   const { data, error } = await db.storage.from(BUCKET).createSignedUrl(asset.storage_path, 60, { download: filename });
   if (error || !data) throw new Error("De download kon niet worden gestart. Probeer opnieuw.");
   const link = document.createElement("a");
