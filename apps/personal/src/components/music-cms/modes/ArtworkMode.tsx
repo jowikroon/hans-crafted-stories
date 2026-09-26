@@ -4,17 +4,19 @@ import { ArrowDownToLine, Images, Search, ShieldCheck, SlidersHorizontal } from 
 import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { listArtwork, previewUrls, downloadArtwork } from "../lib/artworkStore";
-import { artworkVersions, collectionLabel, dimensions, EMPTY_FILTERS, filterArtwork, groupArtwork, type ArtworkAsset, type ArtworkFilters } from "../lib/artworkModel";
+import { artworkVersions, changeArtworkCategory, collectionLabel, dimensions, EMPTY_FILTERS, filterArtwork, groupArtwork, type ArtworkAsset, type ArtworkFilters } from "../lib/artworkModel";
 import "../artwork.css";
 
 const PAGE_SIZE = 36;
 const CATEGORIES = ["Album", "Song", "Social", "Profile", "Banner", "Brand element", "Studio"];
+const FILTER_LABELS: Record<keyof ArtworkFilters, string> = { search: "Zoekterm", category: "Categorie", channel: "Kanaal", album: "Album", song: "Song", collection: "Collectie", edition: "Selectie" };
 
 export default function ArtworkMode() {
   const { user } = useAuth();
   const [filters, setFilters] = useState<ArtworkFilters>(EMPTY_FILTERS);
   const [page, setPage] = useState(0);
   const [showFiles, setShowFiles] = useState(false);
+  const [filterNotice, setFilterNotice] = useState("");
   const [selected, setSelected] = useState<ArtworkAsset | null>(null);
   const [downloadError, setDownloadError] = useState("");
   const [downloading, setDownloading] = useState(false);
@@ -33,8 +35,14 @@ export default function ArtworkMode() {
     collections: [...new Set(assets.flatMap(a => a.collections))].sort(),
   }), [assets]);
   const versions = selected ? artworkVersions(assets, selected) : [];
-  const update = (key: keyof ArtworkFilters, value: string) => { setFilters(f => ({ ...f, [key]: value })); setPage(0); };
-  const reset = () => { setFilters(EMPTY_FILTERS); setPage(0); };
+  const update = (key: keyof ArtworkFilters, value: string) => {
+    const next = key === "category" ? changeArtworkCategory(assets, filters, value) : { ...filters, [key]: value };
+    const cleared = Object.keys(filters).some(k => k !== key && filters[k as keyof ArtworkFilters] && !next[k as keyof ArtworkFilters]);
+    setFilterNotice(cleared ? "Eerdere filters pasten niet bij deze categorie en zijn gewist. Je ziet nu alle beelden in deze categorie." : "");
+    setFilters(next); setPage(0);
+  };
+  const reset = () => { setFilters(EMPTY_FILTERS); setFilterNotice(""); setPage(0); };
+  const resetWithinCategory = () => { setFilters({ ...EMPTY_FILTERS, category: filters.category }); setFilterNotice(""); setPage(0); };
   useEffect(() => { setSelected(null); setDownloadError(""); }, [user?.id]);
   const download = async () => {
     if (!selected) return;
@@ -52,7 +60,8 @@ export default function ArtworkMode() {
       <div><p className="ma-kicker">JOWIKROON / VISUAL ARCHIVE</p><h1>Het beeld achter<br /><em>de muziek.</em></h1><p className="ma-intro">Van het eerste idee tot de laatste versie. Alle beelden, één verhaal.</p></div>
       <div className="ma-header-side"><span className="ma-private"><ShieldCheck size={15} /> Privé beeldbank</span><strong>{assets.length || "—"}<small>beelden in het archief</small></strong><svg className="ma-pulse" viewBox="0 0 200 45" aria-hidden="true"><path d="M0 24H38Q45 24 49 20T59 24H75L82 34L90 5L99 39L107 21Q112 13 118 24H200" /></svg></div>
     </header>
-    <nav className="ma-tabs" aria-label="Soort beeld"><button aria-pressed={!filters.category} onClick={() => update("category", "")}>Alles <span>{assets.length}</span></button>{CATEGORIES.filter(c => assets.some(a => a.categories.includes(c))).map(c => <button key={c} aria-pressed={filters.category === c} onClick={() => update("category", c)}>{c}</button>)}</nav>
+    <nav className="ma-tabs" aria-label="Soort beeld"><button aria-pressed={!filters.category} onClick={reset}>Alles <span>{assets.length}</span></button>{CATEGORIES.filter(c => assets.some(a => a.categories.includes(c))).map(c => <button key={c} aria-pressed={filters.category === c} onClick={() => update("category", c)}>{c} <span>{assets.filter(a => a.categories.includes(c)).length}</span></button>)}</nav>
+    {filters.category === "Profile" && <p className="ma-filter-help">Profielfoto’s, portretmasters en brede profielheaders. Kies een kanaal voor bijvoorbeeld Instagram, WhatsApp of SoundCloud.</p>}
     <section className="ma-filterbar" aria-label="Beeldbank filters">
       <label className="ma-search"><Search size={17} /><span className="sr-only">Zoek beelden</span><input type="search" placeholder="Zoek een song, beeld of versie…" value={filters.search} onChange={e => update("search", e.target.value)} /></label>
       <label>Album<select value={filters.album} onChange={e => update("album", e.target.value)}><option value="">Alle albums</option>{options.albums.map(v => <option key={v}>{v}</option>)}</select></label>
@@ -61,11 +70,13 @@ export default function ArtworkMode() {
       <label>Collectie / versie<select value={filters.collection} onChange={e => update("collection", e.target.value)}><option value="">Alle collecties</option>{options.collections.map(v => <option key={v} value={v}>{collectionLabel(v)}</option>)}</select></label>
       <label>Selectie<select value={filters.edition} onChange={e => update("edition", e.target.value)}><option value="">Alle versies</option><option value="current">Huidige collectie</option><option value="archive">Eerdere versies & studies</option></select></label>
     </section>
+    <div className="ma-active-filters" aria-label="Actieve filters">{(Object.keys(filters) as (keyof ArtworkFilters)[]).filter(k => k !== "category" && filters[k]).map(k => <button key={k} onClick={() => update(k, "")} aria-label={`Verwijder filter ${FILTER_LABELS[k]}: ${filters[k]}`}>{FILTER_LABELS[k]}: {k === "collection" ? collectionLabel(filters[k]) : k === "edition" ? filters[k] === "current" ? "Huidige collectie" : "Eerdere versies & studies" : filters[k]} <span aria-hidden="true">×</span></button>)}</div>
+    {filterNotice && <p className="ma-filter-help" role="status">{filterNotice}</p>}
     <div className="ma-results"><p role="status">{filtered.length} bestanden · {groupArtwork(filtered).length} ontwerpen</p><div className="ma-view-options"><button aria-pressed={!showFiles} onClick={() => { setShowFiles(false); setPage(0); }}>Per ontwerp</button><button aria-pressed={showFiles} onClick={() => { setShowFiles(true); setPage(0); }}>Alle bestanden</button><button onClick={reset}><SlidersHorizontal size={14} /> Wis filters</button></div></div>
     {query.isPending && <p className="ma-message" role="status">Je beeldbank wordt geladen…</p>}
     {query.isError && <div className="ma-message" role="alert"><p>{query.error.message}</p><button onClick={() => query.refetch()}>Opnieuw laden</button></div>}
     {previews.isError && <div className="ma-message" role="alert">Previews konden niet worden geladen. <button onClick={() => previews.refetch()}>Probeer opnieuw</button></div>}
-    {!query.isPending && !query.isError && !filtered.length && <div className="ma-message"><Images /><h2>Geen beelden in deze selectie.</h2><button onClick={reset}>Bekijk alle beelden</button></div>}
+    {!query.isPending && !query.isError && !filtered.length && <div className="ma-message"><Images /><h2>Geen beelden met deze combinatie van filters.</h2><button onClick={resetWithinCategory}>Bekijk alle beelden{filters.category ? ` in ${filters.category}` : ""}</button></div>}
     <div className="ma-grid">{visible.map(a => <button className="ma-card" key={a.id} onClick={() => { setSelected(a); setDownloadError(""); }} aria-label={`${a.title}, ${a.format}, ${a.role}. Bekijk beeld en versies`}>
       <div className="ma-card-image">{image(a)}<span className="ma-format">{a.format}</span>{a.is_current && <span className="ma-current">Huidige collectie</span>}</div>
       <div className="ma-card-copy"><h2>{a.title}</h2><p>{a.role} <span>·</span> {dimensions(a)}</p><small>{artworkVersions(assets, a).length} versies & exports · {collectionLabel(a.collections[0])}</small></div>

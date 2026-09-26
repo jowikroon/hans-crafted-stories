@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { artworkVersions, EMPTY_FILTERS, filterArtwork, groupArtwork, type ArtworkAsset } from "./artworkModel";
+import { artworkVersions, changeArtworkCategory, EMPTY_FILTERS, filterArtwork, groupArtwork, type ArtworkAsset } from "./artworkModel";
 
 const asset = (overrides: Partial<ArtworkAsset>): ArtworkAsset => ({
   id: "one", title: "HelloGoodbye", family_key: "hellogoodbye", album: "NEON", song: "HelloGoodbye",
@@ -31,5 +31,22 @@ describe("artwork archive discovery", () => {
   it("groups versions behind a current cover while preserving unrelated designs", () => {
     const plate = asset({ id: "plate", role: "Clean plate" });
     expect(groupArtwork([plate, old, unrelated, current])).toEqual([current, unrelated]);
+  });
+  it("opens Profile even after a song and current-collection filter hide its archived images", () => {
+    const profile = asset({ id: "profile", song: null, categories: ["Profile"], is_current: false });
+    const next = changeArtworkCategory([current, profile], { ...EMPTY_FILTERS, category: "Song", song: "HelloGoodbye", edition: "current" }, "Profile");
+    expect(next).toEqual({ ...EMPTY_FILTERS, category: "Profile" });
+    expect(filterArtwork([current, profile], next)).toEqual([profile]);
+  });
+  it("keeps compatible channel filters when changing category", () => {
+    const banner = asset({ categories: ["Profile", "Banner"], channels: ["SoundCloud"] });
+    const filters = { ...EMPTY_FILTERS, category: "Profile", channel: "SoundCloud" };
+    expect(changeArtworkCategory([banner], filters, "Banner")).toEqual({ ...filters, category: "Banner" });
+  });
+  it("recovers every populated category from an incompatible search", () => {
+    for (const category of ["Album", "Song", "Social", "Profile", "Banner", "Brand element", "Studio"]) {
+      const row = asset({ categories: [category] });
+      expect(filterArtwork([row], changeArtworkCategory([row], { ...EMPTY_FILTERS, search: "missing" }, category))).toEqual([row]);
+    }
   });
 });

@@ -43,6 +43,10 @@
 .ma-pagination { margin-top:35px; display:flex; justify-content:center; align-items:center; gap:22px; font-size:12px; }
 .ma-library .ma-pagination button { color:#f1eee8; border:1px solid #45424e; border-radius:4px; padding:9px 16px; min-height:40px; background:none; }
 .ma-footer { margin-top:36px; padding-top:20px; border-top:1px solid #34343c; font-size:10px; color:#96949f; line-height:1.8; }
+.ma-filter-help { color:#c1b5d3; font-size:12px; line-height:1.6; margin:12px 0; }
+.ma-active-filters { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.ma-library .ma-active-filters button { color:#e0d4f2; background:#23202b; border:1px solid #51435f; border-radius:4px; padding:8px 10px; font-size:11px; cursor:pointer; }
+.ma-active-filters span { margin-left:8px; }
 .ma-dialog { background:#101114!important; color:#f1eee8!important; border:1px solid #45424e!important; max-width:1120px!important; width:calc(100vw - 32px)!important; display:grid!important; grid-template-columns:minmax(0,1.3fr) minmax(280px,1fr); padding:28px!important; gap:28px!important; max-height:92dvh; overflow:auto; border-radius:8px!important; }
 .ma-detail-image { align-self:start; background:#1b1c22; aspect-ratio:1; position:sticky; top:0; }
 .ma-detail-copy { min-width:0; padding-top:14px; }.ma-detail-copy .ma-kicker { margin-bottom:16px; }
