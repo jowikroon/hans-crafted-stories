@@ -166,7 +166,17 @@
     },
     {
       "source": "/cases/connect-car-parts",
-      "destination": "/work/connect-car-parts",
+      "destination": "/work/marketplace-product-data-automation",
+      "permanent": true
+    },
+    {
+      "source": "/work/connect-car-parts",
+      "destination": "/work/marketplace-product-data-automation",
+      "permanent": true
+    },
+    {
+      "source": "/nl/work/connect-car-parts",
+      "destination": "/nl/work/marketplace-product-data-automation",
       "permanent": true
     },
     {

@@ -285,22 +285,23 @@ const WritingV2 = () => {
             )}
           </p>
           <div className="proof">
+            {/* Geen klantresultaatcijfers (anonimisering 2026-09-23); alleen eigen, controleerbare feiten. */}
             <div className="proof__item">
-              <span className="proof__stat">70%</span>
+              <span className="proof__stat">10+</span>
               <span className="proof__label">
-                {lang === "nl" ? "Amazon NL categorie-aandeel (Nielsen)" : "Amazon NL category share (Nielsen)"}
+                {lang === "nl" ? "jaar marketplace- en e-commercewerk" : "years of marketplace and e-commerce work"}
               </span>
             </div>
             <div className="proof__item">
-              <span className="proof__stat">+20%</span>
+              <span className="proof__stat">2</span>
               <span className="proof__label">
-                {lang === "nl" ? "Wekelijkse sales via targeted campagnes" : "Weekly sales via targeted campaigns"}
+                {lang === "nl" ? "kernkanalen: Amazon en Bol.com" : "core channels: Amazon and Bol.com"}
               </span>
             </div>
             <div className="proof__item">
-              <span className="proof__stat">&lt;2%</span>
+              <span className="proof__stat">AI</span>
               <span className="proof__label">
-                {lang === "nl" ? "Out-of-stock rate, forecast-driven" : "Out-of-stock rate, forecast-driven"}
+                {lang === "nl" ? "workflows met controleerbare output" : "workflows with checkable output"}
               </span>
             </div>
           </div>

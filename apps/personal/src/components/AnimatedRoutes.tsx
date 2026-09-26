@@ -87,7 +87,7 @@ const AnimatedRoutes = () => {
         ))}
         <Route path="/portfolio" element={<Navigate to="/work" replace />} />
         {LANG_PREFIXES.map((prefix) => (
-          <Route key={`${prefix}/work/connect-car-parts`} path={`${prefix}/work/connect-car-parts`} element={<PageTransition><CaseStudyDetail /></PageTransition>} />
+          <Route key={`${prefix}/work/marketplace-product-data-automation`} path={`${prefix}/work/marketplace-product-data-automation`} element={<PageTransition><CaseStudyDetail /></PageTransition>} />
         ))}
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/writing`} path={`${prefix}/writing`} element={<PageTransition><Writing /></PageTransition>} />

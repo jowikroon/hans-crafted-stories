@@ -12,6 +12,7 @@ import { getBlogPostHead, getBlogPostJsonLd, detectBlogPostLang, primaryBlogPost
 import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "@/lib/seo/staticHtml";
 import { SERVICE_PAGES, SERVICE_PAGES_UPDATED, SERVICE_BYLINE, EXPERIENCE_STRIP, RATES_PAGE, PRICING_NL, PRICING_EN } from "@/data/servicePages";
 import { translations } from "@/data/translations";
+import { MARKETPLACE_CASES } from "@/data/marketplaceCases";
 import { songs } from "@/data/music";
 import { LOCALIZED_ROUTES, alternatesFor, absoluteUrl, localizePath, OG_LOCALE } from "@/lib/i18n/routes";
 
@@ -57,6 +58,7 @@ export {
   SERVICE_PAGES_UPDATED,
   SERVICE_BYLINE,
   EXPERIENCE_STRIP,
+  MARKETPLACE_CASES,
   RATES_PAGE,
   PRICING_NL,
   PRICING_EN,

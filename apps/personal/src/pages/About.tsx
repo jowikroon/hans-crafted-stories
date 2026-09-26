@@ -1,4 +1,6 @@
-import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home, Calendar } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
@@ -26,6 +28,23 @@ const About = () => {
   const t = translations[lang];
   const { isVisible } = usePageElements("about");
   const { getValue } = usePageContent("about");
+  const location = useLocation();
+  const reduceMotion = useReducedMotion();
+  const contactHeadingRef = useRef<HTMLHeadingElement>(null);
+
+  // /about#contact: React Router scrolt niet naar een hash bij routewissel. Na mount
+  // (en bij elke nieuwe navigatie naar #contact) naar het formulier scrollen en de
+  // kop focussen, zodat toetsenbord- en screenreadergebruikers op de juiste plek landen.
+  useEffect(() => {
+    if (location.hash !== "#contact") return;
+    const timer = window.setTimeout(() => {
+      const el = document.getElementById("contact");
+      if (!el) return;
+      el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      contactHeadingRef.current?.focus({ preventScroll: true });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [location.hash, location.key, reduceMotion]);
 
   const seo = t.seo;
 
@@ -40,7 +59,7 @@ const About = () => {
     { q: "Vendor of Seller op Bol.com: wat past beter?",
       a: "Seller houdt marge en controle maar vraagt actief accountwerk. Vendor bespaart operatie maar levert marge en pricing-controle in. Ik help beide modellen te modelleren op EBITDA, niet alleen omzet." },
     { q: "Hoe verlaag je out-of-stock rates?",
-      a: "Een demand-forecasting model op recente sell-through, seizoen en promotie-lift, gekoppeld aan supplier lead-times. In bestaande cases OOS onder 2%." },
+      a: "Een demand-forecasting model op recente sell-through, seizoen en promotie-lift, gekoppeld aan supplier lead-times, plus duidelijke afspraken met logistiek over wie ingrijpt bij een risico." },
     { q: "Doe je ook Amazon Ads en Bol Ads?",
       a: "Ja. Sponsored Products, Sponsored Brands, Display en Bol Ads met wekelijkse bidsturing en negative harvesting; ACOS/TACOS als primaire KPI\u2019s." },
   ] : [
@@ -51,7 +70,7 @@ const About = () => {
     { q: "Bol.com: vendor or seller?",
       a: "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. I model both routes on EBITDA, not just revenue." },
     { q: "How do you reduce out-of-stock rates?",
-      a: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2% OOS." },
+      a: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times, plus clear agreements with logistics on who acts when a risk appears." },
     { q: "Do you manage Amazon Ads and Bol Ads?",
       a: "Yes. Sponsored Products, Sponsored Brands, Display and Bol Ads with weekly bid steering and negative harvesting; ACOS/TACOS as primary KPIs." },
   ];
@@ -228,10 +247,8 @@ const About = () => {
                     <Download size={14} /> {getValue("about_cv_en_label", t.downloadCvEn)}
                     <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
-                  <a href="/Cv_HvL_-_Ecommerce.pdf" download onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "download_cv", label: "nl" }); }} className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:border-primary/20">
-                    <Download size={14} /> {getValue("about_cv_nl_label", t.downloadCvNl)}
-                    <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-                  </a>
+                  {/* NL-cv (Cv_HvL_-_Ecommerce.pdf) tijdelijk offline: bevatte klantresultaatcijfers en
+                      geboortedatum/adres. Terugzetten zodra er een geanonimiseerde versie is (anonimisering 2026-09-23). */}
                 </div>
               )}
 
@@ -408,12 +425,12 @@ const About = () => {
 
         {/* Contact Form */}
         {isVisible("contact_form") && (
-          <motion.div id="contact" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mt-20">
+          <motion.div id="contact" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mt-20 scroll-mt-28">
             <div className="mb-8 flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
                 <Mail size={14} className="text-primary" />
               </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">{t.contact.heading}</h2>
+              <h2 ref={contactHeadingRef} tabIndex={-1} className="font-display text-2xl font-medium text-foreground focus:outline-none">{t.contact.heading}</h2>
             </div>
             <ContactForm />
           </motion.div>

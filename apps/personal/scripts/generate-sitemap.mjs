@@ -31,7 +31,7 @@ const SUPABASE_KEY = readEnv("VITE_SUPABASE_PUBLISHABLE_KEY");
 const LOCALIZED = [
   { path: "/", changefreq: "monthly", priority: "1.0" },
   { path: "/work", changefreq: "monthly", priority: "0.8" },
-  { path: "/work/connect-car-parts", changefreq: "monthly", priority: "0.7" },
+  { path: "/work/marketplace-product-data-automation", changefreq: "monthly", priority: "0.7" },
   { path: "/about", changefreq: "monthly", priority: "0.8" },
   { path: "/amazon-nl-specialist", changefreq: "monthly", priority: "0.9" },
   { path: "/bol-com-consultant", changefreq: "monthly", priority: "0.9" },

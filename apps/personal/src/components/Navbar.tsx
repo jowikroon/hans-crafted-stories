@@ -96,7 +96,7 @@ const Navbar = (_props: NavbarProps) => {
   const searchablePages = [
     { to: "/", label: t.home, keywords: ["home", "start", "landing"] },
     { to: "/work", label: t.work, keywords: ["work", "werk", "cases", "portfolio"] },
-    { to: "/work/connect-car-parts", label: "Connect Car Parts", keywords: ["ccp", "case", "brake", "abs"] },
+    { to: "/work/marketplace-product-data-automation", label: t.workMenu.marketplaceCase, keywords: ["case", "product data", "productdata", "automotive", "feeds"] },
     { to: "/amazon-nl-specialist", label: t.workMenu.amazon, keywords: ["amazon", "nl", "specialist", "ads"] },
     { to: "/bol-com-consultant", label: t.workMenu.bol, keywords: ["bol", "consultant", "marketplace"] },
     { to: "/interim-ecommerce-manager", label: t.workMenu.interim, keywords: ["interim", "manager", "freelance"] },
@@ -165,6 +165,8 @@ const Navbar = (_props: NavbarProps) => {
     if (searchOpen) { setTimeout(() => searchInputRef.current?.focus(), 100); setSearchQuery(""); setSelectedIndex(0); }
   }, [searchOpen]);
   useEffect(() => setSelectedIndex(0), [searchQuery]);
+  // Mobiel menu sluit bij elke route- of taalwissel (ook browser-terug/vooruit), niet alleen via onClick.
+  useEffect(() => setMobileOpen(false), [location.pathname, location.search]);
 
   // Scroll state — drives the floating pill's elevation (redesign shell)
   const [scrolled, setScrolled] = useState(false);
@@ -468,8 +470,15 @@ const Navbar = (_props: NavbarProps) => {
                   </AnimatePresence>
                 </div>
               ) : (
-                <Link to="/portal" className={`hidden sm:inline-flex items-center gap-2 rounded-full border ${barBord} px-4 py-1.5 text-sm font-medium ${barInk} ${barHovBg} transition-all`}>
-                  <LogIn size={14} /><span>{t.login}</span>
+                // Login is secundair (bestaande portalgebruikers); nieuwe opdrachten gaan via Contact (audit F4.2).
+                <Link to="/portal" className={`hidden sm:inline-flex items-center gap-1.5 px-2 py-1.5 text-sm ${barInk} underline-offset-4 hover:underline`}>
+                  <LogIn size={13} /><span>{t.login}</span>
+                </Link>
+              )}
+
+              {!user && (
+                <Link to="/about#contact" className={`hidden sm:inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${barDark ? "bg-[#F5F1E6] text-[#15140F] hover:opacity-90" : "bg-[#15140F] text-[#F1ECDF] hover:opacity-90"}`}>
+                  {t.contact}
                 </Link>
               )}
 
@@ -492,6 +501,10 @@ const Navbar = (_props: NavbarProps) => {
                     <Link key={l.to} to={l.to} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm font-medium ${active ? (cc ? "bg-[#2D9255] text-white" : `${barChip} ${barInk}`) : `${barMut} ${barHovBg} ${barHovInk}`}`}>{l.label}</Link>
                   );
                 })}
+
+                {!user && (
+                  <Link to="/about#contact" onClick={() => setMobileOpen(false)} className={`mt-1 rounded-lg px-3 py-2.5 text-sm font-semibold ${barDark ? "bg-[#F5F1E6] text-[#15140F]" : "bg-[#15140F] text-[#F1ECDF]"}`}>{t.contact}</Link>
+                )}
 
                 <div className={`my-1 h-px ${barDark ? "bg-white/10" : "bg-black/10"}`} />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
@@ -527,7 +540,7 @@ const Navbar = (_props: NavbarProps) => {
                     <button onClick={() => { signOut(); setMobileOpen(false); }} className="rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 text-[#C2410C] hover:bg-[#C2410C]/10 w-full text-left"><LogOut size={14} /> {t.workspace.signOut}</button>
                   </>
                 ) : (
-                  <Link to="/portal" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium inline-flex items-center gap-2 text-[#15140F] hover:bg-[#E5DFCE]/60"><LogIn size={14} /> {t.login}</Link>
+                  <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><LogIn size={14} /> {t.login}</Link>
                 )}
               </div>
             </motion.div>
