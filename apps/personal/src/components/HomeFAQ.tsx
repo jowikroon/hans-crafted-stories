@@ -55,6 +55,38 @@ const faqs = [
     answerNl:
       "Ja. Naast Amazon NL en Bol.com omvatten opdrachten regelmatig Amazon DE en Amazon FR voor merken die uitbreiden in de EU, met hetzelfde operationele model per marktplaats: listingkwaliteit, advertising, pricing, catalogus en rapportage.",
   },
+  {
+    question: "How can I improve marketplace conversion without increasing ad spend?",
+    questionNl: "Hoe verbeter ik marketplace-conversie zonder meer advertentiebudget?",
+    answer:
+      "Start with the product detail page: align the title and bullets with search intent, make the main image and value proposition easier to scan, resolve variation and catalog errors, and strengthen reviews and delivery promises. Better listing quality can lift organic and paid conversion before bids or budgets change.",
+    answerNl:
+      "Begin bij de productdetailpagina: laat titel en bullets aansluiten op zoekintentie, maak hoofdafbeelding en waardepropositie sneller scanbaar, los variatie- en catalogusfouten op en versterk reviews en leverbelofte. Betere listingkwaliteit kan organische en betaalde conversie verhogen voordat biedingen of budgetten veranderen.",
+  },
+  {
+    question: "What is the difference between optimizing Amazon Ads and Bol Ads?",
+    questionNl: "Wat is het verschil tussen optimalisatie van Amazon Ads en Bol Ads?",
+    answer:
+      "Both require search-term analysis, bid control and profitability tracking, but their campaign structures, targeting options and reporting differ. Optimization should therefore use channel-specific search terms, margins, placement data and stock signals instead of copying one marketplace setup to the other.",
+    answerNl:
+      "Beide vragen om zoektermanalyse, biedingssturing en winstgevendheidsmeting, maar campagnestructuur, targeting en rapportage verschillen. Optimalisatie gebruikt daarom kanaalspecifieke zoektermen, marges, plaatsingsdata en voorraadsignalen in plaats van één marketplace-opzet te kopiëren.",
+  },
+  {
+    question: "What data is needed for an Amazon or Bol.com marketplace audit?",
+    questionNl: "Welke data is nodig voor een Amazon- of Bol.com-marketplace-audit?",
+    answer:
+      "A useful audit normally combines sales, traffic, conversion, advertising, margin, stock and catalog-quality data. Account exports are ideal, but a first diagnosis can also start with listing URLs, campaign reports, product margins and a clear description of the commercial goals and constraints.",
+    answerNl:
+      "Een bruikbare audit combineert doorgaans verkoop-, traffic-, conversie-, advertising-, marge-, voorraad- en catalogusdata. Accountexports zijn ideaal, maar een eerste diagnose kan ook starten met listing-URL's, campagnerapporten, productmarges en een heldere beschrijving van commerciële doelen en beperkingen.",
+  },
+  {
+    question: "Can Hans help with marketplace stockouts, pricing and catalog errors?",
+    questionNl: "Kan Hans helpen met stockouts, pricing en catalogusfouten?",
+    answer:
+      "Yes. Marketplace operations can include stock and sell-through analysis, pricing and Buy Box monitoring, variation cleanup, content corrections and feed troubleshooting. The first step is to separate isolated listing issues from structural problems in forecasting, source data or marketplace integrations.",
+    answerNl:
+      "Ja. Marketplace-operations kunnen voorraad- en sell-throughanalyse, pricing- en Buy Box-monitoring, variatie-opschoning, contentcorrecties en feedtroubleshooting omvatten. De eerste stap is losse listingproblemen te scheiden van structurele fouten in forecasting, brondata of marketplace-integraties.",
+  },
 ];
 
 const HomeFAQ = () => {
