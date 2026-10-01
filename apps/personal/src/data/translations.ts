@@ -184,6 +184,10 @@ type TranslationStrings = {
     errorSummary: string;
     /** Getoond op previews/localhost: er wordt niets verstuurd. */
     previewNotSent: string;
+    /** Server weigert tijdelijk (te veel inzendingen); e-mailuitwijk blijft. */
+    limitedMessage: string;
+    /** Botcontrole (Turnstile) niet afgerond of niet geladen. */
+    captchaMessage: string;
     /** Label voor de directe e-mail-uitwijk naast het formulier. */
     emailFallback: string;
   };
@@ -539,6 +543,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       invalidEmail: "Enter a valid email address",
       errorSummary: "Please check the highlighted fields.",
       previewNotSent: "Preview environment: this message was not sent.",
+      limitedMessage: "Too many messages in a short time. Please try again later, or email me directly.",
+      captchaMessage: "The spam check did not complete. Please wait a moment and try again, or email me directly.",
       emailFallback: "Prefer email? Write to me directly",
     },
 
@@ -907,6 +913,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       invalidEmail: "Vul een geldig e-mailadres in",
       errorSummary: "Controleer de gemarkeerde velden.",
       previewNotSent: "Previewomgeving: dit bericht is niet verstuurd.",
+      limitedMessage: "Te veel berichten in korte tijd. Probeer het later opnieuw of mail me direct.",
+      captchaMessage: "De spamcontrole is niet afgerond. Wacht even en probeer het opnieuw, of mail me direct.",
       emailFallback: "Liever mailen? Stuur me direct een e-mail",
     },
 
