@@ -9,13 +9,13 @@ import type { Lang } from "@/lib/i18n/routes";
  * Bewust een klein extern store-object: Navbar, LangProvider en BlogPostPage
  * zijn geen ouder/kind, en de prerender (SSR) heeft geen effecten.
  */
-export interface ArticleLangInfo { hasEn: boolean; lang: Lang }
+export interface ArticleLangInfo { hasEn: boolean; lang: Lang; /** Nederlandse versie aanwezig (Codex-review PR #387). */ hasNl?: boolean }
 const state = new Map<string, ArticleLangInfo>();
 const listeners = new Set<() => void>();
 
 export function setArticleLangInfo(slug: string, info: ArticleLangInfo): void {
   const cur = state.get(slug);
-  if (cur && cur.hasEn === info.hasEn && cur.lang === info.lang) return;
+  if (cur && cur.hasEn === info.hasEn && cur.lang === info.lang && cur.hasNl === info.hasNl) return;
   state.set(slug, info);
   listeners.forEach((l) => l());
 }
@@ -23,7 +23,7 @@ export function setArticleLangInfo(slug: string, info: ArticleLangInfo): void {
 /** Backwards-compatible helper (PR #350). */
 export function setArticleHasEnglish(slug: string, hasEn: boolean): void {
   const cur = state.get(slug);
-  setArticleLangInfo(slug, { hasEn, lang: cur?.lang ?? "nl" });
+  setArticleLangInfo(slug, { hasEn, lang: cur?.lang ?? "nl", hasNl: cur?.hasNl });
 }
 
 const subscribe = (l: () => void) => {

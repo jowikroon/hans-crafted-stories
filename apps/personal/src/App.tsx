@@ -13,6 +13,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollProgress from "./components/ScrollProgress";
 import AnimatedRoutes from "./components/AnimatedRoutes";
+import UntranslatedNotice from "./components/UntranslatedNotice";
 import SamanthaGlobalButton from "@/features/samantha/components/global/SamanthaGlobalButton";
 import CookieConsent from "./components/CookieConsent";
 import TrackingScriptInjector from "./components/TrackingScriptInjector";
@@ -81,6 +82,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
             <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
           </header>
           <main id="main-content" style={mainBg ? { backgroundColor: mainBg } : undefined} className={`min-h-screen ${isDarkPage ? "pt-16" : "pt-24"}`}>
+            <UntranslatedNotice />
             <AnimatedRoutes />
           </main>
           {!isDarkPage && <Footer />}

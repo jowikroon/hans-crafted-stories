@@ -64,6 +64,17 @@ export const localizePath = (path: string, lang: Lang): string => {
   return base;
 };
 
+/**
+ * localizePath werkt op een kaal pad en laat ?query en #hash vallen; een link
+ * als `/writing/<slug>?lang=en` werd daardoor stil de Nederlandse versie
+ * (i18n-audit 2026-10-01). Query en hash blijven hier behouden.
+ */
+export const localizeHref = (to: string, lang: Lang): string => {
+  const cut = to.search(/[?#]/);
+  if (cut === -1) return localizePath(to, lang);
+  return `${localizePath(to.slice(0, cut), lang)}${to.slice(cut)}`;
+};
+
 export const absoluteUrl = (path: string, lang: Lang): string => `${BASE_URL}${localizePath(path, lang)}`;
 
 export interface HreflangEntry {
