@@ -11,6 +11,16 @@ export interface PageElement {
   sort_order: number;
 }
 
+/*
+ * Elke hook-instantie krijgt een eigen kanaalnaam. Bij een taalwissel (/nl/about ->
+ * /about) houdt AnimatePresence de vertrekkende pagina nog even gemount; met een
+ * vaste naam gaf supabase.channel() het al geabonneerde kanaal terug en gooide
+ * .on() "cannot add postgres_changes callbacks ... after subscribe()", waarna de
+ * route-error-boundary "This page could not be displayed." toonde
+ * (i18n-audit 2026-10-01, reproduceerbaar op productie).
+ */
+let channelSeq = 0;
+
 export function usePageElements(page: string) {
   const [elements, setElements] = useState<PageElement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +42,7 @@ export function usePageElements(page: string) {
     fetchElements();
 
     const channel = supabase
-      .channel(`page_elements_${page}`)
+      .channel(`page_elements_${page}_${++channelSeq}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "page_elements", filter: `page=eq.${page}` },

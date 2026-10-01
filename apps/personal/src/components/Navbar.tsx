@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Link as RouterLink } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { localizePath, parsePath } from "@/lib/i18n/routes";
-import { useArticleHasEnglish } from "@/lib/i18n/articleLang";
+import { useArticleLangInfo } from "@/lib/i18n/articleLang";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
-import { hasEnglishVersion } from "@/lib/seo/blogPostHead";
+import { hasDutchVersion, hasEnglishVersion } from "@/lib/seo/blogPostHead";
+import { untranslatedFallback } from "@/lib/i18n/untranslated";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
@@ -74,7 +75,8 @@ const Navbar = (_props: NavbarProps) => {
      die BlogPostPage vult na het laden (client-side navigatie). Onbekend = tonen. */
   const articleSlug = isArticle ? parsePath(location.pathname).path.split("/")[2] : undefined;
   const preloadedArticle = usePreloadedBlogPost(articleSlug);
-  const storedHasEn = useArticleHasEnglish(articleSlug);
+  const storedInfo = useArticleLangInfo(articleSlug);
+  const storedHasEn = storedInfo ? storedInfo.hasEn : null;
   const articleHasEn = !isArticle || (storedHasEn ?? (preloadedArticle ? hasEnglishVersion(preloadedArticle) : true));
   const engUnavailableTitle = "Alleen in het Nederlands beschikbaar / Only available in Dutch";
   /* /music en /music/:slug bestaan alleen in het Engels (geen NL-copy); een
@@ -82,6 +84,13 @@ const Navbar = (_props: NavbarProps) => {
   const basePathNow = parsePath(location.pathname).path;
   const isEnglishOnly = basePathNow === "/music" || basePathNow.startsWith("/music/");
   const nlUnavailableTitle = "Only available in English / Alleen in het Engels beschikbaar";
+  // Store eerst (client-side navigatie), dan de preload (directe load); onbekend = tonen.
+  const articleHasNl = !isArticle || (storedInfo?.hasNl ?? (preloadedArticle ? hasDutchVersion(preloadedArticle) : true));
+  /* Geen vertaling: de schakelaar blijft een werkende link en brengt de lezer naar
+     de startpagina in de gekozen taal (artikelen: de artikelenlijst), waar een
+     melding uitlegt waarom (i18n-audit 2026-10-01; eerder een dode knop). */
+  const nlFallback = untranslatedFallback("nl", location.pathname, isArticle);
+  const enFallback = untranslatedFallback("en", location.pathname, isArticle);
 
   /* ── Nav model ── */
   /* Editable header menu (Design mode in /write); defaults mirror the old
@@ -373,7 +382,9 @@ const Navbar = (_props: NavbarProps) => {
               </button>
               <div className="hidden sm:flex items-center gap-0.5 font-mono text-xs">
                 {isEnglishOnly ? (
-                  <span aria-disabled="true" title={nlUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>NL</span>
+                  <RouterLink to={nlFallback} hrefLang="nl" lang="nl" rel="nofollow" title={nlUnavailableTitle} data-untranslated="true" className={`px-1.5 py-0.5 rounded ${barMut} ${barHovInk}`}>NL</RouterLink>
+                ) : !articleHasNl ? (
+                  <RouterLink to={nlFallback} hrefLang="nl" lang="nl" rel="nofollow" title={nlUnavailableTitle} data-untranslated="true" className={`px-1.5 py-0.5 rounded ${barMut} ${barHovInk}`}>NL</RouterLink>
                 ) : (
                   <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
                 )}
@@ -381,7 +392,7 @@ const Navbar = (_props: NavbarProps) => {
                 {articleHasEn ? (
                   <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
                 ) : (
-                  <span aria-disabled="true" title={engUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>ENG</span>
+                  <RouterLink to={enFallback} hrefLang="en" lang="en" rel="nofollow" title={engUnavailableTitle} data-untranslated="true" className={`px-1.5 py-0.5 rounded ${barMut} ${barHovInk}`}>ENG</RouterLink>
                 )}
               </div>
 
@@ -509,7 +520,9 @@ const Navbar = (_props: NavbarProps) => {
                 <div className={`my-1 h-px ${barDark ? "bg-white/10" : "bg-black/10"}`} />
                 <div className="flex items-center gap-1 px-3 py-1 font-mono text-xs">
                   {isEnglishOnly ? (
-                    <span aria-disabled="true" title={nlUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>NL</span>
+                    <RouterLink to={nlFallback} hrefLang="nl" lang="nl" rel="nofollow" title={nlUnavailableTitle} data-untranslated="true" onClick={() => setMobileOpen(false)} className={`px-1.5 py-0.5 rounded ${barMut}`}>NL</RouterLink>
+                  ) : !articleHasNl ? (
+                    <RouterLink to={nlFallback} hrefLang="nl" lang="nl" rel="nofollow" title={nlUnavailableTitle} data-untranslated="true" onClick={() => setMobileOpen(false)} className={`px-1.5 py-0.5 rounded ${barMut}`}>NL</RouterLink>
                   ) : (
                     <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" onClick={() => setMobileOpen(false)} aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
                   )}
@@ -517,7 +530,7 @@ const Navbar = (_props: NavbarProps) => {
                   {articleHasEn ? (
                     <RouterLink to={langTarget("en")} hrefLang="en" lang="en" onClick={() => setMobileOpen(false)} aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
                   ) : (
-                    <span aria-disabled="true" title={engUnavailableTitle} className={`px-1.5 py-0.5 rounded ${barMut} opacity-50 cursor-not-allowed`}>ENG</span>
+                    <RouterLink to={enFallback} hrefLang="en" lang="en" rel="nofollow" title={engUnavailableTitle} data-untranslated="true" onClick={() => setMobileOpen(false)} className={`px-1.5 py-0.5 rounded ${barMut}`}>ENG</RouterLink>
                   )}
                 </div>
 

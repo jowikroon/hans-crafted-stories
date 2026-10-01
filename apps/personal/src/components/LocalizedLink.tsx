@@ -1,17 +1,7 @@
 import { forwardRef } from "react";
 import { Link as RouterLink, type LinkProps } from "react-router-dom";
 import { useLang } from "@/hooks/useLang";
-import { localizePath, type Lang } from "@/lib/i18n/routes";
-
-/**
- * Lokaliseert een intern pad maar behoudt `?query` en `#hash`. localizePath()
- * zelf strip die (bedoeld voor canonicals); zonder dit werd elke
- * `to="/about#contact"` stilletjes `/about` en landde de bezoeker bovenaan.
- */
-export const localizeHref = (to: string, lang: Lang): string => {
-  const [, pathPart, suffix] = to.match(/^([^?#]*)(.*)$/) ?? [to, to, ""];
-  return `${localizePath(pathPart || "/", lang)}${suffix}`;
-};
+import { localizeHref } from "@/lib/i18n/routes";
 
 /**
  * Drop-in vervanger voor react-router's <Link> die interne links in de
