@@ -113,6 +113,42 @@ export function hasEnglishVersion(
   return en !== nl;
 }
 
+/**
+ * Bestaat er een Nederlandse versie van dit artikel? Een gevuld `content_nl`
+ * telt altijd; zonder `content_nl` is `content` de enige versie en is die
+ * Nederlands als de detectie dat zegt (de CMS-pipeline schreef soms Nederlandse
+ * tekst in de EN-kolommen, i18n-audit 2026-10-01).
+ */
+export function hasDutchVersion(
+  post: Pick<BlogPostRow, "title" | "excerpt" | "content"> & { content_nl?: string | null },
+): boolean {
+  if (normalizeBody(post.content_nl)) return true;
+  return !!normalizeBody(post.content) && detectBlogPostLang(post) === "nl";
+}
+
+/** Heeft het artikel een versie in `lang`? Bron voor de lijstfilters en de taalschakelaar. */
+export function hasBlogPostVersion(
+  post: Pick<BlogPostRow, "title" | "excerpt" | "content"> & { content_nl?: string | null },
+  lang: "nl" | "en",
+): boolean {
+  return lang === "nl" ? hasDutchVersion(post) : hasEnglishVersion(post);
+}
+
+/**
+ * Interne link naar de versie van een artikel in `lang`. Artikelen hebben één
+ * URL (HAN-167): de primaire taal staat op /writing/<slug>, de andere taal op
+ * /writing/<slug>?lang=en. Zo landt een lezer van /writing (EN) direct op de
+ * Engelse tekst in plaats van op de Nederlandse.
+ */
+export function blogPostHref(
+  post: Pick<BlogPostRow, "slug" | "title" | "excerpt" | "content"> & { content_nl?: string | null },
+  lang: "nl" | "en",
+): string {
+  const base = `/writing/${post.slug}`;
+  if (lang === "en" && hasEnglishVersion(post) && primaryBlogPostLang(post) !== "en") return `${base}?lang=en`;
+  return base;
+}
+
 export function getBlogPostCanonical(post: Pick<BlogPostRow, "slug" | "canonical_url">): string {
   return clean(post.canonical_url) || `${BASE_URL}/writing/${post.slug}`;
 }
@@ -139,9 +175,13 @@ export function localizeBlogPost<T extends Pick<BlogPostRow, "title" | "excerpt"
 export function getBlogPostHead(input: BlogPostRow, lang?: "nl" | "en"): SeoHead {
   const articleLang = lang ?? primaryBlogPostLang(input);
   const post = localizeBlogPost(input, articleLang);
-  const metaTitle = clean(post.meta_title);
-  const title = metaTitle || `${post.title} | Hans van Leeuwen`;
-  const description = clean(post.meta_description) || clean(post.excerpt) || DEFAULT_DESCRIPTION;
+  // meta_title / meta_description zijn eentalig en horen bij de primaire taal
+  // van het artikel. Op de andere taalversie (?lang=en) bleef de <title> anders
+  // Nederlands boven een Engelse tekst (i18n-audit 2026-09-22 R5, 2026-10-01).
+  const isPrimary = articleLang === primaryBlogPostLang(input);
+  const metaTitle = isPrimary ? clean(post.meta_title) : "";
+  const title = metaTitle || `${clean(post.title)} | Hans van Leeuwen`;
+  const description = (isPrimary ? clean(post.meta_description) : "") || clean(post.excerpt) || DEFAULT_DESCRIPTION;
 
   return {
     title,

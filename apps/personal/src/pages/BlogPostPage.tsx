@@ -6,7 +6,7 @@ import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+import { getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasDutchVersion, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 import { setArticleLangInfo } from "@/lib/i18n/articleLang";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
@@ -421,7 +421,7 @@ const BlogPostPage = () => {
   const articleLang: "nl" | "en" = post ? (wantsEn && hasEn ? "en" : primaryBlogPostLang(post)) : lang;
   const englishUnavailable = !!post && wantsEn && !hasEn && articleLang === "nl";
   useEffect(() => {
-    if (post) setArticleLangInfo(post.slug, { hasEn, lang: primaryBlogPostLang(post) });
+    if (post) setArticleLangInfo(post.slug, { hasEn, lang: primaryBlogPostLang(post), hasNl: hasDutchVersion(post) });
   }, [post, hasEn]);
   const displayTitle = post ? (articleLang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
   const displayExcerpt = post ? (articleLang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";

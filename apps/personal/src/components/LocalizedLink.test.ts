@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { localizeHref } from "./LocalizedLink";
+import { localizeHref } from "@/lib/i18n/routes";
 
 describe("localizeHref", () => {
   it("keeps the #contact anchor (regression: CTA's landed at the top of About)", () => {

@@ -11,10 +11,12 @@ import SongsMode from "./modes/SongsMode";
 import SongwriterMode from "./modes/SongwriterMode";
 import VoicesMode from "./modes/VoicesMode";
 import ProductionMode from "./modes/ProductionMode";
+import ArtworkMode from "./modes/ArtworkMode";
 
-type CmsMode = "songs" | "write" | "voices" | "productie";
+type CmsMode = "songs" | "write" | "voices" | "productie" | "artwork";
 
 const ICONS: Record<CmsMode, JSX.Element> = {
+  artwork: (<svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" /><path d="m3 12 4-4 3 3 2-2 2 2" stroke="currentColor" strokeWidth="1.5" /><circle cx="10.5" cy="5.5" r="1" fill="currentColor" /></svg>),
   songs: (
     <svg viewBox="0 0 16 16" fill="none"><path d="M6 12.5V3l7-1.5V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /><circle cx="4" cy="12.5" r="2" stroke="currentColor" strokeWidth="1.5" /><circle cx="11" cy="11" r="2" stroke="currentColor" strokeWidth="1.5" /></svg>
   ),
@@ -43,7 +45,7 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
   const navigate = useNavigate();
   const { user, loading, signInWithGoogle } = useAuth();
   const raw = params.get("mode");
-  const mode: CmsMode = songId ? "write" : raw === "write" || raw === "voices" || raw === "productie" ? raw : "songs";
+  const mode: CmsMode = songId ? "write" : raw === "write" || raw === "voices" || raw === "productie" || raw === "artwork" ? raw : "songs";
 
   const [songCount, setSongCount] = useState<number | null>(null);
   useEffect(() => {
@@ -74,6 +76,7 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
     { id: "write", label: "Schrijven", count: "werkblad" },
     { id: "voices", label: "Voices", count: `${VOICE_TEMPLATES.length} tpl` },
     { id: "productie", label: "Productie", count: "catalogus" },
+    { id: "artwork", label: "Beeldbank", count: "versies" },
   ];
 
   const gated = !loading && !user;
@@ -125,6 +128,7 @@ export default function MusicCmsShell({ songId }: { songId?: string }) {
               {mode === "write" && <SongwriterMode songId={songId} />}
               {mode === "voices" && <VoicesMode />}
               {mode === "productie" && <ProductionMode />}
+              {mode === "artwork" && <ArtworkMode />}
             </>
           )}
         </div>

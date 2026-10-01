@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { getPageContent, PageContentRow } from "@/lib/api/pageContent";
 import { useLang } from "@/hooks/useLang";
-import { stripEmDash } from "@/lib/noEmDash";
+import { resolvePageContentValue } from "@/lib/pageContentLang";
+
+export { resolvePageContentValue };
 
 export function usePageContent(page: string) {
   const [rows, setRows] = useState<PageContentRow[]>([]);
@@ -17,14 +19,7 @@ export function usePageContent(page: string) {
 
   const getValue = useCallback(
     (key: string, fallback: string) => {
-      // Try lang-suffixed key first (e.g. hero_heading_nl)
-      if (lang !== "en") {
-        const langRow = rows.find((r) => r.content_key === `${key}_${lang}`);
-        if (langRow?.content_value) return stripEmDash(langRow.content_value);
-      }
-      // Fall back to base key (English default)
-      const row = rows.find((r) => r.content_key === key);
-      return row?.content_value ? stripEmDash(row.content_value) : fallback;
+      return resolvePageContentValue(rows, key, lang, fallback);
     },
     [rows, lang]
   );

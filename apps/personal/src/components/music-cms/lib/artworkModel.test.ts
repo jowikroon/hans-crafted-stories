@@ -1,0 +1,75 @@
+import { describe, expect, it } from "vitest";
+import { durationLabel, artworkVersions, changeArtworkCategory, EMPTY_FILTERS, filterArtwork, groupArtwork, type ArtworkAsset } from "./artworkModel";
+
+const asset = (overrides: Partial<ArtworkAsset>): ArtworkAsset => ({
+  id: "one", title: "HelloGoodbye", family_key: "hellogoodbye", album: "NEON", song: "HelloGoodbye",
+  categories: ["Song"], channels: ["Instagram"], collections: ["photographic-v7"], origins: [{ collection: "photographic-v7", file: "hello.jpg", version: "v7" }],
+  format: "JPG", role: "Artwork", width: 1254, height: 1254, bytes: 1024, storage_path: "originals/one.jpg", thumbnail_path: "thumbnails/one.webp", is_current: true, source_modified: "2026-09-25T00:00:00Z", ...overrides,
+});
+
+describe("artwork archive discovery", () => {
+  const current = asset({});
+  const old = asset({ id: "two", collections: ["illustrated-v3"], origins: [{ collection: "illustrated-v3", file: "hello.png", version: "v3" }], is_current: false, channels: ["TikTok"], format: "PNG" });
+  const unrelated = asset({ id: "three", title: "Profile", family_key: "profile", song: null, categories: ["Profile"], channels: ["Spotify"] });
+  it("combines song, channel and collection filters without losing earlier versions", () => {
+    expect(filterArtwork([current, old, unrelated], { ...EMPTY_FILTERS, song: "HelloGoodbye", channel: "TikTok", collection: "illustrated-v3" })).toEqual([old]);
+  });
+  it("searches filenames and formats case-insensitively with all terms", () => {
+    expect(filterArtwork([current, old], { ...EMPTY_FILTERS, search: "HELLO jpg" })).toEqual([current]);
+  });
+  it("keeps the default complete and distinguishes current selection from archive", () => {
+    expect(filterArtwork([old, current, unrelated], EMPTY_FILTERS)).toHaveLength(3);
+    expect(filterArtwork([old, current], { ...EMPTY_FILTERS, edition: "archive" })).toEqual([old]);
+  });
+  it("shows a song's versions across collections and formats, excluding unrelated art", () => {
+    expect(artworkVersions([old, unrelated, current], old)).toEqual([current, old]);
+  });
+  it("does not mutate the underlying import order", () => {
+    const original = [old, current]; filterArtwork(original, EMPTY_FILTERS);
+    expect(original).toEqual([old, current]);
+  });
+  it("groups versions behind a current cover while preserving unrelated designs", () => {
+    const plate = asset({ id: "plate", role: "Clean plate" });
+    expect(groupArtwork([plate, old, unrelated, current])).toEqual([current, unrelated]);
+  });
+  it("opens Profile even after a song and current-collection filter hide its archived images", () => {
+    const profile = asset({ id: "profile", song: null, categories: ["Profile"], is_current: false });
+    const next = changeArtworkCategory([current, profile], { ...EMPTY_FILTERS, category: "Song", song: "HelloGoodbye", edition: "current" }, "Profile");
+    expect(next).toEqual({ ...EMPTY_FILTERS, category: "Profile" });
+    expect(filterArtwork([current, profile], next)).toEqual([profile]);
+  });
+  it("keeps compatible channel filters when changing category", () => {
+    const banner = asset({ categories: ["Profile", "Banner"], channels: ["SoundCloud"] });
+    const filters = { ...EMPTY_FILTERS, category: "Profile", channel: "SoundCloud" };
+    expect(changeArtworkCategory([banner], filters, "Banner")).toEqual({ ...filters, category: "Banner" });
+  });
+  it("recovers every populated category from an incompatible search", () => {
+    for (const category of ["Album", "Song", "Social", "Profile", "Banner", "Brand element", "Studio"]) {
+      const row = asset({ categories: [category] });
+      expect(filterArtwork([row], changeArtworkCategory([row], { ...EMPTY_FILTERS, search: "missing" }, category))).toEqual([row]);
+    }
+  });
+});
+
+
+describe("video archive discovery", () => {
+  const image = asset({ id: "image" });
+  const video = asset({ id: "video", media_type: "video", family_key: "video-hello", categories: ["Video", "Song"], role: "Video export", format: "MP4" });
+  const segment = asset({ id: "segment", media_type: "video", family_key: "video-fragment", categories: ["Video", "Studio"], role: "Editing segment", is_current: false });
+  it("combines media and usage filters without treating legacy images as videos", () => {
+    expect(filterArtwork([image, video, segment], { ...EMPTY_FILTERS, media: "video", role: "Video export" })).toEqual([video]);
+    expect(filterArtwork([image, video], { ...EMPTY_FILTERS, media: "image" })).toEqual([image]);
+  });
+  it("keeps a song's video versions separate from its cover artwork", () => {
+    expect(groupArtwork([image, video])).toHaveLength(2);
+    expect(artworkVersions([image, video], video)).toEqual([video]);
+  });
+  it("clears an image-only constraint when opening Video", () => {
+    expect(changeArtworkCategory([image, video], { ...EMPTY_FILTERS, media: "image" }, "Video")).toEqual({ ...EMPTY_FILTERS, category: "Video" });
+  });
+  it("formats video durations across minute boundaries", () => {
+    expect(durationLabel(164.29)).toBe("2:44");
+    expect(durationLabel(59.9)).toBe("1:00");
+    expect(durationLabel(null)).toBe("");
+  });
+});
