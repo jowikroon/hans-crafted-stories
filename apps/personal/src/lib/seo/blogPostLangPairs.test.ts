@@ -94,6 +94,10 @@ describe("EN article URLs (option A)", () => {
     expect(blogPostAlternates({ ...base, content: NL_BODY })).toEqual([]);
     expect(blogPostAlternates({ ...base, content_nl: "" })).toEqual([]);
   });
+  it("uses the primary canonical for the NL alternate and drops the pair for an external canonical", () => {
+    expect(blogPostAlternates({ ...base, canonical_url: "https://hansvanleeuwen.com/writing/designing-with-llms" })[1].href).toBe("https://hansvanleeuwen.com/writing/designing-with-llms");
+    expect(blogPostAlternates({ ...base, canonical_url: "https://medium.com/@hans/designing-with-llms" })).toEqual([]);
+  });
   it("keeps an English-only post on /writing/<slug>", () => {
     expect(blogPostPath({ ...base, content_nl: "" }, "en")).toBe("/writing/designing-with-llms");
   });

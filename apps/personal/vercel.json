@@ -20,18 +20,6 @@
       "permanent": true
     },
     {
-      "source": "/writing/:slug",
-      "has": [
-        {
-          "type": "query",
-          "key": "lang",
-          "value": "en"
-        }
-      ],
-      "destination": "/en/writing/:slug",
-      "permanent": true
-    },
-    {
       "source": "/writing/freelance-e-commerce-manager-inhuren",
       "destination": "/writing/waarom-marketplace-listings-niet-converteren",
       "permanent": true
@@ -185,6 +173,18 @@
       "source": "/cowork",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/writing/:slug",
+      "has": [
+        {
+          "type": "query",
+          "key": "lang",
+          "value": "en"
+        }
+      ],
+      "destination": "/en/writing/:slug",
+      "permanent": true
     }
   ],
   "trailingSlash": false,
@@ -219,6 +219,10 @@
     },
     {
       "source": "/writing/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/en/writing/:slug",
       "destination": "/index.html"
     },
     {

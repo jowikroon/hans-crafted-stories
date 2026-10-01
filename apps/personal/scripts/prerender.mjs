@@ -505,7 +505,9 @@ for (const [slug, blogPost] of postBySlug) {
   writeArticle(slug, blogPost, postLang);
   if (hasEnglishArticleUrl(blogPost)) {
     writeArticle(slug, blogPost, "en");
-    articlePairs.push({ slug, nl: blogPostPath(blogPost, "nl"), en: blogPostPath(blogPost, "en") });
+    // Alleen als taalpaar in de sitemap wanneer de HTML ook een hreflang-set draagt
+    // (externe canonical_url = geen paar, Codex-review PR #388).
+    if (blogPostAlternates(blogPost).length) articlePairs.push({ slug, nl: blogPostPath(blogPost, "nl"), en: blogPostPath(blogPost, "en") });
   }
 }
 // Bron voor generate-sitemap.mjs: welke artikelen een /en/writing-versie hebben.

@@ -159,12 +159,16 @@ export const blogPostHref = blogPostPath;
  * Wederkerige hreflang-set voor een artikel met NL- én EN-URL: nl, en en
  * x-default (= en, zoals de rest van de site). Eentalige artikelen: geen set.
  */
-export function blogPostAlternates(post: LangSource): { lang: string; href: string }[] {
+export function blogPostAlternates(post: LangSource & { canonical_url?: string | null }): { lang: string; href: string }[] {
   if (!hasEnglishArticleUrl(post)) return [];
+  // De NL-alternate is de echte canonical van de primaire versie; wijst die naar
+  // een ander domein, dan geen taalpaar (Codex-review PR #388).
+  const nl = getBlogPostCanonical({ slug: post.slug, canonical_url: post.canonical_url ?? "" });
+  if (!nl.startsWith(`${BASE_URL}/`)) return [];
   const en = `${BASE_URL}${blogPostPath(post, "en")}`;
   return [
     { lang: "en", href: en },
-    { lang: "nl", href: `${BASE_URL}${blogPostPath(post, "nl")}` },
+    { lang: "nl", href: nl },
     { lang: "x-default", href: en },
   ];
 }
