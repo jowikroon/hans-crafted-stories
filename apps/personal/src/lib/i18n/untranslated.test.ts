@@ -43,6 +43,11 @@ describe("page_content language resolution", () => {
   it("uses the _nl key for NL", () => {
     expect(resolvePageContentValue(rows, "hero_subtitle", "nl", "fallback")).toBe("Nederlandse ondertitel");
   });
+  it("shares language-neutral values (name, location, URLs) across both languages", () => {
+    const neutral = [{ content_key: "about_linkedin_url", content_value: "https://linkedin.com/in/new" }, { content_key: "about_location", content_value: "Utrecht, NL" }];
+    expect(resolvePageContentValue(neutral, "about_linkedin_url", "nl", "https://old")).toBe("https://linkedin.com/in/new");
+    expect(resolvePageContentValue(neutral, "about_location", "nl", "Amersfoort, NL")).toBe("Utrecht, NL");
+  });
   it("falls back to the Dutch code copy instead of the English base row on NL", () => {
     expect(resolvePageContentValue(rows, "about_h1", "nl", "Nederlandse kop")).toBe("Nederlandse kop");
   });

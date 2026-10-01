@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Link as RouterLink } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { localizePath, parsePath } from "@/lib/i18n/routes";
-import { useArticleHasEnglish } from "@/lib/i18n/articleLang";
+import { useArticleLangInfo } from "@/lib/i18n/articleLang";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { hasDutchVersion, hasEnglishVersion } from "@/lib/seo/blogPostHead";
 import { untranslatedFallback } from "@/lib/i18n/untranslated";
@@ -75,7 +75,8 @@ const Navbar = (_props: NavbarProps) => {
      die BlogPostPage vult na het laden (client-side navigatie). Onbekend = tonen. */
   const articleSlug = isArticle ? parsePath(location.pathname).path.split("/")[2] : undefined;
   const preloadedArticle = usePreloadedBlogPost(articleSlug);
-  const storedHasEn = useArticleHasEnglish(articleSlug);
+  const storedInfo = useArticleLangInfo(articleSlug);
+  const storedHasEn = storedInfo ? storedInfo.hasEn : null;
   const articleHasEn = !isArticle || (storedHasEn ?? (preloadedArticle ? hasEnglishVersion(preloadedArticle) : true));
   const engUnavailableTitle = "Alleen in het Nederlands beschikbaar / Only available in Dutch";
   /* /music en /music/:slug bestaan alleen in het Engels (geen NL-copy); een
@@ -83,7 +84,8 @@ const Navbar = (_props: NavbarProps) => {
   const basePathNow = parsePath(location.pathname).path;
   const isEnglishOnly = basePathNow === "/music" || basePathNow.startsWith("/music/");
   const nlUnavailableTitle = "Only available in English / Alleen in het Engels beschikbaar";
-  const articleHasNl = !isArticle || (preloadedArticle ? hasDutchVersion(preloadedArticle) : true);
+  // Store eerst (client-side navigatie), dan de preload (directe load); onbekend = tonen.
+  const articleHasNl = !isArticle || (storedInfo?.hasNl ?? (preloadedArticle ? hasDutchVersion(preloadedArticle) : true));
   /* Geen vertaling: de schakelaar blijft een werkende link en brengt de lezer naar
      de startpagina in de gekozen taal (artikelen: de artikelenlijst), waar een
      melding uitlegt waarom (i18n-audit 2026-10-01; eerder een dode knop). */

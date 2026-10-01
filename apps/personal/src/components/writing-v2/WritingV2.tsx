@@ -142,12 +142,14 @@ const WritingV2 = () => {
               item: {
                 "@type": "BlogPosting",
                 "@id": `https://hansvanleeuwen.com/writing/${p.slug}#post`,
-                headline: localizeBlogPost(p, lang).title,
+                // Kop en omschrijving in de taal van de canonieke artikel-URL hieronder
+                // (Codex-review PR #387): geen Engelse kop bij een Nederlandse URL.
+                headline: localizeBlogPost(p).title,
                 url: `https://hansvanleeuwen.com/writing/${p.slug}`,
                 datePublished: p.created_at,
                 dateModified: p.updated_at,
                 ...(getBlogPostImage(p, lang) !== DEFAULT_OG_IMAGE ? { image: getBlogPostImage(p, lang) } : {}),
-                description: localizeBlogPost(p, lang).excerpt || p.meta_description || undefined,
+                description: p.meta_description || localizeBlogPost(p).excerpt || undefined,
                 author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
                 publisher: { "@id": "https://hansvanleeuwen.com/#person" },
               },
@@ -327,7 +329,7 @@ const WritingV2 = () => {
               // Counts follow the same scope as the visible list (Codex PR #273):
               // published-only toggle filters drafts, and tags are normalised so
               // "e-commerce" (CMS default) matches the "ecommerce" pill.
-              const countable = authed && publishedOnly ? mappedPosts.filter((post) => post.isPublic) : mappedPosts;
+              const countable = authed ? (publishedOnly ? mappedPosts.filter((post) => post.isPublic) : mappedPosts) : mappedPosts.filter((post) => post.inLang);
               const pillCount = p.tag === "all"
                 ? countable.length
                 : countable.filter((post) => {
