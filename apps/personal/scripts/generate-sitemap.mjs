@@ -115,6 +115,8 @@ const urls = [
       const pair = pairBySlug.get(p.slug);
       const nl = { loc: `${BASE}/writing/${p.slug}`, lastmod: iso(p.updated_at), changefreq: "yearly", priority: "0.6" };
       if (!pair) return [nl];
+      // Loc = de NL-URL uit het taalcluster (eigen canonical_url wint), zodat loc en hreflang-nl gelijk zijn.
+      nl.loc = `${BASE}${pair.nl}`;
       const alternates = articleAlternates(pair);
       return [
         { ...nl, alternates },

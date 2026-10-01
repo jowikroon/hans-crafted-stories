@@ -507,7 +507,11 @@ for (const [slug, blogPost] of postBySlug) {
     writeArticle(slug, blogPost, "en");
     // Alleen als taalpaar in de sitemap wanneer de HTML ook een hreflang-set draagt
     // (externe canonical_url = geen paar, Codex-review PR #388).
-    if (blogPostAlternates(blogPost).length) articlePairs.push({ slug, nl: blogPostPath(blogPost, "nl"), en: blogPostPath(blogPost, "en") });
+    // NL-pad = de echte NL-alternate uit de HTML (kan een eigen canonical_url zijn),
+    // zodat sitemap en HTML hetzelfde taalcluster tonen (Codex-review PR #388).
+    const alts = blogPostAlternates(blogPost);
+    const nlAlt = alts.find((a) => a.lang === "nl");
+    if (nlAlt) articlePairs.push({ slug, nl: nlAlt.href.slice(BASE.length) || "/", en: blogPostPath(blogPost, "en") });
   }
 }
 // Bron voor generate-sitemap.mjs: welke artikelen een /en/writing-versie hebben.

@@ -6,7 +6,7 @@ import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { blogPostAlternates, blogPostPath, getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasDutchVersion, hasEnglishArticleUrl, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+import { blogPostAlternates, blogPostPath, hasBlogPostVersion, localizeBlogPost, getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasDutchVersion, hasEnglishArticleUrl, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 import { parseArticlePath } from "@/lib/i18n/routes";
 import { setArticleLangInfo } from "@/lib/i18n/articleLang";
 import { toast } from "sonner";
@@ -836,16 +836,20 @@ const BlogPostPage = () => {
 /* "Meer lezen" — two related cards (design .ncard).
    Same category, excludes current; falls back to latest if none. */
 const MoreReading = ({ category, currentSlug, lang }: { category: string; currentSlug: string; lang: string }) => {
-  const [items, setItems] = useState<{ slug: string; title: string; cat: string; read: string }[]>([]);
+  const [items, setItems] = useState<{ slug: string; href: string; title: string; cat: string; read: string }[]>([]);
 
   useEffect(() => {
     getBlogPosts(true).then((posts) => {
-      const others = posts.filter((p) => p.slug !== currentSlug);
+      // Alleen artikelen met een versie in de taal van deze pagina, gelinkt naar die
+      // versie (/en/writing/<slug> op Engelse pagina's; Codex-review PR #388).
+      const v = lang === "nl" ? "nl" : "en";
+      const others = posts.filter((p) => p.slug !== currentSlug && hasBlogPostVersion(p, v));
       const same = others.filter((p) => p.category === category);
       const pick = (same.length ? same : others).slice(0, 2);
       setItems(pick.map((p) => ({
         slug: p.slug,
-        title: lang === "nl" && p.title_nl ? p.title_nl : p.title,
+        href: blogPostPath(p, v),
+        title: localizeBlogPost(p, v).title,
         cat: p.category,
         read: p.read_time,
       })));
@@ -859,7 +863,7 @@ const MoreReading = ({ category, currentSlug, lang }: { category: string; curren
       <div className="more__h">{lang === "nl" ? "Meer lezen" : "More reading"}</div>
       <div className="more__grid">
         {items.map((o) => (
-          <Link key={o.slug} to={`/writing/${o.slug}`} className="ncard">
+          <Link key={o.slug} to={o.href} className="ncard">
             <div className="ncard__m">
               <span className="tagx">{o.cat}</span>
               <span className="dot"></span>
