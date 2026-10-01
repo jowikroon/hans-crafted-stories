@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { Home, ChevronRight, Link2, Linkedin, Twitter, ArrowRight, ArrowUpRight, ArrowUp, List, Share2, X } from "lucide-react";
 import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasDutchVersion, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+import { blogPostAlternates, blogPostPath, getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasDutchVersion, hasEnglishArticleUrl, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+import { parseArticlePath } from "@/lib/i18n/routes";
 import { setArticleLangInfo } from "@/lib/i18n/articleLang";
 import { toast } from "sonner";
 import hansProfile from "@/assets/hans-profile.jpg";
@@ -410,15 +411,28 @@ const BlogPostPage = () => {
   const post =
     rawPost && slug && rawPost.slug !== slug ? undefined : rawPost;
 
-  // Taal van het artikel volgt het artikel, niet de bezoeker (HAN-167): de URL
-  // serveert de primaire taal (NL zodra er een NL-versie is); ?lang=en toont de
-  // Engelse versie op dezelfde URL zonder eigen canonical.
+  // Taal van het artikel volgt de URL (optie A, 2026-10-02): /writing/<slug> is de
+  // primaire taal (NL zodra er een NL-versie is), /en/writing/<slug> de Engelse
+  // versie met eigen canonical en hreflang. ?lang=en is de oude vorm: vercel.json
+  // geeft een 308, en client-side (oude interne links) navigeren we hieronder.
   const routerLocation = useLocation();
-  const wantsEn = new URLSearchParams(routerLocation.search).get("lang") === "en";
-  // ?lang=en alleen honoreren als er een echte Engelse versie is; anders bleef de
-  // Nederlandse tekst onder een Engelse kop staan (i18n-audit 2026-09-22, R2).
+  const navigateTo = useNavigate();
+  const enRoute = !!parseArticlePath(routerLocation.pathname)?.enRoute;
+  const wantsEn = enRoute || new URLSearchParams(routerLocation.search).get("lang") === "en";
+  // Engels alleen bij een echte Engelse versie; anders bleef de Nederlandse tekst
+  // onder een Engelse kop staan (i18n-audit 2026-09-22, R2).
   const hasEn = post ? hasEnglishVersion(post) : false;
   const articleLang: "nl" | "en" = post ? (wantsEn && hasEn ? "en" : primaryBlogPostLang(post)) : lang;
+  const redirectTo = !post
+    ? null
+    : enRoute && !hasEnglishArticleUrl(post)
+      ? blogPostPath(post, "nl")
+      : !enRoute && wantsEn && hasEnglishArticleUrl(post)
+        ? blogPostPath(post, "en")
+        : null;
+  useEffect(() => {
+    if (redirectTo) navigateTo(`${redirectTo}${routerLocation.hash}`, { replace: true });
+  }, [redirectTo, routerLocation.hash, navigateTo]);
   const englishUnavailable = !!post && wantsEn && !hasEn && articleLang === "nl";
   useEffect(() => {
     if (post) setArticleLangInfo(post.slug, { hasEn, lang: primaryBlogPostLang(post), hasNl: hasDutchVersion(post) });
@@ -503,6 +517,8 @@ const BlogPostPage = () => {
     image: seoHead?.image,
     imageAlt: seoHead?.imageAlt,
     jsonLd: post && !isDraft ? getBlogPostJsonLd(post, articleLang) : undefined,
+    // Wederkerige nl/en/x-default-set zodra het artikel een NL- én EN-URL heeft.
+    hreflang: post && !isDraft ? blogPostAlternates(post) : undefined,
     // 2026-09-11: een niet-bestaand artikel (post === null) rendert "Post not found" met HTTP 200
     // via de /writing/:slug-rewrite; zonder noindex is dat een indexeerbare soft-404 met self-canonical.
     noindex: isDraft || post === null,

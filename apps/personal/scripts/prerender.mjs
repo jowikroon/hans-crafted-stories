@@ -62,6 +62,9 @@ const {
   detectBlogPostLang,
   primaryBlogPostLang,
   localizeBlogPost,
+  blogPostAlternates,
+  blogPostPath,
+  hasEnglishArticleUrl,
   SERVICE_PAGES,
   SERVICE_PAGES_UPDATED,
   EXPERIENCE_STRIP,
@@ -346,9 +349,9 @@ function applyLang(html, lang) {
  * Vervangt ALLE hreflang-links door één wederkerige set voor het EN-basispad
  * (en + nl + x-default). Voor niet-gelokaliseerde routes worden ze verwijderd.
  */
-function setHreflang(html, basePath) {
+function setHreflang(html, basePath, explicitAlts = null) {
   const stripped = html.replace(/[ \t]*<link rel="alternate" hreflang="[^"]*" href="[^"]*" \/>\n?/g, "");
-  const alts = basePath ? alternatesFor(basePath) : [];
+  const alts = explicitAlts ?? (basePath ? alternatesFor(basePath) : []);
   if (!alts.length) return stripped;
   const links = alts.map((a) => `    <link rel="alternate" hreflang="${a.lang}" href="${escapeHtml(a.href)}" />`).join("\n");
   return stripped.replace(/<meta property="og:locale" content="[^"]*" \/>/, (m) => `${m}\n${links}`);
@@ -396,8 +399,8 @@ function textToParagraphs(text) {
     .join("\n          ");
 }
 
-function buildBlogPostFallback(input, head) {
-  const post = localizeBlogPost(input);
+function buildBlogPostFallback(input, head, lang) {
+  const post = localizeBlogPost(input, lang);
   const body = textToParagraphs(post.content);
   return `
       <header>
@@ -460,27 +463,31 @@ for (const slug of HERO_SLUGS) {
   }
 }
 
-for (const [slug, blogPost] of postBySlug) {
-  const route = `/writing/${slug}`;
-  // Eén URL = één taal: NL zodra er een NL-versie is (doelmarkt); EN-versie via ?lang=en.
-  const postLang = primaryBlogPostLang(blogPost);
+/**
+ * Artikelen (optie A, 2026-10-02): de primaire versie op /writing/<slug> en, voor
+ * NL-primaire artikelen met een echte Engelse tekst, de Engelse versie op
+ * /en/writing/<slug>. Beide met self-canonical en dezelfde wederkerige
+ * hreflang-set (nl, en, x-default = en). Eentalige artikelen: geen set.
+ */
+const articlePairs = [];
+function writeArticle(slug, blogPost, lang) {
+  const route = blogPostPath(blogPost, lang);
   // Head in de taal van de URL: og:image is de header van die taal (og_image / og_image_en).
-  const head = getBlogPostHead(blogPost, postLang);
-  const { html } = renderQuietly(route, blogPost, { initialLang: postLang });
+  const head = getBlogPostHead(blogPost, lang);
+  const { html } = renderQuietly(route, blogPost, { initialLang: lang });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, { ...head, ogImageAlt: head.imageAlt });
   // HAN-159: zelfstandige graph per artikel — volledige Person/WebSite/Organization
   // nodes naast de BlogPosting, zodat @id-referenties in dit document resolven.
-  const { "@context": _articleCtx, ...articleNode } = getBlogPostJsonLd(blogPost);
+  const { "@context": _articleCtx, ...articleNode } = getBlogPostJsonLd(blogPost, lang);
   page = setJsonLd(page, {
     "@context": "https://schema.org",
     "@graph": [articleNode, PERSON_ENTITY, WEBSITE_ENTITY, PROFESSIONAL_SERVICE_ENTITY],
   });
-  // HAN-158: taalsignaal per artikel uit de contenttaal. Artikelen zijn eentalig,
-  // dus geen hreflang-set (een self-referentie zonder alternatief is ruis).
-  page = applyLang(page, postLang);
-  page = setHreflang(page, null);
-  page = replaceSsrFallbackHtml(page, buildBlogPostFallback(blogPost, head));
+  // HAN-158: taalsignaal per artikel uit de contenttaal van deze URL.
+  page = applyLang(page, lang);
+  page = setHreflang(page, null, blogPostAlternates(blogPost));
+  page = replaceSsrFallbackHtml(page, buildBlogPostFallback(blogPost, head, lang));
 
   const preloadedScript = `<script id="__PRELOADED__" type="application/json">${serializeJsonForHtmlScript({
     blogPost,
@@ -489,8 +496,21 @@ for (const [slug, blogPost] of postBySlug) {
 
   const outPath = outPathFor(route);
   fs.writeFileSync(outPath, page, "utf8");
-  console.log(`[prerender] ${route} -> ${outPath}`);
+  console.log(`[prerender] ${route} (${lang}) -> ${outPath}`);
 }
+
+for (const [slug, blogPost] of postBySlug) {
+  // Primaire versie: NL zodra er een NL-versie is (doelmarkt), anders de contenttaal.
+  const postLang = primaryBlogPostLang(blogPost);
+  writeArticle(slug, blogPost, postLang);
+  if (hasEnglishArticleUrl(blogPost)) {
+    writeArticle(slug, blogPost, "en");
+    articlePairs.push({ slug, nl: blogPostPath(blogPost, "nl"), en: blogPostPath(blogPost, "en") });
+  }
+}
+// Bron voor generate-sitemap.mjs: welke artikelen een /en/writing-versie hebben.
+fs.writeFileSync(path.join(distDir, "article-pairs.json"), JSON.stringify(articlePairs, null, 1), "utf8");
+console.log(`[prerender] ${articlePairs.length} artikelparen NL/EN -> dist/article-pairs.json`);
 
 /* ───────────────────────────── / (home) ───────────────────────────── */
 {

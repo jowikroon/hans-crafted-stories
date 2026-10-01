@@ -88,6 +88,22 @@ function iso(date) {
 }
 
 const posts = await fetchPublishedPosts();
+
+// Artikelparen NL/EN (optie A, 2026-10-02): prerender.mjs schrijft welke artikelen een
+// /en/writing-versie hebben (zelfde bron als de hreflang in de HTML). Daarna opruimen,
+// zodat het bestand niet mee gepubliceerd wordt.
+const pairsPath = path.join(appDir, "dist", "article-pairs.json");
+let articlePairs = [];
+if (fs.existsSync(pairsPath)) {
+  try { articlePairs = JSON.parse(fs.readFileSync(pairsPath, "utf8")); } catch { articlePairs = []; }
+  fs.rmSync(pairsPath, { force: true });
+}
+const pairBySlug = new Map(articlePairs.map((p) => [p.slug, p]));
+const articleAlternates = (pair) => [
+  { hreflang: "en", href: `${BASE}${pair.en}` },
+  { hreflang: "nl", href: `${BASE}${pair.nl}` },
+  { hreflang: "x-default", href: `${BASE}${pair.en}` },
+];
 const today = new Date().toISOString().slice(0, 10);
 
 const urls = [
@@ -95,12 +111,16 @@ const urls = [
   ...posts
     // External canonicals point elsewhere; keep only self-canonical posts in our sitemap
     .filter((p) => !p.canonical_url || p.canonical_url.startsWith(BASE))
-    .map((p) => ({
-      loc: `${BASE}/writing/${p.slug}`,
-      lastmod: iso(p.updated_at),
-      changefreq: "yearly",
-      priority: "0.6",
-    })),
+    .flatMap((p) => {
+      const pair = pairBySlug.get(p.slug);
+      const nl = { loc: `${BASE}/writing/${p.slug}`, lastmod: iso(p.updated_at), changefreq: "yearly", priority: "0.6" };
+      if (!pair) return [nl];
+      const alternates = articleAlternates(pair);
+      return [
+        { ...nl, alternates },
+        { loc: `${BASE}${pair.en}`, lastmod: iso(p.updated_at), changefreq: "yearly", priority: "0.6", alternates },
+      ];
+    }),
 ];
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>

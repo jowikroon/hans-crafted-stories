@@ -93,6 +93,8 @@ const AnimatedRoutes = () => {
           <Route key={`${prefix}/writing`} path={`${prefix}/writing`} element={<PageTransition><Writing /></PageTransition>} />
         ))}
         <Route path="/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
+        {/* Engelse versie van een NL-primair artikel (optie A, 2026-10-02). */}
+        <Route path="/en/writing/:slug" element={<PageTransition><BlogPostPage /></PageTransition>} />
         <Route path="/blog" element={<Navigate to="/writing" replace />} />
         <Route path="/blog/:slug" element={<LegacyBlogRedirect />} />
         <Route path="/music" element={<PageTransition><Music /></PageTransition>} />

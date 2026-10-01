@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { getBlogPosts, isHansSession, BlogPostRow } from "@/lib/api/content";
 import { useSEO } from "@/hooks/useSEO";
-import { getBlogPostImage, DEFAULT_OG_IMAGE, hasBlogPostVersion, blogPostHref, localizeBlogPost } from "@/lib/seo/blogPostHead";
+import { getBlogPostImage, DEFAULT_OG_IMAGE, hasBlogPostVersion, blogPostHref, blogPostPath, hasEnglishArticleUrl, localizeBlogPost, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 import { useLang } from "@/hooks/useLang";
 import { absoluteUrl } from "@/lib/i18n/routes";
 import { translations } from "@/data/translations";
@@ -30,7 +30,7 @@ interface MappedPost {
   isPublic: boolean;
   /** Heeft dit artikel een versie in de taal van deze lijst? (i18n-audit 2026-10-01) */
   inLang: boolean;
-  /** Link naar de versie in de taal van deze lijst (/writing/<slug> of ?lang=en). */
+  /** Link naar de versie in de taal van deze lijst (/writing/<slug> of /en/writing/<slug>). */
   href: string;
   /** Taal van de tekst achter de link, voor het NL/EN-label op de kaart. */
   shownLang: "nl" | "en";
@@ -136,24 +136,29 @@ const WritingV2 = () => {
         ? [{
             "@type": "ItemList",
             "@id": `${pageUrl}#articles`,
-            itemListElement: publicPostsForLd.slice(0, 20).map((p, i) => ({
+            itemListElement: publicPostsForLd.slice(0, 20).map((p, i) => {
+              // Elke vermelding wijst naar de versie in de taal van deze lijst (optie A:
+              // /en/writing/<slug> voor Engelse versies); kop en omschrijving volgen die URL.
+              const itemLang = lang === "en" && hasEnglishArticleUrl(p) ? "en" : primaryBlogPostLang(p);
+              const v = localizeBlogPost(p, itemLang);
+              const url = `https://hansvanleeuwen.com${blogPostPath(p, itemLang)}`;
+              return {
               "@type": "ListItem",
               position: i + 1,
               item: {
                 "@type": "BlogPosting",
-                "@id": `https://hansvanleeuwen.com/writing/${p.slug}#post`,
-                // Kop en omschrijving in de taal van de canonieke artikel-URL hieronder
-                // (Codex-review PR #387): geen Engelse kop bij een Nederlandse URL.
-                headline: localizeBlogPost(p).title,
-                url: `https://hansvanleeuwen.com/writing/${p.slug}`,
+                "@id": `${url}#post`,
+                headline: v.title,
+                url,
                 datePublished: p.created_at,
                 dateModified: p.updated_at,
                 ...(getBlogPostImage(p, lang) !== DEFAULT_OG_IMAGE ? { image: getBlogPostImage(p, lang) } : {}),
-                description: p.meta_description || localizeBlogPost(p).excerpt || undefined,
+                description: (itemLang === primaryBlogPostLang(p) ? p.meta_description : "") || v.excerpt || undefined,
                 author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
                 publisher: { "@id": "https://hansvanleeuwen.com/#person" },
               },
-            })),
+            };
+            }),
           }]
         : []),
     ],

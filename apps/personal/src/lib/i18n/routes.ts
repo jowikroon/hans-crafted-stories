@@ -28,8 +28,7 @@ export const LOCALIZED_ROUTES: readonly string[] = [
   "/privacy",
   "/rates",
   // De artikelenindex bestaat in beide talen (/writing EN, /nl/writing NL) sinds de
-  // i18n-audit van 2026-09-22: de prerender leverde NL, de client rendert EN en de
-  // taalschakelaar wees naar dezelfde URL. Artikelen zelf blijven één URL (?lang=en).
+  // i18n-audit van 2026-09-22. Artikelen volgen een eigen model, zie parseArticlePath.
   "/writing",
 ] as const;
 
@@ -73,6 +72,26 @@ export const localizeHref = (to: string, lang: Lang): string => {
   const cut = to.search(/[?#]/);
   if (cut === -1) return localizePath(to, lang);
   return `${localizePath(to.slice(0, cut), lang)}${to.slice(cut)}`;
+};
+
+/**
+ * Artikel-URL's (besluit Hans 2026-10-02, optie A):
+ *
+ *   /writing/<slug>      primaire taal van het artikel (NL zodra er NL-tekst is)
+ *   /en/writing/<slug>   Engelse versie van een NL-primair artikel, eigen canonical
+ *
+ * Beide dragen een wederkerige hreflang-set (nl, en, x-default = en). ?lang=en is
+ * de oude vorm en gaat met een 308 naar /en/writing/<slug> (vercel.json).
+ */
+export const EN_ARTICLE_PREFIX = "/en/writing/";
+
+export const parseArticlePath = (pathname: string): { slug: string; enRoute: boolean } | null => {
+  const p = normalize(pathname);
+  const en = /^\/en\/writing\/([^/]+)$/.exec(p);
+  if (en) return { slug: en[1], enRoute: true };
+  const primary = /^\/writing\/([^/]+)$/.exec(parsePath(p).path);
+  if (primary) return { slug: primary[1], enRoute: false };
+  return null;
 };
 
 export const absoluteUrl = (path: string, lang: Lang): string => `${BASE_URL}${localizePath(path, lang)}`;
