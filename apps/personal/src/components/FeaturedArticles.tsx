@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "@/components/LocalizedLink";
 import { ArrowRight } from "lucide-react";
 import { getBlogPosts, BlogPostRow } from "@/lib/api/content";
-import { getBlogPostImage, DEFAULT_OG_IMAGE } from "@/lib/seo/blogPostHead";
+import { getBlogPostImage, DEFAULT_OG_IMAGE, hasBlogPostVersion, blogPostHref } from "@/lib/seo/blogPostHead";
 import { useLang } from "@/hooks/useLang";
 import "@/styles/writing-v2.css";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
@@ -38,11 +38,15 @@ const FeaturedArticles = () => {
   useEffect(() => { ensureFontCss("fonts-writing", FONT_CSS.writing); }, []);
   const { lang } = useLang();
   const isNl = lang === "nl";
-  const [posts, setPosts] = useState<BlogPostRow[]>([]);
+  const [allPosts, setAllPosts] = useState<BlogPostRow[]>([]);
 
   useEffect(() => {
-    getBlogPosts(true).then((p) => setPosts(p.slice(0, 3)));
+    getBlogPosts(true).then(setAllPosts);
   }, []);
+
+  // Alleen artikelen met een versie in de UI-taal, gelinkt naar die versie
+  // (i18n-audit 2026-10-01): de EN-homepage linkte naar Nederlandse artikelen.
+  const posts = allPosts.filter((p) => hasBlogPostVersion(p, lang)).slice(0, 3);
 
   if (posts.length === 0) return null;
 
@@ -75,7 +79,7 @@ const FeaturedArticles = () => {
             const cardImage = getBlogPostImage(post, isNl ? "nl" : "en");
             const hasImage = cardImage !== DEFAULT_OG_IMAGE;
             return (
-              <Link key={post.id} to={`/writing/${post.slug}`} className="post">
+              <Link key={post.id} to={blogPostHref(post, lang)} className="post">
                 <div className="post__thumb">
                   {hasImage ? (
                     <img

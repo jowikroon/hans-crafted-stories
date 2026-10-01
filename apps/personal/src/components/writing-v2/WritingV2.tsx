@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { getBlogPosts, isHansSession, BlogPostRow } from "@/lib/api/content";
 import { useSEO } from "@/hooks/useSEO";
-import { getBlogPostImage, DEFAULT_OG_IMAGE } from "@/lib/seo/blogPostHead";
+import { getBlogPostImage, DEFAULT_OG_IMAGE, hasBlogPostVersion, blogPostHref, localizeBlogPost } from "@/lib/seo/blogPostHead";
 import { useLang } from "@/hooks/useLang";
 import { absoluteUrl } from "@/lib/i18n/routes";
 import { translations } from "@/data/translations";
@@ -28,6 +28,12 @@ interface MappedPost {
   imageUrl?: string;
   isDraft: boolean;
   isPublic: boolean;
+  /** Heeft dit artikel een versie in de taal van deze lijst? (i18n-audit 2026-10-01) */
+  inLang: boolean;
+  /** Link naar de versie in de taal van deze lijst (/writing/<slug> of ?lang=en). */
+  href: string;
+  /** Taal van de tekst achter de link, voor het NL/EN-label op de kaart. */
+  shownLang: "nl" | "en";
 }
 
 const FILTER_PILLS = [
@@ -95,9 +101,11 @@ const WritingV2 = () => {
   const isFilteredView = filter !== "all" || sort !== "newest" || publishedOnly;
 
   // Public posts drive an ItemList of BlogPosting entities (rich results).
+  // Alleen artikelen met een versie in de taal van deze lijst (HAN-167 + i18n-audit
+  // 2026-10-01): /writing (EN) toonde Nederlandstalige artikelen met een EN-label.
   const publicPostsForLd = useMemo(
-    () => blogPosts.filter((p) => p.published === true && p.status === "published"),
-    [blogPosts],
+    () => blogPosts.filter((p) => p.published === true && p.status === "published" && hasBlogPostVersion(p, lang)),
+    [blogPosts, lang],
   );
 
   // Eén URL per taal (HAN-167): /writing (EN) en /nl/writing (NL) dragen elk hun
@@ -134,12 +142,12 @@ const WritingV2 = () => {
               item: {
                 "@type": "BlogPosting",
                 "@id": `https://hansvanleeuwen.com/writing/${p.slug}#post`,
-                headline: p.title,
+                headline: localizeBlogPost(p, lang).title,
                 url: `https://hansvanleeuwen.com/writing/${p.slug}`,
                 datePublished: p.created_at,
                 dateModified: p.updated_at,
                 ...(getBlogPostImage(p, lang) !== DEFAULT_OG_IMAGE ? { image: getBlogPostImage(p, lang) } : {}),
-                description: p.meta_description || p.excerpt || undefined,
+                description: localizeBlogPost(p, lang).excerpt || p.meta_description || undefined,
                 author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen" },
                 publisher: { "@id": "https://hansvanleeuwen.com/#person" },
               },
@@ -191,13 +199,18 @@ const WritingV2 = () => {
         isDraft: !p.published || (typeof p.status === "string" && p.status === "draft"),
         // Public = exactly what anonymous visitors see (RLS: published + status=published).
         isPublic: p.published === true && p.status === "published",
+        inLang: hasBlogPostVersion(p, lang),
+        href: blogPostHref(p, lang),
+        shownLang: hasBlogPostVersion(p, lang) ? lang : lang === "nl" ? "en" : "nl",
       })),
     [blogPosts, lang],
   );
 
   // Filter & sort
   const filtered = useMemo(() => {
-    let posts = mappedPosts;
+    // Bezoekers zien alleen artikelen met een versie in de taal van de lijst; Hans
+    // (ingelogd) ziet alles, met het echte taallabel per artikel.
+    let posts = authed ? mappedPosts : mappedPosts.filter((p) => p.inLang);
     if (authed && publishedOnly) {
       posts = posts.filter((p) => p.isPublic);
     }
@@ -249,9 +262,10 @@ const WritingV2 = () => {
 
   // The featured post = first/newest
   const [featured, ...rest] = filtered;
-  const featTitle = featured && lang === "nl" && featured.titleNl ? featured.titleNl : featured?.title;
-  const featExcerpt = featured && lang === "nl" && featured.excerptNl ? featured.excerptNl : featured?.excerpt;
-  const featLang = (lang === "nl" ? "NL" : "EN").toString();
+  const featTitle = featured && featured.shownLang === "nl" && featured.titleNl ? featured.titleNl : featured?.title;
+  const featExcerpt = featured && featured.shownLang === "nl" && featured.excerptNl ? featured.excerptNl : featured?.excerpt;
+  // Label = taal van de tekst achter de link, niet de UI-taal (stond altijd op EN in /writing).
+  const langLabel = (p: MappedPost) => (p.shownLang === "nl" ? "NL" : "EN");
 
   return (
     <div className="writing-v2">
@@ -431,7 +445,7 @@ const WritingV2 = () => {
                         <span className="dot"></span>
                         <span className="tag">{featured.category}</span>
                         <span className="dot"></span>
-                        <span className="lang">{featLang}</span>
+                        <span className="lang">{langLabel(featured)}</span>
                         {featured.readTime && (
                           <>
                             <span className="dot"></span>
@@ -447,7 +461,7 @@ const WritingV2 = () => {
                       </div>
                       <h2 className="post__title">
                         <Link
-                          to={`/writing/${featured.slug}`}
+                          to={featured.href}
                           className="post__title-link"
                           aria-label={`Featured essay: ${featTitle}`}
                         >
@@ -479,8 +493,8 @@ const WritingV2 = () => {
 
               {/* Rest of posts */}
               {rest.map((post) => {
-                const title = lang === "nl" && post.titleNl ? post.titleNl : post.title;
-                const excerpt = lang === "nl" && post.excerptNl ? post.excerptNl : post.excerpt;
+                const title = post.shownLang === "nl" && post.titleNl ? post.titleNl : post.title;
+                const excerpt = post.shownLang === "nl" && post.excerptNl ? post.excerptNl : post.excerpt;
                 return (
                   <article key={post.id} className="post rv">
                     <div className="post__thumb">
@@ -503,7 +517,7 @@ const WritingV2 = () => {
                         <span className="dot"></span>
                         <span className="tag">{post.category}</span>
                         <span className="dot"></span>
-                        <span className="lang">{featLang}</span>
+                        <span className="lang">{langLabel(post)}</span>
                         {post.readTime && (
                           <>
                             <span className="dot"></span>
@@ -518,7 +532,7 @@ const WritingV2 = () => {
                         )}
                       </div>
                       <h2 className="post__title">
-                        <Link to={`/writing/${post.slug}`} className="post__title-link">
+                        <Link to={post.href} className="post__title-link">
                           {title}
                         </Link>
                       </h2>
