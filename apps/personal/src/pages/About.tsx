@@ -214,7 +214,7 @@ const About = () => {
                 {getValue("about_h1", lang === "nl" ? "Interim E-commerce Manager & Marketplace-specialist (Amazon & Bol.com)" : "Interim E-commerce Manager & Marketplace Specialist (Amazon & Bol.com)")}
               </h1>
               <p className="mb-6 font-display text-lg font-medium text-muted-foreground md:text-xl">
-                {getValue("about_name", "Hans van Leeuwen")} · {getValue("about_location", "Amersfoort, NL")}
+                {getValue("about_name", "Hans van Leeuwen", { neutral: true })} · {getValue("about_location", "Amersfoort, NL", { neutral: true })}
               </p>
 
               {isVisible("bio_section") && (
@@ -227,7 +227,7 @@ const About = () => {
               {isVisible("contact_details") && (
                 <div className="mt-8 flex flex-wrap gap-4 text-sm text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin size={14} className="text-primary" /> {getValue("about_location", "Amersfoort, NL")}
+                    <MapPin size={14} className="text-primary" /> {getValue("about_location", "Amersfoort, NL", { neutral: true })}
                   </span>
                   <a href="#contact" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
                     <Mail size={14} className="text-primary" /> {lang === "nl" ? "Stuur een bericht" : "Send a message"}
@@ -235,8 +235,8 @@ const About = () => {
                   <ObfuscatedMailto user="hansvl3" domain="gmail.com" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground" aria-label={lang === "nl" ? "E-mail sturen" : "Send email"}>
                     {lang === "nl" ? "Of e-mail" : "Or email"}
                   </ObfuscatedMailto>
-                  <a href={getValue("about_linkedin_url", "https://linkedin.com/in/hansvl3")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                    <Linkedin size={14} className="text-primary" /> {getValue("about_linkedin_label", "LinkedIn")}
+                  <a href={getValue("about_linkedin_url", "https://linkedin.com/in/hansvl3", { neutral: true })} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+                    <Linkedin size={14} className="text-primary" /> {getValue("about_linkedin_label", "LinkedIn", { neutral: true })}
                   </a>
                 </div>
               )}
