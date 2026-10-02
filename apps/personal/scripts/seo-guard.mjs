@@ -32,11 +32,13 @@
  *  19. intentwoord-scheiding (plan A.1, HAN-180): homepage-<title> (/, /nl) zonder "inhuren"/"hire",
  *      alle vier /nl-dienstentitels mét "inhuren"; /writing- en /nl/writing-head = translations.seo.writing*
  *      (pariteit prerender ↔ component) en description ≥ 120 tekens
+ *  20. artikelparen (optie A, 2026-10-02): elke /en/writing/<slug> heeft een NL-tweeling met
+ *      wederkerige hreflang, en de HTML bevat geen ?lang=en-links meer
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
  *      want databasetekst gaat bij het lezen al door lib/noEmDash.ts
- *  20. artikelvloer: minder dan MIN_PRERENDERED_ARTICLES geprerenderde artikelen = build faalt
+ *  21. artikelvloer: minder dan MIN_PRERENDERED_ARTICLES geprerenderde artikelen = build faalt
  *      (een mislukte CMS-fetch zou zonder /writing/:slug-rewrite elk artikel 404 geven)
  */
 import fs from "node:fs";
@@ -95,11 +97,12 @@ function checkFile(file) {
   const lang = attr(html, /<html[^>]*\blang="([^"]+)"/);
   const isNl = route === "/nl" || route.startsWith("/nl/");
   const isArticle = route.startsWith("/writing/") || route === "/writing";
+  const isEnArticle = route.startsWith("/en/writing/");
   if (!lang) failures.push(`${rel}: html lang ontbreekt`);
   else if (isNl && lang !== "nl") failures.push(`${rel}: /nl-pad maar html lang="${lang}"`);
   else if (!isNl && !isArticle && lang !== "en") failures.push(`${rel}: EN-pad maar html lang="${lang}"`);
   // 15b. Artikel: JSON-LD headline en de statische fallback-<h2> dragen dezelfde taal als de <h1>.
-  if (route.startsWith("/writing/")) {
+  if (route.startsWith("/writing/") || isEnArticle) {
     const decode = (t) => t.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d)).replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
     const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
     // Vergelijkingstekst, geen sanitizer: tags eruit via split (CodeQL js/incomplete-multi-character-sanitization).
@@ -132,7 +135,10 @@ function checkFile(file) {
     const by = Object.fromEntries(alts.map((a) => [a.lang, a.href]));
     if (by.en && by.nl && by.en === by.nl) failures.push(`${rel}: hreflang en en nl wijzen naar dezelfde URL (${by.en})`);
     if (by["x-default"] && by["x-default"] !== by.en) failures.push(`${rel}: x-default (${by["x-default"]}) ≠ en (${by.en})`);
-    const self = isNl ? by.nl : by.en;
+    // Self-verwijzing volgt de taal van de pagina (artikelen: /writing/<slug> is NL,
+    // /en/writing/<slug> is EN; optie A 2026-10-02), niet alleen het /nl-prefix.
+    const self = (lang ?? (isNl ? "nl" : "en")) === "nl" ? by.nl : by.en;
+    if (!self) failures.push(`${rel}: hreflang-set zonder verwijzing naar zichzelf (${lang})`);
     if (self && canonical && self !== canonical) failures.push(`${rel}: hreflang-self ${self} ≠ canonical ${canonical}`);
     for (const [code, href] of Object.entries(by)) {
       // Exacte origin-match (CodeQL js/incomplete-url-substring-sanitization): "https://hansvanleeuwen.com.evil" mag niet slagen.
@@ -428,6 +434,30 @@ try {
 }
 if (warnings.length) console.warn(`[seo-guard] let op: em dash in geprerenderde pagina's (databasetekst?): ${warnings.slice(0, 10).join(", ")}`);
 
+// 20. Artikelparen (optie A, 2026-10-02): elke /en/writing/<slug> heeft een NL-tweeling
+//     /writing/<slug> die terugverwijst, en nergens in dist staat nog een ?lang=en-link
+//     (die gaat via een 308 en kost een hop).
+for (const route of seen) {
+  if (!route.startsWith("/en/writing/")) continue;
+  const nlRoute = route.slice(3);
+  const nlFile = path.join(distDir, nlRoute.slice(1), "index.html");
+  if (!fs.existsSync(nlFile)) { failures.push(`${route}: geen NL-tweeling ${nlRoute}`); continue; }
+  const nlHtml = fs.readFileSync(nlFile, "utf8");
+  if (!nlHtml.includes(`hreflang="en" href="${BASE}${route}"`)) failures.push(`${nlRoute}: hreflang en verwijst niet naar ${route}`);
+}
+{
+  const hits = [];
+  const scan = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) { if (!["assets", "cowork", "__edit"].includes(e.name)) scan(p); continue; }
+      if (e.name.endsWith(".html") && /href="[^"]*\/writing\/[^"?]+\?lang=en/.test(fs.readFileSync(p, "utf8"))) hits.push(path.relative(distDir, p));
+    }
+  };
+  scan(distDir);
+  if (hits.length) failures.push(`?lang=en-links in de HTML (gebruik /en/writing/<slug>): ${hits.slice(0, 5).join(", ")}`);
+}
+
 // Wederkerigheid vanuit de andere kant: elke /nl-pagina heeft een EN-tweeling en andersom.
 for (const route of seen) {
   if (route === "/nl" || route.startsWith("/nl/")) {
@@ -436,7 +466,7 @@ for (const route of seen) {
   }
 }
 
-// 20. Artikelvloer (2026-09-23): zonder /writing/:slug-rewrite geeft een ontbrekend geprerenderd
+// 21. Artikelvloer (2026-09-23): zonder /writing/:slug-rewrite geeft een ontbrekend geprerenderd
 //     artikel een echte 404. Minder dan MIN_PRERENDERED_ARTICLES artikelpagina's = waarschijnlijk een
 //     mislukte CMS-fetch → build faalt i.p.v. de blog te deïndexeren.
 {
@@ -453,4 +483,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (20 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelvloer).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (21 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/artikelvloer).`);

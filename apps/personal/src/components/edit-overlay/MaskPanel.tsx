@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { parseArticlePath } from "@/lib/i18n/routes";
 import { getBlogPost, updateBlogPost } from "@/lib/api/content";
 import {
   applyMaskConfigToDom,
@@ -31,8 +32,10 @@ const MODES: MaskMode[] = ["specific", "general", "masked"];
 export default function MaskPanel() {
   const location = useLocation();
   const slug = useMemo(() => {
-    const m = location.pathname.match(/^\/writing\/([^/]+)\/?$/);
-    return m ? decodeURIComponent(m[1]) : null;
+    // Beide artikel-URL's: /writing/<slug> en /en/writing/<slug> (Codex-review PR #388).
+    const slug = parseArticlePath(location.pathname)?.slug;
+    if (!slug) return null;
+    try { return decodeURIComponent(slug); } catch { return slug; }
   }, [location.pathname]);
 
   const [open, setOpen] = useState(false);

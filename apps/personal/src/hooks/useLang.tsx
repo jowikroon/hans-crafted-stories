@@ -1,11 +1,10 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { isLocalizedRoute, localizePath, parsePath, type Lang } from "@/lib/i18n/routes";
+import { isLocalizedRoute, localizePath, parseArticlePath, parsePath, type Lang } from "@/lib/i18n/routes";
 import { usePreloadedData } from "@/contexts/PreloadedDataContext";
 import { useArticleLangInfo } from "@/lib/i18n/articleLang";
 import { primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 
-const ARTICLE_RE = /^\/writing\/([^/]+)$/;
 
 export type { Lang };
 
@@ -46,7 +45,8 @@ export const LangProvider = ({ children, initialLang }: LangProviderProps) => {
   // bezoeker (i18n-audit 2026-09-22): op een Nederlands artikel stond ENG als
   // actief omdat de client geen initialLang kent. Bron in volgorde: ?lang=en,
   // de prerender-/SSR-preload, de store die BlogPostPage vult na het laden.
-  const articleSlug = ARTICLE_RE.exec(parsePath(location.pathname).path)?.[1];
+  const article = parseArticlePath(location.pathname);
+  const articleSlug = article?.slug;
   const wantsEn = articleSlug ? new URLSearchParams(location.search).get("lang") === "en" : false;
   const preloaded = usePreloadedData();
   const storeInfo = useArticleLangInfo(articleSlug);
@@ -61,6 +61,8 @@ export const LangProvider = ({ children, initialLang }: LangProviderProps) => {
   const lang = useMemo<Lang>(() => {
     const { lang: fromUrl, path } = parsePath(location.pathname);
     if (fromUrl === "nl") return "nl";
+    // /en/writing/<slug> is altijd de Engelse versie (optie A, 2026-10-02).
+    if (article?.enRoute) return "en";
     if (articleSlug) {
       if (wantsEn && (storeInfo ? storeInfo.hasEn : true)) return "en";
       return storeInfo?.lang ?? preloadedArticleLang ?? initialLang ?? "nl";
@@ -69,7 +71,7 @@ export const LangProvider = ({ children, initialLang }: LangProviderProps) => {
     // daar bepaalt de SSR-hint de UI-taal, anders EN.
     if (!isLocalizedRoute(path) && initialLang) return initialLang;
     return "en";
-  }, [location.pathname, initialLang, articleSlug, wantsEn, storeInfo, preloadedArticleLang]);
+  }, [location.pathname, initialLang, article?.enRoute, articleSlug, wantsEn, storeInfo, preloadedArticleLang]);
 
   const setLang = (l: Lang) => {
     if (l === lang) return;

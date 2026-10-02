@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Link as RouterLink } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
-import { localizePath, parsePath } from "@/lib/i18n/routes";
+import { localizePath, parseArticlePath, parsePath } from "@/lib/i18n/routes";
 import { useArticleLangInfo } from "@/lib/i18n/articleLang";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
-import { hasDutchVersion, hasEnglishVersion } from "@/lib/seo/blogPostHead";
+import { hasDutchVersion, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 import { untranslatedFallback } from "@/lib/i18n/untranslated";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
@@ -65,19 +65,23 @@ const Navbar = (_props: NavbarProps) => {
   /* Theme toggle still controls page-content dark mode; the bar stays light.
      State lives in the site-wide ThemeProvider (src/hooks/useTheme). */
   const { theme: siteTheme, toggleTheme } = useTheme();
-  /* Artikelen hebben één URL per artikel (HAN-167): de taalwissel gebruikt daar
-     ?lang=en in plaats van een /nl-prefix, zodat de NL-canonical intact blijft. */
-  const isArticle = /^\/writing\/[^/]+$/.test(parsePath(location.pathname).path);
-  const langTarget = (l: "nl" | "en") =>
-    isArticle ? (l === "en" ? `${location.pathname}?lang=en` : location.pathname) : localizePath(location.pathname, l);
+  /* Artikelen (optie A, 2026-10-02): primaire versie op /writing/<slug>, de Engelse
+     versie van een NL-primair artikel op /en/writing/<slug>. */
+  const article = parseArticlePath(location.pathname);
+  const isArticle = !!article;
   /* ENG alleen aanbieden als het artikel een Engelse versie heeft (i18n-audit
      2026-09-22, R2). Bron: de prerender-/SSR-preload (direct load) of de store
      die BlogPostPage vult na het laden (client-side navigatie). Onbekend = tonen. */
-  const articleSlug = isArticle ? parsePath(location.pathname).path.split("/")[2] : undefined;
+  const articleSlug = article?.slug;
   const preloadedArticle = usePreloadedBlogPost(articleSlug);
   const storedInfo = useArticleLangInfo(articleSlug);
   const storedHasEn = storedInfo ? storedInfo.hasEn : null;
   const articleHasEn = !isArticle || (storedHasEn ?? (preloadedArticle ? hasEnglishVersion(preloadedArticle) : true));
+  const articlePrimary = storedInfo?.lang ?? (preloadedArticle ? primaryBlogPostLang(preloadedArticle) : "nl");
+  const langTarget = (l: "nl" | "en") =>
+    article
+      ? l === "en" && articlePrimary === "nl" ? `/en/writing/${article.slug}` : `/writing/${article.slug}`
+      : localizePath(location.pathname, l);
   const engUnavailableTitle = "Alleen in het Nederlands beschikbaar / Only available in Dutch";
   /* /music en /music/:slug bestaan alleen in het Engels (geen NL-copy); een
      NL-knop die naar dezelfde URL wijst deed niets (i18n-audit 2026-09-22). */
