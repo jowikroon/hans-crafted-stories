@@ -17,6 +17,7 @@ import UntranslatedNotice from "./components/UntranslatedNotice";
 import SamanthaGlobalButton from "@/features/samantha/components/global/SamanthaGlobalButton";
 import CookieConsent from "./components/CookieConsent";
 import TrackingScriptInjector from "./components/TrackingScriptInjector";
+import SiteTracker from "./components/SiteTracker";
 import { EditOverlayProvider } from "./components/edit-overlay/EditOverlayProvider";
 import EditLayer from "./components/edit-overlay/EditLayer";
 // blog.css moved to BlogPostPage.tsx (2026-07-23): article-page CSS was
@@ -89,6 +90,7 @@ const AppShell = ({ initialLang }: AppShellProps) => {
           <SamanthaGlobalButton />
           <CookieConsent />
           <TrackingScriptInjector />
+          <SiteTracker />
           <EditLayer />
         </EditOverlayProvider>
       </LangProvider>

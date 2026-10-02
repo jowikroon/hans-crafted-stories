@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { HoverChart, InsightCards, DrilldownDrawer, type DrillPost } from "./AnalyticsExtras";
 import InfraStatusCard from "../infra/InfraStatusCard";
+import { indexedHeadline } from "@/lib/indexedHeadline";
 
 interface PostMetric {
   id: string;
@@ -40,7 +41,7 @@ interface Dashboard {
     site: string; clicks: number; impressions: number; ctr: number | null; position: number | null;
     range?: { from: string; to: string };
     pages_with_traffic: number; queries: Query[];
-    indexed_pages?: number | null; submitted_pages?: number | null; sitemaps?: Sitemap[];
+    indexed_pages?: number | null; submitted_pages?: number | null; sitemaps?: Sitemap[]; sitemaps_fetched_at?: string | null;
     sitemap_warnings?: number; sitemap_errors?: number;
     indexing_checked?: number; indexing_skipped?: number; indexing_total?: number; indexing_rotated?: boolean;
     indexing_issues?: IndexingIssue[]; indexing_fetched_at?: string | null;
@@ -155,6 +156,7 @@ export default function AnalyticsMode() {
   const sessionDays = dash?.range?.days ?? dash?.range_days ?? null;
   const gscDays = daysInclusive(gsc?.range?.from, gsc?.range?.to);
   const period = (d: number | null) => (d ? `${d}d` : "period");
+  const indexed = indexedHeadline(gsc);
 
   return (
     <main className="main manage-main">
@@ -187,11 +189,9 @@ export default function AnalyticsMode() {
           { k: "Avg. position", v: gsc?.position != null ? gsc.position.toFixed(1) : "–", sub: "Search Console" },
           { k: "Avg. CTR", v: gsc?.ctr != null ? `${gsc.ctr}%` : "–", sub: "Search Console" },
           { k: `Clicks · ${period(gscDays)}`, v: num(gsc?.clicks), sub: gsc?.impressions != null ? `${num(gsc.impressions)} impr.` : undefined },
-          // Provenance matters here: the only site-wide indexed count Google
-          // exposes by API is the sitemap-reported one, which is deprecated
-          // and approximate. Say where it comes from rather than presenting
-          // it as an exact figure.
-          { k: "Indexed pages", v: num(gsc?.indexed_pages), sub: gsc?.submitted_pages ? `of ${num(gsc.submitted_pages)} in sitemaps` : "Search Console · sitemap-reported" },
+          // Headline is the per-URL URL Inspection verdict over the sitemap; the
+          // deprecated sitemap-reported count is only secondary context.
+          { k: "Indexed pages", v: indexed.value, sub: indexed.sub },
         ].map((m) => (
           <div key={m.k} className="metric-cell">
             <div className="k">{m.k}</div>

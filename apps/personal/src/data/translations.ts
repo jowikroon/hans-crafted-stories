@@ -432,7 +432,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. What data do we collect?",
-          body: "We only collect anonymous analytical data via Google Analytics 4 (GA4), managed through Google Tag Manager. This includes page views, session duration, and device type. No personal data such as names, email addresses, or IP addresses is stored, IP anonymization is enabled by default in GA4.",
+          body: "We only collect anonymous analytical data via Google Analytics 4 (GA4), managed through Google Tag Manager. This includes page views, session duration, and device type. No personal data such as names, email addresses, or IP addresses is stored, IP anonymization is enabled by default in GA4. In addition, the site keeps its own anonymous visit statistics (pages viewed, time on page, scroll depth, clicks on contact links, page speed). These use no cookies, store nothing on your device and contain no IP address or other identifier; they only exist in memory for the duration of your visit.",
         },
         {
           heading: "3. Cookies",
@@ -770,7 +770,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. Welke gegevens verzamelen wij?",
-          body: "Wij verzamelen uitsluitend anonieme analytische gegevens via Google Analytics 4 (GA4), beheerd via Google Tag Manager. Dit omvat onder andere paginaweergaven, sessieduur en apparaattype. Er worden geen persoonsgegevens zoals naam, e-mailadres of IP-adres opgeslagen, IP-anonimisering is standaard ingeschakeld in GA4.",
+          body: "Wij verzamelen uitsluitend anonieme analytische gegevens via Google Analytics 4 (GA4), beheerd via Google Tag Manager. Dit omvat onder andere paginaweergaven, sessieduur en apparaattype. Er worden geen persoonsgegevens zoals naam, e-mailadres of IP-adres opgeslagen, IP-anonimisering is standaard ingeschakeld in GA4. Daarnaast houdt de site eigen anonieme bezoekstatistieken bij (bekeken pagina's, tijd op de pagina, scrolldiepte, klikken op contactlinks, laadsnelheid). Die gebruiken geen cookies, slaan niets op je apparaat op en bevatten geen IP-adres of andere identificatie; ze bestaan alleen in het geheugen zolang je bezoek duurt.",
         },
         {
           heading: "3. Cookies",
