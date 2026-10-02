@@ -7,8 +7,8 @@
  * we matchen daarom op specifieke claim-patronen, niet op losse namen.
  *
  * Scope:
- *  - FAIL: alle HTML buiten /writing/<slug>, plus assets/*.js, llms.txt, sitemap.
- *  - REPORT (geen fail): /writing/<slug> en de /writing-lijst — die tekst komt uit
+ *  - FAIL: alle HTML buiten de artikelroutes, plus assets/*.js, llms.txt, sitemap.
+ *  - REPORT (geen fail): /writing/<slug>, /en/writing/<slug> en de /writing-lijst: die tekst komt uit
  *    Supabase (blog_posts) en wordt via de CMS-patch in docs/cms-patches/ opgelost.
  *    Zo breekt een merge vóór het toepassen van die patch de productiebuild niet.
  */
@@ -41,7 +41,8 @@ function walk(dir, out = []) {
   return out;
 }
 
-const isCmsOwned = (rel) => /^(nl[\\/])?writing([\\/]|$)/.test(rel);
+// /en/writing/<slug> (#388) is de Engelse versie van hetzelfde CMS-artikel: zelfde classificatie.
+const isCmsOwned = (rel) => /^((nl|en)[\\/])?writing([\\/]|$)/.test(rel);
 // Interne werkdocumenten/dashboards: apart opgevolgd (horen niet in de publieke webroot). Melden, niet falen.
 const isPrivateTool = (rel) => /^(cowork[\\/]|dashboards[\\/]|ccp-dashboard\.html$|assets[\\/]Dashboards)/.test(rel);
 

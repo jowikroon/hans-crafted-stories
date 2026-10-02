@@ -79,9 +79,10 @@ export function detectBlogPostLang(
 }
 
 /**
- * Primaire taal van een artikel-URL: Nederlands zodra er een NL-versie is (de
- * doelmarkt), anders de gedetecteerde taal van de EN-velden. Eén URL = één
- * taal; de EN-versie is bereikbaar via ?lang=en zonder eigen canonical (HAN-167).
+ * Primaire taal van een artikel: Nederlands zodra er een NL-versie is (de
+ * doelmarkt), anders de gedetecteerde taal van de EN-velden. De primaire versie
+ * staat op /writing/<slug>; een Engelse versie van een NL-primair artikel staat
+ * sinds 2026-10-02 op /en/writing/<slug> (zie blogPostPath).
  */
 export function primaryBlogPostLang(
   post: Pick<BlogPostRow, "title" | "excerpt" | "content"> & { content_nl?: string | null },
@@ -134,22 +135,55 @@ export function hasBlogPostVersion(
   return lang === "nl" ? hasDutchVersion(post) : hasEnglishVersion(post);
 }
 
-/**
- * Interne link naar de versie van een artikel in `lang`. Artikelen hebben één
- * URL (HAN-167): de primaire taal staat op /writing/<slug>, de andere taal op
- * /writing/<slug>?lang=en. Zo landt een lezer van /writing (EN) direct op de
- * Engelse tekst in plaats van op de Nederlandse.
- */
-export function blogPostHref(
-  post: Pick<BlogPostRow, "slug" | "title" | "excerpt" | "content"> & { content_nl?: string | null },
-  lang: "nl" | "en",
-): string {
-  const base = `/writing/${post.slug}`;
-  if (lang === "en" && hasEnglishVersion(post) && primaryBlogPostLang(post) !== "en") return `${base}?lang=en`;
-  return base;
+type LangSource = Pick<BlogPostRow, "slug" | "title" | "excerpt" | "content"> & { content_nl?: string | null };
+
+/** Heeft dit artikel naast de primaire (NL) versie een eigen Engelse URL? */
+export function hasEnglishArticleUrl(post: LangSource): boolean {
+  return primaryBlogPostLang(post) === "nl" && hasEnglishVersion(post);
 }
 
-export function getBlogPostCanonical(post: Pick<BlogPostRow, "slug" | "canonical_url">): string {
+/**
+ * Pad van de versie van een artikel in `lang` (besluit 2026-10-02, optie A):
+ * /en/writing/<slug> voor de Engelse versie van een NL-primair artikel, anders
+ * /writing/<slug>. Een lezer van /writing (EN) landt zo direct op de Engelse tekst.
+ */
+export function blogPostPath(post: LangSource, lang: "nl" | "en"): string {
+  if (lang === "en" && hasEnglishArticleUrl(post)) return `/en/writing/${post.slug}`;
+  return `/writing/${post.slug}`;
+}
+
+/** Interne link naar de versie in `lang` (alias van blogPostPath, PR #387). */
+export const blogPostHref = blogPostPath;
+
+/**
+ * Wederkerige hreflang-set voor een artikel met NL- én EN-URL: nl, en en
+ * x-default (= en, zoals de rest van de site). Eentalige artikelen: geen set.
+ */
+export function blogPostAlternates(post: LangSource & { canonical_url?: string | null }): { lang: string; href: string }[] {
+  if (!hasEnglishArticleUrl(post)) return [];
+  // De NL-alternate is de echte canonical van de primaire versie; wijst die naar
+  // een ander domein, dan geen taalpaar (Codex-review PR #388).
+  const nl = getBlogPostCanonical({ slug: post.slug, canonical_url: post.canonical_url ?? "" });
+  if (!nl.startsWith(`${BASE_URL}/`)) return [];
+  const en = `${BASE_URL}${blogPostPath(post, "en")}`;
+  return [
+    { lang: "en", href: en },
+    { lang: "nl", href: nl },
+    { lang: "x-default", href: en },
+  ];
+}
+
+/**
+ * Canonical van de versie in `lang`. canonical_url (CMS) geldt alleen voor de
+ * primaire versie; de Engelse versie is altijd self-canonical op /en/writing.
+ */
+export function getBlogPostCanonical(
+  post: Pick<BlogPostRow, "slug" | "canonical_url"> & Partial<LangSource>,
+  lang?: "nl" | "en",
+): string {
+  if (lang === "en" && post.title !== undefined && hasEnglishArticleUrl(post as LangSource)) {
+    return `${BASE_URL}${blogPostPath(post as LangSource, "en")}`;
+  }
   return clean(post.canonical_url) || `${BASE_URL}/writing/${post.slug}`;
 }
 
@@ -176,7 +210,7 @@ export function getBlogPostHead(input: BlogPostRow, lang?: "nl" | "en"): SeoHead
   const articleLang = lang ?? primaryBlogPostLang(input);
   const post = localizeBlogPost(input, articleLang);
   // meta_title / meta_description zijn eentalig en horen bij de primaire taal
-  // van het artikel. Op de andere taalversie (?lang=en) bleef de <title> anders
+  // van het artikel. Op de andere taalversie (/en/writing) bleef de <title> anders
   // Nederlands boven een Engelse tekst (i18n-audit 2026-09-22 R5, 2026-10-01).
   const isPrimary = articleLang === primaryBlogPostLang(input);
   const metaTitle = isPrimary ? clean(post.meta_title) : "";
@@ -186,7 +220,7 @@ export function getBlogPostHead(input: BlogPostRow, lang?: "nl" | "en"): SeoHead
   return {
     title,
     description,
-    canonical: getBlogPostCanonical(post),
+    canonical: getBlogPostCanonical(input, articleLang),
     image: getBlogPostImage(input, articleLang),
     imageAlt: clean(post.title) || title,
   };
