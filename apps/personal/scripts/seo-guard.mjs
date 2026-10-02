@@ -34,6 +34,9 @@
  *      (pariteit prerender ↔ component) en description ≥ 120 tekens
  *  20. artikelparen (optie A, 2026-10-02): elke /en/writing/<slug> heeft een NL-tweeling met
  *      wederkerige hreflang, en de HTML bevat geen ?lang=en-links meer
+ *  21. directory-listings (2026-10-02, HAN-182): elke map in dist/ zónder eigen index.html maar mét
+ *      geprerenderde kinderen (bv. /en na PR #388, /cases op 11-09) is een Vercel directory-listing
+ *      (200 "Index of …", geen canonical/robots) tenzij vercel.json er een redirect voor heeft
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
@@ -456,6 +459,37 @@ for (const route of seen) {
   if (hits.length) failures.push(`?lang=en-links in de HTML (gebruik /en/writing/<slug>): ${hits.slice(0, 5).join(", ")}`);
 }
 
+// 21. Directory-listings (2026-10-02, HAN-182): PR #388 schreef dist/en/writing/<slug>/index.html en
+//     daarmee ontstonden /en en /en/writing als Vercel directory-listing (HTTP 200 "Index of /en/",
+//     geen canonical, geen robots) — hetzelfde lek als /cases op 2026-09-11 (les #37). Elke map in dist/
+//     zonder eigen index.html maar met geprerenderde kinderen heeft een exacte redirect in vercel.json.
+{
+  const appDir = path.resolve(distDir, "..");
+  try {
+    const vercel = JSON.parse(fs.readFileSync(path.join(appDir, "vercel.json"), "utf8"));
+    const sources = new Set((vercel.redirects || []).map((r) => r.source));
+    const skip = new Set(["assets", "dashboards", "cowork", "tools", "extensions", "artist-radar", "img", "__edit", "fonts", "images", "icons", "og", "cv", "logos", "media", "audio", "video", "docs", "files", "data", "pdf", "static", "js", "css"]);
+    const bare = [];
+    // Geeft true als ergens onder `dir` een index.html ligt (ook kleinkinderen: /en had alleen
+    // /en/writing/<slug>/index.html en was tóch een listing).
+    const hasPageBelow = (dir) => fs.readdirSync(dir, { withFileTypes: true }).some((c) => c.isDirectory() && !skip.has(c.name) && (fs.existsSync(path.join(dir, c.name, "index.html")) || hasPageBelow(path.join(dir, c.name))));
+    const walkDirs = (dir, rel) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (!e.isDirectory() || skip.has(e.name)) continue;
+        const full = path.join(dir, e.name);
+        const route = `${rel}/${e.name}`;
+        const hasIndex = fs.existsSync(path.join(full, "index.html"));
+        if (!hasIndex && hasPageBelow(full) && !sources.has(route)) bare.push(route);
+        walkDirs(full, route);
+      }
+    };
+    walkDirs(distDir, "");
+    for (const route of bare) failures.push(`${route}: map zonder index.html maar met geprerenderde kinderen = Vercel directory-listing; voeg een redirect voor "${route}" toe aan vercel.json`);
+  } catch (e) {
+    failures.push(`check 21 kon niet draaien: ${e.message}`);
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /nl-pagina heeft een EN-tweeling en andersom.
 for (const route of seen) {
   if (route === "/nl" || route.startsWith("/nl/")) {
@@ -469,4 +503,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (20 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (21 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings).`);
