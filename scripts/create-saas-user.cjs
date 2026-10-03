@@ -13,12 +13,18 @@
 
 const { createClient } = require("@supabase/supabase-js");
 
-const EMAIL = "hansvl3@gmail.com";
-const PASSWORD = "Cheyenne90955!";
+// Security 2026-09-23: e-mail/wachtwoord stonden hard-coded in deze (publieke) repo.
+const EMAIL = process.env.SAAS_USER_EMAIL;
+const PASSWORD = process.env.SAAS_USER_PASSWORD;
 
 async function main() {
   const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!EMAIL || !PASSWORD) {
+    console.error("Missing SAAS_USER_EMAIL and/or SAAS_USER_PASSWORD.");
+    process.exit(1);
+  }
 
   if (!url || !key) {
     console.error("Missing SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY. Use the SaaS project URL and Service Role Key from Supabase Dashboard → Settings → API.");
