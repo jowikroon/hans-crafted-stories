@@ -93,6 +93,47 @@ export function primaryBlogPostLang(
 
 const normalizeBody = (value: string | null | undefined): string => clean(value).replace(/\s+/g, " ");
 
+// Sterk-Nederlandse functiewoorden, zonder Engelse homografen als "is", "over", "al" of "die".
+const NL_FUNCTION_WORDS = new Set([
+  "de", "het", "een", "en", "van", "voor", "niet", "naar", "zijn", "worden", "je", "ik",
+  "dat", "wat", "waarom", "dus", "deze", "wordt", "geen", "wel", "nog", "jouw", "onze",
+  "ook", "maar", "bij", "hoe", "met", "om", "op", "dan", "kun", "kunt", "meer",
+]);
+
+/**
+ * Is deze body Nederlands? Aandeel Nederlandse functiewoorden over de hele body
+ * (tot 12.000 tekens), zodat een Nederlands citaat of voorbeeld bovenaan een
+ * Engels artikel niet beslist. Gemeten op alle posts met twee bodies
+ * (2026-10-03): Engelse bodies scoren 0 tot 0,8%, Nederlandse 17 tot 34%; de
+ * grens ligt ruim daartussen op 8%. Codeblokken, citaten (`> `), URL's en
+ * link-doelen tellen niet mee (`/en/` is geen Nederlands), net als
+ * hoofdlettercodes als "DE" in "Amazon DE", ook niet in de noemer. Er moeten
+ * minstens vier verschillende functiewoorden in staan, zodat één herhaald woord
+ * niet beslist. Korte teksten (< 20 woorden) gelden niet als Nederlands.
+ */
+export function isDutchBody(text: string | null | undefined): boolean {
+  const sample = clean(text)
+    .slice(0, 12000)
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/^\s*>.*$/gm, " ")
+    .replace(/\]\([^)]*\)/g, "] ")
+    .replace(/https?:\/\/\S+/g, " ");
+  const words = sample
+    .split(/[^A-Za-z\u00c0-\u00ff']+/)
+    .filter((token) => token && !(token.length <= 3 && token === token.toUpperCase()))
+    .map((token) => token.toLowerCase());
+  if (words.length < 20) return false;
+  let hits = 0;
+  const distinct = new Set<string>();
+  for (const w of words) {
+    if (NL_FUNCTION_WORDS.has(w)) {
+      hits += 1;
+      distinct.add(w);
+    }
+  }
+  return distinct.size >= 4 && hits / words.length >= 0.08;
+}
+
 /**
  * Bestaat er een échte Engelse versie van dit artikel? (i18n-audit 2026-09-22)
  *
@@ -103,6 +144,10 @@ const normalizeBody = (value: string | null | undefined): string => clean(value)
  * én inhoudelijk afwijkt van `content_nl`. Zonder NL-veld is `content` de enige
  * versie: die is Engels als de detectie dat zegt (dan is er geen NL-versie, de
  * schakelaar heeft dan niets om naar te wisselen).
+ *
+ * Pipeline-fix 2026-10-03: een afwijkende body telt alleen als die ook echt niet
+ * Nederlands is. In de CMS bewerkte Nederlandse tekst in `content` (naast een
+ * oudere `content_nl`) leverde anders een /en/-URL met Nederlandse tekst op.
  */
 export function hasEnglishVersion(
   post: Pick<BlogPostRow, "title" | "excerpt" | "content"> & { content_nl?: string | null },
@@ -111,7 +156,7 @@ export function hasEnglishVersion(
   if (!en) return false;
   const nl = normalizeBody(post.content_nl);
   if (!nl) return detectBlogPostLang(post) === "en";
-  return en !== nl;
+  return en !== nl && !isDutchBody(post.content);
 }
 
 /**
