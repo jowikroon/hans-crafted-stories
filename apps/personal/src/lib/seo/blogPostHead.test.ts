@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_OG_IMAGE, getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasEnglishVersion } from "./blogPostHead";
+import { DEFAULT_OG_IMAGE, getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasEnglishVersion, isDutchBody } from "./blogPostHead";
 import type { BlogPostRow } from "@/lib/api/content";
 
 const basePost: BlogPostRow = {
@@ -119,5 +119,23 @@ describe("hasEnglishVersion", () => {
   });
   it("is false without any EN body", () => {
     expect(hasEnglishVersion({ ...basePost, content: "", content_nl: nl })).toBe(false);
+  });  // Pipeline-fix 2026-10-03: Nederlandse tekst die in de CMS in `content` is bewerkt.
+  it("is false when the EN column holds a different, edited Dutch text", () => {
+    const edited = `${nl} ${nl} Deze alinea heb ik later in de editor toegevoegd voor de lezer.`;
+    expect(hasEnglishVersion({ ...basePost, content: edited, content_nl: nl })).toBe(false);
+  });
+  it("stays true for a full English body next to a Dutch one", () => {
+    const en = "At Alpine we moved from vendor to seller on Bol.com. This is the calculation per product group and what it delivered over the first year, including the fees we paid and the margin we kept.";
+    expect(hasEnglishVersion({ ...basePost, content: en, content_nl: nl })).toBe(true);
+  });
+});
+
+describe("isDutchBody", () => {
+  it("separates Dutch from English prose", () => {
+    expect(isDutchBody("Bij Alpine stapten we op Bol.com over van vendor naar seller. De rekensom per productgroep en wat het opleverde in het eerste jaar, met de kosten die we betaalden.")).toBe(true);
+    expect(isDutchBody("At Alpine we moved from vendor to seller on Bol.com. This is the calculation per product group and what it delivered over the first year, including the fees we paid.")).toBe(false);
+  });
+  it("does not call short text Dutch", () => {
+    expect(isDutchBody("De kop van een artikel")).toBe(false);
   });
 });

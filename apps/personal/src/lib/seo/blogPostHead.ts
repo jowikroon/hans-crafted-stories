@@ -93,6 +93,27 @@ export function primaryBlogPostLang(
 
 const normalizeBody = (value: string | null | undefined): string => clean(value).replace(/\s+/g, " ");
 
+// Sterk-Nederlandse functiewoorden, zonder Engelse homografen als "is", "over", "al" of "die".
+const NL_FUNCTION_WORDS = new Set([
+  "de", "het", "een", "en", "van", "voor", "niet", "naar", "zijn", "worden", "je", "ik",
+  "dat", "wat", "waarom", "dus", "deze", "wordt", "geen", "wel", "nog", "jouw", "onze",
+  "ook", "maar", "bij", "hoe", "met", "om", "op", "dan", "kun", "kunt", "meer",
+]);
+
+/**
+ * Is deze body Nederlands? Aandeel Nederlandse functiewoorden in de eerste 1500
+ * tekens. Gemeten op alle posts met twee bodies (2026-10-03): Engelse bodies
+ * scoren 0 tot 0,8%, Nederlandse 17 tot 34%; de grens ligt ruim daartussen op 8%.
+ * Korte teksten (< 20 woorden) gelden niet als Nederlands.
+ */
+export function isDutchBody(text: string | null | undefined): boolean {
+  const words = clean(text).slice(0, 1500).toLowerCase().split(/[^a-z\u00e0-\u00ff']+/).filter(Boolean);
+  if (words.length < 20) return false;
+  let hits = 0;
+  for (const w of words) if (NL_FUNCTION_WORDS.has(w)) hits += 1;
+  return hits / words.length >= 0.08;
+}
+
 /**
  * Bestaat er een échte Engelse versie van dit artikel? (i18n-audit 2026-09-22)
  *
@@ -103,6 +124,10 @@ const normalizeBody = (value: string | null | undefined): string => clean(value)
  * én inhoudelijk afwijkt van `content_nl`. Zonder NL-veld is `content` de enige
  * versie: die is Engels als de detectie dat zegt (dan is er geen NL-versie, de
  * schakelaar heeft dan niets om naar te wisselen).
+ *
+ * Pipeline-fix 2026-10-03: een afwijkende body telt alleen als die ook echt niet
+ * Nederlands is. In de CMS bewerkte Nederlandse tekst in `content` (naast een
+ * oudere `content_nl`) leverde anders een /en/-URL met Nederlandse tekst op.
  */
 export function hasEnglishVersion(
   post: Pick<BlogPostRow, "title" | "excerpt" | "content"> & { content_nl?: string | null },
@@ -111,7 +136,7 @@ export function hasEnglishVersion(
   if (!en) return false;
   const nl = normalizeBody(post.content_nl);
   if (!nl) return detectBlogPostLang(post) === "en";
-  return en !== nl;
+  return en !== nl && !isDutchBody(post.content);
 }
 
 /**
