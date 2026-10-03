@@ -13,6 +13,23 @@ describe("editSource codec", () => {
     expect(decodeJsxText("\n   \n  ").value).toBe("");
   });
 
+  it("keeps whitespace-only single-line runs as-is and drops multi-line ones", () => {
+    // e.g. the " " between `{t.heading}` and `<em>` in a heading
+    expect(decodeJsxText(" ").value).toBe(" ");
+    expect(decodeJsxText("   ").value).toBe("   ");
+    expect(decodeJsxText("\t").value).toBe(" ");
+    expect(decodeJsxText(" ").map).toEqual([0, 1]);
+    expect(decodeJsxText("\n   \n  ").value).toBe("");
+    expect(decodeJsxText(" \n ").value).toBe("");
+    expect(decodeJsxText("  \r\n\t\t").value).toBe("");
+  });
+
+  it("patches a whitespace-only JSX text run", () => {
+    const out = patchPartRaw({ k: "jsx", raw: " ", v: " " }, 0, 1, " and ");
+    expect(out).toBe(" and ");
+    expect(patchPartRaw({ k: "jsx", raw: " ", v: " " }, 1, 1, "& more ")).toBe(" &amp; more ");
+  });
+
   it("patches a JSX text run and keeps the source style", () => {
     const raw = "Hans van Leeuwen — E-commerce &amp; Marketplace Manager (Amazon &amp; Bol.com): ";
     const v = decodeJsxText(raw).value;
