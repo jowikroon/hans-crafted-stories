@@ -2,7 +2,7 @@
 
 > Freelance e-commerce manager and marketplace specialist (Amazon & Bol.com), based in Amersfoort, the Netherlands. 10+ years of experience in marketplace strategy, listing optimization, marketplace advertising (Amazon Ads, Bol Ads), conversion rate optimization, UX and digital commerce for brands in the Netherlands and EU.
 
-Hans van Leeuwen helps brands grow on Amazon and Bol.com: marketplace audits, product listing optimization (SEO, A+ Content), PPC management, catalog management, inventory forecasting and monthly performance reporting. Proven results include 70% market share on Amazon NL in the earplug category (Nielsen data) and out-of-stock rates below 2%.
+Hans van Leeuwen helps brands grow on Amazon and Bol.com: marketplace audits, product listing optimization (SEO, A+ Content), PPC management, catalog management, inventory forecasting and monthly performance reporting. He combines hands-on marketplace management with a UX background and AI-assisted workflows whose output can be checked. Client-specific performance figures are not published.
 
 ## Services
 
@@ -13,12 +13,13 @@ Hans van Leeuwen helps brands grow on Amazon and Bol.com: marketplace audits, pr
 ## Key pages
 
 - [About Hans van Leeuwen](https://hansvanleeuwen.com/about): Background, experience and contact.
-- [Case Studies](https://hansvanleeuwen.com/work): E-commerce and marketplace case studies with real results, including Connect Car Parts.
+- [Work](https://hansvanleeuwen.com/work): Marketplace cases (anonymised; no client performance figures) alongside UX, design and creative projects.
+- [Marketplace product-data case](https://hansvanleeuwen.com/work/marketplace-product-data-automation): Product data, feeds, channel-specific validation and human approval for an automotive-parts retailer.
 - [Articles](https://hansvanleeuwen.com/writing): Essays and practical insights on e-commerce strategy, Amazon vs Bol.com, marketplace optimization and AI in e-commerce.
 
 ## Articles
 
-- [Waarom je marketplace-listings niet converteren](https://hansvanleeuwen.com/writing/freelance-e-commerce-manager-inhuren): UX lens on marketplace listing conversion.
+- [Waarom je marketplace-listings niet converteren](https://hansvanleeuwen.com/writing/waarom-marketplace-listings-niet-converteren): UX lens on marketplace listing conversion.
 - [Amazon vs Bol.com in 2026](https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland): Where Dutch sellers should focus in 2026.
 - [Designing with LLMs: A Practical UX Framework](https://hansvanleeuwen.com/writing/designing-with-llms): Practical UX framework for LLM-powered products.
 

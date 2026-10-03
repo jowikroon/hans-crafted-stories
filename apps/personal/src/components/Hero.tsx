@@ -54,58 +54,52 @@ const Hero = () => {
           <p className="mb-4 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {getValue("hero_subtitle", t.subtitle)}
           </p>
-          <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            {isNl
-              ? <>Hans van Leeuwen, Marketplace Manager (Amazon &amp; Bol.com): <em className="text-primary">strategie</em>, groei &amp; AI-operations</>
-              : <>Hans van Leeuwen, Marketplace Manager (Amazon &amp; Bol.com): <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
-            }
+          {/* Korte hero (audit F4.1/F6.1): naam blijft in de H1 (#345), max. twee zinnen subcopy, CTA's direct eronder; context volgt daarna.
+              Woordkeus H1 volgt Hans op main: #364 ("Marketplace Manager", zonder "E-commerce &") en #367 (komma na de naam,
+              geen em dash). NL-nadruk komt, net als op main, rechtstreeks uit de vertaling: de CMS-sleutel valt zonder _nl-rij terug op Engels. */}
+          <h1 className="mb-5 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
+            Hans van Leeuwen, {t.heading} <em className="text-primary">{isNl ? t.headingEmphasis : getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, {t.headingEnd}
           </h1>
-          <p className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
-            {getValue("hero_freelance_h2", t.freelanceH2)}
-          </p>
-          <p className="mb-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
+          <p className="mb-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
             {getValue("hero_description", t.description)}
-          </p>
-          <p className="mb-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            {isNl ? "Bekijk mijn " : "Explore my "}
-            <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
-              {isNl ? "Amazon NL & Bol.com marketplace cases met meetbare resultaten" : "Amazon NL & Bol.com case studies with measurable results"}
-            </Link>
-            {isNl ? " of lees " : " or read "}
-            <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
-              {isNl ? "Amazon & Bol.com optimalisatie artikelen" : "Amazon & Bol.com optimization articles"}
-            </Link>
-            .
-          </p>
-          <p className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground">
-            <MapPin size={13} className="shrink-0 text-primary/60" />
-            {getValue("hero_location", t.location)}
           </p>
           <div className="flex flex-wrap gap-4" role="group" aria-label={isNl ? "Actieknoppen" : "Call to action"}>
             <Magnetic>
               <Link
-                to="/work"
+                to="/about#contact"
                 className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-bold text-background transition-all duration-300 hover:gap-3 hover:shadow-lg"
-                aria-label={getValue("hero_cta_work", t.ctaWork)}
               >
-                {getValue("hero_cta_work", t.ctaWork)}
+                {getValue("hero_cta_consult", t.ctaConsult)}
                 <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
             </Magnetic>
             <Magnetic>
               <Link
-                to="/about#contact"
+                to="/work"
                 className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-sm font-bold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary hover:shadow-sm"
-                aria-label={getValue("hero_cta_consult", t.ctaConsult)}
               >
-                {getValue("hero_cta_consult", t.ctaConsult)}
+                {getValue("hero_cta_work", t.ctaWork)}
               </Link>
             </Magnetic>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            {isNl
-              ? "Reactie binnen 48 uur · Vrijblijvend · Voor merken en retailers op Amazon NL & Bol.com"
-              : "Response within 48h · No obligation · For brands & retailers on Amazon NL & Bol.com"}
+            {t.availability}
+            {isNl ? " · Reactie binnen 48 uur · Vrijblijvend" : " · Response within 48h · No obligation"}
+          </p>
+          <p className="mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            {isNl ? "Bekijk mijn " : "Explore my "}
+            <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {isNl ? "marketplace-cases voor Amazon & Bol.com" : "Amazon & Bol.com marketplace cases"}
+            </Link>
+            {isNl ? " of lees " : " or read "}
+            <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {isNl ? "artikelen over Amazon & Bol.com" : "articles on Amazon & Bol.com"}
+            </Link>
+            .
+          </p>
+          <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+            <MapPin size={13} className="shrink-0 text-primary/60" />
+            {getValue("hero_location", t.location)}
           </p>
         </motion.div>
         {/* Portrait: echte foto (E-E-A-T), eager + fetchpriority want boven de vouw op md+; op mobiel verborgen zodat de H1 de LCP blijft. SEO-run april-items "zero images". */}
