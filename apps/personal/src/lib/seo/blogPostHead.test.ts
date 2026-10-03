@@ -139,6 +139,17 @@ describe("isDutchBody", () => {
     const en = "Selling on Amazon DE and eBay DE is not the same as selling on Amazon NL. DE buyers expect fast delivery, DE listings need German titles, and DE returns are high. Read the [guide](/en/writing/amazon-de) and https://example.com/en/de/en for more on DE fees.";
     expect(isDutchBody(en)).toBe(false);
   });
+  it("does not let uppercase codes dilute a Dutch body", () => {
+    const nl = "Op Amazon DE en eBay DE werkt het anders dan op Bol.com in NL. Een SKU met een goede titel en de juiste EAN haalt de Buy Box, maar de marge is dan nog niet binnen. Kijk dus ook naar de kosten per order en het aantal retouren per SKU.";
+    expect(isDutchBody(`${nl} DE NL SKU EAN DE NL SKU EAN DE NL SKU EAN DE NL SKU EAN DE NL SKU EAN`)).toBe(true);
+  });
+  it("judges the whole body, not a Dutch quote at the top", () => {
+    const quote = "> Bij ons stapten we op Bol.com over van vendor naar seller en dat was de beste keuze die we in jaren hebben gemaakt, zegt de oprichter.";
+    const en = "This article explains why that switch worked. The numbers per product group show higher margins, faster payouts and more control over pricing. ".repeat(4);
+    expect(isDutchBody(`${quote}\n\n${en}`)).toBe(false);
+    const dutchIntro = "Bij ons stapten we op Bol.com over van vendor naar seller en dat was de beste keuze die we in jaren hebben gemaakt. ";
+    expect(isDutchBody(`${dutchIntro}\n\n${en.repeat(3)}`)).toBe(false);
+  });
   it("does not call short text Dutch", () => {
     expect(isDutchBody("De kop van een artikel")).toBe(false);
   });
