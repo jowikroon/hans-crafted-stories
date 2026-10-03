@@ -135,6 +135,10 @@ describe("isDutchBody", () => {
     expect(isDutchBody("Bij Alpine stapten we op Bol.com over van vendor naar seller. De rekensom per productgroep en wat het opleverde in het eerste jaar, met de kosten die we betaalden.")).toBe(true);
     expect(isDutchBody("At Alpine we moved from vendor to seller on Bol.com. This is the calculation per product group and what it delivered over the first year, including the fees we paid.")).toBe(false);
   });
+  it("ignores marketplace codes and locale paths in English prose", () => {
+    const en = "Selling on Amazon DE and eBay DE is not the same as selling on Amazon NL. DE buyers expect fast delivery, DE listings need German titles, and DE returns are high. Read the [guide](/en/writing/amazon-de) and https://example.com/en/de/en for more on DE fees.";
+    expect(isDutchBody(en)).toBe(false);
+  });
   it("does not call short text Dutch", () => {
     expect(isDutchBody("De kop van een artikel")).toBe(false);
   });

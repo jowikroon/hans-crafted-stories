@@ -104,14 +104,29 @@ const NL_FUNCTION_WORDS = new Set([
  * Is deze body Nederlands? Aandeel Nederlandse functiewoorden in de eerste 1500
  * tekens. Gemeten op alle posts met twee bodies (2026-10-03): Engelse bodies
  * scoren 0 tot 0,8%, Nederlandse 17 tot 34%; de grens ligt ruim daartussen op 8%.
+ * URL's en link-doelen tellen niet mee (`/en/` is geen Nederlands), net als
+ * hoofdlettercodes als "DE" in "Amazon DE" of "eBay DE". Er moeten minstens vier
+ * verschillende functiewoorden in staan, zodat één herhaald woord niet beslist.
  * Korte teksten (< 20 woorden) gelden niet als Nederlands.
  */
 export function isDutchBody(text: string | null | undefined): boolean {
-  const words = clean(text).slice(0, 1500).toLowerCase().split(/[^a-z\u00e0-\u00ff']+/).filter(Boolean);
-  if (words.length < 20) return false;
+  const sample = clean(text)
+    .slice(0, 1500)
+    .replace(/\]\([^)]*\)/g, "] ")
+    .replace(/https?:\/\/\S+/g, " ");
+  const tokens = sample.split(/[^A-Za-z\u00c0-\u00ff']+/).filter(Boolean);
+  if (tokens.length < 20) return false;
   let hits = 0;
-  for (const w of words) if (NL_FUNCTION_WORDS.has(w)) hits += 1;
-  return hits / words.length >= 0.08;
+  const distinct = new Set<string>();
+  for (const token of tokens) {
+    if (token.length <= 3 && token === token.toUpperCase()) continue;
+    const w = token.toLowerCase();
+    if (NL_FUNCTION_WORDS.has(w)) {
+      hits += 1;
+      distinct.add(w);
+    }
+  }
+  return distinct.size >= 4 && hits / tokens.length >= 0.08;
 }
 
 /**
