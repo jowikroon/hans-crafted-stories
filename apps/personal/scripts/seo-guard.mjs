@@ -497,7 +497,9 @@ for (const route of seen) {
 //     de NL-dienstpagina's op pos 41-43 liet staan, omdat die termen niet in de NL-title/H1 stonden.
 //     Regel: de prerender-<title> én de <h1> van deze NL-pagina's dragen de echte zoekvraag.
 {
-  const dec = (t) => t.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'").replace(/\s+/g, " ").trim();
+  const ENT = { "&amp;": "&", "&#x27;": "'", "&#39;": "'", "&quot;": '"' };
+  // Eén pass: geen dubbele unescape (CodeQL js/double-escaping, PR #391).
+  const dec = (t) => t.replace(/<[^>]+>/g, " ").replace(/&amp;|&#x27;|&#39;|&quot;/g, (m) => ENT[m]).replace(/\s+/g, " ").trim();
   const targets = [
     ["amazon-nl-specialist", /\bamazon specialist\b/i, "amazon specialist"],
     ["interim-ecommerce-manager", /\be-commerce specialist\b/i, "e-commerce specialist"],
