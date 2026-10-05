@@ -37,6 +37,8 @@
  *  21. directory-listings (2026-10-02, HAN-182): elke map in dist/ zónder eigen index.html maar mét
  *      geprerenderde kinderen (bv. /en na PR #388, /cases op 11-09) is een Vercel directory-listing
  *      (200 "Index of …", geen canonical/robots) tenzij vercel.json er een redirect voor heeft
+ *  22. GSC-vraagtermen (2026-10-05): NL-title en H1 van amazon-nl-specialist en interim-ecommerce-manager
+ *      bevatten de zoekvraag uit GSC ("amazon specialist", "e-commerce specialist")
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
@@ -490,6 +492,27 @@ for (const route of seen) {
   }
 }
 
+// 22. GSC-vraagtermen (2026-10-05, plan A/B): GSC 28d (t/m 03-10) toonde dat Google voor
+//     "amazon specialist" (38 impr) en "e commerce specialist inhuren" (18 impr) de EN-pagina's koos en
+//     de NL-dienstpagina's op pos 41-43 liet staan, omdat die termen niet in de NL-title/H1 stonden.
+//     Regel: de prerender-<title> én de <h1> van deze NL-pagina's dragen de echte zoekvraag.
+{
+  const dec = (t) => t.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'").replace(/\s+/g, " ").trim();
+  const targets = [
+    ["amazon-nl-specialist", /\bamazon specialist\b/i, "amazon specialist"],
+    ["interim-ecommerce-manager", /\be-commerce specialist\b/i, "e-commerce specialist"],
+  ];
+  for (const [slug, re, term] of targets) {
+    const file = path.join(distDir, "nl", slug, "index.html");
+    if (!fs.existsSync(file)) { failures.push(`nl/${slug}/index.html ontbreekt (guard 22)`); continue; }
+    const html = fs.readFileSync(file, "utf8");
+    const t = dec((html.match(/<title>([\s\S]*?)<\/title>/) || [, ""])[1]);
+    const h = dec((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [, ""])[1]);
+    if (!re.test(t)) failures.push(`nl/${slug}: <title> "${t}" mist GSC-vraagterm "${term}" (guard 22)`);
+    if (!re.test(h)) failures.push(`nl/${slug}: <h1> "${h}" mist GSC-vraagterm "${term}" (guard 22)`);
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /nl-pagina heeft een EN-tweeling en andersom.
 for (const route of seen) {
   if (route === "/nl" || route.startsWith("/nl/")) {
@@ -503,4 +526,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (21 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (22 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen).`);
