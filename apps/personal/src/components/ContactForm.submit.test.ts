@@ -38,6 +38,22 @@ describe("submitContact", () => {
     insert.mockRejectedValueOnce(new TypeError("Failed to fetch"));
     expect(await submitContact(data, { isProduction: true })).toBe("error");
   });
+
+  it("stores the journey columns (lang, page, visit_id) with the submission", async () => {
+    insert.mockResolvedValueOnce({ error: null });
+    const meta = { lang: "nl", page: "/nl/contact", visit_id: "v1" };
+    expect(await submitContact(data, { isProduction: true, meta })).toBe("sent");
+    expect(insert).toHaveBeenCalledWith([{ ...data, ...meta }]);
+  });
+
+  it("reports the error code for tracking (null on a network failure)", async () => {
+    const onError = vi.fn();
+    insert.mockResolvedValueOnce({ error: { code: "42501", message: "rls" } });
+    await submitContact(data, { isProduction: true, onError });
+    insert.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    await submitContact(data, { isProduction: true, onError });
+    expect(onError.mock.calls).toEqual([["42501"], [null]]);
+  });
 });
 
 describe("makeContactSchema", () => {

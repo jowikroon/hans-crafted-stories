@@ -19,6 +19,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { isProductionHost } from "@/lib/config/productionHost";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
+import { currentVisitId, track } from "@/lib/siteTracker";
 
 type ContactT = (typeof translations)["en"]["contact"];
 
@@ -50,15 +51,23 @@ const FIELD_IDS: Record<keyof ContactData, string> = {
  */
 export async function submitContact(
   data: ContactData,
-  opts: { isProduction?: boolean } = {},
+  opts: {
+    isProduction?: boolean;
+    /** Extra kolommen voor de journey-koppeling (taal, pagina, bezoek). */
+    meta?: { lang: string; page: string; visit_id: string | null };
+    /** Foutcode voor tracking; null bij een netwerkfout. */
+    onError?: (code: string | null) => void;
+  } = {},
 ): Promise<"sent" | "preview" | "error"> {
   if (!(opts.isProduction ?? isProductionHost())) return "preview";
   try {
     const { error } = await supabase
       .from("contact_submissions" as unknown)
-      .insert([data] as unknown);
+      .insert([{ ...data, ...opts.meta }] as unknown);
+    if (error) opts.onError?.((error as { code?: string }).code ?? null);
     return error ? "error" : "sent";
   } catch {
+    opts.onError?.(null);
     return "error";
   }
 }
@@ -76,6 +85,7 @@ const ContactForm = () => {
     message: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ContactData, string>>>({ /* empty */ });
+  const [started, setStarted] = useState(false);
 
   const reasons = [
     { value: "freelance", label: t.reasonFreelance },
@@ -85,6 +95,10 @@ const ContactForm = () => {
   ];
 
   const handleChange = (field: keyof ContactData, value: string) => {
+    if (!started) {
+      setStarted(true);
+      track("contact_form_start", { field });
+    }
     setForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
@@ -110,6 +124,7 @@ const ContactForm = () => {
       setStatus({ kind: "invalid", text: t.errorSummary });
       const first = FIELD_ORDER.find((f) => fieldErrors[f]);
       if (first) formRef.current?.querySelector<HTMLElement>(`#${FIELD_IDS[first]}`)?.focus();
+      track("contact_form_error", { kind: "validation", fields: Object.keys(fieldErrors) });
       return;
     }
 
@@ -117,7 +132,10 @@ const ContactForm = () => {
     setStatus({ kind: "idle" });
     let outcome: "sent" | "preview" | "error" = "error";
     try {
-      outcome = await submitContact(result.data);
+      outcome = await submitContact(result.data, {
+        meta: { lang, page: window.location.pathname.slice(0, 300), visit_id: currentVisitId() },
+        onError: (code) => track("contact_form_error", { kind: "submit", code }),
+      });
     } finally {
       setLoading(false);
     }
@@ -135,6 +153,9 @@ const ContactForm = () => {
     }
 
     setStatus({ kind: "success", text: t.successMessage });
+    track("contact_form_submit", { reason: result.data.reason });
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: "contact_form_submit", form_reason: result.data.reason });
     toast.success(t.successMessage);
     setForm({ name: "", email: "", reason: "", message: "" });
     setErrors({ /* empty */ });

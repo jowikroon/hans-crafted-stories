@@ -1,5 +1,8 @@
 // analytics-ga4-gsc v9 — hansvanleeuwen.com Command Center
 //
+// v10: de 6-uurlijkse evaluator-aanroep (service role) schopt ook site-metrics aan, op de achtergrond.
+//   Geen eigen klok (CLAUDE.md: nieuwe schema's horen in OpenClaw); site-metrics' 20u-guard maakt er
+//   een dagelijkse oogst van (Search Console, GA4, PR-register, impactmeting).
 // v9 (HAN-93): INDEXATIE. Bovenop v8, zonder het v8-contract te wijzigen:
 //   - gsc.indexed_pages / submitted_pages uit de GSC Sitemaps API (sitemap-indexen uitgeklapt)
 //   - gsc.indexing_issues: elke URL uit de eigen sitemap.xml door URL Inspection
@@ -517,6 +520,17 @@ Deno.serve(async (req) => {
   let body: Record<string, any> = {};
   if (req.method === "POST") body = await req.json().catch(() => ({}));
   const force = body.force === true || url.searchParams.get("force") === "1";
+  const bearer0 = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  if (SB_KEY && timingSafeEqualStr(bearer0, SB_KEY)) {
+    // site-metrics antwoordt direct (202) en oogst in zijn eigen worker; waitUntil wacht alleen die aflevering af.
+    const rt = (globalThis as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime;
+    const kick = fetch(`${SB_URL}/functions/v1/site-metrics`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "harvest", background: true }),
+      }).then((r) => r.body?.cancel()).catch(() => {});
+    rt?.waitUntil(kick);
+  }
 
   const R = resolveRange(body, url);
   const cacheKey = `dashboard:${R.from}:${R.to}:${R.compare}`;
@@ -580,7 +594,7 @@ Deno.serve(async (req) => {
   }
 
   const payload: Record<string, any> = {
-    ok: true, configured: true, version: 9, token_source: tokenSource,
+    ok: true, configured: true, version: 10, token_source: tokenSource,
     generated_at: new Date().toISOString(),
     range: { from: R.from, to: R.to, days: R.days, compare: R.compare, prev_from: R.prevFrom, prev_to: R.prevTo, timezone: TZ },
     range_days: R.days, // v7-compatibiliteit

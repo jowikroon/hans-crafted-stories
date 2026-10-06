@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_OG_IMAGE, getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasEnglishVersion } from "./blogPostHead";
+import { DEFAULT_OG_IMAGE, getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasEnglishVersion, isDutchBody } from "./blogPostHead";
 import type { BlogPostRow } from "@/lib/api/content";
 
 const basePost: BlogPostRow = {
@@ -137,5 +137,38 @@ describe("hasEnglishVersion", () => {
   });
   it("is false without any EN body", () => {
     expect(hasEnglishVersion({ ...basePost, content: "", content_nl: nl })).toBe(false);
+  });  // Pipeline-fix 2026-10-03: Nederlandse tekst die in de CMS in `content` is bewerkt.
+  it("is false when the EN column holds a different, edited Dutch text", () => {
+    const edited = `${nl} ${nl} Deze alinea heb ik later in de editor toegevoegd voor de lezer.`;
+    expect(hasEnglishVersion({ ...basePost, content: edited, content_nl: nl })).toBe(false);
+  });
+  it("stays true for a full English body next to a Dutch one", () => {
+    const en = "At Alpine we moved from vendor to seller on Bol.com. This is the calculation per product group and what it delivered over the first year, including the fees we paid and the margin we kept.";
+    expect(hasEnglishVersion({ ...basePost, content: en, content_nl: nl })).toBe(true);
+  });
+});
+
+describe("isDutchBody", () => {
+  it("separates Dutch from English prose", () => {
+    expect(isDutchBody("Bij Alpine stapten we op Bol.com over van vendor naar seller. De rekensom per productgroep en wat het opleverde in het eerste jaar, met de kosten die we betaalden.")).toBe(true);
+    expect(isDutchBody("At Alpine we moved from vendor to seller on Bol.com. This is the calculation per product group and what it delivered over the first year, including the fees we paid.")).toBe(false);
+  });
+  it("ignores marketplace codes and locale paths in English prose", () => {
+    const en = "Selling on Amazon DE and eBay DE is not the same as selling on Amazon NL. DE buyers expect fast delivery, DE listings need German titles, and DE returns are high. Read the [guide](/en/writing/amazon-de) and https://example.com/en/de/en for more on DE fees.";
+    expect(isDutchBody(en)).toBe(false);
+  });
+  it("does not let uppercase codes dilute a Dutch body", () => {
+    const nl = "Op Amazon DE en eBay DE werkt het anders dan op Bol.com in NL. Een SKU met een goede titel en de juiste EAN haalt de Buy Box, maar de marge is dan nog niet binnen. Kijk dus ook naar de kosten per order en het aantal retouren per SKU.";
+    expect(isDutchBody(`${nl} DE NL SKU EAN DE NL SKU EAN DE NL SKU EAN DE NL SKU EAN DE NL SKU EAN`)).toBe(true);
+  });
+  it("judges the whole body, not a Dutch quote at the top", () => {
+    const quote = "> Bij ons stapten we op Bol.com over van vendor naar seller en dat was de beste keuze die we in jaren hebben gemaakt, zegt de oprichter.";
+    const en = "This article explains why that switch worked. The numbers per product group show higher margins, faster payouts and more control over pricing. ".repeat(4);
+    expect(isDutchBody(`${quote}\n\n${en}`)).toBe(false);
+    const dutchIntro = "Bij ons stapten we op Bol.com over van vendor naar seller en dat was de beste keuze die we in jaren hebben gemaakt. ";
+    expect(isDutchBody(`${dutchIntro}\n\n${en.repeat(3)}`)).toBe(false);
+  });
+  it("does not call short text Dutch", () => {
+    expect(isDutchBody("De kop van een artikel")).toBe(false);
   });
 });
