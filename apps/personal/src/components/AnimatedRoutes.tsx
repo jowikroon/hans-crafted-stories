@@ -49,7 +49,8 @@ const DashboardsMpg = lazy(() => import(/* webpackChunkName: "dashboards-mpg" */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
 const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-template-editor" */ "@/components/portal/blog/VoiceTemplateEditor"));
 
-const LANG_PREFIXES = ["", "/nl"] as const;
+// Standaardtaal NL op het kale pad, Engels onder /en (2026-10-06). Het oude /nl-prefix is een 308 in vercel.json.
+const LANG_PREFIXES = ["", "/en"] as const;
 
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
 
@@ -78,7 +79,7 @@ const AnimatedRoutes = () => {
     <AnimatePresence initial={false}>
       <Routes location={location} key={location.pathname}>
         {/* Eén URL per taal (HAN-167/HAN-83): elke gelokaliseerde route bestaat als
-            EN-pad én als /nl-pad. De taal komt uit de URL (zie hooks/useLang). */}
+            NL-pad (kaal) én als /en-pad. De taal komt uit de URL (zie hooks/useLang). */}
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/`} path={`${prefix}/`} element={<PageTransition><Index /></PageTransition>} />
         ))}

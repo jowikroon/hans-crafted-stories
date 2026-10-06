@@ -54,11 +54,16 @@ const Hero = () => {
           <p className="mb-4 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {getValue("hero_subtitle", t.subtitle)}
           </p>
+          {/* H1 rustiger (Hans 2026-10-06): naam als entiteit, daaronder rol + platforms. Zelfde zoektermen
+              als de homepage-title (freelance e-commerce manager, Amazon, Bol.com), zonder dubbele punt,
+              haakjes of opsomming. De spatie na de naam houdt de tekst leesbaar voor crawlers. */}
           <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            {isNl
-              ? <>Hans van Leeuwen, Marketplace Manager (Amazon &amp; Bol.com): <em className="text-primary">strategie</em>, groei &amp; AI-operations</>
-              : <>Hans van Leeuwen, Marketplace Manager (Amazon &amp; Bol.com): <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
-            }
+            Hans van Leeuwen{" "}
+            <span className="mt-2 block text-2xl font-normal leading-snug text-muted-foreground md:text-4xl lg:text-5xl">
+              {isNl
+                ? <>Freelance e-commerce manager voor <em className="not-italic text-primary">Amazon en Bol.com</em></>
+                : <>Freelance e-commerce manager for <em className="not-italic text-primary">Amazon and Bol.com</em></>}
+            </span>
           </h1>
           <p className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
             {getValue("hero_freelance_h2", t.freelanceH2)}

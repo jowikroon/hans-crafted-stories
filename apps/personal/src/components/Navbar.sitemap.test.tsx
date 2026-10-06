@@ -80,23 +80,25 @@ describe("account access", () => {
 });
 
 describe("public links present for everyone", () => {
-  it("shows Home / Werk / Artikelen / Over Hans on the NL URL", () => {
+  it("shows Home / Werk / Artikelen / Over Hans on the NL URL (legacy /nl still parses as NL)", () => {
     authState.user = null;
     renderNav("/nl");
     [translations.nl.nav.home, translations.nl.nav.work, translations.nl.nav.writing, translations.nl.nav.about]
       .forEach((label) => expect(screen.getAllByText(label).length).toBeGreaterThan(0));
   });
-  // HAN-167: de taal komt uit de URL, niet uit de bezoeker. "/" is Engels.
-  it("shows English labels on the EN URL and localized hrefs on the NL URL", () => {
+  // HAN-167: de taal komt uit de URL, niet uit de bezoeker. Sinds 2026-10-06 is "/" Nederlands, /en Engels.
+  it("shows Dutch labels on the bare URL and English labels plus /en hrefs on the EN URL", () => {
     authState.user = null;
     renderNav("/");
-    [translations.en.nav.work, translations.en.nav.about]
+    [translations.nl.nav.work, translations.nl.nav.about]
       .forEach((label) => expect(screen.getAllByText(label).length).toBeGreaterThan(0));
     cleanup();
-    renderNav("/nl/about");
-    expect(document.querySelector('a[href="/nl/work"]')).not.toBeNull();
-    expect(document.querySelector('a[hreflang="en"][href="/about"]')).not.toBeNull();
-    expect(document.querySelector('a[hreflang="nl"][href="/nl/about"]')).not.toBeNull();
+    renderNav("/en/about");
+    [translations.en.nav.work, translations.en.nav.about]
+      .forEach((label) => expect(screen.getAllByText(label).length).toBeGreaterThan(0));
+    expect(document.querySelector('a[href="/en/work"]')).not.toBeNull();
+    expect(document.querySelector('a[hreflang="en"][href="/en/about"]')).not.toBeNull();
+    expect(document.querySelector('a[hreflang="nl"][href="/about"]')).not.toBeNull();
   });
 });
 

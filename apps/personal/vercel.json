@@ -40,6 +40,21 @@
       "permanent": false
     },
     {
+      "source": "/nl/tarieven",
+      "destination": "/rates",
+      "permanent": true
+    },
+    {
+      "source": "/nl",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/nl/:path*",
+      "destination": "/:path*",
+      "permanent": true
+    },
+    {
       "source": "/:path+/",
       "destination": "/:path+",
       "permanent": true
@@ -150,13 +165,8 @@
       "permanent": true
     },
     {
-      "source": "/nl/tarieven",
-      "destination": "/nl/rates",
-      "permanent": true
-    },
-    {
       "source": "/tarieven",
-      "destination": "/nl/rates",
+      "destination": "/rates",
       "permanent": true
     },
     {
@@ -172,16 +182,6 @@
     {
       "source": "/cowork",
       "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/en",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/en/writing",
-      "destination": "/writing",
       "permanent": true
     },
     {

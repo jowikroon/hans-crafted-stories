@@ -19,7 +19,7 @@ interface SEOConfig {
   url?: string;
   /** EN-basispad (bv. "/about"). Samen met `lang` de bron voor canonical + hreflang. */
   path?: string;
-  /** Taal van de gerenderde content; bepaalt canonical (/nl/...) en og:locale. */
+  /** Taal van de gerenderde content; bepaalt canonical (/en/... of kaal NL-pad) en og:locale. */
   lang?: Lang;
   type?: string;
   /** Expliciete hreflang-set. Wordt genegeerd wanneer `path` is opgegeven (dan wederkerig afgeleid). */
@@ -89,7 +89,10 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
   const ogImage = shareImage(image);
   // Eén URL per taal: canonical en hreflang volgen uit (path, lang), nooit uit de
   // bezoeker. Zie lib/i18n/routes.ts (HAN-167 / HAN-83).
-  const resolvedLang: Lang = lang ?? (path ? parsePath(path).lang : "en");
+  // Kale gelokaliseerde paden zijn NL (standaard sinds 2026-10-06), /en/... is EN; niet-gelokaliseerde
+  // routes zonder expliciete lang (music, portal) blijven EN zoals voorheen.
+  const parsedPath = path ? parsePath(path) : null;
+  const resolvedLang: Lang = lang ?? (parsedPath && (parsedPath.lang === "en" || isLocalizedRoute(parsedPath.path)) ? parsedPath.lang : "en");
   const url = path ? absoluteUrl(path, resolvedLang) : (explicitUrl ?? "https://hansvanleeuwen.com/");
   const hreflang = path && isLocalizedRoute(parsePath(path).path) ? alternatesFor(path) : explicitHreflang;
   const hreflangKey = JSON.stringify(hreflang ?? null);

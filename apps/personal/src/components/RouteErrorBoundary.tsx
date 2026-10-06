@@ -46,7 +46,7 @@ class Boundary extends Component<Props, State> {
         <p className="mt-4 font-mono text-xs text-muted-foreground">{String(this.state.error.message || this.state.error).slice(0, 200)}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <button type="button" onClick={() => window.location.reload()} className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground">{nl ? "Herladen" : "Reload"}</button>
-          <a href={nl ? "/nl" : "/"} className="rounded-full border border-border px-5 py-2 text-sm font-medium">{nl ? "Naar de homepage" : "Go to the homepage"}</a>
+          <a href={nl ? "/" : "/en"} className="rounded-full border border-border px-5 py-2 text-sm font-medium">{nl ? "Naar de homepage" : "Go to the homepage"}</a>
         </div>
       </section>
     );

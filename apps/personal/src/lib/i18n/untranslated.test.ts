@@ -8,11 +8,11 @@ import { resolvePageContentValue } from "@/lib/pageContentLang";
 describe("untranslated fallback", () => {
   it("sends an NL-only article to the English article index with a notice", () => {
     expect(untranslatedFallback("en", "/writing/vendor-of-seller-bol-com-alpine", true)).toBe(
-      "/writing?notice=only-nl&from=%2Fwriting%2Fvendor-of-seller-bol-com-alpine",
+      "/en/writing?notice=only-nl&from=%2Fwriting%2Fvendor-of-seller-bol-com-alpine",
     );
   });
   it("sends the EN-only music page to the Dutch home with a notice", () => {
-    expect(untranslatedFallback("nl", "/music", false)).toBe("/nl?notice=only-en&from=%2Fmusic");
+    expect(untranslatedFallback("nl", "/music", false)).toBe("/?notice=only-en&from=%2Fmusic");
   });
   it("parses the notice and only accepts internal paths", () => {
     expect(parseUntranslatedNotice("?notice=only-nl&from=%2Fwriting%2Fx")).toEqual({ notice: "only-nl", from: "/writing/x" });
@@ -25,9 +25,10 @@ describe("untranslated fallback", () => {
 
 describe("localizeHref keeps query and hash", () => {
   it("keeps ?lang=en on article links and localizes the path part only", () => {
-    expect(localizeHref("/writing/slug?lang=en", "nl")).toBe("/writing/slug?lang=en");
-    expect(localizeHref("/rates#faq", "nl")).toBe("/nl/rates#faq");
-    expect(localizeHref("/about", "nl")).toBe("/nl/about");
+    expect(localizeHref("/writing/slug?lang=en", "en")).toBe("/writing/slug?lang=en");
+    expect(localizeHref("/rates#faq", "en")).toBe("/en/rates#faq");
+    expect(localizeHref("/about", "en")).toBe("/en/about");
+    expect(localizeHref("/about", "nl")).toBe("/about");
   });
 });
 

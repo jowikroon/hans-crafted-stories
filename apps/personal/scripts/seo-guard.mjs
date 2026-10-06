@@ -10,12 +10,13 @@
  * Checks per dist/**\/index.html:
  *   1. exact 1 <h1> in het volledige document (incl. noscript-fallback)
  *   2. <title> aanwezig en niet leeg
- *   3. rel=canonical aanwezig én gelijk aan de eigen URL (EN-pad of /nl-pad)
+ *   3. rel=canonical aanwezig én gelijk aan de eigen URL (kaal NL-pad of /en-pad)
  *   4. meta description >= 90 tekens
- *   5. html[lang] = "nl" onder /nl/, anders "en" (artikelen: volgt JSON-LD inLanguage)
+ *   5. html[lang] = "en" onder /en/, "nl" op kale gelokaliseerde routes (standaardtaal sinds
+ *      2026-10-06), "en" op eentalige routes (music); artikelen volgen JSON-LD inLanguage
  *   6. hreflang: óf géén set, óf exact één set {en, nl, x-default}, wederkerig,
  *      en != nl, x-default = en, zonder duplicaten — en de hreflang-nl van een
- *      EN-pagina moet bestaan als dist/nl/<pad>/index.html (en andersom)
+ *      NL-pagina moet bestaan als dist/en/<pad>/index.html (en andersom)
  *   7. JSON-LD "inLanguage" op WebPage/ProfilePage/CollectionPage = html[lang]
  *   8. og:locale en content-language volgen html[lang]
  *   9. geen "noindex" in indexeerbare pagina's (404.html en gated routes uitgezonderd)
@@ -28,9 +29,9 @@
  *      de bewust gedeelde blokken (tarief, byline, ervaring) — sjabloon-variatie
  *  14. CSS-tokens uit index.css: muted-foreground op background/card ≥ 4.5:1 en
  *      --w2-muted op --w2-paper ≥ 4.5:1 (HAN-145, zonder browser)
- *  17. homepage-<title> (/, /nl) = translations.seo.homeTitle, merk-eerst, og/twitter:title gelijk
- *  19. intentwoord-scheiding (plan A.1, HAN-180): homepage-<title> (/, /nl) zonder "inhuren"/"hire",
- *      alle vier /nl-dienstentitels mét "inhuren"; /writing- en /nl/writing-head = translations.seo.writing*
+ *  17. homepage-<title> (/, /en) = translations.seo.homeTitle, merk-eerst, og/twitter:title gelijk
+ *  19. intentwoord-scheiding (plan A.1, HAN-180): homepage-<title> (/, /en) zonder "inhuren"/"hire",
+ *      alle vier NL-dienstentitels mét "inhuren"; /writing- en /en/writing-head = translations.seo.writing*
  *      (pariteit prerender ↔ component) en description ≥ 120 tekens
  *  20. artikelparen (optie A, 2026-10-02): elke /en/writing/<slug> heeft een NL-tweeling met
  *      wederkerige hreflang, en de HTML bevat geen ?lang=en-links meer
@@ -51,6 +52,8 @@ import { createRequire } from "node:module";
 
 const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "dist");
 const BASE = "https://hansvanleeuwen.com";
+// Gelokaliseerde basisroutes (spiegel van src/lib/i18n/routes.ts LOCALIZED_ROUTES): kaal = NL, /en = EN.
+const LOCALIZED_BASES = new Set(["/", "/about", "/work", "/work/connect-car-parts", "/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation", "/privacy", "/rates", "/writing"]);
 const failures = [];
 const seen = new Set();
 
@@ -98,12 +101,13 @@ function checkFile(file) {
   else if (desc.length < 90) failures.push(`${rel}: meta description ${desc.length} tekens (< 90)`);
 
   const lang = attr(html, /<html[^>]*\blang="([^"]+)"/);
-  const isNl = route === "/nl" || route.startsWith("/nl/");
-  const isArticle = route.startsWith("/writing/") || route === "/writing";
+  const isEn = route === "/en" || route.startsWith("/en/");
+  const isArticle = route.startsWith("/writing/");
   const isEnArticle = route.startsWith("/en/writing/");
   if (!lang) failures.push(`${rel}: html lang ontbreekt`);
-  else if (isNl && lang !== "nl") failures.push(`${rel}: /nl-pad maar html lang="${lang}"`);
-  else if (!isNl && !isArticle && lang !== "en") failures.push(`${rel}: EN-pad maar html lang="${lang}"`);
+  else if (isEn && lang !== "en") failures.push(`${rel}: /en-pad maar html lang="${lang}"`);
+  else if (!isEn && !isArticle && LOCALIZED_BASES.has(route) && lang !== "nl") failures.push(`${rel}: kaal NL-pad (standaardtaal) maar html lang="${lang}"`);
+  else if (!isEn && !isArticle && !LOCALIZED_BASES.has(route) && lang !== "en") failures.push(`${rel}: eentalige EN-route maar html lang="${lang}"`);
   // 15b. Artikel: JSON-LD headline en de statische fallback-<h2> dragen dezelfde taal als de <h1>.
   if (route.startsWith("/writing/") || isEnArticle) {
     const decode = (t) => t.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d)).replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
@@ -139,8 +143,8 @@ function checkFile(file) {
     if (by.en && by.nl && by.en === by.nl) failures.push(`${rel}: hreflang en en nl wijzen naar dezelfde URL (${by.en})`);
     if (by["x-default"] && by["x-default"] !== by.en) failures.push(`${rel}: x-default (${by["x-default"]}) ≠ en (${by.en})`);
     // Self-verwijzing volgt de taal van de pagina (artikelen: /writing/<slug> is NL,
-    // /en/writing/<slug> is EN; optie A 2026-10-02), niet alleen het /nl-prefix.
-    const self = (lang ?? (isNl ? "nl" : "en")) === "nl" ? by.nl : by.en;
+    // /en/writing/<slug> is EN; optie A 2026-10-02), niet alleen het /en-prefix.
+    const self = (lang ?? (isEn ? "en" : "nl")) === "nl" ? by.nl : by.en;
     if (!self) failures.push(`${rel}: hreflang-set zonder verwijzing naar zichzelf (${lang})`);
     if (self && canonical && self !== canonical) failures.push(`${rel}: hreflang-self ${self} ≠ canonical ${canonical}`);
     for (const [code, href] of Object.entries(by)) {
@@ -244,7 +248,7 @@ else {
     return h.toLowerCase().replace(/[^a-z0-9àâäéèêëïîôöùûüç€%.,'-]+/g, " ").trim().split(/\s+/);
   };
   const shingles = (words) => { const out = new Set(); for (let i = 0; i + N <= words.length; i++) out.add(words.slice(i, i + N).join(" ")); return out; };
-  for (const lang of ["", "nl/"]) {
+  for (const lang of ["", "en/"]) {
     const sets = pages.map((p) => ({ p, s: shingles(textOf(path.join(distDir, lang + p, "index.html")) || []) }));
     const count = new Map();
     for (const { s: set } of sets) for (const sh of set) count.set(sh, (count.get(sh) || 0) + 1);
@@ -316,7 +320,7 @@ else {
   const tr = fs.readFileSync(path.join(appDir, "src", "data", "translations.ts"), "utf8");
   const titles = [...tr.matchAll(/homeTitle:\s*"([^"]+)"/g)].map((m) => m[1]);
   if (titles.length !== 2) failures.push(`translations.ts: verwacht 2 seo.homeTitle-waarden (en, nl), gevonden ${titles.length}`);
-  for (const [file, idx, label] of [[path.join(distDir, "index.html"), 0, "index.html"], [path.join(distDir, "nl", "index.html"), 1, "nl/index.html"]]) {
+  for (const [file, idx, label] of [[path.join(distDir, "en", "index.html"), 0, "en/index.html"], [path.join(distDir, "index.html"), 1, "index.html"]]) {
     if (!fs.existsSync(file)) continue;
     const html = fs.readFileSync(file, "utf8");
     const t = html.match(/<title>([\s\S]*?)<\/title>/);
@@ -349,20 +353,20 @@ else {
     const m = fs.readFileSync(file, "utf8").match(/<meta name="description" content="([^"]*)"/);
     return m ? decode(m[1]) : "";
   };
-  for (const [file, label] of [[path.join(distDir, "index.html"), "index.html"], [path.join(distDir, "nl", "index.html"), "nl/index.html"]]) {
+  for (const [file, label] of [[path.join(distDir, "index.html"), "index.html"], [path.join(distDir, "en", "index.html"), "en/index.html"]]) {
     const t = titleOf(file);
     if (t !== null && /\b(inhuren|hire)\b/i.test(t)) failures.push(`${label}: homepage-<title> "${t}" bevat het intentwoord — dat hoort alleen op de dienstenpagina's (plan A.1, HAN-180)`);
   }
   for (const slug of ["interim-ecommerce-manager", "bol-com-consultant", "amazon-nl-specialist", "ai-ecommerce-automation"]) {
-    const t = titleOf(path.join(distDir, "nl", slug, "index.html"));
-    if (t === null) failures.push(`nl/${slug}/index.html ontbreekt (guard 19)`);
-    else if (!/\binhuren\b/i.test(t)) failures.push(`nl/${slug}: <title> "${t}" mist het intentwoord "inhuren" (plan A.1)`);
+    const t = titleOf(path.join(distDir, slug, "index.html"));
+    if (t === null) failures.push(`${slug}/index.html ontbreekt (guard 19)`);
+    else if (!/\binhuren\b/i.test(t)) failures.push(`${slug}: NL-<title> "${t}" mist het intentwoord "inhuren" (plan A.1)`);
   }
   const tr = fs.readFileSync(path.join(appDir, "src", "data", "translations.ts"), "utf8");
   const wt = [...tr.matchAll(/writingTitle:\s*"([^"]+)"/g)].map((m) => m[1]);
   const wd = [...tr.matchAll(/writingDescription:\s*"([^"]+)"/g)].map((m) => m[1]);
   if (wt.length !== 2 || wd.length !== 2) failures.push(`translations.ts: verwacht 2x seo.writingTitle en 2x seo.writingDescription, gevonden ${wt.length}/${wd.length}`);
-  for (const [file, idx, label] of [[path.join(distDir, "writing", "index.html"), 0, "writing/index.html"], [path.join(distDir, "nl", "writing", "index.html"), 1, "nl/writing/index.html"]]) {
+  for (const [file, idx, label] of [[path.join(distDir, "en", "writing", "index.html"), 0, "en/writing/index.html"], [path.join(distDir, "writing", "index.html"), 1, "writing/index.html"]]) {
     const t = titleOf(file); const d = descOf(file);
     if (t === null) { failures.push(`${label} ontbreekt (guard 19)`); continue; }
     if (wt[idx] && t !== wt[idx]) failures.push(`${label}: <title> "${t}" ≠ translations.seo.writingTitle "${wt[idx]}"`);
@@ -505,23 +509,30 @@ for (const route of seen) {
     ["interim-ecommerce-manager", /\be-commerce specialist\b/i, "e-commerce specialist"],
   ];
   for (const [slug, re, term] of targets) {
-    const file = path.join(distDir, "nl", slug, "index.html");
-    if (!fs.existsSync(file)) { failures.push(`nl/${slug}/index.html ontbreekt (guard 22)`); continue; }
+    const file = path.join(distDir, slug, "index.html");
+    if (!fs.existsSync(file)) { failures.push(`${slug}/index.html ontbreekt (guard 22)`); continue; }
     const html = fs.readFileSync(file, "utf8");
     const t = dec((html.match(/<title>([\s\S]*?)<\/title>/) || [, ""])[1]);
     const h = dec((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [, ""])[1]);
-    if (!re.test(t)) failures.push(`nl/${slug}: <title> "${t}" mist GSC-vraagterm "${term}" (guard 22)`);
-    if (!re.test(h)) failures.push(`nl/${slug}: <h1> "${h}" mist GSC-vraagterm "${term}" (guard 22)`);
+    if (!re.test(t)) failures.push(`${slug}: NL-<title> "${t}" mist GSC-vraagterm "${term}" (guard 22)`);
+    if (!re.test(h)) failures.push(`${slug}: NL-<h1> "${h}" mist GSC-vraagterm "${term}" (guard 22)`);
   }
 }
 
-// Wederkerigheid vanuit de andere kant: elke /nl-pagina heeft een EN-tweeling en andersom.
+// Wederkerigheid vanuit de andere kant: elke /en-pagina heeft een NL-tweeling op het kale pad,
+// en elke gelokaliseerde NL-route heeft een /en-tweeling.
 for (const route of seen) {
-  if (route === "/nl" || route.startsWith("/nl/")) {
-    const en = route === "/nl" ? "/" : route.slice(3);
-    if (!seen.has(en)) failures.push(`${route}: geen EN-tweeling ${en}`);
+  if (route === "/en" || route.startsWith("/en/")) {
+    const nl = route === "/en" ? "/" : route.slice(3);
+    if (!seen.has(nl)) failures.push(`${route}: geen NL-tweeling ${nl}`);
   }
 }
+for (const base of LOCALIZED_BASES) {
+  const en = base === "/" ? "/en" : `/en${base}`;
+  if (seen.has(base) && !seen.has(en)) failures.push(`${base}: geen EN-tweeling ${en}`);
+}
+// Het oude /nl-prefix mag niet meer gebouwd worden: het is een 308 in vercel.json.
+for (const route of seen) if (route === "/nl" || route.startsWith("/nl/")) failures.push(`${route}: /nl-pagina in dist (NL staat sinds 2026-10-06 op het kale pad; /nl is een redirect)`);
 
 if (failures.length) {
   console.error(`[seo-guard] ${failures.length} SEO-regressie(s):`);
