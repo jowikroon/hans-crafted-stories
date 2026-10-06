@@ -2,8 +2,14 @@
  * Eén URL per taal — de enige manier waarop Google en AI-crawlers een tweetalige
  * site correct lezen (HAN-167 / HAN-83).
  *
- *   EN (canoniek, x-default):  /interim-ecommerce-manager
- *   NL:                        /nl/interim-ecommerce-manager
+ * Sinds 2026-10-06 (besluit Hans: "de site opent standaard in het Nederlands"):
+ *
+ *   NL (standaard):  /interim-ecommerce-manager
+ *   EN:              /en/interim-ecommerce-manager
+ *
+ * Het oude /nl-prefix bestaat alleen nog als 308-redirect naar het kale pad
+ * (vercel.json). Dat sluit aan op het artikelmodel dat al NL-eerst was
+ * (/writing/<slug> primair, /en/writing/<slug> Engels).
  *
  * De URL is de enige bron van waarheid voor de taal. Geen navigator.language,
  * geen localStorage, geen geo: Google vraagt expliciet om níet automatisch te
@@ -13,9 +19,13 @@
 export type Lang = "nl" | "en";
 
 export const BASE_URL = "https://hansvanleeuwen.com";
-export const NL_PREFIX = "/nl";
+export const EN_PREFIX = "/en";
+/** Oud NL-prefix (tot 2026-10-06). Wordt nog geparsed zodat oude links de juiste taal krijgen; vercel.json stuurt het met 308 door. */
+export const LEGACY_NL_PREFIX = "/nl";
+/** Standaardtaal: kale paden zijn Nederlands. */
+export const DEFAULT_LANG = "nl" as const;
 
-/** Routes die in beide talen bestaan (EN-pad zonder prefix). */
+/** Routes die in beide talen bestaan (basispad = NL-pad zonder prefix). */
 export const LOCALIZED_ROUTES: readonly string[] = [
   "/",
   "/about",
@@ -41,25 +51,27 @@ const normalize = (p: string): string => {
 
 export const isLocalizedRoute = (path: string): boolean => LOCALIZED_ROUTES.includes(normalize(path));
 
-/** Splits een pathname in taal + EN-basispad. `/nl/about` -> { lang: "nl", path: "/about" }. */
+/** Splits een pathname in taal + basispad. `/en/about` -> { lang: "en", path: "/about" }, `/about` -> { lang: "nl", path: "/about" }. */
 export const parsePath = (pathname: string): { lang: Lang; path: string } => {
   const p = normalize(pathname);
-  if (p === NL_PREFIX) return { lang: "nl", path: "/" };
-  if (p.startsWith(NL_PREFIX + "/")) return { lang: "nl", path: p.slice(NL_PREFIX.length) || "/" };
-  return { lang: "en", path: p };
+  if (p === EN_PREFIX) return { lang: "en", path: "/" };
+  if (p.startsWith(EN_PREFIX + "/")) return { lang: "en", path: p.slice(EN_PREFIX.length) || "/" };
+  if (p === LEGACY_NL_PREFIX) return { lang: "nl", path: "/" };
+  if (p.startsWith(LEGACY_NL_PREFIX + "/")) return { lang: "nl", path: p.slice(LEGACY_NL_PREFIX.length) || "/" };
+  return { lang: DEFAULT_LANG, path: p };
 };
 
-/** Taal van een pathname, uitsluitend op basis van het /nl-prefix. */
+/** Taal van een pathname, uitsluitend op basis van het /en-prefix (geen prefix = NL). */
 export const langFromPath = (pathname: string): Lang => parsePath(pathname).lang;
 
 /**
- * Maakt van een EN-pad het pad in de gevraagde taal. Alleen routes uit
- * LOCALIZED_ROUTES krijgen een prefix; andere paden (artikelen, portal, cms)
- * blijven ongewijzigd zodat er nooit een niet-bestaande /nl-URL ontstaat.
+ * Maakt van een basispad het pad in de gevraagde taal. Alleen routes uit
+ * LOCALIZED_ROUTES krijgen het /en-prefix; andere paden (artikelen, portal, cms)
+ * blijven ongewijzigd zodat er nooit een niet-bestaande /en-URL ontstaat.
  */
 export const localizePath = (path: string, lang: Lang): string => {
   const { path: base } = parsePath(path);
-  if (lang === "nl" && isLocalizedRoute(base)) return base === "/" ? NL_PREFIX : `${NL_PREFIX}${base}`;
+  if (lang === "en" && isLocalizedRoute(base)) return base === "/" ? EN_PREFIX : `${EN_PREFIX}${base}`;
   return base;
 };
 
@@ -102,8 +114,8 @@ export interface HreflangEntry {
 }
 
 /**
- * Wederkerige hreflang-set voor een EN-basispad. x-default = EN (de
- * internationale variant). Niet-gelokaliseerde routes krijgen geen set.
+ * Wederkerige hreflang-set voor een basispad. x-default = EN (de
+ * internationale variant voor wie geen Nederlands spreekt). Niet-gelokaliseerde routes krijgen geen set.
  */
 export const alternatesFor = (path: string): HreflangEntry[] => {
   const { path: base } = parsePath(path);

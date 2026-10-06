@@ -26,7 +26,7 @@ function readEnv(name) {
 const SUPABASE_URL = readEnv("VITE_SUPABASE_URL");
 const SUPABASE_KEY = readEnv("VITE_SUPABASE_PUBLISHABLE_KEY");
 
-// Gelokaliseerde routes: EN op het basispad, NL onder /nl. Per URL een
+// Gelokaliseerde routes: NL op het basispad (standaardtaal sinds 2026-10-06), EN onder /en. Per URL een
 // wederkerige xhtml:link-set (Google: HTML-tags óf sitemap, hier beide consistent).
 const LOCALIZED = [
   { path: "/", changefreq: "monthly", priority: "1.0" },
@@ -39,19 +39,19 @@ const LOCALIZED = [
   { path: "/ai-ecommerce-automation", changefreq: "monthly", priority: "0.9" },
   { path: "/rates", changefreq: "monthly", priority: "0.8" },
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
-  // Artikelenindex in beide talen sinds 2026-09-22 (/writing EN, /nl/writing NL).
+  // Artikelenindex in beide talen (/writing NL, /en/writing EN).
   { path: "/writing", changefreq: "weekly", priority: "0.8" },
 ];
-const nlLoc = (p) => `${BASE}/nl${p === "/" ? "" : p}`;
-const enLoc = (p) => `${BASE}${p}`;
+const nlLoc = (p) => `${BASE}${p}`;
+const enLoc = (p) => `${BASE}/en${p === "/" ? "" : p}`;
 const alternates = (p) => [
   { hreflang: "en", href: enLoc(p) },
   { hreflang: "nl", href: nlLoc(p) },
   { hreflang: "x-default", href: enLoc(p) },
 ];
 const LOCALIZED_ROUTES = LOCALIZED.flatMap((r) => [
-  { loc: enLoc(r.path), changefreq: r.changefreq, priority: r.priority, alternates: alternates(r.path) },
   { loc: nlLoc(r.path), changefreq: r.changefreq, priority: r.priority, alternates: alternates(r.path) },
+  { loc: enLoc(r.path), changefreq: r.changefreq, priority: r.priority, alternates: alternates(r.path) },
 ]);
 
 const STATIC_ROUTES = [
@@ -107,7 +107,7 @@ const articleAlternates = (pair) => [
 const today = new Date().toISOString().slice(0, 10);
 
 const urls = [
-  ...STATIC_ROUTES.map((r) => ({ ...r, lastmod: (r.loc === `${BASE}/writing` || r.loc === `${BASE}/nl/writing`) && posts[0] ? iso(posts[0].updated_at) : today })),
+  ...STATIC_ROUTES.map((r) => ({ ...r, lastmod: (r.loc === `${BASE}/writing` || r.loc === `${BASE}/en/writing`) && posts[0] ? iso(posts[0].updated_at) : today })),
   ...posts
     // External canonicals point elsewhere; keep only self-canonical posts in our sitemap
     .filter((p) => !p.canonical_url || p.canonical_url.startsWith(BASE))

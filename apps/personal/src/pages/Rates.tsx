@@ -15,7 +15,7 @@ const fade = {
 };
 const h2 = "mb-6 font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl";
 
-/** /rates · /nl/tarieven — één plek voor de tariefvraag, met dezelfde bedragen als de dienstenpagina's (data/servicePages.ts). */
+/** /rates (NL) · /en/rates (EN) · alias /tarieven — één plek voor de tariefvraag, met dezelfde bedragen als de dienstenpagina's (data/servicePages.ts). */
 const Rates = () => {
   const { lang } = useLang();
   const t = RATES_PAGE[lang];

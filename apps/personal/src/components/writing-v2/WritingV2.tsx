@@ -108,7 +108,7 @@ const WritingV2 = () => {
     [blogPosts, lang],
   );
 
-  // Eén URL per taal (HAN-167): /writing (EN) en /nl/writing (NL) dragen elk hun
+  // Eén URL per taal (HAN-167): /writing (NL) en /en/writing (EN) dragen elk hun
   // eigen CollectionPage-@id, url en broodkruimels; de artikel-URL's zijn taalloos.
   const pageUrl = absoluteUrl("/writing", lang);
   const homeUrl = absoluteUrl("/", lang);

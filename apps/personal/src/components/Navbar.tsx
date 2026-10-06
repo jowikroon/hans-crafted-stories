@@ -188,7 +188,7 @@ const Navbar = (_props: NavbarProps) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Actieve staat op het EN-basispad, zodat /nl/about en /about dezelfde tab oplichten.
+  // Actieve staat op het EN-basispad, zodat /en/about en /about dezelfde tab oplichten.
   const basePath = parsePath(location.pathname).path;
   const isActive = (to: string) => basePath === to;
   const isWorkActive = basePath.startsWith("/work")
