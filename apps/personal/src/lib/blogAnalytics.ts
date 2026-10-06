@@ -12,6 +12,10 @@
    Reader-interest profiling happens in GA4 on the blog_category param
    (register as custom dimension), e.g. "3 AI articles read this week". */
 
+import { track, type TrackEvent } from "./siteTracker";
+
+const FIRST_PARTY = new Set<string>(["blog_read_progress", "blog_read_complete", "blog_share", "blog_toc_click"]);
+
 declare global {
   interface Window {
     dataLayer?: Record<string, unknown>[];
@@ -29,6 +33,11 @@ export const pushBlogEvent = (event: string, params: Record<string, unknown> = {
   if (typeof window === "undefined") return;
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event, ...params });
+  // Mirror reading behaviour into the first-party log (blog_view is already a page_view there).
+  if (FIRST_PARTY.has(event)) {
+    const { blog_title: _t, blog_lang: _l, ...rest } = params;
+    track(event as TrackEvent, rest);
+  }
 };
 
 const ctxParams = (ctx: BlogEventContext) => ({
