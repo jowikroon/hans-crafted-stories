@@ -444,7 +444,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "5. Third-party sharing",
-          body: 'We do not share personal data with third parties. Analytical data is processed exclusively by Google in accordance with their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>.',
+          body: 'We do not share personal data with third parties. Analytical data is processed by Google in accordance with their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a> and, only after your consent, by Ahrefs Web Analytics for visit statistics, in accordance with the <a href="https://ahrefs.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-primary underline">Ahrefs privacy policy</a>.',
         },
         {
           heading: "6. Your rights",
@@ -782,7 +782,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "5. Delen met derden",
-          body: 'Wij delen geen persoonsgegevens met derden. Analytische data wordt uitsluitend verwerkt door Google conform hun <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>.',
+          body: 'Wij delen geen persoonsgegevens met derden. Analytische data wordt verwerkt door Google conform hun <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a> en, alleen na jouw toestemming, door Ahrefs Web Analytics voor bezoekstatistieken, conform het <a href="https://ahrefs.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid van Ahrefs</a>.',
         },
         {
           heading: "6. Je rechten",
