@@ -8,6 +8,10 @@
  * Dependencies: npm run mcp:setup — controleren met npm run mcp:audit.
  */
 
+import { readFileSync } from "node:fs";
+import { hostname } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -18,9 +22,25 @@ import {
 // ─── Config ──────────────────────────────────────────────────────────────────
 const N8N_URL     = process.env.VITE_N8N_PROD_URL    || "https://n8n.srv1402218.hstgr.cloud";
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL   || "https://pesfakewujjwkyybwaom.supabase.co";
-const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+// Publieke anon-key: uit de env, anders uit de gecommitte apps/personal/.env.production
+// (publiek by design). Zonder key gaf de Supabase-check altijd 401.
+function readCommittedAnonKey() {
+  try {
+    const root = join(dirname(fileURLToPath(import.meta.url)), "../../..");
+    const env = readFileSync(join(root, "apps/personal/.env.production"), "utf8");
+    return env.match(/^VITE_SUPABASE_PUBLISHABLE_KEY="?([^"\n]+)"?/m)?.[1] ?? "";
+  } catch {
+    return "";
+  }
+}
+const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || readCommittedAnonKey();
+// Schrijven naar event_log vereist een authenticated/service key (RLS); de anon-key mag dat niet.
+const SUPABASE_WRITE_KEY = process.env.SUPABASE_SERVICE_KEY || "";
 
 // Layer 5 draait op VPS1 zelf; vanaf een ander device wijst localhost nergens heen.
+// Daarom worden localOnly-checks alleen gedraaid op VPS1 of als de URL expliciet is gezet;
+// elders tellen ze niet mee in de score (anders altijd een vals CRITICAL).
+const ON_VPS1 = hostname().includes("srv1402218");
 const OLLAMA_URL      = process.env.OLLAMA_URL      || "http://localhost:11434";
 const QDRANT_URL      = process.env.QDRANT_URL      || "http://localhost:6333";
 const ANYTHINGLLM_URL = process.env.ANYTHINGLLM_URL || "http://localhost:3001";
@@ -37,17 +57,28 @@ const ENDPOINTS = {
   n8n: { url: `${N8N_URL}/healthz`, layer: 3, name: "n8n Orchestration" },
 
   // Layer 5 — Senses (local tunnel services)
-  ollama:      { url: `${OLLAMA_URL}/api/tags`, layer: 5, name: "Ollama LLM",       localOnly: true },
-  qdrant:      { url: `${QDRANT_URL}/health`,  layer: 5, name: "Qdrant Vector DB", localOnly: true },
-  anythingllm: { url: ANYTHINGLLM_URL,         layer: 5, name: "AnythingLLM RAG",  localOnly: true },
+  ollama:      { url: `${OLLAMA_URL}/api/tags`, layer: 5, name: "Ollama LLM",       localOnly: !process.env.OLLAMA_URL },
+  qdrant:      { url: `${QDRANT_URL}/health`,  layer: 5, name: "Qdrant Vector DB", localOnly: !process.env.QDRANT_URL },
+  anythingllm: { url: ANYTHINGLLM_URL,         layer: 5, name: "AnythingLLM RAG",  localOnly: !process.env.ANYTHINGLLM_URL },
 
   // Layer 6 — Memory (Supabase)
-  supabase: { url: `${SUPABASE_URL}/rest/v1/`, layer: 6, name: "Supabase Memory" },
+  // /rest/v1/ (OpenAPI-root) geeft 401 met de anon-key; /auth/v1/health is de publieke health-check.
+  supabase: { url: `${SUPABASE_URL}/auth/v1/health`, layer: 6, name: "Supabase Memory" },
 };
 
 // ─── Health Check Helpers ────────────────────────────────────────────────────
 async function checkEndpoint(key) {
   const cfg = ENDPOINTS[key];
+  if (cfg.localOnly && !ON_VPS1) {
+    return {
+      key,
+      name: cfg.name,
+      layer: cfg.layer,
+      ok: null,
+      skipped: true,
+      reason: "localOnly: draait alleen op VPS1 (of zet de URL via env)",
+    };
+  }
   const start = Date.now();
   try {
     const headers = {};
@@ -82,8 +113,9 @@ async function checkEndpoint(key) {
 
 async function checkAllLayers() {
   const results = await Promise.all(Object.keys(ENDPOINTS).map(checkEndpoint));
-  const healthy = results.filter((r) => r.ok).length;
-  const total = results.length;
+  const checked = results.filter((r) => !r.skipped);
+  const healthy = checked.filter((r) => r.ok).length;
+  const total = checked.length;
   const score = Math.round((healthy / total) * 100);
 
   return {
@@ -105,17 +137,22 @@ async function checkSingleLayer(key) {
 
 // ─── Supabase Logging ────────────────────────────────────────────────────────
 async function logToSupabase(eventType, payload) {
-  if (!SUPABASE_KEY) return { ok: false, error: "SUPABASE_KEY not set" };
+  if (!SUPABASE_WRITE_KEY) return { ok: false, error: "SUPABASE_SERVICE_KEY not set (event_log is RLS-protected)" };
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/empire_events`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/event_log`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "apikey": SUPABASE_WRITE_KEY,
+        "Authorization": `Bearer ${SUPABASE_WRITE_KEY}`,
         "Prefer": "return=minimal",
       },
-      body: JSON.stringify({ event_type: eventType, payload }),
+      body: JSON.stringify({
+        key: eventType,
+        value: JSON.stringify(payload),
+        category: "health",
+        source: "health-guardian",
+      }),
       signal: AbortSignal.timeout(8000),
     });
     return { ok: res.ok, status: res.status };
@@ -146,7 +183,7 @@ function formatStatusReport(health) {
     ({ 1: "Shield", 2: "Portal", 3: "Brain", 4: "Muscle", 5: "Senses", 6: "Memory", 7: "Immune" }[n] || `Layer ${n}`);
 
   const lines = health.layers.map(
-    (l) => `║ [L${l.layer}] ${layerName(l.layer).padEnd(7)} ${l.name.padEnd(22)} ${icon(l.ok)} ${l.ok ? `${l.latency_ms}ms` : (l.error || `HTTP ${l.status}`).slice(0, 20)}`
+    (l) => `║ [L${l.layer}] ${layerName(l.layer).padEnd(7)} ${l.name.padEnd(22)} ${l.skipped ? "⏭" : icon(l.ok)} ${l.skipped ? "skipped (VPS1)" : l.ok ? `${l.latency_ms}ms` : (l.error || `HTTP ${l.status}`).slice(0, 20)}`
   );
 
   return [
@@ -293,17 +330,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         status: health.status,
         healthy: health.healthy,
         total: health.total,
-        failed: health.layers.filter((l) => !l.ok).map((l) => l.key),
+        failed: health.layers.filter((l) => l.ok === false).map((l) => l.key),
       });
 
       // 3. Alert if critical (score < 60 or n8n/supabase down)
       const criticalServices = health.layers.filter(
-        (l) => !l.ok && ["n8n", "supabase"].includes(l.key)
+        (l) => l.ok === false && ["n8n", "supabase"].includes(l.key)
       );
       let alertResult = null;
       if (health.score < 60 || criticalServices.length > 0) {
         alertResult = await triggerAlert({
-          message: `Empire health CRITICAL: ${health.score}% — Failed: ${health.layers.filter(l => !l.ok).map(l => l.name).join(", ")}`,
+          message: `Empire health CRITICAL: ${health.score}% — Failed: ${health.layers.filter(l => l.ok === false).map(l => l.name).join(", ")}`,
           severity: "critical",
         });
       }
