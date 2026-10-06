@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/components/LocalizedLink";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
+import { CONSENT_EVENT } from "@/lib/ahrefsAnalytics";
 
 const CONSENT_KEY = "cookie_consent";
 type ConsentValue = "accepted" | "declined";
@@ -59,6 +60,11 @@ const applyConsent = (granted: boolean) => {
   pushConsentUpdateEvent(granted);
 };
 
+// Laat consent-afhankelijke scripts (Ahrefs) direct reageren op een keuze, zonder reload.
+const announceChoice = (choice: ConsentValue) => {
+  window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: choice }));
+};
+
 const CookieConsent = () => {
   const [visible, setVisible] = useState(false);
   const { lang } = useLang();
@@ -82,12 +88,14 @@ const CookieConsent = () => {
     localStorage.setItem(CONSENT_KEY, "accepted");
     setVisible(false);
     applyConsent(true);
+    announceChoice("accepted");
   }, []);
 
   const handleDecline = useCallback(() => {
     localStorage.setItem(CONSENT_KEY, "declined");
     setVisible(false);
     applyConsent(false);
+    announceChoice("declined");
   }, []);
 
   return (
