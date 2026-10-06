@@ -1,15 +1,28 @@
 {
   "permissions": {
     "allow": [
-      "mcp__github__pull_request_read",
-      "Bash(npm run test --workspace=@hans/personal)",
-      "Bash(npm run typecheck --workspace=@hans/personal)",
-      "Bash(npm run lint --workspace=@hans/personal)",
-      "mcp__Supabase__get_edge_function",
-      "Bash(npm run test)",
-      "mcp__Vercel__list_deployments",
-      "mcp__Vercel__get_deployment_build_logs",
-      "mcp__Supabase__list_projects"
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "NotebookEdit",
+      "mcp__Supabase",
+      "mcp__Supabase__execute_sql",
+      "mcp__Supabase__apply_migration",
+      "mcp__Supabase__deploy_edge_function",
+      "mcp__github",
+      "mcp__Linear",
+      "mcp__Vercel",
+      "mcp__Claude_Code_Remote",
+      "mcp__Hostinger_n8n",
+      "mcp__Hostinger_Connector",
+      "mcp__Ahrefs",
+      "mcp__Claude_Docs",
+      "mcp__Cloudflare_Developer_Platform"
     ]
   },
   "hooks": {

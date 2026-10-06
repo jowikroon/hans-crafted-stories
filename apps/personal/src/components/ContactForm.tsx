@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
+import { currentVisitId, track } from "@/lib/siteTracker";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Required").max(100),
@@ -38,6 +39,7 @@ const ContactForm = () => {
     message: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ContactData, string>>>({ /* empty */ });
+  const [started, setStarted] = useState(false);
 
   const reasons = [
     { value: "freelance", label: t.reasonFreelance },
@@ -47,6 +49,10 @@ const ContactForm = () => {
   ];
 
   const handleChange = (field: keyof ContactData, value: string) => {
+    if (!started) {
+      setStarted(true);
+      track("contact_form_start", { field });
+    }
     setForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
@@ -62,21 +68,26 @@ const ContactForm = () => {
         fieldErrors[field] = issue.message;
       });
       setErrors(fieldErrors);
+      track("contact_form_error", { kind: "validation", fields: Object.keys(fieldErrors) });
       return;
     }
 
     setLoading(true);
     const { error } = await supabase
       .from("contact_submissions" as unknown)
-      .insert([result.data] as unknown);
+      .insert([{ ...result.data, lang, page: window.location.pathname.slice(0, 300), visit_id: currentVisitId() }] as unknown);
 
     setLoading(false);
 
     if (error) {
+      track("contact_form_error", { kind: "submit", code: error.code ?? null });
       toast.error(t.errorMessage);
       return;
     }
 
+    track("contact_form_submit", { reason: result.data.reason });
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: "contact_form_submit", form_reason: result.data.reason });
     toast.success(t.successMessage);
     setForm({ name: "", email: "", reason: "", message: "" });
     setErrors({ /* empty */ });
