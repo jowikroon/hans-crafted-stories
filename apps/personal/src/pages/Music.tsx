@@ -20,6 +20,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { songs, featuredRelease, previousRelease, type Song } from "@/data/music";
 import ReleaseTimeline from "@/components/music/ReleaseTimeline";
+import ArtistRadarVisual from "@/components/music/ArtistRadarVisual";
 import "@/styles/music-neon.css";
 
 /* deterministic waveform bars, stable across SSR/CSR (no Math.random) */
@@ -354,12 +355,7 @@ const Music = () => {
             </div>
           </div>
           <div className="mn-release__player mn-radar-visual" aria-hidden="true">
-            <div className="mn-radar-rings">
-              <div className="mn-radar-sweep" />
-              <span className="mn-radar-dot" style={{ left: "62%", top: "30%" }} />
-              <span className="mn-radar-dot" style={{ left: "34%", top: "58%", animationDelay: ".9s" }} />
-              <span className="mn-radar-dot" style={{ left: "70%", top: "68%", animationDelay: "1.7s" }} />
-            </div>
+            <ArtistRadarVisual />
           </div>
         </div>
       </section>
