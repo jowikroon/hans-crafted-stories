@@ -56,8 +56,8 @@ const Hero = () => {
           </p>
           <h1 className="hvl-page-title mb-3 text-foreground">
             {isNl
-              ? <>Marketplace Manager Amazon|Bol|eBay <em className="text-primary">strategie</em>, groei &amp; AI operations</>
-              : <>Marketplace Manager Amazon|Bol|eBay <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
+              ? <>Marketplace Manager voor Amazon, bol &amp; eBay</>
+              : <>Marketplace Manager for Amazon, bol &amp; eBay</>
             }
           </h1>
           <p className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">
