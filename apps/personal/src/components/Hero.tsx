@@ -54,14 +54,17 @@ const Hero = () => {
           <p className="mb-4 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {getValue("hero_subtitle", t.subtitle)}
           </p>
-          {/* Korte hero (audit F4.1/F6.1): max. twee zinnen subcopy, CTA's direct eronder; context volgt daarna.
-              Woordkeus en stijl van de H1 volgen Hans op main (#396: gedeelde .hvl-page-title, Marketplace Manager-copy). */}
+          {/* Korte hero (audit F4.1/F6.1): subline + korte beschrijving, CTA's direct eronder; context volgt daarna.
+              H1, stijl en subline volgen Hans op main (#396 .hvl-page-title, #398 H1-copy en nieuwe subline). */}
           <h1 className="hvl-page-title mb-3 text-foreground">
             {isNl
-              ? <>Marketplace Manager Amazon|Bol|eBay <em className="text-primary">strategie</em>, groei &amp; AI operations</>
-              : <>Marketplace Manager Amazon|Bol|eBay <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
+              ? <>Marketplace Manager voor Amazon, bol &amp; eBay</>
+              : <>Marketplace Manager for Amazon, bol &amp; eBay</>
             }
           </h1>
+          <p className="mb-4 font-display text-base font-medium text-muted-foreground md:text-lg">
+            {getValue("hero_freelance_h2", t.freelanceH2)}
+          </p>
           <p className="mb-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
             {getValue("hero_description", t.description)}
           </p>

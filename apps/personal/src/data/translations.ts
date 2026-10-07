@@ -48,7 +48,6 @@ type TranslationStrings = {
     heading: string;
     headingEmphasis: string;
     /** Slot van de H1 na de nadruk ("growth & AI operations"); Hero.tsx zet ", " ervoor, dus geen eigen komma of slotpunt. */
-    headingEnd: string;
     /** Beschikbaarheid — aanname uit de opdracht (1 december 2026); Hans bevestigt vóór release. */
     availability: string;
     freelanceH2: string;
@@ -332,9 +331,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
       heading: "Marketplace Manager (Amazon & Bol.com):",
       headingEmphasis: "strategy",
-      headingEnd: "growth & AI operations",
       availability: "Available from 1 December 2026",
-      freelanceH2: "Grow Amazon NL & Bol.com revenue with a hands-on interim marketplace lead",
+      freelanceH2: "Strategy, operations and AI automation for scalable marketplace growth.",
       description:
         "I'm Hans van Leeuwen. I help brands run Amazon and Bol.com with clearer product data, better customer journeys and AI-assisted workflows whose output can be checked.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
@@ -676,9 +674,8 @@ export const translations: Record<Lang, TranslationStrings> = {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
       heading: "Marketplace Manager (Amazon & Bol.com):",
       headingEmphasis: "strategie",
-      headingEnd: "groei & AI-operations",
       availability: "Beschikbaar vanaf 1 december 2026",
-      freelanceH2: "Groei Amazon NL & Bol.com omzet met een hands-on interim marktplaatsmanager",
+      freelanceH2: "Strategie, operations en AI-automatisering voor schaalbare marketplace groei.",
       description:
         "Ik ben Hans van Leeuwen. Ik help merken Amazon en Bol.com organiseren met heldere productdata, betere klantreizen en AI-ondersteunde workflows waarvan de output controleerbaar is.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
