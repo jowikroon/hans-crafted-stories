@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "images": "node scripts/gen-image-variants.mjs",
-    "build": "node scripts/gen-image-variants.mjs && node scripts/check-og-image.cjs && vite build && node scripts/inject-static-content.cjs && node scripts/build-ssr.cjs && node scripts/prerender.mjs && node scripts/seo-guard.mjs && node scripts/generate-sitemap.mjs && node scripts/indexnow-ping.mjs",
+    "build": "node scripts/gen-image-variants.mjs && node scripts/check-og-image.cjs && vite build && node scripts/inject-static-content.cjs && node scripts/build-ssr.cjs && node scripts/prerender.mjs && node scripts/seo-guard.mjs && node scripts/inline-critical-css.mjs && node scripts/generate-sitemap.mjs && node scripts/indexnow-ping.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -104,6 +104,7 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^4.3.1",
     "autoprefixer": "^10.5.0",
+    "beasties": "^0.5.4",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.5.2",
