@@ -180,7 +180,7 @@ const Work = () => {
           <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
             {getValue("work_label", tw.label)}
           </p>
-          <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
+          <h1 className="hvl-page-title mb-4 text-foreground">
             {getValue("work_heading", tw.heading)}
           </h1>
           <p className="mb-10 max-w-xl text-base leading-relaxed text-muted-foreground">

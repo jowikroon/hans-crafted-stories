@@ -28,7 +28,8 @@ interface LangProviderProps {
 }
 
 /**
- * Taal = URL. `/nl/...` is Nederlands, al het andere Engels (HAN-167).
+ * Taal = URL. `/en/...` is Engels, al het andere Nederlands (HAN-167; omgedraaid
+ * naar Nederlands-eerst op 2026-10-07, besluit Hans).
  *
  * Bewust verwijderd (2026-09-05): localStorage-voorkeur en navigator.language.
  * Die maakten dat één URL twee talen serveerde afhankelijk van de bezoeker,
@@ -60,17 +61,17 @@ export const LangProvider = ({ children, initialLang }: LangProviderProps) => {
 
   const lang = useMemo<Lang>(() => {
     const { lang: fromUrl, path } = parsePath(location.pathname);
-    if (fromUrl === "nl") return "nl";
+    if (fromUrl === "en" && isLocalizedRoute(path)) return "en";
     // /en/writing/<slug> is altijd de Engelse versie (optie A, 2026-10-02).
     if (article?.enRoute) return "en";
     if (articleSlug) {
       if (wantsEn && (storeInfo ? storeInfo.hasEn : true)) return "en";
       return storeInfo?.lang ?? preloadedArticleLang ?? initialLang ?? "nl";
     }
-    // Niet-gelokaliseerde routes (portal, cms, music) hebben geen /nl-variant;
-    // daar bepaalt de SSR-hint de UI-taal, anders EN.
-    if (!isLocalizedRoute(path) && initialLang) return initialLang;
-    return "en";
+    // Niet-gelokaliseerde routes (portal, cms, music) hebben geen /en-variant;
+    // daar bepaalt de SSR-hint de UI-taal, anders EN (die pagina's zijn Engelstalig).
+    if (!isLocalizedRoute(path)) return initialLang ?? "en";
+    return "nl";
   }, [location.pathname, initialLang, article?.enRoute, articleSlug, wantsEn, storeInfo, preloadedArticleLang]);
 
   const setLang = (l: Lang) => {
