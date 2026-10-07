@@ -185,16 +185,6 @@
       "permanent": true
     },
     {
-      "source": "/en",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/en/writing",
-      "destination": "/writing",
-      "permanent": true
-    },
-    {
       "source": "/writing/:slug",
       "has": [
         {
