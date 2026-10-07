@@ -39,6 +39,8 @@ export interface PricingModel {
 }
 
 export interface ServicePageCopy {
+  /** Laatste inhoudelijke revisie van deze pagina in deze taal. */
+  updated: string;
   title: string;
   metaDesc: string;
   breadcrumb: string;
@@ -78,7 +80,7 @@ export interface ServicePageDef {
   copy: Record<Lang, ServicePageCopy>;
 }
 
-/** Datum van de laatste inhoudelijke revisie; zichtbaar op elke dienstenpagina. */
+/** Bestaande revisiedatum; niet verhogen voor wijzigingen aan losse pagina’s of talen. */
 export const SERVICE_PAGES_UPDATED = "2026-09-22";
 
 const BYLINE = {
@@ -186,9 +188,10 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "briefcase",
     copy: {
       nl: {
-        title: "Interim E-commerce Manager & E-commerce Specialist inhuren | Hans van Leeuwen",
+        updated: "2026-10-05",
+        title: "Interim e-commerce manager | E-commerce specialist inhuren",
         metaDesc:
-          "Interim e-commerce manager of e-commerce specialist inhuren voor Amazon NL/DE en Bol.com. 10+ jaar, 70% marktaandeel (Nielsen), €2M+ marketplace-omzet beheerd. Amersfoort.",
+          "Interim e-commerce manager of e-commerce specialist inhuren voor Amazon NL/DE en Bol.com. 10+ jaar ervaring, €2M+ marketplace-omzet beheerd. Amersfoort.",
         breadcrumb: "Interim E-commerce Manager",
         eyebrow: "Interim & freelance",
         h1: "Interim e-commerce manager en e-commerce specialist inhuren",
@@ -270,6 +273,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.ai, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Interim E-commerce Manager (NL/EU) | Hans van Leeuwen",
         metaDesc:
           "Hire an interim e-commerce manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen), €2M+ marketplace revenue managed. Amersfoort.",
@@ -362,7 +366,8 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "cart",
     copy: {
       nl: {
-        title: "Amazon Specialist inhuren voor Amazon.nl & .de | Hans van Leeuwen",
+        updated: "2026-10-05",
+        title: "Amazon specialist inhuren (NL/DE) | Hans van Leeuwen",
         metaDesc:
           "Freelance Amazon specialist inhuren: listings, A+ Content, Amazon Ads en Buy Box voor Amazon.nl en Amazon.de. 70% categoriemarktaandeel (Nielsen 2023).",
         breadcrumb: "Amazon NL Specialist",
@@ -444,6 +449,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.bol, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Amazon NL Specialist & Account Manager | Hans van Leeuwen",
         metaDesc:
           "Freelance Amazon NL specialist for hire: listings, A+ Content, Amazon Ads and Buy Box on Amazon.nl and Amazon.de. 70% category share (Nielsen 2023).",
@@ -535,6 +541,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "store",
     copy: {
       nl: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Bol.com Consultant & Ads inhuren | Hans van Leeuwen",
         metaDesc:
           "Freelance Bol.com consultant inhuren voor content, Bol Ads, Buy Block en vendor-naar-seller. Zelf een Bol.com-sellerkanaal gelanceerd bij Alpine Hearing.",
@@ -617,6 +624,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Bol.com Consultant & Ads Specialist | Hans van Leeuwen",
         metaDesc:
           "Freelance Bol.com consultant for content, Bol Ads, Buy Block and vendor-to-seller transitions. Launched a Bol.com seller channel at Alpine Hearing.",
@@ -708,6 +716,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "bot",
     copy: {
       nl: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "AI E-commerce Automation inhuren | Hans van Leeuwen",
         metaDesc:
           "Freelance AI e-commerce automation specialist: productdata, orders, ads en rapportage voor Amazon en Bol.com geautomatiseerd met n8n, Supabase en Claude.",
@@ -790,6 +799,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.interim, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "AI E-commerce Automation Specialist | Hans van Leeuwen",
         metaDesc:
           "Freelance AI e-commerce automation specialist: product data, orders, ads and reporting for Amazon and Bol.com automated with n8n, Supabase and Claude.",

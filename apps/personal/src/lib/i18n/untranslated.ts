@@ -5,7 +5,7 @@ import type { Lang } from "@/lib/i18n/routes";
  * gekozen taal heeft (i18n-audit 2026-10-01).
  *
  *   Artikel zonder EN-versie  -> /writing?notice=only-nl&from=<pad>
- *   Artikel zonder NL-versie  -> /nl/writing?notice=only-en&from=<pad>
+ *   Artikel zonder NL-versie  -> /writing?notice=only-en&from=<pad>
  *   Overige pagina's (music)  -> /  of /nl met dezelfde melding
  *
  * De bestemming is de startpagina in de gekozen taal (voor artikelen de
@@ -16,7 +16,7 @@ export type UntranslatedNotice = "only-nl" | "only-en";
 
 export const untranslatedFallback = (target: Lang, fromPath: string, isArticle: boolean): string => {
   const notice: UntranslatedNotice = target === "en" ? "only-nl" : "only-en";
-  const home = isArticle ? (target === "nl" ? "/nl/writing" : "/writing") : target === "nl" ? "/nl" : "/";
+  const home = isArticle ? (target === "en" ? "/en/writing" : "/writing") : target === "en" ? "/en" : "/";
   return `${home}?notice=${notice}&from=${encodeURIComponent(safeInternalPath(fromPath) ?? "/")}`;
 };
 

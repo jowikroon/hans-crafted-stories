@@ -49,7 +49,8 @@ const DashboardsMpg = lazy(() => import(/* webpackChunkName: "dashboards-mpg" */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
 const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-template-editor" */ "@/components/portal/blog/VoiceTemplateEditor"));
 
-const LANG_PREFIXES = ["", "/nl"] as const;
+// Nederlands op het kale pad, Engels onder /en (Nederlands-eerst sinds 2026-10-07).
+const LANG_PREFIXES = ["", "/en"] as const;
 
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
 

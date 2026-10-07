@@ -319,7 +319,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
       heading: "Driving marketplace growth through",
       headingEmphasis: "strategy",
-      freelanceH2: "Grow Amazon NL & Bol.com revenue with a hands-on interim marketplace lead",
+      freelanceH2: "Strategy, operations and AI automation for scalable marketplace growth.",
       description:
         "I'm Hans van Leeuwen, a freelance e-commerce and marketplace manager based in Amersfoort. After ten years growing Amazon and Bol.com revenue for brands, I know where marketplace growth actually comes from: sharp listings, disciplined ads, and reliable operations. I help brands across the Netherlands and EU turn their digital channels into revenue engines.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
@@ -432,7 +432,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. What data do we collect?",
-          body: "We only collect anonymous analytical data via Google Analytics 4 (GA4), managed through Google Tag Manager. This includes page views, session duration, and device type. No personal data such as names, email addresses, or IP addresses is stored, IP anonymization is enabled by default in GA4.",
+          body: "We only collect anonymous analytical data via Google Analytics 4 (GA4), managed through Google Tag Manager. This includes page views, session duration, and device type. No personal data such as names, email addresses, or IP addresses is stored, IP anonymization is enabled by default in GA4. In addition, the site keeps its own anonymous visit statistics (pages viewed, time on page, scroll depth, clicks on contact links, page speed). These use no cookies, store nothing on your device and contain no IP address or other identifier; they only exist in memory for the duration of your visit.",
         },
         {
           heading: "3. Cookies",
@@ -657,7 +657,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
       heading: "Marktplaatsgroei realiseren door",
       headingEmphasis: "strategie",
-      freelanceH2: "Groei Amazon NL & Bol.com omzet met een hands-on interim marktplaatsmanager",
+      freelanceH2: "Strategie, operations en AI-automatisering voor schaalbare marketplace groei.",
       description:
         "Laat je omzet op Amazon NL & Bol.com groeien met een ervaren interim marketplace manager. Ik ben Hans van Leeuwen, freelance e-commerce en marketplace specialist gevestigd in Amersfoort. Na tien jaar omzetgroei op Amazon en Bol.com voor diverse merken, weet ik exact hoe je marktplaatsen omzet in winstgevende groeikanalen: strakke productlistings, scherpe advertenties en betrouwbare operations.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
@@ -770,7 +770,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. Welke gegevens verzamelen wij?",
-          body: "Wij verzamelen uitsluitend anonieme analytische gegevens via Google Analytics 4 (GA4), beheerd via Google Tag Manager. Dit omvat onder andere paginaweergaven, sessieduur en apparaattype. Er worden geen persoonsgegevens zoals naam, e-mailadres of IP-adres opgeslagen, IP-anonimisering is standaard ingeschakeld in GA4.",
+          body: "Wij verzamelen uitsluitend anonieme analytische gegevens via Google Analytics 4 (GA4), beheerd via Google Tag Manager. Dit omvat onder andere paginaweergaven, sessieduur en apparaattype. Er worden geen persoonsgegevens zoals naam, e-mailadres of IP-adres opgeslagen, IP-anonimisering is standaard ingeschakeld in GA4. Daarnaast houdt de site eigen anonieme bezoekstatistieken bij (bekeken pagina's, tijd op de pagina, scrolldiepte, klikken op contactlinks, laadsnelheid). Die gebruiken geen cookies, slaan niets op je apparaat op en bevatten geen IP-adres of andere identificatie; ze bestaan alleen in het geheugen zolang je bezoek duurt.",
         },
         {
           heading: "3. Cookies",

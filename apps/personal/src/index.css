@@ -116,6 +116,22 @@
   }
 }
 
+/* Paginatitel (besluit Hans 2026-10-07): exact de masthead-titel van /writing
+   (.writing-v2 .title) voor de H1 van home, work en about. Eén bron, zelfde
+   gewicht/grootte/spatiëring op elke pagina. */
+.hvl-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -.035em;
+  font-feature-settings: "ss01", "cv01";
+  text-wrap: balance;
+}
+@media (max-width: 720px) {
+  .hvl-page-title { font-size: clamp(34px, 9vw, 48px); }
+}
+
 /* ─────────────────────────────────────────────────────────────
    Motion system — one duration/easing scale for the whole site.
    Grounded in Material Motion + NN/g guidance: micro-interactions
