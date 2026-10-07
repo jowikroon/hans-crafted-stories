@@ -39,12 +39,13 @@
         }
       })();
     </script>
-    <!-- Google Tag Manager, single source of truth; GA4 configured inside GTM (no standalone gtag.js) -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-K22B6627');</script>
+    <!-- Google Tag Manager, single source of truth; GA4 configured inside GTM (no standalone gtag.js).
+         Perf okt 2026: de container is 429 KB raw / 144 KB gz en vocht hier synchroon in de
+         <head> om bandwidth met het app-bundle en de fonts, precies tijdens FCP (PSI mobiel 58,
+         "Verzoeken voor renderblokkering"). De injectie staat nu in
+         src/components/TrackingScriptInjector.tsx en gebeurt na LCP (requestIdleCallback,
+         timeout 3500 ms) of bij de eerste interactie, wat eerder komt.
+         Consent Mode default hierboven BLIJFT synchroon: die moet staan voordat GTM boot. -->
     <!-- End Google Tag Manager -->
     <!-- Note: GA4 is configured inside GTM (dual: G-2YX26R0RZK = HVL property/primair, G-6E713E94JW = Marketplacegrowth/legacy), no standalone gtag.js needed -->
     <!-- Hotjar (hjid:6659262) is loaded via TrackingScriptInjector after first user interaction -->

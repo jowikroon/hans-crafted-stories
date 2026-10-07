@@ -8,8 +8,43 @@ function isGtmAlreadyPresent(): boolean {
   return typeof document !== "undefined" && !!document.querySelector('script[src*="googletagmanager.com/gtm.js"]');
 }
 
+const GTM_ID = "GTM-K22B6627";
+/** Na hoeveel ms de GTM-container alsnog laadt als de bezoeker niets doet. */
+const GTM_IDLE_TIMEOUT_MS = 3500;
+
+/**
+ * Laadt de GTM-container na LCP in plaats van synchroon in de <head>.
+ * Stond tot okt 2026 in index.html; de container is 429 KB raw / 144 KB gz en
+ * concurreerde daar met het app-bundle tijdens First Contentful Paint.
+ * Consent Mode default blijft wel synchroon in index.html staan, zodat GTM
+ * nog steeds met de juiste consent-state boot.
+ */
+function loadGtm() {
+  if (typeof window === "undefined") return;
+  const w = window as Window & { __gtmLoaded?: boolean; dataLayer?: unknown[] };
+  if (w.__gtmLoaded || isGtmAlreadyPresent()) return;
+  w.__gtmLoaded = true;
+  w.dataLayer = w.dataLayer || [];
+  w.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+  const s = document.createElement("script");
+  s.async = true;
+  s.src = `https://www.googletagmanager.com/gtm.js?id=${GTM_ID}`;
+  document.head.appendChild(s);
+}
+
+/**
+ * GTM wordt sinds okt 2026 door deze component zelf geladen (post-LCP), dus de
+ * container komt gegarandeerd op de pagina, ook als hij er op dit moment nog
+ * niet staat. De GA4-dedupe hieronder moet daarom niet meer naar de DOM kijken:
+ * deed hij dat wel, dan injecteerde hij in het venster voor de GTM-load alsnog
+ * een losse GA4-tag en had je dubbele hits.
+ */
+function isGtmManaged(): boolean {
+  return Boolean(GTM_ID);
+}
+
 function shouldSkipScript(script: TrackingScript): boolean {
-  if (!isGtmAlreadyPresent()) return false;
+  if (!isGtmManaged() && !isGtmAlreadyPresent()) return false;
   if (script.script_type === "ga4") return true;
   const code = (script.code || "").toLowerCase();
   if (code.includes("gtag/js") || code.includes("googletagmanager.com/gtag")) return true;
@@ -78,6 +113,33 @@ const TrackingScriptInjector = () => {
     }
   }, []);
 
+  // GTM: na LCP of bij de eerste interactie, wat eerder komt.
+  useEffect(() => {
+    const events: Array<keyof WindowEventMap> = ["pointerdown", "keydown", "scroll", "touchstart"];
+    const fire = () => {
+      loadGtm();
+      events.forEach((e) => window.removeEventListener(e, fire));
+    };
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const handle = idleWindow.requestIdleCallback
+      ? idleWindow.requestIdleCallback(fire, { timeout: GTM_IDLE_TIMEOUT_MS })
+      : window.setTimeout(fire, GTM_IDLE_TIMEOUT_MS);
+    events.forEach((e) => window.addEventListener(e, fire, { once: true, passive: true }));
+
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, fire));
+      if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
+        idleWindow.cancelIdleCallback(handle as number);
+      } else {
+        window.clearTimeout(handle as number);
+      }
+    };
+  }, []);
+
+  // Overige tracking-scripts uit de CMS-tabel.
   useEffect(() => {
     if (!injected) inject();
   }, [injected, inject]);

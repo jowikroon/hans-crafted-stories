@@ -7,23 +7,19 @@ import Index from "@/pages/Index";
 import Work from "@/pages/Work";
 import Writing from "@/pages/Writing";
 import Music from "@/pages/Music";
+/* MusicSong blijft eager: scripts/prerender.mjs prerendert /music/<slug> (beat-drop,
+   neon-house-of-glass). Lazy maken leverde een lege #root zonder h1 op die pagina's. */
 import MusicSong from "@/pages/MusicSong";
-import ArtistRadar from "@/pages/ArtistRadar";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
-import Portal from "@/pages/Portal";
-import Wiki from "@/pages/Wiki";
 import Privacy from "@/pages/Privacy";
 import Rates from "@/pages/Rates";
-import AuthCallback from "@/pages/AuthCallback";
 import NotFound from "@/pages/NotFound";
 import AmazonNlSpecialist from "@/pages/AmazonNlSpecialist";
 import BolComConsultant from "@/pages/BolComConsultant";
 import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
 import AiEcommerceAutomation from "@/pages/AiEcommerceAutomation";
 import CaseStudyDetail from "@/pages/CaseStudyDetail";
-import GodStructure from "@/pages/GodStructure";
-import SamanthaAI from "@/pages/SamanthaAI";
 
 /* WriteCMS is lazy-loaded — full Blog CMS shell at /write (3-mode: Write/Manage/Analytics).
    BlogCMS is kept for /blog-cms/voice/:id route only (VoiceTemplateEditor still uses it). */
@@ -44,6 +40,19 @@ const DashboardsCcp = lazy(() => import(/* webpackChunkName: "dashboards-ccp" */
 const DashboardsHvl = lazy(() => import(/* webpackChunkName: "dashboards-hvl" */ "@/pages/dashboards/DashboardsHvl"));
 const DashboardsMpg = lazy(() => import(/* webpackChunkName: "dashboards-mpg" */ "@/pages/dashboards/DashboardsMpg"));
 
+/* Perf okt 2026 (PSI mobiel 58): deze routes staan NIET in scripts/prerender.mjs
+   en hebben geen SEO-prerender nodig, maar trokken wel hun hele dependency-graaf
+   in het entry-chunk van de homepage. GodStructure + SamanthaAI brachten recharts
+   (~95 KB gz) en de Supabase client mee. Lazy = alleen laden wie er echt komt.
+   LET OP: voeg hier geen route toe die in prerender.mjs staat. Tijdens SSR
+   rendert een lazy route de fallback en verlies je de geprerenderde HTML. */
+const ArtistRadar = lazy(() => import(/* webpackChunkName: "artist-radar" */ "@/pages/ArtistRadar"));
+const Portal = lazy(() => import(/* webpackChunkName: "portal" */ "@/pages/Portal"));
+const Wiki = lazy(() => import(/* webpackChunkName: "wiki" */ "@/pages/Wiki"));
+const AuthCallback = lazy(() => import(/* webpackChunkName: "auth-callback" */ "@/pages/AuthCallback"));
+const GodStructure = lazy(() => import(/* webpackChunkName: "god-structure" */ "@/pages/GodStructure"));
+const SamanthaAI = lazy(() => import(/* webpackChunkName: "samantha" */ "@/pages/SamanthaAI"));
+
 /* BlogCMS is lazy-loaded and excluded from the SSR bundle.
    During prerender (typeof window === "undefined"), the fallback renders instead. */
 const BlogCMS = lazy(() => import(/* webpackChunkName: "blog-cms" */ "@/pages/BlogCMS"));
@@ -53,6 +62,8 @@ const VoiceTemplateEditor = lazy(() => import(/* webpackChunkName: "voice-templa
 const LANG_PREFIXES = ["", "/en"] as const;
 
 const BlogCMSFallback = () => <div className="min-h-screen bg-[hsl(220,18%,5%)]" />;
+/* Neutrale fallback voor lichte pagina's, voorkomt een donkere flash tijdens het laden van het route-chunk. */
+const RouteFallback = () => <div className="min-h-screen" />;
 
 /* /blog-cms is retired — React CMS shell at /write is canonical.
    /write is now a React route (docs/archive/write-src.html is the archived static prototype). */
@@ -100,7 +111,7 @@ const AnimatedRoutes = () => {
         <Route path="/blog/:slug" element={<LegacyBlogRedirect />} />
         <Route path="/music" element={<PageTransition><Music /></PageTransition>} />
         <Route path="/music/:slug" element={<PageTransition><MusicSong /></PageTransition>} />
-        <Route path="/muziek/artist-radar" element={<PageTransition><ArtistRadar /></PageTransition>} />
+        <Route path="/muziek/artist-radar" element={<Suspense fallback={<RouteFallback />}><PageTransition><ArtistRadar /></PageTransition></Suspense>} />
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/about`} path={`${prefix}/about`} element={<PageTransition><About /></PageTransition>} />
         ))}
@@ -116,7 +127,7 @@ const AnimatedRoutes = () => {
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/ai-ecommerce-automation`} path={`${prefix}/ai-ecommerce-automation`} element={<PageTransition><AiEcommerceAutomation /></PageTransition>} />
         ))}
-        <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
+        <Route path="/portal" element={<Suspense fallback={<RouteFallback />}><PageTransition><Portal /></PageTransition></Suspense>} />
         <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/write/:id" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/music-cms" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
@@ -131,9 +142,9 @@ const AnimatedRoutes = () => {
         <Route path="/dashboards/mpg" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsMpg /></Suspense>} />
         <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
-        <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
-        <Route path="/god-structure" element={<GodStructure />} />
-        <Route path="/samantha" element={<SamanthaAI />} />
+        <Route path="/wiki" element={<Suspense fallback={<RouteFallback />}><PageTransition><Wiki /></PageTransition></Suspense>} />
+        <Route path="/god-structure" element={<Suspense fallback={<BlogCMSFallback />}><GodStructure /></Suspense>} />
+        <Route path="/samantha" element={<Suspense fallback={<BlogCMSFallback />}><SamanthaAI /></Suspense>} />
         <Route path="/empire" element={<Navigate to="/samantha" replace />} />
         <Route path="/hansai" element={<Navigate to="/samantha" replace />} />
         <Route path="/hans-ai" element={<Navigate to="/samantha" replace />} />
@@ -144,7 +155,7 @@ const AnimatedRoutes = () => {
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/rates`} path={`${prefix}/rates`} element={<PageTransition><Rates /></PageTransition>} />
         ))}
-        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/callback" element={<Suspense fallback={<RouteFallback />}><AuthCallback /></Suspense>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
