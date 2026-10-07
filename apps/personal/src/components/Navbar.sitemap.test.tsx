@@ -67,7 +67,7 @@ describe("account access", () => {
   // for the account menu. (t.commandCenter is validated separately below.)
   it("logged out: shows the Login link and no workspace link", () => {
     authState.user = null;
-    renderNav("/nl");
+    renderNav("/");
     expect(screen.getAllByText(translations.nl.nav.login).length).toBeGreaterThan(0);
     expect(document.querySelector('a[href="/write"]')).toBeNull();
     expect(screen.queryByText("Command Center")).toBeNull();
@@ -82,21 +82,21 @@ describe("account access", () => {
 describe("public links present for everyone", () => {
   it("shows Home / Werk / Artikelen / Over Hans on the NL URL", () => {
     authState.user = null;
-    renderNav("/nl");
+    renderNav("/");
     [translations.nl.nav.home, translations.nl.nav.work, translations.nl.nav.writing, translations.nl.nav.about]
       .forEach((label) => expect(screen.getAllByText(label).length).toBeGreaterThan(0));
   });
-  // HAN-167: de taal komt uit de URL, niet uit de bezoeker. "/" is Engels.
+  // HAN-167: de taal komt uit de URL, niet uit de bezoeker. "/" is Nederlands, "/en" Engels (2026-10-07).
   it("shows English labels on the EN URL and localized hrefs on the NL URL", () => {
     authState.user = null;
-    renderNav("/");
+    renderNav("/en");
     [translations.en.nav.work, translations.en.nav.about]
       .forEach((label) => expect(screen.getAllByText(label).length).toBeGreaterThan(0));
     cleanup();
-    renderNav("/nl/about");
-    expect(document.querySelector('a[href="/nl/work"]')).not.toBeNull();
-    expect(document.querySelector('a[hreflang="en"][href="/about"]')).not.toBeNull();
-    expect(document.querySelector('a[hreflang="nl"][href="/nl/about"]')).not.toBeNull();
+    renderNav("/about");
+    expect(document.querySelector('a[href="/work"]')).not.toBeNull();
+    expect(document.querySelector('a[hreflang="en"][href="/en/about"]')).not.toBeNull();
+    expect(document.querySelector('a[hreflang="nl"][href="/about"]')).not.toBeNull();
   });
 });
 

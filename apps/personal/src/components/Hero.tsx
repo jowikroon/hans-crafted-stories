@@ -54,10 +54,10 @@ const Hero = () => {
           <p className="mb-4 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {getValue("hero_subtitle", t.subtitle)}
           </p>
-          <h1 className="mb-3 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="hvl-page-title mb-3 text-foreground">
             {isNl
-              ? <>Hans van Leeuwen, Marketplace Manager (Amazon &amp; Bol.com): <em className="text-primary">strategie</em>, groei &amp; AI-operations</>
-              : <>Hans van Leeuwen, Marketplace Manager (Amazon &amp; Bol.com): <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
+              ? <>Marketplace Manager Amazon|Bol|eBay <em className="text-primary">strategie</em>, groei &amp; AI operations</>
+              : <>Marketplace Manager Amazon|Bol|eBay <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
             }
           </h1>
           <p className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">

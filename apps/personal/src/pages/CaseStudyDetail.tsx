@@ -141,7 +141,7 @@ const CaseStudyDetail = () => {
       description: content.subtitle,
       author: { "@type": "Person", name: "Hans van Leeuwen", url: "https://hansvanleeuwen.com/about" },
       publisher: { "@id": "https://hansvanleeuwen.com/#organization" },
-      url: `https://hansvanleeuwen.com${lang === "nl" ? "/nl" : ""}/work/connect-car-parts`,
+      url: `https://hansvanleeuwen.com${lang === "en" ? "/en" : ""}/work/connect-car-parts`,
       inLanguage: lang,
       dateModified: "2026-09-22",
     },
