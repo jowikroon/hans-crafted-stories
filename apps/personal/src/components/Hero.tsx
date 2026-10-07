@@ -54,11 +54,13 @@ const Hero = () => {
           <p className="mb-4 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {getValue("hero_subtitle", t.subtitle)}
           </p>
-          {/* Korte hero (audit F4.1/F6.1): naam blijft in de H1 (#345), max. twee zinnen subcopy, CTA's direct eronder; context volgt daarna.
-              Woordkeus H1 volgt Hans op main: #364 ("Marketplace Manager", zonder "E-commerce &") en #367 (komma na de naam,
-              geen em dash). NL-nadruk komt, net als op main, rechtstreeks uit de vertaling: de CMS-sleutel valt zonder _nl-rij terug op Engels. */}
-          <h1 className="mb-5 font-display text-4xl font-medium leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
-            Hans van Leeuwen, {t.heading} <em className="text-primary">{isNl ? t.headingEmphasis : getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, {t.headingEnd}
+          {/* Korte hero (audit F4.1/F6.1): max. twee zinnen subcopy, CTA's direct eronder; context volgt daarna.
+              Woordkeus en stijl van de H1 volgen Hans op main (#396: gedeelde .hvl-page-title, Marketplace Manager-copy). */}
+          <h1 className="hvl-page-title mb-3 text-foreground">
+            {isNl
+              ? <>Marketplace Manager Amazon|Bol|eBay <em className="text-primary">strategie</em>, groei &amp; AI operations</>
+              : <>Marketplace Manager Amazon|Bol|eBay <em className="text-primary">{getValue("hero_heading_emphasis", t.headingEmphasis)}</em>, growth &amp; AI operations</>
+            }
           </h1>
           <p className="mb-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
             {getValue("hero_description", t.description)}

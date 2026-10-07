@@ -20,6 +20,21 @@
       "permanent": true
     },
     {
+      "source": "/nl/work/connect-car-parts",
+      "destination": "/work/marketplace-product-data-automation",
+      "permanent": true
+    },
+    {
+      "source": "/nl",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/nl/:path*",
+      "destination": "/:path*",
+      "permanent": true
+    },
+    {
       "source": "/writing/freelance-e-commerce-manager-inhuren",
       "destination": "/writing/waarom-marketplace-listings-niet-converteren",
       "permanent": true
@@ -151,12 +166,12 @@
     },
     {
       "source": "/nl/tarieven",
-      "destination": "/nl/rates",
+      "destination": "/rates",
       "permanent": true
     },
     {
       "source": "/tarieven",
-      "destination": "/nl/rates",
+      "destination": "/rates",
       "permanent": true
     },
     {
@@ -175,8 +190,8 @@
       "permanent": true
     },
     {
-      "source": "/nl/work/connect-car-parts",
-      "destination": "/nl/work/marketplace-product-data-automation",
+      "source": "/en/work/connect-car-parts",
+      "destination": "/en/work/marketplace-product-data-automation",
       "permanent": true
     },
     {
@@ -253,7 +268,12 @@
   "headers": [
     {
       "source": "/bijlagen",
-      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     },
     {
       "source": "/assets/(.*)",
@@ -267,8 +287,14 @@
     {
       "source": "/(__edit/.*|build\\.json)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store" },
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
       ]
     },
     {

@@ -4,7 +4,7 @@
  * pagina doet (Network.requestWillBeSent). Faalt als er een tracking-host wordt benaderd, of als de
  * pagina zelf niet laadde (dan is de controle ongeldig).
  *
- *   node scripts/nojs-network-check.mjs http://localhost:4173/ http://localhost:4173/nl/about
+ *   node scripts/nojs-network-check.mjs http://localhost:4173/ http://localhost:4173/en/about
  *
  * Alleen lokaal/preview; verstuurt geen formulieren, logt geen cookies/headers.
  */

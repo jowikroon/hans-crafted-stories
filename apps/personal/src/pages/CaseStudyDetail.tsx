@@ -27,7 +27,7 @@ const CaseStudyDetail = () => {
       description: c.description,
       author: { "@type": "Person", "@id": "https://hansvanleeuwen.com/#person", name: "Hans van Leeuwen", url: "https://hansvanleeuwen.com/about" },
       publisher: { "@id": "https://hansvanleeuwen.com/#organization" },
-      url: `https://hansvanleeuwen.com${lang === "nl" ? "/nl" : ""}${MARKETPLACE_PRODUCT_DATA_CASE.path}`,
+      url: `https://hansvanleeuwen.com${lang === "en" ? "/en" : ""}${MARKETPLACE_PRODUCT_DATA_CASE.path}`,
       inLanguage: lang,
       dateModified: MARKETPLACE_PRODUCT_DATA_CASE.dateModified,
     },

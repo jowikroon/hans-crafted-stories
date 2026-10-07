@@ -2,6 +2,10 @@
 # Redirect www to non-www (301)
 https://www.hansvanleeuwen.com/* https://hansvanleeuwen.com/:splat 301
 
+# Nederlands-eerst (2026-10-07): NL op het kale pad, EN onder /en. Oude /nl-URL's permanent naar het kale pad.
+/nl                /                   301
+/nl/*              /:splat             301
+
 # Blog aliases: /blog and /artikelen never existed as routes; canonical is /writing (301)
 /blog              /writing            301
 /blog/*            /writing/:splat     301

@@ -87,15 +87,15 @@ describe("blog post head per language (R5)", () => {
 describe("EN article URLs (option A)", () => {
   it("emits a reciprocal nl/en/x-default set only for real pairs", () => {
     expect(blogPostAlternates(base)).toEqual([
-      { lang: "en", href: "https://hansvanleeuwen.com/en/writing/designing-with-llms" },
       { lang: "nl", href: "https://hansvanleeuwen.com/writing/designing-with-llms" },
-      { lang: "x-default", href: "https://hansvanleeuwen.com/en/writing/designing-with-llms" },
+      { lang: "en", href: "https://hansvanleeuwen.com/en/writing/designing-with-llms" },
+      { lang: "x-default", href: "https://hansvanleeuwen.com/writing/designing-with-llms" },
     ]);
     expect(blogPostAlternates({ ...base, content: NL_BODY })).toEqual([]);
     expect(blogPostAlternates({ ...base, content_nl: "" })).toEqual([]);
   });
   it("uses the primary canonical for the NL alternate and drops the pair for an external canonical", () => {
-    expect(blogPostAlternates({ ...base, canonical_url: "https://hansvanleeuwen.com/writing/designing-with-llms" })[1].href).toBe("https://hansvanleeuwen.com/writing/designing-with-llms");
+    expect(blogPostAlternates({ ...base, canonical_url: "https://hansvanleeuwen.com/writing/designing-with-llms" })[0].href).toBe("https://hansvanleeuwen.com/writing/designing-with-llms");
     expect(blogPostAlternates({ ...base, canonical_url: "https://medium.com/@hans/designing-with-llms" })).toEqual([]);
   });
   it("keeps an English-only post on /writing/<slug>", () => {

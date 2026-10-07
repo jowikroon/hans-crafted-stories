@@ -85,7 +85,7 @@ const {
 // Use balanced div parsing so nested homepage markup cannot leak into prerendered article pages.
 template = clearRootHtml(template);
 
-// De homepage wordt verderop per taal gerenderd (/ en /nl) — zie writeLocalizedPage().
+// De homepage wordt verderop per taal gerenderd (/ NL en /en EN) — zie writeLocalizedPage().
 
 const BASE = "https://hansvanleeuwen.com";
 
@@ -195,7 +195,7 @@ const caseHead = (mcase, lang) => {
 };
 
 // /writing is sinds de i18n-audit (2026-09-22) een gelokaliseerde route: /writing (EN)
-// en /nl/writing (NL). Titels/omschrijvingen = translations.ts seo.writingTitle /
+// en /en/writing (EN). Titels/omschrijvingen = translations.ts seo.writingTitle /
 // seo.writingDescription (taal-twin), zodat prerender en client hetzelfde tonen.
 // 2026-09-25 (HAN-180): niet meer hard-coded maar uit translations.ts, anders lopen prerender
 // en client uit elkaar zoals bij de homepage-titel (HAN-178). Guard 19 bewaakt de pariteit.
@@ -355,13 +355,13 @@ function outPathFor(route) {
 }
 
 /**
- * Rendert een gelokaliseerde route in beide talen en schrijft dist/<route> en
- * dist/nl/<route>. `buildHead(lang)` levert title/description/canonical/intro/faq,
+ * Rendert een gelokaliseerde route in beide talen en schrijft dist/<route> (NL) en
+ * dist/en/<route> (EN). `buildHead(lang)` levert title/description/canonical/intro/faq,
  * `buildJsonLd(lang, head)` de @graph, `fallbackHtml(lang, head)` de noscript-body.
  */
 function writeLocalizedPage(basePath, { buildHead, buildJsonLd, fallbackHtml, renderOptions, rootHtml, postProcess }) {
   for (const lang of LANGS) {
-    const route = lang === "nl" ? (basePath === "/" ? "/nl" : `/nl${basePath}`) : basePath;
+    const route = lang === "en" ? (basePath === "/" ? "/en" : `/en${basePath}`) : basePath;
     const head = buildHead(lang);
     head.canonical = absoluteUrl(basePath, lang);
     const html = rootHtml ? rootHtml(lang, head) : renderQuietly(route, null, { initialLang: lang, ...(renderOptions || {}) }).html;
@@ -414,7 +414,7 @@ function buildStaticPageFallback(head, extraHtml = "", headingTag = "h2", lang =
     .map((para) => `<p>${para}</p>`)
     .join("\n          ");
   const nl = lang === "nl";
-  const p = nl ? "/nl" : "";
+  const p = nl ? "" : "/en";
   return `
       <header>
         <nav aria-label="Primary navigation">
@@ -457,7 +457,7 @@ for (const slug of HERO_SLUGS) {
  * Artikelen (optie A, 2026-10-02): de primaire versie op /writing/<slug> en, voor
  * NL-primaire artikelen met een echte Engelse tekst, de Engelse versie op
  * /en/writing/<slug>. Beide met self-canonical en dezelfde wederkerige
- * hreflang-set (nl, en, x-default = en). Eentalige artikelen: geen set.
+ * hreflang-set (nl, en, x-default = nl). Eentalige artikelen: geen set.
  */
 const articlePairs = [];
 function writeArticle(slug, blogPost, lang) {
@@ -533,7 +533,7 @@ console.log(`[prerender] ${articlePairs.length} artikelparen NL/EN -> dist/artic
     fallbackHtml: (lang, head) => buildStaticPageFallback({ ...head, intro: [] }, "", "h2", lang),
   });
   // De home-JSON-LD staat in de template; inLanguage per variant gelijktrekken.
-  for (const [file, lang] of [[path.join(distDir, "index.html"), "en"], [path.join(distDir, "nl", "index.html"), "nl"]]) {
+  for (const [file, lang] of [[path.join(distDir, "index.html"), "nl"], [path.join(distDir, "en", "index.html"), "en"]]) {
     let page = fs.readFileSync(file, "utf8");
     page = page.replace(/"inLanguage":\s*"(?:en|nl)"/g, `"inLanguage": "${lang}"`);
     fs.writeFileSync(file, page, "utf8");
@@ -546,7 +546,7 @@ writeLocalizedPage("/about", {
     title: translations[lang].seo.aboutTitle,
     description: translations[lang].seo.aboutDescription,
     // og:image:alt volgt de H1 (SEO-run 2026-09-22: functietitel in OG week af van de kop)
-    ogImageAlt: lang === "nl" ? "Hans van Leeuwen – Interim E-commerce Manager & Marketplace-specialist" : "Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
+    ogImageAlt: "Hans van Leeuwen – Marketplace Manager Amazon EU, US, eBay DE & Bol.com",
   }),
   buildJsonLd: (lang, head) => ({
     "@context": "https://schema.org",
@@ -582,17 +582,17 @@ writeLocalizedPage("/about", {
 /* ───────────────────────────── /work ───────────────────────────── */
 // Zakelijke cases uit dezelfde bron als de client (data/marketplaceCases.ts).
 const workExtra = (lang) => {
-  const p = lang === "nl" ? "/nl" : "";
+  const p = lang === "en" ? "/en" : ""; // #396: NL op het kale pad, EN onder /en
   const items = MARKETPLACE_CASES.map((c) => `<li><a href="${p}${c.path}">${escapeHtml(c.copy[lang].title)}</a>: ${escapeHtml(c.copy[lang].cardSummary)}</li>`).join("");
   return lang === "nl"
     ? `
           <h2>Marketplace-cases</h2>
           <ul>${items}</ul>
-          <p>Zie ook <a href="/nl/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/nl/bol-com-consultant">Bol.com consultant</a> en <a href="/nl/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`
+          <p>Zie ook <a href="/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/bol-com-consultant">Bol.com consultant</a> en <a href="/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`
     : `
           <h2>Marketplace cases</h2>
           <ul>${items}</ul>
-          <p>See also <a href="/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/bol-com-consultant">Bol.com consultant</a> and <a href="/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`;
+          <p>See also <a href="/en/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/en/bol-com-consultant">Bol.com consultant</a> and <a href="/en/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`;
 };
 writeLocalizedPage("/work", {
   buildHead: (lang) => (lang === "nl" ? WORK_HEAD_NL : WORK_HEAD_EN),
@@ -627,7 +627,7 @@ writeLocalizedPage("/work", {
   fallbackHtml: () => "",
 });
 
-/* ───────────────────────────── /writing (EN) + /nl/writing (NL) ───────────────────────────── */
+/* ───────────────────────────── /writing (NL) + /en/writing (EN) ───────────────────────────── */
 {
   let writingPosts = [];
   try {
@@ -755,7 +755,7 @@ for (const mcase of MARKETPLACE_CASES) writeLocalizedPage(mcase.path, {
   }),
 });
 
-/* ───────────────────────────── /rates (NL: /nl/rates, alias /nl/tarieven) ───────────────────────────── */
+/* ───────────────────────────── /rates (NL kaal, EN /en/rates, alias /tarieven) ───────────────────────────── */
 writeLocalizedPage("/rates", {
   buildHead: (lang) => {
     const t = RATES_PAGE[lang]; const pr = lang === "nl" ? PRICING_NL : PRICING_EN;
@@ -862,8 +862,8 @@ for (const song of songs.filter((sg) => sg.provider !== "soundcloud")) {
   page = page.replace(/[ \t]*<meta property="og:url" content="[^"]*" \/>\n?/, "");
   page = applyLang(page, "en");
   page = setHreflang(page, null);
-  // De taalschakelaar mag niet naar het probe-pad wijzen: NL -> /nl, ENG -> /.
-  page = page.replace(/href="\/__prerender-404-probe__"/g, (m, offset) => (page.lastIndexOf('hrefLang="nl"', offset) > page.lastIndexOf('hrefLang="en"', offset) ? 'href="/nl"' : 'href="/"'));
+  // De taalschakelaar mag niet naar het probe-pad wijzen: NL -> /, ENG -> /en.
+  page = page.replace(/href="\/__prerender-404-probe__"/g, (m, offset) => (page.lastIndexOf('hrefLang="nl"', offset) > page.lastIndexOf('hrefLang="en"', offset) ? 'href="/"' : 'href="/en"'));
   page = setJsonLd(page, { "@context": "https://schema.org", "@type": "WebPage", name: "Page Not Found", inLanguage: "en" });
   page = replaceSsrFallbackHtml(page, `
       <main><article><h2>Page not found</h2><p>This page does not exist or has moved.</p><p><a href="/">Back to the homepage</a></p></article></main>`);

@@ -25,8 +25,11 @@ afterEach(cleanup);
 
 // i18n-audit 2026-09-22: de UI-taal op een artikel volgt het artikel, niet "en".
 describe("LangProvider on article routes", () => {
-  it("uses the /nl prefix on localised routes", () => {
-    mount("/nl/about");
+  it("uses the /en prefix on localised routes and Dutch on the bare path (Dutch-first 2026-10-07)", () => {
+    mount("/en/about");
+    expect(screen.getByTestId("lang").textContent).toBe("en");
+    cleanup();
+    mount("/about");
     expect(screen.getByTestId("lang").textContent).toBe("nl");
   });
   it("follows the preloaded article language instead of defaulting to English", () => {
