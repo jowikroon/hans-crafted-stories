@@ -106,8 +106,25 @@ const articleAlternates = (pair) => [
 ];
 const today = new Date().toISOString().slice(0, 10);
 
+// Gebruik de inhoudelijke revisiedatum uit de prerender, ook per taalversie.
+// Een nieuwe build verandert de lastmod van een ongewijzigde dienstpagina niet.
+function staticLastmod(loc) {
+  const route = new URL(loc).pathname;
+  const file = path.join(appDir, "dist", route, "index.html");
+  if (!fs.existsSync(file)) return today;
+  const html = fs.readFileSync(file, "utf8");
+  for (const match of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+    const data = JSON.parse(match[1]);
+    const graph = data["@graph"] || [data];
+    if (!graph.some((item) => item["@type"] === "Service")) continue;
+    const page = graph.find((item) => item["@type"] === "WebPage" && item.url === loc);
+    if (page?.dateModified) return iso(page.dateModified);
+  }
+  return today;
+}
+
 const urls = [
-  ...STATIC_ROUTES.map((r) => ({ ...r, lastmod: (r.loc === `${BASE}/writing` || r.loc === `${BASE}/en/writing`) && posts[0] ? iso(posts[0].updated_at) : today })),
+  ...STATIC_ROUTES.map((r) => ({ ...r, lastmod: (r.loc === `${BASE}/writing` || r.loc === `${BASE}/en/writing`) && posts[0] ? iso(posts[0].updated_at) : staticLastmod(r.loc) })),
   ...posts
     // External canonicals point elsewhere; keep only self-canonical posts in our sitemap
     .filter((p) => !p.canonical_url || p.canonical_url.startsWith(BASE))
