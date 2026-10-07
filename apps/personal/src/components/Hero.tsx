@@ -8,7 +8,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { usePageContent } from "@/hooks/usePageContent";
 import Magnetic from "@/components/Magnetic";
-import hansProfile from "@/assets/hans-profile.jpg";
+import HansPortrait from "@/components/media/HansPortrait";
 import { SERVICE_BYLINE, SERVICE_PAGES_UPDATED } from "@/data/servicePages";
 
 const icons = [
@@ -111,16 +111,14 @@ const Hero = () => {
         {/* Portrait: echte foto (E-E-A-T), eager + fetchpriority want boven de vouw op md+; op mobiel verborgen zodat de H1 de LCP blijft. SEO-run april-items "zero images". */}
         <figure className="hidden md:block">
           <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-muted ring-1 ring-border/50">
-            <img
-              src={hansProfile}
+            {/* De figure is hidden md:block, dus onder 768px wordt er niets gerenderd
+                en blijft de H1 de LCP. Daarboven is de kolom ongeveer 420 CSS-pixels. */}
+            <HansPortrait
               alt={isNl
                 ? "Hans van Leeuwen, freelance en interim e-commerce manager voor Amazon NL/DE en Bol.com, Amersfoort"
                 : "Hans van Leeuwen, freelance and interim e-commerce manager for Amazon NL/DE and Bol.com, Amersfoort"}
-              width={600}
-              height={800}
-              loading="eager"
-              decoding="async"
-              {...{ fetchpriority: "high" }}
+              sizes="(min-width: 768px) 420px, 1px"
+              priority
               className="h-full w-full object-cover object-top"
             />
           </div>

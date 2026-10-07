@@ -14,26 +14,6 @@ function htmlPlaceholders(): Plugin {
   };
 }
 
-/**
- * Preload van de hero-afbeelding (LCP-element op /, /about, de dienstenpagina's
- * en artikelpagina's). De bestandsnaam is content-hashed, dus hardcoden in
- * index.html kan niet: deze plugin leest de echte asset-naam uit de bundle.
- * Perf okt 2026, PSI "LCP-uitsplitsing".
- */
-function preloadHeroImage(): Plugin {
-  return {
-    name: "preload-hero-image",
-    enforce: "post",
-    transformIndexHtml(html, ctx) {
-      if (!ctx.bundle) return html;
-      const hero = Object.keys(ctx.bundle).find((k) => /hans-profile-[^/]*\.(jpg|jpeg|webp|avif)$/.test(k));
-      if (!hero) return html;
-      const tag = `    <link rel="preload" as="image" fetchpriority="high" href="/${hero}" />\n`;
-      return html.replace("</head>", `${tag}  </head>`);
-    },
-  };
-}
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   build: {
@@ -57,7 +37,7 @@ export default defineConfig(({ mode }) => ({
             manualChunks(id: string) {
               if (!id.includes("node_modules")) return;
               // BELANGRIJK: groepeer hier alleen packages die op elke pagina
-              // nodig zijn. Deze build gebruikt rolldown-vite, en die zet een
+              // nodig zijn. Deze build gebruikt Vite 8 (rolldown), en die zet een
               // handmatig benoemd chunk als modulepreload in index.html. Noem je
               // hier recharts of tiptap, dan downloadt de homepage ze alsnog
               // (gemeten: +500 KB gz aan preload). Laat die aan de automatische
@@ -79,7 +59,7 @@ export default defineConfig(({ mode }) => ({
   },
   // editSourceMap: data-src tags + /__edit/source-map.json for the edit overlay's
   // write-back to source (see src/lib/editSource/). Text only, no DOM/visual change.
-  plugins: [editSourceMap({ root: __dirname }), react(), htmlPlaceholders(), preloadHeroImage(), componentTagger()].filter(Boolean),
+  plugins: [editSourceMap({ root: __dirname }), react(), htmlPlaceholders(), componentTagger()].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
