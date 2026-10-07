@@ -224,8 +224,9 @@ describe("parseSitemapLocs", () => {
   it("parses the site's real generated sitemap into the full inspectable set", () => {
     // Ties the parser to the actual artifact scripts/generate-sitemap.mjs
     // produces, not just to fixtures: every <loc> must survive as an
-    // inspectable URL, and the /nl/ variants and service pages must be in it
-    // (the old sample of 4 static pages + recent posts never inspected them).
+    // inspectable URL, and the /en/ variants (EN under /en since the Dutch-first
+    // switch of 2026-10-07) and service pages must be in it (the old sample of
+    // 4 static pages + recent posts never inspected them).
     const xml = realSitemapXml;
     const parsed = parseSitemapLocs(xml);
     expect(parsed.kind).toBe("urlset");
@@ -233,7 +234,8 @@ describe("parseSitemapLocs", () => {
     expect(parsed.locs).toHaveLength(locCount);
     const urls = inspectableUrls(parsed.locs);
     expect(urls).toHaveLength(locCount);
-    expect(urls.some((u) => new URL(u).pathname.startsWith("/nl"))).toBe(true);
+    expect(urls.some((u) => new URL(u).pathname.startsWith("/en/"))).toBe(true);
+    expect(urls.some((u) => new URL(u).pathname.startsWith("/nl"))).toBe(false);
     expect(urls.some((u) => new URL(u).pathname.startsWith("/writing/"))).toBe(true);
     expect(urls.every((u) => new URL(u).origin === SITE_ORIGIN)).toBe(true);
   });
