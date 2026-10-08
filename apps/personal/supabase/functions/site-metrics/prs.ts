@@ -22,7 +22,7 @@ export const METRICS: Metric[] = [
 export interface Measure {
   metric: Metric;
   paths: string[];
-  /** A paths= or path= key was present, even empty: it overrides a planned change's paths. */
+  /** A paths= or path= key was present, empty or with a valid path: it overrides a planned change's paths. */
   pathsGiven: boolean;
   expect: "up" | "down";
   days: number | null;
@@ -48,7 +48,10 @@ export function parseMeasure(body: string | null | undefined): Measure | null {
     return Number.isFinite(n) && n >= 7 && n <= 180 ? n : null;
   };
   const expect = kv.expect === "down" ? "down" : kv.expect === "up" ? "up" : metric === "search_position" ? "down" : "up";
-  const pathsGiven = kv.paths !== undefined || kv.path !== undefined;
+  // Present and either explicitly empty (whole site) or holding at least one valid path: a value
+  // whose every entry was rejected must not widen a planned change to the whole site.
+  const rawPaths = kv.paths ?? kv.path;
+  const pathsGiven = rawPaths !== undefined && (rawPaths.trim() === "" || paths.length > 0);
   return { metric, paths, pathsGiven, expect, days: num(kv.days), baseline: num(kv.baseline) };
 }
 

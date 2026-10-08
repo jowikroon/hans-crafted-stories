@@ -18,7 +18,8 @@
 //   5. Every change with a deploy date and a metric gets a fresh before/after verdict (impact.ts),
 //      a concluded one too until 14 days after its measurement window, while Search Console
 //      finalizes those days.
-//   Runs at most once per 20h unless forced. Scheduling: no clock of its own (CLAUDE.md puts new
+//   Runs at most once per 20h unless forced, and never twice at once (site_metrics_try_lock, a
+//   10-minute lease in hvl_analytics_cache). Scheduling: no clock of its own (CLAUDE.md puts new
 //   schedules in OpenClaw); analytics-ga4-gsc kicks it on each run of the existing 6-hourly
 //   dashboard-evaluator, and the 20h guard makes that one harvest a day.
 // POST { action: "evaluate" }                  (service role or admin): step 5 only.
@@ -38,6 +39,8 @@ const SITE = "https://hansvanleeuwen.com";
 const REPO = "jowikroon/hans-crafted-stories";
 const TZ = "Europe/Amsterdam";
 const STATE_KEY = "site-metrics:last";
+const LOCK_KEY = "site-metrics:lock"; // taken by site_metrics_try_lock(), deleted when the harvest ends
+const LOCK_TTL = "10 minutes"; // a crashed worker's lock expires; a harvest stops new chunks after 90s
 const GUARD_MS = 20 * 60 * 60 * 1000;
 const BUDGET_MS = 90_000; // stop starting new chunks after this; the next run resumes
 const CHUNK_DAYS = 60;
@@ -361,7 +364,10 @@ async function evaluateAll(sb: SB) {
     const ch = c as unknown as ChangeInput & { id: string; status: string };
     if (ch.status === "concluded" && today > addDays(deployDay(ch.deployed_at), ch.measure_days + RECHECK_DAYS)) continue;
     const search = isSearchMetric(ch.primary_metric as Metric);
-    const last = search ? gscLast ?? yesterday : yesterday;
+    // No Search Console day stored yet: nothing to judge a search metric on, and yesterday as its
+    // last day would let an empty measurement window pass as complete.
+    if (search && !gscLast) continue;
+    const last = search ? gscLast! : yesterday;
     const since = search ? (firstGsc?.d as string | undefined) ?? null : eventsSince;
     const from = addDays(ch.deployed_at.slice(0, 10), -ch.baseline_days - 1);
     const to = addDays(ch.deployed_at.slice(0, 10), ch.measure_days + 1);
@@ -378,11 +384,20 @@ async function evaluateAll(sb: SB) {
 type LeadResult = { sent: true } | { skipped: string } | { error: string };
 type LeadRetry = { tried: number; sent: number } | { error: string };
 
-/** One Telegram message for a submission row; notified_at marks it sent. Callers check age and state. */
+/**
+ * One Telegram message for a submission row. Callers check age. notified_at is claimed before the
+ * send, so the trigger path and a retry (or two overlapping kicks) never both send one lead; a
+ * failed send hands the claim back for the next retry.
+ */
 async function sendLead(sb: SB, row: Record<string, unknown>): Promise<LeadResult> {
   const { data: chat } = await sb.from("autoccp_thresholds").select("value_text").eq("key", "telegram_chat_id").maybeSingle();
   const bot = Deno.env.get("TELEGRAM_BOT_TOKEN");
   if (!bot || !chat?.value_text) return { skipped: "telegram niet geconfigureerd" };
+  const id = row.id as string;
+  const { data: claimed, error: claimErr } = await sb.from("contact_submissions")
+    .update({ notified_at: new Date().toISOString() }).eq("id", id).is("notified_at", null).select("id");
+  if (claimErr) return { error: `claim: ${claimErr.message}`.slice(0, 300) };
+  if (!claimed?.length) return { skipped: "already notified" };
   const text = [
     "Nieuwe aanvraag via hansvanleeuwen.com",
     `${row.name} <${row.email}>`,
@@ -397,8 +412,10 @@ async function sendLead(sb: SB, row: Record<string, unknown>): Promise<LeadResul
     body: JSON.stringify({ chat_id: chat.value_text, text, disable_web_page_preview: true }),
     signal: AbortSignal.timeout(10_000),
   }).catch(() => null);
-  if (!r?.ok) return { error: `telegram ${r?.status ?? "onbereikbaar"}` };
-  await sb.from("contact_submissions").update({ notified_at: new Date().toISOString() }).eq("id", row.id as string);
+  if (!r?.ok) {
+    const { error } = await sb.from("contact_submissions").update({ notified_at: null }).eq("id", id);
+    return { error: `telegram ${r?.status ?? "onbereikbaar"}${error ? `; claim niet vrijgegeven: ${error.message}` : ""}`.slice(0, 300) };
+  }
   return { sent: true };
 }
 
@@ -494,12 +511,21 @@ Deno.serve(async (req) => {
   const fresh = state && Date.now() - new Date(state.fetched_at as string).getTime() < GUARD_MS && prev.complete === true;
   if (fresh && body.force !== true) return json({ ok: true, skipped: "harvested < 20h ago", at: state!.fetched_at, lead_retry: leads });
 
+  // One harvest at a time: two runs interleaving their upserts and dropStale() on the same chunk
+  // would delete rows the other just wrote (each deletes what is older than its own run start).
+  const { data: locked, error: lockErr } = await sb.rpc("site_metrics_try_lock", { p_ttl: LOCK_TTL });
+  if (lockErr) return json({ error: `lock: ${lockErr.message}`, lead_retry: leads }, 500);
+  if (locked !== true) return json({ ok: true, skipped: "harvest in progress", lead_retry: leads });
+  const run = () => harvest(sb, prev, leads).finally(async () => {
+    await sb.from("hvl_analytics_cache").delete().eq("key", LOCK_KEY);
+  });
+
   // The scheduled kick asks for background mode: answer now, harvest in this worker's own lifetime.
   const rt = (globalThis as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime;
   if (body.background === true && rt) {
-    rt.waitUntil(harvest(sb, prev, leads).catch(() => {}));
+    rt.waitUntil(run().catch(() => {}));
     return json({ ok: true, started: true, lead_retry: leads }, 202);
   }
-  const out = await harvest(sb, prev, leads);
+  const out = await run();
   return json({ ok: Object.keys(out.errors as Record<string, string>).length === 0, ...out });
 });

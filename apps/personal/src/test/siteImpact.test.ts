@@ -204,6 +204,11 @@ describe("PR parsing", () => {
       .toEqual({ metric: "leads", paths: [], pathsGiven: false, expect: "up", days: 42, baseline: null });
   });
 
+  it("does not widen a plan to the whole site when every given path was rejected", () => {
+    expect(parseMeasure("Measure: metric=leads paths=https://evil.example,nl/contact")).toMatchObject({ paths: [], pathsGiven: false });
+    expect(parseMeasure("Measure: metric=leads paths=https://evil.example,/ok")).toMatchObject({ paths: ["/ok"], pathsGiven: true });
+  });
+
   it("defaults position to 'down' and ignores unknown metrics and unsafe paths", () => {
     expect(parseMeasure("Measure: metric=search_position paths=/x")?.expect).toBe("down");
     expect(parseMeasure("Measure: metric=revenue")).toBeNull();

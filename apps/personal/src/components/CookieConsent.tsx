@@ -119,6 +119,7 @@ const CookieConsent = () => {
                 <Link to="/privacy" className="underline text-primary hover:text-primary/80 transition-colors">
                   {t.privacyLink}
                 </Link>
+                .
               </p>
               <div className="flex items-center gap-2 pt-1">
                 <Button size="sm" onClick={handleAccept} className="h-8 text-xs">

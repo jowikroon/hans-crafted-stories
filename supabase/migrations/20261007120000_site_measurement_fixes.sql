@@ -1,12 +1,14 @@
 -- Site measurement fixes after the review of PR #371.
 --
--- Applied to production (pesfakewujjwkyybwaom) on 2026-10-07. Idempotent, and additive only:
--- nothing is removed, so it can be re-run safely.
+-- Applied to production (pesfakewujjwkyybwaom) on 2026-10-08. Idempotent, and it removes no object,
+-- so it can be re-run safely.
 --
 --   hvl_analytics_cache     the key/value cache the dashboard and the site-metrics, analytics-ga4-gsc
 --                           functions read and write. It was created by hand in production and never
---                           committed, so a fresh project failed with a missing relation. Same schema,
---                           RLS and read policy as the production object.
+--                           committed, so a fresh project failed with a missing relation. Same schema
+--                           and RLS as the production object; reading is now limited to admins (it was
+--                           any signed-in account, and the cache holds CCP Channable and dashboard data).
+--                           Every reader in the app is an admin screen (/write) or a service-role function.
 --   harvested_at            on hvl_gsc_daily and hvl_ga4_daily: when site-metrics last wrote a row.
 --                           The harvest sets it explicitly (an upsert does not apply column defaults)
 --                           and, after a fully fetched chunk, removes rows that chunk no longer returned.
@@ -16,6 +18,12 @@
 --                           tab switchers several times with short samples and understated active time.
 --                           Everything else in the function is unchanged; site_visits, site_kpis and the
 --                           landing table already work per visit.
+--   contact form            the insert trigger sets created_at to the insert time (a backdated row slipped
+--                           past the hourly limits and into the lead retry window) and keeps visit_id empty:
+--                           the privacy statement says visit statistics are not linked to a message, and a
+--                           bundle cached from before this change still sends it. Existing values cleared.
+--   site_metrics_try_lock() a lease row in hvl_analytics_cache so two harvests never run at once (their
+--                           stale-row deletes would remove each other's fresh rows). Service role only.
 
 -- ---------------------------------------------------------------------------
 -- 1. Analytics cache
@@ -31,9 +39,12 @@ do $$ begin
     select 1 from pg_policies
     where schemaname = 'public' and tablename = 'hvl_analytics_cache' and policyname = 'auth read analytics cache'
   ) then
-    create policy "auth read analytics cache" on public.hvl_analytics_cache for select to authenticated using (true);
+    create policy "auth read analytics cache" on public.hvl_analytics_cache for select to authenticated
+      using (public.has_role(auth.uid(), 'admin'));
   end if;
 end $$;
+-- Production's policy predates this file and read using (true).
+alter policy "auth read analytics cache" on public.hvl_analytics_cache using (public.has_role(auth.uid(), 'admin'));
 
 -- ---------------------------------------------------------------------------
 -- 2. Harvest timestamp on the daily Search Console and GA4 rows
@@ -192,3 +203,42 @@ begin
   ) into out;
   return out;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- 4. Contact form: the server sets created_at, visit_id stays empty
+-- ---------------------------------------------------------------------------
+-- Same trigger (contact_submissions_limit, BEFORE INSERT, 20260925130000) and the same limits;
+-- the two assignments run first so the limits count the real insert time.
+create or replace function public.contact_submissions_limit() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  new.created_at := now();
+  new.visit_id := null;
+  if (select count(*) from contact_submissions where lower(email) = lower(new.email) and created_at > now() - interval '1 hour') >= 3
+     or (select count(*) from contact_submissions where created_at > now() - interval '1 hour') >= 30 then
+    return null;
+  end if;
+  return new;
+end $$;
+revoke execute on function public.contact_submissions_limit() from public, anon, authenticated;
+update public.contact_submissions set visit_id = null where visit_id is not null;
+
+-- ---------------------------------------------------------------------------
+-- 5. One site-metrics harvest at a time
+-- ---------------------------------------------------------------------------
+-- True when the caller got the lease: no lease row yet, or the current one is older than p_ttl
+-- (a worker that died without releasing it). A concurrent caller waits on the key's unique index,
+-- then sees the fresh lease and gets false. site-metrics deletes the row when its harvest ends.
+create or replace function public.site_metrics_try_lock(p_ttl interval default interval '10 minutes')
+returns boolean language plpgsql set search_path = public as $$
+declare
+  got boolean;
+begin
+  insert into hvl_analytics_cache (key, data, fetched_at) values ('site-metrics:lock', '{}'::jsonb, now())
+  on conflict (key) do update set data = excluded.data, fetched_at = excluded.fetched_at
+    where hvl_analytics_cache.fetched_at < now() - p_ttl
+  returning true into got;
+  return coalesce(got, false);
+end $$;
+revoke execute on function public.site_metrics_try_lock(interval) from public, anon, authenticated;
+grant execute on function public.site_metrics_try_lock(interval) to service_role;
