@@ -1,11 +1,19 @@
 {
-  "version": 1,
-  "updated": "2026-08-19",
+  "version": 2,
+  "updated": "2026-10-07",
   "description": "Canonieke MCP-registry voor het HansOS-netwerk. Dit bestand is de enige bron van waarheid over welke MCP-servers bestaan en welk device ze hoort te kennen. Wijzig hier, niet in een device-lokale config. Controleer een device met `npm run mcp:audit`.",
+  "statusLegend": {
+    "live": "Draait en is aantoonbaar bruikbaar voor minstens een client (handshake, connector verbonden, of endpoint dat auth afdwingt).",
+    "needs-auth": "Server bestaat en leeft, maar de connector of client heeft geen geldige auth. Opnieuw autoriseren lost het op.",
+    "planned": "Gekozen maar nog niet aangesloten. Geen drift als hij ontbreekt.",
+    "retired": "Afgevoerd. Staat in `retired` zodat de URL niet stilletjes terugkeert als default."
+  },
   "servers": [
     {
       "id": "workflow-orchestrator",
       "label": "Workflow Orchestrator",
+      "status": "live",
+      "lastVerified": "2026-10-07",
       "transport": "stdio",
       "scope": "repo",
       "command": "node",
@@ -26,11 +34,13 @@
         "laptop",
         "cloud-sandbox"
       ],
-      "note": "Reist mee met de repo via .mcp.json. Dependencies via `npm run mcp:setup`."
+      "note": "Reist mee met de repo via .mcp.json. Dependencies via `npm run mcp:setup`; in cloud-sessies draait de SessionStart-hook (.claude/hooks/session-start.sh) dat sinds PR #372 automatisch. Handshake 2026-10-07: 7 van 7 tools."
     },
     {
       "id": "health-guardian",
       "label": "Health Guardian",
+      "status": "live",
+      "lastVerified": "2026-10-07",
       "transport": "stdio",
       "scope": "repo",
       "command": "node",
@@ -51,15 +61,21 @@
         "laptop",
         "cloud-sandbox"
       ],
-      "note": "Reist mee met de repo via .mcp.json. Dependencies via `npm run mcp:setup`."
+      "note": "Reist mee met de repo via .mcp.json. Dependencies via `npm run mcp:setup`; in cloud-sessies via de SessionStart-hook sinds PR #372. Vals CRITICAL-alarm opgelost in PR #394. Handshake 2026-10-07: 7 van 7 tools."
     },
     {
       "id": "n8n-hostinger",
-      "label": "n8n Hostinger MCP",
+      "label": "n8n Hostinger MCP (instance-level)",
+      "status": "live",
+      "lastVerified": "2026-10-07",
       "transport": "http",
       "scope": "self-hosted",
       "url": "https://n8n.srv1402218.hstgr.cloud/mcp-server/http",
-      "auth": "bearer",
+      "auth": "oauth",
+      "authModes": [
+        "oauth",
+        "bearer"
+      ],
       "aliases": [
         "Hostinger_n8n"
       ],
@@ -73,25 +89,121 @@
         "cloud-sandbox",
         "claude-account"
       ],
-      "note": "De enige werkende self-hosted MCP. Token heeft de mcp-server-api audience nodig, niet public-api."
+      "clients": [
+        {
+          "client": "claude-ai",
+          "status": "live",
+          "via": "claude.ai-connector \"Hostinger_n8n\"",
+          "auth": "oauth"
+        },
+        {
+          "client": "chatgpt",
+          "status": "planned",
+          "via": "ChatGPT developer mode, remote MCP",
+          "auth": "oauth",
+          "doc": "docs/mcp-llm-clients.md"
+        },
+        {
+          "client": "gemini",
+          "status": "planned",
+          "via": "Gemini Enterprise / Gemini CLI, remote MCP",
+          "auth": "oauth",
+          "doc": "docs/mcp-llm-clients.md"
+        }
+      ],
+      "note": "VPS1 n8n, instance-level MCP. Accepteert OAuth of een persoonlijke API-key als bearer (die key heeft de mcp-server-api audience nodig, niet public-api). Toont alleen gepubliceerde workflows met een webhook-, schedule-, form- of chat-trigger die op 'available in MCP' staan."
+    },
+    {
+      "id": "hansos-mcp-gateway",
+      "label": "HansOS MCP Gateway",
+      "status": "live",
+      "lastVerified": "2026-10-07",
+      "transport": "http",
+      "scope": "self-hosted",
+      "url": "https://n8n.srv1402218.hstgr.cloud/mcp/hansos-gateway",
+      "auth": "bearer",
+      "authModes": [
+        "bearer"
+      ],
+      "n8nWorkflowId": "30lnKzfSmeYVpSWk",
+      "n8nPath": "hansos-gateway",
+      "expectedTools": [
+        "svc_call"
+      ],
+      "expectUnauthenticated": [
+        401,
+        403
+      ],
+      "requiredOn": [],
+      "clients": [
+        {
+          "client": "claude-code-cli",
+          "status": "planned",
+          "auth": "bearer"
+        },
+        {
+          "client": "codex",
+          "status": "planned",
+          "auth": "bearer",
+          "doc": "docs/mcp-llm-clients.md"
+        },
+        {
+          "client": "gemini-cli",
+          "status": "planned",
+          "auth": "bearer",
+          "doc": "docs/mcp-llm-clients.md"
+        }
+      ],
+      "note": "Per-workflow MCP Server Trigger (n8n workflow 30lnKzfSmeYVpSWk, actief) met een tool, svc_call, die doorroutert naar sub-workflow acK9fcrMwAQRapgr (channable, supabase, linear, telegram, anthropic, ollama). Lezen is default; schrijven vereist mode=write plus confirm=true plus writes_enabled in agent_control; DELETE wordt nooit uitgevoerd. Alleen voor bearer-clients: claude.ai, ChatGPT en Gemini Enterprise accepteren remote MCP alleen met OAuth of zonder auth en kunnen hem dus niet gebruiken. Geen clientconfig in de repo en geen executies in de bewaarde n8n-historie op 2026-10-07."
+    },
+    {
+      "id": "hostinger-api",
+      "label": "Hostinger API MCP (officieel)",
+      "status": "needs-auth",
+      "needsAuthSince": "2026-10-06",
+      "lastVerified": "2026-10-07",
+      "transport": "http",
+      "scope": "saas",
+      "url": "https://mcp.hostinger.com",
+      "auth": "oauth",
+      "authorizationServer": "https://auth.hostinger.com",
+      "aliases": [
+        "Hostinger_Connector"
+      ],
+      "expectUnauthenticated": [
+        401,
+        403
+      ],
+      "requiredOn": [
+        "claude-account"
+      ],
+      "note": "Officiele remote MCP van Hostinger (hPanel-API). claude.ai-connector \"Hostinger_Connector\" staat sinds 2026-10-06 op needs-auth: opnieuw autoriseren via claude.ai, Settings, Connectors. Niet te verwarren met n8n-hostinger, dat is de n8n-instance op VPS1."
     },
     {
       "id": "supabase",
       "label": "Supabase MCP",
+      "status": "live",
+      "lastVerified": "2026-10-07",
       "transport": "http",
       "scope": "saas",
       "url": "https://mcp.supabase.com/mcp",
       "auth": "oauth",
+      "aliases": [
+        "Supabase"
+      ],
       "expectUnauthenticated": [
         401
       ],
       "requiredOn": [
         "claude-account"
-      ]
+      ],
+      "note": "Verbonden via het claude.ai-account."
     },
     {
       "id": "cloudflare-bindings",
       "label": "Cloudflare Developer Platform MCP",
+      "status": "live",
+      "lastVerified": "2026-10-07",
       "transport": "http",
       "scope": "saas",
       "url": "https://bindings.mcp.cloudflare.com/mcp",
@@ -104,22 +216,46 @@
       ],
       "requiredOn": [
         "claude-account"
-      ]
+      ],
+      "note": "Verbonden via het claude.ai-account (stond op 2026-08-19 nog op needs-auth)."
     },
     {
       "id": "github",
       "label": "GitHub MCP",
+      "status": "live",
+      "lastVerified": "2026-10-07",
       "transport": "http",
       "scope": "saas",
       "auth": "oauth",
+      "aliases": [
+        "github"
+      ],
       "requiredOn": [
         "claude-account"
       ],
-      "note": "Endpoint wordt door de client beheerd; alleen aanwezigheid wordt gecontroleerd."
+      "note": "Endpoint wordt door de client beheerd; alleen aanwezigheid wordt gecontroleerd. Verbonden via het claude.ai-account."
+    },
+    {
+      "id": "vercel",
+      "label": "Vercel MCP",
+      "status": "live",
+      "lastVerified": "2026-10-07",
+      "transport": "http",
+      "scope": "saas",
+      "auth": "oauth",
+      "aliases": [
+        "Vercel"
+      ],
+      "requiredOn": [
+        "claude-account"
+      ],
+      "note": "Endpoint wordt door de client beheerd; alleen aanwezigheid wordt gecontroleerd. Verbonden via het claude.ai-account."
     },
     {
       "id": "monday",
       "label": "monday.com MCP",
+      "status": "needs-auth",
+      "lastVerified": "2026-10-07",
       "transport": "http",
       "scope": "saas",
       "url": "https://mcp.monday.com/mcp",
@@ -134,64 +270,79 @@
         "claude-account",
         "laptop"
       ],
-      "note": "Op de laptop geconfigureerd in Cursor, zie docs/monday-mcp-setup.md."
+      "note": "Op het claude.ai-account geconfigureerd maar zonder geldige auth (2026-10-07). Op de laptop geconfigureerd in Cursor, zie docs/monday-mcp-setup.md."
     },
     {
       "id": "linear",
       "label": "Linear MCP",
+      "status": "live",
+      "lastVerified": "2026-10-07",
       "transport": "http",
       "scope": "saas",
       "auth": "oauth",
+      "aliases": [
+        "Linear"
+      ],
       "requiredOn": [
         "claude-account"
-      ]
+      ],
+      "note": "Endpoint wordt door de client beheerd; alleen aanwezigheid wordt gecontroleerd. Verbonden via het claude.ai-account."
     },
     {
       "id": "slack",
       "label": "Slack MCP",
+      "status": "live",
+      "lastVerified": "2026-10-07",
       "transport": "http",
       "scope": "saas",
       "auth": "oauth",
+      "aliases": [
+        "Slack"
+      ],
       "requiredOn": [
         "claude-account"
-      ]
+      ],
+      "note": "Endpoint wordt door de client beheerd; alleen aanwezigheid wordt gecontroleerd. Verbonden via het claude.ai-account."
     }
   ],
   "devices": [
     {
       "id": "vps1",
-      "label": "VPS1 — Capital City",
+      "label": "VPS1, Capital City",
       "hostname": "srv1402218.hstgr.cloud",
       "ip": "187.124.1.75",
       "heartbeatHost": "vps1",
       "clients": [
         "claude-code-cli"
       ],
-      "repoCheckout": true
+      "repoCheckout": true,
+      "note": "n8n (https://n8n.srv1402218.hstgr.cloud) en de instance-MCP draaien hier."
     },
     {
       "id": "vps2",
-      "label": "VPS2 — Industrial Zone",
+      "label": "VPS2, Industrial Zone",
       "hostname": "srv1411336.hstgr.cloud",
       "ip": "187.124.2.66",
       "heartbeatHost": "vps2",
       "clients": [
         "openclaw"
       ],
-      "repoCheckout": false
+      "repoCheckout": false,
+      "note": "OpenClaw (https://openclaw-cvpd.srv1411336.hstgr.cloud), Ollama, AnythingLLM, traefik."
     },
     {
       "id": "pi5",
-      "label": "pi5 — Raspberry Pi 5 (CasaOS)",
+      "label": "pi5, Raspberry Pi 5 (CasaOS)",
       "heartbeatHost": "pi5",
       "clients": [
         "openclaw"
       ],
-      "repoCheckout": false
+      "repoCheckout": false,
+      "note": "Samantha brain (container samantha-brain), WAHA, Vault Gateway. Publieke health: https://samantha-pi.hansvanleeuwen.com/health."
     },
     {
       "id": "laptop",
-      "label": "Laptop — Cursor + Cowork",
+      "label": "Laptop, Cursor + Cowork",
       "heartbeatHost": "laptop",
       "clients": [
         "cursor",
@@ -213,7 +364,7 @@
         "vm",
         "sandbox"
       ],
-      "note": "Efemere host; de hostnaam wisselt per sessie, vandaar hostnameAliases."
+      "note": "Efemere host; de hostnaam wisselt per sessie, vandaar hostnameAliases. Repo-servers worden door de SessionStart-hook geinstalleerd."
     },
     {
       "id": "claude-account",
@@ -229,29 +380,52 @@
     {
       "id": "n8n-cloud",
       "label": "n8n Cloud MCP",
+      "status": "retired",
+      "lastVerified": "2026-10-07",
       "url": "https://hansvanleeuwen.app.n8n.cloud/mcp-server/http",
       "retiredOn": "2026-08-19",
-      "reason": "Instance geeft 404 op /, /healthz en /mcp-server/http. Niet opnieuw als default invoeren zonder eerst een 200 op /healthz aan te tonen.",
+      "reason": "Instance geeft 404 op /, /healthz en /mcp-server/http (opnieuw 404 op /healthz op 2026-10-07). Niet opnieuw als default invoeren zonder eerst een 200 op /healthz aan te tonen.",
       "stillReferencedIn": [
-        "docs/n8n-credentials-setup.md",
-        "docs/empire-n8n-flow.md",
+        "apps/personal/n8n/secrets.manifest.yml",
+        ".claude/mcp/workflow-orchestrator/index.js"
+      ],
+      "stillReferencedNote": "Geen van beide noemt de dode host zelf: secrets.manifest.yml beschrijft N8N_BASE_URL nog als 'n8n Cloud instance URL' en workflow-orchestrator noemt in de tool-omschrijving van n8n_health nog 'n8n cloud instance'. Alleen tekst, geen runtime-pad.",
+      "historyOnlyIn": [
+        "docs/mcp-network-validation.md",
+        "docs/mcp-registry.md",
+        "docs/god-structure-architecture-v2.md",
         "docs/system-map.md",
         "docs/secrets-inventory.md",
-        "docs/cloudflare-connection-troubleshooting.md",
-        "docs/god-structure-architecture-v2.md",
-        "docs/runbooks/missing-secrets.md",
-        "docs/migrate-supabase-to-own-org.md",
-        "docs/secrets-manifest-spec.md",
-        "apps/personal/config/README.md"
+        "docs/cloudflare-connection-troubleshooting.md"
       ],
       "runtimeCleanedOn": "2026-09-05",
-      "runtimeCleanupNote": "Alle runtime-referenties zijn weg: edge functions, frontend-config, .env.production, .env.example en de .claude-agents wijzen nu naar n8n.srv1402218.hstgr.cloud (GET /healthz = 200). Alleen documentatie noemt de oude host nog."
+      "runtimeCleanupNote": "Alle runtime-referenties zijn weg: edge functions, frontend-config, .env.production, .env.example en de .claude-agents wijzen nu naar n8n.srv1402218.hstgr.cloud (GET /healthz = 200). Op 2026-10-07 zijn ook de docs die de oude host nog als live presenteerden gemarkeerd als afgevoerd."
     },
     {
       "id": "docker-mcp-gateway",
       "label": "Docker MCP Gateway :3100",
+      "status": "retired",
+      "lastVerified": "2026-10-07",
+      "port": 3100,
       "retiredOn": "2026-08-19",
-      "reason": "Genoemd in vijf documenten en in de Command Center UI, maar draait op geen enkele host (niet in de heartbeats van pi5, vps1 of vps2). Behandel als niet-bestaand tot een heartbeat het tegendeel bewijst."
+      "reason": "Draait op geen enkele host (niet in de heartbeats van pi5, vps1 of vps2). Het compose-bestand dat hem definieerde (apps/personal/public/empire/docker-compose.yml) is al op 2026-03-14 verwijderd in commit ebaea46. Behandel als niet-bestaand tot een heartbeat het tegendeel bewijst. Niet verwarren met hansos-mcp-gateway (n8n-workflow, wel live).",
+      "stillReferencedIn": [
+        "supabase/functions/hansai-chat/index.ts",
+        "apps/personal/src/components/ai/contextCategories.ts",
+        "apps/personal/src/components/ai/commandSuggestions.ts",
+        "apps/personal/src/components/overlays/EmpireOverlay.tsx",
+        "apps/personal/src/components/empire/EmpireStatusGrid.tsx",
+        "apps/personal/src/components/empire/EmpireClaudePanel.tsx",
+        "apps/personal/src/components/portal/InlineChatPanel.tsx",
+        "apps/personal/src/components/portal/UnifiedChatPanel.tsx"
+      ],
+      "stillReferencedNote": "Systeemprompts en Command Center-UI noemen de gateway nog als bestaand onderdeel. Dat is runtime-code en hoort in een eigen change.",
+      "historyOnlyIn": [
+        "docs/mcp-network-validation.md",
+        "docs/empire-n8n-flow.md",
+        "docs/inventory-secrets-and-workflows.md",
+        "docs/secrets-inventory.md"
+      ]
     }
   ],
   "unverified": [
@@ -260,14 +434,22 @@
       "aliases": [
         "WorkOS"
       ],
-      "reason": "Staat als geconfigureerd-zonder-auth op het claude.ai-account, maar komt in geen enkel architectuurdocument voor. Uitzoeken of hij hoort te bestaan."
+      "lastVerified": "2026-10-07",
+      "reason": "Stond op 2026-08-19 als geconfigureerd-zonder-auth op het claude.ai-account, maar komt in geen enkel architectuurdocument voor. Op 2026-10-07 niet meer zichtbaar in de cloud-sessie (niet verbonden en niet in needs-auth); waarschijnlijk verwijderd."
     },
     {
       "id": "adobe-experience-manager",
       "aliases": [
         "Adobe_Experience_Manager"
       ],
-      "reason": "Idem: geconfigureerd zonder auth, nergens gedocumenteerd."
+      "lastVerified": "2026-10-07",
+      "reason": "Geconfigureerd zonder auth op het claude.ai-account (nog steeds op 2026-10-07), nergens gedocumenteerd."
+    },
+    {
+      "id": "ccp-playwright-mcp",
+      "host": "pi5",
+      "lastVerified": "2026-10-07",
+      "reason": "Container ccp-playwright-mcp meldt zich als up in de pi5-heartbeat (infra_service_heartbeats, laatste rij 2026-10-08 00:00 UTC), maar endpoint, transport en clients staan nergens beschreven. Uitzoeken welke client hem gebruikt en hem dan met status en url naar servers verplaatsen."
     }
   ]
 }
