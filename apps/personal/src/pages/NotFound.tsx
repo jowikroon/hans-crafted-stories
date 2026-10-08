@@ -4,6 +4,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { useSEO } from "@/hooks/useSEO";
 import { track } from "@/lib/siteTracker";
+import { referrerPage } from "@/lib/siteTrackerCore";
 
 const NotFound = () => {
   const location = useLocation();
@@ -31,7 +32,10 @@ const NotFound = () => {
     robots.content = "noindex, nofollow";
 
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-    track("not_found", { referrer: document.referrer ? document.referrer.slice(0, 200) : null });
+    // Explicit path: this effect can run before the SiteTracker sibling has started the tracker
+    // or registered this route; track() starts it if needed, and the path keeps an SPA 404 from
+    // landing on the previous page. The referrer is the linking page without its query string.
+    track("not_found", { referrer: referrerPage(document.referrer) }, undefined, location.pathname);
 
     return () => {
       if (robots) robots.content = "index, follow";

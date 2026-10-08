@@ -4,6 +4,10 @@
 //
 //   Measure: metric=search_clicks paths=/nl/interim-ecommerce-manager,/services/* expect=up days=28
 //
+// baseline=<days> is optional; an explicitly empty paths= measures the whole site. On a PR that
+// activates a planned change the line overrides the plan's metric and expectation, plus every
+// optional key it names (an empty paths= included).
+//
 // Without that line a PR that references a planned Linear issue (HAN-123) activates the
 // planned row for that issue; any other product PR is logged as a timeline annotation, and
 // dependency bumps and bot PRs are skipped.
@@ -18,6 +22,8 @@ export const METRICS: Metric[] = [
 export interface Measure {
   metric: Metric;
   paths: string[];
+  /** A paths= or path= key was present, even empty: it overrides a planned change's paths. */
+  pathsGiven: boolean;
   expect: "up" | "down";
   days: number | null;
   baseline: number | null;
@@ -42,7 +48,8 @@ export function parseMeasure(body: string | null | undefined): Measure | null {
     return Number.isFinite(n) && n >= 7 && n <= 180 ? n : null;
   };
   const expect = kv.expect === "down" ? "down" : kv.expect === "up" ? "up" : metric === "search_position" ? "down" : "up";
-  return { metric, paths, expect, days: num(kv.days), baseline: num(kv.baseline) };
+  const pathsGiven = kv.paths !== undefined || kv.path !== undefined;
+  return { metric, paths, pathsGiven, expect, days: num(kv.days), baseline: num(kv.baseline) };
 }
 
 export function linearIssues(...texts: (string | null | undefined)[]): string[] {

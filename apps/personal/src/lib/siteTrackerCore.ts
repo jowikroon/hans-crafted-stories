@@ -6,11 +6,34 @@ export type TrackEvent =
   | "lang_switch" | "blog_read_progress" | "blog_read_complete" | "blog_share" | "blog_toc_click"
   | "not_found" | "js_error" | "web_vital";
 
-/** Routes that are tools or admin screens, not the public site. */
-const PRIVATE = /^\/(write|dashboards|portal|samantha|bijlagen|cowork|admin|login|auth)(\/|$)|^\/__|^\/[a-z-]+\.html$/;
+/**
+ * Routes that are tools or admin screens, not the public site: the logged-in screens of
+ * AnimatedRoutes, their redirect aliases, and what robots.txt keeps out of search.
+ */
+const PRIVATE =
+  /^\/(write|dashboards|portal|samantha|bijlagen|cowork|admin|login|auth|music-cms|release-set|blog-cms|wiki|god-structure|empire|hansai|hans-ai|command|extensions)(\/|$)|^\/__|^\/[a-z-]+\.html$/i;
 
 export function isTrackablePath(path: string): boolean {
-  return !PRIVATE.test(path);
+  // React Router matches case-insensitively on the decoded path, so /Samantha and /%73amantha
+  // open the same private screen as /samantha and must be skipped the same way.
+  let p = path;
+  try { p = decodeURI(path); } catch { /* malformed escape: test it as written */ }
+  return !PRIVATE.test(p);
+}
+
+/**
+ * The page a visitor came from, as origin and path only (for a 404: which page holds the broken
+ * link). The query string and fragment are dropped: they can carry search terms, tokens or an
+ * email address, and the privacy policy promises the address without them.
+ */
+export function referrerPage(referrer: string | null | undefined): string | null {
+  if (!referrer) return null;
+  try {
+    const u = new URL(referrer);
+    return /^https?:$/.test(u.protocol) ? `${u.origin}${u.pathname}`.slice(0, 200) : null;
+  } catch {
+    return null;
+  }
 }
 
 export function deviceClass(width: number): "mobile" | "tablet" | "desktop" {

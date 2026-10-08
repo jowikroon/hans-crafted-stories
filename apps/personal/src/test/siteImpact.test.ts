@@ -76,6 +76,50 @@ describe("evaluate", () => {
     expect(res.verdict).toBe("flat");
   });
 
+  it("adjusts for the control trend on large volumes, also with windows of different length", () => {
+    const r = rows("2026-08-04", "2026-09-29", (i) => [
+      { scope: "treated", clicks: i > 0 ? 80 : 50, impressions: 2000 },
+      { scope: "control", clicks: i > 0 ? 220 : 200, impressions: 8000 },
+    ]);
+    const res = evaluate(change({ baseline_days: 14 }), r, "2026-09-29");
+    expect(res.windows.pre.days).toBe(14);
+    expect(res.change_pct).toBe(60);
+    expect(res.control_change_pct).toBe(10);
+    expect(res.lift_pct).toBe(45.5); // 1.6 / 1.1 - 1
+    expect(res.verdict).toBe("win");
+    expect(res.confidence).toBeGreaterThan(0.99);
+  });
+
+  it("does not let a thin control group swing a count verdict", () => {
+    // Treated pages flat at 10 clicks a day; the rest of the site goes from 1 click to 6. Taken as
+    // an exact trend that sixfold rise would make the flat treated pages a confident loss.
+    const flat = rows("2026-08-04", "2026-09-29", (i) => [
+      { scope: "treated", clicks: 10, impressions: 200 },
+      { scope: "control", clicks: i === -10 || (i > 0 && i <= 6) ? 1 : 0, impressions: 50 },
+    ]);
+    const res = evaluate(change(), flat, "2026-09-29");
+    expect(res.lift_pct).toBeLessThan(-80);
+    expect(res.confidence).toBeLessThan(0.95);
+    expect(res.verdict).toBe("insufficient");
+
+    // The other way round: a thin control that drops must not turn a flat page into a win.
+    const drop = rows("2026-08-04", "2026-09-29", (i) => [
+      { scope: "treated", clicks: 10, impressions: 200 },
+      { scope: "control", clicks: (i < 0 && i >= -6) || i === 10 ? 1 : 0, impressions: 50 },
+    ]);
+    expect(["insufficient", "flat"]).toContain(evaluate(change(), drop, "2026-09-29").verdict);
+  });
+
+  it("applies the control volume gate to rates and position as well", () => {
+    // One control impression per window: CTR 0% to 100%, position 50 to 3.
+    const r = rows("2026-08-04", "2026-09-29", (i) => [
+      { scope: "treated", clicks: 5, impressions: 100, pos_impr: 800 },
+      { scope: "control", clicks: i === 3 ? 1 : 0, impressions: i === -3 || i === 3 ? 1 : 0, pos_impr: i === -3 ? 50 : i === 3 ? 3 : 0 },
+    ]);
+    expect(evaluate(change({ primary_metric: "search_ctr" }), r, "2026-09-29").verdict).toBe("insufficient");
+    expect(evaluate(change({ primary_metric: "search_position", expected: "down" }), r, "2026-09-29").verdict).toBe("insufficient");
+  });
+
   it("gives no verdict on tiny volumes, however large the swing", () => {
     const r = rows("2026-08-04", "2026-09-29", (i) => [{ scope: "treated", clicks: i === 5 ? 3 : i === -3 ? 1 : 0, impressions: 10 }]);
     const res = evaluate(change({ paths: [] }), r, "2026-09-29");
@@ -99,6 +143,15 @@ describe("evaluate", () => {
     const r = rows("2026-09-02", "2026-09-29", () => [{ scope: "treated", visits: 10 }]);
     const res = evaluate(change({ primary_metric: "visits" }), r, "2026-09-29", "2026-09-02");
     expect(res.verdict).toBe("no_baseline");
+    expect(res.status).toBe("concluded");
+  });
+
+  it("keeps a missing baseline open until the measurement window is complete", () => {
+    // A chunked backfill can still supply the baseline, so no_baseline must not conclude early.
+    const r = rows("2026-09-02", "2026-09-10", () => [{ scope: "treated", clicks: 5, impressions: 100 }]);
+    const res = evaluate(change(), r, "2026-09-10");
+    expect(res.verdict).toBe("no_baseline");
+    expect(res.status).toBe("measuring");
   });
 
   it("treats a lower position as the improvement", () => {
@@ -139,7 +192,16 @@ describe("totals and valueOf", () => {
 describe("PR parsing", () => {
   it("reads the Measure line", () => {
     expect(parseMeasure("## Measure\nMeasure: metric=search_clicks paths=/nl/interim-ecommerce-manager,/services/* expect=up days=42"))
-      .toEqual({ metric: "search_clicks", paths: ["/nl/interim-ecommerce-manager", "/services/*"], expect: "up", days: 42, baseline: null });
+      .toEqual({ metric: "search_clicks", paths: ["/nl/interim-ecommerce-manager", "/services/*"], pathsGiven: true, expect: "up", days: 42, baseline: null });
+  });
+
+  it("tells an explicit empty paths= (whole site) apart from no paths key", () => {
+    expect(parseMeasure("Measure: metric=leads paths= expect=up baseline=56"))
+      .toEqual({ metric: "leads", paths: [], pathsGiven: true, expect: "up", days: null, baseline: 56 });
+    expect(parseMeasure("Measure: metric=leads path=")?.pathsGiven).toBe(true);
+    expect(parseMeasure("Measure: metric=leads path=/nl/contact")).toMatchObject({ paths: ["/nl/contact"], pathsGiven: true });
+    expect(parseMeasure("Measure: metric=leads expect=up days=42"))
+      .toEqual({ metric: "leads", paths: [], pathsGiven: false, expect: "up", days: 42, baseline: null });
   });
 
   it("defaults position to 'down' and ignores unknown metrics and unsafe paths", () => {
@@ -183,6 +245,9 @@ describe("PR parsing", () => {
   it("activates a planned change for a referenced issue, else inserts", () => {
     const pr = { number: 7, title: "seo: money pages indexable (HAN-156)", body: "", merged_at: "2026-09-26T10:00:00Z", user: { login: "jowikroon" } };
     expect(planPr(pr, new Set(["HAN-156"]))).toEqual({ type: "activate", issues: ["HAN-156"], measure: null });
+    // The activation applies these overrides to the planned row (site-metrics syncPrs).
+    expect(planPr({ ...pr, body: "Measure: metric=search_clicks paths= baseline=56" }, new Set(["HAN-156"])))
+      .toMatchObject({ type: "activate", measure: { paths: [], pathsGiven: true, baseline: 56 } });
     expect(planPr(pr, new Set())).toMatchObject({ type: "insert", status: "logged", kind: "seo" });
     expect(planPr({ ...pr, merged_at: null }, new Set())).toEqual({ type: "skip" });
   });

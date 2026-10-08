@@ -9,6 +9,7 @@ import DashboardKpi from "@/components/dashboard/DashboardKpi";
 import EmptyWidget from "@/components/dashboard/EmptyWidget";
 import { Funnel, SERIES_1, SERIES_2, TrendChart, type Marker } from "@/components/dashboard/SiteCharts";
 import { buildInsights, label, MONEY_PAGES, type ChangeRow, type Insight, type SiteDashboard } from "@/lib/siteInsights";
+import { indexedCount } from "@/lib/indexedHeadline";
 import DashboardShell from "./DashboardShell";
 
 // The generated types predate the measurement tables (site_*, hvl_gsc_daily, ...).
@@ -113,7 +114,11 @@ export default function DashboardsHvl() {
   const logged = (d?.changes ?? []).filter((c) => c.deployed_at && !c.primary_metric);
   const planned = (d?.changes ?? []).filter((c) => !c.deployed_at);
   const issues = d?.coverage?.indexing?.data?.issues ?? [];
-  const idxTotal = d?.coverage?.indexing?.data?.total ?? null;
+  // Above the URL Inspection cap a run checks a rotating window, so checked < total: only what
+  // was inspected can count as indexed, and the figure is then a lower bound.
+  const ixData: { checked?: number; skipped?: number; total?: number } | null = d?.coverage?.indexing?.data ?? null;
+  const idx = indexedCount({ indexing_checked: ixData?.checked, indexing_skipped: ixData?.skipped, indexing_total: ixData?.total, indexing_issues: issues });
+  const idxAgo = ago(d?.coverage?.indexing?.fetched_at);
   const tracking = !!d?.quality.tracking_since;
 
   return (
@@ -162,7 +167,8 @@ export default function DashboardsHvl() {
         <DashboardKpi label="Klikken" value={nf(k.search_clicks)} current={k.search_clicks} previous={p?.search_clicks} compareLabel={cmp} />
         <DashboardKpi label="CTR" value={k.search_ctr != null ? `${nf(k.search_ctr, 2)}%` : "–"} current={k.search_ctr} previous={p?.search_ctr} compareLabel={cmp} />
         <DashboardKpi label="Gem. positie" value={nf(k.search_position, 1)} current={k.search_position} previous={p?.search_position} compareLabel={cmp} invert />
-        <DashboardKpi label="Geïndexeerd" value={idxTotal != null ? `${idxTotal - issues.length} / ${idxTotal}` : "–"} sub={`URL-inspectie, ${ago(d?.coverage?.indexing?.fetched_at)}`} />
+        <DashboardKpi label="Geïndexeerd" value={idx ? `${idx.partial ? "≥ " : ""}${nf(idx.indexed)} / ${nf(idx.total)}` : "–"}
+          sub={idx?.partial ? `URL-inspectie, ${nf(idx.checked)} van ${nf(idx.total)} gecontroleerd, ${idxAgo}` : `URL-inspectie, ${idxAgo}`} />
       </div>
 
       {/* 3. Trends with change markers */}
@@ -268,7 +274,8 @@ export default function DashboardsHvl() {
                     <td className="py-1.5 text-right tabular-nums">{nf(r.impressions)}</td>
                     <td className="py-1.5 text-right tabular-nums">{nf(r.clicks)}</td>
                     <td className="py-1.5 text-right tabular-nums">{nf(r.position, 1)}</td>
-                    <td className="py-1.5 pl-4">{issue ? <span className="text-[#8F1D13]" title={issue.coverage_state ?? ""}>niet geïndexeerd</span> : <span className="text-[#7E7A6F]">ok</span>}</td>
+                    <td className="py-1.5 pl-4">{issue ? <span className="text-[#8F1D13]" title={issue.coverage_state ?? ""}>niet geïndexeerd</span>
+                      : <span className="text-[#7E7A6F]" title={idx?.partial ? "Niet elke URL is bij de laatste controle bekeken" : undefined}>{!idx ? "–" : idx.partial ? "geen melding" : "ok"}</span>}</td>
                   </tr>);
               })}</tbody>
             </table>
@@ -331,9 +338,13 @@ export default function DashboardsHvl() {
           ) : <EmptyWidget title="Nog geen snelheidsmetingen" pipeline="first-party meting (web_vital)" />}
         </Card>
         <Card title="Indexatie">
-          {idxTotal != null ? (
+          {idx ? (
             <>
-              <p className="text-xs text-[#4B4842]"><strong className="text-[#15140F]">{idxTotal - issues.length}</strong> van {idxTotal} sitemap-URL's in Google, gecontroleerd {ago(d?.coverage?.indexing?.fetched_at)}.</p>
+              {idx.partial ? (
+                <p className="text-xs text-[#4B4842]">Minstens <strong className="text-[#15140F]">{nf(idx.indexed)}</strong> van {nf(idx.total)} sitemap-URL's in Google: de laatste controle ({idxAgo}) bekeek er {nf(idx.checked)} van de {nf(idx.total)}{idx.skipped > 0 ? `, ${nf(idx.skipped)} overgeslagen` : ""}. Niet bekeken URL's tellen niet mee als geïndexeerd.</p>
+              ) : (
+                <p className="text-xs text-[#4B4842]"><strong className="text-[#15140F]">{nf(idx.indexed)}</strong> van {nf(idx.total)} sitemap-URL's in Google, gecontroleerd {idxAgo}.</p>
+              )}
               {issues.length > 0 && (
                 <ul className="mt-2 space-y-1 text-xs">{issues.map((i) => (
                   <li key={i.url} className="flex justify-between gap-2 border-t border-[#E5DFCE]/70 pt-1">

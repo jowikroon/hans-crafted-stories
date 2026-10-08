@@ -7,16 +7,24 @@
 //   the `measure_days` full days after it. The deploy day itself is partial and left out.
 // - Treated = the pages the change touched (`paths`); control = every other page. Search
 //   metrics come from Search Console page rows, visit metrics from first-party visits.
-// - Counts (clicks, impressions, visits, leads) are compared as daily rates, adjusted for the
-//   control group's movement (difference in differences on a ratio scale), and tested with a
-//   conditional Poisson test: given the total count, is the share that fell after the deploy
-//   larger than the window lengths (and the control trend) predict?
+// - Counts (clicks, impressions, visits, leads) are compared as daily rates. With a control
+//   group: difference in differences on the rate ratio R = (treated post/pre) / (control
+//   post/pre), tested on ln R with variance 1/a + 1/b + 1/c + 1/d over the four counts (0.5 for
+//   a zero). The control trend is an estimate too, so a thin control group widens the interval
+//   instead of moving the expected treated count for free. Without a control group (the change
+//   covers the whole site, or the rest of the site has no data for the metric): a conditional
+//   Poisson test, given the total count, is the share that fell after the deploy larger than
+//   the window lengths predict?
 // - Rates (CTR, engaged rate, lead rate) use a two-proportion z-test on the change in
-//   percentage points, minus the control group's change.
+//   percentage points, minus the control group's change (whose variance is included).
 // - Position has no per-day variance in Search Console, so it uses a practical rule: a move of
 //   at least one position with at least 100 impressions in both windows.
 // - Below a minimum sample there is no verdict, only the numbers: a low-traffic site produces
-//   plenty of +200% swings that mean nothing.
+//   plenty of +200% swings that mean nothing. A control group that adjusts the result needs
+//   the same minimum volume as the treated pages.
+// - Status is "concluded" once the planned measurement window has complete data, never earlier
+//   (also not on a missing baseline: a backfill can still supply it). Search Console revises
+//   recent days, so the caller keeps recomputing concluded changes for a while.
 
 export type Metric =
   | "search_clicks" | "search_impressions" | "search_ctr" | "search_position"
@@ -163,6 +171,7 @@ const round = (n: number | null, d = 1) => (n == null || !Number.isFinite(n) ? n
 const rel = (post: number | null, pre: number | null) => (post != null && pre != null && pre > 0 ? (post / pre - 1) * 100 : null);
 
 export const MIN_COUNT = 20; // pre + post events for a count metric
+export const MIN_CONTROL_COUNT = 20; // pre + post control events before the control may adjust a count
 export const MIN_DENOM = 30; // per window, for a rate
 export const MIN_IMPR_POSITION = 100; // per window, for position
 export const POSITION_STEP = 1; // positions
@@ -195,16 +204,30 @@ export function evaluate(c: ChangeInput, rows: DailyRow[], lastDay: string, sinc
 
   if (m === "search_clicks" || m === "search_impressions" || m === "visits" || m === "leads") {
     const n1 = countOf(m, tPre), n2 = countOf(m, tPost);
-    // Control trend as a ratio of daily rates; 1 when there is no usable control.
-    const rc = cv && cv.pre && cv.post != null && cv.pre > 0 ? cv.post / cv.pre : 1;
-    lift = change == null ? null : ((1 + change / 100) / rc - 1) * 100;
+    const c1 = countOf(m, cPre), c2 = countOf(m, cPost);
     abs = tv.post != null && tv.pre != null ? tv.post - tv.pre : null;
     const n = n1 + n2;
-    enough = n >= MIN_COUNT;
-    if (n > 0 && w.post.days > 0) {
-      const p = (w.post.days * rc) / (w.pre.days + w.post.days * rc);
-      const sd = Math.sqrt(n * p * (1 - p));
-      z = sd > 0 ? (n2 - n * p) / sd : null;
+    if (cv && c1 + c2 > 0) {
+      // Difference in differences on the log rate ratio, in daily rates. All four counts are
+      // Poisson, so the control windows add variance instead of acting as an exact trend.
+      enough = n >= MIN_COUNT && c1 + c2 >= MIN_CONTROL_COUNT;
+      if (w.pre.days > 0 && w.post.days > 0) {
+        const k = (x: number) => (x > 0 ? x : 0.5);
+        const ratio = (pre: number, post: number) => (k(post) / w.post.days) / (k(pre) / w.pre.days);
+        const R = ratio(n1, n2) / ratio(c1, c2);
+        z = Math.log(R) / Math.sqrt(1 / k(n1) + 1 / k(n2) + 1 / k(c1) + 1 / k(c2));
+        // The 0.5 stand-in only feeds the test: a headline lift needs four observed counts.
+        lift = Math.min(n1, n2, c1, c2) > 0 ? (R - 1) * 100 : null;
+      }
+    } else {
+      // No control group: conditional Poisson test on the share of the total after the deploy.
+      enough = n >= MIN_COUNT;
+      lift = change;
+      if (n > 0 && w.post.days > 0) {
+        const p = w.post.days / (w.pre.days + w.post.days);
+        const sd = Math.sqrt(n * p * (1 - p));
+        z = sd > 0 ? (n2 - n * p) / sd : null;
+      }
     }
   } else if (m === "search_ctr" || m === "engaged_rate" || m === "lead_rate") {
     const [x1, d1] = propOf(m, tPre), [x2, d2] = propOf(m, tPost);
@@ -216,6 +239,7 @@ export function evaluate(c: ChangeInput, rows: DailyRow[], lastDay: string, sinc
       if (cv) {
         const [y1, e1] = propOf(m, cPre), [y2, e2] = propOf(m, cPost);
         if (e1 > 0 && e2 > 0) {
+          enough = enough && e1 >= MIN_DENOM && e2 >= MIN_DENOM;
           const q1 = y1 / e1, q2 = y2 / e2;
           diff -= q2 - q1;
           v += (q1 * (1 - q1)) / e1 + (q2 * (1 - q2)) / e2;
@@ -232,14 +256,18 @@ export function evaluate(c: ChangeInput, rows: DailyRow[], lastDay: string, sinc
     enough = tPre.impressions >= MIN_IMPR_POSITION && tPost.impressions >= MIN_IMPR_POSITION;
     if (tv.pre != null && tv.post != null) {
       let move = tv.post - tv.pre;
-      if (cv && cv.pre != null && cv.post != null) move -= cv.post - cv.pre;
+      if (cv && cv.pre != null && cv.post != null) {
+        move -= cv.post - cv.pre;
+        enough = enough && cPre.impressions >= MIN_IMPR_POSITION && cPost.impressions >= MIN_IMPR_POSITION;
+      }
       abs = move;
       lift = tv.pre > 0 ? (-move / tv.pre) * 100 : null;
     }
   }
 
   const confidence = z == null ? null : confidenceOf(z);
-  const wentUp = m === "search_position" ? (abs ?? 0) > 0 : (lift ?? abs ?? 0) > 0;
+  // Without a headline lift (a zero count) the direction follows the test itself.
+  const wentUp = m === "search_position" ? (abs ?? 0) > 0 : (lift ?? z ?? abs ?? 0) > 0;
   const good = c.expected === "up" ? wentUp : !wentUp;
   const significant = m === "search_position"
     ? Math.abs(abs ?? 0) >= POSITION_STEP
@@ -281,7 +309,7 @@ export function evaluate(c: ChangeInput, rows: DailyRow[], lastDay: string, sinc
     z: round(z, 2),
     confidence: round(confidence, 3),
     verdict,
-    status: w.complete || verdict === "no_baseline" ? "concluded" : "measuring",
+    status: w.complete ? "concluded" : "measuring",
     note,
     snapshot,
     computed_at: now.toISOString(),
