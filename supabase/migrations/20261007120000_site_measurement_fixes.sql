@@ -1,11 +1,12 @@
 -- Site measurement fixes after the review of PR #371.
 --
--- Applied to production (pesfakewujjwkyybwaom) on 2026-10-08. Idempotent, and it removes no object,
+-- Applied to production (pesfakewujjwkyybwaom) on 2026-10-09. Idempotent, and it removes no object,
 -- so it can be re-run safely.
 --
 --   hvl_analytics_cache     the key/value cache the dashboard and the site-metrics, analytics-ga4-gsc
---                           functions read and write. It was created by hand in production and never
---                           committed, so a fresh project failed with a missing relation. Same schema
+--                           functions read and write. Production got it from migration
+--                           create_hvl_analytics_cache (2026-06-08), which was never committed here, so a
+--                           fresh project failed with a missing relation. Same schema
 --                           and RLS as the production object; reading is now limited to admins (it was
 --                           any signed-in account, and the cache holds CCP Channable and dashboard data).
 --                           Every reader in the app is an admin screen (/write) or a service-role function.
