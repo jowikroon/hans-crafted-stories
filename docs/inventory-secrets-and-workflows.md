@@ -12,7 +12,7 @@
 | **Webhook relay** | `supabase/functions/trigger-webhook/index.ts` | Auth: `X-COMMANDER-TOKEN` must match `COMMANDER_WEBHOOK_TOKEN` (ENV); 401 if invalid. Backward compat if token not set. |
 | **n8n API usage** | `scripts/n8n-add-credentials.cjs` | Uses `N8N_BASE_URL`/`N8N_URL`, `N8N_API_KEY`, `X-N8N-API-KEY`, `/api/v1`. Log redaction via `scripts/lib/redact.cjs`. |
 | **Credentials source** | `config/all-credentials.export.env.example` | Defines N8N_*, SUPABASE_*, ANTHROPIC_*, OPENAI_*, MONDAY_*, N8N_ENCRYPTION_KEY, COMMANDER_WEBHOOK_TOKEN, VAULT_*. Real file gitignored. |
-| **Docker / env** | `public/empire/docker-compose.yml`, `.env.example` | MCP gateway, Loki, Promtail, Grafana, **vault-adapter** (port 4000). Default Grafana password `empire2024` (override via GRAFANA_PASSWORD). |
+| **Docker / env** | `public/empire/docker-compose.yml`, `.env.example` | MCP gateway, Loki, Promtail, Grafana, **vault-adapter** (port 4000). A hardcoded default Grafana password (override via GRAFANA_PASSWORD). *Status 2026-10-07: the compose file was removed on 2026-03-14 (commit `ebaea46`) and the Docker MCP Gateway (port 3100) was retired on 2026-08-19; see `ops/mcp/registry.json`.* |
 | **Workflow config** | `src/lib/config/workflows.ts`, `supabase/functions/_shared/workflows.ts` | Centralized `N8N_BASE` and webhook paths. No secrets. |
 | **CI** | `.github/workflows/ci.yml` | Uses GitHub secrets `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. No secrets in logs. |
 | **Docs** | `docs/n8n-credentials-setup.md`, `docs/empire-n8n-flow.md` | N8N_ENCRYPTION_KEY documented. No runbooks folder. |
@@ -43,7 +43,7 @@
 | **Monday.com** | Edge functions, n8n nodes | `MONDAY_API_TOKEN` |
 | **GitHub** | CI secrets | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (Actions secrets) |
 | **Ollama** | `public/workflows/install-ai-brain.sh` (VPS 2) | No API key (local); firewall-restricted to VPS 1 |
-| **MCP Gateway** | `public/empire/docker-compose.yml` | `SUPABASE_URL`, `SUPABASE_KEY` (via env) |
+| **MCP Gateway** (retired 2026-08-19) | `public/empire/docker-compose.yml` (removed 2026-03-14) | `SUPABASE_URL`, `SUPABASE_KEY` (via env). Historical: the Docker MCP Gateway runs nowhere. |
 | **n8n API** | `scripts/n8n-add-credentials.js` | `N8N_BASE_URL`, `N8N_API_KEY` |
 
 ---
@@ -53,7 +53,7 @@
 1. **trigger-webhook has no auth** — any caller can proxy to any URL via the Supabase edge function.
 2. **seo-audit-workflow.json contains instance-specific credential IDs** — not portable; should use placeholders.
 3. **n8n-add-credentials.js may log API key** — needs redaction.
-4. **Grafana default password** in docker-compose (`empire2024`).
+4. **Grafana default password** in docker-compose (literal default). *(obsolete: file removed 2026-03-14, commit `ebaea46`)*
 5. **N8N_ENCRYPTION_KEY not in env example** — must be added.
 6. **No COMMANDER_WEBHOOK_TOKEN** defined anywhere yet.
 7. **No vault or external secrets store** — all secrets live in flat env files.

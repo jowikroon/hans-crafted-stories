@@ -3,6 +3,12 @@
 > **Hans van Leeuwen | marketplacegrowth.nl**
 > Updated: 2026-03-08 | Version 2.0
 > Previous audit: 2026-03-07 v1.0
+>
+> **Status note 2026-10-07:** this document is a snapshot of 2026-03-08 and is kept as history.
+> The n8n Cloud instance and its `n8n-cloud` MCP (`hansvanleeuwen.app.n8n.cloud`, 404 on `/`,
+> `/healthz` and `/mcp-server/http`) were retired on 2026-08-19; n8n runs self-hosted on VPS1
+> only. The current MCP picture, with a status per server, lives in
+> [`docs/mcp-registry.md`](./mcp-registry.md) and `ops/mcp/registry.json`.
 
 ---
 
@@ -337,7 +343,7 @@ Claude Code CLI (VPS1)
        │
        ├──► /root/.claude.json
        │    ├── n8n-hostinger (X-N8N-API-KEY header)
-       │    └── n8n-cloud (X-N8N-API-KEY header)
+       │    └── n8n-cloud (X-N8N-API-KEY header) [retired 2026-08-19]
        │
        └──► tmux session: hansai
             └── Persistent workspace at /opt/hansai/
@@ -361,7 +367,7 @@ Claude Code CLI (VPS1)
 
 **God Structure dashboard** committed to GitHub (commit `96aa700`) with full React visualization.
 
-**Infrastructure services registered.** 9 services catalogued in the `infrastructure_services` table: n8n (Hostinger), n8n (secondary), Traefik, AnythingLLM, Qdrant, Ollama, n8n Cloud, Supabase, Vercel, and Cloudflare Workers.
+**Infrastructure services registered.** 9 services catalogued in the `infrastructure_services` table: n8n (Hostinger), Traefik, AnythingLLM, Qdrant, Ollama, n8n Cloud (retired 2026-08-19), Supabase, Vercel, and Cloudflare Workers.
 
 ---
 

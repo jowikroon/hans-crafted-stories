@@ -70,7 +70,7 @@ No dedicated `/n8n/templates/` folder exists. The workflow JSON files in `n8n/wo
 
 | File | Purpose |
 |------|---------|
-| `public/empire/docker-compose.yml` | MCP Gateway, Loki, Promtail, Grafana, **vault-adapter** (port 4000). **No n8n service** — n8n runs on the VPS itself. |
+| `public/empire/docker-compose.yml` | Removed on 2026-03-14 (commit `ebaea46`). Defined: MCP Gateway (port 3100, retired 2026-08-19, see `ops/mcp/registry.json`), Loki, Promtail, Grafana, **vault-adapter** (port 4000). **No n8n service**: n8n runs on the VPS itself. |
 | `.env.example` | Frontend placeholders: `VITE_SUPABASE_*`, `CLOUDFLARE_*`, `VITE_ADMIN_EMAILS`. No N8N_* or COMMANDER_* here. |
 | `.env.development` | Supabase project ID + URL (non-secret; Supabase project URL is public). Committed. |
 | `.env.production` | Same as above for production. Committed (anon key placeholder). |
@@ -102,7 +102,7 @@ No dedicated `/n8n/templates/` folder exists. The workflow JSON files in `n8n/wo
 
 ### How n8n is started
 
-n8n runs **self-hosted on VPS1** (`https://n8n.srv1402218.hstgr.cloud`), not from the repo's docker-compose. It is provisioned separately (via the VPS setup scripts or manually). The former n8n Cloud instance was retired on 2026-08-19. The public compose file (`public/empire/docker-compose.yml`) manages the observability stack and vault adapter only.
+n8n runs **self-hosted on VPS1** (`https://n8n.srv1402218.hstgr.cloud`), not from the repo's docker-compose. It is provisioned separately (via the VPS setup scripts or manually). The former n8n Cloud instance was retired on 2026-08-19. The public compose file (`public/empire/docker-compose.yml`) used to manage the observability stack, the vault adapter and the (now retired) Docker MCP Gateway; it was removed from the repo on 2026-03-14 (commit `ebaea46`).
 
 One URL serves both roles:
 - **Admin UI / API and public webhooks:** `https://n8n.srv1402218.hstgr.cloud`
@@ -121,7 +121,7 @@ One URL serves both roles:
 |----------|----------------------|-------|
 | **`config/all-credentials.export.env`** | Flat env file (gitignored) | Loaded by Commander and n8n-add-credentials via `dotenv -e config/...`. Primary secret source for local dev and VPS. |
 | **Server ENV** | Docker `-e` flags or VPS `.env` file | `N8N_ENCRYPTION_KEY` must be set in n8n's own server ENV. |
-| **`public/empire/docker-compose.yml`** | `environment:` block with `${VAR}` interpolation | Passes `VAULT_MASTER_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`, `GRAFANA_PASSWORD` into containers at runtime. |
+| **`public/empire/docker-compose.yml`** | `environment:` block with `${VAR}` interpolation | Passes `VAULT_MASTER_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`, `GRAFANA_PASSWORD` into containers at runtime. *(obsolete: file removed 2026-03-14, commit `ebaea46`)* |
 | **Vault adapter** | AES-256-GCM encrypted file at `/mnt/data/secrets.vault` | HTTP API at port 4000. Master key from `VAULT_MASTER_KEY` ENV. Returns existence only, never values. |
 | **n8n credential store** | n8n's internal encrypted store (`N8N_ENCRYPTION_KEY`) | Credentials added once via UI or script; referenced by name/type in workflow JSON. |
 | **Supabase edge function secrets** | Supabase project secrets panel | `COMMANDER_WEBHOOK_TOKEN` must be set here for `trigger-webhook` to authenticate. |
@@ -137,11 +137,11 @@ One URL serves both roles:
 | # | File | Line(s) | Severity | Finding |
 |---|------|---------|----------|---------|
 | F-01 | `supabase/functions/trigger-webhook/index.ts` | 9–11 | **HIGH** | `verifyCommanderToken()` returns `true` when `COMMANDER_WEBHOOK_TOKEN` is not set in Supabase secrets (`if (!expected) return true`). This means the webhook proxy is fully unauthenticated on any deployment where the secret has not yet been provisioned. Any caller can proxy arbitrary POST requests to any URL. **Mitigation (Gate 6):** Change to fail-closed: if `expected` is empty/null, return `false` (deny). |
-| F-02 | `public/empire/docker-compose.yml` | 79 | **MEDIUM** | Default Grafana admin password hardcoded as fallback: `${GRAFANA_PASSWORD:-empire2024}`. The string `empire2024` is committed in the repo. If `GRAFANA_PASSWORD` is not set, Grafana starts with this known-public password. **Mitigation:** Require `GRAFANA_PASSWORD` to be set; do not provide a default, or use a random-generated placeholder that fails clearly. |
+| F-02 | `public/empire/docker-compose.yml` | 79 | **MEDIUM** | Default Grafana admin password hardcoded as fallback: `${GRAFANA_PASSWORD:-<default>}`. A literal default string was committed in the repo. If `GRAFANA_PASSWORD` is not set, Grafana starts with this known-public password. **Mitigation:** Require `GRAFANA_PASSWORD` to be set; do not provide a default, or use a random-generated placeholder that fails clearly. *(obsolete: file removed 2026-03-14, commit `ebaea46`)* |
 | F-03 | `public/workflows/seo-audit-workflow.json` | 61, 86, 220, 250 | **INFO** | Credential nodes reference `id: "REPLACE_WITH_YOUR_CREDENTIAL_ID"`. This is the correct export pattern (no real IDs). Confirmed no secret values present. |
 | F-04 | `public/workflows/product-title-optimizer.json` | 72, 114, 156 | **INFO** | Same placeholder pattern as F-03. Correct. |
 | F-05 | `supabase/functions/trigger-webhook/index.ts` | 42 | **LOW** | `console.log("Triggering webhook:", webhook_url)` — if a webhook URL ever contains a token or API key as a query parameter, it would be logged in plain text. Current usage does not include tokens in URLs. **Mitigation (Gate 6):** Wrap with redact middleware before logging URLs. |
-| F-06 | `public/empire/docker-compose.yml` | 20 | **INFO** | `N8N_URL=https://n8n.srv1402218.hstgr.cloud` hardcoded in compose. This is a non-secret URL, but it couples the compose file to a specific hostname. Consider using `${N8N_URL}` with a documented default. |
+| F-06 | `public/empire/docker-compose.yml` | 20 | **INFO** | `N8N_URL=https://n8n.srv1402218.hstgr.cloud` hardcoded in compose. This is a non-secret URL, but it couples the compose file to a specific hostname. Consider using `${N8N_URL}` with a documented default. *(obsolete: file removed 2026-03-14, commit `ebaea46`)* |
 | F-07 | `scripts/n8n-add-credentials.js` | 109–110 | **LOW** | When creating OpenAI credentials, the script sets `headerValue: \`Bearer ${openAiKey}\`` inline in the credential object. This is sent to the n8n API (HTTPS), not logged. Redact middleware (`scripts/lib/redact.cjs`) should be imported to guard `console.log` calls in this file. |
 
 **Scan result:** No literal `sk-`, `ghp_`, `xoxb-`, `AKIA[A-Z0-9]{16}`, or bare Bearer token strings found anywhere in tracked source files. The only `Bearer` strings in docs are instructional (e.g., `Authorization: Bearer YOUR_TOKEN`).
@@ -190,7 +190,7 @@ All secrets are declared in `n8n/secrets.manifest.yml`. Summary:
 |---|------|-----------|--------|------------|
 | R-01 | **Webhook proxy fail-open** (`trigger-webhook` returns `true` when token unset) | High (unset on new deploy) | High (SSRF / unauthenticated proxy to any URL) | Gate 6: change `verifyCommanderToken` to fail-closed; require `COMMANDER_WEBHOOK_TOKEN` in Supabase secrets before deploy |
 | R-02 | **Secrets in logs** (any script that logs env vars or HTTP responses) | Medium | Medium | `scripts/lib/redact.cjs` covers `API_KEY`, `TOKEN`, `SECRET`, `PASSWORD` patterns; Gate 6: extend to URLs with query params and `Authorization` header values; ensure all scripts import redact |
-| R-03 | **Grafana default password committed** (`empire2024`) | High (shipped by default) | Medium (Grafana admin access) | Gate 6: remove default from docker-compose; require explicit `GRAFANA_PASSWORD` or generate at startup; document in runbook |
+| R-03 | **Grafana default password committed** (literal default) | High (shipped by default) | Medium (Grafana admin access) | Gate 6: remove default from docker-compose; require explicit `GRAFANA_PASSWORD` or generate at startup; document in runbook *(obsolete: file removed 2026-03-14, commit `ebaea46`)* |
 | R-04 | **N8N_ENCRYPTION_KEY loss** | Low (stable infra) | Critical (all n8n credentials unreadable) | Set once and back up securely offline; documented in `docs/runbooks/missing-secrets.md`; never rotate unless re-creating all credentials |
 | R-05 | **Bootstrap chicken-and-egg** (Commander needs `COMMANDER_WEBHOOK_TOKEN` + `N8N_API_KEY` to run) | Medium (new install) | Medium (system won't start) | Document minimal bootstrap checklist; provide `commander secrets:plan` (dry-run) that can run with only `N8N_BASE_URL` to show what's missing |
 | R-06 | **Workflow JSON re-export with real credential IDs** | Low (manual error) | Low (credential ID exposure, not value) | Gate 6: add git pre-commit hook that scans workflow JSON for non-placeholder credential IDs; document "always use placeholder on export" |

@@ -150,7 +150,7 @@ For each interface we list: **how it works**, **what it does**, **who it talks t
 |-------|--------|
 | **Where** | **/empire** page → “Empire Commander” / Claude panel. |
 | **How it works** | User types; message + **Empire Commander** system prompt (and optional context from empireCategories) sent to **n8n-agent**. Non-streaming. |
-| **What it does** | Ops-focused AI: n8n, Cloudflare, VPS, Docker MCP, Supabase, Claude CLI. Diagnose, give commands, workflow JSON, markdown. |
+| **What it does** | Ops-focused AI: n8n, Cloudflare, VPS, Docker MCP, Supabase, Claude CLI. Diagnose, give commands, workflow JSON, markdown. Note 2026-10-07: the Docker MCP Gateway in this prompt was retired on 2026-08-19 and runs nowhere; see `ops/mcp/registry.json`. |
 | **Who it talks to** | **n8n-agent** (Supabase) → Lovable AI gateway. |
 | **Successful at** | Infrastructure and workflow troubleshooting; exact commands and step-by-step fixes; Empire context. |
 

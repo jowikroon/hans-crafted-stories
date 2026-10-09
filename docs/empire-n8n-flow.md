@@ -132,13 +132,13 @@ Three pages serve as the command surface for triggering N8N automations.
 
 - **File:** `supabase/functions/empire-health/index.ts`
 - **Checks (in parallel):**
-  - Shield — `https://cloudflare.com/cdn-cgi/trace`
-  - Portal — `https://hansvanleeuwen.com`
-  - Brain — `https://n8n.srv1402218.hstgr.cloud/healthz`
-  - Memory — Supabase REST API
-  - Immune — Edge Functions (`site-audit`)
-  - Muscle — Claude Code CLI (manual status)
-  - Senses — MCP Gateway (manual status)
+  - Shield: `https://cloudflare.com/cdn-cgi/trace`
+  - Portal: `https://hansvanleeuwen.com`
+  - Brain: `https://n8n.srv1402218.hstgr.cloud/healthz`
+  - Memory: Supabase REST API
+  - Immune: Edge Functions (`site-audit`)
+  - Muscle: Claude Code CLI (manual status)
+  - Senses: MCP Gateway (manual status). Note 2026-10-07: the Docker MCP Gateway (port 3100) was retired on 2026-08-19 and runs nowhere. `empire-health` never probed it (this was a manual status in the UI only); see `ops/mcp/registry.json`.
 - **Logs:** Results to `empire_events` table with service count
 
 ### 2C. `n8n-agent` — AI Workflow Builder
@@ -153,7 +153,7 @@ Three pages serve as the command surface for triggering N8N automations.
 - **File:** `supabase/functions/hansai-chat/index.ts`
 - **Model:** `google/gemini-3-flash-preview` via Lovable Gateway (configurable)
 - **Purpose:** General AI assistant with Empire infrastructure context
-- **System prompt includes:** N8N workflows, Cloudflare Workers, VPS servers, Docker MCP Gateway, Supabase, Claude Code CLI
+- **System prompt includes:** N8N workflows, Cloudflare Workers, VPS servers, Docker MCP Gateway, Supabase, Claude Code CLI. The Docker MCP Gateway mention is stale: it was retired on 2026-08-19 (open runtime cleanup, tracked in `ops/mcp/registry.json` under `retired[docker-mcp-gateway].stillReferencedIn`).
 - **Returns:** Server-Sent Events stream
 
 ### 2E. `portal-api` — Tool CRUD
@@ -255,7 +255,7 @@ All workflows are hosted at `https://n8n.srv1402218.hstgr.cloud` (self-hosted on
 | **Primary VPS** | `srv1402218.hstgr.cloud` (187.124.1.75) — hosts N8N, Claude Code CLI in tmux "hansai" |
 | **Secondary VPS** | `srv1411336.hstgr.cloud` (187.124.2.66) — SSH alias "industrial", Ed25519 key auth |
 | **Cloudflare** | Zero Trust, 5 Workers (including `n8n-relay-proxy`), DNS, Tunnels for SSH |
-| **Docker Stack** | MCP Gateway (port 3100), Loki (3101), Promtail, Grafana (3000) |
+| **Docker Stack** | MCP Gateway (port 3100, retired 2026-08-19, never seen in any heartbeat), Loki (3101), Promtail, Grafana (3000). The compose file that defined this stack (`public/empire/docker-compose.yml`) was removed on 2026-03-14 (commit `ebaea46`). |
 | **Supabase** | Project `oejeojzaakfhculcoqdh`, Edge Functions with `verify_jwt = false` |
 
 ---

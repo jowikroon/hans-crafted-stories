@@ -6,14 +6,16 @@
  *   1. staat elke repo-server in .mcp.json?
  *   2. start elke repo-server echt, en levert hij de verwachte tools? (echte MCP-handshake)
  *   3. reageert elk HTTP-endpoint zoals de registry verwacht?
+ *      200 = "ok"; een verwachte 401/403 uit expectUnauthenticated = "alive (auth required)":
+ *      het endpoint leeft en dwingt auth af. Beide tellen als gezond (geen drift, heartbeat "up").
  * Daarnaast leest hij de lokale client-registries (~/.claude.json) zodat zichtbaar wordt
  * wat dít device kent, en waarschuwt hij als een afgevoerde server weer als default opduikt.
  *
  * Gebruik:
- *   npm run mcp:audit                 — leesbare rapportage, exit 1 bij drift
- *   npm run mcp:audit -- --json       — machineleesbaar
- *   npm run mcp:audit -- --device=pi5 — forceer een device-id uit de registry
- *   npm run mcp:audit -- --report     — schrijf het resultaat als heartbeat naar Supabase,
+ *   npm run mcp:audit                 : leesbare rapportage, exit 1 bij drift
+ *   npm run mcp:audit -- --json       : machineleesbaar
+ *   npm run mcp:audit -- --device=pi5 : forceer een device-id uit de registry
+ *   npm run mcp:audit -- --report     : schrijf het resultaat als heartbeat naar Supabase,
  *                                       zodat de andere devices het ook zien
  *
  * --report heeft SUPABASE_URL + SUPABASE_SERVICE_KEY (of SUPABASE_KEY) in de omgeving nodig
@@ -55,13 +57,21 @@ function detectDevice() {
 
 const device = detectDevice();
 
-// Op een device dat de registry niet kent, vervalt `requiredOn` — dan zou de audit
+// Op een device dat de registry niet kent, vervalt `requiredOn`; dan zou de audit
 // nooit drift zien. Daarom geldt daar de ondergrens: wie een repo-checkout heeft,
 // hoort de repo-servers te kunnen draaien.
+// Een server met registry-status "planned" is nog niet aangesloten en is dus nergens drift;
+// "retired" hoort in de `retired`-lijst, maar telt ook in `servers` nooit als drift.
 const expectedHere = (server) => {
+  if (server.status === "planned" || server.status === "retired") return false;
   if (device.unknown) return server.scope === "repo";
   return Array.isArray(server.requiredOn) && server.requiredOn.includes(device.id);
 };
+
+// Statussen die "gezond" betekenen: tellen niet als drift en publiceren als "up".
+const AUTH_REQUIRED = "alive (auth required)";
+const HEALTHY = new Set(["ok", AUTH_REQUIRED]);
+const NOT_DRIFT = new Set([...HEALTHY, "n.v.t.", "handmatig"]);
 
 /* ── 1. registratie in .mcp.json ─────────────────────────────────────────── */
 
@@ -236,7 +246,15 @@ const results = [];
 
 for (const server of registry.servers) {
   const required = expectedHere(server);
-  const row = { id: server.id, label: server.label, transport: server.transport, scope: server.scope, required };
+  const row = {
+    id: server.id,
+    label: server.label,
+    transport: server.transport,
+    scope: server.scope,
+    required,
+    registryStatus: server.status ?? null,
+    lastVerified: server.lastVerified ?? null,
+  };
 
   if (server.transport === "stdio") {
     row.registered = projectServers !== null && Object.hasOwn(projectServers, server.id);
@@ -247,7 +265,7 @@ for (const server of registry.servers) {
       const hs = await handshakeStdio(server);
       if (!hs.ok) {
         row.status = "stuk";
-        row.detail = hs.stderr ? `${hs.error} — ${hs.stderr}` : hs.error;
+        row.detail = hs.stderr ? `${hs.error}: ${hs.stderr}` : hs.error;
       } else {
         const missing = (server.expectedTools ?? []).filter((t) => !hs.tools.includes(t));
         row.tools = hs.tools.length;
@@ -265,12 +283,16 @@ for (const server of registry.servers) {
     if (probe.status === null) {
       row.status = "onbereikbaar";
       row.detail = probe.error;
-    } else if (probe.status === 200 || expect.includes(probe.status)) {
+    } else if (probe.status === 200) {
       row.status = "ok";
-      row.detail = `HTTP ${probe.status}${expect.includes(probe.status) && probe.status !== 200 ? " (auth vereist, endpoint leeft)" : ""}`;
+      row.detail = "HTTP 200";
+    } else if (expect.includes(probe.status)) {
+      row.status = AUTH_REQUIRED;
+      row.authRequired = true;
+      row.detail = `HTTP ${probe.status}, endpoint leeft en vraagt ${server.auth ?? "auth"}`;
     } else {
       row.status = "afwezig";
-      row.detail = `HTTP ${probe.status}, verwacht ${expect.join("/")} of 200`;
+      row.detail = `HTTP ${probe.status}, verwacht ${[...new Set([200, ...expect])].join(" of ")}`;
     }
   } else {
     row.status = "handmatig";
@@ -285,9 +307,18 @@ for (const server of registry.servers) {
 }
 
 const reintroduced = retiredStillDefault();
-const drift = results.filter(
-  (r) => r.required && !["ok", "n.v.t.", "handmatig"].includes(r.status),
+const drift = results.filter((r) => r.required && !NOT_DRIFT.has(r.status));
+
+// Registry zegt live of needs-auth, maar de probe vindt niets: alleen een waarschuwing,
+// telt niet mee in de exitcode (die blijft drift + teruggekeerde afgevoerde servers).
+const statusMismatch = results.filter(
+  (r) => ["live", "needs-auth"].includes(r.registryStatus) && !NOT_DRIFT.has(r.status),
 );
+// Een status buiten de legenda (tikfout, of een server zonder status) is ook alleen een waarschuwing.
+// Een v1-registry (zonder statusLegend) kent nog geen status en wordt hier niet op afgerekend.
+const knownStatuses = Object.keys(registry.statusLegend ?? {});
+const unknownStatus = registry.statusLegend ? results.filter((r) => !knownStatuses.includes(r.registryStatus)) : [];
+for (const r of results) r.healthy = HEALTHY.has(r.status);
 
 const report = {
   device: { id: device.id, label: device.label, hostname: hostname(), unknownToRegistry: device.unknown === true },
@@ -296,27 +327,43 @@ const report = {
   servers: results,
   localRegistry: { sources: local.sources, known: local.known.length, needsAuth: local.needsAuth },
   retiredReintroduced: reintroduced,
+  retired: (registry.retired ?? []).map((r) => ({ id: r.id, retiredOn: r.retiredOn ?? null })),
+  statusMismatch: statusMismatch.map((r) => ({ id: r.id, registryStatus: r.registryStatus, status: r.status })),
+  unknownRegistryStatus: unknownStatus.map((r) => ({ id: r.id, registryStatus: r.registryStatus })),
   driftCount: drift.length,
 };
 
 if (asJson) {
   console.log(JSON.stringify(report, null, 2));
 } else {
-  const icon = { ok: "✓", "n.v.t.": "·", handmatig: "·" };
-  console.log(`\nMCP-audit — device: ${device.label}${device.unknown ? "" : ` (${device.id})`}`);
+  const icon = { ok: "✓", [AUTH_REQUIRED]: "✓", "n.v.t.": "·", handmatig: "·" };
+  console.log(`\nMCP-audit, device: ${device.label}${device.unknown ? "" : ` (${device.id})`}`);
   if (device.unknown) {
     console.log("  → dit device staat niet in ops/mcp/registry.json. Voeg het daar toe, of draai met --device=<id>.");
   }
   console.log(`registry v${registry.version} · ${report.checkedAt}\n`);
   const pad = (s, n) => String(s).padEnd(n);
-  console.log(`${pad("SERVER", 24)}${pad("HIER NODIG", 12)}${pad("STATUS", 20)}DETAIL`);
-  console.log("-".repeat(100));
+  console.log(`${pad("SERVER", 24)}${pad("REGISTRY", 12)}${pad("HIER NODIG", 12)}${pad("STATUS", 26)}DETAIL`);
+  console.log("-".repeat(120));
   for (const r of results) {
     console.log(
-      `${pad(r.id, 24)}${pad(r.required ? "ja" : "nee", 12)}${pad(`${icon[r.status] ?? "✗"} ${r.status}`, 20)}${r.detail ?? ""}`,
+      `${pad(r.id, 24)}${pad(r.registryStatus ?? "-", 12)}${pad(r.required ? "ja" : "nee", 12)}${pad(`${icon[r.status] ?? "✗"} ${r.status}`, 26)}${r.detail ?? ""}`,
     );
   }
   console.log("");
+  const healthy = results.filter((r) => r.healthy);
+  const authOnly = healthy.filter((r) => r.status === AUTH_REQUIRED).length;
+  console.log(
+    `Gezond: ${healthy.length} van ${results.length} (${healthy.length - authOnly} ok, ${authOnly} alive (auth required)); ` +
+      `handmatig: ${results.filter((r) => r.status === "handmatig").length}; ` +
+      `afgevoerd in registry: ${report.retired.map((r) => (r.retiredOn ? `${r.id} (${r.retiredOn})` : r.id)).join(", ") || "geen"}`,
+  );
+  for (const r of statusMismatch) {
+    console.log(`! registry zegt ${r.registryStatus} voor ${r.id}, maar de audit ziet: ${r.status}. Werk status/lastVerified bij.`);
+  }
+  for (const r of unknownStatus) {
+    console.log(`! ${r.id} heeft geen geldige registry-status (${r.registryStatus ?? "leeg"}); kies uit ${knownStatuses.join(", ")}.`);
+  }
   if (local.sources.length) {
     console.log(`Lokale registry (${local.sources.join(", ")}): ${local.known.length} server(s) bekend` + (local.needsAuth.length ? `, zonder auth: ${local.needsAuth.join(", ")}` : ""));
   }
@@ -334,13 +381,23 @@ if (doReport) {
   if (!url || !key) {
     console.error("\n--report overgeslagen: SUPABASE_URL en SUPABASE_SERVICE_KEY zijn niet gezet.");
   } else {
+    // "handmatig" (client-beheerd, niet gemeten) is geen meting en dus ook geen "down".
     const rows = results
-      .filter((r) => r.status !== "n.v.t.")
+      .filter((r) => r.status !== "n.v.t." && r.status !== "handmatig")
       .map((r) => ({
         host: device.heartbeatHost ?? device.id,
         service: `mcp:${r.id}`,
-        status: r.status === "ok" ? "up" : "down",
-        detail: { transport: r.transport, scope: r.scope, required: r.required, note: r.detail ?? null, knownLocally: r.knownLocally },
+        status: HEALTHY.has(r.status) ? "up" : "down",
+        detail: {
+          transport: r.transport,
+          scope: r.scope,
+          required: r.required,
+          auditStatus: r.status,
+          registryStatus: r.registryStatus,
+          authRequired: r.authRequired === true,
+          note: r.detail ?? null,
+          knownLocally: r.knownLocally,
+        },
         reported_at: report.checkedAt,
       }));
     const res = await fetch(`${url}/rest/v1/infra_service_heartbeats`, {
