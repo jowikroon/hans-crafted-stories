@@ -120,7 +120,9 @@ export function decodeJsxText(raw: string): Decoded {
   }
   lines.push({ text: raw.slice(last), start: last });
 
-  let lastNonEmpty = -1;
+  // 0, not -1 (as in Babel): a whitespace-only single-line run such as the
+  // " " in `{a} <em>b</em>` must not get a joining space appended.
+  let lastNonEmpty = 0;
   lines.forEach((ln, idx) => {
     if (/[^ \t]/.test(ln.text)) lastNonEmpty = idx;
   });
