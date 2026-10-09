@@ -319,7 +319,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
       heading: "Driving marketplace growth through",
       headingEmphasis: "strategy",
-      freelanceH2: "Grow Amazon NL & Bol.com revenue with a hands-on interim marketplace lead",
+      freelanceH2: "Strategy, operations and AI automation for scalable marketplace growth.",
       description:
         "I'm Hans van Leeuwen, a freelance e-commerce and marketplace manager based in Amersfoort. After ten years growing Amazon and Bol.com revenue for brands, I know where marketplace growth actually comes from: sharp listings, disciplined ads, and reliable operations. I help brands across the Netherlands and EU turn their digital channels into revenue engines.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
@@ -661,7 +661,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       subtitle: "Freelance E-commerce Manager · Amazon & Bol.com Specialist",
       heading: "Marktplaatsgroei realiseren door",
       headingEmphasis: "strategie",
-      freelanceH2: "Groei Amazon NL & Bol.com omzet met een hands-on interim marktplaatsmanager",
+      freelanceH2: "Strategie, operations en AI-automatisering voor schaalbare marketplace groei.",
       description:
         "Laat je omzet op Amazon NL & Bol.com groeien met een ervaren interim marketplace manager. Ik ben Hans van Leeuwen, freelance e-commerce en marketplace specialist gevestigd in Amersfoort. Na tien jaar omzetgroei op Amazon en Bol.com voor diverse merken, weet ik exact hoe je marktplaatsen omzet in winstgevende groeikanalen: strakke productlistings, scherpe advertenties en betrouwbare operations.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
