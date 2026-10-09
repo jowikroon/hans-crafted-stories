@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
-import { currentVisitId, track } from "@/lib/siteTracker";
+import { track } from "@/lib/siteTracker";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Required").max(100),
@@ -73,9 +73,11 @@ const ContactForm = () => {
     }
 
     setLoading(true);
+    // No visit id here on purpose: the site does not link a message to the visit statistics.
+    // Time and page are all the two still share; the privacy policy says so (translations.ts).
     const { error } = await supabase
       .from("contact_submissions" as unknown)
-      .insert([{ ...result.data, lang, page: window.location.pathname.slice(0, 300), visit_id: currentVisitId() }] as unknown);
+      .insert([{ ...result.data, lang, page: window.location.pathname.slice(0, 300) }] as unknown);
 
     setLoading(false);
 
@@ -85,7 +87,9 @@ const ContactForm = () => {
       return;
     }
 
-    track("contact_form_submit", { reason: result.data.reason });
+    // Counted per visit for the lead funnel. No reason or other form field: the message keeps
+    // those (contact_submissions), the statistics event repeats none of them.
+    track("contact_form_submit");
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: "contact_form_submit", form_reason: result.data.reason });
     toast.success(t.successMessage);

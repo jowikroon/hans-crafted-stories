@@ -1,4 +1,5 @@
-// The "Indexed pages" tile on the CMS analytics view.
+// The "Indexed pages" tile on the CMS analytics view, and (via indexedCount) the
+// "Geïndexeerd" tile and Indexatie card on /dashboards/hvl.
 //
 // Headline: the URL Inspection result over every sitemap URL (exact, per URL).
 // Secondary: the sitemap-reported count, which Google documents as deprecated
@@ -20,13 +21,40 @@ export interface IndexedHeadline {
   sub: string;
 }
 
+export interface IndexedCount {
+  /** Sitemap URLs known to be indexed: exact on a complete run, a lower bound on a partial one. */
+  indexed: number;
+  checked: number;
+  /** Inspections that failed or ran out of time this run (0 when the snapshot does not say). */
+  skipped: number;
+  total: number;
+  /** Not every sitemap URL got a verdict this run (rotation above the cap, or skipped requests). */
+  partial: boolean;
+}
+
 const fmt = (n: number) => n.toLocaleString();
 
-export function indexedHeadline(g: IndexedInput | null | undefined): IndexedHeadline {
+/**
+ * The indexed count behind the headline, for views that word it themselves (the Dutch
+ * /dashboards/hvl). Null without a URL Inspection snapshot. A URL that was never inspected
+ * never counts as indexed.
+ */
+export function indexedCount(g: IndexedInput | null | undefined): IndexedCount | null {
   const checked = g?.indexing_checked ?? null;
   const total = g?.indexing_total ?? null;
+  if (checked == null || total == null || total === 0) return null;
   const flagged = g?.indexing_issues?.length ?? 0;
+  const skipped = g?.indexing_skipped ?? 0;
+  if (checked >= total) {
+    // Every sitemap URL got a verdict this run, so every flagged URL is one of them.
+    return { indexed: Math.max(0, total - flagged), checked, skipped, total, partial: false };
+  }
+  // Partial run: flagged may include issues carried over for URLs not re-checked,
+  // so checked - flagged is a lower bound on what is indexed.
+  return { indexed: Math.max(0, checked - flagged), checked, skipped, total, partial: true };
+}
 
+export function indexedHeadline(g: IndexedInput | null | undefined): IndexedHeadline {
   let secondary: string;
   if (g?.indexed_pages != null) {
     secondary = `sitemap-reported ${fmt(g.indexed_pages)}${g.submitted_pages ? ` of ${fmt(g.submitted_pages)}` : ""}`;
@@ -36,7 +64,8 @@ export function indexedHeadline(g: IndexedInput | null | undefined): IndexedHead
     secondary = "sitemap count unavailable";
   }
 
-  if (checked == null || total == null || total === 0) {
+  const c = indexedCount(g);
+  if (!c) {
     // No URL Inspection snapshot yet: fall back to the sitemap figure, labelled as such.
     return {
       value: g?.indexed_pages != null ? fmt(g.indexed_pages) : "–",
@@ -44,17 +73,9 @@ export function indexedHeadline(g: IndexedInput | null | undefined): IndexedHead
     };
   }
 
-  if (checked >= total) {
-    // Every sitemap URL got a verdict this run, so every flagged URL is one of them.
-    const indexed = Math.max(0, total - flagged);
-    return { value: `${fmt(indexed)} / ${fmt(total)}`, sub: `URL Inspection · ${secondary}` };
-  }
-
-  // Partial run: flagged may include issues carried over for URLs not re-checked,
-  // so checked - flagged is a lower bound on what is indexed.
-  const atLeast = Math.max(0, checked - flagged);
+  if (!c.partial) return { value: `${fmt(c.indexed)} / ${fmt(c.total)}`, sub: `URL Inspection · ${secondary}` };
   return {
-    value: `≥ ${fmt(atLeast)} / ${fmt(total)}`,
-    sub: `URL Inspection, ${fmt(checked)} of ${fmt(total)} checked · ${secondary}`,
+    value: `≥ ${fmt(c.indexed)} / ${fmt(c.total)}`,
+    sub: `URL Inspection, ${fmt(c.checked)} of ${fmt(c.total)} checked · ${secondary}`,
   };
 }
