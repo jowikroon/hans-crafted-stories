@@ -73,7 +73,7 @@ When `commander secrets:heal` or `secrets_registry_verify` reports missing secre
 ### GRAFANA_PASSWORD
 - **Provider:** Self-chosen
 - **How:** Pick a strong password for the Grafana admin user.
-- **Store in:** Server ENV as `GRAFANA_PASSWORD` (overrides the default `empire2024`).
+- **Store in:** Server ENV as `GRAFANA_PASSWORD` (overrides the hardcoded default).
 
 ---
 
