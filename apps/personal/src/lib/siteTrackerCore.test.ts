@@ -9,7 +9,7 @@ describe("classifyLink", () => {
     expect(classifyLink("https://calendly.com/hansvl3/30min", O)?.event).toBe("book_call");
     expect(classifyLink("https://www.linkedin.com/in/hans", O)?.event).toBe("linkedin_click");
     expect(classifyLink("/about#contact", O)).toEqual({ event: "cta_click", target: "/about#contact" });
-    expect(classifyLink("/nl/rates", O)?.event).toBe("rates_click");
+    for (const p of ["/rates", "/en/rates", "/nl/rates", "/nl/tarieven"]) expect(classifyLink(p, O)?.event).toBe("rates_click");
   });
 
   it("separates downloads and outbound links from internal navigation", () => {

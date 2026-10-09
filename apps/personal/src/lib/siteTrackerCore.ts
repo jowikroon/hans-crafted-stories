@@ -57,6 +57,7 @@ export function classifyLink(href: string, origin: string, download = false): { 
   const own = u.origin === origin || host === new URL(origin).hostname.replace(/^www\./, "");
   if (!own) return /^https?:$/.test(u.protocol) ? { event: "outbound_click", target } : null;
   if (u.hash === "#contact") return { event: "cta_click", target: `${u.pathname}#contact` };
-  if (/^\/(nl\/)?(rates|tarieven)\/?$/.test(u.pathname)) return { event: "rates_click", target: u.pathname };
+  // /rates is Dutch, /en/rates English; /nl/... links from before the switch still redirect there.
+  if (/^\/((nl|en)\/)?(rates|tarieven)\/?$/.test(u.pathname)) return { event: "rates_click", target: u.pathname };
   return null;
 }
