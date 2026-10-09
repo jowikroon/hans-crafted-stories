@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  addDays, deployDay, evaluate, totals, valueOf, windowsFor,
+  addDays, countDispersion, dailyOf, deployDay, evaluate, rateDispersion, totals, valueOf, windowsFor,
   type ChangeInput, type DailyRow,
 } from "../../supabase/functions/site-metrics/impact";
 import { isSkippable, kindOf, linearIssues, looksInternal, parseMeasure, planPr } from "../../supabase/functions/site-metrics/prs";
@@ -90,34 +90,56 @@ describe("evaluate", () => {
     expect(res.confidence).toBeGreaterThan(0.99);
   });
 
-  it("does not let a thin control group swing a count verdict", () => {
-    // Treated pages flat at 10 clicks a day; the rest of the site goes from 1 click to 6. Taken as
-    // an exact trend that sixfold rise would make the flat treated pages a confident loss.
-    const flat = rows("2026-08-04", "2026-09-29", (i) => [
+  it("leaves a control group that is thin in either window out instead of letting it swing a count", () => {
+    // Treated pages flat at 10 clicks a day; the rest of the site goes from 1 click to 19. Taken as
+    // a trend, that rise would make the flat treated pages a confident loss.
+    const lopsided = rows("2026-08-04", "2026-09-29", (i) => [
       { scope: "treated", clicks: 10, impressions: 200 },
-      { scope: "control", clicks: i === -10 || (i > 0 && i <= 6) ? 1 : 0, impressions: 50 },
+      { scope: "control", clicks: i === -10 || (i > 0 && i <= 19) ? 1 : 0, impressions: 50 },
     ]);
-    const res = evaluate(change(), flat, "2026-09-29");
-    expect(res.lift_pct).toBeLessThan(-80);
-    expect(res.confidence).toBeLessThan(0.95);
-    expect(res.verdict).toBe("insufficient");
+    const res = evaluate(change(), lopsided, "2026-09-29");
+    expect(res.adjusted).toBe(false);
+    expect(res.lift_pct).toBe(0);
+    expect(res.verdict).toBe("flat");
+    expect(res.note).toContain("Niet gecorrigeerd voor de rest van de site");
 
-    // The other way round: a thin control that drops must not turn a flat page into a win.
-    const drop = rows("2026-08-04", "2026-09-29", (i) => [
-      { scope: "treated", clicks: 10, impressions: 200 },
-      { scope: "control", clicks: (i < 0 && i >= -6) || i === 10 ? 1 : 0, impressions: 50 },
+    // One stray control event must not block a clear verdict either (it used to give z 0, 0%).
+    const doubled = rows("2026-08-04", "2026-09-29", (i) => [
+      { scope: "treated", clicks: i > 0 ? 2 : 1, impressions: 100 },
+      { scope: "control", clicks: i === 10 ? 1 : 0, impressions: 50 },
     ]);
-    expect(["insufficient", "flat"]).toContain(evaluate(change(), drop, "2026-09-29").verdict);
+    const res2 = evaluate(change(), doubled, "2026-09-29");
+    expect(res2.adjusted).toBe(false);
+    expect(res2.verdict).toBe("win");
+    expect(res2.z).toBeCloseTo(3.06, 1);
   });
 
-  it("applies the control volume gate to rates and position as well", () => {
+  it("leaves a thin control out of rates and position as well", () => {
     // One control impression per window: CTR 0% to 100%, position 50 to 3.
     const r = rows("2026-08-04", "2026-09-29", (i) => [
       { scope: "treated", clicks: 5, impressions: 100, pos_impr: 800 },
       { scope: "control", clicks: i === 3 ? 1 : 0, impressions: i === -3 || i === 3 ? 1 : 0, pos_impr: i === -3 ? 50 : i === 3 ? 3 : 0 },
     ]);
-    expect(evaluate(change({ primary_metric: "search_ctr" }), r, "2026-09-29").verdict).toBe("insufficient");
-    expect(evaluate(change({ primary_metric: "search_position", expected: "down" }), r, "2026-09-29").verdict).toBe("insufficient");
+    for (const metric of ["search_ctr", "search_position"] as const) {
+      const res = evaluate(change({ primary_metric: metric, expected: metric === "search_position" ? "down" : "up" }), r, "2026-09-29");
+      expect(res).toMatchObject({ adjusted: false, verdict: "flat" });
+    }
+  });
+
+  it("asks for a stricter z while the measurement window runs, because it is re-tested daily", () => {
+    // Whole site, 10 clicks a day before and 13 after: z 2.8 after 14 days, 3.3 after 28.
+    const mild = rows("2026-08-04", "2026-09-29", (i) => [{ scope: "treated", clicks: i > 0 ? 13 : 10, impressions: 100 }]);
+    const mid = evaluate(change({ paths: [] }), mild, "2026-09-15");
+    expect(mid.z).toBeGreaterThan(1.96);
+    expect(mid.z).toBeLessThan(3);
+    expect(mid.verdict).toBe("measuring");
+    expect(evaluate(change({ paths: [] }), mild, "2026-09-29").verdict).toBe("win");
+
+    const strong = rows("2026-08-04", "2026-09-29", (i) => [{ scope: "treated", clicks: i > 0 ? 20 : 10, impressions: 100 }]);
+    const early = evaluate(change({ paths: [] }), strong, "2026-09-15");
+    expect(early.verdict).toBe("win");
+    expect(early.status).toBe("measuring");
+    expect(early.note).toContain("strengere drempel");
   });
 
   it("gives no verdict on tiny volumes, however large the swing", () => {
@@ -186,6 +208,102 @@ describe("totals and valueOf", () => {
     const r = rows("2026-08-30", "2026-08-31", () => [{ scope: "treated", clicks: 3 }]);
     const t = totals(r, "treated", { from: "2026-08-30", to: "2026-08-31", days: 2 });
     expect(valueOf("search_clicks", t)).toBe(3);
+  });
+});
+
+describe("dispersion", () => {
+  it("zero-fills the days the RPC returns no row for", () => {
+    const r = rows("2026-08-30", "2026-09-01", (i) => (i === -1 ? [] : [{ scope: "treated", clicks: 4 }]));
+    expect(dailyOf(r, "treated", { from: "2026-08-29", to: "2026-09-01", days: 4 }, "clicks")).toEqual([0, 4, 0, 4]);
+  });
+
+  it("is 1 for Poisson-like or steady counts and measures extra noise around each window's own mean", () => {
+    expect(countDispersion([[5, 5, 5], [9, 9, 9]])).toBe(1); // a step between windows is the effect, not noise
+    expect(countDispersion([[0, 10], [0, 10]])).toBe(10); // (25 + 25) / 5 per window, 1 degree of freedom each
+    expect(countDispersion([[], [0, 0]])).toBe(1);
+  });
+
+  it("does the same for daily proportions", () => {
+    expect(rateDispersion([[[5, 100], [5, 100]], [[9, 100], [9, 100]]])).toBe(1);
+    expect(rateDispersion([[[0, 100], [20, 100]]])).toBeGreaterThan(10);
+    expect(rateDispersion([[[0, 0], [3, 50]]])).toBe(1); // a day without trials says nothing
+  });
+});
+
+// Seeded simulations: daily counts with the extra-Poisson noise production shows (variance up to
+// 6x the mean), where a plain Poisson test called about a quarter of no-effect changes a win or
+// loss. Deterministic, so a regression shows up as a fixed number.
+function rng(seed: number) {
+  return () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const normal = (u: () => number) => Math.sqrt(-2 * Math.log(1 - u())) * Math.cos(2 * Math.PI * u());
+function gamma(k: number, u: () => number): number {
+  if (k < 1) return gamma(k + 1, u) * u() ** (1 / k);
+  const d = k - 1 / 3, c = 1 / Math.sqrt(9 * d);
+  for (;;) {
+    let x: number, v: number;
+    do { x = normal(u); v = 1 + c * x; } while (v <= 0);
+    v = v ** 3;
+    const r = u();
+    if (r < 1 - 0.0331 * x ** 4 || Math.log(r) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
+  }
+}
+function poisson(mean: number, u: () => number): number {
+  const limit = Math.exp(-mean);
+  let k = 0, p = 1;
+  do { k++; p *= u(); } while (p > limit);
+  return k - 1;
+}
+/** A daily count with this mean and variance mean * vm (gamma-Poisson; vm 1 is plain Poisson). */
+const draw = (mean: number, vm: number, u: () => number) =>
+  poisson(vm > 1 ? gamma(mean / (vm - 1), u) * (vm - 1) : mean, u);
+
+function verdictRate(o: {
+  metric?: "search_impressions" | "search_ctr"; paths?: string[]; seed: number; runs?: number; lift?: number;
+  treated: [number, number]; control?: [number, number];
+}): number {
+  const u = rng(o.seed), runs = o.runs ?? 400, metric = o.metric ?? "search_impressions";
+  let hits = 0;
+  for (let run = 0; run < runs; run++) {
+    const r = rows("2026-08-04", "2026-09-29", (i) => {
+      const f = i > 0 ? o.lift ?? 1 : 1;
+      const t = draw(o.treated[0] * f, o.treated[1], u);
+      const out: Partial<DailyRow>[] = [metric === "search_ctr"
+        ? { scope: "treated", clicks: t, impressions: 100 }
+        : { scope: "treated", impressions: t }];
+      if (o.control) {
+        const k = draw(o.control[0], o.control[1], u);
+        out.push(metric === "search_ctr" ? { scope: "control", clicks: k, impressions: 200 } : { scope: "control", impressions: k });
+      }
+      return out;
+    });
+    const v = evaluate(change({ primary_metric: metric, paths: o.paths ?? ["/x"] }), r, "2026-09-29").verdict;
+    if (v === "win" || v === "loss") hits++;
+  }
+  return hits / runs;
+}
+
+describe("evaluate on noisy daily data", () => {
+  // Nominal 5%; at 400 runs the bound leaves room for sampling noise. The Poisson-only test this
+  // replaced scored 26%, 63%, 17% and 37% on the overdispersed cases.
+  it("keeps the false-alarm rate near 5% when daily counts are overdispersed", () => {
+    expect(verdictRate({ seed: 1, treated: [4, 2], control: [6, 5] })).toBeLessThan(0.09);
+    expect(verdictRate({ seed: 2, treated: [40, 10], control: [60, 30] })).toBeLessThan(0.09);
+    expect(verdictRate({ seed: 3, treated: [4, 2], paths: [] })).toBeLessThan(0.09);
+    expect(verdictRate({ seed: 4, treated: [4, 1], control: [6, 1] })).toBeLessThan(0.09); // plain Poisson
+  });
+
+  it("does the same for a rate whose daily values swing more than binomial", () => {
+    expect(verdictRate({ seed: 5, metric: "search_ctr", treated: [5, 4], control: [10, 4] })).toBeLessThan(0.09);
+  });
+
+  it("still finds a real effect", () => {
+    expect(verdictRate({ seed: 6, treated: [10, 2], control: [30, 5], lift: 1.6 })).toBeGreaterThan(0.7);
   });
 });
 

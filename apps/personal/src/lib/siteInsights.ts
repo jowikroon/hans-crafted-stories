@@ -19,7 +19,10 @@ export interface VitalRow { metric: string; device: string; p75: number; n: numb
 export interface ChangeResult {
   verdict: "win" | "loss" | "flat" | "measuring" | "insufficient" | "no_baseline";
   lift_pct: number | null; abs_change: number | null; confidence: number | null; note: string;
+  /** The rest of the site entered the test. Absent on results computed before it existed. */
+  adjusted?: boolean;
   treated: { pre: number | null; post: number | null };
+  control?: { pre: number | null; post: number | null } | null;
   windows: { post: { days: number }; planned_post_to: string };
 }
 export interface ChangeRow {
@@ -148,8 +151,12 @@ export function buildInsights(d: SiteDashboard, now = new Date()): Insight[] {
   for (const c of d.changes ?? []) {
     const r = c.result;
     if (!r) continue;
-    if (r.verdict === "win") add({ id: `win:${c.id}`, severity: "win", area: "Verbeteringen", title: `Werkt: ${c.title}`, evidence: `${r.lift_pct != null ? `${r.lift_pct > 0 ? "+" : ""}${r.lift_pct}%` : ""} op ${label(c.primary_metric)} ten opzichte van de rest van de site (${Math.round((r.confidence ?? 0) * 100)}% zekerheid).`, action: "Pas hetzelfde principe toe op vergelijkbare pagina's en leg het vast als standaard." });
-    if (r.verdict === "loss") add({ id: `loss:${c.id}`, severity: "high", area: "Verbeteringen", title: `Averechts: ${c.title}`, evidence: `${r.lift_pct != null ? `${r.lift_pct}%` : ""} op ${label(c.primary_metric)} ten opzichte van de rest van de site.`, action: "Draai de wijziging (deels) terug of stuur bij, en meet opnieuw." });
+    // Only a result the rest of the site entered may claim to be relative to it.
+    const basis = (r.adjusted ?? r.control != null)
+      ? "ten opzichte van de rest van de site"
+      : "ten opzichte van de basisperiode, niet gecorrigeerd voor de rest van de site";
+    if (r.verdict === "win") add({ id: `win:${c.id}`, severity: "win", area: "Verbeteringen", title: `Werkt: ${c.title}`, evidence: `${r.lift_pct != null ? `${r.lift_pct > 0 ? "+" : ""}${r.lift_pct}%` : ""} op ${label(c.primary_metric)} ${basis} (${Math.round((r.confidence ?? 0) * 100)}% zekerheid).`, action: "Pas hetzelfde principe toe op vergelijkbare pagina's en leg het vast als standaard." });
+    if (r.verdict === "loss") add({ id: `loss:${c.id}`, severity: "high", area: "Verbeteringen", title: `Averechts: ${c.title}`, evidence: `${r.lift_pct != null ? `${r.lift_pct}%` : ""} op ${label(c.primary_metric)} ${basis}.`, action: "Draai de wijziging (deels) terug of stuur bij, en meet opnieuw." });
   }
   const unmeasured = (d.changes ?? []).filter((c) => c.status === "planned").length;
   if (unmeasured) add({ id: "planned", severity: "info", area: "Verbeteringen", title: `${unmeasured} geplande verbeteringen klaar om te meten`, evidence: "Elke PR die het Linear-nummer noemt, start automatisch de voor- en nameting.", action: "Noem het HAN-nummer in de PR-titel of -tekst; een Measure-regel in de PR stuurt metriek en pagina's." });

@@ -216,7 +216,7 @@ export default function DashboardsHvl() {
       </div>
 
       {/* 5. Improvements */}
-      <H2 hint="voor- en nameting per wijziging, gecorrigeerd voor de rest van de site">Verbeteringen</H2>
+      <H2 hint="voor- en nameting per wijziging, gecorrigeerd voor de rest van de site waar die genoeg volume heeft">Verbeteringen</H2>
       <Card>
         {measured.length ? (
           <div className="overflow-x-auto">
@@ -224,7 +224,7 @@ export default function DashboardsHvl() {
               <thead><tr className="text-left text-[#7E7A6F]">
                 <th className="pb-1.5">Wijziging</th><th className="pb-1.5">Live</th><th className="pb-1.5">Metriek</th>
                 <th className="pb-1.5 text-right">Voor</th><th className="pb-1.5 text-right">Na</th>
-                <th className="pb-1.5 text-right" title="Effect op de gewijzigde pagina's, na correctie voor de beweging van de rest van de site">Effect</th>
+                <th className="pb-1.5 text-right" title="Effect op de gewijzigde pagina's, na correctie voor de beweging van de rest van de site (de toelichting zegt het als die te weinig volume had)">Effect</th>
                 <th className="pb-1.5 text-right">Zekerheid</th><th className="pb-1.5 pl-4">Oordeel</th>
               </tr></thead>
               <tbody>{measured.map((c) => <ChangeLine key={c.id} c={c} />)}</tbody>

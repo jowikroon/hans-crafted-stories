@@ -25,7 +25,7 @@
    headless browsers (including the prerender build). A logged-in session is marked internal so
    the dashboard can leave Hans's own visits out. */
 
-import { classifyLink, deviceClass, isTrackablePath, type TrackEvent } from "./siteTrackerCore";
+import { classifyLink, deviceClass, isTrackablePath, referrerPage, type TrackEvent } from "./siteTrackerCore";
 
 export type { TrackEvent };
 
@@ -263,7 +263,9 @@ export function initSiteTracker(): boolean {
   });
   addEventListener("pagehide", () => { endEngagement(); flush(true); });
   addEventListener("error", (e) => {
-    jsError({ message: clip(String(e.message || "error"), 200), source: clip(e.filename, 200), line: e.lineno });
+    // filename is the page itself for an error without a script (a ResizeObserver loop, an inline
+    // handler): origin and path only, like every other address the tracker keeps.
+    jsError({ message: clip(String(e.message || "error"), 200), source: referrerPage(e.filename), line: e.lineno });
   });
   addEventListener("unhandledrejection", (e) => {
     jsError({ message: clip(String((e.reason as Error)?.message ?? e.reason ?? "rejection"), 200) });
