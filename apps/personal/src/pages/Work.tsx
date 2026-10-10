@@ -26,7 +26,6 @@ const categoryGroupMap: Record<string, string> = {
 };
 
 const internalRoutes: Record<string, string> = {
-  "connect-car-parts": "/work/connect-car-parts",
 };
 
 const Work = () => {

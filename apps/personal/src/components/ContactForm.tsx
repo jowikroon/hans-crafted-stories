@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Send, Loader2 } from "lucide-react";
 import { z } from "zod";
@@ -17,21 +17,67 @@ import {
 } from "@/components/ui/select";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
+import { isProductionHost } from "@/lib/config/productionHost";
+import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
 import { track } from "@/lib/siteTracker";
 
-const contactSchema = z.object({
-  name: z.string().trim().min(1, "Required").max(100),
-  email: z.string().trim().email("Invalid email").max(255),
-  reason: z.string().min(1, "Required"),
-  message: z.string().trim().min(1, "Required").max(2000),
-});
+type ContactT = (typeof translations)["en"]["contact"];
 
-type ContactData = z.infer<typeof contactSchema>;
+// Lokaliseerde meldingen; server-side validatie is een aparte (backend) stap.
+export const makeContactSchema = (t: Pick<ContactT, "required" | "invalidEmail">) =>
+  z.object({
+    name: z.string().trim().min(1, t.required).max(100),
+    email: z.string().trim().min(1, t.required).email(t.invalidEmail).max(255),
+    reason: z.string().min(1, t.required),
+    message: z.string().trim().min(1, t.required).max(2000),
+  });
+
+type ContactData = z.infer<ReturnType<typeof makeContactSchema>>;
+type Status = { kind: "idle" } | { kind: "success" | "error" | "preview" | "invalid"; text: string };
+
+const FIELD_ORDER: (keyof ContactData)[] = ["name", "email", "reason", "message"];
+const FIELD_IDS: Record<keyof ContactData, string> = {
+  name: "contact-name",
+  email: "contact-email",
+  reason: "contact-reason",
+  message: "contact-message",
+};
+
+/**
+ * Verstuurt een contactaanvraag. Alleen op het productiedomein wordt er
+ * werkelijk in `contact_submissions` geschreven; elders (Vercel-preview,
+ * localhost) is het resultaat "preview" en gebeurt er niets.
+ * Succes = insert zonder error (anon mag niet SELECTen, dus geen .select()).
+ */
+export async function submitContact(
+  data: ContactData,
+  opts: {
+    isProduction?: boolean;
+    /** Extra kolommen (taal, pagina). Bewust geen visit id: een bericht wordt niet aan de bezoekstatistiek gekoppeld (#401). */
+    meta?: { lang: string; page: string };
+    /** Foutcode voor tracking; null bij een netwerkfout. */
+    onError?: (code: string | null) => void;
+  } = {},
+): Promise<"sent" | "preview" | "error"> {
+  if (!(opts.isProduction ?? isProductionHost())) return "preview";
+  try {
+    const { error } = await supabase
+      .from("contact_submissions" as unknown)
+      .insert([{ ...data, ...opts.meta }] as unknown);
+    if (error) opts.onError?.((error as { code?: string }).code ?? null);
+    return error ? "error" : "sent";
+  } catch {
+    opts.onError?.(null);
+    return "error";
+  }
+}
 
 const ContactForm = () => {
   const { lang } = useLang();
   const t = translations[lang].contact;
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const formRef = useRef<HTMLFormElement>(null);
   const [form, setForm] = useState<ContactData>({
     name: "",
     email: "",
@@ -57,36 +103,58 @@ const ContactForm = () => {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
+  // aria-koppeling voor veldfouten (F4.6)
+  const fieldA11y = (field: keyof ContactData) =>
+    errors[field]
+      ? { "aria-invalid": true as const, "aria-describedby": `${FIELD_IDS[field]}-error` }
+      : { "aria-invalid": false as const };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = contactSchema.safeParse(form);
+    if (loading) return;
+    const result = makeContactSchema(t).safeParse(form);
 
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof ContactData, string>> = { /* empty */ };
       result.error.issues.forEach((issue) => {
         const field = issue.path[0] as keyof ContactData;
-        fieldErrors[field] = issue.message;
+        if (!fieldErrors[field]) fieldErrors[field] = issue.message;
       });
       setErrors(fieldErrors);
+      setStatus({ kind: "invalid", text: t.errorSummary });
+      const first = FIELD_ORDER.find((f) => fieldErrors[f]);
+      if (first) formRef.current?.querySelector<HTMLElement>(`#${FIELD_IDS[first]}`)?.focus();
       track("contact_form_error", { kind: "validation", fields: Object.keys(fieldErrors) });
       return;
     }
 
     setLoading(true);
-    // No visit id here on purpose: the site does not link a message to the visit statistics.
-    // Time and page are all the two still share; the privacy policy says so (translations.ts).
-    const { error } = await supabase
-      .from("contact_submissions" as unknown)
-      .insert([{ ...result.data, lang, page: window.location.pathname.slice(0, 300) }] as unknown);
+    setStatus({ kind: "idle" });
+    let outcome: "sent" | "preview" | "error" = "error";
+    try {
+      // No visit id here on purpose: the site does not link a message to the visit statistics.
+      // Time and page are all the two still share; the privacy policy says so (translations.ts).
+      outcome = await submitContact(result.data, {
+        meta: { lang, page: window.location.pathname.slice(0, 300) },
+        onError: (code) => track("contact_form_error", { kind: "submit", code }),
+      });
+    } finally {
+      setLoading(false);
+    }
 
-    setLoading(false);
-
-    if (error) {
-      track("contact_form_error", { kind: "submit", code: error.code ?? null });
+    if (outcome === "error") {
+      // Formulierwaarden blijven staan zodat de bezoeker opnieuw kan proberen.
+      setStatus({ kind: "error", text: t.errorMessage });
       toast.error(t.errorMessage);
       return;
     }
+    if (outcome === "preview") {
+      setStatus({ kind: "preview", text: t.previewNotSent });
+      toast.message(t.previewNotSent);
+      return;
+    }
 
+    setStatus({ kind: "success", text: t.successMessage });
     // Counted per visit for the lead funnel. No reason or other form field: the message keeps
     // those (contact_submissions), the statistics event repeats none of them.
     track("contact_form_submit");
@@ -99,7 +167,10 @@ const ContactForm = () => {
 
   return (
     <motion.form
+      ref={formRef}
       onSubmit={handleSubmit}
+      noValidate
+      aria-busy={loading}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -118,8 +189,10 @@ const ContactForm = () => {
           placeholder={t.namePlaceholder}
           maxLength={100}
           className={errors.name ? "border-destructive" : ""}
+          required
+          {...fieldA11y("name")}
         />
-        {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+        {errors.name && <p id="contact-name-error" className="text-xs text-destructive">{errors.name}</p>}
       </div>
 
       {/* Email */}
@@ -135,8 +208,10 @@ const ContactForm = () => {
           placeholder={t.emailPlaceholder}
           maxLength={255}
           className={errors.email ? "border-destructive" : ""}
+          required
+          {...fieldA11y("email")}
         />
-        {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+        {errors.email && <p id="contact-email-error" className="text-xs text-destructive">{errors.email}</p>}
       </div>
 
       {/* Reason */}
@@ -145,7 +220,7 @@ const ContactForm = () => {
           {t.reason}
         </Label>
         <Select value={form.reason} onValueChange={(v) => handleChange("reason", v)}>
-          <SelectTrigger id="contact-reason" className={errors.reason ? "border-destructive" : ""}>
+          <SelectTrigger id="contact-reason" className={errors.reason ? "border-destructive" : ""} aria-required="true" {...fieldA11y("reason")}>
             <SelectValue placeholder={t.reasonPlaceholder} />
           </SelectTrigger>
           <SelectContent>
@@ -156,7 +231,7 @@ const ContactForm = () => {
             ))}
           </SelectContent>
         </Select>
-        {errors.reason && <p className="text-xs text-destructive">{errors.reason}</p>}
+        {errors.reason && <p id="contact-reason-error" className="text-xs text-destructive">{errors.reason}</p>}
       </div>
 
       {/* Message */}
@@ -172,8 +247,10 @@ const ContactForm = () => {
           maxLength={2000}
           rows={5}
           className={errors.message ? "border-destructive" : ""}
+          required
+          {...fieldA11y("message")}
         />
-        {errors.message && <p className="text-xs text-destructive">{errors.message}</p>}
+        {errors.message && <p id="contact-message-error" className="text-xs text-destructive">{errors.message}</p>}
       </div>
 
       {/* Submit */}
@@ -186,6 +263,14 @@ const ContactForm = () => {
           )}
           {loading ? t.sending : t.send}
         </Button>
+        <p role="status" aria-live="polite" className={`mt-3 text-sm ${status.kind === "success" ? "text-foreground" : status.kind === "idle" ? "sr-only" : "text-destructive"}`}>
+          {status.kind === "idle" ? "" : status.text}
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          <ObfuscatedMailto user="hansvl3" domain="gmail.com" className="underline underline-offset-4 hover:text-foreground">
+            {t.emailFallback}
+          </ObfuscatedMailto>
+        </p>
       </div>
     </motion.form>
   );

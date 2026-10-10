@@ -62,7 +62,7 @@ const HeaderNeon = (_props: NavbarProps) => {
   /* ── Nav model ── */
   const workChildren = [
     { to: "/work", label: t.workMenu.allCases },
-    { to: "/work/connect-car-parts", label: "Connect Car Parts" },
+    { to: "/work/marketplace-product-data-automation", label: t.workMenu.marketplaceCase },
     { group: t.workMenu.services },
     { to: "/amazon-nl-specialist", label: t.workMenu.amazon },
     { to: "/bol-com-consultant", label: t.workMenu.bol },
@@ -81,7 +81,7 @@ const HeaderNeon = (_props: NavbarProps) => {
   const searchablePages = [
     { to: "/", label: t.home, keywords: ["home", "start", "landing"] },
     { to: "/work", label: t.work, keywords: ["work", "werk", "cases", "portfolio"] },
-    { to: "/work/connect-car-parts", label: "Connect Car Parts", keywords: ["ccp", "case", "brake", "abs"] },
+    { to: "/work/marketplace-product-data-automation", label: t.workMenu.marketplaceCase, keywords: ["case", "product data", "productdata", "automotive", "feeds"] },
     { to: "/amazon-nl-specialist", label: t.workMenu.amazon, keywords: ["amazon", "nl", "specialist", "ads"] },
     { to: "/bol-com-consultant", label: t.workMenu.bol, keywords: ["bol", "consultant", "marketplace"] },
     { to: "/interim-ecommerce-manager", label: t.workMenu.interim, keywords: ["interim", "manager", "freelance"] },

@@ -85,8 +85,8 @@ def main():
 
     # Proof line
     y += 66
-    d.rectangle([x, y, x + 6, y + 64], fill=GREEN)
-    d.multiline_text((x + 22, y - 2), "10+ years on marketplaces\n70% category share on Amazon NL (Nielsen 2023)", font=f_sub, fill=INK, spacing=10)
+    d.rectangle([x, y, x + 6, y + 32], fill=GREEN)  # één regel: geen klantcijfers (anonimisering 2026-09-23)
+    d.multiline_text((x + 22, y - 2), "10+ years on marketplaces", font=f_sub, fill=INK, spacing=10)
 
     # Footer domain
     d.rectangle([x, H - 92, W - 64, H - 91], fill=LINE)
