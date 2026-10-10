@@ -61,6 +61,23 @@ describe("buildInsights", () => {
     expect(out.find((i) => i.id === "loss:b")?.severity).toBe("high");
   });
 
+  it("claims a comparison with the rest of the site only when the control entered the test", () => {
+    const d = base();
+    const result = { verdict: "win" as const, lift_pct: 20, abs_change: 1, confidence: 0.99, note: "", treated: { pre: 5, post: 6 }, windows: { post: { days: 28 }, planned_post_to: "2026-10-03" } };
+    const row = { kind: "seo", linear_issue: null, pr_number: 1, deployed_at: "2026-09-05", primary_metric: "search_clicks", expected: "up" as const, hypothesis: null, measure_days: 28, status: "concluded", result_at: null };
+    d.changes = [
+      { ...row, id: "adj", title: "A", paths: ["/x"], result: { ...result, adjusted: true } },
+      { ...row, id: "thin", title: "B", paths: ["/y"], result: { ...result, adjusted: false, control: { pre: 0, post: 0.1 } } },
+      { ...row, id: "site", title: "C", paths: [], result: { ...result, control: null } },
+      { ...row, id: "old", title: "D", paths: ["/z"], result: { ...result, control: { pre: 2, post: 2 } } }, // stored before `adjusted`
+    ];
+    const ev = (id: string) => buildInsights(d, NOW).find((i) => i.id === `win:${id}`)?.evidence ?? "";
+    expect(ev("adj")).toContain("ten opzichte van de rest van de site");
+    expect(ev("thin")).toContain("niet gecorrigeerd voor de rest van de site");
+    expect(ev("site")).toContain("ten opzichte van de basisperiode");
+    expect(ev("old")).toContain("ten opzichte van de rest van de site");
+  });
+
   it("flags slow pages by the p75 thresholds and ignores tiny samples", () => {
     const d = base();
     d.vitals = [{ metric: "LCP", device: "mobile", p75: 4600, n: 12, good_pct: 20 }, { metric: "INP", device: "mobile", p75: 900, n: 1, good_pct: 0 }];

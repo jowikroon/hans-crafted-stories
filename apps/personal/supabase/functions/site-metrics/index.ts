@@ -1,25 +1,34 @@
 // site-metrics v1: the measurement engine behind /dashboards/hvl.
 //
-// POST { action: "harvest", force?, background? }   (service role or admin; background answers 202 at once)
+// POST { action: "harvest", force?, background? }   (service role or admin; background answers 202 after step 0)
+//   0. Every kick, also when the 20h guard skips the rest: lead alerts that did not go out
+//      (notified_at still null, 10 minutes to 7 days old) get another try, oldest first, 10 a kick.
 //   1. Search Console per day x {site, page, query, device} -> hvl_gsc_daily
 //      GA4 per day x {site, page, channel, event, device}     -> hvl_ga4_daily
 //      First run backfills (16 months GSC, 14 months GA4) in oldest-first 60-day chunks, so an
 //      interrupted run resumes from max(d) per dimension; later runs refresh the last 5 days
-//      (Search Console revises recent days).
+//      (Search Console revises recent days). Every row carries the run's harvested_at; once a
+//      (dim, from..to) chunk is fetched in full and stored, its rows with an older harvested_at are
+//      keys Google no longer returns, and they are deleted.
 //   2. Sitemap self-heal: when Search Console lists no sitemap, submit /sitemap.xml.
 //   3. Merged PRs -> site_changes (see prs.ts), so every future improvement is measured
-//      without anyone filling in a form.
-//   4. Every change with a deploy date and a metric gets a fresh before/after verdict (impact.ts).
-//   Runs at most once per 20h unless forced. Scheduling: no clock of its own (CLAUDE.md puts new
+//      without anyone filling in a form. The next cursor is taken just before the GitHub call,
+//      minus 10 minutes, so a PR merged while it runs is still seen next time (pr_number dedups).
+//   4. Retention: site_events older than 13 months are deleted (the privacy statement's maximum).
+//   5. Every change with a deploy date and a metric gets a fresh before/after verdict (impact.ts),
+//      a concluded one too until 14 days after its measurement window, while Search Console
+//      finalizes those days.
+//   Runs at most once per 20h unless forced, and never twice at once (site_metrics_try_lock, a
+//   10-minute lease in hvl_analytics_cache). Scheduling: no clock of its own (CLAUDE.md puts new
 //   schedules in OpenClaw); analytics-ga4-gsc kicks it on each run of the existing 6-hourly
 //   dashboard-evaluator, and the 20h guard makes that one harvest a day.
-// POST { action: "evaluate" }                  (service role or admin): step 4 only.
+// POST { action: "evaluate" }                  (service role or admin): step 5 only.
 // POST { action: "lead", id }                  (anyone; called by the contact_submissions trigger)
 //   One Telegram message for a submission younger than 10 minutes that was not notified yet.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { evaluate, isSearchMetric, type ChangeInput, type DailyRow, type Metric } from "./impact.ts";
+import { deployDay, evaluate, isSearchMetric, type ChangeInput, type DailyRow, type Metric } from "./impact.ts";
 import { planPr, type PrLike } from "./prs.ts";
 
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
@@ -30,12 +39,20 @@ const SITE = "https://hansvanleeuwen.com";
 const REPO = "jowikroon/hans-crafted-stories";
 const TZ = "Europe/Amsterdam";
 const STATE_KEY = "site-metrics:last";
+const LOCK_KEY = "site-metrics:lock"; // taken by site_metrics_try_lock(), deleted when the harvest ends
+const LOCK_TTL = "10 minutes"; // a crashed worker's lock expires; a harvest stops new chunks after 90s
 const GUARD_MS = 20 * 60 * 60 * 1000;
 const BUDGET_MS = 90_000; // stop starting new chunks after this; the next run resumes
 const CHUNK_DAYS = 60;
 const GSC_BACKFILL_DAYS = 485;
 const GA4_BACKFILL_DAYS = 425;
 const REFRESH_DAYS = 5;
+const RECHECK_DAYS = 14; // a concluded verdict is recomputed this long after its measurement window
+const PR_CURSOR_MARGIN_MS = 10 * 60_000;
+const EVENT_RETENTION_MONTHS = 13;
+const LEAD_FRESH_MS = 10 * 60_000; // the public trigger path only alerts a just-inserted lead
+const LEAD_RETRY_MS = 7 * 86_400_000; // the privileged retry gives up on older ones
+const LEAD_RETRY_LIMIT = 10;
 const ADMIN_EMAILS = [...(Deno.env.get("ADMIN_EMAILS") || "").split(","), "hansvl3@gmail.com"]
   .map((e) => e.trim().toLowerCase()).filter(Boolean);
 
@@ -139,6 +156,18 @@ async function upsert(sb: SB, table: string, rows: Record<string, unknown>[]) {
   }
 }
 
+/**
+ * After a (dim, from..to) chunk was fetched in full and upserted with harvested_at = runAt, the
+ * rows still carrying an older harvested_at are keys Google dropped when it revised those days.
+ * Only call this on a complete chunk: a partial response would delete live data.
+ */
+async function dropStale(sb: SB, table: string, dim: string, from: string, to: string, runAt: string): Promise<number> {
+  const { error, count } = await sb.from(table).delete({ count: "exact" })
+    .eq("dim", dim).gte("d", from).lte("d", to).lt("harvested_at", runAt);
+  if (error) throw new Error(`${table} stale: ${error.message}`);
+  return count ?? 0;
+}
+
 async function lastDay(sb: SB, table: string, dim: string): Promise<string | null> {
   const { data } = await sb.from(table).select("d").eq("dim", dim).order("d", { ascending: false }).limit(1).maybeSingle();
   return (data?.d as string | undefined) ?? null;
@@ -155,11 +184,12 @@ function chunks(resume: string | null, backfillFrom: string, end: string): [stri
 // ---------- Search Console ----------
 const GSC_DIMS: Record<string, string[]> = { site: ["date"], page: ["date", "page"], query: ["date", "query"], device: ["date", "device"] };
 
-async function harvestGsc(sb: SB, token: string, site: string, deadline: number) {
+async function harvestGsc(sb: SB, token: string, site: string, deadline: number, runAt: string) {
   const today = ymd(new Date());
   const end = addDays(today, -1); // fresh data; the refresh window rewrites it as Google finalizes
   const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/searchAnalytics/query`;
   const stats: Record<string, number> = {};
+  let removed = 0;
   let complete = true;
   for (const [dim, dims] of Object.entries(GSC_DIMS)) {
     stats[dim] = 0;
@@ -175,16 +205,18 @@ async function harvestGsc(sb: SB, token: string, site: string, deadline: number)
           rows.push({
             d: r.keys[0], dim, key: dim === "site" ? "" : String(r.keys[1]).slice(0, 500),
             clicks: Math.round(r.clicks ?? 0), impressions: Math.round(r.impressions ?? 0),
-            ctr: r.ctr ?? null, position: r.position ?? null,
+            ctr: r.ctr ?? null, position: r.position ?? null, harvested_at: runAt,
           });
         }
         if ((d.rows ?? []).length < 25000) break;
       }
+      // Reached only when every page came back and the upsert succeeded (both throw otherwise).
       await upsert(sb, "hvl_gsc_daily", rows);
+      removed += await dropStale(sb, "hvl_gsc_daily", dim, from, to, runAt);
       stats[dim] += rows.length;
     }
   }
-  return { stats, complete };
+  return { stats, removed, complete };
 }
 
 // ---------- GA4 ----------
@@ -200,11 +232,12 @@ const GA4_COL: Record<string, string> = {
   userEngagementDuration: "engagement_sec", eventCount: "events", keyEvents: "key_events",
 };
 
-async function harvestGa4(sb: SB, token: string, deadline: number) {
+async function harvestGa4(sb: SB, token: string, deadline: number, runAt: string) {
   const today = ymd(new Date());
   const end = addDays(today, -1);
   const url = `https://analyticsdata.googleapis.com/v1beta/properties/${GA4_PROPERTY_ID}:runReport`;
   const stats: Record<string, number> = {};
+  let removed = 0;
   let complete = true;
   for (const [dim, spec] of Object.entries(GA4_DIMS)) {
     stats[dim] = 0;
@@ -226,6 +259,7 @@ async function harvestGa4(sb: SB, token: string, deadline: number) {
           const row: Record<string, unknown> = {
             d: `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`, dim,
             key: spec.dim ? String(r.dimensionValues[1].value).slice(0, 500) : "",
+            harvested_at: runAt,
           };
           spec.metrics.forEach((m, i) => {
             const v = Number(r.metricValues[i].value ?? 0);
@@ -235,11 +269,13 @@ async function harvestGa4(sb: SB, token: string, deadline: number) {
         }
         if ((d.rows ?? []).length < 100000) break;
       }
+      // Reached only when every page came back and the upsert succeeded (both throw otherwise).
       await upsert(sb, "hvl_ga4_daily", rows);
+      removed += await dropStale(sb, "hvl_ga4_daily", dim, from, to, runAt);
       stats[dim] += rows.length;
     }
   }
-  return { stats, complete };
+  return { stats, removed, complete };
 }
 
 // ---------- sitemap self-heal ----------
@@ -284,10 +320,13 @@ async function syncPrs(sb: SB, since: string | null) {
       for (const issue of plan.issues) {
         const patch: Record<string, unknown> = { deployed_at: pr.merged_at, pr_number: pr.number, status: "measuring" };
         if (plan.measure) {
-          patch.primary_metric = plan.measure.metric;
-          if (plan.measure.paths.length) patch.paths = plan.measure.paths;
-          patch.expected = plan.measure.expect;
-          if (plan.measure.days) patch.measure_days = plan.measure.days;
+          // The Measure line overrides the plan: metric and expectation always, the rest when named.
+          const m = plan.measure;
+          patch.primary_metric = m.metric;
+          patch.expected = m.expect;
+          if (m.pathsGiven) patch.paths = m.paths; // an empty paths= means the whole site
+          if (m.days) patch.measure_days = m.days;
+          if (m.baseline) patch.baseline_days = m.baseline;
         }
         const { error } = await sb.from("site_changes").update(patch).eq("id", byIssue.get(issue)!).eq("status", "planned");
         if (!error) { activated++; byIssue.delete(issue); }
@@ -309,19 +348,26 @@ async function syncPrs(sb: SB, since: string | null) {
 
 // ---------- impact ----------
 async function evaluateAll(sb: SB) {
+  // Concluded changes too: Search Console revises recent days and a chunked backfill can still
+  // supply a missing baseline, so a verdict stays live until RECHECK_DAYS after its window.
   const { data: changes } = await sb.from("site_changes")
     .select("id, deployed_at, paths, primary_metric, expected, baseline_days, measure_days, status")
-    .in("status", ["measuring", "planned"]).not("deployed_at", "is", null).not("primary_metric", "is", null);
+    .in("status", ["measuring", "planned", "concluded"]).not("deployed_at", "is", null).not("primary_metric", "is", null);
   const gscLast = await lastDay(sb, "hvl_gsc_daily", "page");
   const { data: firstGsc } = await sb.from("hvl_gsc_daily").select("d").order("d").limit(1).maybeSingle();
   const { data: firstEvent } = await sb.from("site_events").select("ts").order("ts").limit(1).maybeSingle();
-  const yesterday = addDays(ymd(new Date()), -1);
+  const today = ymd(new Date());
+  const yesterday = addDays(today, -1);
   const eventsSince = firstEvent?.ts ? addDays(ymd(new Date(firstEvent.ts as string)), 1) : yesterday; // first day is partial
   let n = 0;
   for (const c of changes ?? []) {
-    const ch = c as unknown as ChangeInput & { id: string };
+    const ch = c as unknown as ChangeInput & { id: string; status: string };
+    if (ch.status === "concluded" && today > addDays(deployDay(ch.deployed_at), ch.measure_days + RECHECK_DAYS)) continue;
     const search = isSearchMetric(ch.primary_metric as Metric);
-    const last = search ? gscLast ?? yesterday : yesterday;
+    // No Search Console day stored yet: nothing to judge a search metric on, and yesterday as its
+    // last day would let an empty measurement window pass as complete.
+    if (search && !gscLast) continue;
+    const last = search ? gscLast! : yesterday;
     const since = search ? (firstGsc?.d as string | undefined) ?? null : eventsSince;
     const from = addDays(ch.deployed_at.slice(0, 10), -ch.baseline_days - 1);
     const to = addDays(ch.deployed_at.slice(0, 10), ch.measure_days + 1);
@@ -335,15 +381,23 @@ async function evaluateAll(sb: SB) {
 }
 
 // ---------- lead alert ----------
-async function notifyLead(sb: SB, id: unknown) {
-  if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) return { skipped: "bad id" };
-  const { data: row } = await sb.from("contact_submissions").select("*").eq("id", id).maybeSingle();
-  if (!row) return { skipped: "not found" };
-  if (row.notified_at) return { skipped: "already notified" };
-  if (Date.now() - new Date(row.created_at as string).getTime() > 10 * 60_000) return { skipped: "too old" };
+type LeadResult = { sent: true } | { skipped: string } | { error: string };
+type LeadRetry = { tried: number; sent: number } | { error: string };
+
+/**
+ * One Telegram message for a submission row. Callers check age. notified_at is claimed before the
+ * send, so the trigger path and a retry (or two overlapping kicks) never both send one lead; a
+ * failed send hands the claim back for the next retry.
+ */
+async function sendLead(sb: SB, row: Record<string, unknown>): Promise<LeadResult> {
   const { data: chat } = await sb.from("autoccp_thresholds").select("value_text").eq("key", "telegram_chat_id").maybeSingle();
   const bot = Deno.env.get("TELEGRAM_BOT_TOKEN");
   if (!bot || !chat?.value_text) return { skipped: "telegram niet geconfigureerd" };
+  const id = row.id as string;
+  const { data: claimed, error: claimErr } = await sb.from("contact_submissions")
+    .update({ notified_at: new Date().toISOString() }).eq("id", id).is("notified_at", null).select("id");
+  if (claimErr) return { error: `claim: ${claimErr.message}`.slice(0, 300) };
+  if (!claimed?.length) return { skipped: "already notified" };
   const text = [
     "Nieuwe aanvraag via hansvanleeuwen.com",
     `${row.name} <${row.email}>`,
@@ -356,30 +410,78 @@ async function notifyLead(sb: SB, id: unknown) {
   const r = await fetch(`https://api.telegram.org/bot${bot}/sendMessage`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chat_id: chat.value_text, text, disable_web_page_preview: true }),
-  });
-  if (!r.ok) return { error: `telegram ${r.status}` };
-  await sb.from("contact_submissions").update({ notified_at: new Date().toISOString() }).eq("id", id);
+    signal: AbortSignal.timeout(10_000),
+  }).catch(() => null);
+  if (!r?.ok) {
+    const { error } = await sb.from("contact_submissions").update({ notified_at: null }).eq("id", id);
+    return { error: `telegram ${r?.status ?? "onbereikbaar"}${error ? `; claim niet vrijgegeven: ${error.message}` : ""}`.slice(0, 300) };
+  }
   return { sent: true };
 }
 
-async function harvest(sb: SB, prev: Record<string, unknown>): Promise<Record<string, unknown>> {
+/** The trigger path (public key): only a just-inserted row, so it cannot re-send old leads. */
+async function notifyLead(sb: SB, id: unknown): Promise<LeadResult> {
+  if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) return { skipped: "bad id" };
+  const { data: row } = await sb.from("contact_submissions").select("*").eq("id", id).maybeSingle();
+  if (!row) return { skipped: "not found" };
+  if (row.notified_at) return { skipped: "already notified" };
+  if (Date.now() - new Date(row.created_at as string).getTime() > LEAD_FRESH_MS) return { skipped: "too old" };
+  return await sendLead(sb, row);
+}
+
+/**
+ * The privileged retry on every harvest kick: the insert trigger is a lead's only other call, so
+ * an alert that failed there (Telegram down, a timeout) would otherwise be lost. Rows younger than
+ * LEAD_FRESH_MS belong to the trigger path, so the two never alert the same lead at once.
+ */
+async function retryLeads(sb: SB): Promise<LeadRetry> {
+  const now = Date.now();
+  const { data, error } = await sb.from("contact_submissions").select("*").is("notified_at", null)
+    .gte("created_at", new Date(now - LEAD_RETRY_MS).toISOString())
+    .lt("created_at", new Date(now - LEAD_FRESH_MS).toISOString())
+    .order("created_at").limit(LEAD_RETRY_LIMIT);
+  if (error) return { error: `contact_submissions: ${error.message}`.slice(0, 300) };
+  let sent = 0;
+  for (const row of data ?? []) if ("sent" in (await sendLead(sb, row))) sent++;
+  return { tried: (data ?? []).length, sent };
+}
+
+// ---------- retention ----------
+/** First-party events are kept at most EVENT_RETENTION_MONTHS (the privacy statement says so). */
+async function pruneEvents(sb: SB): Promise<number> {
+  const cutoff = new Date();
+  cutoff.setUTCMonth(cutoff.getUTCMonth() - EVENT_RETENTION_MONTHS);
+  const { error, count } = await sb.from("site_events").delete({ count: "exact" }).lt("ts", cutoff.toISOString());
+  if (error) throw new Error(`site_events: ${error.message}`);
+  return count ?? 0;
+}
+
+async function harvest(sb: SB, prev: Record<string, unknown>, leads: LeadRetry): Promise<Record<string, unknown>> {
   const started = Date.now();
   const deadline = started + BUDGET_MS;
-  const out: Record<string, unknown> = { started_at: new Date(started).toISOString() };
+  const runAt = new Date(started).toISOString(); // harvested_at of every row this run writes
+  const out: Record<string, unknown> = { started_at: runAt };
   const errors: Record<string, string> = {};
   let complete = true;
+  if ("error" in leads) errors.leads = leads.error; else out.lead_retry = leads;
 
   let site: string | null = null;
   try {
     const token = await googleToken(sb, "https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly");
-    try { site = await resolveSite(token); out.gsc_site = site; const g = await harvestGsc(sb, token, site, deadline); out.gsc = g.stats; complete &&= g.complete; }
-    catch (e) { errors.gsc = String(e).slice(0, 300); }
-    try { const g = await harvestGa4(sb, token, deadline); out.ga4 = g.stats; complete &&= g.complete; }
+    try {
+      site = await resolveSite(token); out.gsc_site = site;
+      const g = await harvestGsc(sb, token, site, deadline, runAt); out.gsc = g.stats; out.gsc_removed = g.removed; complete &&= g.complete;
+    } catch (e) { errors.gsc = String(e).slice(0, 300); }
+    try { const g = await harvestGa4(sb, token, deadline, runAt); out.ga4 = g.stats; out.ga4_removed = g.removed; complete &&= g.complete; }
     catch (e) { errors.ga4 = String(e).slice(0, 300); }
   } catch (e) { errors.google = String(e).slice(0, 300); }
   if (site) { try { out.sitemap = await ensureSitemap(sb, site); } catch (e) { errors.sitemap = String(e).slice(0, 300); } }
-  try { out.prs = await syncPrs(sb, (prev.prs_synced_at as string | undefined) ?? null); out.prs_synced_at = new Date().toISOString(); }
+  // Taken before GitHub answers: a PR merged after its response was built is missing from it, so
+  // the next run must still look back past this moment (pr_number keeps re-seen PRs single).
+  const prsCursor = new Date(Date.now() - PR_CURSOR_MARGIN_MS).toISOString();
+  try { out.prs = await syncPrs(sb, (prev.prs_synced_at as string | undefined) ?? null); out.prs_synced_at = prsCursor; }
   catch (e) { errors.prs = String(e).slice(0, 300); out.prs_synced_at = prev.prs_synced_at ?? null; }
+  try { out.events_pruned = await pruneEvents(sb); } catch (e) { errors.retention = String(e).slice(0, 300); }
   try { out.evaluated = await evaluateAll(sb); } catch (e) { errors.evaluate = String(e).slice(0, 300); }
 
   out.errors = errors;
@@ -401,17 +503,29 @@ Deno.serve(async (req) => {
   if (action === "evaluate") return json({ ok: true, evaluated: await evaluateAll(sb) });
   if (action !== "harvest") return json({ error: "unknown action" }, 400);
 
+  // Every 6-hourly kick, before the 20h guard: undelivered lead alerts must not wait a day.
+  const leads = await retryLeads(sb).catch((e): LeadRetry => ({ error: String(e).slice(0, 300) }));
+
   const { data: state } = await sb.from("hvl_analytics_cache").select("data, fetched_at").eq("key", STATE_KEY).maybeSingle();
   const prev = (state?.data ?? {}) as Record<string, unknown>;
   const fresh = state && Date.now() - new Date(state.fetched_at as string).getTime() < GUARD_MS && prev.complete === true;
-  if (fresh && body.force !== true) return json({ ok: true, skipped: "harvested < 20h ago", at: state!.fetched_at });
+  if (fresh && body.force !== true) return json({ ok: true, skipped: "harvested < 20h ago", at: state!.fetched_at, lead_retry: leads });
+
+  // One harvest at a time: two runs interleaving their upserts and dropStale() on the same chunk
+  // would delete rows the other just wrote (each deletes what is older than its own run start).
+  const { data: locked, error: lockErr } = await sb.rpc("site_metrics_try_lock", { p_ttl: LOCK_TTL });
+  if (lockErr) return json({ error: `lock: ${lockErr.message}`, lead_retry: leads }, 500);
+  if (locked !== true) return json({ ok: true, skipped: "harvest in progress", lead_retry: leads });
+  const run = () => harvest(sb, prev, leads).finally(async () => {
+    await sb.from("hvl_analytics_cache").delete().eq("key", LOCK_KEY);
+  });
 
   // The scheduled kick asks for background mode: answer now, harvest in this worker's own lifetime.
   const rt = (globalThis as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime;
   if (body.background === true && rt) {
-    rt.waitUntil(harvest(sb, prev).catch(() => {}));
-    return json({ ok: true, started: true }, 202);
+    rt.waitUntil(run().catch(() => {}));
+    return json({ ok: true, started: true, lead_retry: leads }, 202);
   }
-  const out = await harvest(sb, prev);
+  const out = await run();
   return json({ ok: Object.keys(out.errors as Record<string, string>).length === 0, ...out });
 });

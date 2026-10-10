@@ -437,7 +437,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Privacy ── */
     privacy: {
       title: "Privacy Policy",
-      lastUpdated: "Last updated: February 2026",
+      lastUpdated: "Last updated: October 2026",
       sections: [
         {
           heading: "1. Who are we?",
@@ -445,26 +445,30 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. What data do we collect?",
-          body: "We only collect anonymous analytical data via Google Analytics 4 (GA4), managed through Google Tag Manager. This includes page views, session duration, and device type. No personal data such as names, email addresses, or IP addresses is stored, IP anonymization is enabled by default in GA4. In addition, the site keeps its own anonymous visit statistics (pages viewed, time on page, scroll depth, clicks on contact links, page speed). These use no cookies, store nothing on your device and contain no IP address or other identifier; they only exist in memory for the duration of your visit.",
+          body: "When you use the contact form, we store your name, email address, the reason you chose, your message, the page you sent it from and the site language in the site's own database (Supabase, EU), so that we can reply. A notification with these details is sent to Hans via Telegram. We keep a message as long as needed to handle it and any follow-up, and delete it sooner if you ask. We also use Google Analytics 4 (GA4), managed through Google Tag Manager, for, among other things, page views, session duration, device type and how blog articles are read. GA4 receives no names or email addresses, and IP anonymization is enabled by default in GA4. Finally, the site keeps its own visit statistics, described in section 3.",
         },
         {
-          heading: "3. Cookies",
+          heading: "3. The site's own visit statistics",
+          body: "Without cookies and without storing anything on your device, the site records how it is used: which pages are viewed, how long a page is visible and how far you scroll; clicks on links for contact, booking a call, email, LinkedIn and the rates page, on links to other websites and on downloads (where the link points to, without its query string, and up to 80 characters of the link text); on blog articles, how far you read, whether you finish and how long that took, the share option you choose and the table of contents entries you click; the steps of the contact form (the field you start in, which fields are not filled in correctly and whether sending worked), never what you type; page speed; technical error messages; and, when you open a page that does not exist, the address of the page that linked to it (without its query string). Each event also carries the site language, the device type (mobile, tablet or desktop) and whether you are signed in to an account on this site (read from the sign-in the site itself keeps in your browser, so that the owner's own visits can be left out of the figures), and the first page of a visit also the referring website (its domain only) and any campaign tags in the address (utm_source, utm_medium and utm_campaign). To group the events of one visit, your browser tab creates a random visit code that is held only in the browser's memory (a new tab or a reload starts a new code). That code is sent along with each event and stored with it in the site's own database (Supabase, EU). It is a pseudonymous code: no IP address, name or email address is stored with the statistics, and the code is not linked to contact form submissions or other personal data (the contact form does not send it). Because every event is stored with its time and page, the statistics of a visit in which you sent the contact form could in principle be matched to your message; we do not do that. The statistics are deleted automatically after at most 13 months.",
+        },
+        {
+          heading: "4. Cookies",
           body: "We use analytical cookies only after your explicit consent (opt-in). Without consent, no tracking cookies are placed. You can withdraw your consent at any time by clearing your browser data.",
         },
         {
-          heading: "4. Google Consent Mode v2",
+          heading: "5. Google Consent Mode v2",
           body: "This website uses Google Consent Mode v2. This means all storage types (analytics, advertising, personalization) are denied by default for visitors from the EEA, until you actively grant consent.",
         },
         {
-          heading: "5. Third-party sharing",
-          body: 'We do not share personal data with third parties. Analytical data is processed exclusively by Google in accordance with their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>.',
+          heading: "6. Third-party sharing",
+          body: 'We share personal data only with the services this site uses. Supabase hosts the site\'s database in the EU (contact form messages and the visit statistics). Telegram delivers the notification of a new contact form message (name, email address, reason, page, language and message) to Hans, under its own <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. Google processes Google Analytics data in accordance with their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. The site\'s own visit statistics are not shared with anyone else.',
         },
         {
-          heading: "6. Your rights",
-          body: "Under the GDPR, you have the right to access, rectify, and delete your data. Since we do not store personal data, this is not applicable in practice. For questions, you can always reach out.",
+          heading: "7. Your rights",
+          body: 'Under the GDPR, you have the right to access, rectify and delete your personal data, and to object to its processing. For a contact form message, email <a href="mailto:hansvl3@gmail.com" class="text-primary underline">hansvl3@gmail.com</a> and we will show, correct or delete it. The visit statistics are not stored under your name, so we cannot look them up by name. If you sent the contact form and also want to see or delete the statistics of that visit, say so and we will handle them together with your message. You can also lodge a complaint with the Dutch Data Protection Authority (Autoriteit Persoonsgegevens).',
         },
         {
-          heading: "7. Changes",
+          heading: "8. Changes",
           body: "This privacy policy may be updated. The most recent version is always available on this page.",
         },
       ],
@@ -474,7 +478,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     cookie: {
       title: "Cookies & Privacy",
       description:
-        "We use analytical cookies to understand and improve the website experience. No personal data is shared with third parties.",
+        "We use analytical cookies (Google Analytics) to understand and improve the website experience. Google processes this data; read more in the",
       privacyLink: "Privacy Policy",
       accept: "Accept",
       decline: "Decline",
@@ -780,7 +784,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Privacy ── */
     privacy: {
       title: "Privacybeleid",
-      lastUpdated: "Laatst bijgewerkt: februari 2026",
+      lastUpdated: "Laatst bijgewerkt: oktober 2026",
       sections: [
         {
           heading: "1. Wie zijn wij?",
@@ -788,26 +792,30 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. Welke gegevens verzamelen wij?",
-          body: "Wij verzamelen uitsluitend anonieme analytische gegevens via Google Analytics 4 (GA4), beheerd via Google Tag Manager. Dit omvat onder andere paginaweergaven, sessieduur en apparaattype. Er worden geen persoonsgegevens zoals naam, e-mailadres of IP-adres opgeslagen, IP-anonimisering is standaard ingeschakeld in GA4. Daarnaast houdt de site eigen anonieme bezoekstatistieken bij (bekeken pagina's, tijd op de pagina, scrolldiepte, klikken op contactlinks, laadsnelheid). Die gebruiken geen cookies, slaan niets op je apparaat op en bevatten geen IP-adres of andere identificatie; ze bestaan alleen in het geheugen zolang je bezoek duurt.",
+          body: "Als je het contactformulier gebruikt, slaan we je naam, e-mailadres, de gekozen reden, je bericht, de pagina waarvandaan je het verstuurde en de taal van de site op in de eigen database van de site (Supabase, EU), zodat we je kunnen antwoorden. Een melding met deze gegevens gaat via Telegram naar Hans. We bewaren een bericht zolang dat nodig is om het af te handelen en op te volgen, en verwijderen het eerder als je daarom vraagt. Daarnaast gebruiken we Google Analytics 4 (GA4), beheerd via Google Tag Manager, voor onder andere paginaweergaven, sessieduur, apparaattype en hoe blogartikelen gelezen worden. GA4 ontvangt geen namen of e-mailadressen, en IP-anonimisering is standaard ingeschakeld in GA4. Tot slot houdt de site eigen bezoekstatistieken bij, zie punt 3.",
         },
         {
-          heading: "3. Cookies",
+          heading: "3. Eigen bezoekstatistieken van de site",
+          body: "Zonder cookies en zonder iets op je apparaat op te slaan, houdt de site bij hoe die gebruikt wordt: welke pagina's bekeken worden, hoe lang een pagina in beeld is en hoe ver je scrollt; klikken op links voor contact, een afspraak, e-mail, LinkedIn en de tarievenpagina, op links naar andere websites en op downloads (waar de link naartoe gaat, zonder zoekparameters, en maximaal 80 tekens van de linktekst); bij blogartikelen hoe ver je leest, of je het uitleest en hoe lang dat duurde, de deeloptie die je kiest en de onderdelen van de inhoudsopgave waarop je klikt; de stappen van het contactformulier (het veld waarin je begint, welke velden niet goed zijn ingevuld en of het versturen lukte), nooit wat je intypt; laadsnelheid; technische foutmeldingen; en, als je een pagina opent die niet bestaat, het adres van de pagina die ernaar linkte (zonder zoekparameters). Bij elke melding horen ook de taal van de site, het type apparaat (mobiel, tablet of desktop) en of je bent ingelogd op een account van deze site (afgeleid van de inlog die de site zelf in je browser bewaart, zodat de eigen bezoeken van de eigenaar buiten de cijfers blijven), en bij de eerste pagina van een bezoek ook de verwijzende website (alleen het domein) en eventuele campagnetags in het adres (utm_source, utm_medium en utm_campaign). Om de meldingen van één bezoek bij elkaar te houden, maakt je browsertabblad een willekeurige bezoekcode aan die alleen in het geheugen van de browser staat (een nieuw tabblad of herladen geeft een nieuwe code). Die code gaat mee met elke melding en wordt daarmee opgeslagen in de eigen database van de site (Supabase, EU). Het is een pseudonieme code: bij de statistieken wordt geen IP-adres, naam of e-mailadres opgeslagen, en de code wordt niet gekoppeld aan contactformulieren of andere persoonsgegevens (het contactformulier stuurt hem niet mee). Omdat elke melding met tijdstip en pagina wordt opgeslagen, zijn de statistieken van een bezoek waarin je het contactformulier verstuurde in principe aan je bericht te koppelen; dat doen we niet. De statistieken worden na uiterlijk 13 maanden automatisch verwijderd.",
+        },
+        {
+          heading: "4. Cookies",
           body: "Wij gebruiken analytische cookies uitsluitend na jouw expliciete toestemming (opt-in). Zonder toestemming worden er geen tracking-cookies geplaatst. Je kunt je toestemming op elk moment intrekken door je browsergegevens te wissen.",
         },
         {
-          heading: "4. Google Consent Mode v2",
+          heading: "5. Google Consent Mode v2",
           body: "Deze website maakt gebruik van Google Consent Mode v2. Dit betekent dat alle opslagtypen (analytics, advertenties, personalisatie) standaard worden geweigerd voor bezoekers uit de EER, totdat je actief toestemming geeft.",
         },
         {
-          heading: "5. Delen met derden",
-          body: 'Wij delen geen persoonsgegevens met derden. Analytische data wordt uitsluitend verwerkt door Google conform hun <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>.',
+          heading: "6. Delen met derden",
+          body: 'Wij delen persoonsgegevens alleen met de diensten die deze site gebruikt. Supabase host de database van de site in de EU (contactberichten en de bezoekstatistieken). Telegram bezorgt de melding van een nieuw contactbericht (naam, e-mailadres, reden, pagina, taal en bericht) bij Hans, conform zijn eigen <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. Google verwerkt Google Analytics-data conform hun <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. De eigen bezoekstatistieken worden met niemand anders gedeeld.',
         },
         {
-          heading: "6. Je rechten",
-          body: "Op grond van de AVG heb je recht op inzage, rectificatie en verwijdering van je gegevens. Aangezien wij geen persoonsgegevens opslaan, is dit in de praktijk niet van toepassing. Voor vragen kun je altijd contact opnemen.",
+          heading: "7. Je rechten",
+          body: 'Op grond van de AVG heb je recht op inzage, rectificatie en verwijdering van je persoonsgegevens, en kun je bezwaar maken tegen de verwerking. Voor een contactbericht mail je naar <a href="mailto:hansvl3@gmail.com" class="text-primary underline">hansvl3@gmail.com</a>; we laten het je dan zien, passen het aan of verwijderen het. De bezoekstatistieken staan niet op je naam, dus we kunnen ze niet op naam opzoeken. Heb je het contactformulier verstuurd en wil je ook de statistieken van dat bezoek inzien of laten verwijderen, zeg dat dan; we behandelen ze samen met je bericht. Je kunt ook een klacht indienen bij de Autoriteit Persoonsgegevens.',
         },
         {
-          heading: "7. Wijzigingen",
+          heading: "8. Wijzigingen",
           body: "Dit privacybeleid kan worden bijgewerkt. De meest recente versie is altijd beschikbaar op deze pagina.",
         },
       ],
@@ -817,7 +825,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     cookie: {
       title: "Cookies & Privacy",
       description:
-        "Wij gebruiken analytische cookies om het gebruik van de website te begrijpen en te verbeteren. Geen persoonlijke data wordt gedeeld met derden.",
+        "Wij gebruiken analytische cookies (Google Analytics) om het gebruik van de website te begrijpen en te verbeteren. Google verwerkt deze data; lees meer in het",
       privacyLink: "Privacybeleid",
       accept: "Accepteren",
       decline: "Weigeren",

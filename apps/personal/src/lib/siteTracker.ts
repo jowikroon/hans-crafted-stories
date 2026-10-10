@@ -2,23 +2,30 @@
 
    Why it exists next to GA4: GA4 only counts visitors who accept cookies (Consent Mode denies
    everything by default for the EEA), which on this site is a small minority. This tracker
-   stores nothing on the device, sends no IP, user agent or identifier beyond a random id that
-   lives in memory for one tab (a reload starts a new visit), so it needs no consent and sees
-   every visit. GA4 stays for what it is good at; the dashboard shows both side by side.
+   stores nothing on the device and puts no IP, user agent or identifier in its rows beyond a
+   random visit id that is made in memory for one tab (a reload starts a new visit) and stored
+   with the events, a pseudonym the privacy policy describes. It needs no consent and sees every
+   visit. GA4 stays for what it is good at; the dashboard shows both side by side.
 
    What it records (see supabase/migrations/20260925120000_site_measurement.sql):
    - page_view on every route change, with referrer host, UTM tags, language and device class
    - engagement per page: visible time and max scroll depth, sent when the page is left
-   - lead and intent clicks, classified from the link itself (classifyLink)
-   - contact form start / submit / error (from ContactForm), 404s (from NotFound)
-   - Core Web Vitals (LCP, CLS, INP, FCP, TTFB) for the landing page, with Google's ratings
+   - lead, intent, outbound and download clicks, classified from the link itself (classifyLink),
+     with the link's host and path (never its query string) and up to 80 characters of its text
+   - blog reading progress, completion, shares and table of contents clicks (from blogAnalytics)
+   - contact form start / submit / error (from ContactForm), 404s with the linking page minus its
+     query string (from NotFound); the visit id never goes along with the form itself and the
+     submit event repeats none of its fields, so only time and page are shared
+   Keep this list and the privacy policy (translations.ts, privacy section 3) in step.
+   - Core Web Vitals (LCP, CLS, INP, FCP, TTFB) for the landing page, with Google's ratings,
+     until the first hide or the first private route
    - JavaScript errors (first five per visit)
 
-   Not tracked: admin and tool routes (/write, /dashboards, /portal, ...), bots and headless
-   browsers (including the prerender build). A logged-in session is marked internal so the
-   dashboard can leave Hans's own visits out. */
+   Not tracked: any event on admin and tool routes (/write, /dashboards, /portal, ...), bots and
+   headless browsers (including the prerender build). A logged-in session is marked internal so
+   the dashboard can leave Hans's own visits out. */
 
-import { classifyLink, deviceClass, isTrackablePath, type TrackEvent } from "./siteTrackerCore";
+import { classifyLink, deviceClass, isTrackablePath, referrerPage, type TrackEvent } from "./siteTrackerCore";
 
 export type { TrackEvent };
 
@@ -53,6 +60,8 @@ let visibleMs = 0;
 let maxScroll = 0;
 let errors = 0;
 let internal = false;
+/** performance.now() when the visit first entered a private route: the landing page's vitals end there. */
+let vitalsUntil = Infinity;
 const attribution: Pick<Row, "referrer_host" | "utm_source" | "utm_medium" | "utm_campaign"> = {};
 
 const clip = (v: string | null | undefined, n: number) => (v ? v.slice(0, n) : null);
@@ -97,7 +106,9 @@ function flush(keepalive = false) {
 }
 
 function push(event: TrackEvent, path: string, extra: Partial<Row> = {}) {
-  if (!enabled) return;
+  // The single choke point: nothing that belongs to an admin or tool route leaves the browser,
+  // whichever event it is (page view, vital, error, click, engagement).
+  if (!enabled || !isTrackablePath(path)) return;
   queue.push({
     visit_id: visitId, event, path: clip(path, 300) ?? "/", lang: lang(), device: deviceClass(window.innerWidth),
     internal, ...extra,
@@ -105,15 +116,18 @@ function push(event: TrackEvent, path: string, extra: Partial<Row> = {}) {
   if (!timer) timer = setTimeout(() => flush(), FLUSH_MS);
 }
 
-/** The in-memory visit id, to tie a contact submission to its visit (null when not measured). */
-export function currentVisitId(): string | null {
-  return enabled ? visitId : null;
-}
+/** The page an event belongs to: the tracked route, or the address bar before the first page view. */
+const pagePath = () => currentPath || location.pathname;
 
-/** Public: record an event for the current page. Safe to call anywhere, also before init. */
-export function track(event: TrackEvent, props?: Record<string, unknown>, value?: number) {
-  if (!enabled) return;
-  push(event, currentPath || location.pathname, { props: props ?? null, value: value ?? null });
+/**
+ * Public: record an event. Safe to call anywhere: the first call starts the tracker when the
+ * SiteTracker component has not yet (a route's own effects run before that later sibling's), and
+ * it does nothing for bots and during prerender. Pass `path` for an event that belongs to the new
+ * route while the tracked one may still be the previous page, such as a 404 on an SPA transition.
+ */
+export function track(event: TrackEvent, props?: Record<string, unknown>, value?: number, path?: string) {
+  if (!enabled && !initSiteTracker()) return;
+  push(event, path || pagePath(), { props: props ?? null, value: value ?? null });
   if (event === "contact_form_submit") flush(true);
 }
 
@@ -126,6 +140,7 @@ function endEngagement() {
 }
 
 function onScroll() {
+  if (!currentPath || !isTrackablePath(location.pathname)) return; // no depth measured on a private route
   const h = document.documentElement;
   const max = h.scrollHeight - window.innerHeight;
   const pct = max > 0 ? (window.scrollY / max) * 100 : 100;
@@ -137,9 +152,19 @@ export function trackPageView(path: string) {
   if (!enabled) return;
   if (path === currentPath) return;
   endEngagement();
+  // Every page measures from zero, and a private route measures nothing: no clock, no scroll
+  // depth, and the landing page's vitals stop there. So nothing done on it can surface in the
+  // engagement or vitals of a public page.
+  visibleMs = 0;
+  maxScroll = 0;
+  if (!isTrackablePath(path)) {
+    currentPath = "";
+    visibleSince = 0;
+    vitalsUntil = Math.min(vitalsUntil, performance.now());
+    return;
+  }
   currentPath = path;
   visibleSince = document.visibilityState === "visible" ? Date.now() : 0;
-  if (!isTrackablePath(path)) { currentPath = ""; return; }
   push("page_view", path, firstView ? attribution : {});
   firstView = false;
   requestAnimationFrame(onScroll);
@@ -147,7 +172,7 @@ export function trackPageView(path: string) {
 
 function onClick(e: MouseEvent) {
   const a = (e.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
-  if (!a || !currentPath) return;
+  if (!a || !currentPath || !isTrackablePath(location.pathname)) return;
   const c = classifyLink(a.href, location.origin, a.hasAttribute("download"));
   if (!c) return;
   track(c.event, { href: clip(c.target, 200), text: clip(a.textContent?.trim() ?? "", 80) });
@@ -160,14 +185,20 @@ function onClick(e: MouseEvent) {
 
 function observeVitals() {
   if (typeof PerformanceObserver === "undefined") return;
-  const landing = currentPath || location.pathname;
+  const landing = pagePath();
+  if (!isTrackablePath(landing)) return; // a direct visit to /login or a tool: no vitals at all
   const vitals: Record<string, number> = {};
   const rate = (name: string, v: number) => {
     const [good, poor] = ({ LCP: [2500, 4000], INP: [200, 500], CLS: [0.1, 0.25], FCP: [1800, 3000], TTFB: [800, 1800] } as Record<string, [number, number]>)[name];
     return v <= good ? "good" : v <= poor ? "needs-improvement" : "poor";
   };
+  // Entries are filtered on when they happened, not on when they arrive: input and layout shifts
+  // from the moment the visitor entered a private route on are not the landing page's.
   const obs = (type: string, cb: (entries: PerformanceEntry[]) => void) => {
-    try { new PerformanceObserver((l) => cb(l.getEntries())).observe({ type, buffered: true } as PerformanceObserverInit); } catch { /* unsupported */ }
+    try {
+      new PerformanceObserver((l) => cb(l.getEntries().filter((e) => e.startTime < vitalsUntil)))
+        .observe({ type, buffered: true } as PerformanceObserverInit);
+    } catch { /* unsupported */ }
   };
   obs("largest-contentful-paint", (es) => { const e = es[es.length - 1]; if (e) vitals.LCP = e.startTime; });
   let cls = 0;
@@ -190,6 +221,14 @@ function observeVitals() {
   };
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") report(); });
   addEventListener("pagehide", report);
+}
+
+function jsError(props: Record<string, unknown>) {
+  // The address bar decides: an error on a private route is dropped, also in the moment after
+  // navigating there and before the route tracker has caught up (currentPath still the old page).
+  if (!isTrackablePath(location.pathname) || errors >= MAX_ERRORS) return;
+  errors++;
+  track("js_error", props);
 }
 
 /** Start once, in the browser. Returns false when this visit is not measured. */
@@ -224,12 +263,12 @@ export function initSiteTracker(): boolean {
   });
   addEventListener("pagehide", () => { endEngagement(); flush(true); });
   addEventListener("error", (e) => {
-    if (errors++ >= MAX_ERRORS) return;
-    track("js_error", { message: clip(String(e.message || "error"), 200), source: clip(e.filename, 200), line: e.lineno });
+    // filename is the page itself for an error without a script (a ResizeObserver loop, an inline
+    // handler): origin and path only, like every other address the tracker keeps.
+    jsError({ message: clip(String(e.message || "error"), 200), source: referrerPage(e.filename), line: e.lineno });
   });
   addEventListener("unhandledrejection", (e) => {
-    if (errors++ >= MAX_ERRORS) return;
-    track("js_error", { message: clip(String((e.reason as Error)?.message ?? e.reason ?? "rejection"), 200) });
+    jsError({ message: clip(String((e.reason as Error)?.message ?? e.reason ?? "rejection"), 200) });
   });
   observeVitals();
   return true;

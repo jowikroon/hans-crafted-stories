@@ -39,11 +39,12 @@ describe("submitContact", () => {
     expect(await submitContact(data, { isProduction: true })).toBe("error");
   });
 
-  it("stores the journey columns (lang, page, visit_id) with the submission", async () => {
+  it("stores lang and page with the submission, never a visit id (#401)", async () => {
     insert.mockResolvedValueOnce({ error: null });
-    const meta = { lang: "nl", page: "/nl/contact", visit_id: "v1" };
+    const meta = { lang: "nl", page: "/contact" };
     expect(await submitContact(data, { isProduction: true, meta })).toBe("sent");
     expect(insert).toHaveBeenCalledWith([{ ...data, ...meta }]);
+    expect(insert.mock.calls[0][0][0]).not.toHaveProperty("visit_id");
   });
 
   it("reports the error code for tracking (null on a network failure)", async () => {

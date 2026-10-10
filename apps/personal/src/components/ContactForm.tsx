@@ -19,7 +19,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { isProductionHost } from "@/lib/config/productionHost";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
-import { currentVisitId, track } from "@/lib/siteTracker";
+import { track } from "@/lib/siteTracker";
 
 type ContactT = (typeof translations)["en"]["contact"];
 
@@ -53,8 +53,8 @@ export async function submitContact(
   data: ContactData,
   opts: {
     isProduction?: boolean;
-    /** Extra kolommen voor de journey-koppeling (taal, pagina, bezoek). */
-    meta?: { lang: string; page: string; visit_id: string | null };
+    /** Extra kolommen (taal, pagina). Bewust geen visit id: een bericht wordt niet aan de bezoekstatistiek gekoppeld (#401). */
+    meta?: { lang: string; page: string };
     /** Foutcode voor tracking; null bij een netwerkfout. */
     onError?: (code: string | null) => void;
   } = {},
@@ -132,8 +132,10 @@ const ContactForm = () => {
     setStatus({ kind: "idle" });
     let outcome: "sent" | "preview" | "error" = "error";
     try {
+      // No visit id here on purpose: the site does not link a message to the visit statistics.
+      // Time and page are all the two still share; the privacy policy says so (translations.ts).
       outcome = await submitContact(result.data, {
-        meta: { lang, page: window.location.pathname.slice(0, 300), visit_id: currentVisitId() },
+        meta: { lang, page: window.location.pathname.slice(0, 300) },
         onError: (code) => track("contact_form_error", { kind: "submit", code }),
       });
     } finally {
@@ -153,7 +155,9 @@ const ContactForm = () => {
     }
 
     setStatus({ kind: "success", text: t.successMessage });
-    track("contact_form_submit", { reason: result.data.reason });
+    // Counted per visit for the lead funnel. No reason or other form field: the message keeps
+    // those (contact_submissions), the statistics event repeats none of them.
+    track("contact_form_submit");
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: "contact_form_submit", form_reason: result.data.reason });
     toast.success(t.successMessage);
