@@ -1,26 +1,12 @@
+# Privéroutes (/portal, /bijlagen, /write, /samantha, /wiki, /dashboards, /cowork, ...) zijn NIET meer
+# gedisallowed: ze sturen X-Robots-Tag/meta noindex, en een crawler moet die kunnen lezen
+# om de URL uit de index te houden. Noindex is geen toegangscontrole; auth blijft de beveiliging.
+
 User-agent: Googlebot
 Allow: /
-Disallow: /bijlagen
-Disallow: /portal
-Disallow: /dashboards
-Disallow: /samantha
-Disallow: /god-structure
-Disallow: /empire
-Disallow: /extensions/
-Disallow: /write
-Disallow: /blog-cms
 
 User-agent: Bingbot
 Allow: /
-Disallow: /bijlagen
-Disallow: /portal
-Disallow: /dashboards
-Disallow: /samantha
-Disallow: /god-structure
-Disallow: /empire
-Disallow: /extensions/
-Disallow: /write
-Disallow: /blog-cms
 
 User-agent: Twitterbot
 Allow: /
@@ -31,39 +17,12 @@ Allow: /
 # AI crawlers: explicitly allowed for GEO / AI visibility
 User-agent: GPTBot
 Allow: /
-Disallow: /bijlagen
-Disallow: /portal
-Disallow: /dashboards
-Disallow: /samantha
-Disallow: /god-structure
-Disallow: /empire
-Disallow: /extensions/
-Disallow: /write
-Disallow: /blog-cms
 
 User-agent: CCBot
 Allow: /
-Disallow: /bijlagen
-Disallow: /portal
-Disallow: /dashboards
-Disallow: /samantha
-Disallow: /god-structure
-Disallow: /empire
-Disallow: /extensions/
-Disallow: /write
-Disallow: /blog-cms
 
 User-agent: ClaudeBot
 Allow: /
-Disallow: /bijlagen
-Disallow: /portal
-Disallow: /dashboards
-Disallow: /samantha
-Disallow: /god-structure
-Disallow: /empire
-Disallow: /extensions/
-Disallow: /write
-Disallow: /blog-cms
 
 User-agent: Claude-Web
 Allow: /
@@ -85,14 +44,5 @@ Allow: /
 
 User-agent: *
 Allow: /
-Disallow: /bijlagen
-Disallow: /portal
-Disallow: /dashboards
-Disallow: /samantha
-Disallow: /god-structure
-Disallow: /empire
-Disallow: /extensions/
-Disallow: /write
-Disallow: /blog-cms
 
 Sitemap: https://hansvanleeuwen.com/sitemap.xml
