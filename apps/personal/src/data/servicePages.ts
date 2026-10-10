@@ -39,6 +39,8 @@ export interface PricingModel {
 }
 
 export interface ServicePageCopy {
+  /** Laatste inhoudelijke revisie van deze pagina in deze taal. */
+  updated: string;
   title: string;
   metaDesc: string;
   breadcrumb: string;
@@ -78,7 +80,7 @@ export interface ServicePageDef {
   copy: Record<Lang, ServicePageCopy>;
 }
 
-/** Datum van de laatste inhoudelijke revisie; zichtbaar op elke dienstenpagina. */
+/** Bestaande revisiedatum; niet verhogen voor wijzigingen aan losse pagina’s of talen. */
 export const SERVICE_PAGES_UPDATED = "2026-09-22";
 
 const BYLINE = {
@@ -186,15 +188,16 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "briefcase",
     copy: {
       nl: {
-        title: "Interim E-commerce Manager inhuren | Hans van Leeuwen",
+        updated: "2026-10-05",
+        title: "Interim e-commerce manager | E-commerce specialist inhuren",
         metaDesc:
-          "Interim e-commerce manager inhuren voor Amazon NL/DE en Bol.com. 10+ jaar, 70% marktaandeel (Nielsen), €2M+ marketplace-omzet beheerd. Amersfoort, NL/EU.",
+          "Interim e-commerce manager of e-commerce specialist inhuren voor Amazon NL/DE en Bol.com. 10+ jaar ervaring, €2M+ marketplace-omzet beheerd. Amersfoort.",
         breadcrumb: "Interim E-commerce Manager",
         eyebrow: "Interim & freelance",
-        h1: "Interim e-commerce manager inhuren",
+        h1: "Interim e-commerce manager en e-commerce specialist inhuren",
         subtitle: "Tijdelijke leiding over je marketplace-operatie: strategie, uitvoering en overdracht",
         intro:
-          "Ik ben Hans van Leeuwen, interim e-commerce manager uit Amersfoort. Ik neem tijdelijk de leiding over je Amazon- en Bol.com-operatie wanneer je manager vertrekt, je groei sneller gaat dan je team, of je een nieuw kanaal opent. Bij Alpine Hearing Protection bouwde ik als marketplace manager de oordoppencategorie op Amazon NL uit tot 70% marktaandeel (Nielsen, 2023) en bracht ik het out-of-stockpercentage onder de 2%; bij ABS All Brake Systems koppelde ik eBay, Amazon en Bol.com tot één operatie. In totaal stuurde ik meer dan €2 miljoen marketplace-omzet en teams van 6+ FTE aan.",
+          "Ik ben Hans van Leeuwen, interim e-commerce manager en freelance e-commerce specialist uit Amersfoort. Zoek je tijdelijk e-commerce personeel met senior ervaring in plaats van een vaste medewerker, dan neem ik tijdelijk de leiding over je Amazon- en Bol.com-operatie wanneer je manager vertrekt, je groei sneller gaat dan je team, of je een nieuw kanaal opent. Bij Alpine Hearing Protection bouwde ik als marketplace manager de oordoppencategorie op Amazon NL uit tot 70% marktaandeel (Nielsen, 2023) en bracht ik het out-of-stockpercentage onder de 2%; bij ABS All Brake Systems koppelde ik eBay, Amazon en Bol.com tot één operatie. In totaal stuurde ik meer dan €2 miljoen marketplace-omzet en teams van 6+ FTE aan.",
         whenHeading: "Wanneer je een interim e-commerce manager inschakelt",
         when: [
           "Je e-commerce manager is vertrokken en de marketplace-operatie mag niet stilvallen tijdens de werving",
@@ -203,6 +206,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
           "Je wilt van vendor naar seller op Bol.com zonder je performancescore te verliezen",
           "Je hebt stockouts, Buy Box-verlies en geen forecast die het voorkomt",
           "Je team heeft de handen vol en de rapportage naar directie blijft achter",
+          "Je zoekt een e-commerce specialist of tijdelijke e-commerce medewerker die zonder inwerktijd meedraait",
         ],
         servicesHeading: "Wat ik als interim lead oppak",
         services: [
@@ -269,6 +273,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.ai, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Interim E-commerce Manager (NL/EU) | Hans van Leeuwen",
         metaDesc:
           "Hire an interim e-commerce manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen), €2M+ marketplace revenue managed. Amersfoort.",
@@ -361,12 +366,13 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "cart",
     copy: {
       nl: {
-        title: "Amazon NL Specialist inhuren | Hans van Leeuwen",
+        updated: "2026-10-05",
+        title: "Amazon specialist inhuren (NL/DE) | Hans van Leeuwen",
         metaDesc:
-          "Freelance Amazon NL specialist inhuren: listings, A+ Content, Amazon Ads en Buy Box voor Amazon.nl en Amazon.de. 70% categoriemarktaandeel (Nielsen 2023).",
+          "Freelance Amazon specialist inhuren: listings, A+ Content, Amazon Ads en Buy Box voor Amazon.nl en Amazon.de. 70% categoriemarktaandeel (Nielsen 2023).",
         breadcrumb: "Amazon NL Specialist",
         eyebrow: "Amazon Nederland & Duitsland",
-        h1: "Amazon NL specialist inhuren",
+        h1: "Amazon specialist inhuren voor Amazon.nl en Amazon.de",
         subtitle: "Freelance Amazon-accountmanager voor listings, advertising, Buy Box en voorraad",
         intro:
           "Ik ben Hans van Leeuwen, freelance Amazon-specialist uit Amersfoort. Ik beheer en laat Amazon.nl- en Amazon.de-accounts groeien voor merken die geen fulltime specialist in huis hebben. Voor Alpine Hearing Protection was Amazon NL vier jaar mijn dagelijkse werk: de oordoppencategorie groeide daar naar een marktaandeel van 70% (Nielsen, 2023), de Buy Box werd rustiger door prijsafstemming met de B2B-kanalen en A/B-tests op de productafbeeldingen tilden de conversie. Bij ABS All Brake Systems run ik nu een catalogus van A.B.S.-remonderdelen op Amazon DE naast eBay DE en Bol.com.",
@@ -443,6 +449,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.bol, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Amazon NL Specialist & Account Manager | Hans van Leeuwen",
         metaDesc:
           "Freelance Amazon NL specialist for hire: listings, A+ Content, Amazon Ads and Buy Box on Amazon.nl and Amazon.de. 70% category share (Nielsen 2023).",
@@ -534,6 +541,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "store",
     copy: {
       nl: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Bol.com Consultant & Ads inhuren | Hans van Leeuwen",
         metaDesc:
           "Freelance Bol.com consultant inhuren voor content, Bol Ads, Buy Block en vendor-naar-seller. Zelf een Bol.com-sellerkanaal gelanceerd bij Alpine Hearing.",
@@ -616,6 +624,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Bol.com Consultant & Ads Specialist | Hans van Leeuwen",
         metaDesc:
           "Freelance Bol.com consultant for content, Bol Ads, Buy Block and vendor-to-seller transitions. Launched a Bol.com seller channel at Alpine Hearing.",
@@ -707,6 +716,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "bot",
     copy: {
       nl: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "AI E-commerce Automation inhuren | Hans van Leeuwen",
         metaDesc:
           "Freelance AI e-commerce automation specialist: productdata, orders, ads en rapportage voor Amazon en Bol.com geautomatiseerd met n8n, Supabase en Claude.",
@@ -789,6 +799,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.interim, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "AI E-commerce Automation Specialist | Hans van Leeuwen",
         metaDesc:
           "Freelance AI e-commerce automation specialist: product data, orders, ads and reporting for Amazon and Bol.com automated with n8n, Supabase and Claude.",

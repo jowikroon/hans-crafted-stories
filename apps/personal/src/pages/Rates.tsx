@@ -123,7 +123,7 @@ const Rates = () => {
         <p className="mt-6 text-xs text-muted-foreground">
           <Link to="/interim-ecommerce-manager" className="underline hover:text-foreground">{lang === "nl" ? "Interim e-commerce manager inhuren" : "Interim e-commerce manager"}</Link>
           {" · "}
-          <Link to="/amazon-nl-specialist" className="underline hover:text-foreground">{lang === "nl" ? "Amazon NL specialist inhuren" : "Amazon NL specialist"}</Link>
+          <Link to="/amazon-nl-specialist" className="underline hover:text-foreground">{lang === "nl" ? "Amazon specialist inhuren" : "Amazon NL specialist"}</Link>
           {" · "}
           <Link to="/bol-com-consultant" className="underline hover:text-foreground">{lang === "nl" ? "Bol.com consultant inhuren" : "Bol.com consultant"}</Link>
         </p>

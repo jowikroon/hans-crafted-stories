@@ -5,7 +5,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
 import { PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
 import { absoluteUrl, BASE_URL } from "@/lib/i18n/routes";
-import { EXPERIENCE_STRIP, SERVICE_BYLINE, SERVICE_PAGES_UPDATED, type ServicePageDef } from "@/data/servicePages";
+import { EXPERIENCE_STRIP, SERVICE_BYLINE, type ServicePageDef } from "@/data/servicePages";
 import hansProfile from "@/assets/hans-profile.jpg";
 
 const fade = {
@@ -54,7 +54,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
           isPartOf: { "@id": `${BASE_URL}/#website` },
           about: { "@id": `${BASE_URL}/#person` },
           author: { "@id": `${BASE_URL}/#person` },
-          dateModified: SERVICE_PAGES_UPDATED,
+          dateModified: t.updated,
           inLanguage: lang,
         },
         {
@@ -110,7 +110,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
             <p className="text-muted-foreground">{byline.role}</p>
           </div>
           <div className="flex flex-col gap-1 text-xs text-muted-foreground sm:text-right">
-            <span>{byline.updated}: <time dateTime={SERVICE_PAGES_UPDATED}>{formatDate(SERVICE_PAGES_UPDATED, lang)}</time></span>
+            <span>{byline.updated}: <time dateTime={t.updated}>{formatDate(t.updated, lang)}</time></span>
             <span>
               <Link to="/about" className="underline hover:text-foreground">{byline.about}</Link>
               {" · "}

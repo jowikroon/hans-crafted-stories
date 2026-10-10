@@ -683,7 +683,7 @@ for (const def of SERVICE_PAGES) {
           isPartOf: { "@id": `${BASE}/#website` },
           about: { "@id": `${BASE}/#person` },
           author: { "@id": `${BASE}/#person` },
-          dateModified: SERVICE_PAGES_UPDATED,
+          dateModified: def.copy[lang].updated,
           inLanguage: lang,
         },
         {

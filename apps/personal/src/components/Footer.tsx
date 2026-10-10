@@ -18,7 +18,7 @@ const internalLinksByLang = {
   ],
   nl: [
     { label: "Interim e-commerce manager inhuren", to: "/interim-ecommerce-manager" },
-    { label: "Amazon NL specialist inhuren", to: "/amazon-nl-specialist" },
+    { label: "Amazon specialist inhuren", to: "/amazon-nl-specialist" },
     { label: "Bol.com consultant inhuren", to: "/bol-com-consultant" },
     { label: "Tarieven", to: "/rates" },
     { label: "Case studies", to: "/work" },

@@ -295,7 +295,7 @@ const Hero = () => {
             {isNl ? "Interim e-commerce manager inhuren →" : "Interim e-commerce manager →"}
           </Link>
           <Link to="/amazon-nl-specialist" className="font-semibold transition-colors hover:text-foreground">
-            {isNl ? "Amazon NL specialist inhuren →" : "Amazon NL specialist →"}
+            {isNl ? "Amazon specialist inhuren →" : "Amazon NL specialist →"}
           </Link>
           <Link to="/bol-com-consultant" className="font-semibold transition-colors hover:text-foreground">
             {isNl ? "Bol.com consultant inhuren →" : "Bol.com consultant →"}
