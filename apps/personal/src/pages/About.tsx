@@ -3,7 +3,8 @@ import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRigh
 import ContactForm from "@/components/ContactForm";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
 import { Link } from "@/components/LocalizedLink";
-import hansProfile from "@/assets/hans-profile.jpg";
+import hansProfile from "@/assets/hans-profile.jpg"; // alleen nog voor de JSON-LD image-url
+import HansPortrait from "@/components/media/HansPortrait";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
@@ -174,7 +175,13 @@ const About = () => {
               <div className="relative">
                 <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-primary/10 via-transparent to-primary/5 blur-sm" />
                 <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted ring-1 ring-border/50">
-                  <img src={hansProfile} alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands" width={600} height={800} loading="eager" {...{ fetchpriority: "high" }} decoding="async" className="h-full w-full object-cover object-top" />
+                  {/* md:col-span-2 van een 5-koloms grid, op mobiel vol boven de tekst. */}
+                  <HansPortrait
+                    alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands"
+                    sizes="(min-width: 768px) 38vw, 92vw"
+                    priority
+                    className="h-full w-full object-cover object-top"
+                  />
                   <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background/40 to-transparent" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 flex items-center gap-0.5 rounded-full border border-primary/20 bg-background px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-primary shadow-sm">

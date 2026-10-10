@@ -6,7 +6,7 @@ import { useLang } from "@/hooks/useLang";
 import { PERSON_ENTITY, PROFESSIONAL_SERVICE_ENTITY } from "@/lib/seo/sharedEntities";
 import { absoluteUrl, BASE_URL } from "@/lib/i18n/routes";
 import { EXPERIENCE_STRIP, SERVICE_BYLINE, SERVICE_PAGES_UPDATED, type ServicePageDef } from "@/data/servicePages";
-import hansProfile from "@/assets/hans-profile.jpg";
+import HansAvatar from "@/components/media/HansAvatar";
 
 const fade = {
   initial: { opacity: 0, y: 20 } as const,
@@ -104,7 +104,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
 
         {/* Byline: de "wie" achter de pagina, zichtbaar en gelinkt (E-E-A-T). */}
         <div className="mb-14 flex flex-wrap items-center gap-4 rounded-xl border border-border/40 bg-card p-4 text-sm">
-          <img src={hansProfile} alt={byline.name} width={56} height={56} loading="lazy" decoding="async" className="h-14 w-14 rounded-full object-cover object-top" />
+          <HansAvatar alt={byline.name} size={56} className="h-14 w-14 rounded-full object-cover object-top" />
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-foreground">{byline.name}</p>
             <p className="text-muted-foreground">{byline.role}</p>
