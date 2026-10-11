@@ -10,6 +10,7 @@ import { usePageContent } from "@/hooks/usePageContent";
 import Magnetic from "@/components/Magnetic";
 import hansProfile from "@/assets/hans-profile.jpg";
 import { SERVICE_BYLINE, SERVICE_PAGES_UPDATED } from "@/data/servicePages";
+import { MARKETPLACE_PRODUCT_DATA_CASE } from "@/data/marketplaceCases";
 
 const icons = [
   <ShoppingCart size={20} />,
@@ -54,7 +55,7 @@ const Hero = () => {
           <p className="mb-4 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-primary"><span className="inline-block h-px w-7 bg-primary" aria-hidden="true" />
             {getValue("hero_subtitle", t.subtitle)}
           </p>
-          {/* Korte hero (audit F4.1/F6.1): subline + korte beschrijving, CTA's direct eronder; context volgt daarna.
+          {/* Korte hero (audit F4.1/F6.1): subline, korte beschrijving en ontdekkingslinks, dan de CTA's; context volgt daarna.
               H1, stijl en subline volgen Hans op main (#396 .hvl-page-title, #398 H1-copy en nieuwe subline). */}
           <h1 className="hvl-page-title mb-3 text-foreground">
             {isNl
@@ -65,8 +66,25 @@ const Hero = () => {
           <p className="mb-4 font-display text-base font-medium text-muted-foreground md:text-lg">
             {getValue("hero_freelance_h2", t.freelanceH2)}
           </p>
-          <p className="mb-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+          <p className="mb-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
             {getValue("hero_description", t.description)}
+          </p>
+          {/* Ontdekkingslinks (#403, HAN-156): interne links naar cases en artikelen. De case-link wijst naar de
+              geanonimiseerde case (zelfde bron als /work); de oude klant-URL redirect daarheen (vercel.json). */}
+          <p className="mb-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            {isNl ? "Bekijk mijn " : "Explore my "}
+            <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {isNl ? "Amazon NL & Bol.com marketplace-cases" : "Amazon NL & Bol.com marketplace cases"}
+            </Link>
+            {isNl ? ", waaronder " : ", including "}
+            <Link to={MARKETPLACE_PRODUCT_DATA_CASE.path} className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {isNl ? "de case over productdata en automatisering" : "the product data and automation case"}
+            </Link>
+            {isNl ? "; of lees " : "; or read "}
+            <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
+              {isNl ? "Amazon & Bol.com optimalisatie artikelen" : "Amazon & Bol.com optimization articles"}
+            </Link>
+            .
           </p>
           <div className="flex flex-wrap gap-4" role="group" aria-label={isNl ? "Actieknoppen" : "Call to action"}>
             <Magnetic>
