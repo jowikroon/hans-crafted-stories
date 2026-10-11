@@ -207,6 +207,26 @@ const Work = () => {
         </motion.div>
       )}
 
+      <Link
+        to="/work/connect-car-parts"
+        className="mb-10 block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-secondary/40 sm:p-8"
+      >
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          {lang === "nl" ? "Uitgelichte AI-automation case" : "Featured AI automation case study"}
+        </p>
+        <h2 className="mb-2 font-display text-2xl font-semibold text-foreground">
+          Connect Car Parts
+        </h2>
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          {lang === "nl"
+            ? "Hoe ik productdata, AI-ondersteunde listingcontent en orderbewaking voor een auto-onderdelenbedrijf samenbreng. De case beschrijft circa 400 actieve SKU's en een intern gemeten daling van 45 naar 3 minuten contentcreatie per SKU."
+            : "How I bring together product data, AI-assisted listing content and order monitoring for an automotive-parts business. The case documents about 400 active SKUs and an internally measured reduction from 45 to 3 minutes of content production per SKU."}
+        </p>
+        <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+          {lang === "nl" ? "Lees de case" : "Read the case study"} <ChevronRight size={16} />
+        </span>
+      </Link>
+
       {isVisible("category_cards") && dbCards.length > 0 && (
         <CategoryCards
           cards={dbCards}
