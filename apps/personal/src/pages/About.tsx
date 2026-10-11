@@ -192,7 +192,7 @@ const About = () => {
                 <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{getValue("about_label", t.about)}</p>
               </div>
               <h1 className="hvl-page-title mb-2 text-foreground">
-                {getValue("about_h1", "Marketplace Manager Amazon EU, US, eBay DE & Bol.com")}
+                {getValue("about_h1", "Marketplace Manager Amazon, Bol.com & eBay")}
               </h1>
               <p className="mb-6 font-display text-lg font-medium text-muted-foreground md:text-xl">
                 {getValue("about_name", "Hans van Leeuwen")} · {getValue("about_location", "Amersfoort, NL")}
