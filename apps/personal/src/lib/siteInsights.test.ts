@@ -54,7 +54,7 @@ describe("buildInsights", () => {
     d.changes = [row, { ...row, id: "b", kind: "offsite", linear_issue: "HAN-144", paths: [] }];
     const insight = buildInsights(d, NOW).find((i) => i.id === "planned");
     expect(insight?.title).toContain("wachten op uitvoering");
-    expect(insight?.evidence).toContain("1 sitewijzigingen en 1 externe acties");
+    expect(insight?.evidence).toContain("1 sitewijziging en 1 externe actie");
   });
 
   it("reports the automatic sitemap submission as a win and a missing sitemap as critical", () => {
