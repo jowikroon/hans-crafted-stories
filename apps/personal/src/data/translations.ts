@@ -321,7 +321,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       headingEmphasis: "strategy",
       freelanceH2: "Strategy, operations and AI automation for scalable marketplace growth.",
       description:
-        "I'm Hans van Leeuwen, a freelance e-commerce and marketplace manager based in Amersfoort. After ten years growing Amazon and Bol.com revenue for brands, I know where marketplace growth actually comes from: sharp listings, disciplined ads, and reliable operations. I help brands across the Netherlands and EU turn their digital channels into revenue engines.",
+        "I'm Hans van Leeuwen, a freelance e-commerce and marketplace manager based in Amersfoort. After ten years growing Amazon and Bol.com revenue for brands, I help teams build the foundations of marketplace growth: accurate product data, sharp listings, disciplined ads, and reliable operations. I use AI-assisted workflows where they improve content and day-to-day execution, with a person reviewing the decisions that matter.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
       ctaWork: "View portfolio & case studies",
       ctaConsult: "Contact me",
@@ -663,7 +663,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       headingEmphasis: "strategie",
       freelanceH2: "Strategie, operations en AI-automatisering voor schaalbare marketplace groei.",
       description:
-        "Laat je omzet op Amazon NL & Bol.com groeien met een ervaren interim marketplace manager. Ik ben Hans van Leeuwen, freelance e-commerce en marketplace specialist gevestigd in Amersfoort. Na tien jaar omzetgroei op Amazon en Bol.com voor diverse merken, weet ik exact hoe je marktplaatsen omzet in winstgevende groeikanalen: strakke productlistings, scherpe advertenties en betrouwbare operations.",
+        "Ik ben Hans van Leeuwen, freelance e-commerce en marketplace manager in Amersfoort. Na tien jaar omzetgroei op Amazon en Bol.com voor merken help ik teams met de basis voor winstgevende marktplaatsgroei: betrouwbare productdata, sterke listings, gerichte advertenties en voorspelbare operations. AI-ondersteunde workflows versnellen content en dagelijks beheer, met menselijke controle op belangrijke beslissingen.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
       ctaWork: "Bekijk portfolio & cases",
       ctaConsult: "Neem contact op met mij",
