@@ -173,7 +173,7 @@ export function buildInsights(d: SiteDashboard, now = new Date()): Insight[] {
     add({
       id: "planned", severity: "info", area: "Verbeteringen",
       title: `${unmeasured} geplande verbeteringen wachten op uitvoering`,
-      evidence: `${unmeasured - offsite} sitewijzigingen en ${offsite} externe acties staan nog gepland; de meting start pas na uitvoering.`,
+      evidence: `${unmeasured - offsite} sitewijziging${unmeasured - offsite === 1 ? "" : "en"} en ${offsite} externe actie${offsite === 1 ? "" : "s"} staan nog gepland; de meting start pas na uitvoering.`,
       action: "Voer de HAN-taken uit. Noem bij een sitewijziging het HAN-nummer en eventueel een Measure-regel in de PR; registreer externe acties met uitvoerdatum voor de meting.",
     });
   }
