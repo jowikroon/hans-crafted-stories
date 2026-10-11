@@ -12,9 +12,10 @@ if (branch && branch !== "main") {
   console.log(`[indexnow] skip — branch ${branch} is not main`);
   process.exit(0);
 }
-// Vercel: alleen productie-builds mogen pingen; previews (PR's, dependabot) niet.
-if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production") {
-  console.log(`[indexnow] skip — VERCEL_ENV=${process.env.VERCEL_ENV}`);
+// Alleen een Vercel-productiebuild mag pingen. Previews, lokale builds en CI (GitHub
+// Actions draait build:personal op elke PR zonder VERCEL_ENV) sturen niets naar IndexNow.
+if (process.env.VERCEL_ENV !== "production") {
+  console.log(`[indexnow] skip — VERCEL_ENV=${process.env.VERCEL_ENV ?? "(unset)"} (alleen production pingt)`);
   process.exit(0);
 }
 

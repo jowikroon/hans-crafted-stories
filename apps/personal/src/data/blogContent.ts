@@ -103,7 +103,7 @@ The most powerful CRO lever is understanding user intent. Why did someone come t
 
 ## Design-First CRO in Practice
 
-At Alpine Hearing Protection, we improved our Amazon conversion rate by focusing on the product detail page experience. Instead of testing button colors, we:
+For a consumer brand, we worked on Amazon conversion by focusing on the product detail page experience. Instead of testing button colors, we:
 
 - Rewrote product descriptions to match search intent
 - Reorganized images to answer common questions first  

@@ -2,7 +2,8 @@ import { useCallback, type ReactNode } from "react";
 
 /**
  * Renders a mailto link without exposing the full email in the initial HTML (reduces scraping/spam).
- * Builds href on first click from user + domain so crawlers don't see the plain address.
+ * The real mailto: href is set on first hover/focus/touch and on click, so it behaves as a real
+ * email link (status bar, copy link, keyboard) while crawlers only see a neutral "mailto:" href.
  */
 interface ObfuscatedMailtoProps {
   /** Local part (before @). */
@@ -35,9 +36,22 @@ export function ObfuscatedMailto({
     [user, domain, subject]
   );
 
+  const reveal = useCallback(
+    (e: React.SyntheticEvent<HTMLAnchorElement>) => {
+      const address = `${user}@${domain}`;
+      e.currentTarget.href = subject
+        ? `mailto:${address}?subject=${encodeURIComponent(subject)}`
+        : `mailto:${address}`;
+    },
+    [user, domain, subject]
+  );
+
   return (
     <a
-      href="#contact"
+      href="mailto:"
+      onMouseEnter={reveal}
+      onFocus={reveal}
+      onTouchStart={reveal}
       onClick={handleClick}
       className={className}
       aria-label={ariaLabel}
