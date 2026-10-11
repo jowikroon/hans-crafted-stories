@@ -12,6 +12,8 @@ describe("i18n routes", () => {
   });
   it("localizes only routes that exist in both languages", () => {
     expect(localizePath("/about", "en")).toBe("/en/about");
+    expect(localizePath("/en/writing/example-post", "en")).toBe("/en/writing/example-post");
+    expect(localizePath("/en/writing/example-post", "nl")).toBe("/writing/example-post");
     expect(localizePath("/", "en")).toBe("/en");
     expect(localizePath("/en/about", "nl")).toBe("/about");
     expect(localizePath("/writing/slug", "en")).toBe("/writing/slug");
