@@ -28,7 +28,7 @@ export interface ChangeResult {
 export interface ChangeRow {
   id: string; title: string; kind: string; linear_issue: string | null; pr_number: number | null; deployed_at: string | null;
   paths: string[]; primary_metric: string | null; expected: "up" | "down"; hypothesis: string | null;
-  measure_days: number; status: string; result: ChangeResult | null; result_at: string | null;
+  measure_days: number; status: string; result: ChangeResult | null; result_at: string | null; learning?: string | null;
 }
 export interface IndexingIssue { url: string; verdict: string; coverage_state: string | null; last_crawl: string | null }
 export interface SiteDashboard {

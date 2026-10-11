@@ -242,10 +242,17 @@ export default function DashboardsHvl() {
         {planned.length > 0 && (
           <details className="mt-2 text-xs" open>
             <summary className="cursor-pointer text-[#4B4842]">{planned.length} gepland: sitewijzigingen starten met meten na een PR; externe acties na registratie met uitvoerdatum</summary>
-            <ul className="mt-2 grid gap-1 sm:grid-cols-2">{planned.map((c) => (
-              <li key={c.id} className="flex gap-2 text-[#4B4842]">
-                {c.linear_issue && <a className="shrink-0 font-medium text-[#1F4F8F] hover:underline" href={`${LINEAR}/${c.linear_issue}`} target="_blank" rel="noreferrer">{c.linear_issue}</a>}
-                <span>{c.title} <span className="text-[#9A958A]">({label(c.primary_metric)})</span></span></li>))}</ul>
+            <ul className="mt-2 grid gap-2 sm:grid-cols-2">{planned.map((c) => (
+              <li key={c.id} className="rounded-lg border border-[#E5DFCE]/70 p-2 text-[#4B4842]">
+                <div className="flex gap-2">
+                  {c.linear_issue && <a className="shrink-0 font-medium text-[#1F4F8F] hover:underline" href={`${LINEAR}/${c.linear_issue}`} target="_blank" rel="noreferrer">{c.linear_issue}</a>}
+                  <span>{c.title} <span className="text-[#9A958A]">({label(c.primary_metric)})</span></span>
+                </div>
+                {c.learning && <details className="mt-1 pl-1 text-[11px] text-[#7E7A6F]">
+                  <summary className="cursor-pointer">Laatste controle en volgende stap</summary>
+                  <p className="mt-1 leading-relaxed">{c.learning}</p>
+                </details>}
+              </li>))}</ul>
           </details>
         )}
         <AddChange onAdded={load} />
