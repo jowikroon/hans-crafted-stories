@@ -270,7 +270,21 @@ describe("selectInspectionWindow", () => {
 
   it("inspects everything when the site fits in one run", () => {
     const r = selectInspectionWindow(make(34), 60, 12345);
-    expect(r).toEqual({ urls: make(34), total: 34, rotated: false });
+    expect(r.total).toBe(34);
+    expect(r.rotated).toBe(false);
+    expect(r.urls).toHaveLength(34);
+    expect(new Set(r.urls)).toEqual(new Set(make(34)));
+  });
+
+  it("starts at a different URL the next day if the request budget truncates a run", () => {
+    const all = make(49);
+    const first = selectInspectionWindow(all, 60, 0);
+    const second = selectInspectionWindow(all, 60, 1);
+    expect(first.rotated).toBe(false);
+    expect(second.rotated).toBe(false);
+    expect(first.urls[0]).not.toBe(second.urls[0]);
+    const checked = new Set([...first.urls.slice(0, 38), ...second.urls.slice(0, 38)]);
+    expect(checked.size).toBe(49);
   });
 
   it("rotates so every URL is covered within ceil(total / max) days", () => {
