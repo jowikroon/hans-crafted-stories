@@ -71,6 +71,8 @@ const CaseStudyDetail = () => {
     ],
     ongoingTitle: "Lopend werk",
     ongoingText: "De Amazon DE-catalogus wordt gelanceerd inclusief Duitse btw-registratie, het volledige A.B.S.-assortiment gaat naar eBay DE en Bol.com met marketplace-specifieke contentregels en voertuigcompatibiliteitsbestanden, en een wekelijkse concurrentiescan volgt prijs- en assortimentsbewegingen op Amazon DE en eBay DE. Wat ik daarbij leer over agents die successen melden zonder bewijs, beschreef ik in mijn artikelen over AI-betrouwbaarheid en meta-monitoring.",
+    updateTitle: "September 2026: controle op de uitrol",
+    updateText: "Op 17 september verwerkten we voertuigcompatibiliteit voor 7.165 eBay DE-listings in vier batches. 6.595 listings werden gekoppeld (92%); 570 niet, waarvan 566 door bestaande afbeeldingen onder 500 pixels en 4 door een cataloguskoppeling. Het bestand had nul formaatfouten. Op 21 september stonden 2.908 records in de afzonderlijke Bol.com NL-launchpipeline als klaar gemarkeerd. Dat is een voorbereidingsstatus, geen live verkoopresultaat; de eBay-listings en Bol.com-records zijn ook andere populaties dan de circa 400 actieve SKU’s hierboven. Bron: interne batch- en pipelinecontroles, 17–21 september 2026.",
     galleryTitle: "Deliverables",
     ctaTitle: "Hetzelfde voor jouw catalogus?",
     ctaText: "Deze aanpak werkt voor elke grote catalogus met technische productdata. Bekijk de dienstenpagina's of plan een kennismaking.",
@@ -114,6 +116,8 @@ const CaseStudyDetail = () => {
     ],
     ongoingTitle: "Ongoing work",
     ongoingText: "The Amazon DE catalogue is being launched including German VAT registration, the full A.B.S. assortment is moving to eBay DE and Bol.com with marketplace-specific content rules and vehicle compatibility files, and a weekly competitor scan tracks price and assortment movements on Amazon DE and eBay DE. What I keep learning about agents reporting success without evidence is documented in my articles on AI reliability and meta-monitoring.",
+    updateTitle: "September 2026: checking the rollout",
+    updateText: "On 17 September we processed vehicle compatibility for 7,165 eBay DE listings in four batches. 6,595 listings were linked (92%); 570 were rejected, including 566 because existing images were below 500 pixels and 4 because of catalogue linkage. The upload had zero format errors. On 21 September, 2,908 records in the separate Bol.com NL launch pipeline were marked ready. Ready is a preparation status, not a live sales result; those eBay listings and Bol.com records are different populations from the roughly 400 active SKUs above. Source: internal batch and pipeline checks, 17–21 September 2026.",
     galleryTitle: "Deliverables",
     ctaTitle: "The same for your catalogue?",
     ctaText: "This approach works for any large catalogue with technical product data. See the service pages or book an intro call.",
@@ -316,6 +320,12 @@ const CaseStudyDetail = () => {
           ))}
         </p>
       </motion.div>
+
+      {/* Dated rollout evidence */}
+      <section className="mb-16 max-w-3xl rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <h2 className="mb-4 font-display text-2xl font-medium text-foreground">{content.updateTitle}</h2>
+        <p className="leading-relaxed text-muted-foreground">{content.updateText}</p>
+      </section>
 
       {/* Gallery */}
       <motion.div
