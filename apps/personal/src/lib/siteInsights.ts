@@ -168,7 +168,15 @@ export function buildInsights(d: SiteDashboard, now = new Date()): Insight[] {
     if (r.verdict === "loss") add({ id: `loss:${c.id}`, severity: "high", area: "Verbeteringen", title: `Averechts: ${c.title}`, evidence: `${r.lift_pct != null ? `${r.lift_pct}%` : ""} op ${label(c.primary_metric)} ${basis}.`, action: "Draai de wijziging (deels) terug of stuur bij, en meet opnieuw." });
   }
   const unmeasured = (d.changes ?? []).filter((c) => c.status === "planned").length;
-  if (unmeasured) add({ id: "planned", severity: "info", area: "Verbeteringen", title: `${unmeasured} geplande verbeteringen klaar om te meten`, evidence: "Elke PR die het Linear-nummer noemt, start automatisch de voor- en nameting.", action: "Noem het HAN-nummer in de PR-titel of -tekst; een Measure-regel in de PR stuurt metriek en pagina's." });
+  if (unmeasured) {
+    const offsite = (d.changes ?? []).filter((c) => c.status === "planned" && c.kind === "offsite").length;
+    add({
+      id: "planned", severity: "info", area: "Verbeteringen",
+      title: `${unmeasured} geplande verbeteringen wachten op uitvoering`,
+      evidence: `${unmeasured - offsite} sitewijzigingen en ${offsite} externe acties staan nog gepland; de meting start pas na uitvoering.`,
+      action: "Voer de HAN-taken uit. Noem bij een sitewijziging het HAN-nummer en eventueel een Measure-regel in de PR; registreer externe acties met uitvoerdatum voor de meting.",
+    });
+  }
 
   // ---- data quality ----
   const since = d.quality.tracking_since;
