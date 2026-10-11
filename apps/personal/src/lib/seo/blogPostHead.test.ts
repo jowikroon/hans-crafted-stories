@@ -90,6 +90,24 @@ describe("blog post SEO head", () => {
     expect(head.canonical).toBe("https://hansvanleeuwen.com/writing/custom-canonical");
   });
 
+  it("does not use the single-language meta_title for the other language version (R5)", () => {
+    const nlPost = {
+      ...basePost,
+      title: "Amazon vs Bol.com in 2026",
+      title_nl: "Amazon vs Bol.com in 2026: kiezen als Nederlandse verkoper",
+      content: "An English article body that differs from the Dutch one.",
+      content_nl: "Een Nederlandse tekst over Amazon en Bol.com voor verkopers in Nederland, met de keuzes die je maakt.",
+      excerpt: "English excerpt.",
+      meta_title: "Amazon vs Bol.com 2026: Kiezen als Nederlandse Verkoper",
+      meta_description: "Nederlandse metabeschrijving.",
+    };
+    const en = getBlogPostHead(nlPost, "en");
+    expect(en.title).toBe("Amazon vs Bol.com in 2026 | Hans van Leeuwen");
+    expect(en.description).toBe("English excerpt.");
+    const nl = getBlogPostHead(nlPost, "nl");
+    expect(nl.title).toBe("Amazon vs Bol.com 2026: Kiezen als Nederlandse Verkoper");
+  });
+
   it("emits BlogPosting JSON-LD for the exact post URL", () => {
     const jsonLd = getBlogPostJsonLd(basePost);
 
