@@ -38,6 +38,25 @@ describe("buildInsights", () => {
     expect(insight?.evidence).toContain("38 van 49 geïnspecteerd, 11 zonder nieuw oordeel");
   });
 
+  it("treats unindexed English service pages as critical", () => {
+    const d = base();
+    d.coverage = { indexing: { data: { checked: 49, total: 49, issues: [
+      { url: "https://hansvanleeuwen.com/en/bol-com-consultant", verdict: "NEUTRAL", coverage_state: "URL is unknown to Google", last_crawl: null },
+    ] } } };
+    const insight = buildInsights(d, NOW).find((i) => i.id === "indexing");
+    expect(insight?.severity).toBe("critical");
+    expect(insight?.title).toContain("geldpagina");
+  });
+
+  it("describes planned site and offsite work as awaiting execution", () => {
+    const d = base();
+    const row = { id: "a", title: "SEO", kind: "seo", linear_issue: "HAN-156", pr_number: null, deployed_at: null, paths: ["/en/bol-com-consultant"], primary_metric: "search_impressions", expected: "up" as const, hypothesis: null, measure_days: 28, status: "planned", result: null, result_at: null };
+    d.changes = [row, { ...row, id: "b", kind: "offsite", linear_issue: "HAN-144", paths: [] }];
+    const insight = buildInsights(d, NOW).find((i) => i.id === "planned");
+    expect(insight?.title).toContain("wachten op uitvoering");
+    expect(insight?.evidence).toContain("1 sitewijziging en 1 externe actie");
+  });
+
   it("reports the automatic sitemap submission as a win and a missing sitemap as critical", () => {
     const d = base();
     d.harvest = { at: "", data: { sitemap: "submitted: /sitemap.xml ingediend" } };
