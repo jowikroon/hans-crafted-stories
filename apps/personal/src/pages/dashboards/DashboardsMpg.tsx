@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import EmptyWidget from "@/components/dashboard/EmptyWidget";
 import DashboardShell from "./DashboardShell";
+import ProjectTracker, { type TrackerSnapshot } from "./ProjectTracker";
+import { useAdmin } from "@/hooks/useAdmin";
 
 /**
  * MPG is geen advisory-tak meer maar een SaaS in ontwikkeling. Dit dashboard stuurt
@@ -33,6 +35,7 @@ interface BuildStatus {
   next_step?: { headline: string; why: string; rule: string };
   generated_at?: string;
   cached?: boolean;
+  project_tracker?: TrackerSnapshot;
 }
 
 const card = "rounded-xl border border-[#E5DFCE] bg-white/60 p-4";
@@ -44,14 +47,31 @@ export default function DashboardsMpg() {
   const [d, setD] = useState<BuildStatus | null>(null);
   const [busy, setBusy] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      setBusy(true);
-      const { data, error } = await supabase.functions.invoke("mpg-build-status", { body: {} });
+  const { isAdmin, loading: adminLoading } = useAdmin();
+  const refresh = useCallback(async (force = false) => {
+    if (!isAdmin) return;
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("mpg-build-status", { body: { force } });
       setD(error ? { ok: false, configured: false, reason: error.message } : (data as BuildStatus));
+    } catch {
+      setD({ ok: false, configured: false, reason: "Bouwstatus ophalen mislukt. Probeer opnieuw." });
+    } finally {
       setBusy(false);
-    })();
-  }, []);
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (adminLoading || !isAdmin) { setBusy(false); return; }
+    void refresh();
+    const interval = window.setInterval(() => { if (!document.hidden) void refresh(); }, 30 * 60 * 1000);
+    const onVisible = () => { if (!document.hidden) void refresh(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [refresh, isAdmin, adminLoading]);
 
   if (busy) {
     return (
@@ -64,6 +84,8 @@ export default function DashboardsMpg() {
   if (!d?.ok) {
     return (
       <DashboardShell domain="marketplacegrowth.nl" title="Bouwstatus">
+        <button type="button" onClick={() => void refresh(true)} className="mt-4 text-xs underline">Opnieuw ophalen</button>
+        <ProjectTracker tracker={d?.project_tracker} />
         <EmptyWidget
           title="Bouwstatus niet beschikbaar"
           pipeline="mpg-build-status → GitHub API"
@@ -82,6 +104,8 @@ export default function DashboardsMpg() {
 
   return (
     <DashboardShell domain="marketplacegrowth.nl" title="Bouwstatus">
+      <button type="button" onClick={() => void refresh(true)} className="mt-3 text-xs underline">Alles vernieuwen</button>
+      <ProjectTracker tracker={d.project_tracker} />
       {/* Wat er te weten valt vóór je scrollt. */}
       <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className={card}>
