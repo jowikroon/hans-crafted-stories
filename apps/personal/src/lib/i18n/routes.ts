@@ -64,6 +64,9 @@ export const langFromPath = (pathname: string): Lang => parsePath(pathname).lang
  * blijven ongewijzigd zodat er nooit een niet-bestaande /en-URL ontstaat.
  */
 export const localizePath = (path: string, lang: Lang): string => {
+  // Explicit English article URLs are real pages, not generic /en-prefixed routes.
+  // Preserve them for links from the English writing index and featured articles.
+  if (lang === "en" && /^\/en\/writing\/[^/]+\/?$/.test(path)) return normalize(path);
   const { path: base } = parsePath(path);
   if (lang === "en" && isLocalizedRoute(base)) return base === "/" ? EN_PREFIX : `${EN_PREFIX}${base}`;
   return base;
