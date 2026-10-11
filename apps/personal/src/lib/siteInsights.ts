@@ -42,7 +42,7 @@ export interface SiteDashboard {
   errors: { not_found: { path: string; n: number }[] | null; js: { message: string; path: string; n: number }[] | null } | null;
   events: Record<string, number> | null; changes: ChangeRow[] | null;
   submissions: { created_at: string; name: string; email: string; reason: string; lang: string | null; page: string | null; message: string }[] | null;
-  coverage: { indexing?: { data?: { checked: number; total: number; issues: IndexingIssue[] } | null; fetched_at?: string | null } | null } | null;
+  coverage: { indexing?: { data?: { checked: number; skipped?: number; total: number; issues: IndexingIssue[] } | null; fetched_at?: string | null } | null } | null;
   harvest: { at: string; data: { sitemap?: string; errors?: Record<string, string>; complete?: boolean } } | null;
   quality: { last_event: string | null; internal_events: number; tracking_since: string | null; gsc_since: string | null; ga4_since: string | null };
 }
@@ -64,19 +64,28 @@ export function buildInsights(d: SiteDashboard, now = new Date()): Insight[] {
   const add = (i: Insight) => out.push(i);
 
   // ---- indexing ----
-  const issues = d.coverage?.indexing?.data?.issues ?? [];
+  const inspection = d.coverage?.indexing?.data;
+  const issues = inspection?.issues ?? [];
   if (issues.length) {
     const money = issues.filter((i) => MONEY_PAGES.test(pathOf(i.url)));
     const unknown = issues.filter((i) => /unknown to google/i.test(i.coverage_state ?? ""));
+    const discovered = issues.filter((i) => /discovered/i.test(i.coverage_state ?? ""));
+    const crawled = issues.filter((i) => /crawled/i.test(i.coverage_state ?? ""));
+    const unchecked = Math.max(0, (inspection?.total ?? 0) - (inspection?.checked ?? 0));
+    const counts = [
+      unknown.length && `${unknown.length} onbekend bij Google`,
+      discovered.length && `${discovered.length} ontdekt, nog niet geïndexeerd`,
+      crawled.length && `${crawled.length} gecrawld, nog niet geïndexeerd`,
+    ].filter(Boolean).join(", ");
     add({
       id: "indexing", severity: money.length ? "critical" : "high", area: "Indexatie",
       title: money.length
         ? `${money.length} geldpagina${money.length === 1 ? "" : "'s"} niet in Google`
         : `${issues.length} sitemap-URL's niet in Google`,
-      evidence: `${issues.length} van ${d.coverage?.indexing?.data?.total ?? "?"} URL's niet geïndexeerd (${unknown.length} onbekend bij Google, ${issues.length - unknown.length} gecrawld maar niet opgenomen): ${list((money.length ? money : issues).map((i) => pathOf(i.url)))}.`,
-      action: unknown.length
-        ? "Vraag indexering aan via URL-inspectie in Search Console en link deze pagina's vanaf de homepage en de dienstenpagina's."
-        : "Gecrawld maar niet opgenomen betekent: Google vindt de pagina te dun of te gelijk. Maak de inhoud unieker en voeg interne links toe.",
+      evidence: `${issues.length} URL's met een indexatieprobleem (${counts}); ${inspection?.checked ?? "?"} van ${inspection?.total ?? "?"} geïnspecteerd${unchecked ? `, ${unchecked} zonder nieuw oordeel` : ""}: ${list((money.length ? money : issues).map((i) => pathOf(i.url)))}.`,
+      action: unknown.length || discovered.length
+        ? "Controleer deze URL's live in Search Console en vraag indexering aan; voeg relevante interne links toe vanaf de homepage, diensten en inhoudsindexen."
+        : "Controleer de live URL en Google-canonical in Search Console; verbeter onderscheidende inhoud en relevante interne links.",
     });
   }
   const sm = d.harvest?.data?.sitemap ?? "";
