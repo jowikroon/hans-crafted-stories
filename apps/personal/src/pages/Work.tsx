@@ -134,7 +134,7 @@ const Work = () => {
   }, [filter, mapped]);
 
   const getCount = (value: string) =>
-    value === "all" ? mapped.length : mapped.filter((s) => s.filterGroup === value).length;
+    value === "all" ? mapped.length + 2 : mapped.filter((s) => s.filterGroup === value).length;
 
   if (loading) {
     return (
@@ -207,9 +207,10 @@ const Work = () => {
         </motion.div>
       )}
 
-      {filter === "all" && <Link
+      {filter === "all" && <div className="mb-10 grid gap-5 md:grid-cols-2">
+      <Link
         to="/work/connect-car-parts"
-        className="mb-10 block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-secondary/40 sm:p-8"
+        className="block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-secondary/40 sm:p-8"
       >
         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           {lang === "nl" ? "Uitgelichte AI-automation case" : "Featured AI automation case study"}
@@ -225,7 +226,25 @@ const Work = () => {
         <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
           {lang === "nl" ? "Lees de case" : "Read the case study"} <ChevronRight size={16} />
         </span>
-      </Link>}
+      </Link>
+      <Link
+        to="/writing/vendor-of-seller-bol-com-alpine"
+        className="block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-secondary/40 sm:p-8"
+      >
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          {lang === "nl" ? "Uitgelichte marketplace case · 2021–2025" : "Featured marketplace case · 2021–2025"}
+        </p>
+        <h2 className="mb-2 font-display text-2xl font-semibold text-foreground">Alpine Hearing Protection</h2>
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          {lang === "nl"
+            ? "Marketplace-expansie en een Bol.com vendor-naar-seller-transitie. Het merk behaalde 70% aandeel in de oordoppencategorie op Amazon NL (Nielsen, 2023); out-of-stock bleef onder 2% (2021–2022). Een Back-to-School social-ad-campagne leverde 20% meer wekelijkse verkopen op (eigen cv-materiaal)."
+            : "Marketplace expansion and a Bol.com vendor-to-seller transition. The brand reached 70% of the earplug category on Amazon NL (Nielsen, 2023); out-of-stock remained below 2% (2021–2022). A Back-to-School social-ad campaign increased weekly sales by 20% (CV records)."}
+        </p>
+        <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+          {lang === "nl" ? "Lees de Bol.com-case" : "Read the Bol.com case (Dutch)"} <ChevronRight size={16} />
+        </span>
+      </Link>
+      </div>}
 
       {isVisible("category_cards") && dbCards.length > 0 && (
         <CategoryCards
@@ -242,7 +261,7 @@ const Work = () => {
         animate={{ opacity: 1 }}
         className="mb-6 text-xs text-muted-foreground"
       >
-        {filtered.length + (filter === "all" ? 1 : 0)} {filtered.length + (filter === "all" ? 1 : 0) === 1 ? tw.projectSingular : tw.projectPlural}
+        {filtered.length + (filter === "all" ? 2 : 0)} {filtered.length + (filter === "all" ? 2 : 0) === 1 ? tw.projectSingular : tw.projectPlural}
         {filter !== "all" && ` ${tw.matching}`}
       </motion.p>
 
