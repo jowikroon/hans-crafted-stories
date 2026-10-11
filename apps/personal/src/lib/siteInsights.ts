@@ -51,7 +51,7 @@ export type Severity = "critical" | "high" | "medium" | "win" | "info";
 export interface Insight { id: string; severity: Severity; area: string; title: string; evidence: string; action: string }
 
 const ORDER: Record<Severity, number> = { critical: 0, high: 1, win: 2, medium: 3, info: 4 };
-export const MONEY_PAGES = /^\/(nl\/)?(interim-ecommerce-manager|amazon-nl-specialist|bol-com-consultant|ai-ecommerce-automation|rates|tarieven)\/?$/;
+export const MONEY_PAGES = /^\/((en|nl)\/)?(interim-ecommerce-manager|amazon-nl-specialist|bol-com-consultant|ai-ecommerce-automation|rates|tarieven)\/?$/;
 
 const pathOf = (u: string) => { try { return new URL(u).pathname; } catch { return u; } };
 const pct = (a: number, b: number) => (b > 0 ? Math.round((1000 * a) / b) / 10 : 0);
