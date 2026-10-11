@@ -334,7 +334,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       availability: "Available from 1 December 2026",
       freelanceH2: "Strategy, operations and AI automation for scalable marketplace growth.",
       description:
-        "I'm Hans van Leeuwen. I help brands run Amazon and Bol.com with clearer product data, better customer journeys and AI-assisted workflows whose output can be checked.",
+        "I'm Hans van Leeuwen, a freelance e-commerce and marketplace manager based in Amersfoort. After ten years growing Amazon and Bol.com revenue for brands, I help teams build the foundations of marketplace growth: accurate product data, sharp listings, disciplined ads, and reliable operations. I use AI-assisted workflows where they improve content and day-to-day execution, with a person reviewing the decisions that matter.",
       location: "Based in Amersfoort, Netherlands · Working with brands across Amsterdam, Utrecht, Rotterdam & the wider EU",
       ctaWork: "View marketplace cases",
       ctaConsult: "Discuss your marketplace challenge",
@@ -681,7 +681,7 @@ export const translations: Record<Lang, TranslationStrings> = {
       availability: "Beschikbaar vanaf 1 december 2026",
       freelanceH2: "Strategie, operations en AI-automatisering voor schaalbare marketplace groei.",
       description:
-        "Ik ben Hans van Leeuwen. Ik help merken Amazon en Bol.com organiseren met heldere productdata, betere klantreizen en AI-ondersteunde workflows waarvan de output controleerbaar is.",
+        "Ik ben Hans van Leeuwen, freelance e-commerce en marketplace manager in Amersfoort. Na tien jaar omzetgroei op Amazon en Bol.com voor merken help ik teams met de basis voor winstgevende marktplaatsgroei: betrouwbare productdata, sterke listings, gerichte advertenties en voorspelbare operations. AI-ondersteunde workflows versnellen content en dagelijks beheer, met menselijke controle op belangrijke beslissingen.",
       location: "Gevestigd in Amersfoort, Nederland · Werkzaam voor merken in Amsterdam, Utrecht, Rotterdam & de rest van de EU",
       ctaWork: "Bekijk marketplace-cases",
       ctaConsult: "Bespreek je marketplace-vraag",

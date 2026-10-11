@@ -283,8 +283,16 @@ export function selectInspectionWindow(
   dayIndex: number,
 ): { urls: string[]; total: number; rotated: boolean } {
   const total = urls.length;
-  if (total <= max) return { urls: [...urls], total, rotated: false };
   const sorted = [...urls].sort();
+  if (total <= max) {
+    // A request budget can stop a run before the end even below max. Start
+    // halfway around the sitemap on alternate days so those tail URLs still
+    // get a fresh verdict, while retaining the full URL set for each run.
+    if (total === 0) return { urls: [], total, rotated: false };
+    const step = Math.max(1, Math.floor(total / 2));
+    const start = (((dayIndex * step) % total) + total) % total;
+    return { urls: [...sorted.slice(start), ...sorted.slice(0, start)], total, rotated: false };
+  }
   const windows = Math.ceil(total / max);
   const start = (((dayIndex % windows) + windows) % windows) * max;
   const picked: string[] = [];
