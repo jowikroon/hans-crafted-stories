@@ -110,9 +110,9 @@ export default function DashboardsHvl() {
   const p = d?.kpi.prev ?? null;
   const cmp = period.prevFrom ? formatRange(period.prevFrom, period.prevTo!) : null;
   const series = d?.series ?? [];
-  const measured = (d?.changes ?? []).filter((c) => c.deployed_at && c.primary_metric);
-  const logged = (d?.changes ?? []).filter((c) => c.deployed_at && !c.primary_metric);
-  const planned = (d?.changes ?? []).filter((c) => !c.deployed_at);
+  const measured = (d?.changes ?? []).filter((c) => c.status === "measuring" || c.status === "concluded");
+  const logged = (d?.changes ?? []).filter((c) => c.status === "logged" || c.status === "abandoned");
+  const planned = (d?.changes ?? []).filter((c) => c.status === "planned");
   const issues = d?.coverage?.indexing?.data?.issues ?? [];
   // Above the URL Inspection cap a run checks a rotating window, so checked < total: only what
   // was inspected can count as indexed, and the figure is then a lower bound.
@@ -233,15 +233,15 @@ export default function DashboardsHvl() {
         ) : <EmptyWidget title="Nog geen gemeten verbeteringen" pipeline="site-metrics (PR-sync + impactmeting)" />}
         {logged.length > 0 && (
           <details className="mt-3 text-xs">
-            <summary className="cursor-pointer text-[#4B4842]">{logged.length} overige wijzigingen op de tijdlijn (zonder metriek)</summary>
+            <summary className="cursor-pointer text-[#4B4842]">{logged.length} uitgevoerde of gestopte wijzigingen zonder betrouwbare voor- en nameting</summary>
             <ul className="mt-2 space-y-1">{logged.map((c) => (
               <li key={c.id} className="flex gap-2 text-[#4B4842]"><span className="w-14 shrink-0 tabular-nums text-[#7E7A6F]">{day(c.deployed_at)}</span>
-                {c.pr_number ? <a className="underline-offset-2 hover:underline" href={`${REPO}/pull/${c.pr_number}`} target="_blank" rel="noreferrer">#{c.pr_number}</a> : null}<span>{c.title}</span></li>))}</ul>
+                {c.pr_number ? <a className="underline-offset-2 hover:underline" href={`${REPO}/pull/${c.pr_number}`} target="_blank" rel="noreferrer">#{c.pr_number}</a> : null}<span>{c.status === "abandoned" ? "Gestopt: " : ""}{c.title}</span></li>))}</ul>
           </details>
         )}
         {planned.length > 0 && (
           <details className="mt-2 text-xs" open>
-            <summary className="cursor-pointer text-[#4B4842]">{planned.length} gepland: meting start automatisch bij de PR die het Linear-nummer noemt</summary>
+            <summary className="cursor-pointer text-[#4B4842]">{planned.length} gepland: sitewijzigingen starten met meten na een PR; externe acties na registratie met uitvoerdatum</summary>
             <ul className="mt-2 grid gap-1 sm:grid-cols-2">{planned.map((c) => (
               <li key={c.id} className="flex gap-2 text-[#4B4842]">
                 {c.linear_issue && <a className="shrink-0 font-medium text-[#1F4F8F] hover:underline" href={`${LINEAR}/${c.linear_issue}`} target="_blank" rel="noreferrer">{c.linear_issue}</a>}
