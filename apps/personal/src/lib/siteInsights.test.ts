@@ -23,6 +23,19 @@ describe("buildInsights", () => {
     expect(first.id).toBe("indexing");
     expect(first.severity).toBe("critical");
     expect(first.evidence).toContain("/rates");
+    expect(first.evidence).toContain("1 onbekend bij Google");
+    expect(first.evidence).toContain("1 gecrawld");
+    expect(first.evidence).toContain("34 van 34 geïnspecteerd");
+  });
+
+  it("distinguishes discovered pages and incomplete URL Inspection runs", () => {
+    const d = base();
+    d.coverage = { indexing: { data: { checked: 38, skipped: 11, total: 49, issues: [
+      { url: "https://hansvanleeuwen.com/en/privacy", verdict: "NEUTRAL", coverage_state: "Discovered - currently not indexed", last_crawl: null },
+    ] } } };
+    const insight = buildInsights(d, NOW).find((i) => i.id === "indexing");
+    expect(insight?.evidence).toContain("1 ontdekt, nog niet geïndexeerd");
+    expect(insight?.evidence).toContain("38 van 49 geïnspecteerd, 11 zonder nieuw oordeel");
   });
 
   it("reports the automatic sitemap submission as a win and a missing sitemap as critical", () => {
