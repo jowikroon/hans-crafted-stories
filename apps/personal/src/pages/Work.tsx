@@ -207,7 +207,7 @@ const Work = () => {
         </motion.div>
       )}
 
-      <Link
+      {filter === "all" && <Link
         to="/work/connect-car-parts"
         className="mb-10 block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-secondary/40 sm:p-8"
       >
@@ -225,7 +225,7 @@ const Work = () => {
         <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
           {lang === "nl" ? "Lees de case" : "Read the case study"} <ChevronRight size={16} />
         </span>
-      </Link>
+      </Link>}
 
       {isVisible("category_cards") && dbCards.length > 0 && (
         <CategoryCards
@@ -242,7 +242,7 @@ const Work = () => {
         animate={{ opacity: 1 }}
         className="mb-6 text-xs text-muted-foreground"
       >
-        {filtered.length} {filtered.length === 1 ? tw.projectSingular : tw.projectPlural}
+        {filtered.length + (filter === "all" ? 1 : 0)} {filtered.length + (filter === "all" ? 1 : 0) === 1 ? tw.projectSingular : tw.projectPlural}
         {filter !== "all" && ` ${tw.matching}`}
       </motion.p>
 
