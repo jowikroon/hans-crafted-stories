@@ -27,6 +27,7 @@ const logOnce = (userId: string, email: string | null, outcome: LoginOutcome) =>
 export const usePortalAccess = () => {
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
+  const [resolvedFor,setResolvedFor] = useState<string | null>(null);
   const [status, setStatus] = useState<PortalAccessStatus>("loading");
   const [profile, setProfile] = useState<PortalProfile | null>(null);
 
@@ -42,7 +43,7 @@ export const usePortalAccess = () => {
     const resolve = async () => {
       if (isAdmin) {
         logOnce(user.id, user.email ?? null, "granted_admin");
-        if (!cancelled) { setStatus("admin"); setProfile(null); }
+        if (!cancelled) { setStatus("admin"); setProfile(null); setResolvedFor(user.id); }
         return;
       }
 
@@ -72,6 +73,7 @@ export const usePortalAccess = () => {
       }
 
       if (cancelled) return;
+      setResolvedFor(user.id);
       if (prof && prof.is_active) {
         logOnce(user.id, user.email ?? null, "granted_member");
         setStatus("member");
@@ -87,5 +89,5 @@ export const usePortalAccess = () => {
     return () => { cancelled = true; };
   }, [user, isAdmin, adminLoading]);
 
-  return { status, profile };
+  return { status: (adminLoading || resolvedFor !== user?.id ? "loading" : status) as PortalAccessStatus, profile: resolvedFor === user?.id ? profile : null };
 };

@@ -22,13 +22,15 @@ const categoryConfig: Record<string, { label: string; color: string }> = {
 
 interface ToolPreviewModalProps {
   tool: PortalTool | null;
+  isAdmin?: boolean;
+  canUse?: boolean;
   onClose: () => void;
   onEdit: (tool: PortalTool) => void;
   onOpen: (tool: PortalTool) => void;
   onToolUpdated?: () => void;
 }
 
-const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: ToolPreviewModalProps) => {
+const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated, isAdmin = false, canUse = false }: ToolPreviewModalProps) => {
   const { toast } = useToast();
   const [editingUrl, setEditingUrl] = useState(false);
   const [urlValue, setUrlValue] = useState("");
@@ -114,13 +116,13 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
               <X size={16} />
             </button>
 
-            <button
+            {isAdmin && <button
               onClick={() => onEdit(tool)}
               className="absolute right-12 top-4 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               aria-label="Edit tool"
             >
               <Pencil size={14} />
-            </button>
+            </button>}
 
             <div className="flex flex-col items-start gap-5">
               <div className="flex w-full items-start justify-between">
@@ -176,7 +178,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
               )}
 
               {/* Webhook section */}
-              {isWebhook && (
+              {isAdmin && isWebhook && (
                 <div className="w-full space-y-3 rounded-lg border border-border bg-secondary/30 p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -245,6 +247,7 @@ const ToolPreviewModal = ({ tool, onClose, onEdit, onOpen, onToolUpdated }: Tool
               )}
 
               <button
+                disabled={!canUse}
                 onClick={() => onOpen(tool)}
                 className={`mt-2 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
                   tool.tool_type === "ai-agent"

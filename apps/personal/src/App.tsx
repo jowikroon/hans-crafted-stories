@@ -1,3 +1,5 @@
+import OwnerRouteBoundary from '@/components/portal/OwnerRouteBoundary';
+import PortalChrome from '@/components/portal/PortalChrome';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -79,19 +81,19 @@ const AppShell = ({ initialLang }: AppShellProps) => {
             Skip to content
           </a>
           <ScrollProgress />
-          <header>
+          <PortalChrome><header>
             <Navbar variant={isDarkPage ? "dark" : "default"} compact={isCompact} />
-          </header>
+          </header></PortalChrome>
           <main id="main-content" style={mainBg ? { backgroundColor: mainBg } : undefined} className={`min-h-screen ${isDarkPage ? "pt-16" : "pt-24"}`}>
             <UntranslatedNotice />
-            <AnimatedRoutes />
+            <OwnerRouteBoundary><AnimatedRoutes /></OwnerRouteBoundary>
           </main>
-          {!isDarkPage && <Footer />}
-          <SamanthaGlobalButton />
+          <PortalChrome>{!isDarkPage && <Footer />}</PortalChrome>
+          <PortalChrome><SamanthaGlobalButton /></PortalChrome>
           <CookieConsent />
           <TrackingScriptInjector />
           <SiteTracker />
-          <EditLayer />
+          <PortalChrome><EditLayer /></PortalChrome>
         </EditOverlayProvider>
       </LangProvider>
     </AuthProvider>

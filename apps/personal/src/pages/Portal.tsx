@@ -46,7 +46,7 @@ const Portal = () => {
   const isAdmin = accessStatus === "admin";
   const allowedTabIds: Tab[] = isAdmin
     ? tabs.map((t) => t.id)
-    : tabs.filter((t) => (profile?.tab_access ?? []).includes(t.id)).map((t) => t.id);
+    : accessStatus === "member" ? ["tools"] : [];
   const [activeTab, setActiveTab] = useState<Tab>("tools");
   const [subFilter, setSubFilter] = useState<string>("All");
   const [commandOpen, setCommandOpen] = useState(false);
@@ -167,7 +167,7 @@ const Portal = () => {
   return (
     <MediaPickerProvider>
     <section className="section-container pt-20 pb-28 sm:pb-20 sm:pt-28 px-5 sm:px-8 lg:px-12">
-      <PageBreadcrumb items={[{ label: "Portal" }]} />
+      {isAdmin && <PageBreadcrumb items={[{ label: "Portal" }]} />}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -178,10 +178,10 @@ const Portal = () => {
           <div>
             <p className="mb-1.5 text-sm font-medium uppercase tracking-[0.2em] text-primary sm:mb-2">Portal</p>
             <h1 className="mb-1.5 font-display text-2xl font-medium tracking-tight text-foreground sm:mb-2 sm:text-4xl">
-              Welcome back{user.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(" ")[0]}` : ""}
+              {isAdmin ? `Welkom terug${user.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(" ")[0]}` : ""}` : "Mijn tools"}
             </h1>
             <p className="text-sm leading-relaxed text-muted-foreground/80 sm:text-base sm:leading-normal sm:text-muted-foreground">
-              Manage tools, content, and pages.
+              {isAdmin ? "Jouw tools, projecten en mensen op één plek." : `Welkom${profile?.display_name ? `, ${profile.display_name.split(" ")[0]}` : ""}. Open een tool of bekijk wat je ermee kunt doen.`}
             </p>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2 sm:mt-0">
@@ -212,13 +212,13 @@ const Portal = () => {
               onClick={signOut}
               className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97] sm:min-h-0 sm:py-2"
             >
-              <LogOut size={14} />
+              <LogOut size={14} /><span className="sr-only">Uitloggen</span>
             </button>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="mb-2 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:overflow-visible">
+        {isAdmin && <><div className="mb-2 flex gap-1 overflow-x-auto rounded-2xl border border-border bg-secondary/50 p-1 pb-2 sm:overflow-visible">
           {tabs.filter((tab) => allowedTabIds.includes(tab.id)).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -273,7 +273,7 @@ const Portal = () => {
               </div>
             );
           })}
-        </nav>
+        </nav></>}
 
 
         {/* Tab Content */}

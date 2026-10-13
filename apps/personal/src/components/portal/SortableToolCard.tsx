@@ -106,6 +106,10 @@ const SortableToolCard = ({
           !isEditMode ? "hover:-translate-y-1 hover:shadow-xl hover:shadow-foreground/[0.03] hover:border-primary/25" : ""
         } ${isDragging ? "shadow-2xl" : ""}`}
         onClick={handleCardClick}
+        tabIndex={isEditMode ? -1 : 0}
+        role="button"
+        aria-label={`Bekijk ${tool.name}`}
+        onKeyDown={e => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ") && !isEditMode) { e.preventDefault(); onToolClick(tool); } }}
       >
         {/* Gradient glass overlay */}
         <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${cat.gradient} opacity-80 transition-opacity group-hover:opacity-100`} />
@@ -174,7 +178,7 @@ const SortableToolCard = ({
 
           {/* Description */}
           <p className={`mt-3 text-[11px] leading-relaxed text-muted-foreground/60 sm:text-[12px] sm:text-muted-foreground/65 ${isLarge ? "line-clamp-3 text-xs" : "line-clamp-2"}`}>
-            {punchyDescriptions[tool.tool_type] || tool.description}
+            {tool.description || punchyDescriptions[tool.tool_type]}
           </p>
 
           {/* Features on large cards */}

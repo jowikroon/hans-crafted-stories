@@ -50,3 +50,4 @@ apps/*/.env.*.local
 *.njsproj
 *.sln
 *.sw?
+/node_modules-shared-backup/
