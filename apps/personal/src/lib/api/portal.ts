@@ -99,30 +99,22 @@ export const portalApi = {
   },
 
   async getTools(): Promise<PortalTool[]> {
-    const { data, error } = await supabase
-      .from("portal_tools")
-      .select("*")
-      .order("sort_order");
+    const { data, error } = await supabase.rpc('portal_tool_catalog' as never);
     if (error) throw error;
     const tools = (data as unknown as PortalTool[]) || [];
-
-    // Fetch all attributes for these tools in one query
-    if (tools.length > 0) {
-      const toolIds = tools.map((t) => t.id);
-      const { data: attrs } = await supabase
-        .from("tool_attributes")
-        .select("*")
-        .in("tool_id", toolIds);
-      const attrMap = new Map<string, ToolAttribute[]>();
-      for (const a of (attrs as unknown as ToolAttribute[]) || []) {
-        if (!attrMap.has(a.tool_id)) attrMap.set(a.tool_id, []);
-        attrMap.get(a.tool_id)!.push(a);
-      }
-      for (const tool of tools) {
-        tool.attributes = attrMap.get(tool.id) || [];
-      }
+    // Only owner rows include user_id. Members receive no internal attributes.
+    if (tools.some(tool => tool.user_id)) {
+      const { data: attributes, error: attrError } = await supabase.from('tool_attributes').select('*').in('tool_id', tools.map(tool => tool.id));
+      if (attrError) throw attrError;
+      for (const tool of tools) tool.attributes = (attributes || []).filter(attr => attr.tool_id === tool.id);
     }
     return tools;
+  },
+
+  async launchTool(toolId: string): Promise<string> {
+    const { data, error } = await supabase.rpc('portal_launch_tool' as never, { _tool: toolId } as never);
+    if (error) throw error;
+    return data as unknown as string;
   },
 
   async addTool(tool: Omit<PortalTool, "id" | "created_at" | "attributes">): Promise<PortalTool> {

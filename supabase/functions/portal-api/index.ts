@@ -333,6 +333,7 @@ serve(async (req) => {
       case "create_user": {
         const { email, password, display_name, role, tab_access } = body;
         if (!email || !password) return err("email and password required");
+        if (role && role !== "user") return err("New portal users must be members", 403);
         
         const { data: authData, error: authError } = await supabase.auth.admin.createUser({
           email,
@@ -364,7 +365,7 @@ serve(async (req) => {
             user_id: userId,
             display_name: display_name || email.split("@")[0],
             email,
-            tab_access: tab_access || ["tools"],
+            tab_access: ["tools"],
           }, { onConflict: "user_id" });
         if (profileError) console.error("Profile upsert error:", profileError.message);
 

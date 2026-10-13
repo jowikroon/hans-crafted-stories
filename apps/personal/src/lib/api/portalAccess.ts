@@ -1,3 +1,4 @@
+import type { ToolGrant } from '@/lib/portalToolPolicy';
 import { supabase } from "@/integrations/supabase/client";
 
 export interface PortalInvite {
@@ -5,6 +6,7 @@ export interface PortalInvite {
   email: string;
   display_name: string | null;
   tab_access: string[];
+  tool_grants?: ToolGrant[];
   invited_by: string | null;
   created_at: string;
   accepted_at: string | null;
@@ -50,31 +52,32 @@ export function parseDevice(ua: string): string {
 export const invitesApi = {
   async list(): Promise<PortalInvite[]> {
     const { data, error } = await supabase
-      .from("portal_invites" as unknown)
+      .from("portal_invites" as never)
       .select("*")
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return ((data ?? []) as unknown) as PortalInvite[];
+    return ((data ?? []) as never) as PortalInvite[];
   },
 
-  async create(email: string, displayName: string, invitedBy: string): Promise<PortalInvite> {
+  async create(email: string, displayName: string, invitedBy: string, grants: ToolGrant[] = []): Promise<PortalInvite> {
     const { data, error } = await supabase
-      .from("portal_invites" as unknown)
+      .from("portal_invites" as never)
       .insert({
         email: email.trim().toLowerCase(),
         display_name: displayName.trim() || null,
         invited_by: invitedBy,
         tab_access: ["tools"],
+        tool_grants: grants,
       } as never)
       .select()
       .single();
     if (error) throw error;
-    return (data as unknown) as PortalInvite;
+    return (data as never) as PortalInvite;
   },
 
   async revoke(id: string): Promise<void> {
     const { error } = await supabase
-      .from("portal_invites" as unknown)
+      .from("portal_invites" as never)
       .update({ revoked_at: new Date().toISOString() } as never)
       .eq("id", id);
     if (error) throw error;
@@ -84,19 +87,19 @@ export const invitesApi = {
 export const attemptsApi = {
   async list(limit = 100): Promise<PortalLoginAttempt[]> {
     const { data, error } = await supabase
-      .from("portal_login_attempts" as unknown)
+      .from("portal_login_attempts" as never)
       .select("*")
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return ((data ?? []) as unknown) as PortalLoginAttempt[];
+    return ((data ?? []) as never) as PortalLoginAttempt[];
   },
 
   /** Fire-and-forget: log a completed sign-in and its access outcome */
   async log(userId: string, email: string | null, outcome: LoginOutcome): Promise<void> {
     const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
     const { error } = await supabase
-      .from("portal_login_attempts" as unknown)
+      .from("portal_login_attempts" as never)
       .insert({
         user_id: userId,
         email,
