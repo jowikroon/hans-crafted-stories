@@ -73,7 +73,7 @@
     "input-otp": "^1.4.2",
     "lowlight": "^3.3.0",
     "lucide-react": "^0.462.0",
-    "mammoth": "^1.8.0",
+    "mammoth": "^1.11.0",
     "next-themes": "^0.4.6",
     "pdfjs-dist": "^4.7.76",
     "react": "^18.3.1",
