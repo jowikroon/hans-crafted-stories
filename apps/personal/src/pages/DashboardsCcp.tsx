@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { 
   ShoppingBag, 
@@ -91,7 +91,7 @@ function useCompetitorPricing(enabled: boolean) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -110,11 +110,11 @@ function useCompetitorPricing(enabled: boolean) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (enabled) void load();
-  }, [enabled]);
+  }, [enabled, load]);
 
   return { data, loading, error, refresh: load };
 }
