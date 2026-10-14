@@ -206,7 +206,7 @@ export default function DashboardsCcp() {
       .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
   }, [competitorPeriodData, competitorSearch]);
 
-  const [samanthaChat, setSamanthaChat = useState<Array<{ sender: "user" | "samantha"; text: string; pills?: Array<{ label: string; action: string }> }>>([
+  const [samanthaChat, setSamanthaChat] = useState<Array<{ sender: "user" | "samantha"; text: string; pills?: Array<{ label: string; action: string }> }>>([
     {
       sender: "samantha",
       text: "Hoi Hans! Ik heb live inzage in de CCP orderflow, de eBay DE Top-400 opschaling en de Magento-koppeling. Waar kan ik je nu mee helpen?",
