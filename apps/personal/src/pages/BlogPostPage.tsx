@@ -10,7 +10,7 @@ import { blogPostAlternates, blogPostPath, hasBlogPostVersion, localizeBlogPost,
 import { parseArticlePath } from "@/lib/i18n/routes";
 import { setArticleLangInfo } from "@/lib/i18n/articleLang";
 import { toast } from "sonner";
-import hansProfile from "@/assets/hans-profile.jpg";
+import HansAvatar from "@/components/media/HansAvatar";
 import "@/styles/article-v2.css";
 import "@/styles/blog.css";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
@@ -698,7 +698,7 @@ const BlogPostPage = () => {
           <h1 className="atitle">{displayTitle}</h1>
           {displayExcerpt && <p className="adek">{displayExcerpt}</p>}
           <div className="byline">
-            <span className="byline__av">H<img src={hansProfile} alt="Hans van Leeuwen" loading="lazy" decoding="async" onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} /></span>
+            <span className="byline__av">H<HansAvatar alt="Hans van Leeuwen" size={40} onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} /></span>
             <div>
               <div className="byline__n"><Link to="/about" className="underline-offset-4 hover:underline">Hans van Leeuwen</Link></div>
               <div className="byline__r">E-commerce and Marketplace Specialist</div>
