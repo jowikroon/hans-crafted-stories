@@ -228,7 +228,7 @@ const Work = () => {
         </span>
       </Link>
       <Link
-        to="/writing/vendor-of-seller-bol-com-alpine"
+        to={lang === "en" ? "/en/writing/vendor-of-seller-bol-com-alpine" : "/writing/vendor-of-seller-bol-com-alpine"}
         className="block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-secondary/40 sm:p-8"
       >
         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">

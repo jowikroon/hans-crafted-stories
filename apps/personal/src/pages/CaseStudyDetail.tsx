@@ -125,7 +125,7 @@ const CaseStudyDetail = () => {
     links: [
       { href: "/ai-ecommerce-automation", label: "AI e-commerce automation" },
       { href: "/amazon-nl-specialist", label: "Amazon services" },
-      { href: "/writing/ai-agent-verzint-succes", label: "Article: my AI agent invented success (Dutch)" },
+      { href: "/en/writing/ai-agent-verzint-succes", label: "Article: my AI agent invented success" },
     ],
   };
 

@@ -37,6 +37,9 @@
  *  21. directory-listings (2026-10-02, HAN-182): elke map in dist/ zónder eigen index.html maar mét
  *      geprerenderde kinderen (bv. /en na PR #388, /cases op 11-09) is een Vercel directory-listing
  *      (200 "Index of …", geen canonical/robots) tenzij vercel.json er een redirect voor heeft
+ *  23. interne links in de juiste taal: /en-pagina linkt niet naar /writing/<slug> als de EN-versie
+ *      bestaat, geen dode /en/writing-links, en elke /en-route heeft een inkomende link van een andere
+ *      /en-pagina (HAN-184, 2026-10-14)
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
@@ -496,6 +499,51 @@ for (const route of seen) {
   }
 }
 
+// 23. Interne links in de juiste taal (2026-10-14, HAN-184/HAN-185-run): na Dutch-first (PR #396)
+//     linkten de EN-dienstpagina's nog naar de NL-artikelen (/writing/<slug>, label "(Dutch)") terwijl
+//     /en/writing/<slug> bestaat — Google vond /en/interim-ecommerce-manager daardoor alleen via hreflang
+//     ("URL is unknown to Google"). Drie regels op de geprerenderde HTML:
+//     a. een /en-pagina linkt niet naar /writing/<slug> als dist/en/writing/<slug> bestaat (eigen NL-tweeling
+//        = taalknop, toegestaan; links in artikelteksten = data -> waarschuwing);
+//     b. elke href="/en/writing/<slug>" bestaat als geprerenderde pagina (geen dode EN-artikellink);
+//     c. elke /en-route (behalve /en zelf) krijgt minstens één interne link vanaf een ándere /en-pagina.
+{
+  const pageExists = (route) => fs.existsSync(path.join(distDir, route.replace(/^\//, ""), "index.html"));
+  const inbound = new Map();
+  const warn23 = [];
+  for (const route of seen) {
+    const file = route === "/" ? path.join(distDir, "index.html") : path.join(distDir, route.slice(1), "index.html");
+    if (!fs.existsSync(file)) continue;
+    const raw = fs.readFileSync(file, "utf8");
+    // noscript-fallback telt niet mee: die tekst ziet geen renderende crawler als navigatie (les #47)
+    let html = raw;
+    for (let i = html.indexOf("<noscript"); i !== -1; i = html.indexOf("<noscript")) {
+      const end = html.indexOf("</noscript>", i);
+      if (end === -1) break;
+      html = html.slice(0, i) + html.slice(end + 11);
+    }
+    const isEn = route === "/en" || route.startsWith("/en/");
+    const hrefs = new Set();
+    for (const m of html.matchAll(/href="(\/[^"#?]*)"/g)) hrefs.add(m[1].replace(/\/$/, "") || "/");
+    for (const h of hrefs) {
+      const art = /^\/writing\/([a-z0-9-]+)$/.exec(h);
+      if (isEn && art && pageExists(`/en/writing/${art[1]}`) && route !== `/en/writing/${art[1]}`) {
+        const msg = `${route}: linkt naar NL-artikel ${h} terwijl /en/writing/${art[1]} bestaat (guard 23a)`;
+        // Links in artikelteksten komen uit blog_posts.content (data, geen code): waarschuwing tot de
+        // data is bijgewerkt. Pagina's uit code (dienstpagina's, /en/work, /en) falen hard.
+        if (route.startsWith("/en/writing/")) warn23.push(msg); else failures.push(msg);
+      }
+      if (/^\/en\/writing\/[a-z0-9-]+$/.test(h) && !pageExists(h)) failures.push(`${route}: dode EN-artikellink ${h} (guard 23b)`);
+      if (isEn && (h === "/en" || h.startsWith("/en/")) && h !== route) inbound.set(h, (inbound.get(h) || 0) + 1);
+    }
+  }
+  for (const route of seen) {
+    if (!route.startsWith("/en/")) continue;
+    if (!inbound.get(route)) failures.push(`${route}: geen enkele interne link vanaf een andere /en-pagina (guard 23c, HAN-184)`);
+  }
+  if (warn23.length) console.warn(`[seo-guard] let op (guard 23a, data): ${warn23.length} NL-artikellink(s) in Engelse artikelteksten, werk blog_posts.content bij: ${warn23.slice(0, 10).join(" | ")}`);
+}
+
 // Wederkerigheid vanuit de andere kant: elke /en-pagina heeft een NL-tweeling en andersom.
 for (const route of seen) {
   if ((route === "/en" || route.startsWith("/en/")) && !route.startsWith("/en/writing/")) {
@@ -509,4 +557,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (21 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (22 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/taal-van-interne-links).`);

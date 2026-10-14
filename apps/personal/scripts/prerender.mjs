@@ -599,7 +599,7 @@ const workExtra = (lang) => lang === "nl"
           <p>Zie ook <a href="/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/bol-com-consultant">Bol.com consultant</a> en <a href="/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`
   : `
           <h2>Amazon NL, DE &amp; Bol.com case studies</h2>
-          <ul><li><a href="/en/work/connect-car-parts">Connect Car Parts: A.B.S. brake parts on Amazon DE, eBay DE &amp; Magento (2025–2026)</a></li><li><a href="/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-to-seller (2021–2025); 70% of the Amazon NL earplug category (Nielsen 2023), out-of-stock &lt;2% (2021–2022) and +20% weekly sales from Back-to-School social ads (CV)</a></li></ul>
+          <ul><li><a href="/en/work/connect-car-parts">Connect Car Parts: A.B.S. brake parts on Amazon DE, eBay DE &amp; Magento (2025–2026)</a></li><li><a href="/en/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-to-seller (2021–2025); 70% of the Amazon NL earplug category (Nielsen 2023), out-of-stock &lt;2% (2021–2022) and +20% weekly sales from Back-to-School social ads (CV)</a></li></ul>
           <p>See also <a href="/en/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/en/bol-com-consultant">Bol.com consultant</a> and <a href="/en/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`;
 writeLocalizedPage("/work", {
   buildHead: (lang) => (lang === "nl" ? WORK_HEAD_NL : WORK_HEAD_EN),
