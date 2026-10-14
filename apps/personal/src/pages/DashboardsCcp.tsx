@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   ShoppingBag, 
@@ -23,14 +23,112 @@ import {
   Check,
   Zap,
   ShieldCheck,
-  Bot
+  Bot,
+  Store,
+  BarChart3,
+  ArrowDownRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 // Types
-type TabType = "overview" | "pacing" | "orders" | "magento" | "keys";
+type TabType = "overview" | "pacing" | "orders" | "magento" | "keys" | "competitors";
 type ChannelType = "all" | "ebay_de" | "amazon_de" | "bol" | "magento";
+interface CompetitorSkuRow {
+  sku: string;
+  product_name?: string | null;
+  our_price?: number | null;
+  lowest_competitor_price?: number | null;
+  lowest_competitor_seller?: string | null;
+  highest_competitor_price?: number | null;
+  highest_competitor_seller?: string | null;
+  competitor_count?: number;
+  listing_count?: number;
+  seller_names?: string[];
+  position?: number | null;
+  previous_position?: number | null;
+  period_avg_competitor_price?: number | null;
+  previous_period_avg_competitor_price?: number | null;
+  price_change_vs_previous_period?: number | null;
+  last_seen_at?: string | null;
+}
+
+interface CompetitorSummary {
+  sku_count?: number;
+  active_listings?: number;
+  competitor_listings?: number;
+  sellers?: number;
+  average_lowest_price?: number | null;
+  previous_average_lowest_price?: number | null;
+  outside_first_position?: number;
+}
+
+interface CompetitorPeriodPayload {
+  period_days?: number;
+  period_start?: string;
+  period_end?: string;
+  previous_period_start?: string;
+  previous_period_end?: string;
+  summary?: CompetitorSummary;
+  rows?: CompetitorSkuRow[];
+}
+
+interface CompetitorPricingData extends CompetitorPeriodPayload {
+  ok?: boolean;
+  error?: string;
+  generated_at?: string;
+  last_scan_at?: string;
+  scan_status?: "ok" | "partial" | "failed";
+  coverage_pct?: number;
+  periods?: Record<string, CompetitorPeriodPayload>;
+}
+
+type CompetitorPeriod = 7 | 30 | 90;
+
+function useCompetitorPricing(enabled: boolean) {
+  const [data, setData] = useState<CompetitorPricingData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: cached, error: cacheError } = await supabase
+        .from("hvl_analytics_cache")
+        .select("data, fetched_at")
+        .eq("key", "ccp_competitors")
+        .maybeSingle();
+
+      if (cacheError) throw cacheError;
+      const parsed = (cached?.data ?? null) as CompetitorPricingData | null;
+      setData(parsed);
+      if (parsed?.ok === false && parsed.error) setError(parsed.error);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Concurrentiedata niet beschikbaar");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (enabled) void load();
+  }, [enabled]);
+
+  return { data, loading, error, refresh: load };
+}
+
+const formatEuro = (value?: number | null) =>
+  value == null
+    ? "—"
+    : new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(value);
+
+const formatDateTime = (value?: string | null) =>
+  value
+    ? new Intl.DateTimeFormat("nl-NL", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value))
+    : "Nog niet uitgevoerd";
+
 
 interface OrderItem {
   id: string;
@@ -88,13 +186,27 @@ const MAGENTO_ENDPOINTS = [
 export default function DashboardsCcp() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>("overview");
+  const [competitorPeriod, setCompetitorPeriod] = useState<CompetitorPeriod>(30);
+  const [competitorSearch, setCompetitorSearch] = useState("");
   const [channelFilter, setChannelFilter] = useState<ChannelType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [fitmentModalOpen, setFitmentModalOpen] = useState(false);
   const [samanthaOpen, setSamanthaOpen] = useState(false);
   const [samanthaQuery, setSamanthaQuery] = useState("");
-  const [samanthaChat, setSamanthaChat] = useState<Array<{ sender: "user" | "samantha"; text: string; pills?: Array<{ label: string; action: string }> }>>([
+  const { data: competitorData, loading: competitorLoading, error: competitorError, refresh: refreshCompetitor } =
+    useCompetitorPricing(activeTab === "competitors");
+  const competitorPeriodData = competitorData?.periods?.[String(competitorPeriod)] ?? competitorData;
+  const competitorSummary = competitorPeriodData?.summary ?? {};
+  const competitorRows = useMemo(() => {
+    const rows = competitorPeriodData?.rows ?? [];
+    const query = competitorSearch.trim().toLowerCase();
+    return rows
+      .filter((row) => !query || row.sku.toLowerCase().includes(query) || (row.product_name ?? "").toLowerCase().includes(query))
+      .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
+  }, [competitorPeriodData, competitorSearch]);
+
+  const [samanthaChat, setSamanthaChat = useState<Array<{ sender: "user" | "samantha"; text: string; pills?: Array<{ label: string; action: string }> }>>([
     {
       sender: "samantha",
       text: "Hoi Hans! Ik heb live inzage in de CCP orderflow, de eBay DE Top-400 opschaling en de Magento-koppeling. Waar kan ik je nu mee helpen?",
@@ -333,6 +445,16 @@ export default function DashboardsCcp() {
         >
           <Package size={14} />
           <span>Orderflow & Matchmaker ({filteredOrders.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("competitors")}
+          className={\`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition shrink-0 ${
+            activeTab === "competitors" ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }\`}
+        >
+          <Store size={14} />
+          <span>Concurrentieprijzen</span>
         </button>
 
         <button
@@ -648,6 +770,213 @@ export default function DashboardsCcp() {
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── TAB 4: COMPETITOR PRICING ── */}
+      {activeTab === "competitors" && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-border/60 bg-card/70 p-6 backdrop-blur-sm shadow-xs">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <BarChart3 size={18} className="text-blue-500" />
+                  <h2 className="text-base font-bold text-foreground">eBay DE Concurrentieprijzen</h2>
+                  {competitorData?.scan_status && (
+                    <span className={\`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      competitorData.scan_status === "ok"
+                        ? "bg-emerald-500/10 text-emerald-500"
+                        : "bg-amber-500/10 text-amber-500"
+                    }\`}>
+                      {competitorData.scan_status === "ok" ? "Scan geslaagd" : "Scan gedeeltelijk"}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Actieve eBay DE-aanbiedingen per SKU, inclusief aanbieders, positie en prijsverschil met de vorige periode.
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Laatste scan: <span className="font-medium text-foreground">{formatDateTime(competitorData?.last_scan_at ?? competitorData?.generated_at)}</span>
+                  {competitorData?.coverage_pct != null && <> · Dekking: <span className="font-medium text-foreground">{competitorData.coverage_pct}%</span></>}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-background/60 p-1">
+                  {[7, 30, 90].map((days) => (
+                    <button
+                      key={days}
+                      onClick={() => setCompetitorPeriod(days as CompetitorPeriod)}
+                      className={\`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                        competitorPeriod === days ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                      }\`}
+                    >
+                      {days} dagen
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void refreshCompetitor()}
+                  disabled={competitorLoading}
+                  className="gap-1.5 text-xs rounded-xl"
+                >
+                  <RefreshCw size={13} className={competitorLoading ? "animate-spin" : ""} />
+                  <span>Ververs scan</span>
+                </Button>
+              </div>
+            </div>
+
+            {competitorError && (
+              <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-600">
+                {competitorError}
+              </div>
+            )}
+
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { label: "SKU's gemeten", value: competitorSummary.sku_count ?? competitorRows.length, tone: "text-blue-500" },
+                { label: "Actieve listings", value: competitorSummary.active_listings ?? "—", tone: "text-foreground" },
+                { label: "Concurrentielistings", value: competitorSummary.competitor_listings ?? "—", tone: "text-foreground" },
+                { label: "Gem. laagste prijs", value: formatEuro(competitorSummary.average_lowest_price), tone: "text-emerald-500" },
+              ].map((metric) => (
+                <div key={metric.label} className="rounded-xl border border-border/50 bg-background/60 p-4">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{metric.label}</div>
+                  <div className={\`mt-2 text-xl font-bold ${\`}>{metric.value}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {competitorPeriodData?.period_start && competitorPeriodData?.period_end
+                      ? \`\${competitorPeriodData.period_start} t/m \${competitorPeriodData.period_end}\`
+                      : "Wacht op eerste dagelijkse scan"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {!competitorData && !competitorLoading ? (
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-sm text-amber-700">
+              Nog geen geslaagde concurrentiescan opgeslagen. De tab staat klaar voor de dagelijkse eBay DE-scan om 07:00; tot die tijd worden geen prijzen ingevuld of aangepast.
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border/60 bg-card/70 p-6 backdrop-blur-sm shadow-xs">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Prijspositie per SKU</h3>
+                  <p className="text-xs text-muted-foreground">Groen = wij zijn goedkoper dan de laagste concurrent; rood = wij liggen hoger.</p>
+                </div>
+                <div className="relative w-full sm:max-w-xs">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Zoek SKU of product..."
+                    value={competitorSearch}
+                    onChange={(e) => setCompetitorSearch(e.target.value)}
+                    className="w-full rounded-xl border border-border/60 bg-background px-9 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                  />
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-border/60 text-muted-foreground uppercase text-[10px]">
+                      <th className="pb-3 font-semibold">SKU / Product</th>
+                      <th className="pb-3 font-semibold">Onze prijs</th>
+                      <th className="pb-3 font-semibold">Laagste concurrent</th>
+                      <th className="pb-3 font-semibold">Verschil</th>
+                      <th className="pb-3 font-semibold">Aanbieder</th>
+                      <th className="pb-3 font-semibold">Aantal aanbieders</th>
+                      <th className="pb-3 font-semibold">Positie</th>
+                      <th className="pb-3 font-semibold">Prijs vs vorige periode</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40 font-medium">
+                    {competitorRows.map((row) => {
+                      const gap = row.our_price != null && row.lowest_competitor_price != null
+                        ? row.our_price - row.lowest_competitor_price
+                        : null;
+                      const positionDelta = row.position != null && row.previous_position != null
+                        ? row.position - row.previous_position
+                        : null;
+                      const priceDelta = row.price_change_vs_previous_period ?? (
+                        row.period_avg_competitor_price != null && row.previous_period_avg_competitor_price != null
+                          ? row.period_avg_competitor_price - row.previous_period_avg_competitor_price
+                          : null
+                      );
+                      return (
+                        <tr key={row.sku} className="hover:bg-muted/40 transition">
+                          <td className="py-3 pr-3">
+                            <div className="font-bold text-blue-500">{row.sku}</div>
+                            <div className="max-w-[260px] truncate text-muted-foreground">{row.product_name ?? "—"}</div>
+                          </td>
+                          <td className="py-3 font-bold text-foreground">{formatEuro(row.our_price)}</td>
+                          <td className="py-3 font-bold text-foreground">{formatEuro(row.lowest_competitor_price)}</td>
+                          <td className={\`py-3 font-bold ${
+                            gap == null ? "text-muted-foreground" : gap <= 0 ? "text-emerald-500" : "text-red-500"
+                          }\`}>
+                            {gap == null ? "—" : \`\${gap > 0 ? "+" : ""}\${formatEuro(gap)}\`}
+                          </td>
+                          <td className="py-3 text-muted-foreground">{row.lowest_competitor_seller ?? "—"}</td>
+                          <td className="py-3">{row.competitor_count ?? "—"}</td>
+                          <td className="py-3">
+                            <span className={\`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              row.position == null
+                                ? "bg-muted text-muted-foreground"
+                                : row.position <= 1
+                                  ? "bg-emerald-500/10 text-emerald-500"
+                                  : "bg-red-500/10 text-red-500"
+                            }\`}>
+                              {row.position == null ? "—" : \`#\${row.position}\`}
+                              {positionDelta != null && positionDelta !== 0 && (
+                                positionDelta < 0
+                                  ? <ArrowDownRight size={11} />
+                                  : <ArrowUpRight size={11} />
+                              )}
+                            </span>
+                          </td>
+                          <td className={\`py-3 font-bold ${
+                            priceDelta == null ? "text-muted-foreground" : priceDelta <= 0 ? "text-emerald-500" : "text-red-500"
+                          }\`}>
+                            {priceDelta == null ? "—" : \`\${priceDelta > 0 ? "+" : ""}\${formatEuro(priceDelta)}\`}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {competitorRows.length === 0 && (
+                      <tr>
+                        <td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
+                          Geen SKU's voor deze periode of zoekopdracht.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {competitorData && (
+            <div className="rounded-2xl border border-border/60 bg-card/70 p-6 backdrop-blur-sm shadow-xs">
+              <div className="flex items-center gap-2 mb-4">
+                <Store size={16} className="text-blue-500" />
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Concurrenten per SKU</h3>
+                  <p className="text-xs text-muted-foreground">De dataset wordt door de dagelijkse scan gevuld; de lijst volgt dezelfde periodefilter.</p>
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {competitorRows.slice(0, 12).map((row) => (
+                  <div key={row.sku} className="rounded-xl border border-border/50 bg-background/60 p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-blue-500">{row.sku}</span>
+                      <span className="text-[10px] text-muted-foreground">{row.competitor_count ?? 0} aanbieders</span>
+                    </div>
+                    <div className="mt-2 text-xs text-foreground">{row.seller_names?.join(", ") || row.lowest_competitor_seller || "Geen aanbieders opgeslagen"}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
