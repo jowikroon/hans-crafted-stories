@@ -883,6 +883,7 @@ export default function DashboardsCcp() {
                       <th className="pb-3 font-semibold">SKU / Product</th>
                       <th className="pb-3 font-semibold">Onze prijs</th>
                       <th className="pb-3 font-semibold">Laagste concurrent</th>
+                      <th className="pb-3 font-semibold">Hoogste concurrent</th>
                       <th className="pb-3 font-semibold">Verschil</th>
                       <th className="pb-3 font-semibold">Aanbieder</th>
                       <th className="pb-3 font-semibold">Aantal aanbieders</th>
@@ -910,7 +911,14 @@ export default function DashboardsCcp() {
                             <div className="max-w-[260px] truncate text-muted-foreground">{row.product_name ?? "—"}</div>
                           </td>
                           <td className="py-3 font-bold text-foreground">{formatEuro(row.our_price)}</td>
-                          <td className="py-3 font-bold text-foreground">{formatEuro(row.lowest_competitor_price)}</td>
+                          <td className="py-3 font-bold text-foreground">
+                            <div>{formatEuro(row.lowest_competitor_price)}</div>
+                            <div className="text-[10px] font-medium text-muted-foreground">{row.lowest_competitor_seller ?? "—"}</div>
+                          </td>
+                          <td className="py-3 font-bold text-foreground">
+                            <div>{formatEuro(row.highest_competitor_price)}</div>
+                            <div className="text-[10px] font-medium text-muted-foreground">{row.highest_competitor_seller ?? "—"}</div>
+                          </td>
                           <td className={`py-3 font-bold ${
                             gap == null ? "text-muted-foreground" : gap <= 0 ? "text-emerald-500" : "text-red-500"
                           }`}>
@@ -944,7 +952,7 @@ export default function DashboardsCcp() {
                     })}
                     {competitorRows.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
+                        <td colSpan={9} className="py-8 text-center text-sm text-muted-foreground">
                           Geen SKU's voor deze periode of zoekopdracht.
                         </td>
                       </tr>
