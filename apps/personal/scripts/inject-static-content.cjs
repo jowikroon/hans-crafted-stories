@@ -91,6 +91,14 @@ const STATIC_CONTENT = `<header>
         <dd>Listing and A+ content fixes tend to shift conversion within 2-4 weeks. Sponsored Products and Bol Ads restructures usually show meaningful ACOS improvement within one advertising cycle (4-6 weeks). Structural share and stockout improvements are a 3-6 month arc.</dd>
         <dt>Does Hans work on Amazon DE and Amazon FR as well?</dt>
         <dd>Yes. In addition to Amazon NL and Bol.com, engagements regularly cover Amazon DE and Amazon FR for brands expanding across the EU, using the same operating model per marketplace.</dd>
+        <dt>How can I improve marketplace conversion without increasing ad spend?</dt>
+        <dd>Start with the product detail page: align the title and bullets with search intent, make the main image and value proposition easier to scan, resolve variation and catalog errors, and strengthen reviews and delivery promises. Better listing quality can lift organic and paid conversion before bids or budgets change.</dd>
+        <dt>What is the difference between optimizing Amazon Ads and Bol Ads?</dt>
+        <dd>Both require search-term analysis, bid control and profitability tracking, but their campaign structures, targeting options and reporting differ. Optimization should therefore use channel-specific search terms, margins, placement data and stock signals instead of copying one marketplace setup to the other.</dd>
+        <dt>What data is needed for an Amazon or Bol.com marketplace audit?</dt>
+        <dd>A useful audit normally combines sales, traffic, conversion, advertising, margin, stock and catalog-quality data. Account exports are ideal, but a first diagnosis can also start with listing URLs, campaign reports, product margins and a clear description of the commercial goals and constraints.</dd>
+        <dt>Can Hans help with marketplace stockouts, pricing and catalog errors?</dt>
+        <dd>Yes. Marketplace operations can include stock and sell-through analysis, pricing and Buy Box monitoring, variation cleanup, content corrections and feed troubleshooting. The first step is to separate isolated listing issues from structural problems in forecasting, source data or marketplace integrations.</dd>
       </dl>
     </section>
   </main>
