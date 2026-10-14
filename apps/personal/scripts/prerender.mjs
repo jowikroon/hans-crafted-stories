@@ -644,7 +644,7 @@ writeLocalizedPage("/work", {
   }
   const writingPreloadScript = `<script id="__PRELOADED__" type="application/json">${JSON.stringify({ blogPosts: writingPosts })}</script>`;
   writeLocalizedPage("/writing", {
-    buildHead: (lang) => ({ ...WRITING_HEADS[lang] }),
+    buildHead: (lang) => ({ ...WRITING_HEADS[lang], ogImageAlt: "Hans van Leeuwen, freelance & interim e-commerce manager" }),
     buildJsonLd: (lang, head) => writingJsonLd(lang, head),
     fallbackHtml: (lang, head) => buildStaticPageFallback(head, "", "h2", lang),
     renderOptions: { preloadedBlogPosts: writingPosts },

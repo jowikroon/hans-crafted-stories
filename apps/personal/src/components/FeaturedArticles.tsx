@@ -86,7 +86,7 @@ const FeaturedArticles = () => {
                       src={cardImage}
                       alt={title}
                       width={600}
-                      height={400}
+                      height={315}
                       loading="lazy"
                       decoding="async"
                     />
