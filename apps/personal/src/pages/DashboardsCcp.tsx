@@ -885,7 +885,6 @@ export default function DashboardsCcp() {
                       <th className="pb-3 font-semibold">Laagste concurrent</th>
                       <th className="pb-3 font-semibold">Hoogste concurrent</th>
                       <th className="pb-3 font-semibold">Verschil</th>
-                      <th className="pb-3 font-semibold">Aanbieder</th>
                       <th className="pb-3 font-semibold">Aantal aanbieders</th>
                       <th className="pb-3 font-semibold">Positie</th>
                       <th className="pb-3 font-semibold">Prijs vs vorige periode</th>
@@ -924,7 +923,6 @@ export default function DashboardsCcp() {
                           }`}>
                             {gap == null ? "—" : `${gap > 0 ? "+" : ""}${formatEuro(gap)}`}
                           </td>
-                          <td className="py-3 text-muted-foreground">{row.lowest_competitor_seller ?? "—"}</td>
                           <td className="py-3">{row.competitor_count ?? "—"}</td>
                           <td className="py-3">
                             <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -952,7 +950,7 @@ export default function DashboardsCcp() {
                     })}
                     {competitorRows.length === 0 && (
                       <tr>
-                        <td colSpan={9} className="py-8 text-center text-sm text-muted-foreground">
+                        <td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
                           Geen SKU's voor deze periode of zoekopdracht.
                         </td>
                       </tr>
