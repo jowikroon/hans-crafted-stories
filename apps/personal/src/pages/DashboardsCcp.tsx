@@ -197,7 +197,7 @@ export default function DashboardsCcp() {
   const { data: competitorData, loading: competitorLoading, error: competitorError, refresh: refreshCompetitor } =
     useCompetitorPricing(activeTab === "competitors");
   const competitorPeriodData = competitorData?.periods?.[String(competitorPeriod)] ?? competitorData;
-  const competitorSummary = competitorPeriodData?.summary ?? {};
+  const competitorSummary: CompetitorSummary = competitorPeriodData?.summary ?? {};
   const competitorRows = useMemo(() => {
     const rows = competitorPeriodData?.rows ?? [];
     const query = competitorSearch.trim().toLowerCase();
@@ -449,9 +449,9 @@ export default function DashboardsCcp() {
 
         <button
           onClick={() => setActiveTab("competitors")}
-          className={\`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition shrink-0 ${
+          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition shrink-0 ${
             activeTab === "competitors" ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }\`}
+          }`}
         >
           <Store size={14} />
           <span>Concurrentieprijzen</span>
@@ -783,11 +783,11 @@ export default function DashboardsCcp() {
                   <BarChart3 size={18} className="text-blue-500" />
                   <h2 className="text-base font-bold text-foreground">eBay DE Concurrentieprijzen</h2>
                   {competitorData?.scan_status && (
-                    <span className={\`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
                       competitorData.scan_status === "ok"
                         ? "bg-emerald-500/10 text-emerald-500"
                         : "bg-amber-500/10 text-amber-500"
-                    }\`}>
+                    }`}>
                       {competitorData.scan_status === "ok" ? "Scan geslaagd" : "Scan gedeeltelijk"}
                     </span>
                   )}
@@ -806,9 +806,9 @@ export default function DashboardsCcp() {
                     <button
                       key={days}
                       onClick={() => setCompetitorPeriod(days as CompetitorPeriod)}
-                      className={\`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                         competitorPeriod === days ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                      }\`}
+                      }`}
                     >
                       {days} dagen
                     </button>
@@ -842,10 +842,10 @@ export default function DashboardsCcp() {
               ].map((metric) => (
                 <div key={metric.label} className="rounded-xl border border-border/50 bg-background/60 p-4">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{metric.label}</div>
-                  <div className={\`mt-2 text-xl font-bold ${\`}>{metric.value}</div>
+                  <div className={`mt-2 text-xl font-bold ${`}>{metric.value}</div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
                     {competitorPeriodData?.period_start && competitorPeriodData?.period_end
-                      ? \`\${competitorPeriodData.period_start} t/m \${competitorPeriodData.period_end}\`
+                      ? `\${competitorPeriodData.period_start} t/m \${competitorPeriodData.period_end}`
                       : "Wacht op eerste dagelijkse scan"}
                   </div>
                 </div>
@@ -911,22 +911,22 @@ export default function DashboardsCcp() {
                           </td>
                           <td className="py-3 font-bold text-foreground">{formatEuro(row.our_price)}</td>
                           <td className="py-3 font-bold text-foreground">{formatEuro(row.lowest_competitor_price)}</td>
-                          <td className={\`py-3 font-bold ${
+                          <td className={`py-3 font-bold ${
                             gap == null ? "text-muted-foreground" : gap <= 0 ? "text-emerald-500" : "text-red-500"
-                          }\`}>
-                            {gap == null ? "—" : \`\${gap > 0 ? "+" : ""}\${formatEuro(gap)}\`}
+                          }`}>
+                            {gap == null ? "—" : `\${gap > 0 ? "+" : ""}\${formatEuro(gap)}`}
                           </td>
                           <td className="py-3 text-muted-foreground">{row.lowest_competitor_seller ?? "—"}</td>
                           <td className="py-3">{row.competitor_count ?? "—"}</td>
                           <td className="py-3">
-                            <span className={\`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
                               row.position == null
                                 ? "bg-muted text-muted-foreground"
                                 : row.position <= 1
                                   ? "bg-emerald-500/10 text-emerald-500"
                                   : "bg-red-500/10 text-red-500"
-                            }\`}>
-                              {row.position == null ? "—" : \`#\${row.position}\`}
+                            }`}>
+                              {row.position == null ? "—" : `#\${row.position}`}
                               {positionDelta != null && positionDelta !== 0 && (
                                 positionDelta < 0
                                   ? <ArrowDownRight size={11} />
@@ -934,10 +934,10 @@ export default function DashboardsCcp() {
                               )}
                             </span>
                           </td>
-                          <td className={\`py-3 font-bold ${
+                          <td className={`py-3 font-bold ${
                             priceDelta == null ? "text-muted-foreground" : priceDelta <= 0 ? "text-emerald-500" : "text-red-500"
-                          }\`}>
-                            {priceDelta == null ? "—" : \`\${priceDelta > 0 ? "+" : ""}\${formatEuro(priceDelta)}\`}
+                          }`}>
+                            {priceDelta == null ? "—" : `\${priceDelta > 0 ? "+" : ""}\${formatEuro(priceDelta)}`}
                           </td>
                         </tr>
                       );
