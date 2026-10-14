@@ -8,8 +8,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 const radarSyncPath = path.join(__dirname, "sync-ccp-competition-radar.mjs");
 
+const commitAndPush = process.argv.includes("--commit");
+const dryRun = process.argv.includes("--dry-run");
+
 if (existsSync(radarSyncPath)) {
-  execFileSync(process.execPath, [radarSyncPath], { cwd: repoRoot, stdio: "inherit" });
+  execFileSync(process.execPath, [radarSyncPath, ...(dryRun ? ["--dry-run"] : [])], { cwd: repoRoot, stdio: "inherit" });
 }
 
 const sources = [
@@ -26,9 +29,6 @@ const ignoredName = /(^\.~lock\.|\.SKILL\.md$|~$|\.tmp$|\.bak$|\.crdownload$)/i;
 // apps/personal/scripts/seo-guard.mjs (check 22) fails the build if one reappears.
 const removedFromWebroot = new Set(["ccp-command-dashboard.html"]);
 const isRemovedFromWebroot = (name) => removedFromWebroot.has(name.toLowerCase());
-
-const commitAndPush = process.argv.includes("--commit");
-const dryRun = process.argv.includes("--dry-run");
 
 const hashFile = (filePath) => createHash("sha256").update(readFileSync(filePath)).digest("hex");
 

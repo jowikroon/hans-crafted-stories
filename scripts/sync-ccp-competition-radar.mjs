@@ -10,6 +10,7 @@ const sourceDirs = [
   "C:/Users/Malle Flappie/Documents/Claude/Projects/Cowork Research",
   "C:/Users/Malle Flappie/Documents/SecondBrainVault/_cowork/ccp-ebay-de",
 ].map((source) => path.resolve(source));
+const dryRun = process.argv.includes("--dry-run");
 
 const radarMarkdown = /^(?:ccp-concurrentie-radar|concurrentie-radar-amazon-de-all)-\d{4}-\d{2}-\d{2}\.md$/i;
 const radarPdf = /^(?:ccp-concurrentie-radar|concurrentie-radar-amazon-de-all)-\d{4}-\d{2}-\d{2}(?:-visual)?\.pdf$/i;
@@ -113,9 +114,9 @@ for (let i = 0; i < runs.length; i += 1) {
   }
 }
 
-if (runs.length) writeFileSync(outputPath, `${JSON.stringify(runs, null, 2)}\n`);
+if (runs.length && !dryRun) writeFileSync(outputPath, `${JSON.stringify(runs, null, 2)}\n`);
 
-mkdirSync(publicDir, { recursive: true });
+if (!dryRun) mkdirSync(publicDir, { recursive: true });
 const copiedPdfs = [];
 for (const sourceDir of sourceDirs) {
   if (!existsSync(sourceDir)) continue;
@@ -125,10 +126,11 @@ for (const sourceDir of sourceDirs) {
     const sourceStat = statSync(sourcePath);
     const shouldCopy = !existsSync(targetPath) || statSync(targetPath).size !== sourceStat.size || statSync(targetPath).mtimeMs < sourceStat.mtimeMs;
     if (!shouldCopy) continue;
+    copiedPdfs.push(name);
+    if (dryRun) continue;
     copyFileSync(sourcePath, targetPath);
     utimesSync(targetPath, sourceStat.atime, sourceStat.mtime);
-    copiedPdfs.push(name);
   }
 }
 
-console.log(JSON.stringify({ sources: sourceDirs.filter(existsSync), runs: runs.length, copiedPdfs }, null, 2));
+console.log(JSON.stringify({ sources: sourceDirs.filter(existsSync), runs: runs.length, copiedPdfs, dryRun }, null, 2));
