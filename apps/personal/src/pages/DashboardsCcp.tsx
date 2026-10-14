@@ -842,10 +842,10 @@ export default function DashboardsCcp() {
               ].map((metric) => (
                 <div key={metric.label} className="rounded-xl border border-border/50 bg-background/60 p-4">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{metric.label}</div>
-                  <div className={`mt-2 text-xl font-bold ${`}>{metric.value}</div>
+                  <div className={`mt-2 text-xl font-bold ${metric.tone}`}>{metric.value}</div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
                     {competitorPeriodData?.period_start && competitorPeriodData?.period_end
-                      ? `\${competitorPeriodData.period_start} t/m \${competitorPeriodData.period_end}`
+                      ? `${competitorPeriodData.period_start} t/m ${competitorPeriodData.period_end}`
                       : "Wacht op eerste dagelijkse scan"}
                   </div>
                 </div>
@@ -914,7 +914,7 @@ export default function DashboardsCcp() {
                           <td className={`py-3 font-bold ${
                             gap == null ? "text-muted-foreground" : gap <= 0 ? "text-emerald-500" : "text-red-500"
                           }`}>
-                            {gap == null ? "—" : `\${gap > 0 ? "+" : ""}\${formatEuro(gap)}`}
+                            {gap == null ? "—" : `${gap > 0 ? "+" : ""}${formatEuro(gap)}`}
                           </td>
                           <td className="py-3 text-muted-foreground">{row.lowest_competitor_seller ?? "—"}</td>
                           <td className="py-3">{row.competitor_count ?? "—"}</td>
@@ -926,7 +926,7 @@ export default function DashboardsCcp() {
                                   ? "bg-emerald-500/10 text-emerald-500"
                                   : "bg-red-500/10 text-red-500"
                             }`}>
-                              {row.position == null ? "—" : `#\${row.position}`}
+                              {row.position == null ? "—" : `#${row.position}`}
                               {positionDelta != null && positionDelta !== 0 && (
                                 positionDelta < 0
                                   ? <ArrowDownRight size={11} />
@@ -937,7 +937,7 @@ export default function DashboardsCcp() {
                           <td className={`py-3 font-bold ${
                             priceDelta == null ? "text-muted-foreground" : priceDelta <= 0 ? "text-emerald-500" : "text-red-500"
                           }`}>
-                            {priceDelta == null ? "—" : `\${priceDelta > 0 ? "+" : ""}\${formatEuro(priceDelta)}`}
+                            {priceDelta == null ? "—" : `${priceDelta > 0 ? "+" : ""}${formatEuro(priceDelta)}`}
                           </td>
                         </tr>
                       );
