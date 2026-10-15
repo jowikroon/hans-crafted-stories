@@ -339,12 +339,17 @@ export function evaluate(c: ChangeInput, rows: DailyRow[], lastDay: string, sinc
 
   let verdict: Verdict;
   let note: string;
+  // Without a baseline, or before the first week after the deploy, there is no test to report:
+  // a -100% on one day of data next to a confidence figure would read as a verdict.
+  let untested = false;
   if (!baseline) {
+    untested = true;
     verdict = "no_baseline";
     note = isSearchMetric(m)
       ? "Geen Search Console-data in de basisperiode voor deze pagina's."
       : "Geen first-party bezoekdata in de basisperiode: meting start bij de volgende wijziging.";
   } else if (w.post.days < Math.min(MIN_POST_DAYS, c.measure_days)) {
+    untested = true;
     verdict = "measuring";
     note = `Nog ${Math.min(MIN_POST_DAYS, c.measure_days) - w.post.days} dag(en) tot een eerste oordeel.`;
   } else if (!enough) {
@@ -369,10 +374,10 @@ export function evaluate(c: ChangeInput, rows: DailyRow[], lastDay: string, sinc
     control: cv ? { pre: round(cv.pre, 2), post: round(cv.post, 2) } : null,
     change_pct: round(change),
     control_change_pct: round(cChange),
-    lift_pct: round(lift),
+    lift_pct: untested ? null : round(lift),
     abs_change: round(abs, 2),
-    z: round(z, 2),
-    confidence: round(confidence, 3),
+    z: untested ? null : round(z, 2),
+    confidence: untested ? null : round(confidence, 3),
     adjusted,
     verdict,
     status: w.complete ? "concluded" : "measuring",
