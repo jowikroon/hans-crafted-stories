@@ -41,6 +41,8 @@
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
  *      want databasetekst gaat bij het lezen al door lib/noEmDash.ts
+ *  22. interne pagina's die PR #368 uit de webroot haalde (CCP-dashboards) staan niet opnieuw in
+ *      public/ (hoofdletterongevoelig) en niet in src/data/coworkAttachments.json
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -496,6 +498,33 @@ for (const route of seen) {
   }
 }
 
+// 22. Uit de webroot gehaalde interne pagina's (2026-10-14): PR #368 verwijderde de CCP-dashboards uit
+//     public/, maar een lokale bronmap van scripts/sync-cowork-dashboard-attachments.mjs bevat nog
+//     CCP-Command-Dashboard.html. Elke sync kopieerde die terug en zette hem weer in het manifest.
+//     Het sync-script slaat ze nu over (removedFromWebroot); deze check vangt elke andere weg terug.
+//     Hoofdletterongevoelig via readdir: Windows ziet Foo.html en foo.html als hetzelfde bestand, de host niet.
+{
+  const appDir = path.resolve(distDir, "..");
+  const REMOVED_FROM_WEBROOT = ["ccp-dashboard.html", "cowork/ccp-ebay-de/CCP-Command-Dashboard.html", "dashboards/ccp.html", "dashboards/index.html"];
+  try {
+    for (const rel of REMOVED_FROM_WEBROOT) {
+      const dir = path.join(appDir, "public", path.posix.dirname(rel));
+      if (!fs.existsSync(dir)) continue;
+      const want = path.posix.basename(rel).toLowerCase();
+      for (const name of fs.readdirSync(dir)) {
+        if (name.toLowerCase() === want) failures.push(`${path.posix.join("public", path.posix.dirname(rel), name)}: interne pagina staat weer in de webroot (verwijderd in #368)`);
+      }
+    }
+    const removedUrls = new Set(REMOVED_FROM_WEBROOT.map((rel) => `/${rel}`.toLowerCase()));
+    const manifest = JSON.parse(fs.readFileSync(path.join(appDir, "src", "data", "coworkAttachments.json"), "utf8"));
+    for (const row of manifest) {
+      if (removedUrls.has(decodeURIComponent(row.url || "").toLowerCase())) failures.push(`coworkAttachments.json: rij "${row.name}" verwijst naar een pagina die in #368 uit de webroot is gehaald`);
+    }
+  } catch (e) {
+    failures.push(`check 22 kon niet draaien: ${e.message}`);
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /en-pagina heeft een NL-tweeling en andersom.
 for (const route of seen) {
   if ((route === "/en" || route.startsWith("/en/")) && !route.startsWith("/en/writing/")) {
@@ -509,4 +538,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (21 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (22 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/webroot-368).`);

@@ -8,8 +8,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 const radarSyncPath = path.join(__dirname, "sync-ccp-competition-radar.mjs");
 
+const commitAndPush = process.argv.includes("--commit");
+const dryRun = process.argv.includes("--dry-run");
+
 if (existsSync(radarSyncPath)) {
-  execFileSync(process.execPath, [radarSyncPath], { cwd: repoRoot, stdio: "inherit" });
+  execFileSync(process.execPath, [radarSyncPath, ...(dryRun ? ["--dry-run"] : [])], { cwd: repoRoot, stdio: "inherit" });
 }
 
 const sources = [
@@ -21,12 +24,15 @@ const publicDir = path.join(repoRoot, "apps/personal/public/cowork/ccp-ebay-de")
 const manifestPath = path.join(repoRoot, "apps/personal/src/data/coworkAttachments.json");
 const allowedExtensions = new Set([".html", ".pdf", ".md", ".xlsx", ".txt"]);
 const ignoredName = /(^\.~lock\.|\.SKILL\.md$|~$|\.tmp$|\.bak$|\.crdownload$)/i;
-
-const commitAndPush = process.argv.includes("--commit");
-const dryRun = process.argv.includes("--dry-run");
+// Internal pages deliberately removed from the public webroot in #368. A source folder may still
+// hold a copy; never copy it back into publicDir, never list it in the manifest, never commit it.
+// apps/personal/scripts/seo-guard.mjs (check 22) fails the build if one reappears.
+const removedFromWebroot = new Set(["ccp-command-dashboard.html"]);
+const isRemovedFromWebroot = (name) => removedFromWebroot.has(name.toLowerCase());
 
 const hashFile = (filePath) => createHash("sha256").update(readFileSync(filePath)).digest("hex");
 
+const skippedRemoved = new Set();
 const listFiles = (dir) => {
   if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -35,6 +41,10 @@ const listFiles = (dir) => {
     if (!entry.isFile()) return [];
     if (ignoredName.test(entry.name)) return [];
     if (!allowedExtensions.has(path.extname(entry.name).toLowerCase())) return [];
+    if (isRemovedFromWebroot(entry.name)) {
+      skippedRemoved.add(fullPath);
+      return [];
+    }
     return [fullPath];
   });
 };
@@ -95,6 +105,7 @@ console.log(JSON.stringify({
   copiedFiles: copied,
   manifestRows: filesForManifest.length,
   manifestChanged,
+  skippedRemoved: [...skippedRemoved].sort(),
   dryRun,
 }, null, 2));
 
@@ -106,7 +117,8 @@ if (!status) {
   process.exit(0);
 }
 
-execFileSync("git", ["add", "apps/personal/public/cowork/ccp-ebay-de", "apps/personal/src/data/coworkAttachments.json"], { cwd: repoRoot, stdio: "inherit" });
+const removedPathspecs = [...removedFromWebroot].map((name) => `:(exclude,icase)apps/personal/public/cowork/ccp-ebay-de/${name}`);
+execFileSync("git", ["add", "--", "apps/personal/public/cowork/ccp-ebay-de", "apps/personal/src/data/coworkAttachments.json", ...removedPathspecs], { cwd: repoRoot, stdio: "inherit" });
 const staged = execFileSync("git", ["diff", "--cached", "--name-only"], { cwd: repoRoot, encoding: "utf8" }).trim();
 if (!staged) {
   console.log("No staged dashboard attachment changes.");
