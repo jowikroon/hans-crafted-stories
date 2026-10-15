@@ -159,6 +159,8 @@ describe("evaluate", () => {
     const res = evaluate(change({ paths: [] }), r, "2026-09-04");
     expect(res.verdict).toBe("measuring");
     expect(res.status).toBe("measuring");
+    // No test before the first week: a tenfold jump on three days must not show a confidence.
+    expect(res).toMatchObject({ lift_pct: null, z: null, confidence: null, change_pct: 900 });
   });
 
   it("marks first-party metrics without a baseline instead of inventing one", () => {
@@ -166,6 +168,7 @@ describe("evaluate", () => {
     const res = evaluate(change({ primary_metric: "visits" }), r, "2026-09-29", "2026-09-02");
     expect(res.verdict).toBe("no_baseline");
     expect(res.status).toBe("concluded");
+    expect(res).toMatchObject({ lift_pct: null, z: null, confidence: null });
   });
 
   it("keeps a missing baseline open until the measurement window is complete", () => {
