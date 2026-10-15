@@ -71,6 +71,12 @@ function lineCol(sf: ts.SourceFile, pos: number): { l: number; c: number } {
   return { l: lc.line + 1, c: lc.character + 1 };
 }
 
+/**
+ * Forward slashes on every platform. Vite ids on Windows are "C:/..." while
+ * node:path yields "C:\...", so both sides are normalised before comparing.
+ */
+const toPosix = (p: string) => p.replace(/\\/g, "/");
+
 function isJsxElementLike(n: ts.Node): boolean {
   return ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n);
 }
@@ -189,7 +195,7 @@ function tagTsx(code: string, file: string, rel: string, elements: EditSourceMap
 }
 
 export function editSourceMap(opts: Options): Plugin {
-  const srcRoot = path.join(opts.root, "src");
+  const srcRoot = path.posix.join(toPosix(opts.root), "src");
   const elements: EditSourceMap["elements"] = {};
   const literals: EditSourceMap["literals"] = {};
   let isSsr = false;
@@ -223,9 +229,9 @@ export function editSourceMap(opts: Options): Plugin {
       });
     },
     transform(code, id) {
-      const file = id.split("?")[0];
-      if (file.includes("/node_modules/") || !file.startsWith(srcRoot + path.sep)) return null;
-      const rel = path.relative(srcRoot, file).split(path.sep).join("/");
+      const file = toPosix(id.split("?")[0]);
+      if (file.includes("/node_modules/") || !file.startsWith(srcRoot + "/")) return null;
+      const rel = file.slice(srcRoot.length + 1);
       if (EXCLUDE.some((re) => re.test(rel))) return null;
       if (file.endsWith(".tsx")) {
         indexLiterals(code, file, rel, literals, ts.ScriptKind.TSX);
