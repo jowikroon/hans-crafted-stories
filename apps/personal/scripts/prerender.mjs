@@ -160,7 +160,8 @@ const ABOUT_PERSON_ENTITY = {
     { "@type": "CollegeOrUniversity", name: "HU University of Applied Sciences Utrecht" },
     { "@type": "EducationalOrganization", name: "ROC Amsterdam - Hilversum" },
   ],
-  worksFor: { "@type": "Organization", name: "ABS All Brake Systems" },
+  // Huidige werkgever zoals zichtbaar op /about. Nooit een moeder- of leveranciersbedrijf (harde regel 2026-10-15).
+  worksFor: { "@type": "Organization", name: "Connect Car Parts" },
   hasOccupation: { "@type": "Occupation", name: "E-commerce & Marketplace Manager", occupationLocation: { "@type": "Country", name: "NL" } },
 };
 

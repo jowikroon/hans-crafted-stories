@@ -1,67 +1,61 @@
-import { motion } from "framer-motion";
-import { Download, MapPin, Mail, Linkedin, Briefcase, GraduationCap, ChevronRight, Home, Calendar } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronRight, MapPin } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
 import { Link } from "@/components/LocalizedLink";
 import hansProfile from "@/assets/hans-profile.jpg";
-import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
-import { usePageElements } from "@/hooks/usePageElements";
 import { useSEO } from "@/hooks/useSEO";
-import { usePageContent } from "@/hooks/usePageContent";
+import { ABOUT, CALENDLY_URL, LINKEDIN_URL } from "@/data/aboutPage";
+import "@/styles/about-v2.css";
 
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
-};
+// /about redesign (2026-10-15). Order follows the visitor's questions:
+// who is this, proof, why him (story), the common thread, career, services, contact.
+// Only one filled button style on the page: the call booking. Main fonts only.
 
-const staggerChildren = {
-  animate: { transition: { staggerChildren: 0.08 } },
-};
+const Arrow = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="m9 18 6-6-6-6" />
+  </svg>
+);
 
-const CV_DOWNLOADS_ENABLED = false; // zie 2026-10-15: CV-PDF's noemden A.B.S. als werkgever
+const SectionHead = ({ id, children }: { id: string; children: React.ReactNode }) => (
+  <div className="av-sechead">
+    <span className="av-dot" aria-hidden="true"><span /></span>
+    <h2 id={id}>{children}</h2>
+  </div>
+);
 
 const About = () => {
   const { lang } = useLang();
   const t = translations[lang];
-  const { isVisible } = usePageElements("about");
-  const { getValue } = usePageContent("about");
-
+  const c = ABOUT[lang];
   const seo = t.seo;
 
-  // Single source for the About FAQ: rendered UI and FAQPage JSON-LD read the
-  // SAME localized array, so schema always matches visible content (Codex
-  // review on PR #272).
-  const aboutFaq = lang === "nl" ? [
-    { q: "Wat doet een freelance e-commerce manager?",
-      a: "Ik neem tijdelijk de e-commerce operatie over: marketplace-strategie, listings, advertising, pricing, forecasting en rapportages. Ik werk hands-on binnen jullie team en tool-stack." },
-    { q: "Wat kost freelance marketplace-management?",
-      a: "Retainer voor doorlopend Amazon/Bol-beheer, projectprijs voor een audit of lancering, dagtarief voor interim. Exact bedrag hangt af van scope en channel-mix; een 30-min intake geeft binnen 1 werkdag een schriftelijke offerte." },
-    { q: "Vendor of Seller op Bol.com: wat past beter?",
-      a: "Seller houdt marge en controle maar vraagt actief accountwerk. Vendor bespaart operatie maar levert marge en pricing-controle in. Ik help beide modellen te modelleren op EBITDA, niet alleen omzet." },
-    { q: "Hoe verlaag je out-of-stock rates?",
-      a: "Een demand-forecasting model op recente sell-through, seizoen en promotie-lift, gekoppeld aan supplier lead-times. In bestaande cases OOS onder 2%." },
-    { q: "Doe je ook Amazon Ads en Bol Ads?",
-      a: "Ja. Sponsored Products, Sponsored Brands, Display en Bol Ads met wekelijkse bidsturing en negative harvesting; ACOS/TACOS als primaire KPI\u2019s." },
-  ] : [
-    { q: "What does a freelance e-commerce manager do?",
-      a: "I temporarily lead the e-commerce operation: marketplace strategy, listings, advertising, pricing, forecasting and reporting. Hands-on inside your existing team and tool stack." },
-    { q: "How much does marketplace management cost?",
-      a: "Retainer for ongoing Amazon/Bol management, project pricing for a defined audit or launch, day rate for interim. Actual number depends on scope; a 30-min intake produces a written quote within one working day." },
-    { q: "Bol.com: vendor or seller?",
-      a: "Seller keeps margin and control but requires active account work. Vendor saves operations but concedes margin and pricing control. I model both routes on EBITDA, not just revenue." },
-    { q: "How do you reduce out-of-stock rates?",
-      a: "A demand-forecasting model built on recent sell-through, seasonality and promo lift, tied to supplier lead-times. Documented cases run under 2% OOS." },
-    { q: "Do you manage Amazon Ads and Bol Ads?",
-      a: "Yes. Sponsored Products, Sponsored Brands, Display and Bol Ads with weekly bid steering and negative harvesting; ACOS/TACOS as primary KPIs." },
-  ];
+  const midCtaRef = useRef<HTMLAnchorElement>(null);
+  const contactRef = useRef<HTMLElement>(null);
+  const [stickyOn, setStickyOn] = useState(false);
+
+  // Mobile sticky CTA: only between the CTA after "De rode draad" and the contact section.
+  useEffect(() => {
+    const mid = midCtaRef.current;
+    const contact = contactRef.current;
+    if (!mid || !contact || typeof IntersectionObserver === "undefined") return;
+    let past = false;
+    let atEnd = false;
+    const update = () => setStickyOn(past && !atEnd);
+    const o1 = new IntersectionObserver(([e]) => { past = !e.isIntersecting && e.boundingClientRect.top < 0; update(); });
+    const o2 = new IntersectionObserver(([e]) => { atEnd = e.isIntersecting || e.boundingClientRect.top < 0; update(); });
+    o1.observe(mid);
+    o2.observe(contact);
+    return () => { o1.disconnect(); o2.disconnect(); };
+  }, []);
 
   useSEO({
     title: seo.aboutTitle,
     description: seo.aboutDescription,
-    imageAlt: lang === "nl" ? "Hans van Leeuwen – Interim E-commerce Manager & Marketplace-specialist" : "Hans van Leeuwen – Interim E-commerce Manager & Marketplace Specialist",
+    imageAlt: c.photoAlt,
     path: "/about",
     lang,
     jsonLd: {
@@ -79,22 +73,22 @@ const About = () => {
           "@id": "https://hansvanleeuwen.com/#person",
           name: "Hans van Leeuwen",
           url: "https://hansvanleeuwen.com/about",
-          jobTitle: "Freelance & Interim E-commerce Manager",
+          jobTitle: "E-commerce Manager",
           alternateName: "Jowikroon",
-          description: "Freelance e-commerce manager & UX designer with 10+ years of experience in marketplace strategy, Amazon, Bol.com, AI-assisted automation, and digital commerce.",
-          image: {
-            "@type": "ImageObject",
-            url: `https://hansvanleeuwen.com${hansProfile}`,
-            caption: "Hans van Leeuwen – Freelance E-commerce Manager",
-          },
-          knowsAbout: ["E-commerce", "Amazon", "Bol.com", "Marketplace optimization", "UX design", "Interaction design", "AI-assisted e-commerce automation", "Conversion optimization", "Digital commerce", "SEO", "Amazon Ads", "Bol Ads"],
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: "Amersfoort",
-            addressCountry: "NL",
-          },
+          description: lang === "nl"
+            ? "Hans van Leeuwen is marketplace manager voor Amazon, Bol.com en eBay uit Amersfoort, met een achtergrond in ICT-beheer (sinds 2008) en UX (Hogeschool Utrecht)."
+            : "Hans van Leeuwen is a marketplace manager for Amazon, Bol.com and eBay based in Amersfoort, with a background in IT administration (since 2008) and UX (Hogeschool Utrecht).",
+          image: { "@type": "ImageObject", url: `https://hansvanleeuwen.com${hansProfile}`, caption: c.photoAlt },
+          // Current employer as shown on the page. Never a parent or supplier company (hard rule 2026-10-15).
+          worksFor: { "@type": "Organization", name: "Connect Car Parts" },
+          alumniOf: [
+            { "@type": "CollegeOrUniversity", name: "Hogeschool Utrecht" },
+            { "@type": "EducationalOrganization", name: "ROC Hilversum" },
+          ],
+          knowsAbout: ["Amazon", "Bol.com", "eBay", "Marketplace management", "UX design", "Interaction design", "SEO", "Conversion optimization", "Channable", "E-commerce automation", "Amazon Ads", "Bol Ads"],
+          address: { "@type": "PostalAddress", addressLocality: "Amersfoort", addressCountry: "NL" },
           sameAs: [
-            "https://www.linkedin.com/in/hansvl3",
+            LINKEDIN_URL,
             "https://x.com/hansvl3",
             "https://github.com/jowikroon",
             "https://www.youtube.com/@jowikroon1990",
@@ -105,326 +99,202 @@ const About = () => {
           "@type": "BreadcrumbList",
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-            { "@type": "ListItem", position: 2, name: "About", item: "https://hansvanleeuwen.com/about" },
+            { "@type": "ListItem", position: 2, name: c.crumb, item: "https://hansvanleeuwen.com/about" },
           ],
-        },
-        {
-          "@type": "FAQPage",
-          mainEntity: aboutFaq.map((qa) => ({
-            "@type": "Question",
-            name: qa.q,
-            acceptedAnswer: { "@type": "Answer", text: qa.a },
-          })),
         },
       ],
     },
   });
 
+  const contactRow = (
+    <p className="av-contactrow">
+      <ObfuscatedMailto user="hansvl3" domain="gmail.com" aria-label={c.email}>{c.email}</ObfuscatedMailto>
+      <span aria-hidden="true">·</span>
+      <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    </p>
+  );
+
   return (
-    <section className="relative mx-auto max-w-6xl px-6 pt-6 pb-20 overflow-hidden">
-      {/* Subtle Stargate-inspired background rings */}
-      {isVisible("stargate_decorations") && (
-        <>
-          <div className="pointer-events-none absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 opacity-[0.03]">
-            <svg width="800" height="800" viewBox="0 0 800 800" fill="none">
-              <circle cx="400" cy="400" r="380" stroke="currentColor" strokeWidth="1" className="text-primary" />
-              <circle cx="400" cy="400" r="320" stroke="currentColor" strokeWidth="0.5" className="text-primary" />
-              <circle cx="400" cy="400" r="260" stroke="currentColor" strokeWidth="0.5" className="text-primary" />
-              {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-                <g key={angle} transform={`rotate(${angle} 400 400)`}>
-                  <rect x="396" y="24" width="8" height="20" rx="2" fill="currentColor" className="text-primary" />
-                </g>
-              ))}
-            </svg>
-          </div>
-          <div className="pointer-events-none absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 opacity-[0.02]">
-            <svg width="600" height="600" viewBox="0 0 600 600" fill="none">
-              <circle cx="300" cy="300" r="280" stroke="currentColor" strokeWidth="1" className="text-primary" />
-              <circle cx="300" cy="300" r="220" stroke="currentColor" strokeWidth="0.5" className="text-primary" />
-            </svg>
-          </div>
-        </>
-      )}
-
-      {isVisible("breadcrumb") && (
-        <motion.nav
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-8 flex items-center gap-1.5 text-xs text-muted-foreground"
-          aria-label="Breadcrumb"
-        >
-          <Link to="/" className="flex items-center gap-1 transition-colors hover:text-foreground">
-            <Home size={12} />
-            <span>Home</span>
-          </Link>
-          <ChevronRight size={11} className="text-muted-foreground/40" />
-          <span className="font-medium text-foreground">About</span>
-        </motion.nav>
-      )}
-
-      <motion.div {...fadeIn}>
-        {/* Header */}
-        <div className="mb-20 grid gap-12 md:grid-cols-5">
-          {isVisible("profile_photo") && (
-            <motion.div
-              className="md:col-span-2"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="relative">
-                <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-primary/10 via-transparent to-primary/5 blur-sm" />
-                <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted ring-1 ring-border/50">
-                  <img src={hansProfile} alt="Hans van Leeuwen, Freelance E-commerce Manager based in Amersfoort, Netherlands" width={600} height={800} loading="eager" {...{ fetchpriority: "high" }} decoding="async" className="h-full w-full object-cover object-top" />
-                  <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background/40 to-transparent" />
-                </div>
-                <div className="absolute -bottom-2 -right-2 flex items-center gap-0.5 rounded-full border border-primary/20 bg-background px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-primary shadow-sm">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                  <span className="ml-1.5">{getValue("about_years_badge", `10+ ${lang === "nl" ? "jaar" : "years"}`)}</span>
-                </div>
+    <div className="about-v2">
+      {/* HERO */}
+      <section className="av-wrap av-hero" aria-labelledby="av-h1">
+        <nav className="av-crumb" aria-label="Breadcrumb">
+          <Link to="/">Home</Link>
+          <ChevronRight size={11} aria-hidden="true" />
+          <span aria-current="page">{c.crumb}</span>
+        </nav>
+        <div className="av-hero-grid">
+          <div className="av-hero-text">
+            <p className="av-eyebrow av-eyebrow-line">{c.eyebrow}</p>
+            <div className="av-kicker-row">
+              <img className="av-avatar" src={hansProfile} alt="" width={72} height={72} />
+              <div>
+                <h1 id="av-h1" className="av-kicker">{c.kicker}</h1>
+                <p className="av-meta av-loc"><MapPin size={14} aria-hidden="true" />{c.location}</p>
               </div>
-            </motion.div>
-          )}
+            </div>
+            <p className="av-display">{c.display}</p>
+            <p className="av-lead">{c.lead}</p>
+            <div className="av-actions">
+              <a className="av-btn" href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">{c.cta}<Arrow /></a>
+              <Link className="av-textlink" to="/work">{c.casesLink} <span aria-hidden="true">→</span></Link>
+            </div>
+            {contactRow}
+            <nav className="av-anchors" aria-label={c.onThisPage}>
+              <span>{c.onThisPage}</span>
+              <a href="#verhaal">{c.anchors.story}</a>
+              <a href="#loopbaan">{c.anchors.career}</a>
+              <a href="#diensten">{c.anchors.services}</a>
+              <a href="#contact">{c.anchors.contact}</a>
+            </nav>
+          </div>
+          <figure className="av-photo">
+            <img src={hansProfile} alt={c.photoAlt} width={600} height={800} loading="eager" {...{ fetchpriority: "high" }} decoding="async" />
+          </figure>
+        </div>
+      </section>
 
-          <div className={isVisible("profile_photo") ? "md:col-span-3" : "md:col-span-5"}>
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
-              <div className="mb-4 flex items-center gap-2">
-                <div className="h-px w-8 bg-primary/60" />
-                <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{getValue("about_label", t.about)}</p>
+      {/* PROOF */}
+      <section className="av-wrap av-proof" aria-label={lang === "nl" ? "Resultaten" : "Results"}>
+        <ul className="av-stats">
+          {c.stats.map((s) => (
+            <li key={s.value}>
+              <span className="av-num">{s.value}</span>
+              <span className="av-stat-label">{s.label}</span>
+              <span className="av-stat-src">{s.source}</span>
+            </li>
+          ))}
+        </ul>
+        <Link className="av-textlink av-proof-link" to="/work">{c.casesLink2} <span aria-hidden="true">→</span></Link>
+      </section>
+
+      {/* STORY */}
+      <section className="av-wrap av-section" id="verhaal" aria-labelledby="av-verhaal">
+        <SectionHead id="av-verhaal">{c.storyHeading}</SectionHead>
+        <div className="av-chapter av-intro">
+          <div className="av-margin" />
+          <div className="av-body"><p className="av-introp">{c.storyIntro}</p></div>
+        </div>
+        <div className="av-chapters">
+          {c.chapters.map((ch) => (
+            <article className="av-chapter" key={ch.title}>
+              <div className="av-margin">
+                <p className="av-eyebrow">{ch.period}</p>
+                {ch.metric && (<><p className="av-mnum">{ch.metric.value}</p><p className="av-msrc">{ch.metric.label}</p></>)}
               </div>
-              <h1 className="hvl-page-title mb-2 text-foreground">
-                {getValue("about_h1", "Marketplace Manager Amazon, Bol.com & eBay")}
-              </h1>
-              <p className="mb-6 font-display text-lg font-medium text-muted-foreground md:text-xl">
-                {getValue("about_name", "Hans van Leeuwen")} · {getValue("about_location", "Amersfoort, NL")}
-              </p>
+              <div className="av-body">
+                <h3>{ch.title}</h3>
+                {ch.paragraphs.map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+                {ch.rules && (
+                  <>
+                    <p>{ch.rules.intro}</p>
+                    <ul className="av-rules">{ch.rules.items.map((r) => <li key={r}>{r}</li>)}</ul>
+                    <p>{ch.rules.outro}</p>
+                  </>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
-              {isVisible("bio_section") && (
-              <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
-                  <p>{getValue("about_bio_1", t.bio[0])}</p>
-                  <p>{getValue("about_bio_2", t.bio[1])}</p>
-                </div>
-              )}
-
-              {isVisible("contact_details") && (
-                <div className="mt-8 flex flex-wrap gap-4 text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin size={14} className="text-primary" /> {getValue("about_location", "Amersfoort, NL")}
-                  </span>
-                  <a href="#contact" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                    <Mail size={14} className="text-primary" /> {lang === "nl" ? "Stuur een bericht" : "Send a message"}
-                  </a>
-                  <ObfuscatedMailto user="hansvl3" domain="gmail.com" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground" aria-label={lang === "nl" ? "E-mail sturen" : "Send email"}>
-                    {lang === "nl" ? "Of e-mail" : "Or email"}
-                  </ObfuscatedMailto>
-                  <a href={getValue("about_linkedin_url", "https://linkedin.com/in/hansvl3")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                    <Linkedin size={14} className="text-primary" /> {getValue("about_linkedin_label", "LinkedIn")}
-                  </a>
-                </div>
-              )}
-
-              {/* CV-downloads uit 2026-10-15: beide PDF's noemden "ABS All Brake Systems"
-                  als werkgever. Zie harde regel: CCP nooit publiek koppelen aan A.B.S.
-                  Zet CV_DOWNLOADS_ENABLED weer op true zodra er nieuwe PDF's staan. */}
-              {CV_DOWNLOADS_ENABLED && isVisible("cv_downloads") && (
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <a href="/Hans_CV_-_e-commerce_manager.pdf" download onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "download_cv", label: "en" }); }} className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-all hover:opacity-80 hover:shadow-lg hover:shadow-foreground/10">
-                    <Download size={14} /> {getValue("about_cv_en_label", t.downloadCvEn)}
-                    <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-                  </a>
-                  <a href="/Cv_HvL_-_Ecommerce.pdf" download onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "download_cv", label: "nl" }); }} className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:border-primary/20">
-                    <Download size={14} /> {getValue("about_cv_nl_label", t.downloadCvNl)}
-                    <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-                  </a>
-                </div>
-              )}
-
-              {/* Book-a-call CTA: own visibility flag, decoupled from cv_downloads (Codex PR #275) */}
-              {isVisible("book_call_cta", true) && (
-                <div className="mt-3 flex flex-wrap gap-3">
-                  <a
-                    href="https://calendly.com/hansvl3/30min"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "book_call", label: "calendly_30min" }); }}
-                    className="group inline-flex items-center gap-2 rounded-full border border-primary/60 bg-primary/5 px-5 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-primary/10 hover:border-primary"
-                    aria-label={lang === "nl" ? "Plan een gesprek van 30 minuten via Calendly" : "Book a 30-minute call via Calendly"}
-                  >
-                    <Calendar size={14} /> {getValue("about_book_call_label", lang === "nl" ? "Plan 30-min gesprek" : "Book a 30-min call")}
-                    <ChevronRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-                  </a>
-                </div>
-              )}
-            </motion.div>
+      {/* COMMON THREAD + MID CTA */}
+      <section className="av-wrap av-thread" aria-labelledby="av-thread">
+        <div className="av-thread-inner">
+          <span className="av-rule" aria-hidden="true" />
+          <p className="av-eyebrow">{c.thread.eyebrow}</p>
+          <h2 id="av-thread" className="av-sr">{c.thread.heading}</h2>
+          <p className="av-thread-pre">{c.thread.pre}</p>
+          <p className="av-quote">{c.thread.quote}</p>
+          <p className="av-thread-post">{c.thread.post}</p>
+          <div className="av-midcta">
+            <p className="av-midcta-q">{c.thread.question}</p>
+            <a ref={midCtaRef} className="av-btn" href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">{c.cta}<Arrow /></a>
           </div>
         </div>
+      </section>
 
-        {/* Methodology (P2-7) */}
-        {isVisible("methodology_section", true) && (
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-20">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
-                <div className="h-2 w-2 rounded-full bg-primary" />
+      {/* CAREER */}
+      <section className="av-wrap av-section" id="loopbaan" aria-labelledby="av-loopbaan">
+        <SectionHead id="av-loopbaan">{c.careerHeading}</SectionHead>
+        <ol className="av-roles">
+          {c.roles.map((r) => (
+            <li key={r.period + r.title}>
+              <span className="av-period">{r.period}</span>
+              <div className="av-role"><h3>{r.title}</h3><p className="av-org">{r.org}</p></div>
+              <div className="av-roledesc">
+                <p>{r.summary}</p>
+                {r.details && (
+                  <details>
+                    <summary>{c.resultsToggle}</summary>
+                    <ul>{r.details.map((d) => <li key={d}>{d}</li>)}</ul>
+                  </details>
+                )}
               </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">
-                {getValue("about_methodology_heading", lang === "nl" ? "Werkwijze" : "How I work")}
-              </h2>
-            </div>
-            <p className="mb-6 max-w-3xl text-base leading-relaxed text-muted-foreground">
-              {getValue("about_methodology_intro", lang === "nl"
-                ? "Elke opdracht doorloopt vier fases. Compact en meetbaar, geen abstract framework, maar exact wat er per week gebeurt en welke KPI’s bewegen."
-                : "Every engagement runs through four phases. Compact and measurable, no abstract framework, just what happens each week and which KPIs move.")}
+            </li>
+          ))}
+        </ol>
+        <div className="av-subgrid">
+          <div>
+            <h3 className="av-subhead">{c.eduHeading}</h3>
+            <ul className="av-edu">
+              {c.edu.map((e) => (
+                <li key={e.title}>
+                  <span className="av-period">{e.period}</span>
+                  <span><strong>{e.title}</strong><br /><span className="av-org">{e.org}</span></span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="av-subhead">{c.skillsHeading}</h3>
+            <dl className="av-skills">
+              {c.skills.map((s) => (<div key={s.group}><dt>{s.group}</dt><dd>{s.items}</dd></div>))}
+            </dl>
+            <a className="av-textlink" href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer">{c.linkedinLink} <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </section>
+
+      {/* SERVICES */}
+      <section className="av-wrap av-section" id="diensten" aria-labelledby="av-diensten">
+        <SectionHead id="av-diensten">{c.servicesHeading}</SectionHead>
+        <div className="av-services">
+          {c.services.map((s) => (
+            <Link className="av-service" to={s.to} key={s.to}>
+              <h3>{s.title}</h3>
+              <p>{s.copy}</p>
+              <span className="av-arrow" aria-hidden="true">→</span>
+            </Link>
+          ))}
+        </div>
+        <p className="av-tools">{c.tools}</p>
+        <Link className="av-textlink" to="/work">{c.allCasesLink} <span aria-hidden="true">→</span></Link>
+      </section>
+
+      {/* CONTACT */}
+      <section ref={contactRef} className="av-wrap av-section" id="contact" aria-labelledby="av-contact">
+        <SectionHead id="av-contact">{c.contactHeading}</SectionHead>
+        <div className="av-contact">
+          <div className="av-card av-card-tint">
+            <p className="av-contact-lead">{c.contactLead}</p>
+            <a className="av-btn" href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">{c.cta}<Arrow /></a>
+            <p className="av-meta av-offer">
+              {c.offer} <Link to="/rates">{c.ratesLink}</Link> · <Link to="/interim-ecommerce-manager">{c.howLink}</Link>
             </p>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {[
-                { k: "discovery", label: lang === "nl" ? "Ontdekken" : "Discovery",
-                  copy: lang === "nl" ? "Audit van marketplace-presence, snel te winnen en structurele groeihefbomen." : "Audit current marketplace presence, identify quick wins and structural growth levers." },
-                { k: "strategy", label: lang === "nl" ? "Strategie" : "Strategy",
-                  copy: lang === "nl" ? "Actieplan met KPI\u2019s, tijdlijn en eigenaarschap per hefboom." : "Action plan with KPIs, timelines and clear ownership per lever." },
-                { k: "execution", label: lang === "nl" ? "Executie" : "Execution",
-                  copy: lang === "nl" ? "Hands-on: listings, A+ content, Amazon Ads en Bol Ads, met wekelijkse check-ins." : "Hands-on: listings, A+ content, Amazon Ads and Bol Ads, with weekly check-ins." },
-                { k: "scale", label: lang === "nl" ? "Schalen" : "Scale",
-                  copy: lang === "nl" ? "Itereren op data, nieuwe kanalen (DE, FR) en compound results." : "Iterate based on data, expand to new channels (DE, FR) and compound results." },
-              ].map((step, i) => (
-                <div key={step.k} className="rounded-xl border border-border/40 bg-card p-4">
-                  <div className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">{i + 1}</div>
-                  <h3 className="mb-1 text-sm font-semibold text-foreground">{step.label}</h3>
-                  <p className="text-xs leading-relaxed text-muted-foreground">{step.copy}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
+            {contactRow}
+          </div>
+          <div className="av-card av-form">
+            <h3>{c.formHeading}</h3>
+            <ContactForm reasonFirst reasonHelp={c.reasonHelp} outlineSubmit className="grid gap-5 sm:grid-cols-2" />
+          </div>
+        </div>
+      </section>
 
-        {/* FAQ (P2-7) — UI en JSON-LD lezen dezelfde aboutFaq array */}
-        {isVisible("about_faq_section", true) && (
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-20">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-              </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">
-                {getValue("about_faq_heading", lang === "nl" ? "Veelgestelde vragen" : "Frequently Asked Questions")}
-              </h2>
-            </div>
-            <div className="max-w-3xl space-y-2">
-              {aboutFaq.map((qa) => (
-                <details key={qa.q} className="rounded-xl border border-border/40 bg-card p-4">
-                  <summary className="cursor-pointer text-sm font-semibold text-foreground">{qa.q}</summary>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{qa.a}</p>
-                </details>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Skills */}
-        {isVisible("skills_section") && (
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mb-20">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-              </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">{getValue("about_skills_heading", t.coreCompetencies)}</h2>
-            </div>
-            <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-muted-foreground">{lang === "nl" ? "Expertisegebieden" : "Key expertise areas"}</h3>
-            <motion.div className="flex flex-wrap gap-2" variants={staggerChildren} initial="initial" whileInView="animate" viewport={{ once: true }}>
-              {t.skills.map((skill, i) => (
-                <motion.div key={skill} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.03 }}>
-                  <Badge variant="secondary" className="px-3 py-1.5 text-sm font-normal transition-colors hover:bg-primary/10 hover:text-primary">
-                    {skill}
-                  </Badge>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* Experience */}
-        {isVisible("experience_section") && (
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mb-20">
-            <div className="mb-10 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
-                <Briefcase size={14} className="text-primary" />
-              </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">{getValue("about_experience_heading", t.experience)}</h2>
-            </div>
-            <div className="space-y-0">
-              {t.experienceList.map((job, i) => (
-                <motion.div
-                  key={`${job.company}-${job.period}`}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
-                  className="group relative border-l-2 border-border py-6 pl-8 transition-colors first:pt-0 last:pb-0 hover:border-l-primary/40"
-                >
-                  <div className="absolute -left-[7px] top-6 first:top-0 h-3 w-3 rounded-full border-2 border-primary bg-background transition-shadow group-hover:shadow-[0_0_8px_hsl(var(--primary)/0.3)]" />
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <div>
-                      <h3 className="font-display text-lg font-medium text-foreground">{job.role}</h3>
-                      <p className="text-sm text-primary">{job.company}</p>
-                    </div>
-                    <span className="rounded-full border border-border bg-secondary/50 px-3 py-0.5 text-[11px] text-muted-foreground">{job.period}</span>
-                  </div>
-                  <ul className="mt-3 space-y-1.5">
-                    {job.highlights.map((h) => (
-                      <li key={h} className="flex items-start gap-2 text-sm leading-relaxed text-muted-foreground">
-                        <ChevronRight size={12} className="mt-1 shrink-0 text-primary/40" />
-                        {h}
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Education */}
-        {isVisible("education_section") && (
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }}>
-            <div className="mb-8 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
-                <GraduationCap size={14} className="text-primary" />
-              </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">{getValue("about_education_heading", t.education)}</h2>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2">
-              {t.educationList.map((edu, i) => (
-                <motion.div
-                  key={edu.institution}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="group relative overflow-hidden rounded-xl border border-border p-6 transition-all hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
-                >
-                  <div className="absolute -right-3 -top-3 h-12 w-12 rounded-full border border-primary/5 opacity-0 transition-opacity group-hover:opacity-100" />
-                  <h3 className="font-display text-base font-medium text-foreground">{edu.degree}</h3>
-                  <p className="mt-1 text-sm text-primary">{edu.institution}</p>
-                  <p className="mt-2 text-xs text-muted-foreground">{edu.period}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Contact Form */}
-        {isVisible("contact_form") && (
-          <motion.div id="contact" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mt-20">
-            <div className="mb-8 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
-                <Mail size={14} className="text-primary" />
-              </div>
-              <h2 className="font-display text-2xl font-medium text-foreground">{t.contact.heading}</h2>
-            </div>
-            <ContactForm />
-          </motion.div>
-        )}
-      </motion.div>
-    </section>
+      <div className={`av-sticky${stickyOn ? " is-on" : ""}`} aria-hidden={!stickyOn}>
+        <a className="av-btn" href={CALENDLY_URL} target="_blank" rel="noopener noreferrer" tabIndex={stickyOn ? 0 : -1}>{c.ctaShort}</a>
+      </div>
+    </div>
   );
 };
 
