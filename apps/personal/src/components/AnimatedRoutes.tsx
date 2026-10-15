@@ -22,6 +22,7 @@ import AmazonNlSpecialist from "@/pages/AmazonNlSpecialist";
 import BolComConsultant from "@/pages/BolComConsultant";
 import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
 import AiEcommerceAutomation from "@/pages/AiEcommerceAutomation";
+import WebshopbeheerderInhuren from "@/pages/WebshopbeheerderInhuren";
 import CaseStudyDetail from "@/pages/CaseStudyDetail";
 import GodStructure from "@/pages/GodStructure";
 import SamanthaAI from "@/pages/SamanthaAI";
@@ -117,6 +118,9 @@ const AnimatedRoutes = () => {
         ))}
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/ai-ecommerce-automation`} path={`${prefix}/ai-ecommerce-automation`} element={<PageTransition><AiEcommerceAutomation /></PageTransition>} />
+        ))}
+        {LANG_PREFIXES.map((prefix) => (
+          <Route key={`${prefix}/webshopbeheerder-inhuren`} path={`${prefix}/webshopbeheerder-inhuren`} element={<PageTransition><WebshopbeheerderInhuren /></PageTransition>} />
         ))}
         <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
         <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
