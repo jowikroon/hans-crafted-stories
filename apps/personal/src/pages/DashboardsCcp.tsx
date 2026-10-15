@@ -161,7 +161,7 @@ export default function DashboardsCcp() {
       let pills: Array<{ label: string; action: string }> = [];
 
       if (lower.includes("track") || lower.includes("t&t") || lower.includes("abs")) {
-        reply = "Track & Trace update: We zien dat de orders van A.B.S. momenteel direct naar Magento lopen, maar de geautomatiseerde DPD trackingnummers bereiken nog niet alle kopers doordat de Chrome extension harvest nog gebouwd wordt. Er wachten nu 2 orders op automatische barcodekoppeling.";
+        reply = "Track & Trace update: We zien dat de leveranciersorders momenteel direct naar Magento lopen, maar de geautomatiseerde DPD trackingnummers bereiken nog niet alle kopers doordat de Chrome extension harvest nog gebouwd wordt. Er wachten nu 2 orders op automatische barcodekoppeling.";
         pills = [{ label: "📦 Bekijk orders zonder T&T", action: "show_tt" }, { label: "⚡ Trigger n8n Sync", action: "trigger_sync" }];
       } else if (lower.includes("pacing") || lower.includes("omzet") || lower.includes("budget") || lower.includes("100k")) {
         reply = "Pacing Analyse: We zitten in Week 34 op € 4.890 werkelijke omzet t.o.v. € 5.000 budget (98% pacing index). De LE1 forecast voor week 35 staat op € 7.650 bij een ACOS van 11,6%. Om het € 100K kwartaaldoel te halen, adviseren we eBay Mengenrabatt op de Top-20 remschijven aan te zetten.";
@@ -391,15 +391,15 @@ export default function DashboardsCcp() {
 
               <div className="rounded-xl border border-border/50 bg-background/60 p-4 relative">
                 <div className="text-[10px] font-bold uppercase text-amber-500">Stap 4 · Leverancier</div>
-                <div className="mt-1 font-bold text-foreground text-sm">A.B.S. Dropshipment</div>
-                <p className="mt-1 text-[11px] text-muted-foreground">Order doorgestuurd naar A.B.S. Magazijn in IJsselstein.</p>
+                <div className="mt-1 font-bold text-foreground text-sm">Dropshipment leverancier</div>
+                <p className="mt-1 text-[11px] text-muted-foreground">Order doorgestuurd naar het magazijn van de leverancier.</p>
                 <div className="mt-2 text-xs font-semibold text-emerald-500">✓ Pakbon aangemaakt</div>
               </div>
 
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 relative">
                 <div className="text-[10px] font-bold uppercase text-amber-500">Stap 5 · Track & Trace</div>
                 <div className="mt-1 font-bold text-foreground text-sm">DPD / eBay T&T Push</div>
-                <p className="mt-1 text-[11px] text-muted-foreground">Barcode ophalen bij A.B.S. portal en terugmelden aan koper.</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">Barcode ophalen bij het leveranciersportaal en terugmelden aan koper.</p>
                 <div className="mt-2 text-xs font-semibold text-amber-500">⚠️ Chrome harvest in aanbouw</div>
               </div>
             </div>
@@ -410,7 +410,7 @@ export default function DashboardsCcp() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-base font-bold text-foreground">Top-5 Hardlopers (eBay DE Assortiment)</h2>
-                <p className="text-xs text-muted-foreground">Snelst verkopende A.B.S. remonderdelen met TecDoc fitment data</p>
+                <p className="text-xs text-muted-foreground">Snelst verkopende remonderdelen met TecDoc fitment data</p>
               </div>
               <Button 
                 variant="outline" 
@@ -769,7 +769,7 @@ export default function DashboardsCcp() {
                     <span>- € 5,95</span>
                   </div>
                   <div className="flex justify-between text-red-400">
-                    <span>Inkoop A.B.S.</span>
+                    <span>Inkoop leverancier</span>
                     <span>- € {(selectedOrder.amount * 0.45).toFixed(2)}</span>
                   </div>
                   <div className="border-t border-border/60 pt-2 flex justify-between font-bold text-emerald-500 text-sm">

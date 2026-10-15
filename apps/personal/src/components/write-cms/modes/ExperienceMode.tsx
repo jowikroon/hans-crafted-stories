@@ -408,7 +408,7 @@ export default function ExperienceMode() {
                   <input
                     className="ve-name"
                     value={draft.client}
-                    placeholder="Klant / opdrachtgever (bv. A.B.S. of intern)"
+                    placeholder="Klant / opdrachtgever (bv. Connect Car Parts of intern)"
                     onChange={(e) => set("client", e.target.value)}
                   />
                   <div className="exp-complete" aria-live="polite">

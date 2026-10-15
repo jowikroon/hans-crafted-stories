@@ -6,7 +6,7 @@
 
      {{m:metric|€67K/mnd|~€70K per maand|een fors maandbedrag}}
      {{m:company#bureau1|Atvise|het bureau}}
-     {{m:client|A.B.S.|een Nederlandse auto-onderdelen retailer}}
+     {{m:client|Voorbeeld BV|een Nederlandse retailer}}
 
    Syntax:  {{m:<type>[#id]|specific[|general[|masked]]}}
    Types:   metric | company | agency | client | person | other

@@ -7,12 +7,8 @@ import { useSEO } from "@/hooks/useSEO";
 
 const images = [
   { src: "/cases/connect-car-parts/ccp-10.png", alt: "Connect Car Parts, full campaign overview" },
-  { src: "/cases/connect-car-parts/ccp-3.png", alt: "ABS vs Bosch vs Brembo vs ATE, brand comparison" },
-  { src: "/cases/connect-car-parts/ccp-4.png", alt: "ABS Rem Schijven, product photography layout" },
   { src: "/cases/connect-car-parts/ccp-6.png", alt: "Frankberg Bremskit, brake kit promotion" },
   { src: "/cases/connect-car-parts/ccp-7.png", alt: "Frankberg, friction coefficient performance chart" },
-  { src: "/cases/connect-car-parts/ccp-8.png", alt: "ABS, ECE Certified, Made in Europe" },
-  { src: "/cases/connect-car-parts/ccp-9.png", alt: "ABS Brake Parts, full brand infographic" },
   { src: "/cases/connect-car-parts/ccp-1.png", alt: "Marketplace listing performance comparison" },
   { src: "/cases/connect-car-parts/ccp-14.png", alt: "How to choose the right brake disc, guide visual" },
   { src: "/cases/connect-car-parts/ccp-13.png", alt: "SEO analysis tool, marketplace optimization" },
@@ -41,18 +37,18 @@ const CaseStudyDetail = () => {
     breadcrumbWork: "Case studies",
     breadcrumbCase: "Connect Car Parts",
     label: "Case study · 2025–2026",
-    title: "Connect Car Parts: A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento",
+    title: "Connect Car Parts: remonderdelen op Amazon DE, eBay DE en Magento",
     subtitle: "Hoe één operator een multi-channel onderdelenbusiness runt met gestructureerde productdata, feedautomatisering en AI-ondersteunde content, met de mens op prijs, merkstem en compliance.",
     contextTitle: "Context en rol",
     contextText: [
-      "Connect Car Parts is de e-commerce-operatie van ABS All Brake Systems: een Nederlandse verkoper van remonderdelen (schijven, blokken, slangen, wiellagersets) van het merk A.B.S. en aanvullende merken zoals Frankberg. De verkoop loopt via een eigen Magento-webshop en via Amazon DE en eBay DE; Bol.com en het volledige A.B.S.-assortiment op eBay DE zijn in uitrol. Ik werk hier sinds december 2025 als e-commerce manager en run de marketplace-kant van begin tot eind.",
-      "Twee getallen die vaak door elkaar lopen: de actieve catalogus die live staat telt circa 400 SKU's met voertuig-fitmentdata (K-types) en OE-kruisverwijzingen; het aantal productrecords dat door de contentpipeline is gegaan ligt boven de 2.400, omdat elk record per land en per kanaal een eigen versie krijgt en omdat het bredere A.B.S.-assortiment wordt voorbereid.",
+      "Connect Car Parts is een Nederlandse online verkoper van remonderdelen: schijven, blokken, slangen en wiellagersets van meerdere Europese fabrikanten. De verkoop loopt via een eigen Magento-webshop en via Amazon DE en eBay DE; Bol.com en de assortimentsuitbreiding op eBay DE zijn in uitrol. Ik werk hier sinds december 2025 als e-commerce manager en run de marketplace-kant van begin tot eind.",
+      "Twee getallen die vaak door elkaar lopen: de actieve catalogus die live staat telt circa 400 SKU's met voertuig-fitmentdata (K-types) en OE-kruisverwijzingen; het aantal productrecords dat door de contentpipeline is gegaan ligt boven de 2.400, omdat elk record per land en per kanaal een eigen versie krijgt en omdat het bredere assortiment wordt voorbereid.",
     ],
     problemTitle: "De uitdaging",
     problemText: "Een remonderdeel verkoopt alleen als de koper zeker weet dat het op zijn auto past. Dat vraagt per SKU om fitment-data, OE-nummers, technische specificaties en per marketplace andere titel-, attribuut- en compliance-regels (GPSR, ISO, merkvermelding). Handmatig kostte een publish-ready listing gemiddeld 45 minuten; met duizenden records over drie landen en drie talen was dat niet vol te houden, en fouten in fitment of claims leidden direct tot retouren of afkeuringen.",
     solutionTitle: "De aanpak",
     solutionItems: [
-      "Gestructureerde productdata-import vanuit ERP/PIM en de A.B.S. TecDoc-export, met K-type-koppeling per voertuig",
+      "Gestructureerde productdata-import vanuit ERP/PIM en de TecDoc-export van de fabrikant, met K-type-koppeling per voertuig",
       "Feedmanagement via Channable met merk-gesplitste GPSR- en ISO-regels per kanaal (Amazon DE, eBay DE, Bol.com)",
       "AI-ondersteunde contentgeneratie: titels, bullets, A+ Content en backend keywords per land, met bron- en zekerheidslabel",
       "Automatische policy-validatie (Amazon-regels, bytelimieten, verboden claims) vóór publicatie; menselijke controle op prijs en merkstem",
@@ -70,7 +66,7 @@ const CaseStudyDetail = () => {
       "Omzetprognoses en KPI-rapportage die de directie wekelijks gebruikt",
     ],
     ongoingTitle: "Lopend werk",
-    ongoingText: "De Amazon DE-catalogus wordt gelanceerd inclusief Duitse btw-registratie, het volledige A.B.S.-assortiment gaat naar eBay DE en Bol.com met marketplace-specifieke contentregels en voertuigcompatibiliteitsbestanden, en een wekelijkse concurrentiescan volgt prijs- en assortimentsbewegingen op Amazon DE en eBay DE. Wat ik daarbij leer over agents die successen melden zonder bewijs, beschreef ik in mijn artikelen over AI-betrouwbaarheid en meta-monitoring.",
+    ongoingText: "De Amazon DE-catalogus wordt gelanceerd inclusief Duitse btw-registratie, het volledige assortiment gaat naar eBay DE en Bol.com met marketplace-specifieke contentregels en voertuigcompatibiliteitsbestanden, en een wekelijkse concurrentiescan volgt prijs- en assortimentsbewegingen op Amazon DE en eBay DE. Wat ik daarbij leer over agents die successen melden zonder bewijs, beschreef ik in mijn artikelen over AI-betrouwbaarheid en meta-monitoring.",
     updateTitle: "September 2026: controle op de uitrol",
     updateText: "Op 17 september verwerkten we voertuigcompatibiliteit voor 7.165 eBay DE-listings in vier batches. 6.595 listings werden gekoppeld (92%); 570 niet, waarvan 566 door bestaande afbeeldingen onder 500 pixels en 4 door een cataloguskoppeling. Het bestand had nul formaatfouten. Op 21 september stonden 2.908 records in de afzonderlijke Bol.com NL-launchpipeline als klaar gemarkeerd. Dat is een voorbereidingsstatus, geen live verkoopresultaat; de eBay-listings en Bol.com-records zijn ook andere populaties dan de circa 400 actieve SKU’s hierboven. Bron: interne batch- en pipelinecontroles, 17–21 september 2026.",
     galleryTitle: "Deliverables",
@@ -86,18 +82,18 @@ const CaseStudyDetail = () => {
     breadcrumbWork: "Case studies",
     breadcrumbCase: "Connect Car Parts",
     label: "Case study · 2025–2026",
-    title: "Connect Car Parts: A.B.S. brake parts on Amazon DE, eBay DE and Magento",
+    title: "Connect Car Parts: brake parts on Amazon DE, eBay DE and Magento",
     subtitle: "How one operator runs a multi-channel parts business with structured product data, feed automation and AI-assisted content, with a human on pricing, brand voice and compliance.",
     contextTitle: "Context and role",
     contextText: [
-      "Connect Car Parts is the e-commerce operation of ABS All Brake Systems: a Dutch seller of brake parts (discs, pads, hoses, wheel-bearing kits) under the A.B.S. brand and complementary brands such as Frankberg. Sales run through its own Magento storefront and on Amazon DE and eBay DE; Bol.com and the full A.B.S. assortment on eBay DE are being rolled out. I've worked here as e-commerce manager since December 2025 and run the marketplace side end to end.",
-      "Two numbers that are often confused: the active catalogue that is live counts roughly 400 SKUs with vehicle-fitment data (K-types) and OE cross-references; the number of product records that have gone through the content pipeline exceeds 2,400, because every record gets its own version per country and channel and because the wider A.B.S. assortment is being prepared.",
+      "Connect Car Parts is a Dutch online seller of brake parts: discs, pads, hoses and wheel-bearing kits from several European manufacturers. Sales run through its own Magento storefront and on Amazon DE and eBay DE; Bol.com and the assortment expansion on eBay DE are being rolled out. I've worked here as e-commerce manager since December 2025 and run the marketplace side end to end.",
+      "Two numbers that are often confused: the active catalogue that is live counts roughly 400 SKUs with vehicle-fitment data (K-types) and OE cross-references; the number of product records that have gone through the content pipeline exceeds 2,400, because every record gets its own version per country and channel and because the wider assortment is being prepared.",
     ],
     problemTitle: "The challenge",
     problemText: "A brake part only sells when the buyer is certain it fits their car. That requires fitment data, OE numbers and technical specifications per SKU, plus different title, attribute and compliance rules per marketplace (GPSR, ISO, brand mention). Done by hand, a publish-ready listing took 45 minutes on average; with thousands of records across three countries and three languages that was unsustainable, and errors in fitment or claims led straight to returns or rejections.",
     solutionTitle: "The approach",
     solutionItems: [
-      "Structured product data import from ERP/PIM and the A.B.S. TecDoc export, with K-type mapping per vehicle",
+      "Structured product data import from ERP/PIM and the manufacturer TecDoc export, with K-type mapping per vehicle",
       "Feed management through Channable with brand-split GPSR and ISO rules per channel (Amazon DE, eBay DE, Bol.com)",
       "AI-assisted content generation: titles, bullets, A+ Content and backend keywords per country, with source and confidence labels",
       "Automatic policy validation (Amazon rules, byte limits, forbidden claims) before publishing; human review on pricing and brand voice",
@@ -115,7 +111,7 @@ const CaseStudyDetail = () => {
       "Revenue forecasts and KPI reporting used weekly by management",
     ],
     ongoingTitle: "Ongoing work",
-    ongoingText: "The Amazon DE catalogue is being launched including German VAT registration, the full A.B.S. assortment is moving to eBay DE and Bol.com with marketplace-specific content rules and vehicle compatibility files, and a weekly competitor scan tracks price and assortment movements on Amazon DE and eBay DE. What I keep learning about agents reporting success without evidence is documented in my articles on AI reliability and meta-monitoring.",
+    ongoingText: "The Amazon DE catalogue is being launched including German VAT registration, the full assortment is moving to eBay DE and Bol.com with marketplace-specific content rules and vehicle compatibility files, and a weekly competitor scan tracks price and assortment movements on Amazon DE and eBay DE. What I keep learning about agents reporting success without evidence is documented in my articles on AI reliability and meta-monitoring.",
     updateTitle: "September 2026: checking the rollout",
     updateText: "On 17 September we processed vehicle compatibility for 7,165 eBay DE listings in four batches. 6,595 listings were linked (92%); 570 were rejected, including 566 because existing images were below 500 pixels and 4 because of catalogue linkage. The upload had zero format errors. On 21 September, 2,908 records in the separate Bol.com NL launch pipeline were marked ready. Ready is a preparation status, not a live sales result; those eBay listings and Bol.com records are different populations from the roughly 400 active SKUs above. Source: internal batch and pipeline checks, 17–21 September 2026.",
     galleryTitle: "Deliverables",
@@ -134,8 +130,8 @@ const CaseStudyDetail = () => {
       ? "Case study Connect Car Parts | Hans van Leeuwen"
       : "Connect Car Parts Case Study | Hans van Leeuwen",
     description: lang === "nl"
-      ? "Hoe Hans van Leeuwen de marketplace-operatie van Connect Car Parts runt: ~400 A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento met Channable en n8n."
-      : "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: ~400 A.B.S. brake-part SKUs on Amazon DE, eBay DE and Magento, Channable and n8n.",
+      ? "Hoe Hans van Leeuwen de marketplace-operatie van Connect Car Parts runt: ~400 remonderdeel-SKU's op Amazon DE, eBay DE en Magento met Channable en n8n."
+      : "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: ~400 brake-part SKUs on Amazon DE, eBay DE and Magento, Channable and n8n.",
     path: "/work/connect-car-parts",
     lang,
     jsonLd: {

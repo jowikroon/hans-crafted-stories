@@ -110,7 +110,7 @@ export const EXPERIENCE_STRIP = {
     note: "Referenties van opdrachtgevers en leidinggevenden op aanvraag beschikbaar.",
     linkedin: "Aanbevelingen op LinkedIn",
     items: [
-      { name: "ABS All Brake Systems", role: "E-commerce manager", period: "2025–heden" },
+      { name: "Connect Car Parts", role: "E-commerce manager", period: "2025–heden" },
       { name: "Alpine Hearing Protection", role: "Marketplace manager", period: "2021–2025" },
       { name: "Intergamma (Karwei & Gamma)", role: "E-commerce manager", period: "2017–2020" },
       { name: "IGM Badkamerwinkel", role: "E-commerce manager", period: "2019–2020" },
@@ -123,7 +123,7 @@ export const EXPERIENCE_STRIP = {
     note: "References from clients and managers available on request.",
     linkedin: "Recommendations on LinkedIn",
     items: [
-      { name: "ABS All Brake Systems", role: "E-commerce manager", period: "2025–present" },
+      { name: "Connect Car Parts", role: "E-commerce manager", period: "2025–present" },
       { name: "Alpine Hearing Protection", role: "Marketplace manager", period: "2021–2025" },
       { name: "Intergamma (Karwei & Gamma)", role: "E-commerce manager", period: "2017–2020" },
       { name: "IGM Badkamerwinkel", role: "E-commerce manager", period: "2019–2020" },
@@ -194,7 +194,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "Interim e-commerce manager inhuren",
         subtitle: "Tijdelijke leiding over je marketplace-operatie: strategie, uitvoering en overdracht",
         intro:
-          "Ik ben Hans van Leeuwen, interim e-commerce manager uit Amersfoort. Ik neem tijdelijk de leiding over je Amazon- en Bol.com-operatie wanneer je manager vertrekt, je groei sneller gaat dan je team, of je een nieuw kanaal opent. Bij Alpine Hearing Protection bouwde ik als marketplace manager de oordoppencategorie op Amazon NL uit tot 70% marktaandeel (Nielsen, 2023) en bracht ik het out-of-stockpercentage onder de 2%; bij ABS All Brake Systems koppelde ik eBay, Amazon en Bol.com tot één operatie. In totaal stuurde ik meer dan €2 miljoen marketplace-omzet en teams van 6+ FTE aan.",
+          "Ik ben Hans van Leeuwen, interim e-commerce manager uit Amersfoort. Ik neem tijdelijk de leiding over je Amazon- en Bol.com-operatie wanneer je manager vertrekt, je groei sneller gaat dan je team, of je een nieuw kanaal opent. Bij Alpine Hearing Protection bouwde ik als marketplace manager de oordoppencategorie op Amazon NL uit tot 70% marktaandeel (Nielsen, 2023) en bracht ik het out-of-stockpercentage onder de 2%; bij Connect Car Parts koppelde ik eBay, Amazon en Bol.com tot één operatie. In totaal stuurde ik meer dan €2 miljoen marketplace-omzet en teams van 6+ FTE aan.",
         whenHeading: "Wanneer je een interim e-commerce manager inschakelt",
         when: [
           "Je e-commerce manager is vertrokken en de marketplace-operatie mag niet stilvallen tijdens de werving",
@@ -283,7 +283,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "Interim e-commerce manager",
         subtitle: "Temporary leadership of your marketplace operation: strategy, execution and handover",
         intro:
-          "I'm Hans van Leeuwen, an interim e-commerce manager and freelance marketplace lead based in Amersfoort, the Netherlands. I take temporary charge of your Amazon and Bol.com operation when your manager leaves, growth outpaces the team, or you open a new channel. At Alpine Hearing Protection I grew the earplug category on Amazon NL to a 70% market share (Nielsen, 2023) and brought out-of-stock below 2%; at ABS All Brake Systems I connected eBay, Amazon and Bol.com into a single operation. In total I have managed more than €2 million in marketplace revenue and teams of 6+ FTE.",
+          "I'm Hans van Leeuwen, an interim e-commerce manager and freelance marketplace lead based in Amersfoort, the Netherlands. I take temporary charge of your Amazon and Bol.com operation when your manager leaves, growth outpaces the team, or you open a new channel. At Alpine Hearing Protection I grew the earplug category on Amazon NL to a 70% market share (Nielsen, 2023) and brought out-of-stock below 2%; at Connect Car Parts I connected eBay, Amazon and Bol.com into a single operation. In total I have managed more than €2 million in marketplace revenue and teams of 6+ FTE.",
         whenHeading: "When to bring in an interim e-commerce manager",
         when: [
           "Your e-commerce manager has left and the marketplace operation cannot stall during recruitment",
@@ -381,7 +381,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "Amazon NL specialist inhuren",
         subtitle: "Freelance Amazon-accountmanager voor listings, advertising, Buy Box en voorraad",
         intro:
-          "Ik ben Hans van Leeuwen, freelance Amazon-specialist uit Amersfoort. Ik beheer en laat Amazon.nl- en Amazon.de-accounts groeien voor merken die geen fulltime specialist in huis hebben. Voor Alpine Hearing Protection was Amazon NL vier jaar mijn dagelijkse werk: de oordoppencategorie groeide daar naar een marktaandeel van 70% (Nielsen, 2023), de Buy Box werd rustiger door prijsafstemming met de B2B-kanalen en A/B-tests op de productafbeeldingen tilden de conversie. Bij ABS All Brake Systems run ik nu een catalogus van A.B.S.-remonderdelen op Amazon DE naast eBay DE en Bol.com.",
+          "Ik ben Hans van Leeuwen, freelance Amazon-specialist uit Amersfoort. Ik beheer en laat Amazon.nl- en Amazon.de-accounts groeien voor merken die geen fulltime specialist in huis hebben. Voor Alpine Hearing Protection was Amazon NL vier jaar mijn dagelijkse werk: de oordoppencategorie groeide daar naar een marktaandeel van 70% (Nielsen, 2023), de Buy Box werd rustiger door prijsafstemming met de B2B-kanalen en A/B-tests op de productafbeeldingen tilden de conversie. Bij Connect Car Parts run ik nu een catalogus remonderdelen op Amazon DE naast eBay DE en Bol.com.",
         whenHeading: "Voor wie Amazon-accountmanagement werkt",
         when: [
           "Merken die op Amazon.nl staan maar geen zicht hebben op waarom de verkoop stagneert",
@@ -463,7 +463,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "Amazon NL specialist",
         subtitle: "Freelance Amazon account manager for listings, advertising, Buy Box and stock",
         intro:
-          "I'm Hans van Leeuwen, a freelance Amazon specialist based in Amersfoort, the Netherlands. I manage and grow Amazon.nl and Amazon.de accounts for brands that don't have a full-time specialist in-house. For Alpine Hearing Protection, Amazon NL was my daily work for four years: the earplug category there grew to a 70% market share (Nielsen, 2023), the Buy Box calmed down through price alignment with the B2B channels, and A/B tests on product images lifted conversion. At ABS All Brake Systems I currently run a catalogue of A.B.S. brake parts on Amazon DE alongside eBay DE and Bol.com.",
+          "I'm Hans van Leeuwen, a freelance Amazon specialist based in Amersfoort, the Netherlands. I manage and grow Amazon.nl and Amazon.de accounts for brands that don't have a full-time specialist in-house. For Alpine Hearing Protection, Amazon NL was my daily work for four years: the earplug category there grew to a 70% market share (Nielsen, 2023), the Buy Box calmed down through price alignment with the B2B channels, and A/B tests on product images lifted conversion. At Connect Car Parts I currently run a catalogue of brake parts on Amazon DE alongside eBay DE and Bol.com.",
         whenHeading: "Who Amazon account management is for",
         when: [
           "Brands on Amazon.nl with no clear view of why sales have stalled",
@@ -554,7 +554,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "Bol.com consultant inhuren",
         subtitle: "Freelance Bol.com-specialist voor content, Bol Ads, Buy Block en de vendor-naar-seller-transitie",
         intro:
-          "Ik ben Hans van Leeuwen, freelance Bol.com-consultant uit Amersfoort. Ik help merken groeien op de grootste marktplaats van Nederland en België, van productcontent en Bol Ads tot prijs, Buy Block en logistiek. Bij Alpine Hearing Protection lanceerde ik het Bol.com-sellerkanaal en begeleidde ik de transitie van vendor naar seller, automatiseerde ik de marketplace-content via Channable en behaalde ik 20% meer wekelijkse verkopen met een social-ad-campagne. Bij ABS All Brake Systems rol ik nu het A.B.S.-assortiment uit naar Bol.com naast Amazon en eBay.",
+          "Ik ben Hans van Leeuwen, freelance Bol.com-consultant uit Amersfoort. Ik help merken groeien op de grootste marktplaats van Nederland en België, van productcontent en Bol Ads tot prijs, Buy Block en logistiek. Bij Alpine Hearing Protection lanceerde ik het Bol.com-sellerkanaal en begeleidde ik de transitie van vendor naar seller, automatiseerde ik de marketplace-content via Channable en behaalde ik 20% meer wekelijkse verkopen met een social-ad-campagne. Bij Connect Car Parts rol ik nu het assortiment uit naar Bol.com naast Amazon en eBay.",
         whenHeading: "Voor wie Bol.com-consultancy werkt",
         when: [
           "Merken die als vendor leveren en willen weten of seller meer marge en controle oplevert",
@@ -642,7 +642,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "Bol.com consultant",
         subtitle: "Freelance Bol.com specialist for content, Bol Ads, Buy Block and the vendor-to-seller transition",
         intro:
-          "I'm Hans van Leeuwen, a freelance Bol.com consultant based in Amersfoort, the Netherlands. I help brands grow on the largest marketplace in the Netherlands and Belgium, from product content and Bol Ads to pricing, Buy Block and logistics. At Alpine Hearing Protection I launched the Bol.com seller channel and led the transition from vendor to seller, automated marketplace content through Channable and achieved 20% more weekly sales with a social ad campaign. At ABS All Brake Systems I'm currently rolling the A.B.S. range out to Bol.com alongside Amazon and eBay.",
+          "I'm Hans van Leeuwen, a freelance Bol.com consultant based in Amersfoort, the Netherlands. I help brands grow on the largest marketplace in the Netherlands and Belgium, from product content and Bol Ads to pricing, Buy Block and logistics. At Alpine Hearing Protection I launched the Bol.com seller channel and led the transition from vendor to seller, automated marketplace content through Channable and achieved 20% more weekly sales with a social ad campaign. At Connect Car Parts I'm currently rolling the assortment out to Bol.com alongside Amazon and eBay.",
         whenHeading: "Who Bol.com consulting is for",
         when: [
           "Brands supplying as a vendor that want to know whether seller brings more margin and control",
@@ -739,7 +739,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "AI e-commerce automation specialist inhuren",
         subtitle: "Pipelines die repetitief marketplace-werk overnemen, met de mens op de gevoelige knoppen",
         intro:
-          "Ik ben Hans van Leeuwen, freelance e-commerce manager die zijn eigen marketplace-operatie grotendeels heeft geautomatiseerd. Bij ABS All Brake Systems automatiseerde ik het VIN-zoekproces voor onderdelen, een primeur in de branche, en koppelde ik eBay, Amazon en Bol.com tot één operatie; bij Alpine Hearing Protection automatiseerde ik de marketplace-content via Channable en bracht geautomatiseerde demand forecasting het out-of-stockpercentage onder de 2%. De stack is zelf gehoste n8n op een Hostinger-VPS voor orchestratie (ordermonitoring elke 30 minuten, feed-, voorraad- en prijsruns), Supabase Postgres als datalaag met row-level security, Claude via de Anthropic API voor listingcontent en analyse achter een menselijke reviewstap, en Channable voor feeddistributie naar Amazon, Bol.com en eBay. Wat ik lever is geen 'AI die je winkel runt', maar concrete, gemonitorde workflows waarvan elke succesmelding te bewijzen is.",
+          "Ik ben Hans van Leeuwen, freelance e-commerce manager die zijn eigen marketplace-operatie grotendeels heeft geautomatiseerd. Bij Connect Car Parts automatiseerde ik het VIN-zoekproces voor onderdelen, een primeur in de branche, en koppelde ik eBay, Amazon en Bol.com tot één operatie; bij Alpine Hearing Protection automatiseerde ik de marketplace-content via Channable en bracht geautomatiseerde demand forecasting het out-of-stockpercentage onder de 2%. De stack is zelf gehoste n8n op een Hostinger-VPS voor orchestratie (ordermonitoring elke 30 minuten, feed-, voorraad- en prijsruns), Supabase Postgres als datalaag met row-level security, Claude via de Anthropic API voor listingcontent en analyse achter een menselijke reviewstap, en Channable voor feeddistributie naar Amazon, Bol.com en eBay. Wat ik lever is geen 'AI die je winkel runt', maar concrete, gemonitorde workflows waarvan elke succesmelding te bewijzen is.",
         whenHeading: "Voor wie automatisering nu loont",
         when: [
           "Teams die elke week dezelfde exports, controles en rapportages met de hand maken",
@@ -762,8 +762,8 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ],
         resultsHeading: "Resultaten uit eigen operaties",
         results: [
-          { stat: "1e", desc: "geautomatiseerde VIN-zoekfunctie voor onderdelen in de branche", source: "ABS All Brake Systems · 2026" },
-          { stat: "3 → 1", desc: "eBay, Amazon en Bol.com gekoppeld tot één marketplace-operatie", source: "ABS All Brake Systems · 2026" },
+          { stat: "1e", desc: "geautomatiseerde VIN-zoekfunctie voor onderdelen in de branche", source: "Connect Car Parts · 2026" },
+          { stat: "3 → 1", desc: "eBay, Amazon en Bol.com gekoppeld tot één marketplace-operatie", source: "Connect Car Parts · 2026" },
           { stat: "<2%", desc: "out-of-stock door geautomatiseerde demand forecasting", source: "Alpine Hearing Protection · 2021–2022" },
         ],
         practiceHeading: "Uit de praktijk",
@@ -821,7 +821,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "AI e-commerce automation specialist",
         subtitle: "Pipelines that take over repetitive marketplace work, with a human on the sensitive decisions",
         intro:
-          "I'm Hans van Leeuwen, a freelance e-commerce manager who has automated most of his own marketplace operation. At ABS All Brake Systems I automated the VIN-based parts lookup, a first in the industry, and connected eBay, Amazon and Bol.com into a single operation; at Alpine Hearing Protection I automated marketplace content through Channable and automated demand forecasting brought out-of-stock below 2%. The stack is self-hosted n8n on a Hostinger VPS for orchestration (order monitoring every 30 minutes, feed, stock and price runs), Supabase Postgres as the data layer with row-level security, Claude through the Anthropic API for listing content and analysis behind a human review gate, and Channable for feed distribution to Amazon, Bol.com and eBay. What I deliver is not 'an AI that runs your store' but concrete, monitored workflows where every success message can be proven.",
+          "I'm Hans van Leeuwen, a freelance e-commerce manager who has automated most of his own marketplace operation. At Connect Car Parts I automated the VIN-based parts lookup, a first in the industry, and connected eBay, Amazon and Bol.com into a single operation; at Alpine Hearing Protection I automated marketplace content through Channable and automated demand forecasting brought out-of-stock below 2%. The stack is self-hosted n8n on a Hostinger VPS for orchestration (order monitoring every 30 minutes, feed, stock and price runs), Supabase Postgres as the data layer with row-level security, Claude through the Anthropic API for listing content and analysis behind a human review gate, and Channable for feed distribution to Amazon, Bol.com and eBay. What I deliver is not 'an AI that runs your store' but concrete, monitored workflows where every success message can be proven.",
         whenHeading: "Who automation pays off for now",
         when: [
           "Teams that build the same exports, checks and reports by hand every week",
@@ -844,8 +844,8 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ],
         resultsHeading: "Results from my own operations",
         results: [
-          { stat: "1st", desc: "automated VIN-based parts lookup in the industry", source: "ABS All Brake Systems · 2026" },
-          { stat: "3 → 1", desc: "eBay, Amazon and Bol.com connected into one marketplace operation", source: "ABS All Brake Systems · 2026" },
+          { stat: "1st", desc: "automated VIN-based parts lookup in the industry", source: "Connect Car Parts · 2026" },
+          { stat: "3 → 1", desc: "eBay, Amazon and Bol.com connected into one marketplace operation", source: "Connect Car Parts · 2026" },
           { stat: "<2%", desc: "out-of-stock through automated demand forecasting", source: "Alpine Hearing Protection · 2021–2022" },
         ],
         practiceHeading: "From the field",

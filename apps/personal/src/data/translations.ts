@@ -194,7 +194,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     ],
     experienceList: [
       {
-        company: "ABS All Brake Systems",
+        company: "Connect Car Parts",
         role: "E-commerce Manager",
         period: "Dec 2025 – Present",
         highlights: [
@@ -536,7 +536,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     ],
     experienceList: [
       {
-        company: "ABS All Brake Systems",
+        company: "Connect Car Parts",
         role: "E-commerce Manager",
         period: "Dec 2025 – Heden",
         highlights: [

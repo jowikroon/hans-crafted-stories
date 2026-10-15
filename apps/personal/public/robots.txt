@@ -1,6 +1,7 @@
 User-agent: Googlebot
 Allow: /
 Disallow: /bijlagen
+Disallow: /cowork
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -13,6 +14,7 @@ Disallow: /blog-cms
 User-agent: Bingbot
 Allow: /
 Disallow: /bijlagen
+Disallow: /cowork
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -32,6 +34,7 @@ Allow: /
 User-agent: GPTBot
 Allow: /
 Disallow: /bijlagen
+Disallow: /cowork
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -44,6 +47,7 @@ Disallow: /blog-cms
 User-agent: CCBot
 Allow: /
 Disallow: /bijlagen
+Disallow: /cowork
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -56,6 +60,7 @@ Disallow: /blog-cms
 User-agent: ClaudeBot
 Allow: /
 Disallow: /bijlagen
+Disallow: /cowork
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
@@ -86,6 +91,7 @@ Allow: /
 User-agent: *
 Allow: /
 Disallow: /bijlagen
+Disallow: /cowork
 Disallow: /portal
 Disallow: /dashboards
 Disallow: /samantha
