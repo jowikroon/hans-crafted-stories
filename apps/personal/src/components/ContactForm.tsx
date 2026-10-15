@@ -28,7 +28,18 @@ const contactSchema = z.object({
 
 type ContactData = z.infer<typeof contactSchema>;
 
-const ContactForm = () => {
+interface ContactFormProps {
+  /** Show "Reden voor contact" as the first field (About redesign 2026-10-15). */
+  reasonFirst?: boolean;
+  /** Helper line under the reason select, e.g. "Recruiter? Kies 'Vacature'." */
+  reasonHelp?: string;
+  /** Outline submit button, so a primary CTA elsewhere on the page stays the only filled one. */
+  outlineSubmit?: boolean;
+  /** Extra classes for the form grid. */
+  className?: string;
+}
+
+const ContactForm = ({ reasonFirst = false, reasonHelp, outlineSubmit = false, className }: ContactFormProps = {}) => {
   const { lang } = useLang();
   const t = translations[lang].contact;
   const [loading, setLoading] = useState(false);
@@ -104,7 +115,7 @@ const ContactForm = () => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: 0.15 }}
-      className="mt-8 grid gap-5 sm:grid-cols-2"
+      className={className ?? "mt-8 grid gap-5 sm:grid-cols-2"}
     >
       {/* Name */}
       <div className="space-y-1.5">
@@ -140,7 +151,7 @@ const ContactForm = () => {
       </div>
 
       {/* Reason */}
-      <div className="space-y-1.5 sm:col-span-2">
+      <div className={`space-y-1.5 sm:col-span-2${reasonFirst ? " order-first" : ""}`}>
         <Label htmlFor="contact-reason" className="text-xs uppercase tracking-widest text-muted-foreground">
           {t.reason}
         </Label>
@@ -156,6 +167,7 @@ const ContactForm = () => {
             ))}
           </SelectContent>
         </Select>
+        {reasonHelp && !errors.reason && <p className="text-xs text-muted-foreground">{reasonHelp}</p>}
         {errors.reason && <p className="text-xs text-destructive">{errors.reason}</p>}
       </div>
 
@@ -178,7 +190,7 @@ const ContactForm = () => {
 
       {/* Submit */}
       <div className="sm:col-span-2">
-        <Button type="submit" disabled={loading} className="group gap-2">
+        <Button type="submit" disabled={loading} variant={outlineSubmit ? "outline" : "default"} className={outlineSubmit ? "group gap-2 rounded-full border-primary/60 px-5" : "group gap-2"}>
           {loading ? (
             <Loader2 size={14} className="animate-spin" />
           ) : (
