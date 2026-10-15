@@ -21,6 +21,8 @@ const staggerChildren = {
   animate: { transition: { staggerChildren: 0.08 } },
 };
 
+const CV_DOWNLOADS_ENABLED = false; // zie 2026-10-15: CV-PDF's noemden A.B.S. als werkgever
+
 const About = () => {
   const { lang } = useLang();
   const t = translations[lang];
@@ -222,7 +224,10 @@ const About = () => {
                 </div>
               )}
 
-              {isVisible("cv_downloads") && (
+              {/* CV-downloads uit 2026-10-15: beide PDF's noemden "ABS All Brake Systems"
+                  als werkgever. Zie harde regel: CCP nooit publiek koppelen aan A.B.S.
+                  Zet CV_DOWNLOADS_ENABLED weer op true zodra er nieuwe PDF's staan. */}
+              {CV_DOWNLOADS_ENABLED && isVisible("cv_downloads") && (
                 <div className="mt-8 flex flex-wrap gap-3">
                   <a href="/Hans_CV_-_e-commerce_manager.pdf" download onClick={() => { (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({ event: "download_cv", label: "en" }); }} className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-all hover:opacity-80 hover:shadow-lg hover:shadow-foreground/10">
                     <Download size={14} /> {getValue("about_cv_en_label", t.downloadCvEn)}
