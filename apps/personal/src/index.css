@@ -1,4 +1,4 @@
-/* Fonts are preloaded in index.html (Switzer + JetBrains Mono + Newsreader, display=swap). The render-blocking @import was removed to fix LCP (HAN-121). */
+/* Fonts are preloaded in index.html (Switzer + JetBrains Mono, display=swap; main fonts per vault HVL-Main-Fonts). The render-blocking @import was removed to fix LCP (HAN-121). */
 
 @tailwind base;
 @tailwind components;

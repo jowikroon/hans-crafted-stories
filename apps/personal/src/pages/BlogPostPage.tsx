@@ -370,7 +370,7 @@ const SERVICE_FOR_ARTICLE: Record<string, { path: string; nl: string; en: string
 const DEFAULT_SERVICE = { path: "/interim-ecommerce-manager", nl: "interim e-commerce manager inhuren", en: "hire an interim e-commerce manager", leadNl: "Tijdelijk een hands-on e-commerce lead nodig?", leadEn: "Need a hands-on e-commerce lead for a while?" };
 
 const BlogPostPage = () => {
-  useEffect(() => { ensureFontCss("fonts-article-v2", FONT_CSS.articleV2); ensureFontCss("fonts-newsreader", FONT_CSS.newsreader); }, []);
+  useEffect(() => { ensureFontCss("fonts-article-v2", FONT_CSS.articleV2); }, []);
   const { slug } = useParams<{ slug: string }>();
   const preloaded = usePreloadedBlogPost(slug);
   const [rawPost, setRawPost] = useState<BlogPostRow | null | undefined>(

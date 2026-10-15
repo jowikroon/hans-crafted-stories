@@ -69,7 +69,7 @@
   --w2-ink-2: #4D4A40;
   --w2-card: #FFFDF8;
   --w2-accent: #1C6B45;
-  --w2-font-display: 'Newsreader', Georgia, serif;
+  --w2-font-display: 'Switzer', 'Inter', system-ui, sans-serif; /* main fonts only (HVL-Main-Fonts) */
   --w2-title-size: clamp(26px, 3.2vw, 38px);
 }
 

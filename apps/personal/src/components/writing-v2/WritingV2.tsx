@@ -74,7 +74,7 @@ function ChevronRight() {
 
 const WritingV2 = () => {
   // Fonts: loaded per-route, not via CSS @import (see fontCss.ts)
-  useEffect(() => { ensureFontCss("fonts-writing", FONT_CSS.writing); ensureFontCss("fonts-newsreader", FONT_CSS.newsreader); }, []);
+  useEffect(() => { ensureFontCss("fonts-writing", FONT_CSS.writing); }, []);
   const preloadedPosts = usePreloadedBlogPosts();
   const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>(() => preloadedPosts ?? []);
   const [loading, setLoading] = useState(preloadedPosts === null);

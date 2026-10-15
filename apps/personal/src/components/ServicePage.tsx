@@ -98,7 +98,7 @@ const ServicePage = ({ page }: { page: ServicePageDef }) => {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon size={20} /></div>
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-primary">{t.eyebrow}</p>
         </div>
-        <h1 className="mb-4 font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">{t.h1}</h1>
+        <h1 className="hvl-page-title mb-4 text-foreground">{t.h1}</h1>
         <p className="mb-6 font-display text-base font-medium text-muted-foreground md:text-lg">{t.subtitle}</p>
         <p className="mb-8 max-w-3xl text-lg leading-relaxed text-foreground/90">{t.intro}</p>
 
