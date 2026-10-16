@@ -830,12 +830,12 @@ writeLocalizedPage("/privacy", {
 }
 
 /* ───────────────────────────── /music/<slug> — alleen publieke tracks (HAN-146, plan F.2) ───────────────────────────── */
-for (const song of songs.filter((sg) => sg.provider !== "soundcloud")) {
+for (const song of songs) {
   const route = `/music/${song.slug}`;
   const head = {
     // ≤60 / ≤155 tekens (SEO-run 2026-09-22: lengtes SERP-veilig houden)
     title: `${song.title}: Song & Notes | Hans van Leeuwen`,
-    description: `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): listen on Spotify and read how the track was made, the gear used and the lyrics.`,
+    description: `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): ${song.provider === "spotify" ? "official release on Spotify" : "pre-release concept on SoundCloud"}, with notes on how it was made.`,
     canonical: `${BASE}${route}`,
   };
   const { html } = renderQuietly(route, null, { initialLang: "en" });

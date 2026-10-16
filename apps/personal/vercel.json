@@ -4,6 +4,16 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/music/new-level",
+      "destination": "/music",
+      "permanent": true
+    },
+    {
+      "source": "/music/teacher-leave",
+      "destination": "/music",
+      "permanent": true
+    },
+    {
       "source": "/dashboards/attachments",
       "destination": "/bijlagen",
       "permanent": true
@@ -237,10 +247,6 @@
     },
     {
       "source": "/en/writing/:slug",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/music/(teacher-leave|hanging-on|beat-between-our-years|new-level)",
       "destination": "/index.html"
     }
   ],

@@ -33,19 +33,37 @@ interface Release {
   video?: boolean;
   note?: string;
   user?: boolean;
+  /** official = Spotify release, concept = pre-release on SoundCloud. */
+  channel?: "official" | "concept";
+  slug?: string;
+  embed?: string;
+  embedHeight?: number;
 }
 
 const LS_KEY = "hvl_music_releases_v1";
 
-/* Canonical catalogue, mirrors the live catalogue's release history. */
-const BASE_RELEASES: Release[] = [
-  { id: "new-level", date: "2025-09-01", title: "New Level (Main Menu)", type: "Single", genre: "Electronic", note: "Where it started, a menu-screen loop that refused to stay background music." },
-  { id: "beat-between", date: "2025-10-01", title: "Beat Between Our Years × Layer Cake Universe", type: "Single", genre: "Mashup" },
-  { id: "hanging-on", date: "2025-11-01", title: "Hanging On (Remastered)", type: "Single", genre: "Electronic" },
-  { id: "teacher-leave", date: "2025-12-01", title: "Teacher Leave (Remastered x2)", type: "Single", genre: "Electronic" },
-  { id: "beat-drop", date: "2026-01-01", title: "Beat Drop", type: "Single", genre: "Electronic", video: true, note: "The first official single, out on Spotify as Jowikroon." },
-  { id: "neon-house-of-glass", date: "2026-07-03", title: "Neon House of Glass", type: "Single", genre: "Electronic", dur: "4:46", note: "Second official single, out on Spotify." },
-];
+/* Canonical catalogue, generated from src/data/music.ts so the timeline always
+ * matches the live catalogue: Spotify = official releases, SoundCloud = public
+ * pre-release concepts (verified public 2026-10-16). Each entry plays inline. */
+const NOTES: Record<string, string> = {
+  "beat-drop": "The first official single, out on Spotify as Jowikroon.",
+  "neon-house-of-glass": "Second official single, out on Spotify.",
+};
+const BASE_RELEASES: Release[] = songs.map((sg) => ({
+  id: sg.slug,
+  slug: sg.slug,
+  date: sg.date,
+  title: sg.title,
+  type: "Single" as ReleaseType,
+  genre: sg.genre,
+  cover: sg.cover,
+  dur: sg.duration && sg.duration !== "-" ? sg.duration : undefined,
+  video: !!(sg.videoFile || sg.videoUrl),
+  note: NOTES[sg.slug],
+  channel: sg.provider === "spotify" ? "official" : "concept",
+  embed: sg.embed,
+  embedHeight: sg.embedHeight,
+}));
 
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function fmtDate(d: string): string {
@@ -70,6 +88,7 @@ const ReleaseTimeline = ({ canEdit = false }: { canEdit?: boolean }) => {
   const [toast, setToast] = useState("");
   const [form, setForm] = useState({ title: "", type: "Single" as ReleaseType, date: "", genre: "" });
   const [errField, setErrField] = useState<string | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
@@ -95,8 +114,8 @@ const ReleaseTimeline = ({ canEdit = false }: { canEdit?: boolean }) => {
   const stats = useMemo(() => ({
     total: merged.length,
     since: merged.length ? yearOf(merged[0].date) : "-",
-    singles: merged.filter((r) => r.type === "Single").length,
-    albums: merged.filter((r) => r.type !== "Single").length,
+    official: merged.filter((r) => r.channel === "official").length,
+    concepts: merged.filter((r) => r.channel === "concept").length,
   }), [merged]);
 
   const flash = (msg: string) => {
@@ -148,13 +167,13 @@ const ReleaseTimeline = ({ canEdit = false }: { canEdit?: boolean }) => {
     <div className="mn-studio">
       <span className="mn-studio__eyebrow">Music Studio · Release timeline</span>
       <h2 className="mn-studio__title">The discography, in order</h2>
-      <p className="mn-studio__sub">Every <strong>single, EP and album</strong> on one growing timeline, anchored to the first release and stretching down with each new one.{canEdit ? " Add a release and watch the page get longer." : ""}</p>
+      <p className="mn-studio__sub">Every track on one growing timeline. <strong>Spotify</strong> carries my official releases; <strong>SoundCloud</strong> is where pre-release concept tracks land first. Press play on any cover to listen right here.{canEdit ? " Add a release and watch the page get longer." : ""}</p>
 
       <div className="mn-studio__stats">
-        <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.total}</span><span className="mn-studio__stat-l">Releases</span></div>
+        <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.official}</span><span className="mn-studio__stat-l">Official on Spotify</span></div>
         <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.since}</span><span className="mn-studio__stat-l">Making music since</span></div>
-        <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.singles}</span><span className="mn-studio__stat-l">Singles</span></div>
-        <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.albums}</span><span className="mn-studio__stat-l">EPs &amp; albums</span></div>
+        <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.concepts}</span><span className="mn-studio__stat-l">Concepts on SoundCloud</span></div>
+        <div className="mn-studio__stat"><span className="mn-studio__stat-n">{stats.total}</span><span className="mn-studio__stat-l">Tracks in total</span></div>
       </div>
 
       {canEdit && (
@@ -211,11 +230,17 @@ const ReleaseTimeline = ({ canEdit = false }: { canEdit?: boolean }) => {
               {showYear && <div className="mn-tl__year"><span>{y}</span></div>}
               <div className={`mn-tl__item ${side}${latest}`} data-id={r.id}>
                 <span className="mn-tl__node" />
-                <div className={`mn-rel${r.user ? " is-user" : ""}`}>
+                <div className={`mn-rel${r.user ? " is-user" : ""}${r.channel ? ` is-${r.channel}` : ""}${playingId === r.id ? " is-playing" : ""}`}>
                   <div className="mn-rel__cover">
-                    <span className="mn-rel__type">{r.type}</span>
                     <div className="fb">{r.title}</div>
-                    {r.cover && <img src={r.cover} alt={`${r.title} cover`} onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} />}
+                    {r.cover && <img src={r.cover} alt={`${r.title} cover`} loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} />}
+                    {r.embed && (
+                      <button className="mn-rel__play" type="button" data-cursor aria-pressed={playingId === r.id} aria-label={playingId === r.id ? `Close player, ${r.title}` : `Play ${r.title}`} onClick={() => setPlayingId((cur) => (cur === r.id ? null : r.id))}>
+                        {playingId === r.id
+                          ? <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+                          : <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>}
+                      </button>
+                    )}
                   </div>
                   <div className="mn-rel__body">
                     <div className="mn-rel__meta">
@@ -223,25 +248,25 @@ const ReleaseTimeline = ({ canEdit = false }: { canEdit?: boolean }) => {
                       <span className="dot" /><span className="mn-rel__genre">{r.genre}</span>
                       {sub && <><span className="dot" /><span>{sub}</span></>}
                     </div>
-                    {(() => {
-                      // HAN-146: SoundCloud-tracks zijn login-gated en renderen publiek als
-                      // "Track not found"; daar dus geen link naartoe, alleen naar publieke pagina's.
-                      const found = songs.find((sg) => sg.slug === r.id || sg.title.toLowerCase() === r.title.toLowerCase());
-                      const match = found && found.provider !== "soundcloud" ? found : undefined;
-                      const label = <>{r.title}{r.type === "EP" ? " (EP)" : ""}</>;
-                      return match
-                        ? <Link to={`/music/${match.slug}`} className="mn-rel__title" data-cursor aria-label={`Open ${match.title} track page`}>{label}</Link>
-                        : <div className="mn-rel__title">{label}</div>;
-                    })()}
+                    {r.slug
+                      ? <Link to={`/music/${r.slug}`} className="mn-rel__title" data-cursor aria-label={`Open ${r.title} track page`}>{r.title}{r.type === "EP" ? " (EP)" : ""}</Link>
+                      : <div className="mn-rel__title">{r.title}{r.type === "EP" ? " (EP)" : ""}</div>}
                     {r.note && <div className="mn-rel__note">{r.note}</div>}
-                    {(i === 0 || r.type !== "Single" || r.user) && (
+                    {(i === 0 || r.type !== "Single" || r.user || r.channel) && (
                       <div className="mn-rel__badges">
-                        {i === 0 && <span className="mn-rel__chip mn-rel__chip--first">★ First release</span>}
+                        {r.channel === "official" && <span className="mn-rel__chip mn-rel__chip--first">Official release · Spotify</span>}
+                        {r.channel === "concept" && <span className="mn-rel__chip mn-rel__chip--concept">Pre-release concept · SoundCloud</span>}
+                        {i === 0 && <span className="mn-rel__chip">★ First on the timeline</span>}
                         {r.type !== "Single" && <span className="mn-rel__chip">{r.type}</span>}
                         {r.user && <span className="mn-rel__chip">Added by you</span>}
                       </div>
                     )}
                   </div>
+                  {r.embed && playingId === r.id && (
+                    <div className="mn-rel__embed">
+                      <iframe title={`${r.channel === "official" ? "Spotify" : "SoundCloud"}, ${r.title}`} src={r.embed} width="100%" height={r.embedHeight || 166} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+                    </div>
+                  )}
                   {r.user && <button className="mn-rel__del" type="button" aria-label={`Remove ${r.title}`} onClick={() => remove(r.id)}><XIcon /></button>}
                 </div>
               </div>

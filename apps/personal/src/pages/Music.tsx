@@ -76,7 +76,7 @@ function TrackRow({ song, index, playing, onToggle }: { song: Song; index: numbe
         <Link className="mn-track__title" to={`/music/${song.slug}`}>{song.title}</Link>
         <div className="mn-track__meta">
           <span className="tag">{song.genre}</span>
-          {song.concept && <span className="concept">Concept</span>}
+          {song.provider === "spotify" ? <span className="concept official">Official · Spotify</span> : <span className="concept">Pre-release · SoundCloud</span>}
           <span className="d" />
           <span>{fmtDate(song.date)}</span>
         </div>
@@ -105,7 +105,8 @@ const Music = () => {
   const { user } = useAuth();
   // SoundCloud tracks are gated: only visible when logged in. Public visitors
   // see Spotify releases only.
-  const visibleSongs = songs.filter((sg) => sg.provider !== "soundcloud" || !!user);
+  // All SoundCloud tracks in music.ts are public (verified 2026-10-16 via oEmbed + sharing:"public").
+  const visibleSongs = songs;
 
   // Hero genre menu, a real, animated filter over the track list. "All" plus
   // the genres actually present in the visible catalogue. Clicking a chip
@@ -325,6 +326,7 @@ const Music = () => {
       {/* tracks */}
       <section className="mn-wrap mn-rv" id="songs" aria-label="Tracks">
         <p className="mn-slabel" style={{ marginTop: "clamp(54px,8vh,90px)" }}><span className="n">02</span> The tracks</p>
+        <p className="mn-channels"><b>Spotify</b> = my official releases. <b>SoundCloud</b> = pre-release concept tracks, shared while they are still taking shape.</p>
         <div className="mn-tracks">
           {shownSongs.map((song, i) => (
             <TrackRow key={song.slug} song={song} index={i} playing={playingSlug === song.slug} onToggle={toggle} />

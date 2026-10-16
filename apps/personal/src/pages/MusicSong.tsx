@@ -117,10 +117,9 @@ function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
 export default function MusicSong() {
   useEffect(() => { ensureFontCss("fonts-music-v2", FONT_CSS.musicV2); }, []);
   const { slug } = useParams<{ slug: string }>();
-  const { user } = useAuth();
   const resolved = getSongBySlug(slug);
-  // SoundCloud songs are login-gated: hide the detail page from public visitors.
-  const song = resolved && resolved.provider === "soundcloud" && !user ? undefined : resolved;
+  // All tracks in music.ts are public (SoundCloud concepts verified public 2026-10-16).
+  const song = resolved;
 
   // Two "More tracks" picks = the next songs after this one (wraps around).
   const more = useMemo(() => {
@@ -144,7 +143,7 @@ export default function MusicSong() {
       ? `${song.title}: Song & Notes | Hans van Leeuwen`
       : "Song not found | Hans van Leeuwen",
     description: song
-      ? `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): listen on Spotify and read how the track was made, the gear used and the lyrics.`
+      ? `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): ${song.provider === "spotify" ? "official release on Spotify" : "pre-release concept on SoundCloud"}, with notes on how it was made.`
       : "This track could not be found.",
     url: song ? `https://hansvanleeuwen.com/music/${song.slug}` : "https://hansvanleeuwen.com/music",
     type: "music.song",
