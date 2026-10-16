@@ -168,7 +168,7 @@ function checkFile(file) {
   }
 }
 
-// Publieke tracks: alles in src/data/music.ts dat niet login-gated (soundcloud) is.
+// Publieke tracks: alles in src/data/music.ts (sinds 2026-10-16 zijn ook de SoundCloud-concepten publiek).
 const PUBLIC_MUSIC_SLUGS = (() => {
   try {
     const src = fs.readFileSync(path.resolve(distDir, "..", "src", "data", "music.ts"), "utf8");
@@ -176,7 +176,7 @@ const PUBLIC_MUSIC_SLUGS = (() => {
     for (const block of src.split(/\n  \{\n/)) {
       const slug = block.match(/slug: "([^"]+)"/);
       const provider = block.match(/provider: "([^"]+)"/);
-      if (slug && provider && provider[1] !== "soundcloud") out.add(slug[1]);
+      if (slug && provider) out.add(slug[1]);
     }
     return out;
   } catch {

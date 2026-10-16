@@ -397,3 +397,16 @@ body.mn-cursor-down .mn-cursor-ring { transform: scale(.82); }
 /* ── Artist Radar card (section 03) ── */
 .music-neon .mn-radar-visual { position: relative; min-height: 440px; padding: 56px 24px 36px; display: grid; place-items: center; background: radial-gradient(circle at 50% 50%, var(--mn-neon-soft), transparent 72%); border-left: 1px solid var(--mn-hair); overflow: hidden; }
 @media (max-width: 860px) { .music-neon .mn-radar-visual { border-left: 0; border-top: 1px solid var(--mn-hair); min-height: 400px; } }
+
+/* 2026-10-16: official (Spotify) vs pre-release concept (SoundCloud) + inline play on the timeline */
+.music-neon .mn-channels { margin: -6px 0 18px; font-size: 14px; color: var(--mn-grey-2); }
+.music-neon .mn-channels b { color: #fff; font-weight: 600; }
+.music-neon .mn-track__meta .concept.official { color: #1ed760; border-color: color-mix(in srgb, #1ed760 45%, transparent); }
+.music-neon .mn-rel__chip--concept { color: #ff7a33; border-color: color-mix(in srgb, #ff7a33 45%, var(--mn-hair)); background: color-mix(in srgb, #ff7a33 9%, transparent); }
+.music-neon .mn-rel.is-official .mn-rel__cover img, .music-neon .mn-rel.is-concept .mn-rel__cover img { filter: none; }
+.music-neon .mn-rel__play { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; border: 0; background: rgba(8,8,6,.28); color: #fff; cursor: pointer; opacity: .9; transition: background .2s var(--mn-ease), opacity .2s var(--mn-ease); }
+.music-neon .mn-rel__play svg { width: 26px; height: 26px; filter: drop-shadow(0 1px 4px rgba(0,0,0,.6)); }
+.music-neon .mn-rel__play:hover, .music-neon .mn-rel__play:focus-visible, .music-neon .mn-rel.is-playing .mn-rel__play { background: rgba(8,8,6,.5); opacity: 1; }
+.music-neon .mn-rel__play:focus-visible { outline: 2px solid var(--mn-neon); outline-offset: -2px; }
+.music-neon .mn-rel__embed { grid-column: 1 / -1; margin-top: 4px; border-radius: 12px; overflow: hidden; }
+.music-neon .mn-rel__embed iframe { display: block; border: 0; }
