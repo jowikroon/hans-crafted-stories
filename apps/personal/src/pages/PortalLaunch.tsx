@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { useForcedTheme } from '@/hooks/useTheme';
 import { gateLaunchTarget } from '@/lib/portalGate';
 import { Button } from '@/components/ui/button';
@@ -15,14 +16,26 @@ export default function PortalLaunch() {
   const [params] = useSearchParams();
   const { session, loading, signInWithGoogle } = useAuth();
   const formRef = useRef<HTMLFormElement>(null);
-  const [sent, setSent] = useState(false);
+  const started = useRef(false);
+  const [token, setToken] = useState<string | null>(null);
   const target = gateLaunchTarget(params.get('host'), params.get('return'));
+  const hasTarget = target !== null;
 
+  // Read the session at hand-off time and refresh a token about to expire, so
+  // the Worker never receives one that lapses on the way.
   useEffect(() => {
-    if (!target || loading || !session || sent) return;
-    setSent(true);
-    formRef.current?.submit();
-  }, [target, loading, session, sent]);
+    if (!hasTarget || loading || !session || started.current) return;
+    started.current = true;
+    void (async () => {
+      let { data: { session: current } } = await supabase.auth.getSession();
+      if (current?.expires_at && current.expires_at * 1000 - Date.now() < 60_000) {
+        current = (await supabase.auth.refreshSession()).data.session ?? current;
+      }
+      setToken(current?.access_token ?? null);
+    })();
+  }, [hasTarget, loading, session]);
+
+  useEffect(() => { if (token) formRef.current?.submit(); }, [token]);
 
   let body = <p>Tool openen…</p>;
   if (!target) body = <p>Onbekende tool-link. Open de tool vanuit de portal.</p>;
@@ -39,9 +52,9 @@ export default function PortalLaunch() {
   return (
     <main className="min-h-screen flex items-center justify-center p-6 text-sm text-foreground">
       <div className="max-w-md">{body}</div>
-      {target && session && (
+      {target && token && (
         <form ref={formRef} method="POST" action={target.action} className="hidden">
-          <input type="hidden" name="token" value={session.access_token} />
+          <input type="hidden" name="token" value={token} />
           <input type="hidden" name="return" value={target.returnPath} />
         </form>
       )}
