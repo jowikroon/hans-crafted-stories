@@ -1,0 +1,31 @@
+name: Publication guard
+
+# Blokkeert publicatie van tekst die op de interne denylist staat.
+# De denylist zelf staat NIET in deze repo: hij komt uit het secret PUBLICATION_DENYLIST_B64.
+# Zonder secret faalt de job bewust (geen regels is geen 'schoon').
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: Publication guard
+    runs-on: ubuntu-latest
+    env:
+      PUBLICATION_DENYLIST_B64: ${{ secrets.PUBLICATION_DENYLIST_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Selftest
+        run: python3 .github/scripts/publication_guard.py selftest
+      - name: Repo
+        run: python3 .github/scripts/publication_guard.py scan .
+      - name: Live site
+        if: github.event_name != 'pull_request'
+        run: python3 .github/scripts/publication_guard.py urls https://hansvanleeuwen.com/sitemap.xml
