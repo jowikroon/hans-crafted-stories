@@ -1,9 +1,10 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { clearGateSessions } from "@/lib/portalGate";
 import type { User, Session } from "@supabase/supabase-js";
 
-const AUTH_REDIRECT_KEY = "auth_redirect_after_login";
+export const AUTH_REDIRECT_KEY = "auth_redirect_after_login";
 
 interface AuthContextType {
   user: User | null;
@@ -79,6 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    await clearGateSessions();
     await supabase.auth.signOut();
   };
 

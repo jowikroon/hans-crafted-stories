@@ -1,4 +1,5 @@
 import PortalNotes from '@/pages/PortalNotes';
+import PortalLaunch from '@/pages/PortalLaunch';
 import { Routes, Route, useLocation, Navigate, useParams } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense, type ComponentType } from "react";
@@ -80,6 +81,7 @@ const AnimatedRoutes = () => {
     <AnimatePresence initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/portal/notes" element={<PortalNotes />} />
+        <Route path="/portal/launch" element={<PortalLaunch />} />
         {/* Eén URL per taal (HAN-167/HAN-83): elke gelokaliseerde route bestaat als
             EN-pad én als /nl-pad. De taal komt uit de URL (zie hooks/useLang). */}
         {LANG_PREFIXES.map((prefix) => (
