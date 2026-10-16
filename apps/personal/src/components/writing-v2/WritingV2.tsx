@@ -487,7 +487,7 @@ const WritingV2 = () => {
                           src={featured.imageUrl}
                           alt={featTitle ?? ""}
                           width={1200}
-                          height={800}
+                          height={630}
                           loading="eager"
                           {...{ fetchpriority: "high" }}
                           decoding="async"
@@ -510,7 +510,7 @@ const WritingV2 = () => {
                           src={post.imageUrl}
                           alt={title}
                           width={600}
-                          height={400}
+                          height={315}
                           loading="lazy"
                           decoding="async"
                         />

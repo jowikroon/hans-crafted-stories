@@ -18,7 +18,7 @@ Hans van Leeuwen helps brands grow on Amazon and Bol.com: marketplace audits, pr
 
 ## Articles
 
-- [Waarom je marketplace-listings niet converteren](https://hansvanleeuwen.com/writing/freelance-e-commerce-manager-inhuren): UX lens on marketplace listing conversion.
+- [Waarom je marketplace-listings niet converteren](https://hansvanleeuwen.com/writing/waarom-marketplace-listings-niet-converteren): UX lens on marketplace listing conversion.
 - [Amazon vs Bol.com in 2026](https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland): Where Dutch sellers should focus in 2026.
 - [Designing with LLMs: A Practical UX Framework](https://hansvanleeuwen.com/writing/designing-with-llms): Practical UX framework for LLM-powered products.
 
