@@ -208,6 +208,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/portal/(notes|launch)",
+      "destination": "/index.html"
+    },
+    {
       "source": "/dashboards",
       "destination": "/index.html"
     },

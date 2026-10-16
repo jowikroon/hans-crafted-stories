@@ -1,0 +1,38 @@
+# Portal gate: de portal-login is de enige login voor de lab-tools.
+# Zie workers/portal-gate/README.md. Los gedeployed (niet via Workers Builds,
+# die bouwt alleen de root-wrangler.toml):
+#   npx wrangler deploy -c workers/portal-gate/wrangler.toml
+# Secrets (nooit in git): GATE_SECRET, SERVICE_CLIENT_ID, SERVICE_CLIENT_SECRET.
+
+name = "portal-gate"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+workers_dev = false
+
+routes = [
+  { pattern = "chatdev.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+  { pattern = "reverse.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+  { pattern = "lab-autodev.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+  { pattern = "lab-browser.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+  { pattern = "lab-canvas.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+  { pattern = "lab-changes.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+  { pattern = "lab-demo.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+  { pattern = "lab-notes.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+  { pattern = "lab-repos.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+]
+
+[vars]
+SUPABASE_URL = "https://pesfakewujjwkyybwaom.supabase.co"
+# Publieke anon key (staat ook in apps/personal/.env.production).
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlc2Zha2V3dWpqd2t5eWJ3YW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzcyNzQsImV4cCI6MjA4NzQ1MzI3NH0.6jTLT1MbeTKhxVW5ATtDnkRa02N-X5zlt3zGgFVA3iU"
+PORTAL_ORIGINS = "https://hansvanleeuwen.com,https://www.hansvanleeuwen.com"
+# Host -> portal_tools.id. Toegang loopt via portal_launch_tool (zelfde regels
+# als de portal). Hosts die hier niet staan zijn alleen voor de portal-eigenaar.
+TOOL_HOSTS = '''{
+  "chatdev.hansvanleeuwen.com": "092622b6-b52f-445e-83b7-aa91a2bda882",
+  "reverse.hansvanleeuwen.com": "dbfc57f9-e543-4373-8039-dbf473ae099c",
+  "lab-autodev.hansvanleeuwen.com": "da9fb81b-d019-43c8-aed8-80585371a6bd",
+  "lab-browser.hansvanleeuwen.com": "397e6e14-6d69-42c4-9f10-eeca658ca011",
+  "lab-canvas.hansvanleeuwen.com": "2f249690-274b-4cdd-8aa9-b9f3ec8453f7",
+  "lab-changes.hansvanleeuwen.com": "f9137c21-ebcb-4afa-b246-35df5432de98"
+}'''
