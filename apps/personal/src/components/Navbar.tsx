@@ -10,7 +10,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
   ChevronDown, Network, Sparkles, PenLine, Disc3, BarChart3,
-  AudioLines, ExternalLink, Paperclip,
+  AudioLines, ExternalLink, Paperclip, Gem,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -20,6 +20,9 @@ import { logoById } from "@/lib/logos";
 import { useActiveLogo, useLogoMotion } from "@/contexts/LogoContext";
 import { useNavMenu } from "@/contexts/NavMenuContext";
 import { useTheme } from "@/hooks/useTheme";
+
+/** Opent de lokale SecondBrainVault in de Obsidian-app (obsidian:// URI). Alleen zichtbaar voor admins. */
+const OBSIDIAN_VAULT_URL = "obsidian://open?vault=SecondBrainVault";
 
 
 /* ─────────────────────────────────────────────────────────────
@@ -418,6 +421,7 @@ const Navbar = (_props: NavbarProps) => {
                           <p className="px-4 pt-2.5 pb-1 text-[10px] uppercase tracking-wider font-semibold text-[#7E7A6F]">{t.workspace.label}</p>
                           <div className="pb-1">
                             {isAdmin && <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer" onClick={closeProfile} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Sparkles size={15} /> Cowork <ExternalLink size={12} className="ml-auto" aria-hidden="true" /></a>}
+                            {isAdmin && <a href={OBSIDIAN_VAULT_URL} onClick={closeProfile} title="Open de SecondBrainVault in Obsidian op deze computer" className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Gem size={15} /> Obsidian <ExternalLink size={12} className="ml-auto" aria-hidden="true" /></a>}
                             {isAdmin && <Link to="/bijlagen" onClick={closeProfile} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Paperclip size={15} /> Bijlagen</Link>}
                             {isAdmin && <Link to="/write" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><PenLine size={15} /> {t.workspace.blogCms}</Link>}
                             {isAdmin && <Link to="/release-set" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Disc3 size={15} /> Release Set</Link>}
@@ -529,6 +533,7 @@ const Navbar = (_props: NavbarProps) => {
                   <>
                     <p className={`px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-semibold ${barMut}`}>{t.workspace.label}</p>
                     {isAdmin && <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Sparkles size={14} /> Cowork <ExternalLink size={12} aria-hidden="true" /></a>}
+                    {isAdmin && <a href={OBSIDIAN_VAULT_URL} onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Gem size={14} /> Obsidian <ExternalLink size={12} aria-hidden="true" /></a>}
                     {isAdmin && <Link to="/bijlagen" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Paperclip size={14} /> Bijlagen</Link>}
                     {isAdmin && <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><PenLine size={14} /> {t.workspace.blogCms}</Link>}
                     {isAdmin && <Link to="/release-set" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Disc3 size={14} /> Release Set</Link>}
