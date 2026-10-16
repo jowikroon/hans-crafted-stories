@@ -168,10 +168,12 @@ export default {
 
     if (url.pathname === AUTH_PATH) return handleAuth(request, env, url);
     if (url.pathname === LOGOUT_PATH) {
-      return new Response(null, {
-        status: 303,
-        headers: { Location: `${portalOrigins(env)[0] || ''}/portal`, 'Set-Cookie': `${COOKIE}=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax` },
-      });
+      // Called by the portal on sign-out (background request) or opened directly.
+      const clear = `${COOKIE}=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax`;
+      if (request.headers.get('Sec-Fetch-Mode') !== 'navigate') {
+        return new Response(null, { status: 204, headers: { 'Set-Cookie': clear, 'Cache-Control': 'no-store' } });
+      }
+      return new Response(null, { status: 303, headers: { Location: `${portalOrigins(env)[0] || ''}/portal`, 'Set-Cookie': clear } });
     }
 
     if (await hasServiceToken(request, env)) {

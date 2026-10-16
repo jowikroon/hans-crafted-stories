@@ -124,6 +124,16 @@ test('return path only allows same-host relative paths', () => {
   assert.equal(readCookie('a=1; b=2=3', 'b'), '2=3');
 });
 
+test('logout clears the gate cookie', async () => {
+  const bg = await gate.fetch(new Request(`https://${HOST}/__portal/logout`), env);
+  assert.equal(bg.status, 204);
+  assert.match(bg.headers.get('Set-Cookie'), /^__Host-portal_gate=; Path=\/; Max-Age=0;/);
+  const nav = await gate.fetch(new Request(`https://${HOST}/__portal/logout`, { headers: { 'Sec-Fetch-Mode': 'navigate' } }), env);
+  assert.equal(nav.status, 303);
+  assert.equal(nav.headers.get('Location'), 'https://hansvanleeuwen.com/portal');
+  assert.equal(calls.length, 0);
+});
+
 test('missing secret fails closed', async () => {
   const res = await gate.fetch(new Request(`https://${HOST}/`), { ...env, GATE_SECRET: '' });
   assert.equal(res.status, 503);

@@ -20,3 +20,16 @@ export function gateLaunchTarget(host: string | null, returnPath: string | null)
   const path = returnPath && /^\/(?![/\\])/.test(returnPath) ? returnPath : '/';
   return { action: `https://${host}/__portal/auth`, returnPath: path };
 }
+
+/**
+ * Clears the gate cookie on every tool host. Same-site no-cors requests carry
+ * and accept the host's cookie, so this works from the portal origin.
+ * Best effort: a host that is down simply keeps its cookie until it expires.
+ */
+export async function clearGateSessions(timeoutMs = 3000): Promise<void> {
+  await Promise.race([
+    Promise.allSettled(GATED_HOSTS.map(host =>
+      fetch(`https://${host}/__portal/logout`, { mode: 'no-cors', credentials: 'include', cache: 'no-store' }))),
+    new Promise(resolve => setTimeout(resolve, timeoutMs)),
+  ]);
+}

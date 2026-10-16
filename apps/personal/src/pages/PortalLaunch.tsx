@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { AUTH_REDIRECT_KEY, useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useForcedTheme } from '@/hooks/useTheme';
 import { gateLaunchTarget } from '@/lib/portalGate';
@@ -37,6 +37,10 @@ export default function PortalLaunch() {
 
   useEffect(() => { if (token) formRef.current?.submit(); }, [token]);
 
+  const rememberLaunch = () => {
+    try { localStorage.setItem(AUTH_REDIRECT_KEY, `/portal/launch${window.location.search}`); } catch { /* storage blocked: user reopens the tool */ }
+  };
+
   let body = <p>Tool openen…</p>;
   if (!target) body = <p>Onbekende tool-link. Open de tool vanuit de portal.</p>;
   else if (!loading && !session) body = (
@@ -44,7 +48,10 @@ export default function PortalLaunch() {
       <p className="mb-4">Log in op de portal om deze tool te openen. Daarna ga je automatisch door.</p>
       <div className="flex gap-3">
         <Button onClick={signInWithGoogle}>Inloggen met Google</Button>
-        <Button variant="outline" asChild><Link to="/portal">Naar de portal</Link></Button>
+        <Button variant="outline" asChild>
+          {/* The email login on /portal returns here after SIGNED_IN, like the Google flow. */}
+          <Link to="/portal" onClick={rememberLaunch}>Inloggen met e-mail</Link>
+        </Button>
       </div>
     </>
   );
