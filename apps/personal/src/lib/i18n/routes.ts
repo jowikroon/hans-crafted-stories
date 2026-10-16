@@ -31,6 +31,7 @@ export const LOCALIZED_ROUTES: readonly string[] = [
   "/bol-com-consultant",
   "/interim-ecommerce-manager",
   "/ai-ecommerce-automation",
+  "/webshopbeheerder-inhuren",
   "/privacy",
   "/rates",
   // De artikelenindex bestaat in beide talen (/writing NL, /en/writing EN) sinds de

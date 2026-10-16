@@ -52,7 +52,7 @@ const BASE = "https://hansvanleeuwen.com";
 const failures = [];
 const seen = new Set();
 // Spiegel van LOCALIZED_ROUTES in src/lib/i18n/routes.ts: deze paden bestaan in NL (kaal) en EN (/en).
-const LOCALIZED_BASE = new Set(["/", "/about", "/work", "/work/connect-car-parts", "/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation", "/privacy", "/rates", "/writing"]);
+const LOCALIZED_BASE = new Set(["/", "/about", "/work", "/work/connect-car-parts", "/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation", "/webshopbeheerder-inhuren", "/privacy", "/rates", "/writing"]);
 
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -222,8 +222,8 @@ else {
 
 /* ───────────── 13. sjabloon-variatie tussen dienstenpagina's ───────────── */
 {
-  const pages = ["interim-ecommerce-manager", "amazon-nl-specialist", "bol-com-consultant", "ai-ecommerce-automation"];
-  // Reeksen die op ALLE vier pagina's staan zijn het bewuste gedeelde skelet (tarief, byline,
+  const pages = ["interim-ecommerce-manager", "amazon-nl-specialist", "bol-com-consultant", "ai-ecommerce-automation", "webshopbeheerder-inhuren"];
+  // Reeksen die op ALLE vijf pagina's staan zijn het bewuste gedeelde skelet (tarief, byline,
   // ervaring, cta) en tellen niet mee; reeksen die op 2 of 3 pagina's staan zijn kopieertekst.
   const N = 12, MAX_PAIRWISE = 10;
   const textOf = (file) => {
@@ -357,7 +357,7 @@ else {
     const t = titleOf(file);
     if (t !== null && /\b(inhuren|hire)\b/i.test(t)) failures.push(`${label}: homepage-<title> "${t}" bevat het intentwoord — dat hoort alleen op de dienstenpagina's (plan A.1, HAN-180)`);
   }
-  for (const slug of ["interim-ecommerce-manager", "bol-com-consultant", "amazon-nl-specialist", "ai-ecommerce-automation"]) {
+  for (const slug of ["interim-ecommerce-manager", "bol-com-consultant", "amazon-nl-specialist", "ai-ecommerce-automation", "webshopbeheerder-inhuren"]) {
     const t = titleOf(path.join(distDir, slug, "index.html"));
     if (t === null) failures.push(`${slug}/index.html ontbreekt (guard 19)`);
     else if (!/\binhuren\b/i.test(t)) failures.push(`${slug}: <title> "${t}" mist het intentwoord "inhuren" (plan A.1)`);
