@@ -13,8 +13,9 @@ if (branch && branch !== "main") {
   process.exit(0);
 }
 // Vercel: alleen productie-builds mogen pingen; previews (PR's, dependabot) niet.
-if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production") {
-  console.log(`[indexnow] skip — VERCEL_ENV=${process.env.VERCEL_ENV}`);
+// Alleen een Vercel-productiebuild pingt; CI (build op elke PR, zonder VERCEL_ENV) en lokaal niet.
+if (process.env.VERCEL_ENV !== "production") {
+  console.log(`[indexnow] skip — VERCEL_ENV=${process.env.VERCEL_ENV ?? "(unset)"} (alleen production pingt)`);
   process.exit(0);
 }
 

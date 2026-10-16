@@ -41,8 +41,10 @@ if (!fs.existsSync(templatePath)) {
 let template = fs.readFileSync(templatePath, "utf8");
 
 // Load server bundle (built with vite build --ssr src/entry-server.tsx)
-const entryJs = path.join(distDir, "entry-server.js");
-const entryMjs = path.join(distDir, "entry-server.mjs");
+// SSR-bundle staat in dist-ssr/ (niet in de publieke output dist/).
+const ssrDir = path.resolve(__dirname, "..", "dist-ssr");
+const entryJs = path.join(ssrDir, "entry-server.js");
+const entryMjs = path.join(ssrDir, "entry-server.mjs");
 const entryPath = fs.existsSync(entryMjs) ? entryMjs : fs.existsSync(entryJs) ? entryJs : null;
 if (!entryPath) {
   console.error("[prerender] dist/entry-server.js or .mjs not found. Run: vite build --ssr src/entry-server.tsx");

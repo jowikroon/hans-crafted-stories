@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 const outputPath = path.join(repoRoot, "apps/personal/src/data/ccpCompetitionRadar.json");
-const publicDir = path.join(repoRoot, "apps/personal/public/cowork/ccp-ebay-de");
+// Security 2026-09-23: radar-PDF's niet meer in de publieke webroot (zie sync-cowork-dashboard-attachments.mjs).
+const publicDir = path.join(repoRoot, ".private/cowork/ccp-ebay-de");
 const sourceDirs = [
   "C:/Users/Malle Flappie/Documents/Claude/Projects/Cowork Research",
   "C:/Users/Malle Flappie/Documents/SecondBrainVault/_cowork/ccp-ebay-de",

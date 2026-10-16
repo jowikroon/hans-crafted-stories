@@ -17,7 +17,10 @@ const sources = [
   "C:/Users/Malle Flappie/.claude-mem/observer-sessions/marketplacegrowth-remote/public/cowork/ccp-ebay-de",
 ].map((source) => path.resolve(source));
 
-const publicDir = path.join(repoRoot, "apps/personal/public/cowork/ccp-ebay-de");
+// Security 2026-09-23: werkdocumenten stonden in apps/personal/public/ en waren daardoor publiek
+// (website + publieke GitHub-repo). Ze gaan nu naar een git-ignored privémap; het manifest bevat
+// alleen metadata, geen publieke URL. Delen met admins: private Supabase Storage + signed URLs.
+const publicDir = path.join(repoRoot, ".private/cowork/ccp-ebay-de");
 const manifestPath = path.join(repoRoot, "apps/personal/src/data/coworkAttachments.json");
 const allowedExtensions = new Set([".html", ".pdf", ".md", ".xlsx", ".txt"]);
 const ignoredName = /(^\.~lock\.|\.SKILL\.md$|~$|\.tmp$|\.bak$|\.crdownload$)/i;
@@ -79,7 +82,7 @@ const filesForManifest = listFiles(publicDir)
       name,
       size: stat.size,
       modified: stat.mtime.toISOString(),
-      url: `/cowork/ccp-ebay-de/${encodeURIComponent(name).replace(/%2F/g, "/")}`,
+      url: null, // bewust geen publieke URL
     };
   })
   .sort((a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime() || b.size - a.size || a.name.localeCompare(b.name));
@@ -106,7 +109,7 @@ if (!status) {
   process.exit(0);
 }
 
-execFileSync("git", ["add", "apps/personal/public/cowork/ccp-ebay-de", "apps/personal/src/data/coworkAttachments.json"], { cwd: repoRoot, stdio: "inherit" });
+execFileSync("git", ["add", "apps/personal/src/data/coworkAttachments.json"], { cwd: repoRoot, stdio: "inherit" });
 const staged = execFileSync("git", ["diff", "--cached", "--name-only"], { cwd: repoRoot, encoding: "utf8" }).trim();
 if (!staged) {
   console.log("No staged dashboard attachment changes.");

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, ArrowRight, CalendarRange, ExternalLink, Radio, ShieldAlert, Target } from "lucide-react";
+import { AlertTriangle, ArrowRight, CalendarRange, Radio, ShieldAlert, Target } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import radarHistoryJson from "@/data/ccpCompetitionRadar.json";
 import { filterRadarRuns, type RadarRun } from "@/lib/competitionRadar";
@@ -14,7 +14,8 @@ const competitors = [
 ];
 
 const formatDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString("nl-NL", { day: "2-digit", month: "short", year: "numeric" });
-const pdfUrl = (run: RadarRun) => `/cowork/ccp-ebay-de/${encodeURIComponent(run.sourceFile.replace(/\.md$/i, "-visual.pdf"))}`;
+// De visual-PDF staat niet meer in de publieke webroot (security 2026-09-23); alleen de bestandsnaam tonen.
+const pdfName = (run: RadarRun) => run.sourceFile.replace(/\.md$/i, "-visual.pdf");
 
 const Metric = ({ label, value, detail, tone = "ink" }: { label: string; value: string | number; detail: string; tone?: "ink" | "red" | "green" }) => {
   const toneClass = tone === "red" ? "text-[#C43B31]" : tone === "green" ? "text-[#2D9255]" : "text-[#15140F] dark:text-[#F5F1E6]";
@@ -90,7 +91,7 @@ const CompetitionRadarPanel = () => {
     <section className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
       <div className="rounded-xl border border-black/10 bg-[#FBF8F0] p-5 dark:border-white/10 dark:bg-white/5">
         <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#2F65C8]">Run detail · {formatDate(latest.run)}</p><h3 className="mt-1 text-lg font-semibold text-[#15140F] dark:text-[#F5F1E6]">Wat staat er nu op de radar?</h3></div>
-          <a href={pdfUrl(latest)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-black/10 px-3 py-1.5 text-xs font-medium text-[#15140F] hover:bg-[#E5DFCE] dark:border-white/10 dark:text-[#F5F1E6] dark:hover:bg-white/10">Visual PDF <ExternalLink size={12} /></a>
+          <span title={pdfName(latest)} className="inline-flex items-center gap-1.5 rounded-full border border-black/10 px-3 py-1.5 text-xs font-medium text-[#15140F] dark:border-white/10 dark:text-[#F5F1E6]">Visual PDF: privé (vault)</span>
         </div><ol className="mt-5 space-y-4">{latest.summary.map((item, index) => <li key={item} className="grid grid-cols-[28px_1fr] gap-3 text-sm leading-6 text-[#4B4842] dark:text-[#C9BFB0]"><span className="mt-0.5 grid h-7 w-7 place-items-center rounded-full bg-[#2F65C8] text-[11px] font-semibold text-white">{index + 1}</span><span>{item}</span></li>)}</ol>
       </div>
       <div className="rounded-xl border border-black/10 bg-[#171812] p-5 text-[#F8F4E8]"><div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#F2C071]"><Target size={14} /> Volgende acties</div><div className="mt-4 space-y-4">{latest.actions.slice(0, 4).map((action, index) => <div key={action.title} className="border-t border-white/10 pt-4 first:border-0 first:pt-0"><div className="flex gap-2 text-sm font-medium"><span className="text-[#83A9FF]">0{index + 1}</span><p>{action.title}</p></div>{action.detail && <p className="mt-1 pl-7 text-xs leading-5 text-[#AFAEA5]">{action.detail}</p>}</div>)}</div></div>
