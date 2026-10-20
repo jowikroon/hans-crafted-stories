@@ -452,7 +452,8 @@ let publishedPosts = [];
 try {
   publishedPosts = await getBlogPosts(true);
 } catch (err) {
-  console.warn("[prerender] Could not pre-fetch published blog posts:", err.message);
+  // Never replace the live articles with an apparently successful, empty build.
+  throw new Error("[prerender] Published articles unavailable; refusing incomplete deployment", { cause: err });
 }
 
 const postBySlug = new Map();

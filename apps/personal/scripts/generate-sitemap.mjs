@@ -67,14 +67,12 @@ const STATIC_ROUTES = [
 
 async function fetchPublishedPosts() {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.warn("[sitemap] Supabase env missing — static routes only");
-    return [];
+    throw new Error("[sitemap] Supabase env missing; refusing incomplete sitemap");
   }
   const url = `${SUPABASE_URL}/rest/v1/blog_posts?select=slug,updated_at,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc`;
   const res = await fetch(url, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } });
   if (!res.ok) {
-    console.warn(`[sitemap] Supabase fetch failed (${res.status}) — static routes only`);
-    return [];
+    throw new Error(`[sitemap] Supabase fetch failed (${res.status}); refusing incomplete sitemap`);
   }
   return res.json();
 }
