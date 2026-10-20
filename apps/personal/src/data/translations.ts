@@ -432,7 +432,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. What data do we collect?",
-          body: "When you use the contact form, we store your name, email address, the reason you chose, your message, the page you sent it from and the site language in the site's own database (Supabase, EU), so that we can reply. A notification with these details is sent to Hans via Telegram. We keep a message as long as needed to handle it and any follow-up, and delete it sooner if you ask. We also use Google Analytics 4 (GA4), managed through Google Tag Manager, for, among other things, page views, session duration, device type and how blog articles are read. GA4 receives no names or email addresses, and IP anonymization is enabled by default in GA4. Finally, the site keeps its own visit statistics, described in section 3.",
+          body: "When you use the contact form, we store your name, email address, the reason you chose, your message, the page you sent it from and the site language in the site's own database (Supabase, EU), so that we can reply. A notification with these details is sent to Hans via Telegram. We keep a message as long as needed to handle it and any follow-up, and delete it sooner if you ask. We also use Google Analytics 4 (GA4), managed through Google Tag Manager, for, among other things, page views, session duration, device type and how blog articles are read. GA4 receives no names or email addresses, and IP anonymization is enabled by default in GA4. We also use Ahrefs Web Analytics, loaded through Google Tag Manager, to see which pages are visited and which websites send visitors. It sets no cookies and stores no IP address: per visit it records the page address (including its query string), the referring website, browser and device type, screen size, language and an approximate location no finer than the city, which it derives from the IP address before discarding it. To count unique visitors it uses a code that changes every day, so a visit cannot be followed from one day to the next. Finally, the site keeps its own visit statistics, described in section 3.",
         },
         {
           heading: "3. The site's own visit statistics",
@@ -440,7 +440,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "4. Cookies",
-          body: "We use analytical cookies only after your explicit consent (opt-in). Without consent, no tracking cookies are placed. You can withdraw your consent at any time by clearing your browser data.",
+          body: "We use analytical cookies only after your explicit consent (opt-in). Without consent, no tracking cookies are placed. Ahrefs Web Analytics (section 2) sets no cookies and also runs without that consent. You can withdraw your consent at any time by clearing your browser data.",
         },
         {
           heading: "5. Google Consent Mode v2",
@@ -448,7 +448,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "6. Third-party sharing",
-          body: 'We share personal data only with the services this site uses. Supabase hosts the site\'s database in the EU (contact form messages and the visit statistics). Telegram delivers the notification of a new contact form message (name, email address, reason, page, language and message) to Hans, under its own <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. Google processes Google Analytics data in accordance with their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. The site\'s own visit statistics are not shared with anyone else.',
+          body: 'We share personal data only with the services this site uses. Supabase hosts the site\'s database in the EU (contact form messages and the visit statistics). Telegram delivers the notification of a new contact form message (name, email address, reason, page, language and message) to Hans, under its own <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. Google processes Google Analytics data in accordance with their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. Ahrefs processes the Ahrefs Web Analytics data described in section 2 under its own <a href="https://ahrefs.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. The site\'s own visit statistics are not shared with anyone else.',
         },
         {
           heading: "7. Your rights",
@@ -774,7 +774,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "2. Welke gegevens verzamelen wij?",
-          body: "Als je het contactformulier gebruikt, slaan we je naam, e-mailadres, de gekozen reden, je bericht, de pagina waarvandaan je het verstuurde en de taal van de site op in de eigen database van de site (Supabase, EU), zodat we je kunnen antwoorden. Een melding met deze gegevens gaat via Telegram naar Hans. We bewaren een bericht zolang dat nodig is om het af te handelen en op te volgen, en verwijderen het eerder als je daarom vraagt. Daarnaast gebruiken we Google Analytics 4 (GA4), beheerd via Google Tag Manager, voor onder andere paginaweergaven, sessieduur, apparaattype en hoe blogartikelen gelezen worden. GA4 ontvangt geen namen of e-mailadressen, en IP-anonimisering is standaard ingeschakeld in GA4. Tot slot houdt de site eigen bezoekstatistieken bij, zie punt 3.",
+          body: "Als je het contactformulier gebruikt, slaan we je naam, e-mailadres, de gekozen reden, je bericht, de pagina waarvandaan je het verstuurde en de taal van de site op in de eigen database van de site (Supabase, EU), zodat we je kunnen antwoorden. Een melding met deze gegevens gaat via Telegram naar Hans. We bewaren een bericht zolang dat nodig is om het af te handelen en op te volgen, en verwijderen het eerder als je daarom vraagt. Daarnaast gebruiken we Google Analytics 4 (GA4), beheerd via Google Tag Manager, voor onder andere paginaweergaven, sessieduur, apparaattype en hoe blogartikelen gelezen worden. GA4 ontvangt geen namen of e-mailadressen, en IP-anonimisering is standaard ingeschakeld in GA4. Ook gebruiken we Ahrefs Web Analytics, geladen via Google Tag Manager, om te zien welke pagina's bezocht worden en welke websites bezoekers sturen. Het plaatst geen cookies en slaat geen IP-adres op: per bezoek legt het het paginaadres vast (inclusief zoekparameters), de verwijzende website, browser en apparaattype, schermformaat, taal en een globale locatie, niet nauwkeuriger dan de stad, die het afleidt uit het IP-adres voordat het dat weggooit. Om unieke bezoekers te tellen gebruikt het een code die elke dag verandert, zodat een bezoek niet van de ene dag naar de volgende te volgen is. Tot slot houdt de site eigen bezoekstatistieken bij, zie punt 3.",
         },
         {
           heading: "3. Eigen bezoekstatistieken van de site",
@@ -782,7 +782,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "4. Cookies",
-          body: "Wij gebruiken analytische cookies uitsluitend na jouw expliciete toestemming (opt-in). Zonder toestemming worden er geen tracking-cookies geplaatst. Je kunt je toestemming op elk moment intrekken door je browsergegevens te wissen.",
+          body: "Wij gebruiken analytische cookies uitsluitend na jouw expliciete toestemming (opt-in). Zonder toestemming worden er geen tracking-cookies geplaatst. Ahrefs Web Analytics (punt 2) plaatst geen cookies en draait ook zonder die toestemming. Je kunt je toestemming op elk moment intrekken door je browsergegevens te wissen.",
         },
         {
           heading: "5. Google Consent Mode v2",
@@ -790,7 +790,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "6. Delen met derden",
-          body: 'Wij delen persoonsgegevens alleen met de diensten die deze site gebruikt. Supabase host de database van de site in de EU (contactberichten en de bezoekstatistieken). Telegram bezorgt de melding van een nieuw contactbericht (naam, e-mailadres, reden, pagina, taal en bericht) bij Hans, conform zijn eigen <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. Google verwerkt Google Analytics-data conform hun <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. De eigen bezoekstatistieken worden met niemand anders gedeeld.',
+          body: 'Wij delen persoonsgegevens alleen met de diensten die deze site gebruikt. Supabase host de database van de site in de EU (contactberichten en de bezoekstatistieken). Telegram bezorgt de melding van een nieuw contactbericht (naam, e-mailadres, reden, pagina, taal en bericht) bij Hans, conform zijn eigen <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. Google verwerkt Google Analytics-data conform hun <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. Ahrefs verwerkt de Ahrefs Web Analytics-gegevens uit punt 2 conform zijn eigen <a href="https://ahrefs.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. De eigen bezoekstatistieken worden met niemand anders gedeeld.',
         },
         {
           heading: "7. Je rechten",
