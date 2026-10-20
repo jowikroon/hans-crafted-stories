@@ -449,10 +449,26 @@ function buildStaticPageFallback(head, extraHtml = "", headingTag = "h2", lang =
 }
 
 let publishedPosts = [];
+let postsError = null;
 try {
   publishedPosts = await getBlogPosts(true);
 } catch (err) {
+  postsError = err;
   console.warn("[prerender] Could not pre-fetch published blog posts:", err.message);
+}
+
+// A deploy build without the articles still passes (seo-guard checks the pages it gets), but it
+// publishes a site whose article pages, /writing list and sitemap entries are all gone: on
+// 2026-10-20 a restricted Supabase API made a build pass with 32 of 51 pages and 23 of 49 sitemap
+// URLs. On a hosting build that must fail instead, so the live deployment stays as it is. Local and
+// GitHub CI builds keep the warning. ALLOW_EMPTY_BLOG=1 overrides it deliberately.
+const deployBuild = Boolean(process.env.VERCEL || process.env.CF_PAGES || process.env.WORKERS_CI || process.env.NETLIFY);
+if (deployBuild && publishedPosts.length === 0 && process.env.ALLOW_EMPTY_BLOG !== "1") {
+  console.error(
+    `[prerender] No published blog posts (${postsError ? postsError.message : "empty result"}). ` +
+      "Refusing to deploy the site without its articles; set ALLOW_EMPTY_BLOG=1 to override.",
+  );
+  process.exit(1);
 }
 
 const postBySlug = new Map();
