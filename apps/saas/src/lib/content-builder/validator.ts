@@ -237,7 +237,7 @@ export function calculateQualityScore(
 
 function calculateCompleteness(content: ListingContent): number {
   let filled = 0;
-  let total = 5;
+  const total = 5;
   if (content.title && content.title.length > 10) filled++;
   if (content.bullets && content.bullets.length >= 3) filled++;
   if (content.description && content.description.length > 50) filled++;
