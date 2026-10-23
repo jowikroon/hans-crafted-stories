@@ -4,11 +4,10 @@ name: Publication guard
 # De denylist zelf staat NIET in deze repo: hij komt uit het secret PUBLICATION_DENYLIST_B64.
 # Zonder secret faalt de job bewust (geen regels is geen 'schoon').
 
+# 2026-10-23: alleen handmatig tot het secret PUBLICATION_DENYLIST_B64 is gezet.
+# Zonder secret faalt de job (exit 2) op elke push en PR en kleurt main rood.
+# Na het zetten van het secret: push/pull_request-triggers hieronder terugzetten.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
