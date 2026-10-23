@@ -30,7 +30,7 @@ jobs:
               - 'package.json'
               - 'package-lock.json'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.changes.outputs.relevant == 'true'
         with:
           node-version: 22
@@ -73,7 +73,7 @@ jobs:
               - 'package.json'
               - 'package-lock.json'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.changes.outputs.relevant == 'true'
         with:
           node-version: 22
@@ -113,7 +113,7 @@ jobs:
               - 'package.json'
               - 'package-lock.json'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.changes.outputs.relevant == 'true'
         with:
           node-version: 22
