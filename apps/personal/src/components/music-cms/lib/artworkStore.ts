@@ -3,7 +3,21 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ArtworkAsset } from "./artworkModel";
 
 const db = supabase as unknown as SupabaseClient;
-const BUCKET = "music-artwork";
+
+// Binaries live in the private Cloudflare R2 bucket "music-artwork" (moved from
+// Supabase Storage on 2026-10-23). The artwork-sign edge function checks
+// is_admin() and returns short-lived signed URLs; keys are unchanged.
+type SignedUrl = { path: string; signedUrl: string };
+async function signArtwork(paths: string[], expires: number, download?: string): Promise<SignedUrl[]> {
+  const { data, error } = await db.functions.invoke("artwork-sign", { body: { paths, expires, download } });
+  if (error || !data || !Array.isArray((data as { urls?: unknown }).urls)) throw new Error("signing failed");
+  return (data as { urls: SignedUrl[] }).urls;
+}
+async function signOne(path: string, expires: number, download?: string): Promise<string> {
+  const [first] = await signArtwork([path], expires, download);
+  if (!first?.signedUrl) throw new Error("signing failed");
+  return first.signedUrl;
+}
 
 export async function listArtwork(): Promise<ArtworkAsset[]> {
   const { data: admin, error: authError } = await db.rpc("is_admin");
@@ -23,16 +37,14 @@ export async function listArtwork(): Promise<ArtworkAsset[]> {
 export async function previewUrls(assets: ArtworkAsset[]): Promise<Record<string, string>> {
   const paths = [...new Set(assets.flatMap(a => a.thumbnail_path ? [a.thumbnail_path] : []))];
   if (!paths.length) return {};
-  const { data, error } = await db.storage.from(BUCKET).createSignedUrls(paths, 900);
-  if (error) throw new Error("De previews konden niet worden geladen.");
-  return Object.fromEntries((data ?? []).filter(p => p.signedUrl && !p.error).map(p => [p.path, p.signedUrl]));
+  let data: SignedUrl[];
+  try { data = await signArtwork(paths, 900); } catch { throw new Error("De previews konden niet worden geladen."); }
+  return Object.fromEntries(data.filter(p => p.signedUrl).map(p => [p.path, p.signedUrl]));
 }
 
 export async function playbackUrl(asset: ArtworkAsset): Promise<string> {
   if (asset.media_type !== "video" || !asset.playback_path) throw new Error("Geen videopreview beschikbaar.");
-  const { data, error } = await db.storage.from(BUCKET).createSignedUrl(asset.playback_path, 3600);
-  if (error || !data) throw new Error("De video kon niet worden geladen. Probeer opnieuw.");
-  return data.signedUrl;
+  try { return await signOne(asset.playback_path, 3600); } catch { throw new Error("De video kon niet worden geladen. Probeer opnieuw."); }
 }
 
 export async function originalVideoBlob(asset: ArtworkAsset, onProgress?: (percent: number) => void): Promise<Blob> {
@@ -41,9 +53,9 @@ export async function originalVideoBlob(asset: ArtworkAsset, onProgress?: (perce
   const buffers: ArrayBuffer[] = [];
   let received = 0;
   for (const path of parts) {
-    const { data, error } = await db.storage.from(BUCKET).createSignedUrl(path, 300);
-    if (error || !data) throw new Error("Het originele bestand kon niet worden opgehaald.");
-    const response = await fetch(data.signedUrl);
+    let signedUrl: string;
+    try { signedUrl = await signOne(path, 300); } catch { throw new Error("Het originele bestand kon niet worden opgehaald."); }
+    const response = await fetch(signedUrl);
     if (!response.ok) throw new Error("Download onderbroken. Probeer opnieuw.");
     const buffer = await response.arrayBuffer();
     buffers.push(buffer); received += buffer.byteLength;
@@ -70,10 +82,10 @@ export async function downloadArtwork(asset: ArtworkAsset, onProgress?: (percent
     setTimeout(() => URL.revokeObjectURL(url), 60_000);
     return;
   }
-  const { data, error } = await db.storage.from(BUCKET).createSignedUrl(asset.storage_path, 60, { download: filename });
-  if (error || !data) throw new Error("De download kon niet worden gestart. Probeer opnieuw.");
+  let signedUrl: string;
+  try { signedUrl = await signOne(asset.storage_path, 60, filename); } catch { throw new Error("De download kon niet worden gestart. Probeer opnieuw."); }
   const link = document.createElement("a");
-  link.href = data.signedUrl;
+  link.href = signedUrl;
   link.rel = "noopener";
   link.download = filename;
   document.body.appendChild(link);
