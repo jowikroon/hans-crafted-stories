@@ -45,6 +45,7 @@
  *  24. Cloudflare-mirror: dist/_headers zet X-Robots-Tag noindex op *.pages.dev, nooit op het productiedomein
  *  25. app-routes (rewrites naar de homepage-snapshot) krijgen X-Robots-Tag noindex via vercel.json, en
  *      robots.txt blokkeert die paden niet voor zoekmachines en blokkeert nergens een publieke pagina
+ *  26. /writing/index en gokbare/oude URL's (/contact, /services, ...) zijn 308's naar bestaande pagina's
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
@@ -683,6 +684,42 @@ const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
   }
 }
 
+// 26. Redirects voor /writing/index en gokbare/oude URL's (2026-10-23): /writing/index gaf 200
+//     (homepage-snapshot via de /writing/:slug-rewrite, canonical "/") en /contact, /services enz.
+//     gaven 404. Elke bron hieronder heeft in vercel.json als EERSTE passende redirect (zonder
+//     host-/query-voorwaarde) een 308 naar de genoemde bestemming; de bestemming is een
+//     geprerenderde pagina (of dist-bestand), is zelf geen redirectbron (geen keten) en een #anker
+//     bestaat als id in die pagina. Bestemming wijzigen = deze tabel én vercel.json samen.
+{
+  const REQUIRED = [
+    ["/writing/index", "/writing"],
+    ["/en/writing/index", "/en/writing"],
+    ["/contact", "/about#contact"],
+    ["/services", "/"],
+    ["/hire", "/interim-ecommerce-manager"],
+    ["/amazon-specialist", "/amazon-nl-specialist"],
+    ["/bol-consultant", "/bol-com-consultant"],
+    ["/freelance-ecommerce-manager", "/interim-ecommerce-manager"],
+    ["/case-studies", "/work"],
+    ["/work/abs", "/work"],
+  ];
+  const plain = (vercelCfg.redirects || []).filter((r) => !r.has && !r.missing);
+  for (const [src, dest] of REQUIRED) {
+    const first = plain.find((r) => vercelSourceRegex(r.source).test(src));
+    if (!first) { failures.push(`vercel.json: geen redirect voor ${src} (verwacht 308 → ${dest}, guard 26)`); continue; }
+    if (first.destination !== dest) failures.push(`vercel.json: ${src} → ${first.destination} (eerste passende redirect "${first.source}"), verwacht ${dest} (guard 26)`);
+    if (first.permanent !== true || first.statusCode) failures.push(`vercel.json: redirect ${src} is niet permanent (verwacht 308, guard 26)`);
+    // Bestaan en keten op de bestemming die vercel.json echt serveert.
+    const [destPath, hash] = first.destination.split("#");
+    const isFile = /\.[a-z0-9]+$/i.test(destPath);
+    if (isFile ? !fs.existsSync(path.join(distDir, destPath.slice(1))) : !pageExistsG(destPath)) failures.push(`${src} → ${first.destination}: bestemming bestaat niet in dist (guard 26)`);
+    else if (hash && !fs.readFileSync(path.join(distDir, destPath === "/" ? "" : destPath.slice(1), "index.html"), "utf8").includes(`id="${hash}"`)) failures.push(`${src} → ${first.destination}: anker #${hash} ontbreekt in ${destPath} (guard 26)`);
+    const chained = plain.find((r) => vercelSourceRegex(r.source).test(destPath));
+    if (chained) failures.push(`${src} → ${first.destination}: bestemming is zelf redirectbron "${chained.source}" (keten, guard 26)`);
+    if (!isFile && pageExistsG(src)) failures.push(`${src}: is een geprerenderde pagina én redirectbron (guard 26)`);
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /en-pagina heeft een NL-tweeling en andersom.
 for (const route of seen) {
   if ((route === "/en" || route.startsWith("/en/")) && !route.startsWith("/en/writing/")) {
@@ -696,4 +733,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (24 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex/app-routes-noindex).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (25 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex/app-routes-noindex/redirects).`);

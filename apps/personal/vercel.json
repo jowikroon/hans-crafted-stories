@@ -205,6 +205,56 @@
       ],
       "destination": "/en/writing/:slug",
       "permanent": true
+    },
+    {
+      "source": "/writing/index",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/en/writing/index",
+      "destination": "/en/writing",
+      "permanent": true
+    },
+    {
+      "source": "/contact",
+      "destination": "/about#contact",
+      "permanent": true
+    },
+    {
+      "source": "/services",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/hire",
+      "destination": "/interim-ecommerce-manager",
+      "permanent": true
+    },
+    {
+      "source": "/amazon-specialist",
+      "destination": "/amazon-nl-specialist",
+      "permanent": true
+    },
+    {
+      "source": "/bol-consultant",
+      "destination": "/bol-com-consultant",
+      "permanent": true
+    },
+    {
+      "source": "/freelance-ecommerce-manager",
+      "destination": "/interim-ecommerce-manager",
+      "permanent": true
+    },
+    {
+      "source": "/case-studies",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/work/abs",
+      "destination": "/work",
+      "permanent": true
     }
   ],
   "trailingSlash": false,
