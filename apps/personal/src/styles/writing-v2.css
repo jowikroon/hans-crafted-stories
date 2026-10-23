@@ -430,7 +430,7 @@
 }
 
 .writing-v2 .post__thumb {
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 1200 / 630;
   border-radius: 12px;
   overflow: hidden;
   background: var(--w2-paper-2);
@@ -665,7 +665,9 @@
   position: relative;
   overflow: hidden;
   background: var(--w2-paper-2);
-  min-height: 280px;
+  min-height: 0;
+  align-self: center;
+  aspect-ratio: 1200 / 630;
 }
 
 .writing-v2 .feat__media img {
@@ -820,8 +822,8 @@
   }
 
   .writing-v2 .feat__media {
-    min-height: 200px;
-    aspect-ratio: 3 / 2;
+    min-height: 0;
+    aspect-ratio: 1200 / 630;
   }
 }
 
@@ -875,7 +877,7 @@
 }
 
 .writing-v2 .skel__thumb {
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 1200 / 630;
 }
 
 .writing-v2 .skel__line {

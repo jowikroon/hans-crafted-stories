@@ -134,7 +134,9 @@ function attr(header: string, key: string): string {
   const m = header.match(new RegExp(key + '=(?:"([^"]*)"|([^\\s]+))'));
   return (m ? (m[1] ?? m[2]) : "").trim();
 }
-function buildFigure(header: string, body: string[], autoNum: number, mask?: MaskCtx): string {
+function buildFigure(header: string, body: string[], autoNum: number, mask?: MaskCtx, lang: "nl" | "en" = "nl"): string {
+  const figLabel = lang === "en" ? "FIGURE" : "FIGUUR";
+  const ctxLabel = lang === "en" ? "View context" : "Bekijk context";
   const num = (attr(header, "num") || String(autoNum)).padStart(2, "0");
   const title = attr(header, "title");
   let caption = "", axis = "", xL = "", xR = "", note = "";
@@ -154,15 +156,15 @@ function buildFigure(header: string, body: string[], autoNum: number, mask?: Mas
     : "";
   const chartHtml = series.length ? lineChartSvg(series, axis, xL, xR) : "";
   const inlineBody = statsHtml || (chartHtml ? `<div class="fig__chartwrap">${chartHtml}</div>` : "");
-  const modalHtml = `<div class="figm"><div class="figm__k">FIGUUR ${num}</div>`
+  const modalHtml = `<div class="figm"><div class="figm__k">${figLabel} ${num}</div>`
     + (title ? `<h3 class="figm__t">${esc(title)}</h3>` : "")
     + (chartHtml ? `<div class="figm__chart">${chartHtml}</div>` : "")
     + (statsHtml && chartHtml ? statsHtml : "")
     + (note ? `<p class="figm__note">${inlineMd(note, mask)}</p>` : "")
     + `</div>`;
   return `<figure class="fig" data-fig="${num}">${inlineBody}`
-    + `<div class="fig__foot"><span class="fig__cap"><b>FIGUUR ${num}</b> ${inlineMd(caption, mask)}</span>`
-    + `<button type="button" class="fig__btn" data-fig-open="${num}">Bekijk context</button></div>`
+    + `<div class="fig__foot"><span class="fig__cap"><b>${figLabel} ${num}</b> ${inlineMd(caption, mask)}</span>`
+    + `<button type="button" class="fig__btn" data-fig-open="${num}">${ctxLabel}</button></div>`
     + `<div class="fig__modalsrc" id="figm-${num}" hidden>${modalHtml}</div></figure>`;
 }
 
@@ -254,7 +256,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl"
       flushList();
       const ialt = esc(imgm[1].trim());
       const isrc = imgm[2];
-      out.push(`<figure class="fig"><img src="${isrc}" alt="${ialt}" decoding="async" />${ialt ? `<figcaption>${ialt}</figcaption>` : ""}</figure>`);
+      out.push(`<figure class="fig"><img src="${isrc}" alt="${ialt}" loading="lazy" decoding="async" />${ialt ? `<figcaption>${ialt}</figcaption>` : ""}</figure>`);
       continue;
     }
 
@@ -293,7 +295,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl"
       let j = i + 1;
       for (; j < lines.length; j++) { if (lines[j].trim() === ":::") break; bodyLines.push(lines[j]); }
       i = j; // skip past closing :::
-      out.push(buildFigure(header, bodyLines, ++figCount, mask));
+      out.push(buildFigure(header, bodyLines, ++figCount, mask, lang));
       continue;
     }
 
@@ -658,8 +660,8 @@ const BlogPostPage = () => {
   });
   const catLine = post.category ? post.category : "Marketplace";
 
-  const shareTwitter = `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(displayTitle)}`;
-  const shareLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`;
+  const shareTwitter = `https://twitter.com/intent/tweet?url=${encodeURIComponent(seoUrl)}&text=${encodeURIComponent(displayTitle)}`;
+  const shareLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(seoUrl)}`;
 
   return (
     <div className="article-v2">
@@ -710,7 +712,7 @@ const BlogPostPage = () => {
 
         {/* Hero */}
         {showHero && (
-          <figure className="ahero"><img src={heroImage} alt={displayTitle} width={1200} height={630} /></figure>
+          <figure className="ahero"><img src={heroImage} alt={displayTitle} width={1200} height={630} decoding="async" {...{ fetchpriority: "high" }} /></figure>
         )}
 
         {/* Reading rail */}
