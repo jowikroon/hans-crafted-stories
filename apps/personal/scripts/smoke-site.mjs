@@ -5,7 +5,6 @@ const baseUrl = normalizeBaseUrl(process.env.SMOKE_BASE_URL || DEFAULT_BASE_URL)
 const canonicalBaseUrl = normalizeBaseUrl(process.env.SMOKE_CANONICAL_BASE_URL || DEFAULT_CANONICAL_BASE_URL);
 
 const blogSlugs = [
-  "freelance-e-commerce-manager-inhuren",
   "ux-unit-economics",
   "amazon-vs-bol-com-2026-nederland",
   "designing-with-llms",

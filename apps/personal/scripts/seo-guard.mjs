@@ -37,9 +37,16 @@
  *  21. directory-listings (2026-10-02, HAN-182): elke map in dist/ zónder eigen index.html maar mét
  *      geprerenderde kinderen (bv. /en na PR #388, /cases op 11-09) is een Vercel directory-listing
  *      (200 "Index of …", geen canonical/robots) tenzij vercel.json er een redirect voor heeft
+ *  22. GSC-vraagtermen (2026-10-05): NL-title en H1 van amazon-nl-specialist en interim-ecommerce-manager
+ *      bevatten de zoekvraag uit GSC ("amazon specialist", "e-commerce specialist")
  *  23. interne links in de juiste taal: /en-pagina linkt niet naar /writing/<slug> als de EN-versie
  *      bestaat, geen dode /en/writing-links, en elke /en-route heeft een inkomende link van een andere
  *      /en-pagina (HAN-184, 2026-10-14)
+ *  24. Cloudflare-mirror: dist/_headers zet X-Robots-Tag noindex op *.pages.dev, nooit op het productiedomein
+ *  25. app-routes (rewrites naar de homepage-snapshot) krijgen X-Robots-Tag noindex via vercel.json, en
+ *      robots.txt blokkeert die paden niet voor zoekmachines en blokkeert nergens een publieke pagina
+ *  26. /writing/index en gokbare/oude URL's (/contact, /services, ...) zijn 308's naar bestaande pagina's
+ *  27. dist/feed.xml is geldige RSS 2.0 met alle geprerenderde artikelen; /rss.xml is een 308 erheen
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
@@ -55,7 +62,7 @@ const BASE = "https://hansvanleeuwen.com";
 const failures = [];
 const seen = new Set();
 // Spiegel van LOCALIZED_ROUTES in src/lib/i18n/routes.ts: deze paden bestaan in NL (kaal) en EN (/en).
-const LOCALIZED_BASE = new Set(["/", "/about", "/work", "/work/connect-car-parts", "/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation", "/privacy", "/rates", "/writing"]);
+const LOCALIZED_BASE = new Set(["/", "/about", "/work", "/work/connect-car-parts", "/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation", "/webshopbeheerder-inhuren", "/privacy", "/rates", "/writing"]);
 
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -225,8 +232,8 @@ else {
 
 /* ───────────── 13. sjabloon-variatie tussen dienstenpagina's ───────────── */
 {
-  const pages = ["interim-ecommerce-manager", "amazon-nl-specialist", "bol-com-consultant", "ai-ecommerce-automation"];
-  // Reeksen die op ALLE vier pagina's staan zijn het bewuste gedeelde skelet (tarief, byline,
+  const pages = ["interim-ecommerce-manager", "amazon-nl-specialist", "bol-com-consultant", "ai-ecommerce-automation", "webshopbeheerder-inhuren"];
+  // Reeksen die op ALLE vijf pagina's staan zijn het bewuste gedeelde skelet (tarief, byline,
   // ervaring, cta) en tellen niet mee; reeksen die op 2 of 3 pagina's staan zijn kopieertekst.
   const N = 12, MAX_PAIRWISE = 10;
   const textOf = (file) => {
@@ -360,7 +367,7 @@ else {
     const t = titleOf(file);
     if (t !== null && /\b(inhuren|hire)\b/i.test(t)) failures.push(`${label}: homepage-<title> "${t}" bevat het intentwoord — dat hoort alleen op de dienstenpagina's (plan A.1, HAN-180)`);
   }
-  for (const slug of ["interim-ecommerce-manager", "bol-com-consultant", "amazon-nl-specialist", "ai-ecommerce-automation"]) {
+  for (const slug of ["interim-ecommerce-manager", "bol-com-consultant", "amazon-nl-specialist", "ai-ecommerce-automation", "webshopbeheerder-inhuren"]) {
     const t = titleOf(path.join(distDir, slug, "index.html"));
     if (t === null) failures.push(`${slug}/index.html ontbreekt (guard 19)`);
     else if (!/\binhuren\b/i.test(t)) failures.push(`${slug}: <title> "${t}" mist het intentwoord "inhuren" (plan A.1)`);
@@ -499,6 +506,32 @@ for (const route of seen) {
   }
 }
 
+// 22. GSC-vraagtermen (2026-10-05, plan A/B): GSC 28d (t/m 03-10) toonde dat Google voor
+//     "amazon specialist" (38 impr) en "e commerce specialist inhuren" (18 impr) de EN-pagina's koos en
+//     de NL-dienstpagina's op pos 41-43 liet staan, omdat die termen niet in de NL-title/H1 stonden.
+//     Regel: de prerender-<title> én de <h1> van deze NL-pagina's dragen de echte zoekvraag.
+{
+  const ENT = { "&amp;": "&", "&#x27;": "'", "&#39;": "'", "&quot;": '"' };
+  // Eén pass: geen dubbele unescape (CodeQL js/double-escaping, PR #391).
+  const dec = (t) => t.replace(/<[^>]+>/g, " ").replace(/&amp;|&#x27;|&#39;|&quot;/g, (m) => ENT[m]).replace(/\s+/g, " ").trim();
+  const targets = [
+    ["amazon-nl-specialist", /\bamazon specialist\b/i, "amazon specialist"],
+    ["interim-ecommerce-manager", /\be-commerce specialist\b/i, "e-commerce specialist"],
+  ];
+  for (const [slug, re, term] of targets) {
+    const file = path.join(distDir, slug, "index.html");
+    if (!fs.existsSync(file)) { failures.push(`${slug}/index.html ontbreekt (guard 22)`); continue; }
+    const html = fs.readFileSync(file, "utf8");
+    const t = dec((html.match(/<title>([\s\S]*?)<\/title>/) || [, ""])[1]);
+    const description = dec((html.match(/<meta name="description" content="([^"]*)"/) || [, ""])[1]);
+    if (t.length > 60) failures.push(`${slug}: title is ${t.length} tekens (max 60, guard 22)`);
+    if (description.length > 160) failures.push(`${slug}: meta description is ${description.length} tekens (max 160, guard 22)`);
+    const h = dec((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [, ""])[1]);
+    if (!re.test(t)) failures.push(`${slug}: <title> "${t}" mist GSC-vraagterm "${term}" (guard 22)`);
+    if (!re.test(h)) failures.push(`${slug}: <h1> "${h}" mist GSC-vraagterm "${term}" (guard 22)`);
+  }
+}
+
 // 23. Interne links in de juiste taal (2026-10-14, HAN-184/HAN-185-run): na Dutch-first (PR #396)
 //     linkten de EN-dienstpagina's nog naar de NL-artikelen (/writing/<slug>, label "(Dutch)") terwijl
 //     /en/writing/<slug> bestaat — Google vond /en/interim-ecommerce-manager daardoor alleen via hreflang
@@ -544,6 +577,185 @@ for (const route of seen) {
   if (warn23.length) console.warn(`[seo-guard] let op (guard 23a, data): ${warn23.length} NL-artikellink(s) in Engelse artikelteksten, werk blog_posts.content bij: ${warn23.slice(0, 10).join(" | ")}`);
 }
 
+// ── Hulpjes voor guards 24-27: vercel.json-source → RegExp (path-to-regexp-subset dat vercel.json
+//    gebruikt, nagemeten met @vercel/routing-utils) en robots.txt-matching volgens RFC 9309. ──
+const appDirG = path.resolve(distDir, "..");
+const vercelCfg = (() => {
+  try { return JSON.parse(fs.readFileSync(path.join(appDirG, "vercel.json"), "utf8")); }
+  catch (e) { failures.push(`guards 24-27: vercel.json onleesbaar (${e.message})`); return { redirects: [], rewrites: [], headers: [] }; }
+})();
+function vercelSourceRegex(src) {
+  let re = "";
+  for (let i = 0; i < src.length;) {
+    const rest = src.slice(i);
+    const param = /^\/:([A-Za-z0-9_]+)([*+?])?/.exec(rest);
+    if (param) { re += param[2] === "*" ? "(?:/.*)?" : param[2] === "+" ? "/.+" : param[2] === "?" ? "(?:/[^/]+)?" : "/[^/]+"; i += param[0].length; continue; }
+    const group = /^\((?:[^()\\]|\\.)*\)/.exec(rest);
+    if (group) { re += `(?:${group[0].slice(1, -1)})`; i += group[0].length; continue; }
+    re += src[i].replace(/[.+?^${}|[\]\\*]/g, "\\$&");
+    i += 1;
+  }
+  return new RegExp(`^${re}$`);
+}
+// Concrete voorbeeldpaden uit een source: (a|b) wordt elk alternatief, :param en (.*) worden "x".
+function expandSource(src) {
+  const alt = /\(([A-Za-z0-9_-]+(?:\|[A-Za-z0-9_-]+)+)\)/.exec(src);
+  if (alt) return alt[1].split("|").flatMap((a) => expandSource(src.slice(0, alt.index) + a + src.slice(alt.index + alt[0].length)));
+  return [src.replace(/:[A-Za-z0-9_]+[*+?]?/g, "x").replace(/\(\.\*\)/g, "x")];
+}
+const pageExistsG = (route) => fs.existsSync(route === "/" ? path.join(distDir, "index.html") : path.join(distDir, route.slice(1), "index.html"));
+const robotsHeaderRules = (vercelCfg.headers || [])
+  .filter((h) => (h.headers || []).some((x) => x.key.toLowerCase() === "x-robots-tag" && /\bnoindex\b/i.test(x.value)))
+  .map((h) => vercelSourceRegex(h.source));
+const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
+
+// 24. Cloudflare Pages-mirror noindex (2026-10-23): hansvanleeuwen.pages.dev gaf 200 met
+//     "index, follow" (canonical wees wel naar .com) = een tweede kopie van de site in de indexpool.
+//     dist/_headers (Cloudflare leest het, Vercel negeert het) moet voor de pages.dev-host én de
+//     preview-hosts X-Robots-Tag: noindex zetten, en mag dat nergens voor het productiedomein doen.
+{
+  const file = path.join(distDir, "_headers");
+  if (!fs.existsSync(file)) failures.push("dist/_headers ontbreekt: de Cloudflare-mirror krijgt geen noindex (guard 24)");
+  else {
+    const rules = new Map();
+    let current = null;
+    for (const line of fs.readFileSync(file, "utf8").split("\n")) {
+      const t = line.trim();
+      if (!t || t.startsWith("#")) continue;
+      if (!/^\s/.test(line)) { current = t; if (!rules.has(t)) rules.set(t, []); continue; }
+      if (current) rules.get(current).push(t);
+    }
+    const isNoindex = (h) => /^x-robots-tag:\s*.*\bnoindex\b/i.test(h);
+    for (const pat of ["https://:project.pages.dev/*", "https://:version.:project.pages.dev/*"]) {
+      if (!(rules.get(pat) || []).some(isNoindex)) failures.push(`dist/_headers: geen "X-Robots-Tag: noindex" onder ${pat}: de Cloudflare-mirror is indexeerbaar (guard 24)`);
+    }
+    for (const [pat, hs] of rules) {
+      if (!/\.pages\.dev\//.test(pat) && hs.some(isNoindex)) failures.push(`dist/_headers: regel "${pat}" zet noindex buiten pages.dev, dus ook op hansvanleeuwen.com (guard 24)`);
+    }
+  }
+}
+
+// 25. Privé app-routes (2026-10-23): /god-structure, /portal, /samantha, /write enz. vallen via een
+//     rewrite terug op de homepage-snapshot (200, "index, follow", canonical "/") en stonden in
+//     robots.txt op Disallow, zodat Google een noindex nooit kon lezen. Regels:
+//     a. elke rewrite naar /index.html (behalve /writing/:slug en /en/writing/:slug, die geprerenderd
+//        zijn) plus de vaste lijst hieronder krijgt X-Robots-Tag noindex via vercel.json headers;
+//     b. geen geprerenderde publieke pagina krijgt die header;
+//     c. robots.txt: zoekmachinegroepen (Googlebot, Bingbot, *) blokkeren geen enkel noindex-pad
+//        (anders is de noindex onleesbaar) en géén groep blokkeert een geprerenderde publieke pagina
+//        (Disallow-regels zijn prefixen: een te korte regel neemt publieke paden mee).
+{
+  const samples = new Set(["/god-structure", "/portal", "/portal/notes", "/samantha", "/write", "/write/x", "/dashboards", "/dashboards/x", "/bijlagen", "/blog-cms/voice/x", "/music-cms", "/release-set", "/wiki", "/muziek/artist-radar", "/extensions/x"]);
+  for (const rw of vercelCfg.rewrites || []) {
+    if (rw.destination !== "/index.html") continue;
+    for (const p of expandSource(rw.source)) if (!/^\/(en\/)?writing\//.test(p)) samples.add(p);
+  }
+  for (const p of samples) if (!noindexByHeader(p)) failures.push(`vercel.json: ${p} (app-route, serveert de homepage-snapshot) krijgt geen X-Robots-Tag noindex (guard 25a)`);
+  for (const route of seen) if (noindexByHeader(route)) failures.push(`vercel.json: publieke pagina ${route} krijgt X-Robots-Tag noindex (guard 25b)`);
+
+  const robotsFile = path.join(distDir, "robots.txt");
+  if (!fs.existsSync(robotsFile)) failures.push("dist/robots.txt ontbreekt (guard 25c)");
+  else {
+    const groups = [];
+    let g = null, lastWasAgent = false;
+    for (const raw of fs.readFileSync(robotsFile, "utf8").split("\n")) {
+      const line = raw.replace(/#.*/, "").trim();
+      const m = /^([A-Za-z-]+)\s*:\s*(.*)$/.exec(line);
+      if (!m) continue;
+      const key = m[1].toLowerCase(), val = m[2].trim();
+      if (key === "user-agent") { if (!lastWasAgent) { g = { agents: [], rules: [] }; groups.push(g); } g.agents.push(val.toLowerCase()); lastWasAgent = true; continue; }
+      lastWasAgent = false;
+      if (g && (key === "allow" || key === "disallow") && val) g.rules.push({ allow: key === "allow", path: val });
+    }
+    const ruleRe = (p) => new RegExp("^" + p.replace(/[.+?^{}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\\?\$$/, "$").replace(/\$(?!$)/g, "\\$"));
+    // RFC 9309: langste match wint, bij gelijke lengte wint Allow.
+    const blocked = (grp, p) => {
+      let best = null;
+      for (const r of grp.rules) if (ruleRe(r.path).test(p) && (!best || r.path.length > best.path.length || (r.path.length === best.path.length && r.allow))) best = r;
+      return Boolean(best && !best.allow);
+    };
+    const publicRoutes = [...seen, "/writing/x", "/en/writing/x"];
+    for (const grp of groups) {
+      const who = grp.agents.join(", ");
+      for (const p of publicRoutes) if (blocked(grp, p)) failures.push(`robots.txt [${who}]: blokkeert publieke pagina ${p} (guard 25c)`);
+      if (grp.agents.some((a) => a === "*" || a === "googlebot" || a === "bingbot")) {
+        for (const p of samples) if (blocked(grp, p)) failures.push(`robots.txt [${who}]: Disallow op ${p}, daardoor kan de zoekmachine de X-Robots-Tag noindex nooit lezen (guard 25c)`);
+      }
+    }
+  }
+}
+
+// 26. Redirects voor /writing/index en gokbare/oude URL's (2026-10-23): /writing/index gaf 200
+//     (homepage-snapshot via de /writing/:slug-rewrite, canonical "/") en /contact, /services enz.
+//     gaven 404. Elke bron hieronder heeft in vercel.json als EERSTE passende redirect (zonder
+//     host-/query-voorwaarde) een 308 naar de genoemde bestemming; de bestemming is een
+//     geprerenderde pagina (of dist-bestand), is zelf geen redirectbron (geen keten) en een #anker
+//     bestaat als id in die pagina. Bestemming wijzigen = deze tabel én vercel.json samen.
+{
+  const REQUIRED = [
+    ["/writing/index", "/writing"],
+    ["/en/writing/index", "/en/writing"],
+    ["/contact", "/about#contact"],
+    ["/services", "/"],
+    ["/hire", "/interim-ecommerce-manager"],
+    ["/amazon-specialist", "/amazon-nl-specialist"],
+    ["/bol-consultant", "/bol-com-consultant"],
+    // Zelfde inhuurintentie als /writing/freelance-e-commerce-manager-inhuren (HAN-188, PR #419).
+    ["/freelance-ecommerce-manager", "/webshopbeheerder-inhuren"],
+    ["/case-studies", "/work"],
+    ["/work/abs", "/work"],
+    ["/rss.xml", "/feed.xml"],
+  ];
+  const plain = (vercelCfg.redirects || []).filter((r) => !r.has && !r.missing);
+  for (const [src, dest] of REQUIRED) {
+    const first = plain.find((r) => vercelSourceRegex(r.source).test(src));
+    if (!first) { failures.push(`vercel.json: geen redirect voor ${src} (verwacht 308 → ${dest}, guard 26)`); continue; }
+    if (first.destination !== dest) failures.push(`vercel.json: ${src} → ${first.destination} (eerste passende redirect "${first.source}"), verwacht ${dest} (guard 26)`);
+    if (first.permanent !== true || first.statusCode) failures.push(`vercel.json: redirect ${src} is niet permanent (verwacht 308, guard 26)`);
+    // Bestaan en keten op de bestemming die vercel.json echt serveert.
+    const [destPath, hash] = first.destination.split("#");
+    const isFile = /\.[a-z0-9]+$/i.test(destPath);
+    if (isFile ? !fs.existsSync(path.join(distDir, destPath.slice(1))) : !pageExistsG(destPath)) failures.push(`${src} → ${first.destination}: bestemming bestaat niet in dist (guard 26)`);
+    else if (hash && !fs.readFileSync(path.join(distDir, destPath === "/" ? "" : destPath.slice(1), "index.html"), "utf8").includes(`id="${hash}"`)) failures.push(`${src} → ${first.destination}: anker #${hash} ontbreekt in ${destPath} (guard 26)`);
+    const chained = plain.find((r) => vercelSourceRegex(r.source).test(destPath));
+    if (chained) failures.push(`${src} → ${first.destination}: bestemming is zelf redirectbron "${chained.source}" (keten, guard 26)`);
+    if (!isFile && pageExistsG(src)) failures.push(`${src}: is een geprerenderde pagina én redirectbron (guard 26)`);
+  }
+}
+
+// 27. RSS-feed (2026-10-23): /feed.xml en /rss.xml gaven 404. dist/feed.xml is geldige RSS 2.0, bevat
+//     precies de geprerenderde primaire artikelpagina's (/writing/<slug>), elk item linkt naar een
+//     bestaande pagina, en de head van de homepage verwijst ernaar (rel=alternate).
+{
+  const feedFile = path.join(distDir, "feed.xml");
+  if (!fs.existsSync(feedFile)) failures.push("dist/feed.xml ontbreekt (prerender schrijft de RSS-feed niet meer, guard 27)");
+  else {
+    const xmlText = fs.readFileSync(feedFile, "utf8");
+    try {
+      const { JSDOM } = createRequire(import.meta.url)("jsdom");
+      const doc = new JSDOM(xmlText, { contentType: "application/xml" }).window.document;
+      if (doc.getElementsByTagName("parsererror").length) throw new Error("parsererror");
+      const rss = doc.documentElement;
+      if (rss.nodeName !== "rss" || rss.getAttribute("version") !== "2.0") failures.push("feed.xml: geen <rss version=\"2.0\"> (guard 27)");
+      const links = [...doc.querySelectorAll("channel > item > link")].map((l) => l.textContent.trim());
+      const items = doc.querySelectorAll("channel > item").length;
+      if (links.length !== items) failures.push(`feed.xml: ${items - links.length} item(s) zonder <link> (guard 27)`);
+      for (const l of links) {
+        if (!l.startsWith(`${BASE}/`)) { failures.push(`feed.xml: item-link ${l} niet op ${BASE} (guard 27)`); continue; }
+        if (!pageExistsG(l.slice(BASE.length))) failures.push(`feed.xml: item-link ${l} heeft geen geprerenderde pagina (guard 27)`);
+      }
+      const articles = [...seen].filter((r) => /^\/writing\/[^/]+$/.test(r)).map((r) => `${BASE}${r}`);
+      const missing = articles.filter((a) => !links.includes(a));
+      if (missing.length) failures.push(`feed.xml: ${missing.length} geprerenderd(e) artikel(en) ontbreken in de feed, bv. ${missing.slice(0, 3).join(", ")} (guard 27)`);
+      if (!articles.length) failures.push("feed.xml: geen geprerenderde artikelen gevonden om tegen te controleren (guard 27)");
+    } catch (e) {
+      failures.push(`feed.xml: geen geldige XML (${e.message}, guard 27)`);
+    }
+    const home = fs.readFileSync(path.join(distDir, "index.html"), "utf8");
+    if (!/<link rel="alternate" type="application\/rss\+xml"[^>]*href="https:\/\/hansvanleeuwen\.com\/feed\.xml"/.test(home)) failures.push("index.html: geen <link rel=\"alternate\" type=\"application/rss+xml\"> naar /feed.xml (guard 27)");
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /en-pagina heeft een NL-tweeling en andersom.
 for (const route of seen) {
   if ((route === "/en" || route.startsWith("/en/")) && !route.startsWith("/en/writing/")) {
@@ -557,4 +769,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (22 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/taal-van-interne-links).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (26 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex/app-routes-noindex/redirects/rss-feed).`);

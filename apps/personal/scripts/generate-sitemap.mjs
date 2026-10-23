@@ -37,6 +37,7 @@ const LOCALIZED = [
   { path: "/bol-com-consultant", changefreq: "monthly", priority: "0.9" },
   { path: "/interim-ecommerce-manager", changefreq: "monthly", priority: "0.9" },
   { path: "/ai-ecommerce-automation", changefreq: "monthly", priority: "0.9" },
+  { path: "/webshopbeheerder-inhuren", changefreq: "monthly", priority: "0.9" },
   { path: "/rates", changefreq: "monthly", priority: "0.8" },
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
   // Artikelenindex in beide talen sinds 2026-09-22 (/writing NL, /en/writing EN).
@@ -67,14 +68,12 @@ const STATIC_ROUTES = [
 
 async function fetchPublishedPosts() {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.warn("[sitemap] Supabase env missing — static routes only");
-    return [];
+    throw new Error("[sitemap] Supabase env missing; refusing incomplete sitemap");
   }
   const url = `${SUPABASE_URL}/rest/v1/blog_posts?select=slug,updated_at,canonical_url&status=eq.published&published=eq.true&order=updated_at.desc`;
   const res = await fetch(url, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } });
   if (!res.ok) {
-    console.warn(`[sitemap] Supabase fetch failed (${res.status}) — static routes only`);
-    return [];
+    throw new Error(`[sitemap] Supabase fetch failed (${res.status}); refusing incomplete sitemap`);
   }
   return res.json();
 }
@@ -106,8 +105,25 @@ const articleAlternates = (pair) => [
 ];
 const today = new Date().toISOString().slice(0, 10);
 
+// Gebruik de inhoudelijke revisiedatum uit de prerender, ook per taalversie.
+// Een nieuwe build verandert de lastmod van een ongewijzigde dienstpagina niet.
+function staticLastmod(loc) {
+  const route = new URL(loc).pathname;
+  const file = path.join(appDir, "dist", route, "index.html");
+  if (!fs.existsSync(file)) return today;
+  const html = fs.readFileSync(file, "utf8");
+  for (const match of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+    const data = JSON.parse(match[1]);
+    const graph = data["@graph"] || [data];
+    if (!graph.some((item) => item["@type"] === "Service")) continue;
+    const page = graph.find((item) => item["@type"] === "WebPage" && item.url === loc);
+    if (page?.dateModified) return iso(page.dateModified);
+  }
+  return today;
+}
+
 const urls = [
-  ...STATIC_ROUTES.map((r) => ({ ...r, lastmod: (r.loc === `${BASE}/writing` || r.loc === `${BASE}/en/writing`) && posts[0] ? iso(posts[0].updated_at) : today })),
+  ...STATIC_ROUTES.map((r) => ({ ...r, lastmod: (r.loc === `${BASE}/writing` || r.loc === `${BASE}/en/writing`) && posts[0] ? iso(posts[0].updated_at) : staticLastmod(r.loc) })),
   ...posts
     // External canonicals point elsewhere; keep only self-canonical posts in our sitemap
     .filter((p) => !p.canonical_url || p.canonical_url.startsWith(BASE))

@@ -41,7 +41,7 @@
     },
     {
       "source": "/writing/freelance-e-commerce-manager-inhuren",
-      "destination": "/writing/waarom-marketplace-listings-niet-converteren",
+      "destination": "/webshopbeheerder-inhuren",
       "permanent": true
     },
     {
@@ -205,6 +205,61 @@
       ],
       "destination": "/en/writing/:slug",
       "permanent": true
+    },
+    {
+      "source": "/writing/index",
+      "destination": "/writing",
+      "permanent": true
+    },
+    {
+      "source": "/en/writing/index",
+      "destination": "/en/writing",
+      "permanent": true
+    },
+    {
+      "source": "/contact",
+      "destination": "/about#contact",
+      "permanent": true
+    },
+    {
+      "source": "/services",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/hire",
+      "destination": "/interim-ecommerce-manager",
+      "permanent": true
+    },
+    {
+      "source": "/amazon-specialist",
+      "destination": "/amazon-nl-specialist",
+      "permanent": true
+    },
+    {
+      "source": "/bol-consultant",
+      "destination": "/bol-com-consultant",
+      "permanent": true
+    },
+    {
+      "source": "/freelance-ecommerce-manager",
+      "destination": "/webshopbeheerder-inhuren",
+      "permanent": true
+    },
+    {
+      "source": "/case-studies",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/work/abs",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "/feed.xml",
+      "permanent": true
     }
   ],
   "trailingSlash": false,
@@ -252,7 +307,25 @@
   ],
   "headers": [
     {
-      "source": "/bijlagen",
+      "source": "/(portal|bijlagen|wiki|god-structure|samantha|release-set|music-cms|write|dashboards|blog-cms|auth|extensions|cowork|empire)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(portal|bijlagen|wiki|god-structure|samantha|release-set|music-cms|write|dashboards|blog-cms|auth|extensions|cowork|empire)/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/muziek/artist-radar",
       "headers": [
         {
           "key": "X-Robots-Tag",
@@ -302,6 +375,19 @@
     {
       "source": "/(robots.txt|sitemap.xml|llms.txt)",
       "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/feed.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/rss+xml; charset=utf-8"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600"

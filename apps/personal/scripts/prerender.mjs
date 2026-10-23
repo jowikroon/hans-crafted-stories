@@ -41,8 +41,10 @@ if (!fs.existsSync(templatePath)) {
 let template = fs.readFileSync(templatePath, "utf8");
 
 // Load server bundle (built with vite build --ssr src/entry-server.tsx)
-const entryJs = path.join(distDir, "entry-server.js");
-const entryMjs = path.join(distDir, "entry-server.mjs");
+// SSR-bundle staat in dist-ssr/ (niet in de publieke output dist/).
+const ssrDir = path.resolve(__dirname, "..", "dist-ssr");
+const entryJs = path.join(ssrDir, "entry-server.js");
+const entryMjs = path.join(ssrDir, "entry-server.mjs");
 const entryPath = fs.existsSync(entryMjs) ? entryMjs : fs.existsSync(entryJs) ? entryJs : null;
 if (!entryPath) {
   console.error("[prerender] dist/entry-server.js or .mjs not found. Run: vite build --ssr src/entry-server.tsx");
@@ -59,6 +61,7 @@ const {
   clearRootHtml,
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
+  buildRssFeed,
   detectBlogPostLang,
   primaryBlogPostLang,
   localizeBlogPost,
@@ -537,6 +540,20 @@ for (const [slug, blogPost] of postBySlug) {
 fs.writeFileSync(path.join(distDir, "article-pairs.json"), JSON.stringify(articlePairs, null, 1), "utf8");
 console.log(`[prerender] ${articlePairs.length} artikelparen NL/EN -> dist/article-pairs.json`);
 
+// RSS-feed (2026-10-23): /feed.xml uit precies de artikelen die hierboven als pagina zijn geschreven,
+// in hun primaire taal. Kanaaltitel en -beschrijving = de /writing-head (translations.nl.seo).
+// /rss.xml is een 308 hierheen (vercel.json). Guard 27.
+{
+  const feed = buildRssFeed([...postBySlug.values()], {
+    title: translations.nl.seo.writingTitle,
+    description: translations.nl.seo.writingDescription,
+    link: `${BASE}/writing`,
+    language: "nl",
+  });
+  fs.writeFileSync(path.join(distDir, "feed.xml"), feed, "utf8");
+  console.log(`[prerender] feed.xml: ${postBySlug.size} artikelen -> ${path.join(distDir, "feed.xml")}`);
+}
+
 /* ───────────────────────────── / (home) ───────────────────────────── */
 {
   // Eén bron voor de homepage-<title>/description: translations[lang].seo (zelfde als useSEO in
@@ -702,7 +719,7 @@ for (const def of SERVICE_PAGES) {
           isPartOf: { "@id": `${BASE}/#website` },
           about: { "@id": `${BASE}/#person` },
           author: { "@id": `${BASE}/#person` },
-          dateModified: SERVICE_PAGES_UPDATED,
+          dateModified: def.copy[lang].updated,
           inLanguage: lang,
         },
         {

@@ -1,5 +1,5 @@
 /**
- * Eén bron van waarheid voor de vier dienstenpagina's, in beide talen.
+ * Eén bron van waarheid voor de vijf dienstenpagina's, in beide talen.
  * Gebruikt door de React-pagina's (components/ServicePage.tsx) én door
  * scripts/prerender.mjs (via entry-server), zodat title, meta, FAQ en
  * bewijscijfers nooit meer uit elkaar lopen tussen head en body.
@@ -39,6 +39,8 @@ export interface PricingModel {
 }
 
 export interface ServicePageCopy {
+  /** Laatste inhoudelijke revisie van deze pagina in deze taal. */
+  updated: string;
   title: string;
   metaDesc: string;
   breadcrumb: string;
@@ -79,7 +81,7 @@ export interface ServicePageDef {
 }
 
 /** Datum van de laatste inhoudelijke revisie; zichtbaar op elke dienstenpagina. */
-export const SERVICE_PAGES_UPDATED = "2026-10-11";
+export const SERVICE_PAGES_UPDATED = "2026-10-15";
 
 const BYLINE = {
   nl: {
@@ -139,6 +141,7 @@ const RELATED = {
     amazon: { href: "/amazon-nl-specialist", label: "Amazon NL specialist" },
     bol: { href: "/bol-com-consultant", label: "Bol.com consultant" },
     ai: { href: "/ai-ecommerce-automation", label: "AI e-commerce automatisering" },
+    webshop: { href: "/webshopbeheerder-inhuren", label: "Webshopbeheerder inhuren" },
     work: { href: "/work", label: "Case studies" },
     about: { href: "/about", label: "Over Hans" },
   },
@@ -147,6 +150,7 @@ const RELATED = {
     amazon: { href: "/amazon-nl-specialist", label: "Amazon NL specialist" },
     bol: { href: "/bol-com-consultant", label: "Bol.com consultant" },
     ai: { href: "/ai-ecommerce-automation", label: "AI e-commerce automation" },
+    webshop: { href: "/webshopbeheerder-inhuren", label: "Webshop manager" },
     work: { href: "/work", label: "Case studies" },
     about: { href: "/about", label: "About Hans" },
   },
@@ -186,15 +190,16 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "briefcase",
     copy: {
       nl: {
-        title: "Interim E-commerce Manager inhuren | Hans van Leeuwen",
+        updated: SERVICE_PAGES_UPDATED,
+        title: "Interim e-commerce manager | E-commerce specialist inhuren",
         metaDesc:
-          "Interim e-commerce manager inhuren voor Amazon NL/DE en Bol.com. 10+ jaar, 70% marktaandeel (Nielsen), €2M+ marketplace-omzet beheerd. Amersfoort, NL/EU.",
+          "Interim e-commerce manager of e-commerce specialist inhuren voor Amazon NL/DE en Bol.com. 10+ jaar ervaring, €2M+ marketplace-omzet beheerd. Amersfoort.",
         breadcrumb: "Interim E-commerce Manager",
         eyebrow: "Interim & freelance",
-        h1: "Interim e-commerce manager inhuren",
+        h1: "Interim e-commerce manager en e-commerce specialist inhuren",
         subtitle: "Tijdelijke leiding over je marketplace-operatie: strategie, uitvoering en overdracht",
         intro:
-          "Ik ben Hans van Leeuwen, interim e-commerce manager uit Amersfoort. Ik neem tijdelijk de leiding over je Amazon- en Bol.com-operatie wanneer je manager vertrekt, je groei sneller gaat dan je team, of je een nieuw kanaal opent. Bij Alpine Hearing Protection bouwde ik als marketplace manager de oordoppencategorie op Amazon NL uit tot 70% marktaandeel (Nielsen, 2023) en bracht ik het out-of-stockpercentage onder de 2%; bij Connect Car Parts koppelde ik eBay, Amazon en Bol.com tot één operatie. In totaal stuurde ik meer dan €2 miljoen marketplace-omzet en teams van 6+ FTE aan.",
+          "Ik ben Hans van Leeuwen, interim e-commerce manager en freelance e-commerce specialist uit Amersfoort. Zoek je tijdelijk e-commerce personeel met senior ervaring in plaats van een vaste medewerker, dan neem ik tijdelijk de leiding over je Amazon- en Bol.com-operatie wanneer je manager vertrekt, je groei sneller gaat dan je team, of je een nieuw kanaal opent. Bij Alpine Hearing Protection bouwde ik als marketplace manager de oordoppencategorie op Amazon NL uit tot 70% marktaandeel (Nielsen, 2023) en bracht ik het out-of-stockpercentage onder de 2%; bij Connect Car Parts koppelde ik eBay, Amazon en Bol.com tot één operatie. In totaal stuurde ik meer dan €2 miljoen marketplace-omzet en teams van 6+ FTE aan.",
         whenHeading: "Wanneer je een interim e-commerce manager inschakelt",
         when: [
           "Je e-commerce manager is vertrokken en de marketplace-operatie mag niet stilvallen tijdens de werving",
@@ -203,6 +208,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
           "Je wilt van vendor naar seller op Bol.com zonder je performancescore te verliezen",
           "Je hebt stockouts, Buy Box-verlies en geen forecast die het voorkomt",
           "Je team heeft de handen vol en de rapportage naar directie blijft achter",
+          "Je zoekt een e-commerce specialist of tijdelijke e-commerce medewerker die zonder inwerktijd meedraait",
         ],
         servicesHeading: "Wat ik als interim lead oppak",
         services: [
@@ -272,9 +278,10 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ctaHeading: "Tijdelijk een e-commerce lead nodig?",
         ctaText: "Plan een kennismaking van 30 minuten. Je krijgt binnen één werkdag een schriftelijke offerte. Vrijblijvend.",
         ctaButton: "Plan een kennismaking",
-        related: [RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.ai, RELATED.nl.work],
+        related: [RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.ai, RELATED.nl.webshop, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Interim E-commerce Manager (NL/EU) | Hans van Leeuwen",
         metaDesc:
           "Hire an interim e-commerce manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen), €2M+ marketplace revenue managed. Amersfoort.",
@@ -361,7 +368,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ctaHeading: "Need a temporary e-commerce lead?",
         ctaText: "Book a 30-minute intro call. You receive a written quote within one working day. No obligation.",
         ctaButton: "Book an intro call",
-        related: [RELATED.en.amazon, RELATED.en.bol, RELATED.en.ai, RELATED.en.work],
+        related: [RELATED.en.amazon, RELATED.en.bol, RELATED.en.ai, RELATED.en.webshop, RELATED.en.work],
       },
     },
   },
@@ -373,12 +380,13 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "cart",
     copy: {
       nl: {
-        title: "Amazon NL Specialist inhuren | Hans van Leeuwen",
+        updated: SERVICE_PAGES_UPDATED,
+        title: "Amazon specialist inhuren (NL/DE) | Hans van Leeuwen",
         metaDesc:
-          "Freelance Amazon NL specialist inhuren: listings, A+ Content, Amazon Ads en Buy Box voor Amazon.nl en Amazon.de. 70% categoriemarktaandeel (Nielsen 2023).",
+          "Freelance Amazon specialist inhuren: listings, A+ Content, Amazon Ads en Buy Box voor Amazon.nl en Amazon.de. 70% categoriemarktaandeel (Nielsen 2023).",
         breadcrumb: "Amazon NL Specialist",
         eyebrow: "Amazon Nederland & Duitsland",
-        h1: "Amazon NL specialist inhuren",
+        h1: "Amazon specialist inhuren voor Amazon.nl en Amazon.de",
         subtitle: "Freelance Amazon-accountmanager voor listings, advertising, Buy Box en voorraad",
         intro:
           "Ik ben Hans van Leeuwen, freelance Amazon-specialist uit Amersfoort. Ik beheer en laat Amazon.nl- en Amazon.de-accounts groeien voor merken die geen fulltime specialist in huis hebben. Voor Alpine Hearing Protection was Amazon NL vier jaar mijn dagelijkse werk: de oordoppencategorie groeide daar naar een marktaandeel van 70% (Nielsen, 2023), de Buy Box werd rustiger door prijsafstemming met de B2B-kanalen en A/B-tests op de productafbeeldingen tilden de conversie. Bij Connect Car Parts run ik nu een catalogus remonderdelen op Amazon DE naast eBay DE en Bol.com.",
@@ -452,9 +460,10 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ctaHeading: "Klaar om te groeien op Amazon Nederland?",
         ctaText: "Vraag de gratis 7-punts Amazon NL-audit aan. Binnen 48 uur weet je waar de grootste groeikansen zitten.",
         ctaButton: "Vraag de audit aan",
-        related: [RELATED.nl.bol, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.work],
+        related: [RELATED.nl.bol, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.webshop, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Amazon NL Specialist & Account Manager | Hans van Leeuwen",
         metaDesc:
           "Freelance Amazon NL specialist for hire: listings, A+ Content, Amazon Ads and Buy Box on Amazon.nl and Amazon.de. 70% category share (Nielsen 2023).",
@@ -534,7 +543,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ctaHeading: "Ready to grow on Amazon Netherlands?",
         ctaText: "Request the free 7-point Amazon NL audit. Within 48 hours you know where the biggest growth opportunities are.",
         ctaButton: "Request the audit",
-        related: [RELATED.en.bol, RELATED.en.interim, RELATED.en.ai, RELATED.en.work],
+        related: [RELATED.en.bol, RELATED.en.interim, RELATED.en.ai, RELATED.en.webshop, RELATED.en.work],
       },
     },
   },
@@ -546,6 +555,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "store",
     copy: {
       nl: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Bol.com Consultant & Ads inhuren | Hans van Leeuwen",
         metaDesc:
           "Freelance Bol.com consultant inhuren voor content, Bol Ads, Buy Block en vendor-naar-seller. Zelf een Bol.com-sellerkanaal gelanceerd bij Alpine Hearing.",
@@ -631,9 +641,10 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ctaHeading: "Groeien op Bol.com?",
         ctaText: "Vraag een Bol.com-audit aan. Je krijgt de grootste kansen op een rij, plus een schriftelijke offerte binnen één werkdag.",
         ctaButton: "Vraag de audit aan",
-        related: [RELATED.nl.amazon, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.work],
+        related: [RELATED.nl.amazon, RELATED.nl.interim, RELATED.nl.ai, RELATED.nl.webshop, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "Bol.com Consultant & Ads Specialist | Hans van Leeuwen",
         metaDesc:
           "Freelance Bol.com consultant for content, Bol Ads, Buy Block and vendor-to-seller transitions. Launched a Bol.com seller channel at Alpine Hearing.",
@@ -719,7 +730,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ctaHeading: "Growing on Bol.com?",
         ctaText: "Request a Bol.com audit. You get the biggest opportunities listed, plus a written quote within one working day.",
         ctaButton: "Request the audit",
-        related: [RELATED.en.amazon, RELATED.en.interim, RELATED.en.ai, RELATED.en.work],
+        related: [RELATED.en.amazon, RELATED.en.interim, RELATED.en.ai, RELATED.en.webshop, RELATED.en.work],
       },
     },
   },
@@ -731,6 +742,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
     icon: "bot",
     copy: {
       nl: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "AI E-commerce Automation inhuren | Hans van Leeuwen",
         metaDesc:
           "Freelance AI e-commerce automation specialist: productdata, orders, ads en rapportage voor Amazon en Bol.com geautomatiseerd met n8n, Supabase en Claude.",
@@ -813,6 +825,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         related: [RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.interim, RELATED.nl.work],
       },
       en: {
+        updated: SERVICE_PAGES_UPDATED,
         title: "AI E-commerce Automation Specialist | Hans van Leeuwen",
         metaDesc:
           "Freelance AI e-commerce automation specialist: product data, orders, ads and reporting for Amazon and Bol.com automated with n8n, Supabase and Claude.",
@@ -893,6 +906,192 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ctaText: "Request the free automation audit. Within 48 hours you have a plan with the three highest-ROI workflows.",
         ctaButton: "Request the audit",
         related: [RELATED.en.amazon, RELATED.en.bol, RELATED.en.interim, RELATED.en.work],
+      },
+    },
+  },
+  /* ───────────────────────── Webshopbeheerder ───────────────────────── */
+  {
+    path: "/webshopbeheerder-inhuren",
+    serviceName: "Webshop Management & Daily Operations",
+    icon: "store",
+    copy: {
+      nl: {
+        updated: SERVICE_PAGES_UPDATED,
+        title: "Webshopbeheerder inhuren | Hans van Leeuwen",
+        metaDesc:
+          "Webshopbeheerder inhuren voor de dagelijkse operatie: voorraad, listings, content, orders en kanalen. Freelance, in je eigen accounts, per maand opzegbaar.",
+        breadcrumb: "Webshopbeheerder",
+        eyebrow: "Dagelijks webshopbeheer",
+        h1: "Webshopbeheerder inhuren",
+        subtitle: "Freelance webshop manager voor de dagelijkse operatie: voorraad, listings, content, orders en kanalen",
+        intro:
+          "Ik ben Hans van Leeuwen, freelance e-commerce en marketplace manager uit Amersfoort. Je huurt mij in als webshopbeheerder wanneer je shop moet blijven draaien zonder dat je er een vaste kracht voor aanneemt: orders, voorraad, listings, productdata, prijzen en de verkoopkanalen eromheen. Bij Alpine Hearing Protection was dat vier jaar mijn dagelijkse werk op Amazon en Bol.com, met out-of-stock onder de 2% na invoering van demand forecasting. Bij Connect Car Parts beheer ik nu één catalogus over eBay, Amazon en Bol.com heen. Je werkt in je eigen accounts en tools, per maand opzegbaar.",
+        whenHeading: "Wanneer je een webshopbeheerder inhuurt",
+        when: [
+          "Je webshop draait, maar niemand heeft de dagelijkse operatie echt in beheer",
+          "Je e-commerce medewerker of accountmanager is vertrokken en het werk blijft liggen",
+          "Je hebt te weinig werk voor een vaste kracht en te veel om er even bij te doen",
+          "Je verkoopt op meerdere kanalen en de productdata loopt per kanaal uit elkaar",
+          "Je listings zijn jaren niet aangeraakt en de conversie zakt langzaam weg",
+          "Je wilt de operatie eerst op orde hebben voordat je een vaste e-commerce manager aanneemt",
+        ],
+        servicesHeading: "Wat ik als webshopbeheerder oppak",
+        services: [
+          "Dagelijks orderbeheer: orders, retouren, levervragen en de afstemming met logistiek",
+          "Voorraad en beschikbaarheid: signalering, bestelsuggesties en demand forecasting samen met inkoop",
+          "Listings en productcontent: titels, bullets, attributen en afbeeldingen per kanaal en per categorie",
+          "Productdata en feeds (Channable, PIM/ERP-koppelingen), zodat elk kanaal dezelfde SKU-data krijgt",
+          "Prijzen en Buy Box: controleren, bijstellen en afstemmen met je andere kanalen",
+          "Kanaalbeheer op Amazon, Bol.com en eBay naast je eigen webshop in Magento of WooCommerce",
+          "PPC bijhouden op Amazon Ads en Bol Ads, gestuurd op ACOS, met de listing als vertrekpunt",
+          "Een vaste weekcadans: wat er gebeurde, wat opvalt, wat er volgende week gebeurt",
+        ],
+        resultsHeading: "Resultaten uit het dagelijkse werk",
+        results: [
+          { stat: "+40%", desc: "organisch verkeer via SEO-optimalisatie van de catalogus", source: "Intergamma (Karwei/Gamma) · 2017–2019" },
+          { stat: "<2%", desc: "out-of-stock na invoering van demand forecasting", source: "Alpine Hearing Protection · 2021–2022" },
+          { stat: "3 → 1", desc: "eBay, Amazon en Bol.com gekoppeld tot één marketplace-operatie", source: "Connect Car Parts · 2026" },
+        ],
+        practiceHeading: "Uit de praktijk",
+        practiceIntro: "Wat het dagelijkse werk in de praktijk oplevert, met cijfers:",
+        practice: [
+          {
+            title: "Vier valse foutmeldingen in de dagcontrole",
+            summary: "Bij Connect Car Parts loop ik de Bol.com-pipeline per run na. Zes producten leken te ontbreken, maar vier bestonden gewoon: in een SKU met een slash moet dat teken als %2F de URL in. Zonder die controle liepen 41 rijen stil mis. En klaar gemarkeerd is voorbereid, nog niet verkocht.",
+            href: "/work/connect-car-parts",
+            linkLabel: "Bekijk de case-update",
+          },
+          {
+            title: "Advertentiebudget dat een slechte listing betaalt",
+            summary: "Een outdoormerk met circa 120 SKU's zette maandelijks €14.000 in op Sponsored Products en zag 23% van de orders terugkomen. Het lek zat in de productpagina, niet in de campagne. Na de herbouw: 12,7% conversie tegenover 8,1% eerder, retouren terug naar 14% en €3.000 per maand minder advertentiekosten.",
+            href: "/writing/waarom-marketplace-listings-niet-converteren",
+            linkLabel: "Lees de casus",
+          },
+          {
+            title: "Geen groen lampje zonder bewijs",
+            summary: "Van de succesmeldingen in mijn eigen automatiseringsstack bleek ruwweg de helft niet terug te voeren op een echte handeling. Vandaar mijn regel in dagelijks beheer: een taak is af als de wijziging in het kanaal zelf te vinden is, niet als een tool zegt dat het gelukt is.",
+            href: "/writing/ai-agent-verzint-succes",
+            linkLabel: "Lees waarom rapportage bewijs nodig heeft",
+          },
+          {
+            title: "Wat kost het om dit werk uit te besteden?",
+            summary: "Dagtarief, projectprijs of een vast maandbedrag: in dit artikel reken ik voor welk model bij welk soort werk hoort, wat er binnen een werkdag valt en op welk punt iemand vast aannemen gewoon voordeliger uitkomt.",
+            href: "/writing/wat-kost-een-interim-ecommerce-manager-2026",
+            linkLabel: "Lees hoe de tarieven zijn opgebouwd",
+          },
+        ],
+        approachHeading: "Hoe het beheer eruitziet",
+        approach: [
+          "Beheer begint met een inventarisatie van het dagelijkse werk: welke taken er liggen, welke kanalen er zijn, waar de productdata vandaan komt, hoe voorraad wordt bijgehouden en wie waarvoor verantwoordelijk is. Daaruit komt een takenlijst met een vaste frequentie, dagelijks, wekelijks en maandelijks, met per taak een eigenaar. Wat niemand deed, staat er vanaf dag één in.",
+          "Daarna doe ik het werk, in je eigen accounts en tools. Een normale week is: orders en retouren langs, voorraadsignalen en bestelsuggesties, listings en productdata bijwerken, prijzen en Buy Box controleren, campagnes bijstellen en de feed naar elk kanaal kloppend houden. Je krijgt een korte schriftelijke weekupdate met wat er gebeurde, wat opvalt en wat er volgende week gebeurt.",
+          "Alles wat zich twee keer herhaalt, leg ik vast of automatiseer ik, met de mens op de gevoelige knoppen. Daardoor kun je het beheer overnemen zodra je een vaste kracht aanneemt, of de inzet terugbrengen naar één dag per week. Groeit de vraag de andere kant op, naar kanaal-P&L, budget en teamaansturing, dan is dat interim e-commerce management en geen beheer. Dat zeg ik dan ook, in plaats van er meer dagen beheer van te maken.",
+        ],
+        pricingHeading: PRICING_NL.heading,
+        pricingIntro: PRICING_NL.intro,
+        pricing: PRICING_NL.models,
+        pricingNote: PRICING_NL.note,
+        faqHeading: "Veelgestelde vragen over een webshopbeheerder inhuren",
+        faq: [
+          { q: "Wat doet een webshopbeheerder?", a: "Hij of zij houdt de webshop dagelijks draaiend: orders en retouren, voorraad en beschikbaarheid, listings en productcontent, prijzen, de feeds naar de verkoopkanalen en de rapportage daarover. Het is uitvoerend werk met eigen verantwoordelijkheid: niemand hoeft achter de taken aan te zitten, maar de strategie en het budget blijven bij jou." },
+          { q: "Wat is het verschil met een interim e-commerce manager?", a: "Een webshopbeheerder voert de dagelijkse operatie uit. Een interim e-commerce manager neemt de leiding over kanaal-P&L, budget, bureaus en team. Heb je dat tweede nodig, lees dan de pagina over interim e-commerce management. In de praktijk begint het vaak met beheer en groeit het daarnaartoe." },
+          { q: "Hoeveel dagen per week heb je nodig?", a: "Voor een webshop die al draait is twee dagen per week meestal genoeg. Met meerdere marketplaces en een grote catalogus wordt het drie. Na de inventarisatie weet je het precies, en je kunt het per maand bijstellen." },
+          { q: "Kun je inspringen voor een vertrokken medewerker?", a: "Ja, dat is de meest voorkomende reden om mij in te huren. Ik neem de taken van je vertrokken e-commerce medewerker of accountmanager over zodat er niets blijft liggen, en lever het werk gedocumenteerd op aan je nieuwe kracht." },
+          { q: "Werk je in onze eigen accounts?", a: "Ja. Ik werk in jouw webshop, jouw Seller Central, jouw Bol.com-account en jouw tools. Je houdt alle toegang, data en werkdocumenten, ook nadat de samenwerking stopt." },
+          { q: "Welke platforms en tools beheers je?", a: "Amazon Seller en Vendor Central voor NL, DE en de overige EU-marktplaatsen, Bol.com en eBay, en webshops in Magento of WooCommerce. De laag eronder: Channable voor de feeds, n8n voor automatisering, Helium10 voor zoekdata, GA4 en Power BI voor de cijfers." },
+        ],
+        ctaHeading: "Wie houdt je webshop deze week bij?",
+        ctaText: "Een half uur kennismaken is genoeg. Daarna weet je welke taken ik overneem, in welke cadans en tegen welk tarief. Dat staat binnen een werkdag op papier.",
+        ctaButton: "Plan een kennismaking",
+        related: [RELATED.nl.interim, RELATED.nl.amazon, RELATED.nl.bol, RELATED.nl.work],
+      },
+      en: {
+        updated: SERVICE_PAGES_UPDATED,
+        title: "Hire a Webshop Manager | Hans van Leeuwen",
+        metaDesc:
+          "Hire a freelance webshop manager for day-to-day operations: stock, listings, content, orders and channels on Amazon and Bol.com. Cancellable monthly.",
+        breadcrumb: "Webshop Manager",
+        eyebrow: "Day-to-day webshop management",
+        h1: "Hire a webshop manager",
+        subtitle: "Freelance webshop manager for the daily operation: stock, listings, content, orders and channels",
+        intro:
+          "I'm Hans van Leeuwen, a freelance e-commerce and marketplace manager based in Amersfoort, the Netherlands. You hire me as a webshop manager when the shop has to keep running without taking on a permanent hire: orders, stock, listings, product data, pricing and the sales channels around them. At Alpine Hearing Protection that was my daily work on Amazon and Bol.com for four years, with out-of-stock below 2% after introducing demand forecasting. At Connect Car Parts I now run one catalogue across eBay, Amazon and Bol.com. You work in your own accounts and tools, cancellable monthly.",
+        whenHeading: "When to hire a webshop manager",
+        when: [
+          "Your webshop runs, but nobody actually owns the day-to-day operation",
+          "Your e-commerce employee or account manager has left and the work is piling up",
+          "There is too little work for a permanent hire and too much to do on the side",
+          "You sell on several channels and the product data drifts apart per channel",
+          "Your listings have not been touched in years and conversion is slowly slipping",
+          "You want the operation in order before you hire a permanent e-commerce manager",
+        ],
+        servicesHeading: "What I take on as webshop manager",
+        services: [
+          "Daily order handling: orders, returns, delivery questions and the line to logistics",
+          "Stock and availability: alerts, reorder suggestions and demand forecasting with purchasing",
+          "Listings and product content: titles, bullets, attributes and images per channel and category",
+          "Product data and feeds (Channable, PIM/ERP connections), so every channel gets the same SKU data",
+          "Pricing and Buy Box: checking, adjusting and aligning with your other channels",
+          "Channel management on Amazon, Bol.com and eBay alongside your own Magento or WooCommerce shop",
+          "PPC upkeep on Amazon Ads and Bol Ads, steered on ACOS, starting from the listing",
+          "A fixed weekly cadence: what happened, what stands out, what happens next week",
+        ],
+        resultsHeading: "Results from the day-to-day work",
+        results: [
+          { stat: "+40%", desc: "organic traffic through SEO optimisation of the catalogue", source: "Intergamma (Karwei/Gamma) · 2017–2019" },
+          { stat: "<2%", desc: "out-of-stock after introducing demand forecasting", source: "Alpine Hearing Protection · 2021–2022" },
+          { stat: "3 → 1", desc: "eBay, Amazon and Bol.com connected into one marketplace operation", source: "Connect Car Parts · 2026" },
+        ],
+        practiceHeading: "From the field",
+        practiceIntro: "What the daily work actually produces, with numbers:",
+        practice: [
+          {
+            title: "Four false errors in the daily check",
+            summary: "At Connect Car Parts I walk through the Bol.com pipeline after every run. Six products looked missing, four simply existed: a slash inside a SKU has to go into the URL as %2F. Without that check, 41 rows would quietly have gone wrong. And marked ready means prepared, not yet sold.",
+            href: "/work/connect-car-parts",
+            linkLabel: "Read the case update",
+          },
+          {
+            title: "Ad budget paying for a weak listing",
+            summary: "An outdoor brand with around 120 SKUs spent €14,000 a month on Sponsored Products and saw 23% of orders come back. The leak sat in the product page, not the campaign. After the rebuild: 12.7% conversion against 8.1% before, returns down to 14% and €3,000 a month less in advertising cost.",
+            href: "/en/writing/waarom-marketplace-listings-niet-converteren",
+            linkLabel: "Read the case",
+          },
+          {
+            title: "No green light without evidence",
+            summary: "Roughly half the success messages in my own automation stack turned out not to rest on a real action. Hence my rule for daily management: a task is done when the change can be found in the channel itself, not when a tool reports that it worked.",
+            href: "/en/writing/ai-agent-verzint-succes",
+            linkLabel: "Read why reporting needs evidence",
+          },
+          {
+            title: "What does outsourcing this work cost?",
+            summary: "Day rate, project fee or a fixed monthly amount: the article works through which model suits which kind of work, what fits inside a working day and at which point hiring someone permanently simply costs you less.",
+            href: "/en/writing/wat-kost-een-interim-ecommerce-manager-2026",
+            linkLabel: "Read how the rates are built up",
+          },
+        ],
+        approachHeading: "What the management looks like",
+        approach: [
+          "Management starts with an inventory of the daily work: which tasks are waiting, which channels exist, where the product data comes from, how stock is tracked and who is responsible for what. That produces a task list with a fixed frequency, daily, weekly and monthly, with an owner per task. Whatever nobody was doing is in there from day one.",
+          "After that I do the work, inside your own accounts and tools. A normal week is: orders and returns reviewed, stock alerts and reorder suggestions, listings and product data updated, pricing and Buy Box checked, campaigns adjusted and the feed to every channel kept correct. You get a short written weekly update with what happened, what stands out and what happens next week.",
+          "Anything that repeats twice gets documented or automated, with a human on the sensitive buttons. That way you can take the management back in-house the moment you hire someone permanent, or scale the engagement down to one day a week. If the need grows the other way, towards channel P&L, budget and team leadership, that is interim e-commerce management rather than day-to-day management. I will say so, instead of turning it into more days of management.",
+        ],
+        pricingHeading: PRICING_EN.heading,
+        pricingIntro: PRICING_EN.intro,
+        pricing: PRICING_EN.models,
+        pricingNote: PRICING_EN.note,
+        faqHeading: "Frequently asked questions about hiring a webshop manager",
+        faq: [
+          { q: "What does a webshop manager do?", a: "Keeps the webshop running day to day: orders and returns, stock and availability, listings and product content, pricing, the feeds to your sales channels and the reporting on all of it. It is hands-on work with its own responsibility: nobody has to chase the tasks, while strategy and budget stay with you." },
+          { q: "How is this different from an interim e-commerce manager?", a: "A webshop manager executes the daily operation. An interim e-commerce manager takes charge of channel P&L, budget, agencies and team. If you need the second, read the interim e-commerce management page. In practice it often starts with day-to-day management and grows into that." },
+          { q: "How many days a week do you need?", a: "For a webshop that already runs, two days a week is usually enough. With several marketplaces and a large catalogue it becomes three. After the inventory you know exactly, and you can adjust it monthly." },
+          { q: "Can you cover for someone who left?", a: "Yes, that is the most common reason to hire me. I take over the tasks of your departed e-commerce employee or account manager so nothing is left waiting, and hand the work over documented to your new hire." },
+          { q: "Do you work in our own accounts?", a: "Yes. I work in your webshop, your Seller Central, your Bol.com account and your tools. You keep all access, data and working documents, including after the engagement ends." },
+          { q: "Which platforms and tools do you know?", a: "Amazon Seller and Vendor Central for NL, DE and the other EU marketplaces, Bol.com and eBay, and webshops on Magento or WooCommerce. The layer underneath: Channable for the feeds, n8n for automation, Helium10 for search data, GA4 and Power BI for the numbers." },
+        ],
+        ctaHeading: "Who is keeping your webshop up this week?",
+        ctaText: "Half an hour on a call is enough. After it you know which tasks I take over, at which cadence and at what rate, in writing within one working day.",
+        ctaButton: "Book an intro call",
+        related: [RELATED.en.interim, RELATED.en.amazon, RELATED.en.bol, RELATED.en.work],
       },
     },
   },

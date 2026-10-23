@@ -1,0 +1,1465 @@
+{
+  "checked_on": "2026-10-20",
+  "scope": "All 49 sitemap URLs, images in HTML img/og:image/twitter:image, fetched independently; not an Ahrefs export.",
+  "pages_checked": 49,
+  "unique_images_checked": 72,
+  "unique_images_blocked": 54,
+  "affected_canonical_pages": 28,
+  "unique_images_restored": 0,
+  "pages": [
+    {
+      "url": "https://hansvanleeuwen.com/",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/work",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/work",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/work/connect-car-parts",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-1.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-10.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-13.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-14.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-6.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-7.png",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/work/connect-car-parts",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-1.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-10.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-13.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-14.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-6.png",
+        "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-7.png",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/about",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/about",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/amazon-nl-specialist",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/amazon-nl-specialist",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/bol-com-consultant",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/bol-com-consultant",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/interim-ecommerce-manager",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/interim-ecommerce-manager",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/ai-ecommerce-automation",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/ai-ecommerce-automation",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/rates",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/rates",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/privacy",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/privacy",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/og-image.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/og-image.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-fabricatie-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-prompt-niveaus-header-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/amazon-vs-bol-2026-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/bewaker-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/claude-guide-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-operator-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/interim-kosten-header-20260905.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kennisbank-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/listings-ux-conversie-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/llm-ux-ecommerce-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/openai-noodstop-header-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/vendor-seller-bol-header-20260905.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/og-image.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-fabricatie-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-prompt-niveaus-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/amazon-vs-bol-2026-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/bewaker-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/claude-guide-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-operator-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/interim-kosten-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kennisbank-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/listings-ux-conversie-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/llm-ux-ecommerce-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/openai-noodstop-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/vendor-seller-bol-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/music",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/og-image.png",
+        "https://i.scdn.co/image/ab67616d0000b27331d1dc7e59bd437f979191c7",
+        "https://i.scdn.co/image/ab67616d0000b273e9e292c832749ec9b5aecd66",
+        "https://i1.sndcdn.com/artworks-000zz1GdKMtCxyBz-X02WMg-t500x500.jpg",
+        "https://i1.sndcdn.com/artworks-KzObgF8l73kd5EiV-sPCntg-t500x500.jpg",
+        "https://i1.sndcdn.com/artworks-Lb2WRfIP4rmG3lAC-g6H5HA-t500x500.jpg",
+        "https://i1.sndcdn.com/artworks-ZYuvKEXMylQVE2iH-r6JYIA-t500x500.jpg",
+        "https://i1.sndcdn.com/artworks-mnWTKG1aNWITRn7g-gTixHQ-t500x500.jpg",
+        "https://i1.sndcdn.com/artworks-mneK4Z6GuPDAyWnk-tw6iuQ-t500x500.jpg"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-blackbox-stack-1783654004599-nl.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-code-vondsten-1783654004599-nl.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-eigen-beheer-1783654004599-nl.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-sourcemap-uitleg-1783654004599.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-tijdlijn-lek-1783654004599.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-transparantie-paradox-1783654004599-nl.svg"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/tragic-mistake-anthropic-leaks-claude-s-source-code",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-blackbox-stack-1783654004599-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-code-vondsten-1783654004599-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-eigen-beheer-1783654004599-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-sourcemap-uitleg-1783654004599-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-tijdlijn-lek-1783654004599-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-transparantie-paradox-1783654004599-en.svg"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/karpathys-knowledge-base-claude-cowork-2026-06",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-afspraken-layers-1783846540.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-grenzen-cards-1783846540.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-uxbril-flow-1783846540.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-vijfstappen-flow-1783846540.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kennisbank-header-20260925.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/karpathys-knowledge-base-claude-cowork-2026-06",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-afspraken-layers-1783846540-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-grenzen-cards-1783846540-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-uxbril-flow-1783846540-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-vijfstappen-flow-1783846540-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kennisbank-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/codex-agentic-ai-operator",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-agent-taken-20260817.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-chatbot-vs-operator-20260817.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-human-in-loop-20260817.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-operator-header-20260925.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-research-flow-20260817.svg"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/codex-agentic-ai-operator",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-agent-taken-20260817-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-chatbot-vs-operator-20260817-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-human-in-loop-20260817-en.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-operator-header-en-20261005.png",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-research-flow-20260817-en.svg"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/amazon-vs-bol-2026-header-20260925.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/amazon-vs-bol-com-2026-nederland",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/amazon-vs-bol-2026-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/openai-staakt-training-na-bizar-sandbox-lek-en-falende-noodstop-kkfyji",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/openai-noodstop-header-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/openai-staakt-training-na-bizar-sandbox-lek-en-falende-noodstop-kkfyji",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/openai-noodstop-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/img/bench-cost.svg",
+        "https://hansvanleeuwen.com/img/bench-intelligence.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/claude-guide-header-20260925.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://hansvanleeuwen.com/img/bench-cost.svg",
+        "https://hansvanleeuwen.com/img/bench-intelligence.svg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/claude-guide-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/waarom-marketplace-listings-niet-converteren",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/listings-ux-conversie-header-20260925.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/waarom-marketplace-listings-niet-converteren",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/listings-ux-conversie-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/ai-agent-verzint-succes",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-fabricatie-header-20260925.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/ai-agent-verzint-succes",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-fabricatie-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/meta-monitoring-wie-bewaakt-de-bewaker",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/bewaker-header-20260925.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/meta-monitoring-wie-bewaakt-de-bewaker",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/bewaker-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/wat-kost-een-interim-ecommerce-manager-2026",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/interim-kosten-header-20260905.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/wat-kost-een-interim-ecommerce-manager-2026",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/interim-kosten-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/vendor-of-seller-bol-com-alpine",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/vendor-seller-bol-header-20260905.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/vendor-of-seller-bol-com-alpine",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/vendor-seller-bol-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/waarom-je-slechte-antwoorden-krijgt-van-ai-en-hoe-je-dat-direct-fixt-pdngx1",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-prompt-niveaus-header-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/waarom-je-slechte-antwoorden-krijgt-van-ai-en-hoe-je-dat-direct-fixt-pdngx1",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-prompt-niveaus-header-en-20261005.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/writing/designing-with-llms",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/llm-ux-ecommerce-header-20260925.png"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/en/writing/designing-with-llms",
+      "status": 200,
+      "images": [
+        "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+        "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/llm-ux-ecommerce-header-en-20261005.png"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "url": "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+      "status": 200,
+      "type": "image/jpeg",
+      "size": 51364,
+      "final": "https://hansvanleeuwen.com/assets/hans-profile-mKIXbs6Q.jpg",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/",
+        "https://hansvanleeuwen.com/en",
+        "https://hansvanleeuwen.com/about",
+        "https://hansvanleeuwen.com/en/about",
+        "https://hansvanleeuwen.com/amazon-nl-specialist",
+        "https://hansvanleeuwen.com/en/amazon-nl-specialist",
+        "https://hansvanleeuwen.com/bol-com-consultant",
+        "https://hansvanleeuwen.com/en/bol-com-consultant",
+        "https://hansvanleeuwen.com/interim-ecommerce-manager",
+        "https://hansvanleeuwen.com/en/interim-ecommerce-manager",
+        "https://hansvanleeuwen.com/ai-ecommerce-automation",
+        "https://hansvanleeuwen.com/en/ai-ecommerce-automation",
+        "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code",
+        "https://hansvanleeuwen.com/en/writing/tragic-mistake-anthropic-leaks-claude-s-source-code",
+        "https://hansvanleeuwen.com/writing/karpathys-knowledge-base-claude-cowork-2026-06",
+        "https://hansvanleeuwen.com/en/writing/karpathys-knowledge-base-claude-cowork-2026-06",
+        "https://hansvanleeuwen.com/writing/codex-agentic-ai-operator",
+        "https://hansvanleeuwen.com/en/writing/codex-agentic-ai-operator",
+        "https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland",
+        "https://hansvanleeuwen.com/en/writing/amazon-vs-bol-com-2026-nederland",
+        "https://hansvanleeuwen.com/writing/openai-staakt-training-na-bizar-sandbox-lek-en-falende-noodstop-kkfyji",
+        "https://hansvanleeuwen.com/en/writing/openai-staakt-training-na-bizar-sandbox-lek-en-falende-noodstop-kkfyji",
+        "https://hansvanleeuwen.com/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes",
+        "https://hansvanleeuwen.com/en/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes",
+        "https://hansvanleeuwen.com/writing/waarom-marketplace-listings-niet-converteren",
+        "https://hansvanleeuwen.com/en/writing/waarom-marketplace-listings-niet-converteren",
+        "https://hansvanleeuwen.com/writing/ai-agent-verzint-succes",
+        "https://hansvanleeuwen.com/en/writing/ai-agent-verzint-succes",
+        "https://hansvanleeuwen.com/writing/meta-monitoring-wie-bewaakt-de-bewaker",
+        "https://hansvanleeuwen.com/en/writing/meta-monitoring-wie-bewaakt-de-bewaker",
+        "https://hansvanleeuwen.com/writing/wat-kost-een-interim-ecommerce-manager-2026",
+        "https://hansvanleeuwen.com/en/writing/wat-kost-een-interim-ecommerce-manager-2026",
+        "https://hansvanleeuwen.com/writing/vendor-of-seller-bol-com-alpine",
+        "https://hansvanleeuwen.com/en/writing/vendor-of-seller-bol-com-alpine",
+        "https://hansvanleeuwen.com/writing/waarom-je-slechte-antwoorden-krijgt-van-ai-en-hoe-je-dat-direct-fixt-pdngx1",
+        "https://hansvanleeuwen.com/en/writing/waarom-je-slechte-antwoorden-krijgt-van-ai-en-hoe-je-dat-direct-fixt-pdngx1",
+        "https://hansvanleeuwen.com/writing/designing-with-llms",
+        "https://hansvanleeuwen.com/en/writing/designing-with-llms"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-1.png",
+      "status": 200,
+      "type": "image/png",
+      "size": 230766,
+      "final": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-1.png",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/work/connect-car-parts",
+        "https://hansvanleeuwen.com/en/work/connect-car-parts"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-10.png",
+      "status": 200,
+      "type": "image/png",
+      "size": 306417,
+      "final": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-10.png",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/work/connect-car-parts",
+        "https://hansvanleeuwen.com/en/work/connect-car-parts"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-13.png",
+      "status": 200,
+      "type": "image/png",
+      "size": 476698,
+      "final": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-13.png",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/work/connect-car-parts",
+        "https://hansvanleeuwen.com/en/work/connect-car-parts"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-14.png",
+      "status": 200,
+      "type": "image/png",
+      "size": 371056,
+      "final": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-14.png",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/work/connect-car-parts",
+        "https://hansvanleeuwen.com/en/work/connect-car-parts"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-6.png",
+      "status": 200,
+      "type": "image/png",
+      "size": 160549,
+      "final": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-6.png",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/work/connect-car-parts",
+        "https://hansvanleeuwen.com/en/work/connect-car-parts"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-7.png",
+      "status": 200,
+      "type": "image/png",
+      "size": 142376,
+      "final": "https://hansvanleeuwen.com/cases/connect-car-parts/ccp-7.png",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/work/connect-car-parts",
+        "https://hansvanleeuwen.com/en/work/connect-car-parts"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/img/bench-cost.svg",
+      "status": 200,
+      "type": "image/svg+xml",
+      "size": 4073,
+      "final": "https://hansvanleeuwen.com/img/bench-cost.svg",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes",
+        "https://hansvanleeuwen.com/en/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/img/bench-intelligence.svg",
+      "status": 200,
+      "type": "image/svg+xml",
+      "size": 4386,
+      "final": "https://hansvanleeuwen.com/img/bench-intelligence.svg",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes",
+        "https://hansvanleeuwen.com/en/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes"
+      ]
+    },
+    {
+      "url": "https://hansvanleeuwen.com/og-image.png",
+      "status": 200,
+      "type": "image/png",
+      "size": 248545,
+      "final": "https://hansvanleeuwen.com/og-image.png",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/",
+        "https://hansvanleeuwen.com/en",
+        "https://hansvanleeuwen.com/work",
+        "https://hansvanleeuwen.com/en/work",
+        "https://hansvanleeuwen.com/work/connect-car-parts",
+        "https://hansvanleeuwen.com/en/work/connect-car-parts",
+        "https://hansvanleeuwen.com/about",
+        "https://hansvanleeuwen.com/en/about",
+        "https://hansvanleeuwen.com/amazon-nl-specialist",
+        "https://hansvanleeuwen.com/en/amazon-nl-specialist",
+        "https://hansvanleeuwen.com/bol-com-consultant",
+        "https://hansvanleeuwen.com/en/bol-com-consultant",
+        "https://hansvanleeuwen.com/interim-ecommerce-manager",
+        "https://hansvanleeuwen.com/en/interim-ecommerce-manager",
+        "https://hansvanleeuwen.com/ai-ecommerce-automation",
+        "https://hansvanleeuwen.com/en/ai-ecommerce-automation",
+        "https://hansvanleeuwen.com/rates",
+        "https://hansvanleeuwen.com/en/rates",
+        "https://hansvanleeuwen.com/privacy",
+        "https://hansvanleeuwen.com/en/privacy",
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/music"
+      ]
+    },
+    {
+      "url": "https://i.scdn.co/image/ab67616d0000b27331d1dc7e59bd437f979191c7",
+      "status": 200,
+      "type": "image/jpeg",
+      "size": 86913,
+      "final": "https://i.scdn.co/image/ab67616d0000b27331d1dc7e59bd437f979191c7",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/music"
+      ]
+    },
+    {
+      "url": "https://i.scdn.co/image/ab67616d0000b273e9e292c832749ec9b5aecd66",
+      "status": 200,
+      "type": "image/jpeg",
+      "size": 91796,
+      "final": "https://i.scdn.co/image/ab67616d0000b273e9e292c832749ec9b5aecd66",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/music"
+      ]
+    },
+    {
+      "url": "https://i1.sndcdn.com/artworks-000zz1GdKMtCxyBz-X02WMg-t500x500.jpg",
+      "status": 200,
+      "type": "image/jpeg",
+      "size": 39351,
+      "final": "https://i1.sndcdn.com/artworks-000zz1GdKMtCxyBz-X02WMg-t500x500.jpg",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/music"
+      ]
+    },
+    {
+      "url": "https://i1.sndcdn.com/artworks-KzObgF8l73kd5EiV-sPCntg-t500x500.jpg",
+      "status": 200,
+      "type": "image/jpeg",
+      "size": 49243,
+      "final": "https://i1.sndcdn.com/artworks-KzObgF8l73kd5EiV-sPCntg-t500x500.jpg",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/music"
+      ]
+    },
+    {
+      "url": "https://i1.sndcdn.com/artworks-Lb2WRfIP4rmG3lAC-g6H5HA-t500x500.jpg",
+      "status": 200,
+      "type": "image/jpeg",
+      "size": 46043,
+      "final": "https://i1.sndcdn.com/artworks-Lb2WRfIP4rmG3lAC-g6H5HA-t500x500.jpg",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/music"
+      ]
+    },
+    {
+      "url": "https://i1.sndcdn.com/artworks-ZYuvKEXMylQVE2iH-r6JYIA-t500x500.jpg",
+      "status": 200,
+      "type": "image/jpeg",
+      "size": 53074,
+      "final": "https://i1.sndcdn.com/artworks-ZYuvKEXMylQVE2iH-r6JYIA-t500x500.jpg",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/music"
+      ]
+    },
+    {
+      "url": "https://i1.sndcdn.com/artworks-mnWTKG1aNWITRn7g-gTixHQ-t500x500.jpg",
+      "status": 200,
+      "type": "image/jpeg",
+      "size": 62354,
+      "final": "https://i1.sndcdn.com/artworks-mnWTKG1aNWITRn7g-gTixHQ-t500x500.jpg",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/music"
+      ]
+    },
+    {
+      "url": "https://i1.sndcdn.com/artworks-mneK4Z6GuPDAyWnk-tw6iuQ-t500x500.jpg",
+      "status": 200,
+      "type": "image/jpeg",
+      "size": 38167,
+      "final": "https://i1.sndcdn.com/artworks-mneK4Z6GuPDAyWnk-tw6iuQ-t500x500.jpg",
+      "sample": "",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/music"
+      ]
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-fabricatie-header-20260925.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-fabricatie-header-20260925.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/ai-agent-verzint-succes"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 203276
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-fabricatie-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-fabricatie-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/ai-agent-verzint-succes"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 194627
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-prompt-niveaus-header-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-prompt-niveaus-header-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/waarom-je-slechte-antwoorden-krijgt-van-ai-en-hoe-je-dat-direct-fixt-pdngx1"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 189327
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-prompt-niveaus-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/ai-prompt-niveaus-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/waarom-je-slechte-antwoorden-krijgt-van-ai-en-hoe-je-dat-direct-fixt-pdngx1"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 183421
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/amazon-vs-bol-2026-header-20260925.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/amazon-vs-bol-2026-header-20260925.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/amazon-vs-bol-com-2026-nederland"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 204330
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/amazon-vs-bol-2026-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/amazon-vs-bol-2026-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/amazon-vs-bol-com-2026-nederland"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 195233
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-blackbox-stack-1783654004599-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-blackbox-stack-1783654004599-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 3055
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-blackbox-stack-1783654004599-nl.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-blackbox-stack-1783654004599-nl.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 3055
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-code-vondsten-1783654004599-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-code-vondsten-1783654004599-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 4111
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-code-vondsten-1783654004599-nl.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-code-vondsten-1783654004599-nl.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 4132
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-eigen-beheer-1783654004599-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-eigen-beheer-1783654004599-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 1990
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-eigen-beheer-1783654004599-nl.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-eigen-beheer-1783654004599-nl.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 1970
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-header-20260925.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-header-20260925.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 198805
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 187280
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-sourcemap-uitleg-1783654004599-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-sourcemap-uitleg-1783654004599-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 2795
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-sourcemap-uitleg-1783654004599.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-sourcemap-uitleg-1783654004599.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 2811
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-tijdlijn-lek-1783654004599-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-tijdlijn-lek-1783654004599-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 3266
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-tijdlijn-lek-1783654004599.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-tijdlijn-lek-1783654004599.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 3286
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-transparantie-paradox-1783654004599-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-transparantie-paradox-1783654004599-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 2726
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-transparantie-paradox-1783654004599-nl.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/anthropic-lek-transparantie-paradox-1783654004599-nl.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 2728
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/bewaker-header-20260925.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/bewaker-header-20260925.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/meta-monitoring-wie-bewaakt-de-bewaker"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 197034
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/bewaker-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/bewaker-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/meta-monitoring-wie-bewaakt-de-bewaker"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 183123
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/claude-guide-header-20260925.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/claude-guide-header-20260925.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 193066
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/claude-guide-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/claude-guide-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/full-claude-guide-beginner-to-pro-in-under-15-minutes"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 181374
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-agent-taken-20260817-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-agent-taken-20260817-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 4071
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-agent-taken-20260817.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-agent-taken-20260817.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 4085
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-chatbot-vs-operator-20260817-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-chatbot-vs-operator-20260817-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 2598
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-chatbot-vs-operator-20260817.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-chatbot-vs-operator-20260817.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 2606
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-human-in-loop-20260817-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-human-in-loop-20260817-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 2737
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-human-in-loop-20260817.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-human-in-loop-20260817.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 2775
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-operator-header-20260925.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-operator-header-20260925.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 201523
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-operator-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-operator-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 190826
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-research-flow-20260817-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-research-flow-20260817-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 3875
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-research-flow-20260817.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/codex-research-flow-20260817.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/codex-agentic-ai-operator"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 3859
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/interim-kosten-header-20260905.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/interim-kosten-header-20260905.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/wat-kost-een-interim-ecommerce-manager-2026"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 397688
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/interim-kosten-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/interim-kosten-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/wat-kost-een-interim-ecommerce-manager-2026"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 197717
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-afspraken-layers-1783846540-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-afspraken-layers-1783846540-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 4598
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-afspraken-layers-1783846540.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-afspraken-layers-1783846540.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 4608
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-grenzen-cards-1783846540-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-grenzen-cards-1783846540-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 4699
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-grenzen-cards-1783846540.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-grenzen-cards-1783846540.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 4685
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-uxbril-flow-1783846540-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-uxbril-flow-1783846540-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 5195
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-uxbril-flow-1783846540.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-uxbril-flow-1783846540.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 5213
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-vijfstappen-flow-1783846540-en.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-vijfstappen-flow-1783846540-en.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 6080
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-vijfstappen-flow-1783846540.svg",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kb-vijfstappen-flow-1783846540.svg",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 6095
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kennisbank-header-20260925.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kennisbank-header-20260925.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 207433
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kennisbank-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/karpathy-kennisbank-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/karpathys-knowledge-base-claude-cowork-2026-06"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 202790
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/listings-ux-conversie-header-20260925.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/listings-ux-conversie-header-20260925.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/waarom-marketplace-listings-niet-converteren"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 199448
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/listings-ux-conversie-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/listings-ux-conversie-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/waarom-marketplace-listings-niet-converteren"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 185237
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/llm-ux-ecommerce-header-20260925.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/llm-ux-ecommerce-header-20260925.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/designing-with-llms"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 199223
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/llm-ux-ecommerce-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/llm-ux-ecommerce-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/designing-with-llms"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 186605
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/openai-noodstop-header-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/openai-noodstop-header-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/openai-staakt-training-na-bizar-sandbox-lek-en-falende-noodstop-kkfyji"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 183179
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/openai-noodstop-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/openai-noodstop-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/openai-staakt-training-na-bizar-sandbox-lek-en-falende-noodstop-kkfyji"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 182254
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/vendor-seller-bol-header-20260905.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/vendor-seller-bol-header-20260905.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/writing",
+        "https://hansvanleeuwen.com/writing/vendor-of-seller-bol-com-alpine"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 389479
+    },
+    {
+      "url": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/vendor-seller-bol-header-en-20261005.png",
+      "status": 402,
+      "type": "application/json;charset=UTF-8",
+      "size": 216,
+      "final": "https://pesfakewujjwkyybwaom.supabase.co/storage/v1/object/public/bucket/blog-images/vendor-seller-bol-header-en-20261005.png",
+      "sample": "Service restricted: exceed_egress_quota, exceed_storage_size_quota",
+      "referencing_pages": [
+        "https://hansvanleeuwen.com/en/writing",
+        "https://hansvanleeuwen.com/en/writing/vendor-of-seller-bol-com-alpine"
+      ],
+      "storage_object_present": true,
+      "stored_bytes": 187300
+    }
+  ]
+}

@@ -43,6 +43,7 @@ export const ADDABLE_PAGES: { to: string; label: string }[] = [
   { to: "/bol-com-consultant", label: "Bol.com Consultant" },
   { to: "/interim-ecommerce-manager", label: "Interim E-commerce Manager" },
   { to: "/ai-ecommerce-automation", label: "AI E-commerce Automation" },
+  { to: "/webshopbeheerder-inhuren", label: "Webshopbeheerder inhuren" },
   { to: "/privacy", label: "Privacy" },
 ];
 

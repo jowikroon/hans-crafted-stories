@@ -1,61 +1,85 @@
-# Content-redeploy watch (2026-09-11, HAN-170 werkstroom F.1-voorwaarde).
-#
-# Waarom: /writing/<slug> wordt geprerenderd bij een deploy. Publiceren in de CMS raakt alleen Supabase,
-# niet de repo, dus zonder redeploy bestaat een nieuw artikel alleen client-side (SPA-rewrite). Zodra de
-# rewrite verdwijnt (F.1) zou een nieuw artikel 404 geven tot iemand handmatig redeployt.
-#
-# Wat: elk half uur de nieuwste published-timestamp + het aantal published artikelen ophalen via de
-# publieke Supabase-REST (anon key = de publishable key die al in de site-bundle staat; geen secret nodig).
-# Wijkt dat af van apps/personal/.content-deploy-stamp, dan wordt de stamp gecommit en gepusht → Vercel
-# bouwt main opnieuw → prerender bevat het artikel. Geen secrets, geen n8n, gratis.
+# Public CMS stamp check. Missing data and API failures must fail closed.
 name: Content redeploy watch (hansvanleeuwen.com)
 
 on:
   schedule:
     - cron: "*/30 * * * *"
   workflow_dispatch:
+    inputs:
+      check_only:
+        description: "Controleer zonder stamp-commit of redeploy"
+        type: boolean
+        default: true
+  pull_request:
+    paths:
+      - ".github/workflows/content-redeploy.yml"
+      - "scripts/content_redeploy_watch.py"
+      - "scripts/test_content_redeploy_watch.py"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: content-redeploy
+  group: content-redeploy-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  watch:
+  tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          persist-credentials: false
+      - name: Test succesvolle controle en onbereikbare Supabase
+        run: python3 -m unittest discover -s scripts -p test_content_redeploy_watch.py -v
 
-      - name: Lees nieuwste published-stamp uit Supabase (anon key uit de live bundle)
+  watch:
+    needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Review/manual runs inspect their own revision. Only main may push a stamp.
+          persist-credentials: false
+
+      - name: Lees en valideer publicatiestamp via expliciete Supabase-configuratie
         id: stamp
+        env:
+          CONTENT_SUPABASE_URL: ${{ vars.CONTENT_SUPABASE_URL }}
+          CONTENT_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.CONTENT_SUPABASE_PUBLISHABLE_KEY || vars.CONTENT_SUPABASE_PUBLISHABLE_KEY }}
+          CHECK_ONLY: ${{ github.ref != 'refs/heads/main' || (github.event_name != 'schedule' && (github.event_name != 'workflow_dispatch' || inputs.check_only)) }}
         run: |
           set -euo pipefail
-          BUNDLE=$(curl -fsS https://hansvanleeuwen.com/ | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | head -1)
-          KEY=$(curl -fsS "https://hansvanleeuwen.com/${BUNDLE}" | grep -oE 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+|sb_publishable_[A-Za-z0-9_-]{20,}' | head -1)
-          test -n "$KEY" || { echo "geen publishable key in bundle"; exit 1; }
-          BASE="https://pesfakewujjwkyybwaom.supabase.co/rest/v1/blog_posts"
-          LATEST=$(curl -fsS "${BASE}?select=updated_at&published=eq.true&order=updated_at.desc&limit=1" -H "apikey: ${KEY}" -H "Authorization: Bearer ${KEY}" | sed -E 's/.*"updated_at":"([^"]+)".*/\1/')
-          COUNT=$(curl -fsS -D - -o /dev/null "${BASE}?select=id&published=eq.true" -H "apikey: ${KEY}" -H "Authorization: Bearer ${KEY}" -H "Prefer: count=exact" -H "Range: 0-0" | grep -i '^content-range' | sed -E 's#.*/([0-9]+).*#\1#' | tr -d '\r')
-          test -n "$LATEST" && test -n "$COUNT" || { echo "stamp onvolledig: latest='$LATEST' count='$COUNT'"; exit 1; }
-          echo "stamp=${LATEST}|${COUNT}" >> "$GITHUB_OUTPUT"
-          echo "live: latest=${LATEST} count=${COUNT}"
+          args=()
+          if [ "$CHECK_ONLY" = "true" ]; then args+=(--check-only); fi
+          python3 scripts/content_redeploy_watch.py "${args[@]}"
 
-      - name: Vergelijk met repo-stamp en push bij verschil
+      - name: Push uitsluitend een geverifieerde gewijzigde main-stamp
+        if: >-
+          success() && steps.stamp.outputs.verified == 'true' &&
+          steps.stamp.outputs.changed == 'true' && github.ref == 'refs/heads/main' &&
+          (github.event_name == 'schedule' ||
+           (github.event_name == 'workflow_dispatch' && inputs.check_only == false))
         env:
           STAMP: ${{ steps.stamp.outputs.stamp }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           FILE=apps/personal/.content-deploy-stamp
-          CUR=$(cat "$FILE" 2>/dev/null || echo "")
-          if [ "$CUR" = "$STAMP" ]; then echo "geen wijziging ($STAMP)"; exit 0; fi
-          echo "$STAMP" > "$FILE"
+          # Refuse concurrent main changes, rather than overwrite or silently rebase.
+          git -c "http.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" fetch origin main
+          test "$(git rev-parse HEAD)" = "$(git rev-parse FETCH_HEAD)" || {
+            echo "main is gewijzigd; geen stamp-update, volgende controle opnieuw proberen"
+            exit 1
+          }
+          printf '%s\n' "$STAMP" > "$FILE"
           git config user.name "content-redeploy-bot"
           git config user.email "hansvl3@gmail.com"
-          git add "$FILE"
+          git add -- "$FILE"
           git commit -m "chore(content): redeploy — blog_posts ${STAMP} (auto)"
-          git push origin HEAD:main
-          echo "gepusht → Vercel bouwt main opnieuw"
+          git -c "http.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push origin HEAD:main
+          echo "Geverifieerde stamp gepusht; Vercel kan main opnieuw bouwen." >> "$GITHUB_STEP_SUMMARY"

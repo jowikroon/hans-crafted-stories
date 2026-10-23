@@ -9,6 +9,7 @@ import type { BlogPostRow } from "@/lib/api/content";
 import { getBlogPosts } from "@/lib/api/content";
 import { getHeroPost, getHeroPostHead, HERO_SLUGS } from "@/data/heroPosts";
 import { getBlogPostHead, getBlogPostJsonLd, detectBlogPostLang, primaryBlogPostLang, localizeBlogPost, blogPostAlternates, blogPostPath, hasEnglishArticleUrl } from "@/lib/seo/blogPostHead";
+import { buildRssFeed } from "@/lib/seo/rssFeed";
 import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } from "@/lib/seo/staticHtml";
 import { SERVICE_PAGES, SERVICE_PAGES_UPDATED, SERVICE_BYLINE, EXPERIENCE_STRIP, RATES_PAGE, PRICING_NL, PRICING_EN } from "@/data/servicePages";
 import { translations } from "@/data/translations";
@@ -56,6 +57,7 @@ export {
   clearRootHtml,
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
+  buildRssFeed,
   SERVICE_PAGES,
   SERVICE_PAGES_UPDATED,
   SERVICE_BYLINE,
