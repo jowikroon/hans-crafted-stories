@@ -37,6 +37,8 @@
  *  21. directory-listings (2026-10-02, HAN-182): elke map in dist/ zónder eigen index.html maar mét
  *      geprerenderde kinderen (bv. /en na PR #388, /cases op 11-09) is een Vercel directory-listing
  *      (200 "Index of …", geen canonical/robots) tenzij vercel.json er een redirect voor heeft
+ *  22. GSC-vraagtermen (2026-10-05): NL-title en H1 van amazon-nl-specialist en interim-ecommerce-manager
+ *      bevatten de zoekvraag uit GSC ("amazon specialist", "e-commerce specialist")
  *  23. interne links in de juiste taal: /en-pagina linkt niet naar /writing/<slug> als de EN-versie
  *      bestaat, geen dode /en/writing-links, en elke /en-route heeft een inkomende link van een andere
  *      /en-pagina (HAN-184, 2026-10-14)
@@ -499,6 +501,32 @@ for (const route of seen) {
   }
 }
 
+// 22. GSC-vraagtermen (2026-10-05, plan A/B): GSC 28d (t/m 03-10) toonde dat Google voor
+//     "amazon specialist" (38 impr) en "e commerce specialist inhuren" (18 impr) de EN-pagina's koos en
+//     de NL-dienstpagina's op pos 41-43 liet staan, omdat die termen niet in de NL-title/H1 stonden.
+//     Regel: de prerender-<title> én de <h1> van deze NL-pagina's dragen de echte zoekvraag.
+{
+  const ENT = { "&amp;": "&", "&#x27;": "'", "&#39;": "'", "&quot;": '"' };
+  // Eén pass: geen dubbele unescape (CodeQL js/double-escaping, PR #391).
+  const dec = (t) => t.replace(/<[^>]+>/g, " ").replace(/&amp;|&#x27;|&#39;|&quot;/g, (m) => ENT[m]).replace(/\s+/g, " ").trim();
+  const targets = [
+    ["amazon-nl-specialist", /\bamazon specialist\b/i, "amazon specialist"],
+    ["interim-ecommerce-manager", /\be-commerce specialist\b/i, "e-commerce specialist"],
+  ];
+  for (const [slug, re, term] of targets) {
+    const file = path.join(distDir, slug, "index.html");
+    if (!fs.existsSync(file)) { failures.push(`${slug}/index.html ontbreekt (guard 22)`); continue; }
+    const html = fs.readFileSync(file, "utf8");
+    const t = dec((html.match(/<title>([\s\S]*?)<\/title>/) || [, ""])[1]);
+    const description = dec((html.match(/<meta name="description" content="([^"]*)"/) || [, ""])[1]);
+    if (t.length > 60) failures.push(`${slug}: title is ${t.length} tekens (max 60, guard 22)`);
+    if (description.length > 160) failures.push(`${slug}: meta description is ${description.length} tekens (max 160, guard 22)`);
+    const h = dec((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [, ""])[1]);
+    if (!re.test(t)) failures.push(`${slug}: <title> "${t}" mist GSC-vraagterm "${term}" (guard 22)`);
+    if (!re.test(h)) failures.push(`${slug}: <h1> "${h}" mist GSC-vraagterm "${term}" (guard 22)`);
+  }
+}
+
 // 23. Interne links in de juiste taal (2026-10-14, HAN-184/HAN-185-run): na Dutch-first (PR #396)
 //     linkten de EN-dienstpagina's nog naar de NL-artikelen (/writing/<slug>, label "(Dutch)") terwijl
 //     /en/writing/<slug> bestaat — Google vond /en/interim-ecommerce-manager daardoor alleen via hreflang
@@ -557,4 +585,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (22 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/taal-van-interne-links).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (23 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links).`);
