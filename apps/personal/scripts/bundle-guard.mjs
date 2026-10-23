@@ -6,7 +6,11 @@
  * turndown op elke publieke pagina meekwamen (~770 kB gzip). Die routes zijn nu lazy.
  * Faalt als:
  *  - de eager JS boven het gzip-budget komt;
- *  - er editor- (ProseMirror) of grafiekcode (recharts) van de privé-routes in zit.
+ *  - er editor- (ProseMirror) of grafiekcode (recharts) van de privé-routes in zit;
+ *  - een JS-chunk (eager of lazy) het complete import.meta.env-object bevat. Dat gebeurt bij dynamische
+ *    toegang (import.meta.env[key]): Vite zet dan ELKE VITE_*-variabele van de buildomgeving in de bundle,
+ *    ook ongebruikte. Op Vercel stond zo een projectvariabele met het woord "ProseMirror" in index-*.js
+ *    (2026-10-23, preview van PR #444). Statische toegang (import.meta.env.VITE_X) inlinet alleen die waarde.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -16,7 +20,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 // Na de lazy privé-routes: 393 kB (was 770 kB). Ruimte ~8% voor groei; verhogen = bewuste keuze.
 export const BUDGET_GZIP_KB = 425;
 export const FORBIDDEN = [
-  { name: "Tiptap/ProseMirror-editor (portal, /write)", re: /ProseMirror/ },
+  // CSS-klassen die alleen in prosemirror-view/-gapcursor-code staan. Niet het losse woord "ProseMirror":
+  // dat kan ook in tekst of een env-waarde staan (vals alarm op Vercel, 2026-10-23).
+  { name: "Tiptap/ProseMirror-editor (portal, /write)", re: /ProseMirror-(?:hideselection|gapcursor|separator|selectednode)/ },
   { name: "recharts (portal-status, /god-structure, dashboards)", re: /recharts-(?:wrapper|surface|tooltip)/ },
 ];
 
@@ -46,8 +52,18 @@ export function eagerChunks(distDir) {
   return [...seen];
 }
 
+// Het geserialiseerde env-object herken je aan Vites ingebouwde sleutels in vaste volgorde
+// (BASE_URL, DEV, MODE, PROD, SSR, daarna de VITE_*). Een eigen object met VITE_-sleutels telt niet.
+const ENV_OBJECT = /\bDEV:\s*(?:!?[01]|true|false),\s*MODE:\s*["'`][^"'`]*["'`],\s*PROD:/;
+
+export function envObjectChunks(distDir) {
+  const assets = path.join(distDir, "assets");
+  return fs.readdirSync(assets).filter((f) => /\.m?js$/.test(f) && ENV_OBJECT.test(fs.readFileSync(path.join(assets, f), "utf8")));
+}
+
 export function checkBundle(distDir, { budgetKb = BUDGET_GZIP_KB } = {}) {
   const failures = [];
+  for (const file of envObjectChunks(distDir)) failures.push(`${file}: bevat het volledige import.meta.env-object (alle VITE_*-variabelen van de build publiek); gebruik import.meta.env.VITE_X i.p.v. import.meta.env[key]`);
   const chunks = eagerChunks(distDir);
   let gzip = 0, raw = 0;
   for (const file of chunks) {

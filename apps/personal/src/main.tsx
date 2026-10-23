@@ -3,12 +3,15 @@ import "./index.css";
 
 const root = createRoot(document.getElementById("root")!);
 
-const requiredEnv = [
-  "VITE_SUPABASE_URL",
-  "VITE_SUPABASE_PUBLISHABLE_KEY",
-] as const;
+// Statische toegang per variabele (2026-10-23): `import.meta.env[key]` laat Vite het hele env-object
+// in de entry-chunk zetten, dus élke VITE_*-variabele van het Vercel-project (ook ongebruikte) stond
+// publiek in /assets/index-*.js. Bewaakt door scripts/bundle-guard.mjs (env-object-check).
+const requiredEnv = {
+  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+  VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+};
 
-const missing = requiredEnv.filter((key) => !import.meta.env[key]);
+const missing = Object.entries(requiredEnv).filter(([, value]) => !value).map(([key]) => key);
 
 if (missing.length > 0) {
   root.render(

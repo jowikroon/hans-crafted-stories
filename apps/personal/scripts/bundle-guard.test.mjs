@@ -18,7 +18,7 @@ const base = {
   'runtime-b.js': 'export const a=1;',
   'App-c.js': 'import{x}from"./shared-d.js";const W=()=>import("./WriteCMS-e.js");',
   'shared-d.js': 'export const x=2;',
-  'WriteCMS-e.js': 'class ProseMirror{}; const c="recharts-wrapper";',
+  'WriteCMS-e.js': 'const pm="ProseMirror-hideselection"; const c="recharts-wrapper";',
 };
 
 test('lazy route code (editor, charts) outside the eager closure passes', () => {
@@ -30,7 +30,7 @@ test('lazy route code (editor, charts) outside the eager closure passes', () => 
 });
 
 test('editor or recharts statically reachable from App fails', () => {
-  const dir = fixture({ ...base, 'shared-d.js': 'export const x=2; class ProseMirror{}; const k="recharts-surface";' });
+  const dir = fixture({ ...base, 'shared-d.js': 'export const x=2; const pm="ProseMirror-gapcursor"; const k="recharts-surface";' });
   try {
     const f = checkBundle(dir).failures;
     assert.equal(f.length, 2);
@@ -51,8 +51,25 @@ test('eager JS over the gzip budget fails; missing App chunk or entry is an erro
 });
 
 test('the guard flags the real pre-fix shape: App statically importing Portal code', () => {
-  const dir = fixture({ ...base, 'App-c.js': 'import{x}from"./shared-d.js";import{P}from"./Portal-f.js";', 'Portal-f.js': 'class ProseMirror{};export const P=1;' });
+  const dir = fixture({ ...base, 'App-c.js': 'import{x}from"./shared-d.js";import{P}from"./Portal-f.js";', 'Portal-f.js': 'const pm="ProseMirror-separator";export const P=1;' });
   try {
     assert.match(checkBundle(dir).failures.join(), /Portal-f\.js: bevat Tiptap\/ProseMirror/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('the bare word ProseMirror in text is not editor code (Vercel false alarm 2026-10-23)', () => {
+  const dir = fixture({ ...base, 'shared-d.js': 'export const x="Schrijf met de ProseMirror-editor in /write";' });
+  try { assert.deepEqual(checkBundle(dir).failures, []); } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('an inlined import.meta.env object fails, in eager and lazy chunks; static env values pass', () => {
+  const envObj = 'const e={BASE_URL:`/`,DEV:!1,MODE:`production`,PROD:!0,SSR:!1,VITE_ADMIN_EMAILS:`a@b.c`,VITE_SUPABASE_URL:`https://x.supabase.co`};';
+  const eager = fixture({ ...base, 'index-a.js': base['index-a.js'] + envObj });
+  const lazy = fixture({ ...base, 'WriteCMS-e.js': envObj });
+  const ok = fixture({ ...base, 'index-a.js': base['index-a.js'] + 'const u=`https://x.supabase.co`,r=Object.entries({VITE_SUPABASE_URL:`https://x.supabase.co`,VITE_SUPABASE_PUBLISHABLE_KEY:`sb_publishable_x`});' });
+  try {
+    assert.match(checkBundle(eager).failures.join(), /index-a\.js: bevat het volledige import\.meta\.env-object/);
+    assert.match(checkBundle(lazy).failures.join(), /WriteCMS-e\.js: bevat het volledige import\.meta\.env-object/);
+    assert.deepEqual(checkBundle(ok).failures, []);
+  } finally { for (const d of [eager, lazy, ok]) fs.rmSync(d, { recursive: true, force: true }); }
 });
