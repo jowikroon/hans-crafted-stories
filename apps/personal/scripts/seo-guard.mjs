@@ -43,6 +43,8 @@
  *      bestaat, geen dode /en/writing-links, en elke /en-route heeft een inkomende link van een andere
  *      /en-pagina (HAN-184, 2026-10-14)
  *  24. Cloudflare-mirror: dist/_headers zet X-Robots-Tag noindex op *.pages.dev, nooit op het productiedomein
+ *  25. app-routes (rewrites naar de homepage-snapshot) krijgen X-Robots-Tag noindex via vercel.json, en
+ *      robots.txt blokkeert die paden niet voor zoekmachines en blokkeert nergens een publieke pagina
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
@@ -631,6 +633,56 @@ const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
   }
 }
 
+// 25. Privé app-routes (2026-10-23): /god-structure, /portal, /samantha, /write enz. vallen via een
+//     rewrite terug op de homepage-snapshot (200, "index, follow", canonical "/") en stonden in
+//     robots.txt op Disallow, zodat Google een noindex nooit kon lezen. Regels:
+//     a. elke rewrite naar /index.html (behalve /writing/:slug en /en/writing/:slug, die geprerenderd
+//        zijn) plus de vaste lijst hieronder krijgt X-Robots-Tag noindex via vercel.json headers;
+//     b. geen geprerenderde publieke pagina krijgt die header;
+//     c. robots.txt: zoekmachinegroepen (Googlebot, Bingbot, *) blokkeren geen enkel noindex-pad
+//        (anders is de noindex onleesbaar) en géén groep blokkeert een geprerenderde publieke pagina
+//        (Disallow-regels zijn prefixen: een te korte regel neemt publieke paden mee).
+{
+  const samples = new Set(["/god-structure", "/portal", "/portal/notes", "/samantha", "/write", "/write/x", "/dashboards", "/dashboards/x", "/bijlagen", "/blog-cms/voice/x", "/music-cms", "/release-set", "/wiki", "/muziek/artist-radar", "/extensions/x"]);
+  for (const rw of vercelCfg.rewrites || []) {
+    if (rw.destination !== "/index.html") continue;
+    for (const p of expandSource(rw.source)) if (!/^\/(en\/)?writing\//.test(p)) samples.add(p);
+  }
+  for (const p of samples) if (!noindexByHeader(p)) failures.push(`vercel.json: ${p} (app-route, serveert de homepage-snapshot) krijgt geen X-Robots-Tag noindex (guard 25a)`);
+  for (const route of seen) if (noindexByHeader(route)) failures.push(`vercel.json: publieke pagina ${route} krijgt X-Robots-Tag noindex (guard 25b)`);
+
+  const robotsFile = path.join(distDir, "robots.txt");
+  if (!fs.existsSync(robotsFile)) failures.push("dist/robots.txt ontbreekt (guard 25c)");
+  else {
+    const groups = [];
+    let g = null, lastWasAgent = false;
+    for (const raw of fs.readFileSync(robotsFile, "utf8").split("\n")) {
+      const line = raw.replace(/#.*/, "").trim();
+      const m = /^([A-Za-z-]+)\s*:\s*(.*)$/.exec(line);
+      if (!m) continue;
+      const key = m[1].toLowerCase(), val = m[2].trim();
+      if (key === "user-agent") { if (!lastWasAgent) { g = { agents: [], rules: [] }; groups.push(g); } g.agents.push(val.toLowerCase()); lastWasAgent = true; continue; }
+      lastWasAgent = false;
+      if (g && (key === "allow" || key === "disallow") && val) g.rules.push({ allow: key === "allow", path: val });
+    }
+    const ruleRe = (p) => new RegExp("^" + p.replace(/[.+?^{}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\\?\$$/, "$").replace(/\$(?!$)/g, "\\$"));
+    // RFC 9309: langste match wint, bij gelijke lengte wint Allow.
+    const blocked = (grp, p) => {
+      let best = null;
+      for (const r of grp.rules) if (ruleRe(r.path).test(p) && (!best || r.path.length > best.path.length || (r.path.length === best.path.length && r.allow))) best = r;
+      return Boolean(best && !best.allow);
+    };
+    const publicRoutes = [...seen, "/writing/x", "/en/writing/x"];
+    for (const grp of groups) {
+      const who = grp.agents.join(", ");
+      for (const p of publicRoutes) if (blocked(grp, p)) failures.push(`robots.txt [${who}]: blokkeert publieke pagina ${p} (guard 25c)`);
+      if (grp.agents.some((a) => a === "*" || a === "googlebot" || a === "bingbot")) {
+        for (const p of samples) if (blocked(grp, p)) failures.push(`robots.txt [${who}]: Disallow op ${p}, daardoor kan de zoekmachine de X-Robots-Tag noindex nooit lezen (guard 25c)`);
+      }
+    }
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /en-pagina heeft een NL-tweeling en andersom.
 for (const route of seen) {
   if ((route === "/en" || route.startsWith("/en/")) && !route.startsWith("/en/writing/")) {
@@ -644,4 +696,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (23 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (24 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex/app-routes-noindex).`);

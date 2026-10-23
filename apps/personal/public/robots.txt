@@ -1,28 +1,13 @@
+# Zoekmachines (Googlebot, Bingbot, *): geen Disallow op de app-routes (/portal, /write, /samantha,
+# /god-structure, /dashboards, /bijlagen, /blog-cms, /extensions, ...). Die krijgen via vercel.json
+# X-Robots-Tag: noindex, nofollow; achter een Disallow kan Google die noindex nooit lezen en blijft
+# de URL als "geindexeerd, ondanks blokkering" staan. Guard 25 bewaakt beide kanten.
+# AI-crawlers (GPTBot, CCBot, ClaudeBot) houden hun Disallow: zij lezen geen noindex.
 User-agent: Googlebot
 Allow: /
-Disallow: /bijlagen
-Disallow: /cowork
-Disallow: /portal
-Disallow: /dashboards
-Disallow: /samantha
-Disallow: /god-structure
-Disallow: /empire
-Disallow: /extensions/
-Disallow: /write
-Disallow: /blog-cms
 
 User-agent: Bingbot
 Allow: /
-Disallow: /bijlagen
-Disallow: /cowork
-Disallow: /portal
-Disallow: /dashboards
-Disallow: /samantha
-Disallow: /god-structure
-Disallow: /empire
-Disallow: /extensions/
-Disallow: /write
-Disallow: /blog-cms
 
 User-agent: Twitterbot
 Allow: /
@@ -90,15 +75,5 @@ Allow: /
 
 User-agent: *
 Allow: /
-Disallow: /bijlagen
-Disallow: /cowork
-Disallow: /portal
-Disallow: /dashboards
-Disallow: /samantha
-Disallow: /god-structure
-Disallow: /empire
-Disallow: /extensions/
-Disallow: /write
-Disallow: /blog-cms
 
 Sitemap: https://hansvanleeuwen.com/sitemap.xml

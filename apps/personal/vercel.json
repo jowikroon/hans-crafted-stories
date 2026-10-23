@@ -252,7 +252,25 @@
   ],
   "headers": [
     {
-      "source": "/bijlagen",
+      "source": "/(portal|bijlagen|wiki|god-structure|samantha|release-set|music-cms|write|dashboards|blog-cms|auth|extensions|cowork|empire)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(portal|bijlagen|wiki|god-structure|samantha|release-set|music-cms|write|dashboards|blog-cms|auth|extensions|cowork|empire)/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/muziek/artist-radar",
       "headers": [
         {
           "key": "X-Robots-Tag",
