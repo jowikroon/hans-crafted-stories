@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://hansvanleeuwen.com/</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/" />
@@ -11,7 +11,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/" />
@@ -20,7 +20,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/work</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/work" />
@@ -29,7 +29,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/work</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/work" />
@@ -38,7 +38,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/work/connect-car-parts</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/work/connect-car-parts" />
@@ -47,7 +47,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/work/connect-car-parts</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/work/connect-car-parts" />
@@ -56,7 +56,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/about</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/about" />
@@ -65,7 +65,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/about</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/about" />
@@ -164,7 +164,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/rates</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/rates" />
@@ -173,7 +173,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/rates</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/rates" />
@@ -182,7 +182,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/privacy</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/privacy" />
@@ -191,7 +191,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/privacy</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/privacy" />
@@ -218,7 +218,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/music</loc>
-    <lastmod>2026-10-15</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
