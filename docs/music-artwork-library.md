@@ -7,9 +7,10 @@ The gallery filters by image category, album, song, intended channel, source col
 ## Storage and access
 
 - `public.music_artwork_assets`: one row per original SHA-256, with a `family_key` connecting related designs, exports and studies. `origins` retains collection, relative file and edition. No private lyrics, biographies, credentials or absolute workstation paths are stored here.
-- Private `music-artwork` bucket: immutable `originals/<sha>.<ext>` and separate `thumbnails/<sha>.webp`. Originals retain their original bytes and dimensions.
+- Private `music-artwork` bucket on Cloudflare R2 (moved from Supabase Storage on 23 October 2026 to stay inside the free storage quota; keys unchanged): immutable `originals/<sha>.<ext>`, separate `thumbnails/<sha>.webp` and `videos/`. Originals retain their original bytes and dimensions.
+- Signed URLs come from the `artwork-sign` edge function. It checks `public.is_admin()` with the caller's session and signs R2 GET URLs server-side; R2 keys are edge-function secrets and never reach the browser.
 - RLS uses the existing `public.is_admin()` check. Authenticated non-admins cannot read artwork metadata or objects; anonymous users have no metadata grants. Imports run server-side using the existing backend credential. The browser only uses its existing user session and short-lived signed URLs.
-- Metadata is paginated past PostgREST's row cap. Only the visible page's previews are signed. Previews refresh before expiry; original download URLs last 60 seconds. No public storage URLs are used.
+- Metadata is paginated past PostgREST's row cap. Only the visible page's previews are signed. Previews refresh before expiry; original download URLs last 60 seconds. No public storage URLs are used; the R2 bucket has no public access.
 
 ## Initial import, 25 September 2026
 

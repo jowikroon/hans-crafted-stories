@@ -2,17 +2,27 @@ import { Blob as NodeBlob } from "node:buffer";
 import { createHash, webcrypto } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ rpc: vi.fn(), range: vi.fn(), signed: vi.fn(), single: vi.fn(), from: vi.fn() }));
+const mocks = vi.hoisted(() => ({ rpc: vi.fn(), range: vi.fn(), signed: vi.fn(), single: vi.fn(), from: vi.fn(), invoke: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {
   rpc: mocks.rpc,
   from: mocks.from,
-  storage: { from: () => ({ createSignedUrls: mocks.signed, createSignedUrl: mocks.single }) },
+  functions: { invoke: mocks.invoke },
 } }));
 import { listArtwork, previewUrls, playbackUrl, originalVideoBlob } from "./artworkStore";
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.from.mockReturnValue({ select: () => ({ order: () => ({ range: mocks.range }) }) });
+  // Route the artwork-sign edge function to the same per-path mocks as before:
+  // a multi-path request maps to `signed`, a single-path request to `single`.
+  mocks.invoke.mockImplementation(async (_name: string, { body }: { body: { paths: string[]; expires: number; download?: string } }) => {
+    if (body.paths.length > 1 || mocks.signed.getMockImplementation()) {
+      const r = await mocks.signed(body.paths, body.expires);
+      return { data: r?.data ? { urls: r.data } : null, error: r?.error ?? null };
+    }
+    const r = await mocks.single(body.paths[0], body.expires, ...(body.download ? [{ download: body.download }] : []));
+    return { data: r?.data ? { urls: [{ path: body.paths[0], signedUrl: r.data.signedUrl }] } : null, error: r?.error ?? null };
+  });
 });
 
 describe("private artwork store", () => {
@@ -28,7 +38,17 @@ describe("private artwork store", () => {
     expect(mocks.range).toHaveBeenNthCalledWith(2, 500, 999);
   });
   it("does not request original files when the preview list is empty", async () => {
-    expect(await previewUrls([])).toEqual({}); expect(mocks.signed).not.toHaveBeenCalled();
+    expect(await previewUrls([])).toEqual({}); expect(mocks.invoke).not.toHaveBeenCalled();
+  });
+  it("signs previews through the admin-gated artwork-sign function", async () => {
+    mocks.invoke.mockResolvedValueOnce({ data: { urls: [{ path: "thumbnails/a.webp", signedUrl: "https://r2.test/a" }] }, error: null });
+    const assets = [{ thumbnail_path: "thumbnails/a.webp" }, { thumbnail_path: "thumbnails/a.webp" }] as import("./artworkModel").ArtworkAsset[];
+    expect(await previewUrls(assets)).toEqual({ "thumbnails/a.webp": "https://r2.test/a" });
+    expect(mocks.invoke).toHaveBeenCalledWith("artwork-sign", { body: { paths: ["thumbnails/a.webp"], expires: 900, download: undefined } });
+  });
+  it("reports a failed signing call instead of showing broken previews", async () => {
+    mocks.invoke.mockResolvedValueOnce({ data: null, error: new Error("403") });
+    await expect(previewUrls([{ thumbnail_path: "thumbnails/a.webp" }] as import("./artworkModel").ArtworkAsset[])).rejects.toThrow("previews");
   });
 });
 
