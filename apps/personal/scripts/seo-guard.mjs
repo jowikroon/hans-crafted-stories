@@ -700,7 +700,8 @@ const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
     ["/hire", "/interim-ecommerce-manager"],
     ["/amazon-specialist", "/amazon-nl-specialist"],
     ["/bol-consultant", "/bol-com-consultant"],
-    ["/freelance-ecommerce-manager", "/interim-ecommerce-manager"],
+    // Zelfde inhuurintentie als /writing/freelance-e-commerce-manager-inhuren (HAN-188, PR #419).
+    ["/freelance-ecommerce-manager", "/webshopbeheerder-inhuren"],
     ["/case-studies", "/work"],
     ["/work/abs", "/work"],
     ["/rss.xml", "/feed.xml"],
