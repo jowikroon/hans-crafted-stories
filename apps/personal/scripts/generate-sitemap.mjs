@@ -141,6 +141,24 @@ const urls = [
     }),
 ];
 
+// Guard 28b (2026-10-23): sinds de /writing/:slug- en /en/writing/:slug-rewrites weg zijn, geeft een
+// URL zonder geprerenderd bestand in dist een echte 404. Elke sitemap-URL moet dus een bestand hebben.
+// Statische route zonder pagina = codefout: build faalt. Artikel zonder pagina (gepubliceerd tussen
+// prerender en deze fetch) = weglaten met waarschuwing; de content-redeploy-watch bouwt opnieuw.
+const hasPage = (loc) => {
+  const route = new URL(loc).pathname;
+  return fs.existsSync(path.join(appDir, "dist", route === "/" ? "" : route.slice(1), "index.html"));
+};
+const staticLocs = new Set(STATIC_ROUTES.map((r) => r.loc));
+const missingStatic = urls.filter((u) => staticLocs.has(u.loc) && !hasPage(u.loc));
+if (missingStatic.length) {
+  console.error(`[sitemap] ${missingStatic.length} statische route(s) zonder pagina in dist (zou 404 geven): ${missingStatic.map((u) => u.loc).join(", ")}`);
+  process.exit(1);
+}
+const missingPosts = urls.filter((u) => !staticLocs.has(u.loc) && !hasPage(u.loc));
+if (missingPosts.length) console.warn(`[sitemap] ${missingPosts.length} artikel-URL('s) zonder geprerenderde pagina weggelaten: ${missingPosts.map((u) => u.loc).join(", ")}`);
+for (const u of missingPosts) urls.splice(urls.indexOf(u), 1);
+
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls

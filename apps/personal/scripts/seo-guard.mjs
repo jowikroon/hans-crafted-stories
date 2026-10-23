@@ -46,6 +46,7 @@
  *  25. app-routes (rewrites naar de homepage-snapshot) krijgen X-Robots-Tag noindex via vercel.json, en
  *      robots.txt blokkeert die paden niet voor zoekmachines en blokkeert nergens een publieke pagina
  *  26. /writing/index en gokbare/oude URL's (/contact, /services, ...) zijn 308's naar bestaande pagina's
+ *  28. geen rewrite maakt een onbekend /writing-, /en/writing-, /work- of /music-pad tot 200 (soft-404)
  *  27. dist/feed.xml is geldige RSS 2.0 met alle geprerenderde artikelen; /rss.xml is een 308 erheen
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
@@ -704,6 +705,14 @@ const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
     ["/freelance-ecommerce-manager", "/webshopbeheerder-inhuren"],
     ["/case-studies", "/work"],
     ["/work/abs", "/work"],
+    // EN-varianten (2026-10-23, ronde 3): alleen waar de EN-doelpagina bestaat.
+    ["/en/contact", "/en/about#contact"],
+    ["/en/services", "/en"],
+    ["/en/hire", "/en/interim-ecommerce-manager"],
+    ["/en/amazon-specialist", "/en/amazon-nl-specialist"],
+    ["/en/bol-consultant", "/en/bol-com-consultant"],
+    ["/en/freelance-ecommerce-manager", "/en/webshopbeheerder-inhuren"],
+    ["/en/case-studies", "/en/work"],
     ["/rss.xml", "/feed.xml"],
   ];
   const plain = (vercelCfg.redirects || []).filter((r) => !r.has && !r.missing);
@@ -756,6 +765,24 @@ const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
   }
 }
 
+
+// 28. Soft-404 op contentpaden (2026-10-23, ronde 3): een onbekende /writing/<slug> of
+//     /en/writing/<slug> gaf 200 met de homepage-snapshot (canonical "/", index), omdat vercel.json
+//     die paden naar /index.html herschreef. Vercel past rewrites pas toe als er geen bestand is, dus
+//     elke rewrite die een contentpad raakt maakt van "bestaat niet" een indexeerbare 200. Zonder
+//     rewrite serveert Vercel dist/404.html met status 404; die laadt de SPA, dus een concept of een
+//     net gepubliceerd artikel rendert in de browser nog steeds (tot de content-redeploy het prerendert).
+//     Regel: geen rewrite matcht een onbekend pad onder de contentsecties of op het hoogste niveau.
+//     Bestaande pagina's blijven 200 (bestand); generate-sitemap controleert dat elke sitemap-URL een
+//     bestand heeft (28b).
+{
+  const probes = ["/writing/onbekend-artikel-x", "/en/writing/onbekend-artikel-x", "/work/onbekend-x", "/en/work/onbekend-x", "/music/onbekend-x", "/onbekend-x", "/en/onbekend-x"];
+  for (const p of probes) {
+    const rw = (vercelCfg.rewrites || []).find((r) => !r.has && !r.missing && vercelSourceRegex(r.source).test(p));
+    if (rw) failures.push(`vercel.json: rewrite "${rw.source}" → ${rw.destination} raakt onbekend contentpad ${p}: soft-404 (200 i.p.v. 404, guard 28)`);
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /en-pagina heeft een NL-tweeling en andersom.
 for (const route of seen) {
   if ((route === "/en" || route.startsWith("/en/")) && !route.startsWith("/en/writing/")) {
@@ -769,4 +796,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (26 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex/app-routes-noindex/redirects/rss-feed).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (27 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex/app-routes-noindex/redirects/rss-feed/geen-soft-404).`);

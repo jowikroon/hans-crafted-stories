@@ -51,6 +51,9 @@ jobs:
       - run: npm run test:images --workspace=@hans/personal
         if: steps.changes.outputs.relevant == 'true'
 
+      - run: npm run test:bundle --workspace=@hans/personal
+        if: steps.changes.outputs.relevant == 'true'
+
       - run: npm run build:personal
         if: steps.changes.outputs.relevant == 'true'
 

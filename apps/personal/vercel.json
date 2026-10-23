@@ -257,6 +257,41 @@
       "permanent": true
     },
     {
+      "source": "/en/contact",
+      "destination": "/en/about#contact",
+      "permanent": true
+    },
+    {
+      "source": "/en/services",
+      "destination": "/en",
+      "permanent": true
+    },
+    {
+      "source": "/en/hire",
+      "destination": "/en/interim-ecommerce-manager",
+      "permanent": true
+    },
+    {
+      "source": "/en/amazon-specialist",
+      "destination": "/en/amazon-nl-specialist",
+      "permanent": true
+    },
+    {
+      "source": "/en/bol-consultant",
+      "destination": "/en/bol-com-consultant",
+      "permanent": true
+    },
+    {
+      "source": "/en/freelance-ecommerce-manager",
+      "destination": "/en/webshopbeheerder-inhuren",
+      "permanent": true
+    },
+    {
+      "source": "/en/case-studies",
+      "destination": "/en/work",
+      "permanent": true
+    },
+    {
       "source": "/rss.xml",
       "destination": "/feed.xml",
       "permanent": true
@@ -294,14 +329,6 @@
     },
     {
       "source": "/muziek/artist-radar",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/writing/:slug",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/en/writing/:slug",
       "destination": "/index.html"
     }
   ],
