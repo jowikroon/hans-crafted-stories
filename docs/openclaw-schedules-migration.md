@@ -14,8 +14,24 @@ Target session:
 | `ebay-de-launch-order-watch` | Cowork scheduled-tasks registry | OpenClaw cron | launch week, every 2h 08:00-20:00 |
 | `ebay-de-golive-audit` | Cowork scheduled audit | OpenClaw cron | daily 07:25 |
 | `autoseo-weekly` | n8n schedule trigger | OpenClaw cron | Monday 06:00 |
+| `hansai-memory-cleanup-weekly` | claude.ai scheduled routine (cloud env) | OpenClaw cron | Sunday 07:40 |
 
 The canonical desired jobs live in [`ops/openclaw/cron-jobs.json`](../ops/openclaw/cron-jobs.json).
+
+### Why `hansai-memory-cleanup-weekly` moves
+
+The memory-cleanup routine audits the `openclaw` user's Claude Code auto-memory
+(`/home/openclaw/.claude/projects/-home-openclaw/memory/`) against the
+`CLAUDE.md` / `.claude.local.md` files under `/home/openclaw/{openclaw,hcs,marketplacegrowth}`.
+Its stored prompt used paths relative to `/home/openclaw`, but the routine was
+attached to a claude.ai cloud environment that clones `hans-crafted-stories`
+into `/home/user/…`. That environment has none of those paths, so every run
+(first observed 2026-09-05) reported all files missing and audited 0 memory files.
+
+The job therefore has to run on the host that owns `/home/openclaw`. The
+`cron-jobs.json` entry rewrites the prompt with absolute paths, a precheck that
+refuses to run when the memory directory is absent, and dynamic discovery of
+extra `CLAUDE.md` files so a future workspace does not need a prompt edit.
 
 ## Live inventory, 2026-07-15
 
@@ -174,7 +190,31 @@ openclaw cron create \
   --session "agent:connectcarparts:main" \
   --message "Run the weekly AutoSEO workflow through the existing webhook/orchestrator path. Keep n8n as execution engine only where credentials/workflow nodes still live; OpenClaw is now the scheduler and reporting owner. Summarize what ran, changed, or failed." \
   --announce
+
+# Memory cleanup: the message body is long, so pull it from cron-jobs.json
+# rather than retyping it. Run from the repo root on the VPS.
+openclaw cron create \
+  --name "HansAI memory cleanup weekly audit" \
+  --cron "40 7 * * 0" \
+  --tz "Europe/Amsterdam" \
+  --session "agent:connectcarparts:main" \
+  --message "$(jq -r '.jobs[] | select(.id=="hansai-memory-cleanup-weekly") | .payload.text' ops/openclaw/cron-jobs.json)" \
+  --announce
 ```
+
+Before the first manual run of the memory-cleanup job, confirm the agent host
+can actually see the memory directory — the job's own precheck reports and
+stops if it cannot:
+
+```sh
+ls /home/openclaw/.claude/projects/-home-openclaw/memory/
+```
+
+If the OpenClaw agent runs in a container that does not mount `/home/openclaw`,
+create the job as a `command` job instead, running Claude Code headless with
+that directory as cwd, for example
+`claude -p "$(jq -r '.jobs[] | select(.id=="hansai-memory-cleanup-weekly") | .payload.text' ops/openclaw/cron-jobs.json)"`
+with `--command-cwd /home/openclaw`.
 
 Then verify:
 
@@ -191,6 +231,9 @@ After each OpenClaw job has one successful manual run and appears in `openclaw c
 - Cloudflare: nothing to disable — the edge worker (`hans-crafted-stories`, root `wrangler.toml`) ships without a cron trigger; keep it that way so this job stays the only clock.
 - Cowork: disable `ebay-de-launch-order-watch` and the daily go-live audit in the scheduled-tasks registry.
 - n8n: disable only the Schedule Trigger node for AutoSEO; keep webhook/manual execution intact.
+- claude.ai: delete the "HansAI Memory Cleanup" scheduled routine on the
+  hans-crafted-stories cloud environment. It cannot be repaired in place — the
+  cloud environment will never have `/home/openclaw`.
 
 ## Notes
 
