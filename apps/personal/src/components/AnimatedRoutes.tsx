@@ -1,5 +1,3 @@
-import PortalNotes from '@/pages/PortalNotes';
-import PortalLaunch from '@/pages/PortalLaunch';
 import { Routes, Route, useLocation, Navigate, useParams } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense, type ComponentType } from "react";
@@ -13,8 +11,6 @@ import MusicSong from "@/pages/MusicSong";
 import ArtistRadar from "@/pages/ArtistRadar";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
-import Portal from "@/pages/Portal";
-import Wiki from "@/pages/Wiki";
 import Privacy from "@/pages/Privacy";
 import Rates from "@/pages/Rates";
 import AuthCallback from "@/pages/AuthCallback";
@@ -25,11 +21,18 @@ import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
 import AiEcommerceAutomation from "@/pages/AiEcommerceAutomation";
 import WebshopbeheerderInhuren from "@/pages/WebshopbeheerderInhuren";
 import CaseStudyDetail from "@/pages/CaseStudyDetail";
-import GodStructure from "@/pages/GodStructure";
-import SamanthaAI from "@/pages/SamanthaAI";
 
 /* WriteCMS is lazy-loaded — full Blog CMS shell at /write (3-mode: Write/Manage/Analytics).
    BlogCMS is kept for /blog-cms/voice/:id route only (VoiceTemplateEditor still uses it). */
+// Privé-routes lazy (2026-10-23): statisch geïmporteerd trokken Portal (RichTextEditor: Tiptap/ProseMirror +
+// turndown, HealthDetailDrawer: recharts) en GodStructure (recharts) die libraries in de App-chunk van elke
+// publieke pagina (770 kB gzip eager JS). Bewaakt door scripts/bundle-guard.mjs.
+const PortalNotes = lazy(() => import("@/pages/PortalNotes"));
+const PortalLaunch = lazy(() => import("@/pages/PortalLaunch"));
+const Portal = lazy(() => import("@/pages/Portal"));
+const Wiki = lazy(() => import("@/pages/Wiki"));
+const GodStructure = lazy(() => import("@/pages/GodStructure"));
+const SamanthaAI = lazy(() => import("@/pages/SamanthaAI"));
 const WriteCMS = lazy(() => import(/* webpackChunkName: "write-cms" */ "@/pages/WriteCMS"));
 
 /* MusicCMS — songwriter Command Center op /music-cms, zusje van /write.
@@ -81,8 +84,8 @@ const AnimatedRoutes = () => {
     <RouteErrorBoundary>
     <AnimatePresence initial={false}>
       <Routes location={location} key={location.pathname}>
-        <Route path="/portal/notes" element={<PortalNotes />} />
-        <Route path="/portal/launch" element={<PortalLaunch />} />
+        <Route path="/portal/notes" element={<Suspense fallback={<BlogCMSFallback />}><PortalNotes /></Suspense>} />
+        <Route path="/portal/launch" element={<Suspense fallback={<BlogCMSFallback />}><PortalLaunch /></Suspense>} />
         {/* Eén URL per taal (HAN-167/HAN-83): elke gelokaliseerde route bestaat als
             EN-pad én als /nl-pad. De taal komt uit de URL (zie hooks/useLang). */}
         {LANG_PREFIXES.map((prefix) => (
@@ -124,7 +127,7 @@ const AnimatedRoutes = () => {
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/webshopbeheerder-inhuren`} path={`${prefix}/webshopbeheerder-inhuren`} element={<PageTransition><WebshopbeheerderInhuren /></PageTransition>} />
         ))}
-        <Route path="/portal" element={<PageTransition><Portal /></PageTransition>} />
+        <Route path="/portal" element={<PageTransition><Suspense fallback={<BlogCMSFallback />}><Portal /></Suspense></PageTransition>} />
         <Route path="/write" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/write/:id" element={<Suspense fallback={<BlogCMSFallback />}><WriteCMS /></Suspense>} />
         <Route path="/music-cms" element={<Suspense fallback={<BlogCMSFallback />}><MusicCMS /></Suspense>} />
@@ -139,9 +142,9 @@ const AnimatedRoutes = () => {
         <Route path="/dashboards/mpg" element={<Suspense fallback={<BlogCMSFallback />}><DashboardsMpg /></Suspense>} />
         <Route path="/blog-cms" element={<BlogCMSToWriteRedirect />} />
         <Route path="/blog-cms/voice/:id" element={<Suspense fallback={<BlogCMSFallback />}><VoiceTemplateEditor /></Suspense>} />
-        <Route path="/wiki" element={<PageTransition><Wiki /></PageTransition>} />
-        <Route path="/god-structure" element={<GodStructure />} />
-        <Route path="/samantha" element={<SamanthaAI />} />
+        <Route path="/wiki" element={<PageTransition><Suspense fallback={<BlogCMSFallback />}><Wiki /></Suspense></PageTransition>} />
+        <Route path="/god-structure" element={<Suspense fallback={<BlogCMSFallback />}><GodStructure /></Suspense>} />
+        <Route path="/samantha" element={<Suspense fallback={<BlogCMSFallback />}><SamanthaAI /></Suspense>} />
         <Route path="/empire" element={<Navigate to="/samantha" replace />} />
         <Route path="/hansai" element={<Navigate to="/samantha" replace />} />
         <Route path="/hans-ai" element={<Navigate to="/samantha" replace />} />
