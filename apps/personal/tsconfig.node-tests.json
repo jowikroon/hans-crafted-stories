@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "node"],
+    "allowJs": true
+  },
+  "include": ["src/test/publicWebrootGuard.test.ts", "src/vite-env.d.ts"],
+  "exclude": []
+}
