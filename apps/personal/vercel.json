@@ -255,6 +255,11 @@
       "source": "/work/abs",
       "destination": "/work",
       "permanent": true
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "/feed.xml",
+      "permanent": true
     }
   ],
   "trailingSlash": false,
@@ -370,6 +375,19 @@
     {
       "source": "/(robots.txt|sitemap.xml|llms.txt)",
       "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/feed.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/rss+xml; charset=utf-8"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600"

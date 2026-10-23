@@ -61,6 +61,7 @@ const {
   clearRootHtml,
   replaceSsrFallbackHtml,
   serializeJsonForHtmlScript,
+  buildRssFeed,
   detectBlogPostLang,
   primaryBlogPostLang,
   localizeBlogPost,
@@ -538,6 +539,20 @@ for (const [slug, blogPost] of postBySlug) {
 // Bron voor generate-sitemap.mjs: welke artikelen een /en/writing-versie hebben.
 fs.writeFileSync(path.join(distDir, "article-pairs.json"), JSON.stringify(articlePairs, null, 1), "utf8");
 console.log(`[prerender] ${articlePairs.length} artikelparen NL/EN -> dist/article-pairs.json`);
+
+// RSS-feed (2026-10-23): /feed.xml uit precies de artikelen die hierboven als pagina zijn geschreven,
+// in hun primaire taal. Kanaaltitel en -beschrijving = de /writing-head (translations.nl.seo).
+// /rss.xml is een 308 hierheen (vercel.json). Guard 27.
+{
+  const feed = buildRssFeed([...postBySlug.values()], {
+    title: translations.nl.seo.writingTitle,
+    description: translations.nl.seo.writingDescription,
+    link: `${BASE}/writing`,
+    language: "nl",
+  });
+  fs.writeFileSync(path.join(distDir, "feed.xml"), feed, "utf8");
+  console.log(`[prerender] feed.xml: ${postBySlug.size} artikelen -> ${path.join(distDir, "feed.xml")}`);
+}
 
 /* ───────────────────────────── / (home) ───────────────────────────── */
 {

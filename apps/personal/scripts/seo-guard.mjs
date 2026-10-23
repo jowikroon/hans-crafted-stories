@@ -46,6 +46,7 @@
  *  25. app-routes (rewrites naar de homepage-snapshot) krijgen X-Robots-Tag noindex via vercel.json, en
  *      robots.txt blokkeert die paden niet voor zoekmachines en blokkeert nergens een publieke pagina
  *  26. /writing/index en gokbare/oude URL's (/contact, /services, ...) zijn 308's naar bestaande pagina's
+ *  27. dist/feed.xml is geldige RSS 2.0 met alle geprerenderde artikelen; /rss.xml is een 308 erheen
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
@@ -702,6 +703,7 @@ const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
     ["/freelance-ecommerce-manager", "/interim-ecommerce-manager"],
     ["/case-studies", "/work"],
     ["/work/abs", "/work"],
+    ["/rss.xml", "/feed.xml"],
   ];
   const plain = (vercelCfg.redirects || []).filter((r) => !r.has && !r.missing);
   for (const [src, dest] of REQUIRED) {
@@ -720,6 +722,39 @@ const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
   }
 }
 
+// 27. RSS-feed (2026-10-23): /feed.xml en /rss.xml gaven 404. dist/feed.xml is geldige RSS 2.0, bevat
+//     precies de geprerenderde primaire artikelpagina's (/writing/<slug>), elk item linkt naar een
+//     bestaande pagina, en de head van de homepage verwijst ernaar (rel=alternate).
+{
+  const feedFile = path.join(distDir, "feed.xml");
+  if (!fs.existsSync(feedFile)) failures.push("dist/feed.xml ontbreekt (prerender schrijft de RSS-feed niet meer, guard 27)");
+  else {
+    const xmlText = fs.readFileSync(feedFile, "utf8");
+    try {
+      const { JSDOM } = createRequire(import.meta.url)("jsdom");
+      const doc = new JSDOM(xmlText, { contentType: "application/xml" }).window.document;
+      if (doc.getElementsByTagName("parsererror").length) throw new Error("parsererror");
+      const rss = doc.documentElement;
+      if (rss.nodeName !== "rss" || rss.getAttribute("version") !== "2.0") failures.push("feed.xml: geen <rss version=\"2.0\"> (guard 27)");
+      const links = [...doc.querySelectorAll("channel > item > link")].map((l) => l.textContent.trim());
+      const items = doc.querySelectorAll("channel > item").length;
+      if (links.length !== items) failures.push(`feed.xml: ${items - links.length} item(s) zonder <link> (guard 27)`);
+      for (const l of links) {
+        if (!l.startsWith(`${BASE}/`)) { failures.push(`feed.xml: item-link ${l} niet op ${BASE} (guard 27)`); continue; }
+        if (!pageExistsG(l.slice(BASE.length))) failures.push(`feed.xml: item-link ${l} heeft geen geprerenderde pagina (guard 27)`);
+      }
+      const articles = [...seen].filter((r) => /^\/writing\/[^/]+$/.test(r)).map((r) => `${BASE}${r}`);
+      const missing = articles.filter((a) => !links.includes(a));
+      if (missing.length) failures.push(`feed.xml: ${missing.length} geprerenderd(e) artikel(en) ontbreken in de feed, bv. ${missing.slice(0, 3).join(", ")} (guard 27)`);
+      if (!articles.length) failures.push("feed.xml: geen geprerenderde artikelen gevonden om tegen te controleren (guard 27)");
+    } catch (e) {
+      failures.push(`feed.xml: geen geldige XML (${e.message}, guard 27)`);
+    }
+    const home = fs.readFileSync(path.join(distDir, "index.html"), "utf8");
+    if (!/<link rel="alternate" type="application\/rss\+xml"[^>]*href="https:\/\/hansvanleeuwen\.com\/feed\.xml"/.test(home)) failures.push("index.html: geen <link rel=\"alternate\" type=\"application/rss+xml\"> naar /feed.xml (guard 27)");
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /en-pagina heeft een NL-tweeling en andersom.
 for (const route of seen) {
   if ((route === "/en" || route.startsWith("/en/")) && !route.startsWith("/en/writing/")) {
@@ -733,4 +768,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (25 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex/app-routes-noindex/redirects).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (26 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex/app-routes-noindex/redirects/rss-feed).`);
