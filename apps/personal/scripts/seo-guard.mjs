@@ -42,6 +42,7 @@
  *  23. interne links in de juiste taal: /en-pagina linkt niet naar /writing/<slug> als de EN-versie
  *      bestaat, geen dode /en/writing-links, en elke /en-route heeft een inkomende link van een andere
  *      /en-pagina (HAN-184, 2026-10-14)
+ *  24. Cloudflare-mirror: dist/_headers zet X-Robots-Tag noindex op *.pages.dev, nooit op het productiedomein
  *  18. geen em dash (AI-merkteken, Hans 2026-09-24): faalt op publieke codestrings
  *      (dist/__edit/source-map.json), index.html en public/ (cowork/ uitgezonderd, interne
  *      documenten die apart offline gaan); geprerenderde pagina's alleen als waarschuwing,
@@ -572,6 +573,64 @@ for (const route of seen) {
   if (warn23.length) console.warn(`[seo-guard] let op (guard 23a, data): ${warn23.length} NL-artikellink(s) in Engelse artikelteksten, werk blog_posts.content bij: ${warn23.slice(0, 10).join(" | ")}`);
 }
 
+// ── Hulpjes voor guards 24-27: vercel.json-source → RegExp (path-to-regexp-subset dat vercel.json
+//    gebruikt, nagemeten met @vercel/routing-utils) en robots.txt-matching volgens RFC 9309. ──
+const appDirG = path.resolve(distDir, "..");
+const vercelCfg = (() => {
+  try { return JSON.parse(fs.readFileSync(path.join(appDirG, "vercel.json"), "utf8")); }
+  catch (e) { failures.push(`guards 24-27: vercel.json onleesbaar (${e.message})`); return { redirects: [], rewrites: [], headers: [] }; }
+})();
+function vercelSourceRegex(src) {
+  let re = "";
+  for (let i = 0; i < src.length;) {
+    const rest = src.slice(i);
+    const param = /^\/:([A-Za-z0-9_]+)([*+?])?/.exec(rest);
+    if (param) { re += param[2] === "*" ? "(?:/.*)?" : param[2] === "+" ? "/.+" : param[2] === "?" ? "(?:/[^/]+)?" : "/[^/]+"; i += param[0].length; continue; }
+    const group = /^\((?:[^()\\]|\\.)*\)/.exec(rest);
+    if (group) { re += `(?:${group[0].slice(1, -1)})`; i += group[0].length; continue; }
+    re += src[i].replace(/[.+?^${}|[\]\\*]/g, "\\$&");
+    i += 1;
+  }
+  return new RegExp(`^${re}$`);
+}
+// Concrete voorbeeldpaden uit een source: (a|b) wordt elk alternatief, :param en (.*) worden "x".
+function expandSource(src) {
+  const alt = /\(([A-Za-z0-9_-]+(?:\|[A-Za-z0-9_-]+)+)\)/.exec(src);
+  if (alt) return alt[1].split("|").flatMap((a) => expandSource(src.slice(0, alt.index) + a + src.slice(alt.index + alt[0].length)));
+  return [src.replace(/:[A-Za-z0-9_]+[*+?]?/g, "x").replace(/\(\.\*\)/g, "x")];
+}
+const pageExistsG = (route) => fs.existsSync(route === "/" ? path.join(distDir, "index.html") : path.join(distDir, route.slice(1), "index.html"));
+const robotsHeaderRules = (vercelCfg.headers || [])
+  .filter((h) => (h.headers || []).some((x) => x.key.toLowerCase() === "x-robots-tag" && /\bnoindex\b/i.test(x.value)))
+  .map((h) => vercelSourceRegex(h.source));
+const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
+
+// 24. Cloudflare Pages-mirror noindex (2026-10-23): hansvanleeuwen.pages.dev gaf 200 met
+//     "index, follow" (canonical wees wel naar .com) = een tweede kopie van de site in de indexpool.
+//     dist/_headers (Cloudflare leest het, Vercel negeert het) moet voor de pages.dev-host én de
+//     preview-hosts X-Robots-Tag: noindex zetten, en mag dat nergens voor het productiedomein doen.
+{
+  const file = path.join(distDir, "_headers");
+  if (!fs.existsSync(file)) failures.push("dist/_headers ontbreekt: de Cloudflare-mirror krijgt geen noindex (guard 24)");
+  else {
+    const rules = new Map();
+    let current = null;
+    for (const line of fs.readFileSync(file, "utf8").split("\n")) {
+      const t = line.trim();
+      if (!t || t.startsWith("#")) continue;
+      if (!/^\s/.test(line)) { current = t; if (!rules.has(t)) rules.set(t, []); continue; }
+      if (current) rules.get(current).push(t);
+    }
+    const isNoindex = (h) => /^x-robots-tag:\s*.*\bnoindex\b/i.test(h);
+    for (const pat of ["https://:project.pages.dev/*", "https://:version.:project.pages.dev/*"]) {
+      if (!(rules.get(pat) || []).some(isNoindex)) failures.push(`dist/_headers: geen "X-Robots-Tag: noindex" onder ${pat}: de Cloudflare-mirror is indexeerbaar (guard 24)`);
+    }
+    for (const [pat, hs] of rules) {
+      if (!/\.pages\.dev\//.test(pat) && hs.some(isNoindex)) failures.push(`dist/_headers: regel "${pat}" zet noindex buiten pages.dev, dus ook op hansvanleeuwen.com (guard 24)`);
+    }
+  }
+}
+
 // Wederkerigheid vanuit de andere kant: elke /en-pagina heeft een NL-tweeling en andersom.
 for (const route of seen) {
   if ((route === "/en" || route.startsWith("/en/")) && !route.startsWith("/en/writing/")) {
@@ -585,4 +644,4 @@ if (failures.length) {
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (23 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links).`);
+console.log(`[seo-guard] OK: ${seen.size} pagina's voldoen (23 checks: h1/title/canonical/description/lang/hreflang/inLanguage/noindex/music/404/aliassen/variatie/contrast/artikeltaal/soft404-noindex/home-title-pariteit/intentwoord-scheiding/geen-em-dash/artikelparen/directory-listings/gsc-vraagtermen/taal-van-interne-links/mirror-noindex).`);

@@ -30,3 +30,12 @@
 /llms.txt
   Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=3600
+
+# Cloudflare Pages-mirror (hansvanleeuwen.pages.dev en preview-URL's per commit) mag niet in de
+# index: live is Vercel op hansvanleeuwen.com. Absolute-URL-regels gelden alleen voor die host,
+# dus het productiedomein krijgt hier geen noindex. Vercel negeert dit bestand. Guard 24.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
