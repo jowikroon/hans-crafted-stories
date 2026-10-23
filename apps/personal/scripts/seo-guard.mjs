@@ -705,6 +705,14 @@ const noindexByHeader = (p) => robotsHeaderRules.some((re) => re.test(p));
     ["/freelance-ecommerce-manager", "/webshopbeheerder-inhuren"],
     ["/case-studies", "/work"],
     ["/work/abs", "/work"],
+    // EN-varianten (2026-10-23, ronde 3): alleen waar de EN-doelpagina bestaat.
+    ["/en/contact", "/en/about#contact"],
+    ["/en/services", "/en"],
+    ["/en/hire", "/en/interim-ecommerce-manager"],
+    ["/en/amazon-specialist", "/en/amazon-nl-specialist"],
+    ["/en/bol-consultant", "/en/bol-com-consultant"],
+    ["/en/freelance-ecommerce-manager", "/en/webshopbeheerder-inhuren"],
+    ["/en/case-studies", "/en/work"],
     ["/rss.xml", "/feed.xml"],
   ];
   const plain = (vercelCfg.redirects || []).filter((r) => !r.has && !r.missing);
