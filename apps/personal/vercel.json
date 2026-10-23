@@ -295,14 +295,6 @@
     {
       "source": "/muziek/artist-radar",
       "destination": "/index.html"
-    },
-    {
-      "source": "/writing/:slug",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/en/writing/:slug",
-      "destination": "/index.html"
     }
   ],
   "headers": [
