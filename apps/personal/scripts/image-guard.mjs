@@ -65,23 +65,55 @@ export function resolveImage(ref, pageUrl, distDir) {
   return { file, url: url.href };
 }
 
-export async function checkRemoteImage(url, fetchImage = fetch) {
-  // GET rather than HEAD: several image CDNs handle HEAD differently. Only read
-  // headers, cancel the body, and deduplicate URLs to keep egress small.
-  const response = await fetchImage(url, {
-    signal: AbortSignal.timeout(15000),
-    headers: { Range: 'bytes=0-1023' },
-    redirect: 'follow',
-  });
+// Fail-safe op netwerk (2026-10-23): de Vercel-build moet niet falen omdat een externe CDN (Supabase
+// Storage, sndcdn, scdn) even onbereikbaar is, rate-limit of de build-IP weert. Alleen een definitief
+// antwoord dat het beeld kapot is (404/410/402/overige 4xx, of 2xx zonder image-content-type = soft-404)
+// faalt de build. Netwerkfout, timeout, 403, 408, 429 en 5xx: één nieuwe poging, daarna een waarschuwing.
+const TRANSIENT_STATUS = new Set([403, 408, 429]);
+export function isTransientStatus(status) {
+  return status >= 500 || TRANSIENT_STATUS.has(status);
+}
+
+class TransientImageError extends Error {
+  constructor(message) { super(message); this.transient = true; }
+}
+
+async function fetchOnce(url, fetchImage) {
+  let response;
+  try {
+    // GET rather than HEAD: several image CDNs handle HEAD differently. Only read
+    // headers, cancel the body, and deduplicate URLs to keep egress small.
+    response = await fetchImage(url, {
+      signal: AbortSignal.timeout(15000),
+      headers: { Range: 'bytes=0-1023' },
+      redirect: 'follow',
+    });
+  } catch (error) {
+    throw new TransientImageError(`network error: ${error?.cause?.code || error?.name || ''} ${error?.message || error}`.trim());
+  }
   const type = response.headers.get('content-type') || '';
-  await response.body?.cancel();
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  try { await response.body?.cancel(); } catch { /* body al gesloten */ }
+  if (!response.ok) {
+    if (isTransientStatus(response.status)) throw new TransientImageError(`HTTP ${response.status}`);
+    throw new Error(`HTTP ${response.status}`);
+  }
   if (!/^image\//i.test(type)) throw new Error(`not an image (${type || 'no content-type'})`);
   return { status: response.status, type };
 }
 
-export async function checkImages(distDir, { remote = true, fetchImage = fetch } = {}) {
+export async function checkRemoteImage(url, fetchImage = fetch, { retryDelayMs = 2000 } = {}) {
+  try {
+    return await fetchOnce(url, fetchImage);
+  } catch (error) {
+    if (!error.transient) throw error;
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    return fetchOnce(url, fetchImage);
+  }
+}
+
+export async function checkImages(distDir, { remote = true, fetchImage = fetch, retryDelayMs = 2000 } = {}) {
   const failures = [];
+  const warnings = [];
   const images = new Map();
   let pages = 0;
   // The public React pages are index.html files plus the custom 404. Standalone
@@ -119,20 +151,21 @@ export async function checkImages(distDir, { remote = true, fetchImage = fetch }
           if (!fs.existsSync(image.file) || !fs.statSync(image.file).isFile() || fs.statSync(image.file).size === 0) {
             throw new Error('missing or empty local image');
           }
-        } else if (remote) await checkRemoteImage(image.url, fetchImage);
+        } else if (remote) await checkRemoteImage(image.url, fetchImage, { retryDelayMs });
       } catch (error) {
-        failures.push({ url: image.url, pages: [...image.pages], error: error.message });
+        (error.transient ? warnings : failures).push({ url: image.url, pages: [...image.pages], error: error.message });
       }
     }
   }));
-  return { pages, images: images.size, failures, remote };
+  return { pages, images: images.size, failures, warnings, remote };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const dist = process.argv.find(arg => arg.startsWith('--dist='))?.slice(7)
     || fileURLToPath(new URL('../dist/', import.meta.url));
   const result = await checkImages(path.resolve(dist), { remote: !process.argv.includes('--local-only') });
+  for (const warning of result.warnings) console.warn('[image-guard] waarschuwing (netwerk, faalt de build niet):', JSON.stringify(warning));
   for (const failure of result.failures) console.error('[image-guard]', JSON.stringify(failure));
-  console.log(`[image-guard] ${result.pages} pages, ${result.images} unique images, ${result.failures.length} failures (${result.remote ? 'local + HTTP' : 'local only'})`);
+  console.log(`[image-guard] ${result.pages} pages, ${result.images} unique images, ${result.failures.length} failures, ${result.warnings.length} network warnings (${result.remote ? 'local + HTTP' : 'local only'})`);
   if (result.failures.length) process.exitCode = 1;
 }

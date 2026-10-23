@@ -42,3 +42,48 @@ test('srcset, share metadata, relative URLs, inline images and invalid protocols
     assert.match(result.failures.map(x => x.error).join(','), /empty image reference/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+// 2026-10-23: een onbereikbare of rate-limitende CDN mag de Vercel-deploy niet blokkeren; een echte 404 wel.
+test('network errors, timeouts, 403/429/5xx only warn after one retry; 404/410 and soft-404 still fail', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'image-guard-'));
+  try {
+    const hosts = ['down', 'timeout', 'ratelimit', 'unavailable', 'forbidden', 'gone', 'missing', 'soft404', 'flaky'];
+    fs.writeFileSync(path.join(dir, 'index.html'), hosts.map((h) => `<img src="https://${h}.example.com/a.png">`).join(''));
+    const calls = new Map();
+    const fetchImage = async (url) => {
+      const host = new URL(url).host.split('.')[0];
+      calls.set(host, (calls.get(host) || 0) + 1);
+      if (host === 'down') throw new TypeError('fetch failed', { cause: { code: 'ENOTFOUND' } });
+      if (host === 'timeout') throw new DOMException('The operation was aborted due to timeout', 'TimeoutError');
+      if (host === 'ratelimit') return new Response('', { status: 429 });
+      if (host === 'unavailable') return new Response('', { status: 503 });
+      if (host === 'forbidden') return new Response('', { status: 403 });
+      if (host === 'gone') return new Response('', { status: 410 });
+      if (host === 'missing') return new Response('', { status: 404 });
+      if (host === 'soft404') return new Response('<html></html>', { headers: { 'content-type': 'text/html' } });
+      // flaky: eerste poging 502, tweede lukt
+      return calls.get(host) === 1 ? new Response('', { status: 502 }) : new Response('img', { headers: { 'content-type': 'image/png' } });
+    };
+    const result = await checkImages(dir, { remote: true, fetchImage, retryDelayMs: 0 });
+    const hostOf = (x) => new URL(x.url).host.split('.')[0];
+    assert.deepEqual(result.failures.map(hostOf).sort(), ['gone', 'missing', 'soft404']);
+    assert.deepEqual(result.warnings.map(hostOf).sort(), ['down', 'forbidden', 'ratelimit', 'timeout', 'unavailable']);
+    assert.match(result.warnings.find((w) => hostOf(w) === 'down').error, /network error: ENOTFOUND/);
+    for (const h of ['down', 'timeout', 'ratelimit', 'unavailable', 'forbidden', 'flaky']) assert.equal(calls.get(h), 2, `${h}: één retry`);
+    for (const h of ['gone', 'missing', 'soft404']) assert.equal(calls.get(h), 1, `${h}: geen retry`);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('CLI exits 0 on network-only warnings and 1 on a real 404', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'image-guard-'));
+  const script = new URL('./image-guard.mjs', import.meta.url).pathname;
+  try {
+    // .invalid-TLD resolvet nooit (RFC 2606): echte netwerkfout zonder uitgaand verkeer.
+    fs.writeFileSync(path.join(dir, 'index.html'), '<img src="https://cdn.image-guard-test.invalid/a.png">');
+    const out = execFileSync(process.execPath, [script, `--dist=${dir}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    assert.match(out, /0 failures, 1 network warnings/);
+    fs.writeFileSync(path.join(dir, 'index.html'), '<img src="/assets/missing.png">');
+    assert.throws(() => execFileSync(process.execPath, [script, `--dist=${dir}`], { stdio: 'pipe' }), (e) => e.status === 1);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
