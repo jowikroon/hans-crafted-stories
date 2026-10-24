@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkImages, checkRemoteImage, imageReferences, srcsetUrls } from './image-guard.mjs';
 
 test('missing hashed image fails; references from several pages deduplicate', async () => {
@@ -77,7 +78,7 @@ test('network errors, timeouts, 403/429/5xx only warn after one retry; 404/410 a
 test('CLI exits 0 on network-only warnings and 1 on a real 404', async () => {
   const { execFileSync } = await import('node:child_process');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'image-guard-'));
-  const script = new URL('./image-guard.mjs', import.meta.url).pathname;
+  const script = fileURLToPath(new URL('./image-guard.mjs', import.meta.url));
   try {
     // .invalid-TLD resolvet nooit (RFC 2606): echte netwerkfout zonder uitgaand verkeer.
     fs.writeFileSync(path.join(dir, 'index.html'), '<img src="https://cdn.image-guard-test.invalid/a.png">');

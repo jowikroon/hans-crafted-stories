@@ -1,0 +1,10 @@
+.music-production-menu { color:#4b4842; font-size:14px; }
+.music-production-menu > button,.music-production-menu nav a { display:flex; align-items:center; gap:12px; width:100%; min-height:44px; padding:10px 16px; text-align:left; font:inherit; color:inherit; background:transparent; border:0; cursor:pointer; text-decoration:none; }
+.music-production-menu > button > svg:last-child { margin-left:auto; transition:transform .15s; }
+.music-production-menu .is-open { transform:rotate(180deg); }
+.music-production-menu > button:hover,.music-production-menu nav a:hover { background:#e5dfce99; color:#15140f; }
+.music-production-menu nav { background:#f4efe299; padding:4px 0 6px; }
+.music-production-menu nav a { padding-left:43px; gap:10px; }
+.music-production-menu nav a[aria-current=page] { background:#e5dfce; color:#15140f; box-shadow:inset 3px 0 #9873c2; font-weight:600; }
+.music-production-menu :focus-visible { outline:2px solid #7754a0; outline-offset:-3px; border-radius:4px; }
+@media(prefers-reduced-motion:reduce) { .music-production-menu > button > svg:last-child { transition:none; } }
