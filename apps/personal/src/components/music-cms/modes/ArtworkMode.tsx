@@ -19,9 +19,9 @@ function VideoPreview({ asset, poster, userId }: { asset: ArtworkAsset; poster?:
   return <video controls playsInline preload="metadata" poster={poster} src={video.data} aria-label={asset.title} onError={() => setFailed(true)} />;
 }
 
-export default function ArtworkMode() {
+export default function ArtworkMode({ initialAlbum = "", embedded = false }: { initialAlbum?: string; embedded?: boolean }) {
   const { user } = useAuth();
-  const [filters, setFilters] = useState<ArtworkFilters>(EMPTY_FILTERS);
+  const [filters, setFilters] = useState<ArtworkFilters>({ ...EMPTY_FILTERS, album: initialAlbum });
   const [page, setPage] = useState(0);
   const [showFiles, setShowFiles] = useState(false);
   const [filterNotice, setFilterNotice] = useState("");
@@ -65,9 +65,9 @@ export default function ArtworkMode() {
     return url ? <img src={url} alt={a.title} loading={large ? "eager" : "lazy"} decoding="async" /> : <div className="ma-image-placeholder"><Images size={32} /><span>{previews.isPending ? "Preview laden…" : a.format}</span></div>;
   };
 
-  return <main className="ma-library">
+  return <div className={`ma-library${embedded ? " ma-library--embedded" : ""}`}>
     <header className="ma-header">
-      <div><p className="ma-kicker">JOWIKROON / VISUAL ARCHIVE</p><h1>Het beeld achter<br /><em>de muziek.</em></h1><p className="ma-intro">Van het eerste idee tot de laatste versie. Beelden en films, één verhaal.</p></div>
+      <div><p className="ma-kicker">JOWIKROON / VISUAL ARCHIVE</p>{embedded ? <h2>NEON Beeldbank</h2> : <h1>Het beeld achter<br /><em>de muziek.</em></h1>}<p className="ma-intro">Van het eerste idee tot de laatste versie. Beelden en films, één verhaal.</p></div>
       <div className="ma-header-side"><span className="ma-private"><ShieldCheck size={15} /> Privé beeldbank</span><strong>{assets.length || "—"}<small>bestanden in het archief</small></strong><svg className="ma-pulse" viewBox="0 0 200 45" aria-hidden="true"><path d="M0 24H38Q45 24 49 20T59 24H75L82 34L90 5L99 39L107 21Q112 13 118 24H200" /></svg></div>
     </header>
     <nav className="ma-tabs" aria-label="Soort beeld"><button aria-pressed={!filters.category} onClick={reset}>Alles <span>{assets.length}</span></button>{CATEGORIES.filter(c => assets.some(a => a.categories.includes(c))).map(c => <button key={c} aria-pressed={filters.category === c} onClick={() => update("category", c)}>{c} <span>{assets.filter(a => a.categories.includes(c)).length}</span></button>)}</nav>
@@ -106,5 +106,5 @@ export default function ArtworkMode() {
         <h3>Versies & exports <span>{versions.length}</span></h3><div className="ma-versions">{versions.map(v => <button key={v.id} aria-pressed={v.id === selected.id} disabled={downloading} onClick={() => { setSelected(v); setDownloadError(""); }}><span>{collectionLabel(v.collections[0])}<small>{v.role} · {v.format} · {dimensions(v)}</small></span><span>{v.id === selected.id ? "●" : "↗"}</span></button>)}</div>
         <details className="ma-origins"><summary>Herkomst ({selected.origins.length})</summary>{selected.origins.map((o, i) => <p key={i}><strong>{collectionLabel(o.collection)}</strong><br />{o.file}</p>)}</details>
       </div></>}</DialogContent></Dialog>
-  </main>;
+  </div>;
 }

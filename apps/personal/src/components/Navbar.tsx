@@ -10,7 +10,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Menu, X, LogIn, Search, Sun, Moon, LogOut, BookOpen, LayoutDashboard,
   ChevronDown, Network, Sparkles, PenLine, Disc3, BarChart3,
-  AudioLines, ExternalLink, Paperclip, Gem,
+  ExternalLink, Paperclip, Gem,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -20,6 +20,8 @@ import { logoById } from "@/lib/logos";
 import { useActiveLogo, useLogoMotion } from "@/contexts/LogoContext";
 import { useNavMenu } from "@/contexts/NavMenuContext";
 import { useTheme } from "@/hooks/useTheme";
+import MusicProductionMenu, { MUSIC_PRODUCTION_LINKS } from "./MusicProductionMenu";
+import { useHoverDisclosure } from "@/hooks/useHoverDisclosure";
 
 /** Opent de lokale SecondBrainVault in de Obsidian-app (obsidian:// URI). Alleen zichtbaar voor admins. */
 const OBSIDIAN_VAULT_URL = "obsidian://open?vault=SecondBrainVault";
@@ -52,10 +54,12 @@ const Navbar = (_props: NavbarProps) => {
   const logoMotion = useLogoMotion();
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [musicOpen, setMusicOpen] = useState(false);
   const [dashOpen, setDashOpen] = useState(false);
+  const profileDisclosure = useHoverDisclosure({ onClose: () => setDashOpen(false) });
+  const profileOpen = profileDisclosure.isOpen;
+  const setProfileOpen = (value: boolean) => { if (value) profileDisclosure.open(); else profileDisclosure.close(); };
   const isCoarsePointer = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -130,6 +134,7 @@ const Navbar = (_props: NavbarProps) => {
                 { to: "/god-structure", label: t.workspace.dashboard, keywords: ["dashboard", "god", "structure", "admin", "infrastructure"] },
                 { to: "/dashboards", label: "Dashboards", keywords: ["dashboards", "ccp", "connectcarparts", "sales", "ebay", "klanten"] },
                 { to: "/bijlagen", label: "Bijlagen", keywords: ["attachments", "cowork", "bestanden", "documenten"] },
+                ...MUSIC_PRODUCTION_LINKS.map(({ to, label }) => ({ to, label, keywords: ["muziekproductie", "music", label.toLowerCase()] })),
               ]
             : []),
         ]
@@ -254,7 +259,7 @@ const Navbar = (_props: NavbarProps) => {
     if (dashCloseTimer.current) window.clearTimeout(dashCloseTimer.current);
     dashCloseTimer.current = window.setTimeout(() => setDashOpen(false), 300);
   };
-  const closeProfile = () => { setDashOpen(false); setProfileOpen(false); };
+  const closeProfile = profileDisclosure.close;
 
   const musicItemCls = "block px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 rounded-lg transition-colors dark:text-[#C9BFB0] dark:hover:text-white dark:hover:bg-white/5";
   const MusicNav = ({ label }: { label: string }) => (
@@ -403,8 +408,8 @@ const Navbar = (_props: NavbarProps) => {
 
               {/* Account chip (logged-in) or Login pill */}
               {user ? (
-                <div className="relative hidden sm:block">
-                  <button aria-label="Profielmenu" aria-expanded={profileOpen} onClick={() => setProfileOpen(!profileOpen)} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? `border-[#2D9255] ${barChip}` : `${barBord} ${barInk} ${barHovBg}`}`}>
+                <div ref={profileDisclosure.containerRef} className="relative hidden sm:block" {...profileDisclosure.containerProps}>
+                  <button ref={profileDisclosure.triggerRef} aria-label="Profielmenu" {...profileDisclosure.triggerProps} className={`inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm font-medium transition-all ${profileOpen ? `border-[#2D9255] ${barChip}` : `${barBord} ${barInk} ${barHovBg}`}`}>
                     <span className={`grid h-6 w-6 place-items-center rounded-full ${barAvatar} text-[11px] font-mono font-semibold`}>{firstName.charAt(0).toLowerCase()}</span>
                     <span className="max-w-[90px] truncate">{firstName}</span>
                     <ChevronDown size={12} className={`transition-transform ${profileOpen ? "rotate-180" : ""}`} />
@@ -412,7 +417,6 @@ const Navbar = (_props: NavbarProps) => {
                   <AnimatePresence>
                     {profileOpen && (
                       <>
-                        <div className="fixed inset-0 z-40" onClick={closeProfile} />
                         <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-2 z-50 w-60 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-xl max-h-[calc(100dvh-7rem)] overflow-y-auto">
                           <div className="px-4 py-3 border-b border-black/[0.07]">
                             <p className="text-sm font-medium truncate text-[#15140F]">{user.user_metadata?.full_name || "User"}</p>
@@ -425,7 +429,7 @@ const Navbar = (_props: NavbarProps) => {
                             {isAdmin && <Link to="/bijlagen" onClick={closeProfile} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Paperclip size={15} /> Bijlagen</Link>}
                             {isAdmin && <Link to="/write" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><PenLine size={15} /> {t.workspace.blogCms}</Link>}
                             {isAdmin && <Link to="/release-set" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Disc3 size={15} /> Release Set</Link>}
-                            {isAdmin && <Link to="/music-cms?mode=productie" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><AudioLines size={15} /> Muziek Productie</Link>}
+                            {isAdmin && <MusicProductionMenu onNavigate={closeProfile} />}
                             {isAdmin && <Link to="/samantha" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><Sparkles size={15} /> {t.workspace.samantha}<span className="ml-auto text-[9px] font-mono text-[#7E7A6F]">⌘J</span></Link>}
                             <Link to="/portal" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><LayoutDashboard size={15} /> {t.workspace.portal}</Link>
                             {isAdmin && <Link to="/wiki" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 transition-colors"><BookOpen size={15} /> {t.workspace.docs}</Link>}
@@ -537,7 +541,7 @@ const Navbar = (_props: NavbarProps) => {
                     {isAdmin && <Link to="/bijlagen" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Paperclip size={14} /> Bijlagen</Link>}
                     {isAdmin && <Link to="/write" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><PenLine size={14} /> {t.workspace.blogCms}</Link>}
                     {isAdmin && <Link to="/release-set" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Disc3 size={14} /> Release Set</Link>}
-                    {isAdmin && <Link to="/music-cms?mode=productie" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><AudioLines size={14} /> Muziek Productie</Link>}
+                    {isAdmin && <MusicProductionMenu mobile onNavigate={() => setMobileOpen(false)} />}
                     {isAdmin && <Link to="/samantha" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><Sparkles size={14} /> {t.workspace.samantha}</Link>}
                     <Link to="/portal" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><LayoutDashboard size={14} /> {t.workspace.portal}</Link>
                     {isAdmin && <Link to="/wiki" onClick={() => setMobileOpen(false)} className={`rounded-lg px-3 py-2.5 text-sm inline-flex items-center gap-2 ${barMut} ${barHovBg} ${barHovInk}`}><BookOpen size={14} /> {t.workspace.docs}</Link>}

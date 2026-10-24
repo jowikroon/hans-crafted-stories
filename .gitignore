@@ -53,4 +53,9 @@ apps/*/.env.*.local
 *.njsproj
 *.sln
 *.sw?
+
+# Local NEON preview fixtures and browser captures (never publish as static files)
+.playwright-cli/
+apps/personal/.neon-preview/
+apps/personal/neon-preview.html
 /node_modules-shared-backup/
