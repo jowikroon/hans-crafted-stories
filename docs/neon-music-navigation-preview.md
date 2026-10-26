@@ -10,7 +10,7 @@ The local SecondBrainVault is the knowledge source. GitHub is its private backup
 
 ## Privacy and storage
 
-This repository is public. Migration `20261024190000_neon_development_library.sql` contains schema and access rules only. The 84-entry private catalogue seed is a separate local deployment artifact. Never commit it, bundle it in the application or add it to the public webroot. Preview fixtures remain ignored and excluded from normal builds.
+This repository is public. Migration `20261026011043_neon_development_library.sql` contains schema and access rules only. Its version matches the production migration applied through the management API on 26 October. The 84-entry private catalogue seed is a separate local deployment artifact. Never commit it, bundle it in the application or add it to the public webroot. Preview fixtures remain ignored and excluded from normal builds.
 
 The new table has RLS, read access only for authenticated admins through `public.is_admin()`, no anonymous read and no browser write grants. Artwork is unchanged from current main: metadata in Supabase; binaries in private R2 through `artwork-sign`. This change does not restore the old Supabase Storage workflow.
 
@@ -23,3 +23,4 @@ The new table has RLS, read access only for authenticated admins through `public
 5. To roll back the UI, restore the previous UI deployment and leave the additive private catalogue intact. Never drop or overwrite song/artwork tables.
 
 Music CMS and the standalone local preview use the site's Switzer / JetBrains Mono pair. The earlier local preview-server start was blocked by automatic policy review; no server retry or bypass was attempted during this preparation. The candidate is not a production deployment. Final browser visual verification and signed-in production checks remain deployment gates.
+
