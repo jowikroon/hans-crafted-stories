@@ -96,6 +96,8 @@
 .neon-reader-actions { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
 .neon-reader-actions a, .neon-copy-origins a { text-decoration: underline; text-underline-offset: 3px; }
 .neon-reader-warning { font-size: 13px; color: #e7bf80; }
-.neon-section-heading > a { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px; }
+.neon-section-heading > a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid #484052; border-radius: 6px; color: #caa8ff; white-space: nowrap; font-size: 14px; text-decoration: none; }
+.neon-section-heading > a:hover { background: #b48aff18; }
+.neon-section-heading > a:focus-visible { outline: 2px solid #b48aff; outline-offset: 3px; }
 .neon-copy-origins a { display: inline-block; margin: 8px 12px 8px 0; }
 @media (max-width: 600px) { .neon-reader-dialog { width: 100vw; height: 100dvh; padding: 18px 12px; border-radius: 0; } }
