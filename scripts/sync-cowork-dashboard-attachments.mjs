@@ -31,7 +31,15 @@ if (process.argv.includes('--inventory')) {
   console.log(JSON.stringify({ discovered: files.size, availableSources: sources.filter(existsSync).length }));
   process.exit(0);
 }
-let key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const candidates = [process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.SUPABASE_MG_SERVICE_KEY, process.env.SUPABASE_SERVICE_KEY];
+let key = candidates.find(value => {
+  if (!value) return false;
+  if (value.startsWith('sb_secret_')) return true;
+  try {
+    const claims = JSON.parse(Buffer.from(value.split('.')[1], 'base64url'));
+    return claims.ref === project && claims.role === 'service_role';
+  } catch { return false; }
+});
 if (!key && process.env.SUPABASE_MGMT_TOKEN) {
   const response = await fetch(`https://api.supabase.com/v1/projects/${project}/api-keys`, { headers: { Authorization: `Bearer ${process.env.SUPABASE_MGMT_TOKEN}` } });
   if (!response.ok) throw new Error(`Credential lookup failed: ${response.status}`);

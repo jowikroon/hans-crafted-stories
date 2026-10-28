@@ -10,7 +10,8 @@ source availability without credentials. Run with --dry-run to compare hashes
 without uploads. Run without flags to synchronize and verify uploaded bytes.
 The old --commit flag is accepted but does not create commits or push files.
 
-Provide SUPABASE_SERVICE_ROLE_KEY, or a valid SUPABASE_MGMT_TOKEN with permission
+Provide SUPABASE_SERVICE_ROLE_KEY (also accepts SUPABASE_MG_SERVICE_KEY and
+SUPABASE_SERVICE_KEY when the JWT belongs to this project), or a valid SUPABASE_MGMT_TOKEN with permission
 to read this project's service key, in the process environment. Never put
 these credentials into client environment variables, commits or chat messages.
 
