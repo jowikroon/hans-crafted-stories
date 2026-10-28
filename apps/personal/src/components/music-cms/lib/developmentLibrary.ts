@@ -51,3 +51,12 @@ export function safeHostedUrl(raw: string | null): string | null {
   try { const url = new URL(raw); return url.protocol === "https:" && !url.username && !url.password ? url.href : null; }
   catch { return null; }
 }
+
+export function drivePageLinks(raw: string | null) {
+  const safe = safeHostedUrl(raw);
+  if (!safe) return null;
+  const url = new URL(safe);
+  const match = /^\/file\/d\/([A-Za-z0-9_-]+)\/view$/.exec(url.pathname);
+  if (url.hostname !== "drive.google.com" || !match) return null;
+  return { view: `https://drive.google.com/file/d/${match[1]}/view`, download: `https://drive.google.com/uc?export=download&id=${match[1]}` };
+}
