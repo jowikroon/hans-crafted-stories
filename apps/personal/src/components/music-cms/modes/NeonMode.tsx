@@ -16,5 +16,5 @@ export default function NeonMode() {
   const image = useQuery({ queryKey: ["neon-front-preview", user?.id, front?.id], queryFn: () => previewUrls(front ? [front] : []), enabled: !!user && isAdmin && !!front, gcTime: 0, staleTime: 600_000, refetchInterval: 600_000 });
   if (loading) return <p role="status">Toegang controleren…</p>;
   if (!isAdmin) return <p role="alert">Deze albumwerkruimte is alleen beschikbaar voor het admin-account.</p>;
-  return <NeonWorkspace cover={front?.thumbnail_path ? image.data?.[front.thumbnail_path] : undefined} library={<DevelopmentLibrary pages={query.data ?? []} loading={query.isPending} error={query.error?.message} onRetry={() => { void query.refetch(); }} />} artwork={<ArtworkMode initialAlbum="NEON" embedded />} />;
+  return <NeonWorkspace cover={front?.thumbnail_path ? image.data?.[front.thumbnail_path] : undefined} library={<DevelopmentLibrary pages={query.data ?? []} assets={artwork.data} loading={query.isPending} error={query.error?.message} onRetry={() => { void query.refetch(); }} />} artwork={<ArtworkMode initialAlbum="NEON" embedded />} />;
 }

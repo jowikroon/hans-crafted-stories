@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
-import { Copy, ExternalLink, FileCode2, Search, X } from "lucide-react";
-import { filterDevelopmentPages, groupDevelopmentPages, libraryIndexPath, pageDate, pageOrigin, safeHostedUrl, type DevelopmentPage } from "./lib/developmentLibrary";
+import { Copy, Download, ExternalLink, FileCode2, Search, X } from "lucide-react";
+import { drivePageLinks, filterDevelopmentPages, groupDevelopmentPages, libraryIndexPath, pageDate, pageOrigin, safeHostedUrl, type DevelopmentPage } from "./lib/developmentLibrary";
+import type { ArtworkAsset } from "./lib/artworkModel";
+import DevelopmentReader from "./DevelopmentReader";
+
+const NO_ASSETS: ArtworkAsset[] = [];
 
 const LABELS: Record<string, string> = {
   "Album and releases": "Album & releases", "Covers and branding": "Covers & branding", "Social and video": "Social & video",
@@ -8,7 +12,8 @@ const LABELS: Record<string, string> = {
   "Project overviews": "Projectoverzichten", "Audio and songs": "Audio & songs", "Video and socials": "Video & social", "Story and lyrics": "Verhaal & songteksten",
 };
 const STATUS_LABELS: Record<string, string> = { "Working material / proposal": "Werkmateriaal / voorstel", "Source capture / template": "Broncapture / template", "Archived material": "Archief", "Reference / existing direction": "Referentie / bestaande richting" };
-export default function DevelopmentLibrary({ pages, loading, error, onRetry }: { pages: DevelopmentPage[]; loading?: boolean; error?: string; onRetry?: () => void }) {
+export default function DevelopmentLibrary({ pages, loading, error, onRetry, assets = NO_ASSETS }: { pages: DevelopmentPage[]; loading?: boolean; error?: string; onRetry?: () => void; assets?: ArtworkAsset[] }) {
+  const [reading, setReading] = useState<DevelopmentPage | null>(null);
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -29,8 +34,8 @@ export default function DevelopmentLibrary({ pages, loading, error, onRetry }: {
     catch { setNotice("Kopieer dit pad en plak het in de adresbalk op je pc."); setManualPath(path); }
   }
   return <section className="neon-development" aria-labelledby="neon-development-title" id="development">
-    <div className="neon-section-heading"><div><h2 id="neon-development-title">Development web pages</h2><p>Verhaal, covers, luisterproeven en eerdere versies bij elkaar.</p></div><button type="button" disabled={!indexPath || loading || !!error} onClick={() => { if (indexPath) void copyPath(indexPath); }}><Copy size={15} /> Kopieer bibliotheekpad</button></div>
-    <p className="neon-local-note">De HTML-pagina’s staan op je pc. Kopieer een pad om een pagina te openen. De Beeldbank hieronder is online beschikbaar.</p>
+    <div className="neon-section-heading"><div><h2 id="neon-development-title">Development web pages</h2><p>Verhaal, covers, luisterproeven en eerdere versies bij elkaar.</p></div><a href="https://drive.google.com/drive/folders/18Y28fxCG7DDIf6jcE-d8dbSta1RMleDl" target="_blank" rel="noopener noreferrer"><ExternalLink size={15} /> Bibliotheek in Drive</a></div>
+    <p className="neon-local-note">Je privéarchief in Google Drive. Bekijk een leesversie hier of download het oorspronkelijke bestand rechtstreeks uit Drive. Je pc hoeft daarvoor niet aan te staan.</p>
     <div className="neon-development-search"><Search size={17} aria-hidden="true" /><label className="sr-only" htmlFor="neon-page-search">Zoek developmentpagina’s</label><input id="neon-page-search" type="search" value={search} placeholder="Zoek een song, concept of versie…" onChange={e => { setSearch(e.target.value); setLimit(6); }} /></div>
     <nav className="neon-development-filters" aria-label="Development categorieën"><button aria-pressed={!category} onClick={() => { setCategory(""); setLimit(6); }}>Alles <span>{pages.length}</span></button>{categories.map(c => <button key={c} aria-pressed={category === c} onClick={() => { setCategory(c); setLimit(6); }}>{LABELS[c] || c} <span>{pages.filter(p => p.category === c).length}</span></button>)}</nav>
     <div className="neon-library-controls">
@@ -48,10 +53,15 @@ export default function DevelopmentLibrary({ pages, loading, error, onRetry }: {
     {!loading && !error && !filtered.length && <div className="neon-empty"><p>Geen pagina’s met deze filters.</p><button type="button" onClick={reset}>Bekijk alle pagina’s</button></div>}
     <div className="neon-development-grid">{!loading && !error && displayed.slice(0, limit).map(({ page, copies }) => {
       const hosted = safeHostedUrl(page.hosted_url);
-      return <article key={page.id}><div className="neon-page-topline"><FileCode2 size={18} aria-hidden="true" /><span>{LABELS[page.category] || page.category}</span></div><h3>{page.title}</h3><p className="neon-page-meta"><time dateTime={page.source_modified}>{pageDate(page.source_modified)}</time><span>{pageOrigin(page)}</span></p><p className="neon-page-status">{STATUS_LABELS[page.status] || page.status}</p><div className="neon-page-actions">{hosted && <a href={hosted} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} /> Open online</a>}<button type="button" onClick={() => copyPath(page.local_path)}><Copy size={14} /> Kopieer pad</button><span className="neon-pc-badge">Op je pc</span></div><details className="neon-copy-origins"><summary>{copies.length > 1 ? `${copies.length} identieke kopieën` : "Project & herkomst"}</summary>{copies.map(copy => <div key={copy.id}><strong>{pageOrigin(copy)}</strong><p>{copy.project}</p><small>{pageDate(copy.source_modified)}</small>{copies.length > 1 && <button type="button" onClick={() => copyPath(copy.local_path)}>Kopieer pad van deze kopie</button>}</div>)}</details></article>;
+      const drive = drivePageLinks(page.hosted_url);
+      return <article key={page.id}><div className="neon-page-topline"><FileCode2 size={18} aria-hidden="true" /><span>{LABELS[page.category] || page.category}</span></div><h3>{page.title}</h3><p className="neon-page-meta"><time dateTime={page.source_modified}>{pageDate(page.source_modified)}</time><span>{pageOrigin(page)}</span></p><p className="neon-page-status">{STATUS_LABELS[page.status] || page.status}</p>
+        <div className="neon-page-actions">{drive ? <><button type="button" onClick={() => setReading(page)}><FileCode2 size={14} /> Bekijk pagina</button><a href={drive.download} target="_blank" rel="noopener noreferrer"><Download size={14} /> Download uit Drive</a><span className="neon-pc-badge">Privé · Drive</span></> : <>{hosted && <a href={hosted} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} /> Open online</a>}<button type="button" onClick={() => copyPath(page.local_path)}><Copy size={14} /> Kopieer pad</button><span className="neon-pc-badge">Nog niet gekoppeld</span></>}</div>
+        <details className="neon-copy-origins"><summary>{copies.length > 1 ? `${copies.length} identieke kopieën` : "Project & herkomst"}</summary>{copies.map(copy => { const links = drivePageLinks(copy.hosted_url); return <div key={copy.id}><strong>{pageOrigin(copy)}</strong><p>{copy.project}</p><small>{pageDate(copy.source_modified)}</small>{links && <a href={links.view} target="_blank" rel="noopener noreferrer">Open in Drive</a>}<button type="button" onClick={() => copyPath(copy.local_path)}>Kopieer oorspronkelijk pc-pad</button></div>; })}</details></article>;
     })}</div>
     {displayed.length > limit && !loading && !error && <button className="neon-load-more" onClick={() => setLimit(v => v + 12)}>Meer pagina’s tonen ({displayed.length - limit})</button>}
     <a className="neon-gallery-jump" href="#neon-beeldbank">Naar de Beeldbank</a>
     <p className="neon-library-footnote">Werkmateriaal, archief en inspiratie. Aanwezigheid in deze bibliotheek betekent geen releasegoedkeuring.</p>
+    {indexPath && <details className="neon-copy-origins"><summary>Oorspronkelijke lokale bibliotheek</summary><button type="button" onClick={() => copyPath(indexPath)}>Kopieer bibliotheekpad</button></details>}
+    {reading && <DevelopmentReader page={reading} assets={assets} onClose={() => setReading(null)} />}
   </section>;
 }

@@ -90,3 +90,14 @@
   .neon-library-controls .neon-mobile-category { display:grid; grid-column:1/-1; }.neon-copy-toggle { grid-column:1/-1; }
   .neon-gallery-jump { margin-left:0; }.neon-workspace .ma-filterbar { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
+/* Private Drive reader stays within the authenticated workspace. */
+.neon-reader-dialog { width: min(96vw, 1440px); max-width: 1440px; height: 92dvh; display: flex; flex-direction: column; padding: 24px; gap: 12px; overflow: hidden; }
+.neon-reader-dialog iframe { width: 100%; flex: 1; min-height: 240px; border: 1px solid #333; border-radius: 8px; background: #fff; }
+.neon-reader-actions { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
+.neon-reader-actions a, .neon-copy-origins a { text-decoration: underline; text-underline-offset: 3px; }
+.neon-reader-warning { font-size: 13px; color: #e7bf80; }
+.neon-section-heading > a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid #484052; border-radius: 6px; color: #caa8ff; white-space: nowrap; font-size: 14px; text-decoration: none; }
+.neon-section-heading > a:hover { background: #b48aff18; }
+.neon-section-heading > a:focus-visible { outline: 2px solid #b48aff; outline-offset: 3px; }
+.neon-copy-origins a { display: inline-block; margin: 8px 12px 8px 0; }
+@media (max-width: 600px) { .neon-reader-dialog { width: 100vw; height: 100dvh; padding: 18px 12px; border-radius: 0; } }
