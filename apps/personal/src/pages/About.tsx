@@ -10,6 +10,74 @@ import { useSEO } from "@/hooks/useSEO";
 import { ABOUT, CALENDLY_URL, LINKEDIN_URL } from "@/data/aboutPage";
 import "@/styles/about-v2.css";
 
+// Official company and institution destinations. Historic names keep their wording;
+// their links point to the current successor's website where appropriate.
+const COMPANY_SITES = [
+  { name: "Alpine Hearing Protection", url: "https://www.alpine.nl/" },
+  { name: "Connect Car Parts", url: "https://www.connectcarparts.nl/" },
+  { name: "Hogeschool Utrecht", url: "https://www.hu.nl/" },
+  { name: "ROC Hilversum", url: "https://www.rocva.nl/jongeren/mbo-colleges/mbo-college-hilversum" },
+  { name: "MarketplaceGrowth.nl", url: "https://marketplacegrowth.nl/" },
+  { name: "Pink Elephant", url: "https://pinkelephant.nl/" },
+  { name: "ASP4all", url: "https://www.solvinity.com/nl", title: "ASP4all heet nu Solvinity" },
+  { name: "Webhelp", url: "https://www.concentrix.com/nl", title: "Webhelp is nu onderdeel van Concentrix" },
+  { name: "IGM", url: "https://igm.nl/" },
+  { name: "Intergamma", url: "https://intergamma.nl/" },
+  { name: "Talpa", url: "https://www.talpa.com/" },
+  { name: "Edelman", url: "https://www.edelman.com/nl" },
+  { name: "KARWEI.nl", url: "https://www.karwei.nl/" },
+  { name: "KARWEI", url: "https://www.karwei.nl/" },
+  { name: "Gamma.nl", url: "https://www.gamma.nl/" },
+  { name: "Gamma.be", url: "https://www.gamma.be/" },
+  { name: "Gamma", url: "https://www.gamma.nl/" },
+  { name: "badkamerwinkel.nl", url: "https://www.badkamerwinkel.nl/" },
+  { name: "Amazon", url: "https://www.amazon.nl/" },
+  { name: "Bol.com", url: "https://www.bol.com/nl/nl/" },
+  { name: "eBay", url: "https://www.ebay.nl/" },
+  { name: "Channable", url: "https://www.channable.com/" },
+  { name: "Helium10", url: "https://www.helium10.com/" },
+  { name: "Nielsen", url: "https://www.nielsen.com/" },
+  { name: "Fredhopper", url: "https://www.rezolve.com/", title: "Fredhopper maakt deel uit van Rezolve Ai" },
+  { name: "Algolia", url: "https://www.algolia.com/" },
+  { name: "Google Analytics", url: "https://marketingplatform.google.com/about/analytics/" },
+  { name: "Google", url: "https://www.google.com/" },
+  { name: "VMware", url: "https://www.vmware.com/" },
+  { name: "NetApp", url: "https://www.netapp.com/" },
+  { name: "Cisco UCS", url: "https://www.cisco.com/" },
+  { name: "n8n", url: "https://n8n.io/" },
+] as const;
+
+const companyByName = new Map<string, (typeof COMPANY_SITES)[number]>(
+  COMPANY_SITES.map((site) => [site.name.toLowerCase(), site]),
+);
+const companyPattern = new RegExp(
+  `\\b(${COMPANY_SITES.map((site) => site.name)
+    .sort((a, b) => b.length - a.length)
+    .map((name) => name.split(".").join("\\."))
+    .join("|")})\\b`,
+  "gi",
+);
+
+const CompanyNames = ({ text }: { text: string }) => (
+  <>
+    {text.split(companyPattern).map((part, index) => {
+      const company = companyByName.get(part.toLowerCase());
+      return company ? (
+        <a
+          key={index}
+          className="av-company-link"
+          href={company.url}
+          title={"title" in company ? company.title : undefined}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {part}
+        </a>
+      ) : part;
+    })}
+  </>
+);
+
 // /about redesign (2026-10-15). Order follows the visitor's questions:
 // who is this, proof, why him (story), the common thread, career, services, contact.
 // Only one filled button style on the page: the call booking. Main fonts only.
@@ -160,8 +228,8 @@ const About = () => {
           {c.stats.map((s) => (
             <li key={s.value}>
               <span className="av-num">{s.value}</span>
-              <span className="av-stat-label">{s.label}</span>
-              <span className="av-stat-src">{s.source}</span>
+              <span className="av-stat-label"><CompanyNames text={s.label} /></span>
+              <span className="av-stat-src"><CompanyNames text={s.source} /></span>
             </li>
           ))}
         </ul>
@@ -180,16 +248,16 @@ const About = () => {
             <article className="av-chapter" key={ch.title}>
               <div className="av-margin">
                 <p className="av-eyebrow">{ch.period}</p>
-                {ch.metric && (<><p className="av-mnum">{ch.metric.value}</p><p className="av-msrc">{ch.metric.label}</p></>)}
+                {ch.metric && (<><p className="av-mnum">{ch.metric.value}</p><p className="av-msrc"><CompanyNames text={ch.metric.label} /></p></>)}
               </div>
               <div className="av-body">
                 <h3>{ch.title}</h3>
-                {ch.paragraphs.map((p) => <p key={p.slice(0, 32)}>{p}</p>)}
+                {ch.paragraphs.map((p) => <p key={p.slice(0, 32)}><CompanyNames text={p} /></p>)}
                 {ch.rules && (
                   <>
                     <p>{ch.rules.intro}</p>
                     <ul className="av-rules">{ch.rules.items.map((r) => <li key={r}>{r}</li>)}</ul>
-                    <p>{ch.rules.outro}</p>
+                    <p><CompanyNames text={ch.rules.outro} /></p>
                   </>
                 )}
               </div>
@@ -221,13 +289,13 @@ const About = () => {
           {c.roles.map((r) => (
             <li key={r.period + r.title}>
               <span className="av-period">{r.period}</span>
-              <div className="av-role"><h3>{r.title}</h3><p className="av-org">{r.org}</p></div>
+              <div className="av-role"><h3>{r.title}</h3><p className="av-org"><CompanyNames text={r.org} /></p></div>
               <div className="av-roledesc">
-                <p>{r.summary}</p>
+                <p><CompanyNames text={r.summary} /></p>
                 {r.details && (
                   <details>
                     <summary>{c.resultsToggle}</summary>
-                    <ul>{r.details.map((d) => <li key={d}>{d}</li>)}</ul>
+                    <ul>{r.details.map((d) => <li key={d}><CompanyNames text={d} /></li>)}</ul>
                   </details>
                 )}
               </div>
@@ -241,7 +309,7 @@ const About = () => {
               {c.edu.map((e) => (
                 <li key={e.title}>
                   <span className="av-period">{e.period}</span>
-                  <span><strong>{e.title}</strong><br /><span className="av-org">{e.org}</span></span>
+                  <span><strong>{e.title}</strong><br /><span className="av-org"><CompanyNames text={e.org} /></span></span>
                 </li>
               ))}
             </ul>
@@ -268,7 +336,7 @@ const About = () => {
             </Link>
           ))}
         </div>
-        <p className="av-tools">{c.tools}</p>
+        <p className="av-tools"><CompanyNames text={c.tools} /></p>
         <Link className="av-textlink" to="/work">{c.allCasesLink} <span aria-hidden="true">→</span></Link>
       </section>
 
