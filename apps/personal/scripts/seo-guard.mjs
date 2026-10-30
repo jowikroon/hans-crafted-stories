@@ -803,6 +803,12 @@ for (const route of seen) {
       failures.push(`Work page still links to unpublished case: ${prefix}/work`);
     }
   }
+  // Legacy /cases URL is a public asset directory: redirect the page alias and its files.
+  for (const source of ["/cases/connect-car-parts", "/cases/connect-car-parts/:path*"]) {
+    if (!(vercelCfg.redirects || []).some((r) => r.source === source && r.destination === "/work")) {
+      failures.push(`Retired case asset path is not redirected to /work: ${source}`);
+    }
+  }
   const sitemapFile = path.join(distDir, "sitemap.xml");
   if (fs.existsSync(sitemapFile) && fs.readFileSync(sitemapFile, "utf8").includes(retiredCase)) {
     failures.push("Sitemap still exposes unpublished Connect Car Parts case");
