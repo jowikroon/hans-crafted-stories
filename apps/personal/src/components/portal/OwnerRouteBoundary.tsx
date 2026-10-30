@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 
-const ownerRoutes = ['/write','/blog-cms','/music-cms','/release-set','/god-structure','/dashboards','/bijlagen','/samantha','/muziek/artist-radar'];
+const ownerRoutes = ['/write','/blog-cms','/music-cms','/release-set','/god-structure','/dashboards','/bijlagen','/samantha'];
 export const isOwnerRoute = (path: string) => ownerRoutes.some(route=>path===route||path.startsWith(route+'/'));
 export default function OwnerRouteBoundary({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();

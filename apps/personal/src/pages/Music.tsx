@@ -344,7 +344,7 @@ const Music = () => {
           <div className="mn-release__body">
             <span className="mn-release__kicker"><span className="mn-live" />Free alert service</span>
             <h2 className="mn-release__title">Never miss a show from your favorite artist</h2>
-            <p className="mn-release__sub">Pick your artists and get an email on rumors, announcements, and the moment tickets go on sale in the Netherlands or Belgium.</p>
+            <p className="mn-release__sub">Pick your favorite artists for a weekly email digest of concert news, announcements, and ticket availability in the Netherlands and Belgium.</p>
             <div className="mn-release__meta">
               <span className="mn-chip">Rumors</span>
               <span className="mn-chip">Announcements</span>
