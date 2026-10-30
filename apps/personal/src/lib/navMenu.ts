@@ -35,7 +35,6 @@ export const DEFAULT_NAV_ITEMS: NavMenuItem[] = [
 export const ADDABLE_PAGES: { to: string; label: string }[] = [
   { to: "/", label: "Home" },
   { to: "/work", label: "Portfolio" },
-  { to: "/work/connect-car-parts", label: "Case: Connect Car Parts" },
   { to: "/writing", label: "Artikelen / Writing" },
   { to: "/music", label: "Muziek" },
   { to: "/about", label: "Over mij" },

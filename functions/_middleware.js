@@ -68,7 +68,7 @@ export async function onRequest(context) {
     "/": 1, "/work": 1, "/writing": 1, "/about": 1, "/privacy": 1,
     "/amazon-nl-specialist": 1, "/bol-com-consultant": 1, "/interim-ecommerce-manager": 1,
     "/ai-ecommerce-automation": 1,
-    "/work/connect-car-parts": 1, "/wiki": 1, "/portal": 1, "/write": 1, "/samantha": 1,
+    "/wiki": 1, "/portal": 1, "/write": 1, "/samantha": 1,
     "/blog-cms": 1, "/auth/callback": 1
   };
   function isKnownRoute(p) {
@@ -78,7 +78,6 @@ export async function onRequest(context) {
     // as files (not the SPA fallback). The dynamic prefixes below are legitimately app-routed.
     if (clean.indexOf("/writing/") === 0) return true;   // article slug (real file or app route)
     if (clean.indexOf("/write/") === 0) return true;     // CMS editor (auth-gated app route)
-    if (clean.indexOf("/work/") === 0) return true;      // case-study detail app route
     if (clean.indexOf("/blog-cms/") === 0) return true;  // CMS sub-route
     return false;
   }

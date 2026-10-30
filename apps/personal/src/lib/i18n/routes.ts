@@ -26,7 +26,6 @@ export const LOCALIZED_ROUTES: readonly string[] = [
   "/",
   "/about",
   "/work",
-  "/work/connect-car-parts",
   "/amazon-nl-specialist",
   "/bol-com-consultant",
   "/interim-ecommerce-manager",

@@ -63,7 +63,7 @@ const BASE = "https://hansvanleeuwen.com";
 const failures = [];
 const seen = new Set();
 // Spiegel van LOCALIZED_ROUTES in src/lib/i18n/routes.ts: deze paden bestaan in NL (kaal) en EN (/en).
-const LOCALIZED_BASE = new Set(["/", "/about", "/work", "/work/connect-car-parts", "/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation", "/webshopbeheerder-inhuren", "/privacy", "/rates", "/writing"]);
+const LOCALIZED_BASE = new Set(["/", "/about", "/work", "/amazon-nl-specialist", "/bol-com-consultant", "/interim-ecommerce-manager", "/ai-ecommerce-automation", "/webshopbeheerder-inhuren", "/privacy", "/rates", "/writing"]);
 
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -788,6 +788,24 @@ for (const route of seen) {
   if ((route === "/en" || route.startsWith("/en/")) && !route.startsWith("/en/writing/")) {
     const nl = route === "/en" ? "/" : route.slice(3);
     if (!seen.has(nl)) failures.push(`${route}: geen NL-tweeling ${nl}`);
+  }
+}
+
+// Unpublished case must not reappear in the prerendered NL/EN pages or sitemap.
+{
+  const retiredCase = "/work/connect-car-parts";
+  for (const prefix of ["", "/en"]) {
+    const route = prefix + retiredCase;
+    const htmlFile = path.join(distDir, route.replace(/^\//, ""), "index.html");
+    if (fs.existsSync(htmlFile)) failures.push(`Unpublished case has a prerendered page: ${route}`);
+    const workHtml = path.join(distDir, (prefix + "/work").replace(/^\//, ""), "index.html");
+    if (fs.existsSync(workHtml) && fs.readFileSync(workHtml, "utf8").includes(retiredCase)) {
+      failures.push(`Work page still links to unpublished case: ${prefix}/work`);
+    }
+  }
+  const sitemapFile = path.join(distDir, "sitemap.xml");
+  if (fs.existsSync(sitemapFile) && fs.readFileSync(sitemapFile, "utf8").includes(retiredCase)) {
+    failures.push("Sitemap still exposes unpublished Connect Car Parts case");
   }
 }
 

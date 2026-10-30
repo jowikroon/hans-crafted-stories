@@ -71,11 +71,7 @@ const Hero = () => {
             <Link to="/work" className="font-semibold text-foreground underline-offset-4 hover:underline">
               {isNl ? "Amazon NL & Bol.com marketplace cases met meetbare resultaten" : "Amazon NL & Bol.com case studies with measurable results"}
             </Link>
-            {isNl ? ", waaronder " : ", including "}
-            <Link to="/work/connect-car-parts" className="font-semibold text-foreground underline-offset-4 hover:underline">
-              {isNl ? "de Connect Car Parts-case" : "the Connect Car Parts case study"}
-            </Link>
-            {isNl ? "; of lees " : "; or read "}
+            {isNl ? " of lees " : " or read "}
             <Link to="/writing" className="font-semibold text-foreground underline-offset-4 hover:underline">
               {isNl ? "Amazon & Bol.com optimalisatie artikelen" : "Amazon & Bol.com optimization articles"}
             </Link>
