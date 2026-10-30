@@ -25,10 +25,6 @@ const categoryGroupMap: Record<string, string> = {
   "Web Design": "web-ux",
 };
 
-const internalRoutes: Record<string, string> = {
-  "connect-car-parts": "/work/connect-car-parts",
-};
-
 const Work = () => {
   const [studies, setStudies] = useState<CaseStudyRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,22 +74,23 @@ const Work = () => {
 
   const mapped = useMemo(
     () =>
-      studies.map((s) => {
-        const slug = s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-        return {
-          id: s.id,
-          title: s.title,
-          titleNl: s.title_nl || undefined,
-          category: s.category,
-          description: s.description,
-          descriptionNl: s.description_nl || undefined,
-          image: s.image,
-          year: s.year,
-          externalUrl: s.external_url ?? undefined,
-          internalUrl: internalRoutes[slug],
-          filterGroup: categoryGroupMap[s.category] ?? "visual",
-        };
-      }),
+      studies
+        // Keep the unpublished employer case out of the Supabase-driven portfolio grid.
+        .filter((s) => !/connect[\s-]*car[\s-]*parts/i.test([s.title, s.title_nl, s.external_url ?? ""].join(" ")))
+        .map((s) => {
+          return {
+            id: s.id,
+            title: s.title,
+            titleNl: s.title_nl || undefined,
+            category: s.category,
+            description: s.description,
+            descriptionNl: s.description_nl || undefined,
+            image: s.image,
+            year: s.year,
+            externalUrl: s.external_url ?? undefined,
+            filterGroup: categoryGroupMap[s.category] ?? "visual",
+          };
+        }),
     [studies]
   );
 
@@ -134,7 +131,7 @@ const Work = () => {
   }, [filter, mapped]);
 
   const getCount = (value: string) =>
-    value === "all" ? mapped.length + 2 : mapped.filter((s) => s.filterGroup === value).length;
+    value === "all" ? mapped.length + 1 : mapped.filter((s) => s.filterGroup === value).length;
 
   if (loading) {
     return (
@@ -207,26 +204,7 @@ const Work = () => {
         </motion.div>
       )}
 
-      {filter === "all" && <div className="mb-10 grid gap-5 md:grid-cols-2">
-      <Link
-        to="/work/connect-car-parts"
-        className="block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-secondary/40 sm:p-8"
-      >
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-          {lang === "nl" ? "Uitgelichte AI-automation case" : "Featured AI automation case study"}
-        </p>
-        <h2 className="mb-2 font-display text-2xl font-semibold text-foreground">
-          Connect Car Parts
-        </h2>
-        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          {lang === "nl"
-            ? "Hoe ik productdata, AI-ondersteunde listingcontent en orderbewaking voor een auto-onderdelenbedrijf samenbreng. De case beschrijft circa 400 actieve SKU's en een intern gemeten daling van 45 naar 3 minuten contentcreatie per SKU."
-            : "How I bring together product data, AI-assisted listing content and order monitoring for an automotive-parts business. The case documents about 400 active SKUs and an internally measured reduction from 45 to 3 minutes of content production per SKU."}
-        </p>
-        <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-          {lang === "nl" ? "Lees de case" : "Read the case study"} <ChevronRight size={16} />
-        </span>
-      </Link>
+      {filter === "all" && <div className="mb-10 grid max-w-2xl gap-5">
       <Link
         to={lang === "en" ? "/en/writing/vendor-of-seller-bol-com-alpine" : "/writing/vendor-of-seller-bol-com-alpine"}
         className="block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-secondary/40 sm:p-8"
@@ -261,7 +239,7 @@ const Work = () => {
         animate={{ opacity: 1 }}
         className="mb-6 text-xs text-muted-foreground"
       >
-        {filtered.length + (filter === "all" ? 2 : 0)} {filtered.length + (filter === "all" ? 2 : 0) === 1 ? tw.projectSingular : tw.projectPlural}
+        {filtered.length + (filter === "all" ? 1 : 0)} {filtered.length + (filter === "all" ? 1 : 0) === 1 ? tw.projectSingular : tw.projectPlural}
         {filter !== "all" && ` ${tw.matching}`}
       </motion.p>
 

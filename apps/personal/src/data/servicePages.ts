@@ -232,12 +232,6 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         practiceIntro: "Wat ik onderweg tegenkwam, met cijfers, beschreef ik in mijn artikelen:",
         practice: [
           {
-            title: "September 2026: Bol.com-launchpipeline gecontroleerd",
-            summary: "Bij Connect Car Parts bracht een verrijkingsrun de Bol.com NL-pipeline op 21 september van 2.897 naar 2.908 als klaar gemarkeerde records. Van zes Magento-404’s bleken vier SKU’s wel te bestaan: een slash in de SKU moest als %2F worden gecodeerd. Ik liet de backfill niet stil 41 rijen overslaan. Dit zijn voorbereidende records, geen live verkoopresultaten.",
-            href: "/work/connect-car-parts",
-            linkLabel: "Bekijk de gedateerde case-update",
-          },
-          {
             title: "Listings die niet converteren",
             summary: "In mijn artikel over listings die niet converteren beschrijf ik een outdoormerk met ~120 SKU's op Amazon DE en Bol.com: €14.000 per maand naar Sponsored Products bij 23% retouren. Maatvoering in de galerij, een vergelijkingstabel en een scanbare titel brachten de conversie van 8,1% naar 12,7% en de retouren naar 14%, waarna de ad spend met €3.000 per maand omlaag kon.",
             href: "/writing/waarom-marketplace-listings-niet-converteren",
@@ -321,12 +315,6 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         practiceHeading: "From the field",
         practiceIntro: "What I ran into along the way, with numbers, is documented in my articles:",
         practice: [
-          {
-            title: "September 2026: checking a Bol.com launch pipeline",
-            summary: "At Connect Car Parts an enrichment run moved the Bol.com NL pipeline from 2,897 to 2,908 records marked ready on 21 September. Four of six Magento 404s were existing SKUs whose slash needed %2F encoding. I stopped the backfill from silently skipping 41 rows. These are prepared records, not live sales.",
-            href: "/work/connect-car-parts",
-            linkLabel: "Read the dated case update",
-          },
           {
             title: "Listings that don't convert",
             summary: "In my article on listings that don't convert I describe an outdoor brand with ~120 SKUs on Amazon DE and Bol.com spending €14,000 a month on Sponsored Products with a 23% return rate. Sizing infographics in the gallery, a comparison table and a scannable title lifted conversion from 8.1% to 12.7% and cut returns to 14%, after which ad spend could drop by €3,000 a month.",
@@ -595,12 +583,6 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         practiceIntro: "Wat ik op Bol.com en Amazon meemaakte, met cijfers:",
         practice: [
           {
-            title: "2.908 records voorbereid voor Bol.com NL",
-            summary: "In de launchpipeline van Connect Car Parts stonden op 21 september 2026 2.908 records als klaar gemarkeerd, na een verrijkingsrun van 11 remblokkensets. Vier van zes vermeende Magento-404’s bleken bestaande SKU’s met een slash; door de API-path te herstellen voorkwam ik dat 41 rijen stil werden overgeslagen. Klaar betekent hier voorbereid, niet live.",
-            href: "/work/connect-car-parts",
-            linkLabel: "Bekijk de case-update",
-          },
-          {
             title: "Een listing is een verkooppagina, geen formulier",
             summary: "Bol.com toont titels volledig, op Amazon moeten de eerste 80 tekens overtuigen. In mijn artikel beschrijf ik hoe bij een outdoormerk op beide platforms bracht een UX-herbouw van de listings de conversie van 8,1% naar 12,7% en de retouren van 23% naar 14%.",
             href: "/writing/waarom-marketplace-listings-niet-converteren",
@@ -683,12 +665,6 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         practiceHeading: "From the field",
         practiceIntro: "What I ran into on Bol.com and Amazon, with numbers:",
         practice: [
-          {
-            title: "2,908 records prepared for Bol.com NL",
-            summary: "On 21 September 2026, 2,908 records in the Connect Car Parts launch pipeline were marked ready, after an enrichment run of 11 brake-pad sets. Four of six apparent Magento 404s were existing slash-containing SKUs; fixing the API path prevented 41 rows being silently skipped. Ready means prepared, not live.",
-            href: "/work/connect-car-parts",
-            linkLabel: "Read the case update",
-          },
           {
             title: "A listing is a sales page, not a form",
             summary: "Bol.com shows titles in full; on Amazon the first 80 characters have to convince. In my article I describe how, for an outdoor brand on both platforms, a UX rebuild of the listings lifted conversion from 8.1% to 12.7% and cut returns from 23% to 14%.",
@@ -956,12 +932,6 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         practiceIntro: "Wat het dagelijkse werk in de praktijk oplevert, met cijfers:",
         practice: [
           {
-            title: "Vier valse foutmeldingen in de dagcontrole",
-            summary: "Bij Connect Car Parts loop ik de Bol.com-pipeline per run na. Zes producten leken te ontbreken, maar vier bestonden gewoon: in een SKU met een slash moet dat teken als %2F de URL in. Zonder die controle liepen 41 rijen stil mis. En klaar gemarkeerd is voorbereid, nog niet verkocht.",
-            href: "/work/connect-car-parts",
-            linkLabel: "Bekijk de case-update",
-          },
-          {
             title: "Advertentiebudget dat een slechte listing betaalt",
             summary: "Een outdoormerk met circa 120 SKU's zette maandelijks €14.000 in op Sponsored Products en zag 23% van de orders terugkomen. Het lek zat in de productpagina, niet in de campagne. Na de herbouw: 12,7% conversie tegenover 8,1% eerder, retouren terug naar 14% en €3.000 per maand minder advertentiekosten.",
             href: "/writing/waarom-marketplace-listings-niet-converteren",
@@ -1044,12 +1014,6 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         practiceHeading: "From the field",
         practiceIntro: "What the daily work actually produces, with numbers:",
         practice: [
-          {
-            title: "Four false errors in the daily check",
-            summary: "At Connect Car Parts I walk through the Bol.com pipeline after every run. Six products looked missing, four simply existed: a slash inside a SKU has to go into the URL as %2F. Without that check, 41 rows would quietly have gone wrong. And marked ready means prepared, not yet sold.",
-            href: "/work/connect-car-parts",
-            linkLabel: "Read the case update",
-          },
           {
             title: "Ad budget paying for a weak listing",
             summary: "An outdoor brand with around 120 SKUs spent €14,000 a month on Sponsored Products and saw 23% of orders come back. The leak sat in the product page, not the campaign. After the rebuild: 12.7% conversion against 8.1% before, returns down to 14% and €3,000 a month less in advertising cost.",

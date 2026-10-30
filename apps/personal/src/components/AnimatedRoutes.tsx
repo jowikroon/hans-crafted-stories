@@ -20,7 +20,6 @@ import BolComConsultant from "@/pages/BolComConsultant";
 import InterimEcommerceManager from "@/pages/InterimEcommerceManager";
 import AiEcommerceAutomation from "@/pages/AiEcommerceAutomation";
 import WebshopbeheerderInhuren from "@/pages/WebshopbeheerderInhuren";
-import CaseStudyDetail from "@/pages/CaseStudyDetail";
 
 /* WriteCMS is lazy-loaded — full Blog CMS shell at /write (3-mode: Write/Manage/Analytics).
    BlogCMS is kept for /blog-cms/voice/:id route only (VoiceTemplateEditor still uses it). */
@@ -95,9 +94,6 @@ const AnimatedRoutes = () => {
           <Route key={`${prefix}/work`} path={`${prefix}/work`} element={<PageTransition><Work /></PageTransition>} />
         ))}
         <Route path="/portfolio" element={<Navigate to="/work" replace />} />
-        {LANG_PREFIXES.map((prefix) => (
-          <Route key={`${prefix}/work/connect-car-parts`} path={`${prefix}/work/connect-car-parts`} element={<PageTransition><CaseStudyDetail /></PageTransition>} />
-        ))}
         {LANG_PREFIXES.map((prefix) => (
           <Route key={`${prefix}/writing`} path={`${prefix}/writing`} element={<PageTransition><Writing /></PageTransition>} />
         ))}

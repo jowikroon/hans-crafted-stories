@@ -171,42 +171,19 @@ const ABOUT_PERSON_ENTITY = {
 const WORK_HEAD_EN = {
   title: "Amazon & Bol.com Case Studies | Hans van Leeuwen",
   description:
-    "Documented marketplace results by Hans van Leeuwen: Amazon NL/DE, Bol.com and e-commerce operations case studies, including Connect Car Parts and Alpine.",
+    "Documented marketplace results by Hans van Leeuwen: Amazon NL/DE, Bol.com and e-commerce case studies, including Alpine Hearing Protection.",
   intro: [
     "This portfolio brings together hands-on marketplace and e-commerce work by Hans van Leeuwen, e-commerce & marketplace manager based in Amersfoort. The case studies focus on the operational work behind growth: product data, marketplace listings, advertising, stock planning, reporting and automation across Amazon, Bol.com, eBay and own webstores. Every case shows the starting point, the intervention and the measurable commercial or operational result.",
-    "The featured Connect Car Parts case describes a Dutch automotive parts operation selling A.B.S. brake parts through Magento, Amazon DE and eBay DE, with catalogue quality, vehicle fitment data, Channable feed management, listing optimisation, advertising and recurring performance reviews. Other documented results: 70% market share in an Amazon NL earplug category (Nielsen 2023), out-of-stock below 2% after improving demand forecasting, and 20% more weekly sales from a targeted social ad campaign, all at Alpine Hearing Protection. On Bol.com the same brand moved from vendor to seller after a per-product-group calculation, documented in the article 'Vendor or seller on Bol.com: how I ran the numbers at Alpine'.",
+    "At Alpine Hearing Protection, documented results include 70% market share in an Amazon NL earplug category (Nielsen 2023), out-of-stock below 2% after improving demand forecasting, and 20% more weekly sales from a targeted social ad campaign. On Bol.com the brand moved from vendor to seller after a per-product-group calculation, documented in the article 'Vendor or seller on Bol.com: how I ran the numbers at Alpine'.",
   ],
 };
 const WORK_HEAD_NL = {
   title: "Amazon & Bol.com case studies | Hans van Leeuwen",
   description:
-    "Gedocumenteerde marktplaatsresultaten van Hans van Leeuwen: case studies Amazon NL/DE, Bol.com en e-commerce, waaronder Connect Car Parts en Alpine.",
+    "Gedocumenteerde marktplaatsresultaten van Hans van Leeuwen: case studies Amazon NL/DE, Bol.com en e-commerce, waaronder Alpine Hearing Protection.",
   intro: [
     "Dit portfolio bundelt praktisch marktplaats- en e-commercewerk van Hans van Leeuwen, e-commerce & marketplace manager uit Amersfoort. De case studies richten zich op het operationele werk achter groei: productdata, listings, advertising, voorraadplanning, rapportage en automatisering over Amazon, Bol.com, eBay en eigen webshops. Elke case toont het startpunt, de ingreep en het meetbare commerciële of operationele resultaat.",
-    "De uitgelichte Connect Car Parts-case beschrijft een Nederlandse operatie in auto-onderdelen die A.B.S.-remonderdelen verkoopt via Magento, Amazon DE en eBay DE, met cataloguskwaliteit, voertuig-fitmentdata, feedmanagement via Channable, listingoptimalisatie, advertising en terugkerende performance reviews. Andere gedocumenteerde resultaten: 70% marktaandeel in een oordoppencategorie op Amazon NL (Nielsen 2023), out-of-stock onder 2% na betere demand forecasting en 20% meer wekelijkse verkopen door een gerichte social-ad-campagne, alle bij Alpine Hearing Protection.",
-  ],
-};
-
-const CASE_CCP_HEAD_EN = {
-  title: "Connect Car Parts Case Study | Hans van Leeuwen",
-  description:
-    "How Hans van Leeuwen runs marketplace operations for Connect Car Parts: ~400 A.B.S. brake-part SKUs on Amazon DE, eBay DE and Magento, Channable and n8n.",
-  intro: [
-    "Connect Car Parts is a Dutch automotive e-commerce operation selling A.B.S. brake parts (discs, pads, hoses and wheel-bearing kits) through its own Magento storefront and on Amazon DE and eBay DE. The active catalogue covers roughly 400 SKUs with vehicle-fitment data (K-types) and OE cross-references; the wider A.B.S. assortment being rolled out to eBay DE and Bol.com runs into the thousands of references.",
-    "Hans van Leeuwen runs the marketplace side end to end: catalogue and product-data quality, feed management via Channable, listing optimisation, marketplace advertising and the operational reporting loop across the Dutch and German markets. The operation is automation-first: orders are monitored every 30 minutes through an n8n pipeline with failure alerts, a daily radar checks Channable feed quality and marketplace rule changes, an automated VIN-based parts lookup (a first in the industry) drives the storefront, and listing content is generated through an AI-assisted pipeline with human review on pricing, brand voice and compliance.",
-    "Current expansion work: the Amazon DE catalogue launch including German VAT registration, and rolling the full A.B.S. assortment out to eBay DE and Bol.com with marketplace-specific content rules and vehicle compatibility files.",
-    "September 2026 update: 6,595 of 7,165 eBay DE listings received vehicle compatibility in four batches (92%); 570 failed, including 566 because of images below 500 pixels and 4 because of catalogue linkage. Separately, 2,908 records were marked ready in the Bol.com NL launch pipeline on 21 September. Ready is not a live sales result, and neither population equals the roughly 400 active SKUs. Source: internal batch and pipeline checks, 17–21 September 2026.",
-  ],
-};
-const CASE_CCP_HEAD_NL = {
-  title: "Case study Connect Car Parts | Hans van Leeuwen",
-  description:
-    "Hoe Hans van Leeuwen de marketplace-operatie van Connect Car Parts runt: ~400 A.B.S.-remonderdelen op Amazon DE, eBay DE en Magento met Channable en n8n.",
-  intro: [
-    "Connect Car Parts is een Nederlandse e-commerce-operatie in auto-onderdelen die A.B.S.-remonderdelen (schijven, blokken, slangen en wiellagersets) verkoopt via een eigen Magento-webshop en op Amazon DE en eBay DE. De actieve catalogus omvat circa 400 SKU's met voertuig-fitmentdata (K-types) en OE-kruisverwijzingen; het bredere A.B.S.-assortiment dat naar eBay DE en Bol.com wordt uitgerold loopt in de duizenden referenties.",
-    "Hans van Leeuwen runt de marketplace-kant van begin tot eind: catalogus- en productdatakwaliteit, feedmanagement via Channable, listingoptimalisatie, marketplace-advertising en de operationele rapportagecyclus over de Nederlandse en Duitse markt. De operatie is automation-first: orders worden elke 30 minuten bewaakt via een n8n-pipeline met alerts, een dagelijkse radar controleert de Channable-feedkwaliteit en marketplace-regelwijzigingen, een geautomatiseerde VIN-zoekfunctie (een primeur in de branche) stuurt de webshop aan en listingcontent komt uit een AI-ondersteunde pipeline met menselijke controle op prijs, merkstem en compliance.",
-    "Lopende uitbreiding: de lancering van de Amazon DE-catalogus inclusief Duitse btw-registratie, en de uitrol van het volledige A.B.S.-assortiment naar eBay DE en Bol.com met marketplace-specifieke contentregels en voertuigcompatibiliteitsbestanden.",
-    "Update september 2026: 6.595 van 7.165 eBay DE-listings kregen voertuigcompatibiliteit in vier batches (92%); 570 faalden, waarvan 566 door afbeeldingen onder 500 pixels en 4 door een cataloguskoppeling. Afzonderlijk stonden op 21 september 2.908 records in de Bol.com NL-launchpipeline als klaar gemarkeerd. Klaar is geen live verkoopresultaat en geen van beide populaties is gelijk aan de circa 400 actieve SKU’s. Bron: interne batch- en pipelinecontroles, 17–21 september 2026.",
+    "Bij Alpine Hearing Protection zijn onder meer deze resultaten gedocumenteerd: 70% marktaandeel in een oordoppencategorie op Amazon NL (Nielsen 2023), out-of-stock onder 2% na betere demand forecasting en 20% meer wekelijkse verkopen door een gerichte social-ad-campagne.",
   ],
 };
 
@@ -629,11 +606,11 @@ writeLocalizedPage("/about", {
 const workExtra = (lang) => lang === "nl"
   ? `
           <h2>Case studies Amazon NL, DE &amp; Bol.com</h2>
-          <ul><li><a href="/work/connect-car-parts">Connect Car Parts: A.B.S.-remonderdelen op Amazon DE, eBay DE &amp; Magento (2025–2026)</a></li><li><a href="/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-naar-seller (2021–2025); 70% Amazon NL-oordoppencategorie (Nielsen 2023), out-of-stock &lt;2% (2021–2022) en +20% wekelijkse verkopen via Back-to-School social ads (cv)</a></li></ul>
+          <ul><li><a href="/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-naar-seller (2021–2025); 70% Amazon NL-oordoppencategorie (Nielsen 2023), out-of-stock &lt;2% (2021–2022) en +20% wekelijkse verkopen via Back-to-School social ads (cv)</a></li></ul>
           <p>Zie ook <a href="/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/bol-com-consultant">Bol.com consultant</a> en <a href="/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`
   : `
           <h2>Amazon NL, DE &amp; Bol.com case studies</h2>
-          <ul><li><a href="/en/work/connect-car-parts">Connect Car Parts: A.B.S. brake parts on Amazon DE, eBay DE &amp; Magento (2025–2026)</a></li><li><a href="/en/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-to-seller (2021–2025); 70% of the Amazon NL earplug category (Nielsen 2023), out-of-stock &lt;2% (2021–2022) and +20% weekly sales from Back-to-School social ads (CV)</a></li></ul>
+          <ul><li><a href="/en/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-to-seller (2021–2025); 70% of the Amazon NL earplug category (Nielsen 2023), out-of-stock &lt;2% (2021–2022) and +20% weekly sales from Back-to-School social ads (CV)</a></li></ul>
           <p>See also <a href="/en/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/en/bol-com-consultant">Bol.com consultant</a> and <a href="/en/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`;
 writeLocalizedPage("/work", {
   buildHead: (lang) => (lang === "nl" ? WORK_HEAD_NL : WORK_HEAD_EN),
@@ -762,39 +739,6 @@ for (const def of SERVICE_PAGES) {
     },
   });
 }
-
-/* ───────────────────────────── /work/connect-car-parts ───────────────────────────── */
-writeLocalizedPage("/work/connect-car-parts", {
-  buildHead: (lang) => (lang === "nl" ? CASE_CCP_HEAD_NL : CASE_CCP_HEAD_EN),
-  buildJsonLd: (lang, head) => ({
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": `${head.canonical}#webpage`,
-        url: head.canonical,
-        name: head.title,
-        description: head.description,
-        isPartOf: { "@id": `${BASE}/#website` },
-        about: { "@id": `${BASE}/#person` },
-        author: { "@id": `${BASE}/#person` },
-        dateModified: SERVICE_PAGES_UPDATED,
-        inLanguage: lang,
-      },
-      WEBSITE_ENTITY,
-      personEntity(lang),
-      PROFESSIONAL_SERVICE_ENTITY,
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", lang) },
-          { "@type": "ListItem", position: 2, name: lang === "nl" ? "Case studies" : "Case Studies", item: absoluteUrl("/work", lang) },
-          { "@type": "ListItem", position: 3, name: "Connect Car Parts", item: head.canonical },
-        ],
-      },
-    ],
-  }),
-});
 
 /* ───────────────────────────── /rates (NL kaal, EN /en/rates, alias /tarieven) ───────────────────────────── */
 writeLocalizedPage("/rates", {

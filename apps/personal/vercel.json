@@ -186,7 +186,12 @@
     },
     {
       "source": "/cases/connect-car-parts",
-      "destination": "/work/connect-car-parts",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/cases/connect-car-parts/:path*",
+      "destination": "/work",
       "permanent": true
     },
     {
