@@ -2,6 +2,9 @@
 .about-v2{--ink:hsl(var(--foreground));--mut:hsl(var(--muted-foreground));--pri:hsl(var(--primary));--line:hsl(var(--border));--card:hsl(var(--card));font-family:var(--font-display);color:var(--ink);overflow-x:clip}
 .about-v2 *{box-sizing:border-box}
 .about-v2 a{color:inherit}
+/* External company websites stay subtle until hovered or focused. */
+.about-v2 .av-company-link{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:hsl(var(--primary)/.4);transition:color .15s,text-decoration-color .15s}
+.about-v2 .av-company-link:hover{color:var(--pri);text-decoration-color:currentColor}
 .av-wrap{max-width:1152px;margin:0 auto;padding:0 24px}
 .av-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .av-eyebrow{margin:0;font-size:12px;line-height:16px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--pri)}
