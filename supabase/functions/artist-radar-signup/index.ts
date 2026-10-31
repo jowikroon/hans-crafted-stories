@@ -100,7 +100,7 @@ async function sendConfirmEmail(email: string, confirmToken: string, artists: { 
       html: `<div style="font-family:'Instrument Sans',system-ui,sans-serif;max-width:520px;margin:0 auto;background:#ffffff;padding:32px;border-radius:14px;color:#57534E;border:1px solid rgba(0,0,0,.06)">`+
         `<div style="font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#A0714F">● Artist Radar</div>`+
         `<h1 style="color:#1C1917;font-size:22px;margin:14px 0 6px">Mooi. Je radar draait bijna.</h1>`+
-        `<p style="line-height:1.6">Nog één tik: bevestig je aanmelding, dan houden we deze artiesten voor je in de gaten in <strong>${scope}</strong> — gerucht, aankondiging of ticketverkoop.</p>`+
+        `<p style="line-height:1.6">Nog één tik: bevestig je aanmelding. Daarna ontvang je maximaal één overzicht per week met nieuwe concertsignalen voor je artiesten in <strong>${scope}</strong> — gerucht, aankondiging of kaartverkoop.</p>`+
         `<div style="margin:14px 0">${chips}</div>`+
         `<p style="text-align:center;margin:28px 0"><a href="${confirmUrl}" style="background:#A0714F;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block">Bevestig mijn radar</a></p>`+
         `<p style="font-size:12px;color:#A8A29E">Niet aangevraagd? Negeer deze mail dan gewoon — zonder bevestiging sturen we je niks.</p></div>`,
