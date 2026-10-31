@@ -30,8 +30,8 @@ https://www.hansvanleeuwen.com/* https://hansvanleeuwen.com/:splat 301
 /blog-cms          /write       302
 /blog-cms/*        /write       302
 
-# Artist Radar moved from a static file to a React route
-/muziek/artist-radar/   /muziek/artist-radar   301
+# Artist Radar is prerendered at /muziek/artist-radar/index.html.
+# Do not add a trailing-slash 301: Pages auto-redirects folders to '/'.
 
 # SPA fallback: serve index.html for all routes
 /*  /index.html  200

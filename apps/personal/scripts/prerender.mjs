@@ -834,6 +834,38 @@ for (const song of songs) {
   console.log(`[prerender] ${route} -> ${outPath}`);
 }
 
+/* ───────────────────────────── /muziek/artist-radar (publiek NL, directe links) ───────────────────────────── */
+{
+  // Without a prerendered file, Cloudflare Pages serves dist/404.html on a
+  // first direct visit. Client-side navigation masks that release blocker.
+  const route = "/muziek/artist-radar";
+  const head = {
+    title: "Artist Radar: concerten volgen in Nederland en België | Hans van Leeuwen",
+    description: "Volg concerten van je favoriete artiesten in Nederland en België. Meld je aan met dubbele bevestiging voor maximaal één wekelijkse Artist Radar-mail.",
+    canonical: `${BASE}${route}`,
+    ogImageAlt: "Artist Radar: publieke NL/BE-concertagenda met wekelijkse meldingen",
+  };
+  const { html } = renderQuietly(route, null, { initialLang: "nl" });
+  let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+  page = setHead(page, head);
+  page = applyLang(page, "nl");
+  page = setHreflang(page, null);
+  page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head));
+  page = setJsonLd(page, {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title,
+        description: head.description, isPartOf: { "@id": `${BASE}/#website` },
+        inLanguage: "nl" },
+      WEBSITE_ENTITY,
+      PERSON_ENTITY,
+    ],
+  });
+  const outPath = outPathFor(route);
+  fs.writeFileSync(outPath, page, "utf8");
+  console.log(`[prerender] ${route} -> ${outPath}`);
+}
+
 /* ───────────────────────────── 404.html (echte HTTP 404 via Vercel) ───────────────────────────── */
 {
   // Vercel serveert dist/404.html met status 404 voor elk pad dat geen bestand,
