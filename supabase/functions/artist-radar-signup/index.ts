@@ -28,11 +28,17 @@ function redir(state: string) {
   return Response.redirect(`${SITE}/artist-radar/status.html?state=${state}`, 303);
 }
 
+// All artist names are user-supplied; never interpolate them as raw email HTML.
+function escapeHtml(value: string): string {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 function cleanArtists(raw: unknown): { id: string; name: string; genre: string }[] {
   if (!Array.isArray(raw)) return [];
-  return raw.slice(0, 100).map((a) => {
+  return raw.slice(0, 25).map((a) => {
     const o = (a && typeof a === "object") ? a as Record<string, unknown> : {};
-    return { id: String(o.id ?? "").slice(0, 80), name: String(o.name ?? "").slice(0, 160), genre: String(o.genre ?? "").slice(0, 80) };
+    return { id: String(o.id ?? "").slice(0, 80), name: String(o.name ?? "").slice(0, 100), genre: String(o.genre ?? "").slice(0, 80) };
   }).filter((a) => a.name);
 }
 function cleanCountries(raw: unknown): string[] {
@@ -82,7 +88,7 @@ async function logSearch(req: Request, body: Record<string, unknown>) {
 async function sendConfirmEmail(email: string, confirmToken: string, artists: { name: string }[], countries: string[], baseUrl: string) {
   if (!RESEND_API_KEY) return { sent: false, reason: "RESEND_API_KEY ontbreekt" };
   const confirmUrl = `${baseUrl}?action=confirm&token=${confirmToken}`;
-  const chips = artists.map((a) => `<span style="display:inline-block;padding:6px 12px;margin:3px;border-radius:999px;background:rgba(160,113,79,.08);border:1px solid rgba(160,113,79,.25);font-size:13px;color:#7C5638;font-weight:600">${a.name}</span>`).join("");
+  const chips = artists.map((a) => `<span style="display:inline-block;padding:6px 12px;margin:3px;border-radius:999px;background:rgba(160,113,79,.08);border:1px solid rgba(160,113,79,.25);font-size:13px;color:#7C5638;font-weight:600">${escapeHtml(a.name)}</span>`).join("");
   const scope = countries.map((c) => (c === "NL" ? "Nederland" : "België")).join(" & ") || "NL & BE";
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -144,7 +150,7 @@ Deno.serve(async (req: Request) => {
     const email = String(body.email ?? "").trim().toLowerCase();
     const artists = cleanArtists(body.artists);
     const countries = cleanCountries(body.countries);
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ ok: false, error: "invalid_email" }, 400);
+    if (email.length > 254 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ ok: false, error: "invalid_email" }, 400);
     if (artists.length === 0) return json({ ok: false, error: "no_artists" }, 400);
 
     const { data: existing } = await supabase.from("artist_radar_signups")
