@@ -27,6 +27,17 @@ function json(body: unknown, status = 200) {
 function redir(state: string) {
   return Response.redirect(`${SITE}/artist-radar/status.html?state=${state}`, 303);
 }
+// Rollout safety: this DB-controlled flag stays OFF until the new public
+// confirmation page is deployed on the production site.
+async function safeActionLinksEnabled(): Promise<boolean> {
+  const { data, error } = await supabase.from("artist_radar_runtime_flags")
+    .select("enabled").eq("key", "safe_action_links").maybeSingle();
+  if (error) { console.error("Artist Radar feature flag lookup failed:", error.message); return true; } // fail closed
+  return data?.enabled === true;
+}
+function reviewRedirect(state: "confirm-review" | "unsubscribe-review", token: string) {
+  return Response.redirect(`${SITE}/artist-radar/status.html?state=${state}&token=${encodeURIComponent(token)}`, 303);
+}
 
 // All artist names are user-supplied; never interpolate them as raw email HTML.
 function escapeHtml(value: string): string {
@@ -116,24 +127,47 @@ Deno.serve(async (req: Request) => {
   const baseUrl = FN_BASE || `${url.origin}${url.pathname}`;
   const action = url.searchParams.get("action") ?? "subscribe";
 
-  if (req.method === "GET" && action === "confirm") {
+  // Modern mail scanners can prefetch GET links. Once the production status
+  // page has been deployed, GET must only render an explicit review screen.
+  if (req.method === "GET" && (action === "confirm" || action === "unsubscribe")) {
     const token = url.searchParams.get("token") ?? "";
-    if (!token) return redir("invalid");
-    const { data, error } = await supabase.from("artist_radar_signups")
-      .update({ status: "confirmed", confirmed_at: new Date().toISOString() })
-      .eq("confirm_token", token).neq("status", "unsubscribed").select("email").maybeSingle();
-    if (error || !data) return redir("invalid");
-    return redir("confirmed");
-  }
-
-  if (req.method === "GET" && action === "unsubscribe") {
-    const token = url.searchParams.get("token") ?? "";
-    if (!token) return redir("invalid");
+    if (!/^[0-9a-f-]{36}$/i.test(token)) return redir("invalid");
+    if (await safeActionLinksEnabled()) {
+      return reviewRedirect(action === "confirm" ? "confirm-review" : "unsubscribe-review", token);
+    }
+    // Backwards-compatible rollout fallback, only while new static UI is absent.
+    if (action === "confirm") {
+      const { data, error } = await supabase.from("artist_radar_signups")
+        .update({ status: "confirmed", confirmed_at: new Date().toISOString() })
+        .eq("confirm_token", token).neq("status", "unsubscribed").select("email").maybeSingle();
+      if (error || !data) return redir("invalid");
+      return redir("confirmed");
+    }
     const { data, error } = await supabase.from("artist_radar_signups")
       .update({ status: "unsubscribed", unsubscribed_at: new Date().toISOString() })
       .eq("unsubscribe_token", token).select("email").maybeSingle();
     if (error || !data) return redir("invalid");
     return redir("unsubscribed");
+  }
+
+  // Token possession + an explicit user action are required to change state.
+  if (req.method === "POST" && (action === "confirm" || action === "unsubscribe")) {
+    let body: Record<string, unknown>;
+    try { body = await req.json(); } catch { return json({ ok: false, error: "invalid_json" }, 400); }
+    const token = String(body.token ?? "").trim();
+    if (!/^[0-9a-f-]{36}$/i.test(token)) return json({ ok: false, error: "invalid_token" }, 400);
+    const confirmed = action === "confirm";
+    const change = confirmed
+      ? { status: "confirmed", confirmed_at: new Date().toISOString() }
+      : { status: "unsubscribed", unsubscribed_at: new Date().toISOString() };
+    const { data, error } = await supabase.from("artist_radar_signups")
+      .update(change)
+      .eq(confirmed ? "confirm_token" : "unsubscribe_token", token)
+      .eq("status", confirmed ? "pending" : "confirmed")
+      .select("id").maybeSingle();
+    if (error) return json({ ok: false, error: "save_failed" }, 500);
+    return data ? json({ ok: true, state: confirmed ? "confirmed" : "unsubscribed" })
+      : json({ ok: false, error: "invalid_token" }, 404);
   }
 
   if (req.method === "POST" && action === "search_log") {
