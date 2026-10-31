@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
 <title>Artist Radar</title>
 <style>
   html,body{margin:0}
@@ -12,7 +14,10 @@
   h1{color:#1C1917;font-size:1.6rem;margin:0 0 .5rem;line-height:1.2}
   p{line-height:1.6;font-size:15px;margin:.2rem 0 0}
   .cta{margin-top:28px}
-  a{display:inline-block;background:#A0714F;color:#fff;text-decoration:none;font-weight:700;padding:12px 24px;border-radius:10px}
+  a,button{display:inline-block;background:#A0714F;color:#fff;text-decoration:none;font-weight:700;padding:12px 24px;border-radius:10px;border:0;font:inherit;cursor:pointer}
+  button:disabled{opacity:.55;cursor:wait}
+  [hidden]{display:none!important}
+  #error{color:#B91C1C;margin-top:12px}
 </style>
 </head>
 <body>
@@ -20,20 +25,62 @@
     <div class="kicker">● Artist Radar</div>
     <h1 id="t">Artist Radar</h1>
     <p id="p"></p>
-    <div class="cta"><a href="https://hansvanleeuwen.com/music">Naar de muziekpagina</a></div>
+    <div class="cta"><button id="confirmAction" type="button" hidden></button><a id="back" href="https://hansvanleeuwen.com/music">Naar de muziekpagina</a></div>
+    <p id="error" role="alert" hidden></p>
   </main>
   <script>
-    var M={
-      confirmed:{t:"Je radar staat aan ✅",p:"Na je bevestiging ontvang je maximaal één e-mail per week met nieuwe concertsignalen voor je artiesten in Nederland en België."},
-      already:{t:"Je stond al aan ✅",p:"Je radar was al bevestigd. Nieuwe concertsignalen komen mee in je wekelijkse overzicht."},
-      unsubscribed:{t:"Uitgeschreven",p:"Je ontvangt geen radar-updates meer. Van gedachten veranderd? Je bent altijd welkom terug."},
-      invalid:{t:"Link niet gevonden",p:"Deze link is ongeldig of is al gebruikt."}
-    };
-    var s=new URLSearchParams(location.search).get("state");
-    var m=M[s]||M.invalid;
-    document.getElementById("t").textContent=m.t;
-    document.getElementById("p").textContent=m.p;
-    document.title="Artist Radar | "+m.t;
+    (function(){
+      var M={
+        confirmed:{t:"Je radar staat aan ✅",p:"Na je bevestiging ontvang je maximaal één e-mail per week met nieuwe concertsignalen voor je artiesten in Nederland en België."},
+        already:{t:"Je stond al aan ✅",p:"Je radar was al bevestigd. Nieuwe concertsignalen komen mee in je wekelijkse overzicht."},
+        unsubscribed:{t:"Uitgeschreven",p:"Je ontvangt geen radar-updates meer. Van gedachten veranderd? Je bent altijd welkom terug."},
+        "confirm-review":{t:"Bevestig je Artist Radar",p:"Wil je deze radar echt activeren? Na bevestiging ontvang je maximaal één concertoverzicht per week.",button:"Ja, activeer mijn radar"},
+        "unsubscribe-review":{t:"Radar uitschrijven?",p:"Wil je je wekelijkse Artist Radar echt stopzetten? Er worden pas wijzigingen opgeslagen wanneer je hieronder bevestigt.",button:"Ja, schrijf me uit"},
+        invalid:{t:"Link niet gevonden",p:"Deze link is ongeldig of is al gebruikt."}
+      };
+      var params=new URLSearchParams(location.search);
+      var state=params.get("state");
+      var token=params.get("token")||"";
+      var review=state==="confirm-review"||state==="unsubscribe-review";
+      if(review&&!/^[0-9a-f-]{36}$/i.test(token)){state="invalid";review=false;}
+      var button=document.getElementById("confirmAction");
+      var back=document.getElementById("back");
+      var error=document.getElementById("error");
+      function show(name){
+        var m=M[name]||M.invalid;
+        document.getElementById("t").textContent=m.t;
+        document.getElementById("p").textContent=m.p;
+        document.title="Artist Radar | "+m.t;
+      }
+      show(state);
+      if(review){
+        button.textContent=M[state].button;
+        button.hidden=false;
+        back.hidden=true;
+        button.addEventListener("click",async function(){
+          button.disabled=true;
+          button.textContent="Bezig…";
+          error.hidden=true;
+          try{
+            var action=state==="confirm-review"?"confirm":"unsubscribe";
+            var response=await fetch("https://pesfakewujjwkyybwaom.supabase.co/functions/v1/artist-radar-signup?action="+action,{
+              method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:token})
+            });
+            var result=await response.json();
+            if(!response.ok||result.ok!==true)throw new Error("Deze link is ongeldig of al gebruikt.");
+            show(result.state);
+            button.hidden=true;
+            back.hidden=false;
+            history.replaceState(null,"",location.pathname+"?state="+encodeURIComponent(result.state));
+          }catch(e){
+            error.textContent=e&&e.message?e.message:"Bevestigen is tijdelijk niet mogelijk. Probeer het later opnieuw.";
+            error.hidden=false;
+            button.disabled=false;
+            button.textContent=M[state].button;
+          }
+        });
+      }
+    })();
   </script>
 </body>
 </html>
