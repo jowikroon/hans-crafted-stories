@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
   try {
     const db = createClient(url, key, { auth: { persistSession: false } });
     const { data, error } = await db.from("artist_radar_concerts")
-      .select("artist_id,artist_name,venue,city,country,event_date,sort_key,status,urgent,updated_at")
+      .select("artist_id,artist_name,venue,city,country,event_date,sort_key,status,urgent,updated_at,source")
       .eq("active", true)
       .gte("sort_key", todayInAmsterdam())
       .order("sort_key", { ascending: true })
@@ -48,6 +48,8 @@ Deno.serve(async (req: Request) => {
     const deduped = new Map<string, NonNullable<typeof data>[number]>();
     const priority: Record<string, number> = { available: 3, announced: 2, rumored: 1 };
     for (const row of data ?? []) {
+      // Legacy seeded demo records are not source-verified concerts and must never appear in public alerts.
+      if (row.source === "seed") continue;
       if (!VALID_STATES.has(row.status) || !["NL", "BE"].includes(row.country)) continue;
       const key = [row.artist_id, row.country, String(row.city ?? "").toLowerCase().trim(), row.sort_key].join("|");
       const prev = deduped.get(key);
