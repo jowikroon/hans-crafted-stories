@@ -153,8 +153,17 @@ Deno.serve(async (req: Request) => {
     if (email.length > 254 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ ok: false, error: "invalid_email" }, 400);
     if (artists.length === 0) return json({ ok: false, error: "no_artists" }, 400);
 
-    const { data: existing } = await supabase.from("artist_radar_signups")
-      .select("id,status,confirm_token").ilike("email", email).maybeSingle();
+    const { data: existing, error: lookupError } = await supabase.from("artist_radar_signups")
+      .select("id,status").ilike("email", email).maybeSingle();
+    if (lookupError) {
+      console.error("Artist Radar signup lookup failed:", lookupError.message);
+      return json({ ok: false, error: "save_failed" }, 500);
+    }
+
+    // Never disclose whether an address is already confirmed.
+    // Anonymous requests cannot alter a confirmed subscriber's preferences.
+    const accepted = { ok: true, message: "Als je adres nog niet bevestigd is, ontvang je een bevestigingsmail." };
+    if (existing?.status === "confirmed") return json(accepted);
 
     let confirmToken: string;
     const common = {
@@ -163,34 +172,47 @@ Deno.serve(async (req: Request) => {
       referer: (req.headers.get("referer") ?? "").slice(0, 500),
       source: String(body.source ?? "muziek/artist-radar").slice(0, 120),
     };
+    const now = new Date();
+    const lastHour = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
     if (existing) {
-      if (existing.status === "confirmed") {
-        const { error: updateError } = await supabase.from("artist_radar_signups")
-          .update(common).eq("id", existing.id);
-        if (updateError) {
-          console.error("Artist Radar confirmed preference update failed:", updateError.message);
-          return json({ ok: false, error: "save_failed" }, 500);
-        }
-        return json({ ok: true, confirmed: true, message: "Je radar is bijgewerkt — je was al bevestigd." });
-      }
+      // Atomic reservation: a second concurrent or repeated request cannot
+      // rotate the token, alter choices, or send another confirmation within 1h.
       const nt = crypto.randomUUID();
-      const { error } = await supabase.from("artist_radar_signups")
-        .update({ ...common, status: "pending", confirm_token: nt }).eq("id", existing.id);
-      if (error) return json({ ok: false, error: "save_failed" }, 500);
-      confirmToken = nt;
+      const { data: reserved, error } = await supabase.from("artist_radar_signups")
+        .update({
+          ...common, status: "pending", confirm_token: nt,
+          last_confirmation_attempt_at: now.toISOString(),
+        })
+        .eq("id", existing.id)
+        .in("status", ["pending", "unsubscribed"])
+        .or(`last_confirmation_attempt_at.is.null,last_confirmation_attempt_at.lt.${lastHour}`)
+        .select("confirm_token").maybeSingle();
+      if (error) {
+        console.error("Artist Radar confirmation reservation failed:", error.message);
+        return json({ ok: false, error: "save_failed" }, 500);
+      }
+      if (!reserved) return json(accepted);
+      confirmToken = reserved.confirm_token;
     } else {
       const { data: ins, error } = await supabase.from("artist_radar_signups")
-        .insert({ email, ...common }).select("confirm_token").single();
-      if (error) return json({ ok: false, error: "save_failed", detail: error.message.slice(0,200) }, 500);
+        .insert({ email, ...common, last_confirmation_attempt_at: now.toISOString() })
+        .select("confirm_token").single();
+      // Lowercase-email uniqueness prevents two simultaneous new signups
+      // creating two subscriptions or sending duplicate mails.
+      if (error?.code === "23505") return json(accepted);
+      if (error) {
+        console.error("Artist Radar signup insert failed:", error.message);
+        return json({ ok: false, error: "save_failed" }, 500);
+      }
       confirmToken = ins.confirm_token;
     }
 
     const mail = await sendConfirmEmail(email, confirmToken, artists, countries, baseUrl);
     if (!mail.sent) {
       console.error("Confirm-mail niet verzonden:", mail.reason);
-      return json({ ok: true, mail_pending: true, message: "Aanmelding ontvangen! Bevestiging volgt zodra de mailservice actief is." });
+      return json({ ok: true, mail_pending: true, message: "Aanmelding ontvangen; de bevestigingsmail is tijdelijk niet beschikbaar." });
     }
-    return json({ ok: true, message: "Check je inbox om je aanmelding te bevestigen." });
+    return json(accepted);
   }
 
   return json({ ok: false, error: "method_not_allowed" }, 405);
