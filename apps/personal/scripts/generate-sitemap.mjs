@@ -57,6 +57,7 @@ const LOCALIZED_ROUTES = LOCALIZED.flatMap((r) => [
 const STATIC_ROUTES = [
   ...LOCALIZED_ROUTES,
   { loc: `${BASE}/music`, changefreq: "monthly", priority: "0.7" },
+  { loc: `${BASE}/muziek/artist-radar`, changefreq: "weekly", priority: "0.7" },
   // Music sub-routes intentionally NOT in the sitemap (Codex review PR #264):
   // - teacher-leave / hanging-on / beat-between-our-years / new-level are
   //   login-gated SoundCloud concepts -> render "Track not found" + noindex
