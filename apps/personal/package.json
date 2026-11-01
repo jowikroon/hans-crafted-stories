@@ -14,6 +14,7 @@
     "test:staging-safety": "node scripts/verify-staging-safety.mjs",
     "test": "vitest run",
     "test:artist-radar-signup": "node --test scripts/artist-radar-signup-mock.test.cjs",
+    "test:soundcloud": "node --test scripts/check-soundcloud-feed.test.mjs",
     "test:watch": "vitest",
     "supabase:types": "supabase gen types typescript --project-id pesfakewujjwkyybwaom > src/integrations/supabase/types.ts",
     "check:images": "node scripts/image-guard.mjs",

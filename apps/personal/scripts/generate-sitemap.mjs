@@ -54,16 +54,33 @@ const LOCALIZED_ROUTES = LOCALIZED.flatMap((r) => [
   { loc: enLoc(r.path), changefreq: r.changefreq, priority: r.priority, alternates: alternates(r.path) },
 ]);
 
+// Include only prerendered, indexable MusicRecording pages. The public catalogue
+// intentionally excludes private/follower-only audio and the Clarity preview.
+function publicMusicRoutes() {
+  const dir = path.join(appDir, "dist", "music");
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((entry) => {
+      const slug = entry.name;
+      const htmlPath = path.join(dir, slug, "index.html");
+      if (!fs.existsSync(htmlPath)) return [];
+      const html = fs.readFileSync(htmlPath, "utf8");
+      const canonical = `${BASE}/music/${slug}`;
+      const hasCanonical = html.includes(`<link rel="canonical" href="${canonical}"`);
+      const isRecording = html.includes('"MusicRecording"');
+      const noindex = /<meta name="robots" content="[^"]*noindex/i.test(html);
+      return hasCanonical && isRecording && !noindex
+        ? [{ loc: canonical, changefreq: "yearly", priority: "0.6" }]
+        : [];
+    });
+}
+
 const STATIC_ROUTES = [
   ...LOCALIZED_ROUTES,
   { loc: `${BASE}/music`, changefreq: "monthly", priority: "0.7" },
+  ...publicMusicRoutes(),
   { loc: `${BASE}/muziek/artist-radar`, changefreq: "weekly", priority: "0.7" },
-  // Music sub-routes intentionally NOT in the sitemap (Codex review PR #264):
-  // - teacher-leave / hanging-on / beat-between-our-years / new-level are
-  //   login-gated SoundCloud concepts -> render "Track not found" + noindex
-  //   for crawlers, so advertising them poisons crawl budget.
-  // - beat-drop is public but not prerendered; direct fetches serve the
-  //   homepage shell until prerender support lands. Re-add once prerendered.
 ];
 
 async function fetchPublishedPosts() {
@@ -115,7 +132,8 @@ function staticLastmod(loc) {
   for (const match of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
     const data = JSON.parse(match[1]);
     const graph = data["@graph"] || [data];
-    if (!graph.some((item) => item["@type"] === "Service")) continue;
+    const isMusicPage = route === "/music" || route.startsWith("/music/");
+    if (!isMusicPage && !graph.some((item) => item["@type"] === "Service")) continue;
     const page = graph.find((item) => item["@type"] === "WebPage" && item.url === loc);
     if (page?.dateModified) return iso(page.dateModified);
   }

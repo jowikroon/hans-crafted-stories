@@ -1,0 +1,48 @@
+name: Jowikroon SoundCloud public catalogue audit
+
+on:
+  schedule:
+    - cron: "15 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: jowikroon-soundcloud-catalogue
+  cancel-in-progress: true
+
+jobs:
+  compare-public-catalogue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check parser and privacy safeguards
+        run: node --test apps/personal/scripts/check-soundcloud-feed.test.mjs
+
+      - name: Fetch public RSS and compare immutable SoundCloud IDs
+        run: node apps/personal/scripts/check-soundcloud-feed.mjs --output "$RUNNER_TEMP/soundcloud-drift.md"
+
+      - name: Queue differences for human review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          if [ ! -s "$RUNNER_TEMP/soundcloud-drift.md" ]; then
+            echo "Public feed matches the curated music inventory."
+            exit 0
+          fi
+          title="[Music sync] SoundCloud public catalogue changes"
+          existing=$(gh issue list --state open --json number,title --limit 200 --jq '.[] | select(.title == "[Music sync] SoundCloud public catalogue changes") | .number' | head -n 1)
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body-file "$RUNNER_TEMP/soundcloud-drift.md"
+          else
+            gh issue create --title "$title" --body-file "$RUNNER_TEMP/soundcloud-drift.md"
+          fi

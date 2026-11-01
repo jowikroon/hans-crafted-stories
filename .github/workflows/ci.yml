@@ -49,6 +49,9 @@ jobs:
       - run: npm run test:artist-radar-signup --workspace=@hans/personal
         if: steps.changes.outputs.relevant == 'true'
 
+      - run: npm run test:soundcloud --workspace=@hans/personal
+        if: steps.changes.outputs.relevant == 'true'
+
       - run: npm run test:images --workspace=@hans/personal
         if: steps.changes.outputs.relevant == 'true'
 

@@ -76,9 +76,9 @@ function TrackRow({ song, index, playing, onToggle }: { song: Song; index: numbe
         <Link className="mn-track__title" to={`/music/${song.slug}`}>{song.title}</Link>
         <div className="mn-track__meta">
           <span className="tag">{song.genre}</span>
-          {song.provider === "spotify" ? <span className="concept official">Official · Spotify</span> : <span className="concept">Pre-release · SoundCloud</span>}
+          {song.provider === "spotify" ? <span className="concept official">Official · Spotify</span> : <span className="concept">Public · SoundCloud</span>}
           <span className="d" />
-          <span>{fmtDate(song.date)}</span>
+          <span>{song.provider === "soundcloud" ? "Uploaded " : "Released "}{fmtDate(song.date)}</span>
         </div>
       </div>
       <div className="mn-wave" aria-hidden="true">
@@ -103,9 +103,8 @@ function TrackRow({ song, index, playing, onToggle }: { song: Song; index: numbe
 
 const Music = () => {
   const { user } = useAuth();
-  // SoundCloud tracks are gated: only visible when logged in. Public visitors
-  // see Spotify releases only.
-  // All SoundCloud tracks in music.ts are public (verified 2026-10-16 via oEmbed + sharing:"public").
+  // The catalogue includes only verified public tracks. Private and follower-only
+  // SoundCloud recordings must never enter the public listing or schema.
   const visibleSongs = songs;
 
   // Hero genre menu, a real, animated filter over the track list. "All" plus
@@ -117,8 +116,8 @@ const Music = () => {
 
   useSEO({
     title: "Music: Songs & Production Notes | Hans van Leeuwen",
-    description: "Tracks recorded after midnight, a tape machine, soft synths, and whatever the night left behind. Press play, and read the notes for every song.",
-    imageAlt: "Hans van Leeuwen music: original songs and production notes (Lo-fi, Electronic, Ambient)",
+    description: "Explore Jowikroon's official Spotify singles and public SoundCloud recordings, with verified track information and individual song notes.",
+    imageAlt: "Jowikroon original electronic songs, SoundCloud recordings and Spotify singles",
     url: "https://hansvanleeuwen.com/music",
     type: "music.playlist",
     jsonLd: {
@@ -128,7 +127,7 @@ const Music = () => {
           { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
           { "@type": "ListItem", position: 2, name: "Music", item: "https://hansvanleeuwen.com/music" },
         ] },
-        { "@type": "MusicGroup", "@id": "https://hansvanleeuwen.com/music#artist", name: "Hans van Leeuwen", alternateName: "Jowikroon", url: "https://hansvanleeuwen.com/music", genre: ["Lo-fi", "Electronic", "Ambient"] },
+        { "@type": "MusicGroup", "@id": "https://hansvanleeuwen.com/music#artist", name: "Jowikroon", alternateName: "Hans van Leeuwen", url: "https://hansvanleeuwen.com/music", genre: ["Electronic"] },
         {
           "@type": "ItemList",
           name: "Original songs by Hans van Leeuwen",
@@ -252,8 +251,20 @@ const Music = () => {
       {/* hero */}
       <section className="mn-wrap mn-hero">
         <h1 className="mn-kicker" style={{ display: "inline-flex", margin: "0 0 30px" }}><span className="mn-live" />Hans van Leeuwen Music <span className="mn-sep">/</span> Jowikroon</h1>
-        <p className="mn-hero__title" style={{ margin: 0 }}>Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</p>
-        <p className="mn-hero__lede">No singles chasing a playlist. Just a handful of <b>tracks</b>, a tape machine, and whatever the night left behind. Press play, and if you want to stay a while, every song keeps the notes: the gear, the mistakes, the lyrics.</p>
+        <div className="mn-hero__split">
+          <div>
+            <p className="mn-hero__title" style={{ margin: 0 }}>Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</p>
+            <p className="mn-hero__lede">Warm synths, human voices, house rhythms and a little funk. Listen to the public recordings and follow each track to its own story, source and verified notes.</p>
+          </div>
+          <aside className="mn-preview" aria-label="Clarity Control V2 studio preview">
+            <span className="mn-preview__eyebrow"><span className="mn-preview__dot" />Latest studio preview</span>
+            <h2 className="mn-preview__title">Clarity Control <span>V2</span></h2>
+            <p className="mn-preview__copy">Another part of the signal. Not every detail is shown.</p>
+            <div className="mn-preview__signal" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /></div>
+            <p className="mn-preview__status">First listen in preparation</p>
+            <p className="mn-preview__fine">The full recording remains private while the final V2 version is confirmed.</p>
+          </aside>
+        </div>
         <div className="mn-hero__cues" role="tablist" aria-label="Filter tracks by genre">
           {genres.map((g) => {
             const active = genre === g;
@@ -288,7 +299,7 @@ const Music = () => {
 
       {/* featured release */}
       <section className="mn-wrap mn-rv" aria-label="Latest release">
-        <p className="mn-slabel"><span className="n">01</span> Latest release</p>
+        <p className="mn-slabel"><span className="n">01</span> Latest official release</p>
         <div className="mn-release">
           <div className="mn-release__body">
             <span className="mn-release__kicker"><span className="mn-live" />{featuredRelease.kicker}</span>
@@ -326,7 +337,7 @@ const Music = () => {
       {/* tracks */}
       <section className="mn-wrap mn-rv" id="songs" aria-label="Tracks">
         <p className="mn-slabel" style={{ marginTop: "clamp(54px,8vh,90px)" }}><span className="n">02</span> The tracks</p>
-        <p className="mn-channels"><b>Spotify</b> = my official releases. <b>SoundCloud</b> = pre-release concept tracks, shared while they are still taking shape.</p>
+        <p className="mn-channels"><b>Spotify</b> holds the official singles. <b>SoundCloud</b> holds the verified public recordings and alternate versions; upload dates are not official release dates.</p>
         <div className="mn-tracks">
           {shownSongs.map((song, i) => (
             <TrackRow key={song.slug} song={song} index={i} playing={playingSlug === song.slug} onToggle={toggle} />
@@ -380,7 +391,7 @@ const Music = () => {
         <div className="mn-footer__inner">
           <div>
             <div className="mn-footer__brand">Hans van Leeuwen</div>
-            <p className="mn-footer__note">E-commerce manager by day. Making songs by night. Notes, gear and lyrics for every track.</p>
+            <p className="mn-footer__note">E-commerce manager by day. Making songs by night. Original recordings and honest notes, with more details as they are verified.</p>
           </div>
           <nav className="mn-footer__links" aria-label="Footer">
             <Link to="/writing">Writing</Link>

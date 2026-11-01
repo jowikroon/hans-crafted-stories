@@ -5,9 +5,8 @@
  * rendered with the .music-v2 scoped stylesheet. Looks the song up by slug
  * from src/data/music.ts; renders a graceful fallback when not found.
  *
- * Production notes / gear / lyrics are demo content for v1 (see data/music.ts
- * TODO markers). The eager Spotify track embed mirrors the prototype (the
- * song page leads with the player, above the fold).
+ * The catalogue includes verified public recordings. Production equipment and
+ * lyrics are shown only when supported by artist-approved metadata.
  *
  * Copy is English (matches the prototype). Default export, wired at
  * /music/:slug. Navbar + Footer come from App.tsx.
@@ -18,7 +17,6 @@ import { motion } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
-import { useAuth } from "@/hooks/useAuth";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
 import "@/styles/music-v2.css";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
@@ -118,7 +116,7 @@ export default function MusicSong() {
   useEffect(() => { ensureFontCss("fonts-music-v2", FONT_CSS.musicV2); }, []);
   const { slug } = useParams<{ slug: string }>();
   const resolved = getSongBySlug(slug);
-  // All tracks in music.ts are public (SoundCloud concepts verified public 2026-10-16).
+  // Only tracks verified public are included in music.ts.
   const song = resolved;
 
   // Two "More tracks" picks = the next songs after this one (wraps around).
@@ -143,8 +141,10 @@ export default function MusicSong() {
       ? `${song.title}: Song & Notes | Hans van Leeuwen`
       : "Song not found | Hans van Leeuwen",
     description: song
-      ? `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): ${song.provider === "spotify" ? "official release on Spotify" : "pre-release concept on SoundCloud"}, with notes on how it was made.`
+      ? `${song.title} by Jowikroon. ${song.provider === "spotify" ? "Official single" : "Public SoundCloud recording"} (${song.duration}). Listen and read verified notes on the available version.`
       : "This track could not be found.",
+    image: song?.cover,
+    imageAlt: song ? `Cover artwork for ${song.title} by Jowikroon` : undefined,
     url: song ? `https://hansvanleeuwen.com/music/${song.slug}` : "https://hansvanleeuwen.com/music",
     type: "music.song",
     noindex: !song,
@@ -234,7 +234,7 @@ export default function MusicSong() {
             <div className="songhead__info">
               <div className="songhead__cat">
                 {d.category}
-                {song.concept && <span className="songhead__concept">Concept · ~90%</span>}
+                {song.concept && <span className="songhead__concept">SoundCloud recording</span>}
               </div>
               <h1 className="songtitle">{song.title}</h1>
               <p className="songhead__by">
@@ -363,7 +363,7 @@ export default function MusicSong() {
             items={[
               { id: "song-notes", label: "Notes" },
               ...(d.gear && d.gear.length ? [{ id: "song-gear", label: "Gear" }] : []),
-              { id: "song-lyrics", label: "Lyrics" },
+              ...(d.lyrics.length ? [{ id: "song-lyrics", label: "Lyrics" }] : []),
             ]}
           />
 
@@ -387,41 +387,44 @@ export default function MusicSong() {
                   ))}
                 </dl>
               </div>
-              <div className="gearlist" id="song-gear">
-                <div className="specs__h">Gear &amp; instruments</div>
-                <ul>
-                  {d.gear.map((g) => (
-                    <li key={g.name}>
-                      <span>
-                        <strong>{g.name}</strong>: {g.note}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {d.gear.length > 0 && (
+                <div className="gearlist" id="song-gear">
+                  <div className="specs__h">Gear &amp; instruments</div>
+                  <ul>
+                    {d.gear.map((g) => (
+                      <li key={g.name}>
+                        <span>
+                          <strong>{g.name}</strong>: {g.note}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </aside>
           </div>
 
-          {/* Lyrics */}
-          <section className="lyrics" aria-label="Lyrics" id="song-lyrics">
-            <div className="lyrics__h">Lyrics</div>
-            <div className="lyrics__cols">
-              {d.lyrics.map((v) => (
-                <div className="lyrics__v" key={v.tag}>
-                  <div className="lyrics__tag">{v.tag}</div>
-                  <p>
-                    {v.lines.map((line, i) => (
-                      <span key={i}>
-                        {line}
-                        {i < v.lines.length - 1 && <br />}
-                      </span>
-                    ))}
-                  </p>
-                </div>
-              ))}
-            </div>
-            {d.lyricsNote && <p className="lyrics__note">{d.lyricsNote}</p>}
-          </section>
+          {d.lyrics.length > 0 && (
+            <section className="lyrics" aria-label="Lyrics" id="song-lyrics">
+              <div className="lyrics__h">Lyrics</div>
+              <div className="lyrics__cols">
+                {d.lyrics.map((v) => (
+                  <div className="lyrics__v" key={v.tag}>
+                    <div className="lyrics__tag">{v.tag}</div>
+                    <p>
+                      {v.lines.map((line, i) => (
+                        <span key={i}>
+                          {line}
+                          {i < v.lines.length - 1 && <br />}
+                        </span>
+                      ))}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              {d.lyricsNote && <p className="lyrics__note">{d.lyricsNote}</p>}
+            </section>
+          )}
 
           {/* Share */}
           <div className="share" style={{ maxWidth: 1040 }}>
