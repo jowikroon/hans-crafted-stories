@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "artist": "Jowikroon",
+  "soundcloudUserId": 1360496058,
+  "verifiedAt": "2026-11-01",
+  "tracks": [
+    {
+      "trackId": 2426601855,
+      "sourceTitle": "Loop in Control",
+      "slug": "loop-in-control",
+      "url": "https://soundcloud.com/jowikroon/loop-in-control",
+      "uploadedAt": "2026-10-27T03:17:11.000Z",
+      "durationSeconds": 140,
+      "artwork": "https://i1.sndcdn.com/artworks-Nhk0PzMrYl3UTyQb-59m3Yw-t500x500.jpg"
+    },
+    {
+      "trackId": 2419106913,
+      "sourceTitle": "Hanging On - jowikroon - NEON master (96k 24-bit)",
+      "slug": "hanging-on",
+      "url": "https://soundcloud.com/jowikroon/s06-hanging-on-jowikroon-neon-master-96k-24-bit-14",
+      "uploadedAt": "2026-10-14T22:31:38.000Z",
+      "durationSeconds": 479,
+      "artwork": "https://i1.sndcdn.com/artworks-mneK4Z6GuPDAyWnk-tw6iuQ-t500x500.jpg"
+    },
+    {
+      "trackId": 2417003193,
+      "sourceTitle": "78 THz Texture",
+      "slug": "78-thz-texture",
+      "url": "https://soundcloud.com/jowikroon/78-thz-texture",
+      "uploadedAt": "2026-10-11T16:29:02.000Z",
+      "durationSeconds": 158,
+      "artwork": "https://i1.sndcdn.com/artworks-ZYuvKEXMylQVE2iH-r6JYIA-t500x500.jpg"
+    },
+    {
+      "trackId": 2408843010,
+      "sourceTitle": "Beat Drop",
+      "slug": "beat-drop-original",
+      "url": "https://soundcloud.com/jowikroon/2m44-beatdrop-original",
+      "uploadedAt": "2026-09-28T00:28:25.000Z",
+      "durationSeconds": 164,
+      "artwork": "https://i1.sndcdn.com/artworks-lRI2OW2Kb5R9qlVD-X2Mp9Q-t500x500.jpg"
+    },
+    {
+      "trackId": 2408431119,
+      "sourceTitle": "With a grin",
+      "slug": "with-a-grin",
+      "url": "https://soundcloud.com/jowikroon/with-a-grin-stem-mix-1-stem",
+      "uploadedAt": "2026-09-27T03:50:06.000Z",
+      "durationSeconds": 251,
+      "artwork": "https://i1.sndcdn.com/artworks-000zz1GdKMtCxyBz-X02WMg-t500x500.jpg"
+    },
+    {
+      "trackId": 2359045115,
+      "sourceTitle": "That Spark ***",
+      "slug": "that-spark",
+      "url": "https://soundcloud.com/jowikroon/pressure-remastered-x2-4",
+      "uploadedAt": "2026-07-12T09:06:05.000Z",
+      "durationSeconds": 189,
+      "artwork": "https://i1.sndcdn.com/artworks-LuCwVgVw9ENtQakh-Ds8W2g-t500x500.jpg"
+    },
+    {
+      "trackId": 2338891766,
+      "sourceTitle": "Beat Between our Years",
+      "slug": "beat-between-our-years",
+      "url": "https://soundcloud.com/jowikroon/beat-between-our-years",
+      "uploadedAt": "2026-06-13T22:54:26.000Z",
+      "durationSeconds": 266,
+      "artwork": "https://i1.sndcdn.com/artworks-Lb2WRfIP4rmG3lAC-g6H5HA-t500x500.jpg"
+    }
+  ]
+}

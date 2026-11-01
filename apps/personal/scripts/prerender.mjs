@@ -778,14 +778,17 @@ writeLocalizedPage("/privacy", {
   }),
 });
 
+// Increment only when the music catalogue or its editorial pages substantively change.
+const MUSIC_CONTENT_UPDATED = "2026-11-01";
+
 /* ───────────────────────────── /music (eentalig EN) ───────────────────────────── */
 {
   const route = "/music";
   const head = {
     title: "Music: Songs & Production Notes | Hans van Leeuwen",
-    description: "Original songs by Hans van Leeuwen, listen on Spotify and read the production notes behind each track: how it was made, the gear, and the lyrics.",
+    description: "Explore Jowikroon's official Spotify singles and public SoundCloud recordings, with verified track information and individual song notes.",
     canonical: `${BASE}/music`,
-    ogImageAlt: "Hans van Leeuwen music: original songs and production notes (Lo-fi, Electronic, Ambient)",
+    ogImageAlt: "Jowikroon original electronic songs, SoundCloud recordings and Spotify singles",
   };
   const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
@@ -796,7 +799,10 @@ writeLocalizedPage("/privacy", {
   page = setJsonLd(page, {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, description: head.description, isPartOf: { "@id": `${BASE}/#website` }, about: { "@id": `${BASE}/#person` }, inLanguage: "en" },
+      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, description: head.description, dateModified: MUSIC_CONTENT_UPDATED, isPartOf: { "@id": `${BASE}/#website` }, about: { "@id": `${BASE}/#person` }, inLanguage: "en" },
+      { "@type": "ItemList", name: "Public Jowikroon recordings", numberOfItems: songs.length, itemListElement: songs.map((song, i) => ({
+        "@type": "ListItem", position: i + 1, url: `${BASE}/music/${song.slug}`, name: song.title,
+      })) },
       WEBSITE_ENTITY,
       PERSON_ENTITY,
     ],
@@ -812,8 +818,10 @@ for (const song of songs) {
   const head = {
     // ≤60 / ≤155 tekens (SEO-run 2026-09-22: lengtes SERP-veilig houden)
     title: `${song.title}: Song & Notes | Hans van Leeuwen`,
-    description: `${song.title} by Hans van Leeuwen (${song.genre}${song.date ? `, ${song.date.slice(0, 4)}` : ""}): ${song.provider === "spotify" ? "official release on Spotify" : "pre-release concept on SoundCloud"}, with notes on how it was made.`,
+    description: `${song.title} by Jowikroon. ${song.provider === "spotify" ? "Official single" : "Public SoundCloud recording"} (${song.duration}). Listen and read verified notes on the available version.`,
     canonical: `${BASE}${route}`,
+    image: song.cover,
+    ogImageAlt: `Cover artwork for ${song.title} by Jowikroon`,
   };
   const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
@@ -824,6 +832,7 @@ for (const song of songs) {
   page = setJsonLd(page, {
     "@context": "https://schema.org",
     "@graph": [
+      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, dateModified: MUSIC_CONTENT_UPDATED, inLanguage: "en", isPartOf: { "@id": `${BASE}/#website` } },
       { "@type": "MusicRecording", "@id": `${head.canonical}#recording`, name: song.title, url: head.canonical, genre: song.genre, datePublished: song.date, byArtist: { "@type": "MusicGroup", name: song.artist || "Jowikroon", "@id": `${BASE}/music#artist` }, sameAs: song.listenUrl, image: song.cover },
       WEBSITE_ENTITY,
       PERSON_ENTITY,

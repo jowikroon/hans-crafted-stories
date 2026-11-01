@@ -5,10 +5,9 @@
  *   _redesign-handoff/project/Music.html  (songs grid + featured release)
  *   _redesign-handoff/project/song-template.html  (per-song detail body)
  *
- * The prototype shipped ONE filled-in detail template (Nightline) and three
- * stub cards. For v1 every track therefore reuses the Nightline production
- * notes / gear / lyrics as demo content, lightly varied per track. Real
- * per-song copy is expected to replace `detail` later, see TODO markers.
+ * Public SoundCloud recordings are verified by immutable track ID and public
+ * RSS metadata. Never invent lyrics or production equipment where no
+ * artist-approved information exists. Private/follower-only work is excluded.
  *
  * Copy is intentionally English (the prototype is English). No translation
  * keys are added here; if/when Music goes bilingual, mirror the writing-v2
@@ -84,8 +83,10 @@ export interface Song {
   tags: GenreTag[];
   /** Human label shown in the meta row, e.g. "Lo-fi". */
   genre: string;
-  /** ISO date (YYYY-MM-DD), used for sort + display. */
+  /** ISO date: official release for Spotify, public upload for SoundCloud. */
   date: string;
+  /** Stable ID of a verified public SoundCloud recording; never a private token. */
+  soundcloudTrackId?: number;
   /** Track length, e.g. "3:42". */
   duration: string;
   /** Imported cover image (resolved URL string at build time). */
@@ -117,7 +118,7 @@ export interface Release {
 
 /** Featured release + previous official, both shown at the top of /music. */
 export const featuredRelease: Release = {
-  kicker: "Latest release",
+  kicker: "Latest official release",
   title: "Neon House of Glass",
   sub: "My second official single, out now on Spotify, released as Jowikroon. Spotify carries my official releases; SoundCloud is where my pre-release concept tracks land first.",
   chips: ["2026", "Electronic", "Single"],
@@ -141,39 +142,33 @@ function scEmbed(trackUrl: string): string {
   return `https://w.soundcloud.com/player/?url=${u}&color=%231C6B45&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false`;
 }
 
-/** Lighter detail for the concept tracks, honest, no fabricated studio specs. */
-function conceptDetail(opts: { category: string; released: string; length: string; note: string }): SongDetail {
+/** Source-grounded public SoundCloud metadata, without invented gear or lyrics. */
+function conceptDetail(opts: { category: string; uploaded: string; length: string; note: string; version?: string }): SongDetail {
   return {
     category: opts.category,
     facts: [
-      { label: "Released", value: opts.released },
+      { label: "Uploaded", value: opts.uploaded },
       { label: "Length", value: opts.length },
-      { label: "Status", value: "Pre-release concept" },
+      { label: "Availability", value: "Public on SoundCloud" },
       { label: "As", value: "Jowikroon" },
     ],
     session: [
-      { label: "Status", value: "Pre-release concept" },
-      { label: "Host", value: "SoundCloud" },
+      { label: "Platform", value: "SoundCloud" },
+      { label: "Availability", value: "Public recording" },
+      ...(opts.version ? [{ label: "Version", value: opts.version }] : []),
       { label: "Artist", value: "Jowikroon" },
     ],
     gear: [],
     prose: [
       { type: "lead", text: opts.note },
-      {
-        type: "p",
-        text: "This is a pre-release concept on SoundCloud. My official releases go out on Spotify; on SoundCloud I share tracks while the mix, arrangement and final master are still moving.",
-      },
-      {
-        type: "callout",
-        kicker: "Heads up",
-        text: "Made as Jowikroon, the artist alias of Hans van Leeuwen. Press play to hear the SoundCloud version.",
-      },
+      { type: "p", text: "The date above is the public SoundCloud upload date, not necessarily the composition, mastering or official release date." },
+      { type: "callout", kicker: "Listen", text: "Play this SoundCloud recording above or open its source page. Instrument and lyric details appear only when verified." },
     ],
     lyrics: [],
   };
 }
 
-/** Real catalogue: Beat Drop (Spotify) + 4 SoundCloud concept tracks. */
+/** Two official Spotify singles and seven verified public SoundCloud uploads. */
 export const songs: Song[] = [
   {
     title: "Neon House of Glass",
@@ -184,7 +179,7 @@ export const songs: Song[] = [
     genre: "Electronic",
     date: "2026-07-03",
     duration: "4:46",
-    cover: "https://i.scdn.co/image/ab67616d0000b27331d1dc7e59bd437f979191c7",
+    cover: "https://i.scdn.co/image/ab67616d0000e1a30f634758128b532d176879d6",
     embed: "https://open.spotify.com/embed/album/2JAngR51N6h1mTUI43MHge?utm_source=generator",
     embedHeight: 352,
     listenUrl: "https://open.spotify.com/album/2JAngR51N6h1mTUI43MHge",
@@ -243,9 +238,9 @@ export const songs: Song[] = [
     provider: "spotify",
     tags: ["electronic"],
     genre: "Electronic",
-    date: "2026-01-01",
+    date: "2026-05-28",
     duration: "2:44",
-    cover: "https://i.scdn.co/image/ab67616d0000b273e9e292c832749ec9b5aecd66",
+    cover: "https://i.scdn.co/image/ab67616d0000e1a3cbd4121e25004196fea34fbf",
     embed: "https://open.spotify.com/embed/track/5e5vN1pm3NUY0OQdM7uqSl?utm_source=generator",
     embedHeight: 152,
     listenUrl: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
@@ -259,7 +254,7 @@ export const songs: Song[] = [
     detail: {
       category: "Electronic · Single",
       facts: [
-        { label: "Released", value: "2026" },
+        { label: "Released", value: "May 28, 2026" },
         { label: "Length", value: "2:44" },
         { label: "Type", value: "Official single" },
         { label: "As", value: "Jowikroon" },
@@ -299,7 +294,30 @@ export const songs: Song[] = [
     },
   },
   {
-    title: "Hanging On (NEON master)",
+    title: "Loop in Control",
+    slug: "loop-in-control",
+    artist: "Jowikroon",
+    provider: "soundcloud",
+    concept: true,
+    tags: ["electronic"],
+    genre: "Electronic",
+    date: "2026-10-27",
+    soundcloudTrackId: 2426601855,
+    duration: "2:20",
+    cover: "https://i1.sndcdn.com/artworks-Nhk0PzMrYl3UTyQb-59m3Yw-t500x500.jpg",
+    embed: scEmbed("https://soundcloud.com/jowikroon/loop-in-control"),
+    embedHeight: 166,
+    listenUrl: "https://soundcloud.com/jowikroon/loop-in-control",
+    links: { soundcloud: "https://soundcloud.com/jowikroon/loop-in-control" },
+    detail: conceptDetail({
+      category: "Electronic · SoundCloud recording",
+      uploaded: "Oct 27, 2026",
+      length: "2:20",
+      note: "I can stay inside a loop and still end up somewhere else. A familiar phrase returns, but each pass makes room for a new movement or a detail I missed before.",
+    }),
+  },
+  {
+    title: "Hanging On",
     slug: "hanging-on",
     artist: "Jowikroon",
     provider: "soundcloud",
@@ -307,6 +325,7 @@ export const songs: Song[] = [
     tags: ["electronic"],
     genre: "Electronic",
     date: "2026-10-14",
+    soundcloudTrackId: 2419106913,
     duration: "7:59",
     cover: "https://i1.sndcdn.com/artworks-mneK4Z6GuPDAyWnk-tw6iuQ-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/s06-hanging-on-jowikroon-neon-master-96k-24-bit-14"),
@@ -314,10 +333,11 @@ export const songs: Song[] = [
     listenUrl: "https://soundcloud.com/jowikroon/s06-hanging-on-jowikroon-neon-master-96k-24-bit-14",
     links: { soundcloud: "https://soundcloud.com/jowikroon/s06-hanging-on-jowikroon-neon-master-96k-24-bit-14" },
     detail: conceptDetail({
-      category: "Electronic · Pre-release concept",
-      released: "SoundCloud · 2026",
+      category: "Electronic · NEON master recording",
+      uploaded: "Oct 14, 2026",
       length: "7:59",
-      note: "Hanging On in its NEON album master (96 kHz, 24-bit), the long version as it stands before release.",
+      version: "NEON master upload (labelled 96 kHz / 24-bit)",
+      note: "The public NEON master upload of Hanging On, a longer recording from the evolving NEON: The Signal Between project. This is not a confirmation of a final album release.",
     }),
   },
   {
@@ -329,6 +349,7 @@ export const songs: Song[] = [
     tags: ["electronic"],
     genre: "Electronic",
     date: "2026-10-11",
+    soundcloudTrackId: 2417003193,
     duration: "2:38",
     cover: "https://i1.sndcdn.com/artworks-ZYuvKEXMylQVE2iH-r6JYIA-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/78-thz-texture"),
@@ -336,10 +357,10 @@ export const songs: Song[] = [
     listenUrl: "https://soundcloud.com/jowikroon/78-thz-texture",
     links: { soundcloud: "https://soundcloud.com/jowikroon/78-thz-texture" },
     detail: conceptDetail({
-      category: "Electronic · Pre-release concept",
-      released: "SoundCloud · 2026",
+      category: "Electronic · Instrumental study",
+      uploaded: "Oct 11, 2026",
       length: "2:38",
-      note: "78 THz Texture, a short texture study built around one evolving sound.",
+      note: "An instrumental electronic texture study outside the current NEON album narrative. The frequency in the title is a creative image, not a technical measurement of this recording.",
     }),
   },
   {
@@ -351,21 +372,23 @@ export const songs: Song[] = [
     tags: ["electronic"],
     genre: "Electronic",
     date: "2026-09-28",
+    soundcloudTrackId: 2408843010,
     duration: "2:44",
-    cover: "https://i1.sndcdn.com/artworks-mnWTKG1aNWITRn7g-gTixHQ-t500x500.jpg",
+    cover: "https://i1.sndcdn.com/artworks-lRI2OW2Kb5R9qlVD-X2Mp9Q-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/2m44-beatdrop-original"),
     embedHeight: 166,
     listenUrl: "https://soundcloud.com/jowikroon/2m44-beatdrop-original",
     links: { soundcloud: "https://soundcloud.com/jowikroon/2m44-beatdrop-original" },
     detail: conceptDetail({
-      category: "Electronic · Pre-release concept",
-      released: "SoundCloud · 2026",
+      category: "Electronic · SoundCloud version",
+      uploaded: "Sep 28, 2026",
       length: "2:44",
-      note: "The original version of Beat Drop. The official release lives on Spotify; this is where it started.",
+      version: "SoundCloud original mix",
+      note: "This public SoundCloud upload is a version of Beat Drop. The official single was released on Spotify on May 28, 2026; this SoundCloud upload appeared later on September 28.",
     }),
   },
   {
-    title: "With a Grin (stem mix)",
+    title: "With a Grin",
     slug: "with-a-grin",
     artist: "Jowikroon",
     provider: "soundcloud",
@@ -373,6 +396,7 @@ export const songs: Song[] = [
     tags: ["electronic"],
     genre: "Electronic",
     date: "2026-09-27",
+    soundcloudTrackId: 2408431119,
     duration: "4:11",
     cover: "https://i1.sndcdn.com/artworks-000zz1GdKMtCxyBz-X02WMg-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/with-a-grin-stem-mix-1-stem"),
@@ -380,10 +404,11 @@ export const songs: Song[] = [
     listenUrl: "https://soundcloud.com/jowikroon/with-a-grin-stem-mix-1-stem",
     links: { soundcloud: "https://soundcloud.com/jowikroon/with-a-grin-stem-mix-1-stem" },
     detail: conceptDetail({
-      category: "Electronic · Pre-release concept",
-      released: "SoundCloud · 2026",
+      category: "Electronic · SoundCloud recording",
+      uploaded: "Sep 27, 2026",
       length: "4:11",
-      note: "With a Grin, a stem mix concept: the parts are there, the final balance is still moving.",
+      version: "Stem-mix upload",
+      note: "With a Grin, shared publicly in a stem-mix version. This upload documents one recording without presenting it as a definitive album master.",
     }),
   },
   {
@@ -395,17 +420,18 @@ export const songs: Song[] = [
     tags: ["electronic"],
     genre: "Electronic",
     date: "2026-07-12",
+    soundcloudTrackId: 2359045115,
     duration: "3:09",
-    cover: "https://i1.sndcdn.com/artworks-KzObgF8l73kd5EiV-sPCntg-t500x500.jpg",
+    cover: "https://i1.sndcdn.com/artworks-LuCwVgVw9ENtQakh-Ds8W2g-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/pressure-remastered-x2-4"),
     embedHeight: 166,
     listenUrl: "https://soundcloud.com/jowikroon/pressure-remastered-x2-4",
     links: { soundcloud: "https://soundcloud.com/jowikroon/pressure-remastered-x2-4" },
     detail: conceptDetail({
-      category: "Electronic · Pre-release concept",
-      released: "SoundCloud · 2026",
+      category: "Electronic · NEON recording",
+      uploaded: "Jul 12, 2026",
       length: "3:09",
-      note: "That Spark, a concept track that grew out of an earlier remaster session.",
+      note: "A small spark can be enough to feel movement again. This track leaves that first flicker room to breathe before turning it into a larger story.",
     }),
   },
   {
@@ -417,6 +443,7 @@ export const songs: Song[] = [
     tags: ["electronic"],
     genre: "Electronic",
     date: "2026-06-13",
+    soundcloudTrackId: 2338891766,
     duration: "4:26",
     cover: "https://i1.sndcdn.com/artworks-Lb2WRfIP4rmG3lAC-g6H5HA-t500x500.jpg",
     embed: scEmbed("https://soundcloud.com/jowikroon/beat-between-our-years"),
@@ -424,10 +451,10 @@ export const songs: Song[] = [
     listenUrl: "https://soundcloud.com/jowikroon/beat-between-our-years",
     links: { soundcloud: "https://soundcloud.com/jowikroon/beat-between-our-years" },
     detail: conceptDetail({
-      category: "Electronic · Pre-release concept",
-      released: "SoundCloud · 2026",
+      category: "Electronic · SoundCloud recording",
+      uploaded: "Jun 13, 2026",
       length: "4:26",
-      note: "Beat Between Our Years, an early concept and one of the first tracks I put online.",
+      note: "An early Jowikroon recording from the public SoundCloud timeline. This page documents the available version without assuming it is a finished album master.",
     }),
   },
 ];
