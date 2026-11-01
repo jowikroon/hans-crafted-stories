@@ -141,7 +141,7 @@ export default function MusicSong() {
       ? `${song.title}: Song & Notes | Hans van Leeuwen`
       : "Song not found | Hans van Leeuwen",
     description: song
-      ? `${song.title} by Jowikroon. ${song.provider === "spotify" ? "Official single" : "Public SoundCloud recording"} (${song.duration}). Listen and read verified notes on the available version.`
+      ? `${song.title} by Jowikroon. ${song.provider === "spotify" ? "Official single" : "Public SoundCloud recording"} (${song.duration}). Listen, open the original source and explore the available notes for this recording.`
       : "This track could not be found.",
     image: song?.cover,
     imageAlt: song ? `Cover artwork for ${song.title} by Jowikroon` : undefined,
@@ -362,7 +362,7 @@ export default function MusicSong() {
           <SongSectionNav
             items={[
               { id: "song-notes", label: "Notes" },
-              ...(d.gear && d.gear.length ? [{ id: "song-gear", label: "Gear" }] : []),
+              ...(d.gear && d.gear.length ? [{ id: "song-gear", label: "Sounds" }] : []),
               ...(d.lyrics.length ? [{ id: "song-lyrics", label: "Lyrics" }] : []),
             ]}
           />
@@ -389,7 +389,7 @@ export default function MusicSong() {
               </div>
               {d.gear.length > 0 && (
                 <div className="gearlist" id="song-gear">
-                  <div className="specs__h">Gear &amp; instruments</div>
+                  <div className="specs__h">Sounds &amp; instruments</div>
                   <ul>
                     {d.gear.map((g) => (
                       <li key={g.name}>

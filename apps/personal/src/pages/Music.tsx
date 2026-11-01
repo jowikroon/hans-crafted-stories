@@ -115,8 +115,8 @@ const Music = () => {
   const shownSongs = genre === "All" ? visibleSongs : visibleSongs.filter((sg) => sg.genre === genre);
 
   useSEO({
-    title: "Music: Songs & Production Notes | Hans van Leeuwen",
-    description: "Explore Jowikroon's official Spotify singles and public SoundCloud recordings, with verified track information and individual song notes.",
+    title: "Jowikroon Music: Releases & Track Notes | Hans van Leeuwen",
+    description: "Listen to Jowikroon's official Spotify singles and public SoundCloud recordings. Find release or upload dates, source links and available track notes. Lyrics and equipment details appear only when verified.",
     imageAlt: "Jowikroon original electronic songs, SoundCloud recordings and Spotify singles",
     url: "https://hansvanleeuwen.com/music",
     type: "music.playlist",
@@ -254,7 +254,7 @@ const Music = () => {
         <div className="mn-hero__split">
           <div>
             <p className="mn-hero__title" style={{ margin: 0 }}>Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</p>
-            <p className="mn-hero__lede">Warm synths, human voices, house rhythms and a little funk. Listen to the public recordings and follow each track to its own story, source and verified notes.</p>
+            <p className="mn-hero__lede">Warm synths, human voices, house rhythms and a little funk. Listen to the public recordings and open each track for its source, available notes and release details.</p>
           </div>
           <aside className="mn-preview" aria-label="Clarity Control V2 studio preview">
             <span className="mn-preview__eyebrow"><span className="mn-preview__dot" />Latest studio preview</span>
@@ -337,7 +337,7 @@ const Music = () => {
       {/* tracks */}
       <section className="mn-wrap mn-rv" id="songs" aria-label="Tracks">
         <p className="mn-slabel" style={{ marginTop: "clamp(54px,8vh,90px)" }}><span className="n">02</span> The tracks</p>
-        <p className="mn-channels"><b>Spotify</b> holds the official singles. <b>SoundCloud</b> holds the verified public recordings and alternate versions; upload dates are not official release dates.</p>
+        <p className="mn-channels"><b>Spotify</b> holds the official singles. <b>SoundCloud</b> holds public recordings and alternate versions; upload dates are not official release dates. Lyrics, equipment and detailed production notes are shown only when verified, so some tracks do not have those sections yet.</p>
         <div className="mn-tracks">
           {shownSongs.map((song, i) => (
             <TrackRow key={song.slug} song={song} index={i} playing={playingSlug === song.slug} onToggle={toggle} />
@@ -391,7 +391,7 @@ const Music = () => {
         <div className="mn-footer__inner">
           <div>
             <div className="mn-footer__brand">Hans van Leeuwen</div>
-            <p className="mn-footer__note">E-commerce manager by day. Making songs by night. Original recordings and honest notes, with more details as they are verified.</p>
+            <p className="mn-footer__note">E-commerce manager by day. Making songs by night. Listen to the releases and public recordings, with individual notes and source links. Lyrics and equipment details are added only when verified.</p>
           </div>
           <nav className="mn-footer__links" aria-label="Footer">
             <Link to="/writing">Writing</Link>
@@ -403,7 +403,7 @@ const Music = () => {
         </div>
         <div className="mn-footer__copy">
           <span>© 2026 Hans van Leeuwen · Amersfoort, NL</span>
-          <span>All tracks self-produced</span>
+          <span>Jowikroon · Music &amp; stories</span>
         </div>
       </footer>
     </div>
