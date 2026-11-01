@@ -34,4 +34,22 @@ describe("Jowikroon public music catalogue", () => {
     expect(featuredRelease.kicker).toBe("Latest official release");
     expect(songs.find((song) => song.slug === "beat-drop-original")?.date).toBe("2026-09-28");
   });
+  it("keeps the displayed dates consistent with official releases and SoundCloud uploads", () => {
+    for (const song of songs) {
+      const label = song.provider === "spotify" ? "Released" : "Uploaded";
+      const shownDate = new Date(`${song.date}T00:00:00Z`).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
+      });
+      expect(song.detail.facts.find((fact) => fact.label === label)?.value).toBe(shownDate);
+    }
+  });
+
+  it("does not fabricate equipment or lyrics for SoundCloud recordings without approved sources", () => {
+    // Deliberate review gate: verified additions require a cited source and an updated test.
+    for (const song of soundcloud) {
+      expect(song.detail.gear).toEqual([]);
+      expect(song.detail.lyrics).toEqual([]);
+    }
+  });
+
 });
