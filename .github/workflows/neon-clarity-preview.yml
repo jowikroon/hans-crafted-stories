@@ -24,6 +24,12 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Deno 2 (Supabase Edge runtime)
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck private Edge Function
+        run: deno check supabase/functions/neon-studio-preview/index.ts
       - name: Authorization and checksum tests
         run: node --test apps/personal/scripts/neon-preview-policy.test.mjs
       - name: Install dependencies
