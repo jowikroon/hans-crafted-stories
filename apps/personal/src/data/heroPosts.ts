@@ -19,7 +19,7 @@ const HERO_METADATA: Record<
     tags: ["LLM", "UX", "AI", "Product design"],
     read_time: "5 min read",
     published: true,
-    image_url: "https://hansvanleeuwen.com/og-image.png",
+    image_url: "https://hansvanleeuwen.com/hans-profile.jpg",
     created_at: "2024-06-01T00:00:00Z",
     updated_at: "2025-01-15T00:00:00Z",
   },

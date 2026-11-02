@@ -31,9 +31,9 @@ const STATIC_CONTENT = `<header>
       <a href="/about#contact">Vraag een 7-punten Amazon NL &amp; Bol.com audit aan (48u reactie)</a>
       <a href="/about#contact">Plan een vrijblijvend 30-min Amazon NL &amp; Bol.com groeigesprek</a>
     </section>
-    <section aria-label="Proven results">
+    <section aria-label="Selected career results">
       <ul>
-        <li><strong>70% market share on Amazon NL</strong> (earplug category, Nielsen Data): Listing overhaul, A+ content, A/B-tested images and Buy Box alignment (Alpine Hearing Protection, Nielsen 2023).</li>
+        <li><strong>Amazon NL listing optimisation</strong>: A+ content, A/B-tested images and Buy Box alignment (Alpine Hearing Protection, CV records).</li>
         <li><strong>20% weekly sales increase</strong> from a targeted Back-to-School social ad campaign on top of optimised listings (Alpine Hearing Protection).</li>
         <li><strong>Out-of-stock rates below 2%</strong> through demand forecasting and optimized logistics.</li>
       </ul>

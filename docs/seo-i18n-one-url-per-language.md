@@ -19,7 +19,7 @@ Refereert aan Linear HAN-167, HAN-83, HAN-138, HAN-145, HAN-146, HAN-165.
 - **Sitemap** bevat beide taalversies met `xhtml:link`-alternates.
 
 ## Bewijsregels voor content
-Elk cijfer op een dienstenpagina heeft een zichtbare bron (cv-rol + jaar, of een artikel op `/writing`). De 20% wekelijkse verkoopgroei komt uit een Back-to-School social-ad-campagne bij Alpine Hearing Protection — niet uit Bol Ads; eerdere teksten schreven dat verkeerd toe. 70% marktaandeel = oordoppencategorie Amazon NL, Nielsen 2023.
+Elk cijfer op een dienstenpagina heeft een zichtbare bron (cv-rol + jaar, of een artikel op `/writing`). De 20% wekelijkse verkoopgroei komt uit een Back-to-School social-ad-campagne bij Alpine Hearing Protection — niet uit Bol Ads; eerdere teksten schreven dat verkeerd toe. De eerdere 70%-claim (Alpine/Nielsen 2023) is alleen in eigen CV-materiaal aangetroffen. Publiceer geen percentage of Nielsen-bronclaim zonder de oorspronkelijke meting, categorie-/kanaalafbakening en publicatietoestemming. Zie `docs/content-evidence/alpine-market-share-2023.md`.
 
 ## Restrisico's
 - `/writing/:slug` en `/music/:slug` vallen nog terug op `index.html` (drafts en niet-geprerenderde tracks). Een onbekend pad in die twee subtrees geeft dus nog een 200-shell. Structurele oplossing: SSR of edge-middleware voor die twee routes.

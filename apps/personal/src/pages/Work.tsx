@@ -215,8 +215,8 @@ const Work = () => {
         <h2 className="mb-2 font-display text-2xl font-semibold text-foreground">Alpine Hearing Protection</h2>
         <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
           {lang === "nl"
-            ? "Marketplace-expansie en een Bol.com vendor-naar-seller-transitie. Het merk behaalde 70% aandeel in de oordoppencategorie op Amazon NL (Nielsen, 2023); out-of-stock bleef onder 2% (2021–2022). Een Back-to-School social-ad-campagne leverde 20% meer wekelijkse verkopen op (eigen cv-materiaal)."
-            : "Marketplace expansion and a Bol.com vendor-to-seller transition. The brand reached 70% of the earplug category on Amazon NL (Nielsen, 2023); out-of-stock remained below 2% (2021–2022). A Back-to-School social-ad campaign increased weekly sales by 20% (CV records)."}
+            ? "Marketplace-expansie en een Bol.com vendor-naar-seller-transitie. Bij Alpine werkte ik aan productcontent en Buy Box-afstemming op Amazon NL; out-of-stock bleef onder 2% (2021–2022). Een Back-to-School social-ad-campagne leverde 20% meer wekelijkse verkopen op (eigen cv-materiaal)."
+            : "Marketplace expansion and a Bol.com vendor-to-seller transition. At Alpine I worked on product content and Buy Box alignment on Amazon NL; out-of-stock remained below 2% (2021–2022). A Back-to-School social-ad campaign increased weekly sales by 20% (CV records)."}
         </p>
         <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
           {lang === "nl" ? "Lees de Bol.com-case" : "Read the Bol.com case (Dutch)"} <ChevronRight size={16} />

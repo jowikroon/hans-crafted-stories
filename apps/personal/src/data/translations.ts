@@ -190,7 +190,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     downloadCvNl: "Download CV (NL)",
     bio: [
       "E-commerce Manager with 10+ years of experience accelerating digital commerce performance across marketplaces and D2C channels. Specializing in Amazon, Bol.com, AI-assisted e-commerce automation, and scalable revenue growth strategies.",
-      "I combine a strong background in UX design with hands-on commercial expertise to create data-driven strategies that deliver measurable results. From achieving 70% market share on Amazon NL to cutting out-of-stock rates below 2%, I turn complexity into growth.",
+      "I combine a strong background in UX design with hands-on commercial expertise to create data-driven strategies that deliver measurable results. From improving Amazon NL listings to cutting out-of-stock rates below 2%, I turn complexity into growth.",
     ],
     experienceList: [
       {
@@ -208,7 +208,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "Marketplace Manager",
         period: "Feb 2022 – Dec 2025",
         highlights: [
-          "Achieved 70% market share in the earplug category on Amazon NL (Nielsen, 2023)",
+          "Optimized Amazon NL listings, A+ content and product imagery (Alpine Hearing Protection, CV)",
           "20% more weekly sales with a Back-to-School social ad campaign; A/B-tested images lifted conversion",
           "Less Buy Box price volatility through B2B channel alignment; market analysis with Helium10 and Nielsen",
           "Launched the Bol.com seller channel, transitioning from vendor to seller",
@@ -328,12 +328,12 @@ export const translations: Record<Lang, TranslationStrings> = {
       ctaAbout: "About me",
       resultsLabel: "Proven results",
       results: [
-        "70% market share on Amazon NL (earplug category, Nielsen Data)",
+        "Amazon NL listings and Buy Box alignment (Alpine Hearing Protection, CV)",
         "20% more weekly sales from a targeted Back-to-School social ad campaign",
         "Out-of-stock rates below 2% through forecasting & logistics",
       ],
       resultsDetail: [
-        "Challenge: Competitive earplug category on Amazon NL (Alpine Hearing Protection). Action: Listing overhaul, A+ content, A/B-tested images and Buy Box alignment with B2B channels. Result: 70% category market share (Nielsen, 2023).",
+        "Challenge: Competitive earplug category on Amazon NL (Alpine Hearing Protection). Work: Listing overhaul, A+ content, A/B-tested images and Buy Box alignment with B2B channels, as described in my CV.",
         "Challenge: Flat weekly marketplace sales around the school season. Action: Built a targeted Back-to-School social ad campaign on top of optimised listings (Alpine Hearing Protection). Result: 20% more weekly sales.",
         "Challenge: Frequent stockouts hurting Buy Box. Action: Built demand forecasting model and optimized logistics. Result: Out-of-stock rate reduced to below 2%.",
       ],
@@ -509,7 +509,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Hans van Leeuwen | Freelance E-commerce Manager NL/EU",
-      homeDescription: "Freelance e-commerce & marketplace manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen 2023), AI-assisted operations. Amersfoort.",
+      homeDescription: "Freelance e-commerce & marketplace manager for Amazon NL/DE and Bol.com. 10+ years of marketplace expertise, listing optimization and AI-assisted operations. Amersfoort.",
       writingTitle: "E-commerce Insights: Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Articles by Hans van Leeuwen on marketplace strategy, Amazon NL/DE and Bol.com optimization, CRO and UX, from 10+ years of hands-on e-commerce work in NL/EU.",
       workTitle: "Amazon & Bol.com Case Studies | Hans van Leeuwen",
@@ -532,7 +532,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     downloadCvNl: "Download CV (NL)",
     bio: [
       "E-commerce Manager met 10+ jaar ervaring in het versnellen van digitale commerceprestaties via marktplaatsen en D2C-kanalen. Gespecialiseerd in Amazon, Bol.com en schaalbare groeistrategieën.",
-      "Ik combineer een sterke achtergrond in UX-design met hands-on commerciële expertise om datagedreven strategieën te creëren die meetbare resultaten opleveren. Van 70% marktaandeel op Amazon NL tot het terugbrengen van out-of-stock rates onder de 2%, ik zet complexiteit om in groei.",
+      "Ik combineer een sterke achtergrond in UX-design met hands-on commerciële expertise om datagedreven strategieën te creëren die meetbare resultaten opleveren. Van listingoptimalisatie op Amazon NL tot het terugbrengen van out-of-stock rates onder de 2%, ik zet complexiteit om in groei.",
     ],
     experienceList: [
       {
@@ -550,7 +550,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         role: "Marketplace Manager",
         period: "Feb 2022 – Dec 2025",
         highlights: [
-          "70% marktaandeel in de oordoppencategorie op Amazon NL (Nielsen, 2023)",
+          "Amazon NL-listings, A+ content en productbeelden geoptimaliseerd (Alpine Hearing Protection, eigen CV)",
           "20% meer wekelijkse verkopen met een Back-to-School social-ad-campagne; A/B-tests op afbeeldingen verhoogden de conversie",
           "Minder prijsvolatiliteit in de Buy Box door B2B-afstemming; marktdata-analyse met Helium10 en Nielsen",
           "Bol.com-sellerkanaal gelanceerd, transitie van vendor naar seller",
@@ -670,12 +670,12 @@ export const translations: Record<Lang, TranslationStrings> = {
       ctaAbout: "Over mij",
       resultsLabel: "Bewezen resultaten",
       results: [
-        "70% marktaandeel op Amazon NL (oordopjescategorie, Nielsen Data)",
+        "Amazon NL-listings en Buy Box-afstemming (Alpine Hearing Protection, eigen CV)",
         "20% meer wekelijkse verkopen door een gerichte Back-to-School social-ad-campagne",
         "Out-of-stock rate onder de 2% dankzij verbeterde forecasting & logistiek",
       ],
       resultsDetail: [
-        "Uitdaging: Concurrerende oordoppencategorie op Amazon NL (Alpine Hearing Protection). Actie: Listings herbouwd, A+ content, A/B-tests op afbeeldingen en Buy Box-afstemming met B2B-kanalen. Resultaat: 70% categoriemarktaandeel (Nielsen, 2023).",
+        "Uitdaging: Concurrerende oordoppencategorie op Amazon NL (Alpine Hearing Protection). Werk: Listings herbouwd, A+ content, A/B-tests op afbeeldingen en Buy Box-afstemming met B2B-kanalen, zoals beschreven in mijn CV.",
         "Uitdaging: Vlakke wekelijkse marketplace-omzet rond het schoolseizoen. Actie: Gerichte Back-to-School social-ad-campagne bovenop geoptimaliseerde listings (Alpine Hearing Protection). Resultaat: 20% meer wekelijkse verkopen.",
         "Uitdaging: Frequente stockouts met Buy Box-verlies. Actie: Vraagvoorspellingsmodel gebouwd en logistiek geoptimaliseerd. Resultaat: Out-of-stock rate onder de 2%.",
       ],
@@ -851,7 +851,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── SEO ── */
     seo: {
       homeTitle: "Hans van Leeuwen | freelance e-commerce & marketplace manager",
-      homeDescription: "Freelance e-commerce & marketplace manager inhuren voor Amazon NL/DE en Bol.com. 10+ jaar, 70% marktaandeel (Nielsen 2023), AI-automatisering. Amersfoort.",
+      homeDescription: "Freelance e-commerce & marketplace manager inhuren voor Amazon NL/DE en Bol.com. 10+ jaar marketplace-ervaring, listingoptimalisatie en AI-automatisering. Amersfoort.",
       writingTitle: "E-commerce inzichten Amazon NL & Bol.com | Hans van Leeuwen",
       writingDescription: "Artikelen van Hans van Leeuwen over marketplace-strategie, Amazon NL/DE en Bol.com-optimalisatie, CRO en UX, uit 10+ jaar e-commerce-praktijk in NL/EU.",
       workTitle: "Amazon & Bol.com case studies | Hans van Leeuwen",

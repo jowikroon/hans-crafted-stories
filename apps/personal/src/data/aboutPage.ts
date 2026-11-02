@@ -69,7 +69,7 @@ export const ABOUT: Record<"nl" | "en", AboutCopy> = {
     onThisPage: "Op deze pagina:",
     anchors: { story: "Mijn verhaal", career: "Loopbaan", services: "Diensten", contact: "Contact" },
     stats: [
-      { value: "70%", label: "marktaandeel oordoppen op Amazon NL", source: "Alpine Hearing Protection · Nielsen, 2023" },
+      { value: "Amazon NL", label: "listingoptimalisatie, A+ content en Buy Box-afstemming", source: "Alpine Hearing Protection · eigen CV" },
       { value: "< 2%", label: "out-of-stock, webshops in 4 landen en Amazon in 6", source: "Alpine Hearing Protection" },
       { value: "+40%", label: "organisch verkeer op KARWEI.nl, Gamma.nl en Gamma.be", source: "Intergamma" },
       { value: "+35%", label: "organische zichtbaarheid, conversie +15%", source: "IGM, badkamerwinkel.nl en .be" },
@@ -92,7 +92,7 @@ export const ABOUT: Record<"nl" | "en", AboutCopy> = {
       ] },
       { period: "04 · 2021 tot 2025", title: "Marketplaces", metric: { value: "+20%", label: "weekverkoop · Back-to-School-campagne" }, paragraphs: [
         "Bij Alpine Hearing Protection kwam alles samen. Als e-commerce manager stuurde ik voorraad en klantenservice aan over webshops in vier landen en Amazon in zes. Out-of-stock ging naar onder de 2%. De klantenservice besteedde ik uit, met eigen protocollen en handleidingen.",
-        "Daarna werd ik marketplace manager, eindverantwoordelijk voor Amazon en Bol.com in zeven landen. Een productpagina op Amazon is een interface met strenge regels. Ik testte afbeeldingen, A+ content en listingstructuur. Ik implementeerde Channable, zette de overstap van Bol.com vendor naar seller op en verlaagde de Buy Box-volatiliteit door afstemming met B2B-partners. Resultaat: 70% marktaandeel in de oordoppencategorie op Amazon NL (Nielsen, 2023) en +20% weekverkoop met een Back-to-School-campagne.",
+        "Daarna werd ik marketplace manager, eindverantwoordelijk voor Amazon en Bol.com in zeven landen. Een productpagina op Amazon is een interface met strenge regels. Ik testte afbeeldingen, A+ content en listingstructuur. Ik implementeerde Channable, zette de overstap van Bol.com vendor naar seller op en verlaagde de Buy Box-volatiliteit door afstemming met B2B-partners. Ik werkte aan de categoriepositie van Alpine op Amazon NL; een Back-to-School-campagne leverde volgens mijn CV 20% meer wekelijkse verkopen op.",
       ] },
       { period: "05 · Sinds december 2025", title: "Nu: ontwerpen voor snelheid", paragraphs: [
         "Sinds december 2025 werk ik in de automotive aftermarket. Daar bracht ik eBay, Amazon en Bol.com samen in één marketplace-operatie en bouwde ik de feedketen van marketplace tot ERP. Het zoeken van passende onderdelen automatiseerde ik op basis van het VIN, een primeur in de branche.",
@@ -114,7 +114,7 @@ export const ABOUT: Record<"nl" | "en", AboutCopy> = {
     resultsToggle: "Resultaten",
     roles: [
       { period: "dec 2025 tot heden", title: "E-commerce Manager", org: "Connect Car Parts", summary: "eBay, Amazon en Bol.com samengebracht in één marketplace-operatie", details: ["VIN-gebaseerde onderdelen-lookup geautomatiseerd, een primeur in de branche", "Omzetprognoses en KPI-inzichten geleverd"] },
-      { period: "feb 2022 tot dec 2025", title: "Marketplace Manager", org: "Alpine Hearing Protection", summary: "Eindverantwoordelijk voor Amazon en Bol.com in zeven landen", details: ["70% marktaandeel in de oordoppencategorie op Amazon NL (Nielsen, 2023)", "20% meer wekelijkse verkopen met een Back-to-School-campagne; A/B-tests op afbeeldingen verhoogden de conversie", "Minder prijsvolatiliteit in de Buy Box door B2B-afstemming; marktdata-analyse met Helium10 en Nielsen", "Bol.com-sellerkanaal gelanceerd, overstap van vendor naar seller", "Marketplace-content geautomatiseerd via Channable"] },
+      { period: "feb 2022 tot dec 2025", title: "Marketplace Manager", org: "Alpine Hearing Protection", summary: "Eindverantwoordelijk voor Amazon en Bol.com in zeven landen", details: ["Marketplace- en categorieanalyses voor Amazon NL (eigen CV)", "20% meer wekelijkse verkopen met een Back-to-School-campagne; A/B-tests op afbeeldingen verhoogden de conversie", "Minder prijsvolatiliteit in de Buy Box door B2B-afstemming; marktdata-analyse met Helium10 en Nielsen", "Bol.com-sellerkanaal gelanceerd, overstap van vendor naar seller", "Marketplace-content geautomatiseerd via Channable"] },
       { period: "okt 2021 tot feb 2022", title: "E-commerce Manager", org: "Alpine Hearing Protection", summary: "Out-of-stock naar onder de 2%", details: ["Voorraad en klantenservice over webshops in vier landen en Amazon in zes", "Klantenservice uitbesteed met eigen protocollen en handleidingen"] },
       { period: "feb 2020 tot feb 2022", title: "Team Coach", org: "Webhelp", summary: "Teams gecoacht en getraind die voor de GGD het virus in kaart brachten" },
       { period: "aug 2019 tot feb 2020", title: "E-commerce Manager", org: "IGM (badkamerwinkel.nl)", summary: "Organische zichtbaarheid +35%, conversie +15%", details: ["SEO-strategie en PPC-campagnes", "Productcontent, attributen, filtering en sitemapping verbeterd voor badkamerwinkel.nl en .be"] },
@@ -168,7 +168,7 @@ export const ABOUT: Record<"nl" | "en", AboutCopy> = {
     onThisPage: "On this page:",
     anchors: { story: "My story", career: "Career", services: "Services", contact: "Contact" },
     stats: [
-      { value: "70%", label: "share of the earplug category on Amazon NL", source: "Alpine Hearing Protection · Nielsen, 2023" },
+      { value: "Amazon NL", label: "listing optimisation, A+ content and Buy Box alignment", source: "Alpine Hearing Protection · CV" },
       { value: "< 2%", label: "out-of-stock, webshops in 4 countries and Amazon in 6", source: "Alpine Hearing Protection" },
       { value: "+40%", label: "organic traffic on KARWEI.nl, Gamma.nl and Gamma.be", source: "Intergamma" },
       { value: "+35%", label: "organic visibility, conversion +15%", source: "IGM, badkamerwinkel.nl and .be" },
@@ -191,7 +191,7 @@ export const ABOUT: Record<"nl" | "en", AboutCopy> = {
       ] },
       { period: "04 · 2021 to 2025", title: "Marketplaces", metric: { value: "+20%", label: "weekly sales · Back-to-School campaign" }, paragraphs: [
         "At Alpine Hearing Protection everything came together. As e-commerce manager I ran stock and customer service across webshops in four countries and Amazon in six. Out-of-stock dropped below 2%. I outsourced customer service, with our own protocols and manuals.",
-        "Then I became marketplace manager, fully responsible for Amazon and Bol.com in seven countries. A product page on Amazon is an interface with strict rules. I tested images, A+ content and listing structure. I implemented Channable, set up the move from Bol.com vendor to seller and reduced Buy Box volatility through alignment with B2B partners. Result: 70% share of the earplug category on Amazon NL (Nielsen, 2023) and +20% weekly sales from a Back-to-School campaign.",
+        "Then I became marketplace manager, fully responsible for Amazon and Bol.com in seven countries. A product page on Amazon is an interface with strict rules. I tested images, A+ content and listing structure. I implemented Channable, set up the move from Bol.com vendor to seller and reduced Buy Box volatility through alignment with B2B partners. I worked on Alpine’s category position on Amazon NL; a Back-to-School campaign generated 20% more weekly sales according to my CV.",
       ] },
       { period: "05 · Since December 2025", title: "Now: designing for speed", paragraphs: [
         "Since December 2025 I have worked in the automotive aftermarket. There I brought eBay, Amazon and Bol.com together in one marketplace operation and built the feed chain from marketplace to ERP. I automated finding the right parts based on the VIN, a first in the industry.",
@@ -213,7 +213,7 @@ export const ABOUT: Record<"nl" | "en", AboutCopy> = {
     resultsToggle: "Results",
     roles: [
       { period: "Dec 2025 to present", title: "E-commerce Manager", org: "Connect Car Parts", summary: "Brought eBay, Amazon and Bol.com together in one marketplace operation", details: ["Automated VIN-based parts lookup, a first in the industry", "Delivered revenue forecasts and KPI insights"] },
-      { period: "Feb 2022 to Dec 2025", title: "Marketplace Manager", org: "Alpine Hearing Protection", summary: "Fully responsible for Amazon and Bol.com in seven countries", details: ["70% share of the earplug category on Amazon NL (Nielsen, 2023)", "20% more weekly sales from a Back-to-School campaign; image A/B tests lifted conversion", "Less Buy Box price volatility through B2B alignment; market data analysis with Helium10 and Nielsen", "Launched the Bol.com seller channel, moving from vendor to seller", "Automated marketplace content through Channable"] },
+      { period: "Feb 2022 to Dec 2025", title: "Marketplace Manager", org: "Alpine Hearing Protection", summary: "Fully responsible for Amazon and Bol.com in seven countries", details: ["Marketplace and category analysis for Amazon NL (CV)", "20% more weekly sales from a Back-to-School campaign; image A/B tests lifted conversion", "Less Buy Box price volatility through B2B alignment; market data analysis with Helium10 and Nielsen", "Launched the Bol.com seller channel, moving from vendor to seller", "Automated marketplace content through Channable"] },
       { period: "Oct 2021 to Feb 2022", title: "E-commerce Manager", org: "Alpine Hearing Protection", summary: "Out-of-stock below 2%", details: ["Stock and customer service across webshops in four countries and Amazon in six", "Outsourced customer service with our own protocols and manuals"] },
       { period: "Feb 2020 to Feb 2022", title: "Team Coach", org: "Webhelp", summary: "Coached and trained teams that mapped the virus for the GGD" },
       { period: "Aug 2019 to Feb 2020", title: "E-commerce Manager", org: "IGM (badkamerwinkel.nl)", summary: "Organic visibility +35%, conversion +15%", details: ["SEO strategy and PPC campaigns", "Improved product content, attributes, filtering and sitemapping for badkamerwinkel.nl and .be"] },

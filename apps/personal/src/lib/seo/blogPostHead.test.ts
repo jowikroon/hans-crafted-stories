@@ -15,7 +15,7 @@ const basePost: BlogPostRow = {
   slug: "amazon-vs-bol-com-2026-nederland",
   read_time: "7 min read",
   published: true,
-  image_url: "https://hansvanleeuwen.com/og-image.png",
+  image_url: "https://hansvanleeuwen.com/hans-profile.jpg",
   meta_title: "",
   meta_description: "",
   og_image: "",

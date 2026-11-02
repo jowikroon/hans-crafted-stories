@@ -174,7 +174,7 @@ const WORK_HEAD_EN = {
     "Documented marketplace results by Hans van Leeuwen: Amazon NL/DE, Bol.com and e-commerce case studies, including Alpine Hearing Protection.",
   intro: [
     "This portfolio brings together hands-on marketplace and e-commerce work by Hans van Leeuwen, e-commerce & marketplace manager based in Amersfoort. The case studies focus on the operational work behind growth: product data, marketplace listings, advertising, stock planning, reporting and automation across Amazon, Bol.com, eBay and own webstores. Every case shows the starting point, the intervention and the measurable commercial or operational result.",
-    "At Alpine Hearing Protection, documented results include 70% market share in an Amazon NL earplug category (Nielsen 2023), out-of-stock below 2% after improving demand forecasting, and 20% more weekly sales from a targeted social ad campaign. On Bol.com the brand moved from vendor to seller after a per-product-group calculation, documented in the article 'Vendor or seller on Bol.com: how I ran the numbers at Alpine'.",
+    "At Alpine Hearing Protection, CV-described work includes Amazon NL listing optimisation, out-of-stock below 2% after improving demand forecasting, and 20% more weekly sales from a targeted social ad campaign. On Bol.com the brand moved from vendor to seller after a per-product-group calculation, documented in the article 'Vendor or seller on Bol.com: how I ran the numbers at Alpine'.",
   ],
 };
 const WORK_HEAD_NL = {
@@ -183,7 +183,7 @@ const WORK_HEAD_NL = {
     "Gedocumenteerde marktplaatsresultaten van Hans van Leeuwen: case studies Amazon NL/DE, Bol.com en e-commerce, waaronder Alpine Hearing Protection.",
   intro: [
     "Dit portfolio bundelt praktisch marktplaats- en e-commercewerk van Hans van Leeuwen, e-commerce & marketplace manager uit Amersfoort. De case studies richten zich op het operationele werk achter groei: productdata, listings, advertising, voorraadplanning, rapportage en automatisering over Amazon, Bol.com, eBay en eigen webshops. Elke case toont het startpunt, de ingreep en het meetbare commerciële of operationele resultaat.",
-    "Bij Alpine Hearing Protection zijn onder meer deze resultaten gedocumenteerd: 70% marktaandeel in een oordoppencategorie op Amazon NL (Nielsen 2023), out-of-stock onder 2% na betere demand forecasting en 20% meer wekelijkse verkopen door een gerichte social-ad-campagne.",
+    "Bij Alpine Hearing Protection beschrijft mijn CV onder meer listingoptimalisatie op Amazon NL, out-of-stock onder 2% na betere demand forecasting en 20% meer wekelijkse verkopen door een gerichte social-ad-campagne.",
   ],
 };
 
@@ -242,7 +242,7 @@ function renderQuietly(...args) {
 function setHead(html, { title, description, canonical, ogImageAlt, image }) {
   let out = html;
   // Per-page share image (blog headers). Only absolute https URLs; otherwise the
-  // template keeps the site-wide og-image.png.
+  // template keeps the site-wide approved profile image.
   if (image && /^https:\/\//i.test(image)) {
     out = out.replace(
       /<meta property="og:image" content="[^"]*"/,
@@ -252,6 +252,17 @@ function setHead(html, { title, description, canonical, ogImageAlt, image }) {
       /<meta name="twitter:image" content="[^"]*"/,
       `<meta name="twitter:image" content="${escapeHtml(image)}"`
     );
+    // Blog headers differ in format; never keep the profile photo's MIME type.
+    const imageType = /\.png(?:[?#]|$)/i.test(image) ? "image/png"
+      : /\.jpe?g(?:[?#]|$)/i.test(image) ? "image/jpeg" : null;
+    if (imageType) {
+      out = out.replace(
+        /<meta property="og:image:type" content="[^"]*"/,
+        `<meta property="og:image:type" content="${imageType}"`
+      );
+    } else {
+      out = out.replace(/<meta property="og:image:type" content="[^"]*" \/>/, "");
+    }
   }
   out = out.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(title)}</title>`);
   out = out.replace(
@@ -606,11 +617,11 @@ writeLocalizedPage("/about", {
 const workExtra = (lang) => lang === "nl"
   ? `
           <h2>Case studies Amazon NL, DE &amp; Bol.com</h2>
-          <ul><li><a href="/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-naar-seller (2021–2025); 70% Amazon NL-oordoppencategorie (Nielsen 2023), out-of-stock &lt;2% (2021–2022) en +20% wekelijkse verkopen via Back-to-School social ads (cv)</a></li></ul>
+          <ul><li><a href="/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-naar-seller (2021–2025); listingoptimalisatie op Amazon NL (cv), out-of-stock &lt;2% (2021–2022) en +20% wekelijkse verkopen via Back-to-School social ads (cv)</a></li></ul>
           <p>Zie ook <a href="/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/bol-com-consultant">Bol.com consultant</a> en <a href="/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`
   : `
           <h2>Amazon NL, DE &amp; Bol.com case studies</h2>
-          <ul><li><a href="/en/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-to-seller (2021–2025); 70% of the Amazon NL earplug category (Nielsen 2023), out-of-stock &lt;2% (2021–2022) and +20% weekly sales from Back-to-School social ads (CV)</a></li></ul>
+          <ul><li><a href="/en/writing/vendor-of-seller-bol-com-alpine">Alpine Hearing Protection: Bol.com vendor-to-seller (2021–2025); Amazon NL listing optimisation (CV), out-of-stock &lt;2% (2021–2022) and +20% weekly sales from Back-to-School social ads (CV)</a></li></ul>
           <p>See also <a href="/en/amazon-nl-specialist">Amazon NL specialist</a>, <a href="/en/bol-com-consultant">Bol.com consultant</a> and <a href="/en/interim-ecommerce-manager">interim e-commerce manager</a>.</p>`;
 writeLocalizedPage("/work", {
   buildHead: (lang) => (lang === "nl" ? WORK_HEAD_NL : WORK_HEAD_EN),

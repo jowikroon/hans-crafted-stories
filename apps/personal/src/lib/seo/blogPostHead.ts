@@ -14,7 +14,7 @@ export interface SeoHead {
   imageAlt: string;
 }
 
-export const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
+export const DEFAULT_OG_IMAGE = `${BASE_URL}/hans-profile.jpg`;
 
 function clean(value: string | null | undefined): string {
   return (value ?? "").trim();
@@ -42,7 +42,7 @@ function absoluteImage(value: string | null | undefined): string {
  * Header image per language (blog-header design system, 2026-09-25). Every post
  * carries an NL header in og_image / cover_image_url / image_url and, when made,
  * an EN header in og_image_en. The EN switch falls back to the NL header, and
- * a post without any header falls back to the site-wide og-image.png, so
+ * a post without any header falls back to the site-wide profile photo, so
  * sharing never shows an empty card.
  */
 export function getBlogPostImage(
