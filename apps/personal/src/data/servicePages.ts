@@ -9,14 +9,14 @@
  *    /writing waarin Hans de casus zelf beschrijft. Geen cijfer zonder bron.
  *  - 20% wekelijkse verkoopgroei komt uit een social-ad-campagne (Back to
  *    School, Alpine) — niet uit Bol Ads. Eerdere teksten schreven dat verkeerd toe.
- *  - 70% marktaandeel: oordoppencategorie Amazon NL, Nielsen 2023, Alpine.
+ *  - De Nielsen-marktaandeelclaim is niet publiek verifieerbaar en wordt niet als bewezen cijfer gepubliceerd.
  */
 import type { Lang } from "@/lib/i18n/routes";
 
 export interface ProofStat {
   stat: string;
   desc: string;
-  /** Zichtbare bronvermelding, bv. "Alpine Hearing Protection · Nielsen 2023". */
+  /** Zichtbare herkomstvermelding, bv. "Alpine Hearing Protection · eigen CV". */
   source: string;
 }
 
@@ -199,7 +199,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         h1: "Interim e-commerce manager en e-commerce specialist inhuren",
         subtitle: "Tijdelijke leiding over je marketplace-operatie: strategie, uitvoering en overdracht",
         intro:
-          "Ik ben Hans van Leeuwen, interim e-commerce manager en freelance e-commerce specialist uit Amersfoort. Zoek je tijdelijk e-commerce personeel met senior ervaring in plaats van een vaste medewerker, dan neem ik tijdelijk de leiding over je Amazon- en Bol.com-operatie wanneer je manager vertrekt, je groei sneller gaat dan je team, of je een nieuw kanaal opent. Bij Alpine Hearing Protection bouwde ik als marketplace manager de oordoppencategorie op Amazon NL uit tot 70% marktaandeel (Nielsen, 2023) en bracht ik het out-of-stockpercentage onder de 2%; bij Connect Car Parts koppelde ik eBay, Amazon en Bol.com tot één operatie. In totaal stuurde ik meer dan €2 miljoen marketplace-omzet en teams van 6+ FTE aan.",
+          "Ik ben Hans van Leeuwen, interim e-commerce manager en freelance e-commerce specialist uit Amersfoort. Zoek je tijdelijk e-commerce personeel met senior ervaring in plaats van een vaste medewerker, dan neem ik tijdelijk de leiding over je Amazon- en Bol.com-operatie wanneer je manager vertrekt, je groei sneller gaat dan je team, of je een nieuw kanaal opent. Bij Alpine Hearing Protection verbeterde ik als marketplace manager listings, A+ content en Buy Box-afstemming op Amazon NL en bracht ik het out-of-stockpercentage onder de 2%; bij Connect Car Parts koppelde ik eBay, Amazon en Bol.com tot één operatie. In totaal stuurde ik meer dan €2 miljoen marketplace-omzet en teams van 6+ FTE aan.",
         whenHeading: "Wanneer je een interim e-commerce manager inschakelt",
         when: [
           "Je e-commerce manager is vertrokken en de marketplace-operatie mag niet stilvallen tijdens de werving",
@@ -223,7 +223,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ],
         resultsHeading: "Resultaten uit eerdere rollen",
         results: [
-          { stat: "70%", desc: "marktaandeel in de oordoppencategorie op Amazon NL", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "Bol.com", desc: "sellerkanaal gelanceerd en transitie begeleid", source: "Alpine Hearing Protection · eigen CV" },
           { stat: "<2%", desc: "out-of-stock na invoering van demand forecasting", source: "Alpine Hearing Protection · 2021–2022" },
           { stat: "€2M+", desc: "marketplace-omzet aangestuurd, budgetverantwoordelijkheid €500K+", source: "cv, rollen 2017–2026" },
           { stat: "+40%", desc: "organisch verkeer via SEO-optimalisatie van de catalogus", source: "Intergamma (Karwei/Gamma) · 2017–2019" },
@@ -278,13 +278,13 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         updated: SERVICE_PAGES_UPDATED,
         title: "Interim E-commerce Manager (NL/EU) | Hans van Leeuwen",
         metaDesc:
-          "Hire an interim e-commerce manager for Amazon NL/DE and Bol.com. 10+ years, 70% category share (Nielsen), €2M+ marketplace revenue managed. Amersfoort.",
+          "Hire an interim e-commerce manager for Amazon NL/DE and Bol.com. 10+ years of marketplace expertise, €2M+ marketplace revenue managed. Amersfoort.",
         breadcrumb: "Interim E-commerce Manager",
         eyebrow: "Interim & freelance",
         h1: "Interim e-commerce manager",
         subtitle: "Temporary leadership of your marketplace operation: strategy, execution and handover",
         intro:
-          "I'm Hans van Leeuwen, an interim e-commerce manager and freelance marketplace lead based in Amersfoort, the Netherlands. I take temporary charge of your Amazon and Bol.com operation when your manager leaves, growth outpaces the team, or you open a new channel. At Alpine Hearing Protection I grew the earplug category on Amazon NL to a 70% market share (Nielsen, 2023) and brought out-of-stock below 2%; at Connect Car Parts I connected eBay, Amazon and Bol.com into a single operation. In total I have managed more than €2 million in marketplace revenue and teams of 6+ FTE.",
+          "I'm Hans van Leeuwen, an interim e-commerce manager and freelance marketplace lead based in Amersfoort, the Netherlands. I take temporary charge of your Amazon and Bol.com operation when your manager leaves, growth outpaces the team, or you open a new channel. At Alpine Hearing Protection I led Amazon NL listing, A+ content and Buy Box optimisation and brought out-of-stock below 2%; at Connect Car Parts I connected eBay, Amazon and Bol.com into a single operation. In total I have managed more than €2 million in marketplace revenue and teams of 6+ FTE.",
         whenHeading: "When to bring in an interim e-commerce manager",
         when: [
           "Your e-commerce manager has left and the marketplace operation cannot stall during recruitment",
@@ -307,7 +307,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ],
         resultsHeading: "Results from previous roles",
         results: [
-          { stat: "70%", desc: "market share in the earplug category on Amazon NL", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "Bol.com", desc: "seller channel launched and transition managed", source: "Alpine Hearing Protection · CV" },
           { stat: "<2%", desc: "out-of-stock after introducing demand forecasting", source: "Alpine Hearing Protection · 2021–2022" },
           { stat: "€2M+", desc: "marketplace revenue managed, budget responsibility €500K+", source: "CV, roles 2017–2026" },
           { stat: "+40%", desc: "organic traffic through SEO optimisation of the catalogue", source: "Intergamma (Karwei/Gamma) · 2017–2019" },
@@ -371,13 +371,13 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         updated: SERVICE_PAGES_UPDATED,
         title: "Amazon specialist inhuren (NL/DE) | Hans van Leeuwen",
         metaDesc:
-          "Freelance Amazon specialist inhuren: listings, A+ Content, Amazon Ads en Buy Box voor Amazon.nl en Amazon.de. 70% categoriemarktaandeel (Nielsen 2023).",
+          "Freelance Amazon specialist inhuren: listings, A+ Content, Amazon Ads en Buy Box voor Amazon.nl en Amazon.de. Listings, A+ content en Buy Box-optimalisatie.",
         breadcrumb: "Amazon NL Specialist",
         eyebrow: "Amazon Nederland & Duitsland",
         h1: "Amazon specialist inhuren voor Amazon.nl en Amazon.de",
         subtitle: "Freelance Amazon-accountmanager voor listings, advertising, Buy Box en voorraad",
         intro:
-          "Ik ben Hans van Leeuwen, freelance Amazon-specialist uit Amersfoort. Ik beheer en laat Amazon.nl- en Amazon.de-accounts groeien voor merken die geen fulltime specialist in huis hebben. Voor Alpine Hearing Protection was Amazon NL vier jaar mijn dagelijkse werk: de oordoppencategorie groeide daar naar een marktaandeel van 70% (Nielsen, 2023), de Buy Box werd rustiger door prijsafstemming met de B2B-kanalen en A/B-tests op de productafbeeldingen tilden de conversie. Bij Connect Car Parts run ik nu een catalogus remonderdelen op Amazon DE naast eBay DE en Bol.com.",
+          "Ik ben Hans van Leeuwen, freelance Amazon-specialist uit Amersfoort. Ik beheer en laat Amazon.nl- en Amazon.de-accounts groeien voor merken die geen fulltime specialist in huis hebben. Voor Alpine Hearing Protection was Amazon NL vier jaar mijn dagelijkse werk: ik werkte daar aan oordoppenlistings, A+ content en tests met productbeelden, de Buy Box werd rustiger door prijsafstemming met de B2B-kanalen en A/B-tests op de productafbeeldingen tilden de conversie. Bij Connect Car Parts run ik nu een catalogus remonderdelen op Amazon DE naast eBay DE en Bol.com.",
         whenHeading: "Voor wie Amazon-accountmanagement werkt",
         when: [
           "Merken die op Amazon.nl staan maar geen zicht hebben op waarom de verkoop stagneert",
@@ -400,7 +400,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ],
         resultsHeading: "Resultaten op Amazon",
         results: [
-          { stat: "70%", desc: "van de oordoppencategorie op Amazon NL in handen van één merk", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "Amazon NL", desc: "listings, A+ content en Buy Box-afstemming met B2B-kanalen", source: "Alpine Hearing Protection · eigen CV" },
           { stat: "<2%", desc: "out-of-stock op Amazon door forecasting op sell-through en levertijd", source: "Alpine Hearing Protection · 2021–2022" },
           { stat: "+20%", desc: "wekelijkse verkopen rond het schoolseizoen, social ads bovenop geoptimaliseerde listings", source: "Alpine Hearing Protection · cv" },
         ],
@@ -439,7 +439,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         faqHeading: "Veelgestelde vragen over Amazon NL",
         faq: [
           { q: "Wat doet een freelance Amazon NL specialist?", a: "Beheert en laat de aanwezigheid van een merk op Amazon Nederland groeien: listings optimaliseren, A+ Content maken, Amazon Ads-campagnes voeren, Buy Box en prijs bewaken, suppressies oplossen en voorraad plannen met demand forecasting." },
-          { q: "Welke resultaten heb je op Amazon NL behaald?", a: "Bij Alpine Hearing Protection: 70% marktaandeel in de oordoppencategorie op Amazon NL (Nielsen, 2023), out-of-stock onder 2% door demand forecasting en minder prijsvolatiliteit in de Buy Box door afstemming met B2B-kanalen." },
+          { q: "Welke resultaten heb je op Amazon NL behaald?", a: "Bij Alpine Hearing Protection: listings en A+ content geoptimaliseerd op Amazon NL, out-of-stock onder 2% door demand forecasting en minder prijsvolatiliteit in de Buy Box door afstemming met B2B-kanalen." },
           { q: "Hoe begint een samenwerking?", a: "Met een gratis 7-punts Amazon NL-audit. Ik beoordeel listings, advertising, prijs, content en operatie en lever binnen 48 uur de grootste groeikansen op. Daarna kies je voor uitvoering op projectbasis of doorlopend accountmanagement." },
           { q: "Beheer je ook Amazon Ads (PPC)?", a: "Ja. Sponsored Products, Sponsored Brands en Sponsored Display, inclusief zoekwoordonderzoek voor de Nederlandse en Duitse markt, bidmanagement en een campagnestructuur die aansluit op de categoriebenchmarks. ACOS en TACOS zijn de stuur-KPI's." },
           { q: "Help je ook met Amazon Duitsland?", a: "Ja. Ik run momenteel een catalogus van remonderdelen op Amazon DE en ken de praktische kant: Duitse content, btw-registratie, GPSR en fitment-data. Amazon.nl is vaak de opstap naar Amazon.de, waar het zoekvolume in veel categorieën een veelvoud is." },
@@ -454,13 +454,13 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         updated: SERVICE_PAGES_UPDATED,
         title: "Amazon NL Specialist & Account Manager | Hans van Leeuwen",
         metaDesc:
-          "Freelance Amazon NL specialist for hire: listings, A+ Content, Amazon Ads and Buy Box on Amazon.nl and Amazon.de. 70% category share (Nielsen 2023).",
+          "Freelance Amazon NL specialist for Amazon.nl and Amazon.de. Product listings, A+ Content, PPC and Buy Box strategy with hands-on account management.",
         breadcrumb: "Amazon NL Specialist",
         eyebrow: "Amazon Netherlands & Germany",
         h1: "Amazon NL specialist",
         subtitle: "Freelance Amazon account manager for listings, advertising, Buy Box and stock",
         intro:
-          "I'm Hans van Leeuwen, a freelance Amazon specialist based in Amersfoort, the Netherlands. I manage and grow Amazon.nl and Amazon.de accounts for brands that don't have a full-time specialist in-house. For Alpine Hearing Protection, Amazon NL was my daily work for four years: the earplug category there grew to a 70% market share (Nielsen, 2023), the Buy Box calmed down through price alignment with the B2B channels, and A/B tests on product images lifted conversion. At Connect Car Parts I currently run a catalogue of brake parts on Amazon DE alongside eBay DE and Bol.com.",
+          "I'm Hans van Leeuwen, a freelance Amazon specialist based in Amersfoort, the Netherlands. I manage and grow Amazon.nl and Amazon.de accounts for brands that don't have a full-time specialist in-house. For Alpine Hearing Protection, Amazon NL was my daily work for four years: I worked on earplug listings, A+ content and product image tests, the Buy Box calmed down through price alignment with the B2B channels, and A/B tests on product images lifted conversion. At Connect Car Parts I currently run a catalogue of brake parts on Amazon DE alongside eBay DE and Bol.com.",
         whenHeading: "Who Amazon account management is for",
         when: [
           "Brands on Amazon.nl with no clear view of why sales have stalled",
@@ -483,9 +483,9 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         ],
         resultsHeading: "Results on Amazon",
         results: [
-          { stat: "70%", desc: "of the earplug category on Amazon NL held by one brand", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "Amazon NL", desc: "listings, A+ content and Buy Box alignment with B2B channels", source: "Alpine Hearing Protection · CV" },
           { stat: "<2%", desc: "out-of-stock on Amazon through forecasting on sell-through and lead time", source: "Alpine Hearing Protection · 2021–2022" },
-          { stat: "+20%", desc: "weekly sales around the school season, social ads on top of optimised listings", source: "Alpine Hearing Protection · CV" },
+          { stat: "+20%", desc: "weekly sales around the school season, social ads on top of optimised listings", source: "Alpine Hearing Protection · Back-to-School campaign (CV)" },
         ],
         practiceHeading: "From the field",
         practiceIntro: "Three situations I ran into on Amazon and wrote up:",
@@ -522,7 +522,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         faqHeading: "Frequently asked questions about Amazon NL",
         faq: [
           { q: "What does a freelance Amazon NL specialist do?", a: "Manages and grows a brand's presence on Amazon Netherlands: optimising listings, creating A+ Content, running Amazon Ads campaigns, protecting Buy Box and pricing, resolving suppressions and planning inventory with demand forecasting." },
-          { q: "What results have you achieved on Amazon NL?", a: "At Alpine Hearing Protection: 70% market share in the earplug category on Amazon NL (Nielsen, 2023), out-of-stock below 2% through demand forecasting and less Buy Box price volatility through alignment with B2B channels." },
+          { q: "What results have you achieved on Amazon NL?", a: "At Alpine Hearing Protection: optimised Amazon NL listings and A+ content, out-of-stock below 2% through demand forecasting and less Buy Box price volatility through alignment with B2B channels." },
           { q: "How does an engagement start?", a: "With a free 7-point Amazon NL audit. I review listings, advertising, pricing, content and operations and deliver the biggest growth opportunities within 48 hours. From there you choose project-based execution or ongoing account management." },
           { q: "Do you also manage Amazon Ads (PPC)?", a: "Yes. Sponsored Products, Sponsored Brands and Sponsored Display, including keyword research for the Dutch and German market, bid management and a campaign structure aligned with category benchmarks. ACOS and TACOS are the steering KPIs." },
           { q: "Do you also cover Amazon Germany?", a: "Yes. I currently run a brake-parts catalogue on Amazon DE and know the practical side: German content, VAT registration, GPSR and fitment data. Amazon.nl is often the stepping stone to Amazon.de, where search volume in many categories is several times larger." },
@@ -577,7 +577,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         results: [
           { stat: "Vendor → seller", desc: "Bol.com-sellerkanaal gelanceerd en de transitie succesvol begeleid", source: "Alpine Hearing Protection · 2022–2025" },
           { stat: "+20%", desc: "meer wekelijkse verkopen met één gerichte Back-to-School-campagne", source: "Alpine Hearing Protection · cv" },
-          { stat: "70%", desc: "categorie-aandeel op Amazon NL met dezelfde content- en prijsdiscipline", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "Amazon + bol", desc: "gecoördineerde content- en prijsaanpak op twee marketplaces", source: "Alpine Hearing Protection · eigen CV" },
         ],
         practiceHeading: "Uit de praktijk",
         practiceIntro: "Wat ik op Bol.com en Amazon meemaakte, met cijfers:",
@@ -660,7 +660,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         results: [
           { stat: "Vendor → seller", desc: "Bol.com seller channel launched and the transition led successfully", source: "Alpine Hearing Protection · 2022–2025" },
           { stat: "+20%", desc: "more weekly sales from one targeted Back-to-School campaign", source: "Alpine Hearing Protection · CV" },
-          { stat: "70%", desc: "category share on Amazon NL with the same content and pricing discipline", source: "Alpine Hearing Protection · Nielsen 2023" },
+          { stat: "Amazon + bol", desc: "coordinated content and pricing approach across both marketplaces", source: "Alpine Hearing Protection · marketplace coordination (CV)" },
         ],
         practiceHeading: "From the field",
         practiceIntro: "What I ran into on Bol.com and Amazon, with numbers:",

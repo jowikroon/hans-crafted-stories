@@ -9,7 +9,7 @@ interface SEOConfig {
   imageAlt?: string;
   /**
    * Absolute https URL of a page-specific 1200x630 share image (blog headers).
-   * Anything that is not an absolute https URL falls back to the site og-image.png.
+   * Anything that is not an absolute https URL falls back to the site profile image.
    */
   image?: string;
   /**
@@ -48,10 +48,7 @@ const DEFAULT_TITLE = "Freelance E-commerce Manager (Amazon & Bol.com) | Hans va
  * mag opruimen.
  */
 let headOwner = 0;
-const DEFAULT_OG_IMAGE = "https://hansvanleeuwen.com/og-image.png";
-const DEFAULT_OG_IMAGE_TYPE = "image/png";
-const DEFAULT_OG_IMAGE_WIDTH = "1200";
-const DEFAULT_OG_IMAGE_HEIGHT = "630";
+const DEFAULT_OG_IMAGE = "https://hansvanleeuwen.com/hans-profile.jpg";
 
 /**
  * Alleen absolute URL's op het eigen origin komen in canonical/og:url terecht;
@@ -87,6 +84,7 @@ const shareImage = (candidate?: string): string =>
 
 export const useSEO = ({ enabled = true, title, description, url: explicitUrl, path, lang, type = "website", hreflang: explicitHreflang, jsonLd, noindex = false, robots, imageAlt, image }: SEOConfig) => {
   const ogImage = shareImage(image);
+  const ogImageType = /\.png(?:[?#]|$)/i.test(ogImage) ? "image/png" : /\.jpe?g(?:[?#]|$)/i.test(ogImage) ? "image/jpeg" : null;
   // Eén URL per taal: canonical en hreflang volgen uit (path, lang), nooit uit de
   // bezoeker. Zie lib/i18n/routes.ts (HAN-167 / HAN-83).
   const resolvedLang: Lang = lang ?? (path ? parsePath(path).lang : "en");
@@ -116,9 +114,11 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
     setMeta("og:url", sameOriginUrl(url), "property");
     setMeta("og:type", type, "property");
     setMeta("og:image", ogImage, "property");
-    setMeta("og:image:type", DEFAULT_OG_IMAGE_TYPE, "property");
-    setMeta("og:image:width", DEFAULT_OG_IMAGE_WIDTH, "property");
-    setMeta("og:image:height", DEFAULT_OG_IMAGE_HEIGHT, "property");
+    if (ogImageType) setMeta("og:image:type", ogImageType, "property");
+    else removeMeta("og:image:type", "property");
+    // Blog images can have different dimensions. Do not advertise the old PNG size.
+    removeMeta("og:image:width", "property");
+    removeMeta("og:image:height", "property");
     setMeta("og:image:alt", imageAlt || title, "property");
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", title);
@@ -193,5 +193,5 @@ export const useSEO = ({ enabled = true, title, description, url: explicitUrl, p
       ].forEach((name) => removeMeta(name, "property"));
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- hreflang wordt via hreflangKey (stringified) vergeleken
-  }, [enabled, title, description, url, type, hreflangKey, jsonLd, noindex, robots, imageAlt, ogImage, resolvedLang]);
+  }, [enabled, title, description, url, type, hreflangKey, jsonLd, noindex, robots, imageAlt, ogImage, ogImageType, resolvedLang]);
 };

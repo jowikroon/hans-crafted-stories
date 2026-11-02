@@ -307,9 +307,9 @@ const WritingV2 = () => {
           </p>
           <div className="proof">
             <div className="proof__item">
-              <span className="proof__stat">70%</span>
+              <span className="proof__stat">Amazon NL</span>
               <span className="proof__label">
-                {lang === "nl" ? "Amazon NL categorie-aandeel (Nielsen)" : "Amazon NL category share (Nielsen)"}
+                {lang === "nl" ? "Listing- en categorieoptimalisatie" : "Listing and category optimisation"}
               </span>
             </div>
             <div className="proof__item">

@@ -6,7 +6,7 @@ import { getBlogPost, getBlogPosts, BlogPostRow } from "@/lib/api/content";
 import { usePreloadedBlogPost } from "@/contexts/PreloadedDataContext";
 import { useSEO } from "@/hooks/useSEO";
 import { useLang } from "@/hooks/useLang";
-import { blogPostAlternates, blogPostPath, hasBlogPostVersion, localizeBlogPost, getBlogPostHead, getBlogPostImage, getBlogPostJsonLd, hasDutchVersion, hasEnglishArticleUrl, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
+import { blogPostAlternates, blogPostPath, hasBlogPostVersion, localizeBlogPost, getBlogPostHead, getBlogPostImage, DEFAULT_OG_IMAGE, getBlogPostJsonLd, hasDutchVersion, hasEnglishArticleUrl, hasEnglishVersion, primaryBlogPostLang } from "@/lib/seo/blogPostHead";
 import { parseArticlePath } from "@/lib/i18n/routes";
 import { setArticleLangInfo } from "@/lib/i18n/articleLang";
 import { toast } from "sonner";
@@ -92,7 +92,7 @@ interface RenderResult { html: string; headings: { id: string; text: string }[];
    Authored in article Markdown as a fenced block:
      :::figure num=03 title="Marketplace projectmap"
      caption Klantresultaten met geencodeerde platformregels
-     stat 70% | Amazon NL categorie-aandeel (Nielsen)
+     stat A+ | Amazon NL listingoptimalisatie
      axis OUTPUTKWALITEIT
      xaxis SESSIE 1 | SESSIE 20
      line Met project | 2,6,14,28,46,68,100
@@ -443,9 +443,9 @@ const BlogPostPage = () => {
   const displayExcerpt = post ? (articleLang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";
   const displayContent = post ? (articleLang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
   // Header image follows the article language (EN header in og_image_en, NL in og_image/image_url).
-  // Only a real per-post header is shown as hero; the site-wide og-image.png is share-only.
+  // Only a real per-post header is shown as hero; the site-wide profile photo is share-only.
   const heroImage = post ? getBlogPostImage(post, articleLang) : "";
-  const showHero = !!post && heroImage !== "https://hansvanleeuwen.com/og-image.png";
+  const showHero = !!post && heroImage !== DEFAULT_OG_IMAGE;
 
   const { html: bodyHtml, headings } = useMemo(
     () => renderArticle(displayContent || "", post?.masking, articleLang),
