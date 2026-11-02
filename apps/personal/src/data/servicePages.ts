@@ -454,7 +454,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         updated: SERVICE_PAGES_UPDATED,
         title: "Amazon NL Specialist & Account Manager | Hans van Leeuwen",
         metaDesc:
-          "Freelance Amazon NL specialist for hire: listings, A+ Content, Amazon Ads and Buy Box on Amazon.nl and Amazon.de. Listing optimisation, A+ content and Buy Box strategy.",
+          "Freelance Amazon NL specialist for Amazon.nl and Amazon.de. Product listings, A+ Content, PPC and Buy Box strategy with hands-on account management.",
         breadcrumb: "Amazon NL Specialist",
         eyebrow: "Amazon Netherlands & Germany",
         h1: "Amazon NL specialist",
@@ -485,7 +485,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         results: [
           { stat: "Amazon NL", desc: "listings, A+ content and Buy Box alignment with B2B channels", source: "Alpine Hearing Protection · CV" },
           { stat: "<2%", desc: "out-of-stock on Amazon through forecasting on sell-through and lead time", source: "Alpine Hearing Protection · 2021–2022" },
-          { stat: "+20%", desc: "weekly sales around the school season, social ads on top of optimised listings", source: "Alpine Hearing Protection · CV" },
+          { stat: "+20%", desc: "weekly sales around the school season, social ads on top of optimised listings", source: "Alpine Hearing Protection · Back-to-School campaign (CV)" },
         ],
         practiceHeading: "From the field",
         practiceIntro: "Three situations I ran into on Amazon and wrote up:",
@@ -660,7 +660,7 @@ export const SERVICE_PAGES: ServicePageDef[] = [
         results: [
           { stat: "Vendor → seller", desc: "Bol.com seller channel launched and the transition led successfully", source: "Alpine Hearing Protection · 2022–2025" },
           { stat: "+20%", desc: "more weekly sales from one targeted Back-to-School campaign", source: "Alpine Hearing Protection · CV" },
-          { stat: "Amazon + bol", desc: "coordinated content and pricing approach across both marketplaces", source: "Alpine Hearing Protection · CV" },
+          { stat: "Amazon + bol", desc: "coordinated content and pricing approach across both marketplaces", source: "Alpine Hearing Protection · marketplace coordination (CV)" },
         ],
         practiceHeading: "From the field",
         practiceIntro: "What I ran into on Bol.com and Amazon, with numbers:",
