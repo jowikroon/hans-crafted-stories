@@ -14,6 +14,8 @@ import { clearRootHtml, replaceSsrFallbackHtml, serializeJsonForHtmlScript } fro
 import { SERVICE_PAGES, SERVICE_PAGES_UPDATED, SERVICE_BYLINE, EXPERIENCE_STRIP, RATES_PAGE, PRICING_NL, PRICING_EN } from "@/data/servicePages";
 import { translations } from "@/data/translations";
 import { songs } from "@/data/music";
+export { albumBrandPath, albumBrandTitle, albumBrandDescription, albumBrandJsonLd } from "@/data/albumEditorial";
+export { albums, albumPath, albumTitle, albumSeoTitle, albumJsonLd, musicAlbumsTitle, musicAlbumsDescription } from "@/data/albums";
 import { LOCALIZED_ROUTES, alternatesFor, absoluteUrl, localizePath, OG_LOCALE } from "@/lib/i18n/routes";
 
 export interface RenderOptions {

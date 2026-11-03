@@ -19,9 +19,12 @@ import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { songs, featuredRelease, previousRelease, type Song } from "@/data/music";
+import { musicAlbumsTitle, musicAlbumsDescription } from "@/data/albums";
 import ReleaseTimeline from "@/components/music/ReleaseTimeline";
 import ArtistRadarVisual from "@/components/music/ArtistRadarVisual";
+import AlbumShowcase from "@/components/music/AlbumShowcase";
 import "@/styles/music-neon.css";
+import MusicExperience, { PlaySongButton, SongPageButton, SongPlayerSlot, useMusicExperience } from "@/components/music/MusicExperience";
 
 /* deterministic waveform bars, stable across SSR/CSR (no Math.random) */
 function waveBars(key: string, n: number): number[] {
@@ -35,17 +38,6 @@ function waveBars(key: string, n: number): number[] {
   return out;
 }
 
-const PlayIcon = () => (
-  <svg className="ic-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-);
-const PauseIcon = () => (
-  <svg className="ic-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
-);
-const RhythmIcon = () => (
-  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M4 12h3l2 6 4-14 2 8h5" />
-  </svg>
-);
 const RadarIcon = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4.5" /><path d="M12 12l6.4-6.4" /><circle cx="12" cy="12" r="0.6" fill="currentColor" />
@@ -61,19 +53,20 @@ function fmtDate(iso: string): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function TrackRow({ song, index, playing, onToggle }: { song: Song; index: number; playing: boolean; onToggle: (slug: string) => void }) {
+function TrackRow({ song, index }: { song: Song; index: number }) {
+  const { active, status, openSong } = useMusicExperience();
+  const placement = `track-${song.slug}`;
+  const playing = active?.placement === placement && status === "playing";
   const bars = waveBars(song.title, 34);
   return (
     <article className={`mn-track${playing ? " playing" : ""}`}>
       <span className="mn-track__idx">{String(index + 1).padStart(2, "0")}</span>
       <div className="mn-track__cover">
         {song.cover && <img src={song.cover} alt={`Cover, ${song.title}`} loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
-        <button className="mn-track__play" type="button" aria-label={playing ? `Pause ${song.title}` : `Play ${song.title}`} aria-pressed={playing} onClick={() => onToggle(song.slug)}>
-          <span className="ico">{playing ? <PauseIcon /> : <PlayIcon />}</span>
-        </button>
+        <PlaySongButton slug={song.slug} placement={placement} className="mn-track__play" iconOnly />
       </div>
       <div className="mn-track__main">
-        <Link className="mn-track__title" to={`/music/${song.slug}`}>{song.title}</Link>
+        <button type="button" className="mn-track__title" aria-haspopup="dialog" onClick={(event) => openSong(song.slug, event.currentTarget)}>{song.title}</button>
         <div className="mn-track__meta">
           <span className="tag">{song.genre}</span>
           {song.provider === "spotify" ? <span className="concept official">Official · Spotify</span> : <span className="concept">Public · SoundCloud</span>}
@@ -85,23 +78,14 @@ function TrackRow({ song, index, playing, onToggle }: { song: Song; index: numbe
         {bars.map((h, i) => <i key={i} style={{ height: `${h}px`, "--bi": i } as React.CSSProperties} />)}
       </div>
       <span className="mn-track__dur">{song.duration}</span>
-      <Link className="mn-track__open" to={`/music/${song.slug}`}>Notes <ArrowRight /></Link>
-      {playing && (
-        <div className="mn-track__embed">
-          <iframe
-            title={`Player, ${song.title}`}
-            src={song.embed}
-            height={song.embedHeight}
-            loading="lazy"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          />
-        </div>
-      )}
+      <SongPageButton slug={song.slug} className="mn-track__open" />
+      <SongPlayerSlot placement={placement} />
     </article>
   );
 }
 
-const Music = () => {
+const MusicContent = () => {
+  const { stop } = useMusicExperience();
   const { user } = useAuth();
   // The catalogue includes only verified public tracks. Private and follower-only
   // SoundCloud recordings must never enter the public listing or schema.
@@ -115,9 +99,9 @@ const Music = () => {
   const shownSongs = genre === "All" ? visibleSongs : visibleSongs.filter((sg) => sg.genre === genre);
 
   useSEO({
-    title: "Jowikroon Music: Releases & Track Notes | Hans van Leeuwen",
-    description: "Listen to Jowikroon's official Spotify singles and public SoundCloud recordings. Find release or upload dates, source links and available track notes. Lyrics and equipment details appear only when verified.",
-    imageAlt: "Jowikroon original electronic songs, SoundCloud recordings and Spotify singles",
+    title: musicAlbumsTitle,
+    description: musicAlbumsDescription,
+    imageAlt: "NEON: The Signal Between en IETS MOOIS van Jowikroon",
     url: "https://hansvanleeuwen.com/music",
     type: "music.playlist",
     jsonLd: {
@@ -161,9 +145,6 @@ const Music = () => {
     },
   });
 
-  const [playingSlug, setPlayingSlug] = useState<string | null>(null);
-  const toggle = (slug: string) => setPlayingSlug((cur) => (cur === slug ? null : slug));
-
   const clockRef = useRef<HTMLSpanElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -190,63 +171,9 @@ const Music = () => {
     return () => io.disconnect();
   }, []);
 
-  /* neon cursor + ambient grid lighting (fine pointers, motion-ok only) */
-  useEffect(() => {
-    const fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
-    const reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-    const docEl = document.documentElement;
-    if (!fine || reduce) { docEl.style.setProperty("--mn-mx", "50vw"); docEl.style.setProperty("--mn-my", "32vh"); return; }
-
-    document.body.classList.add("mn-neon-cursor");
-    const mk = (cls: string) => { const d = document.createElement("div"); d.className = `mn-cursor ${cls}`; document.body.appendChild(d); return d; };
-    const glow = mk("mn-cursor-glow"), ring = mk("mn-cursor-ring"), dot = mk("mn-cursor-dot");
-    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, gx = mx, gy = my, raf = 0;
-
-    const onMove = (e: MouseEvent) => {
-      mx = e.clientX; my = e.clientY;
-      docEl.style.setProperty("--mn-mx", `${mx}px`);
-      docEl.style.setProperty("--mn-my", `${my}px`);
-      dot.style.transform = `translate(${mx}px,${my}px)`;
-    };
-    const frame = () => {
-      rx += (mx - rx) * 0.2; ry += (my - ry) * 0.2; gx += (mx - gx) * 0.085; gy += (my - gy) * 0.085;
-      ring.style.transform = `translate(${rx}px,${ry}px)`;
-      glow.style.transform = `translate(${gx}px,${gy}px)`;
-      raf = requestAnimationFrame(frame);
-    };
-    const hot = "a, button, .mn-track, .mn-cue, .mn-chip, input, select, [data-cursor]";
-    const over = (e: Event) => { if ((e.target as Element).closest?.(hot)) document.body.classList.add("mn-cursor-hot"); };
-    const out = (e: Event) => { const re = (e as MouseEvent).relatedTarget as Element | null; if ((e.target as Element).closest?.(hot) && !re?.closest?.(hot)) document.body.classList.remove("mn-cursor-hot"); };
-    const down = () => document.body.classList.add("mn-cursor-down");
-    const up = () => document.body.classList.remove("mn-cursor-down");
-
-    addEventListener("mousemove", onMove, { passive: true });
-    document.addEventListener("mouseover", over);
-    document.addEventListener("mouseout", out);
-    document.addEventListener("mousedown", down);
-    document.addEventListener("mouseup", up);
-    raf = requestAnimationFrame(frame);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseover", over);
-      document.removeEventListener("mouseout", out);
-      document.removeEventListener("mousedown", down);
-      document.removeEventListener("mouseup", up);
-      document.body.classList.remove("mn-neon-cursor", "mn-cursor-hot", "mn-cursor-down");
-      [glow, ring, dot].forEach((el) => el.remove());
-    };
-  }, []);
-
   return (
     <div className="music-neon" ref={rootRef}>
-      {/* ambient field */}
-      <div className="mn-field" aria-hidden="true">
-        <div className="mn-field__grid" />
-        <div className="mn-field__glow" />
-        <div className="mn-field__vign" />
-      </div>
+      <AlbumShowcase />
 
       {/* hero */}
       <section className="mn-wrap mn-hero">
@@ -265,19 +192,19 @@ const Music = () => {
             <p className="mn-preview__fine">The full recording remains private while the final V2 version is confirmed.</p>
           </aside>
         </div>
-        <div className="mn-hero__cues" role="tablist" aria-label="Filter tracks by genre">
+        <div className="mn-hero__cues" role="group" aria-label="Filter tracks by genre">
           {genres.map((g) => {
             const active = genre === g;
             return (
               <button
                 key={g}
                 type="button"
-                role="tab"
-                aria-selected={active}
+                aria-pressed={active}
                 className={`mn-cue mn-cue--btn${active ? " is-active" : ""}`}
                 onClick={() => {
+                  stop();
                   setGenre(g);
-                  document.getElementById("songs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  document.getElementById("songs")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
                 }}
               >
                 {active && (
@@ -307,14 +234,14 @@ const Music = () => {
             <p className="mn-release__sub">{featuredRelease.sub}</p>
             <div className="mn-release__meta">{featuredRelease.chips.map((c) => <span key={c} className="mn-chip">{c}</span>)}</div>
             <div className="mn-release__cta-row">
-              <Link to="/music/neon-house-of-glass" className="mn-release__cta" data-cursor aria-label={`Open the ${featuredRelease.title} track page`}>
-                <RhythmIcon /> Rhythm
-              </Link>
+              <PlaySongButton slug="neon-house-of-glass" placement="featured-neon-house-of-glass" />
+              <SongPageButton slug="neon-house-of-glass" />
             </div>
           </div>
-          <div className="mn-release__player">
-            <iframe title={`Spotify, ${featuredRelease.title}`} src={featuredRelease.embed} width="100%" height={featuredRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+          <div className="mn-release__player mx-release-art">
+            <img src={songs.find((song) => song.slug === "neon-house-of-glass")!.cover} alt="Cover neon house of glass" loading="lazy" width="320" height="320" />
           </div>
+          <SongPlayerSlot placement="featured-neon-house-of-glass" />
         </div>
         <div className="mn-release" style={{ marginTop: "clamp(20px,3vh,32px)" }}>
           <div className="mn-release__body">
@@ -323,14 +250,14 @@ const Music = () => {
             <p className="mn-release__sub">{previousRelease.sub}</p>
             <div className="mn-release__meta">{previousRelease.chips.map((c) => <span key={c} className="mn-chip">{c}</span>)}</div>
             <div className="mn-release__cta-row">
-              <Link to="/music/beat-drop" className="mn-release__cta" data-cursor aria-label={`Open the ${previousRelease.title} track page`}>
-                <RhythmIcon /> Rhythm
-              </Link>
+              <PlaySongButton slug="beat-drop" placement="featured-beat-drop" />
+              <SongPageButton slug="beat-drop" />
             </div>
           </div>
-          <div className="mn-release__player">
-            <iframe title={`Spotify, ${previousRelease.title}`} src={previousRelease.embed} width="100%" height={previousRelease.embedHeight} frameBorder={0} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+          <div className="mn-release__player mx-release-art">
+            <img src={songs.find((song) => song.slug === "beat-drop")!.cover} alt="Cover beat drop" loading="lazy" width="320" height="320" />
           </div>
+          <SongPlayerSlot placement="featured-beat-drop" />
         </div>
       </section>
 
@@ -340,7 +267,7 @@ const Music = () => {
         <p className="mn-channels"><b>Spotify</b> holds the official singles. <b>SoundCloud</b> holds public recordings and alternate versions; upload dates are not official release dates. Lyrics, equipment and detailed production notes are shown only when verified, so some tracks do not have those sections yet.</p>
         <div className="mn-tracks">
           {shownSongs.map((song, i) => (
-            <TrackRow key={song.slug} song={song} index={i} playing={playingSlug === song.slug} onToggle={toggle} />
+            <TrackRow key={song.slug} song={song} index={i} />
           ))}
           {shownSongs.length === 0 && (
             <p className="mn-tracks__empty">No tracks in <b>{genre}</b> yet, <button type="button" className="mn-tracks__reset" onClick={() => setGenre("All")}>show all</button>.</p>
@@ -410,4 +337,4 @@ const Music = () => {
   );
 };
 
-export default Music;
+export default function Music() { return <MusicExperience><MusicContent /></MusicExperience>; }

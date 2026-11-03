@@ -56,6 +56,7 @@ interface AppShellProps {
  * return undefined and keep inheriting the (flip-on-dark) <body> colour.
  */
 const mainBackgroundFor = (pathname: string): string | undefined => {
+  if (pathname.startsWith("/music/albums/")) return "#080A0B";
   if (pathname === "/music") return "#08080A";        // .music-neon (After Hours)
   if (pathname === "/release-set") return "#07080C";  // Release Set studio
   if (pathname === "/god-structure") return "hsl(220, 20%, 6%)";
