@@ -1,0 +1,44 @@
+name: NEON Clarity V2 security checks
+on:
+  pull_request:
+    paths:
+      - 'apps/personal/src/pages/Music.tsx'
+      - 'apps/personal/src/components/music/ClarityStudioPreview*'
+      - 'apps/personal/src/styles/music-neon.css'
+      - 'apps/personal/scripts/neon-preview-policy.test.mjs'
+      - 'supabase/functions/neon-studio-preview/**'
+      - 'supabase/migrations/*neon_studio_preview*'
+      - 'docs/neon-clarity-v2-first-listen.md'
+      - '.github/workflows/neon-clarity-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Deno 2 (Supabase Edge runtime)
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck private Edge Function
+        run: deno check --node-modules-dir=auto supabase/functions/neon-studio-preview/index.ts
+      - name: Authorization and checksum tests
+        run: node --test apps/personal/scripts/neon-preview-policy.test.mjs
+      - name: Install dependencies
+        run: npm ci
+      - name: Personal app lint
+        run: npm run lint:personal
+      - name: Personal app typecheck
+        run: npm run typecheck --workspace=@hans/personal
+      - name: Personal app tests
+        run: npm run test:personal
+      - name: Personal app production build
+        run: npm run build:personal

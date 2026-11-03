@@ -441,3 +441,12 @@ body.mn-cursor-down .mn-cursor-ring { transform: scale(.82); }
 .music-neon .mn-rel__play:focus-visible { outline: 2px solid var(--mn-neon); outline-offset: -2px; }
 .music-neon .mn-rel__embed { grid-column: 1 / -1; margin-top: 4px; border-radius: 12px; overflow: hidden; }
 .music-neon .mn-rel__embed iframe { display: block; border: 0; }
+
+/* Clarity V2 first listen: keep the original purple NEON identity. */
+.music-neon .mn-preview__gate { display: flex; flex-direction: column; align-items: flex-start; gap: .8rem; }
+.music-neon .mn-preview__action { appearance: none; border: 1px solid #C9B4FF; border-radius: 3px; background: transparent; padding: .75rem 1rem; color: #C9B4FF; cursor: pointer; font: inherit; font-size: .8rem; letter-spacing: .04em; text-decoration: none; transition: background 160ms ease; }
+.music-neon .mn-preview__action:hover { background: rgba(156, 77, 255, .15); }
+.music-neon .mn-preview__action:focus-visible { outline: 2px solid #C9B4FF; outline-offset: 4px; }
+.music-neon .mn-preview__action:disabled { cursor: wait; opacity: .65; }
+.music-neon .mn-preview__audio { width: min(100%, 340px); min-height: 42px; accent-color: #C9B4FF; }
+.music-neon .mn-preview__error { color: #FFC7C7; }

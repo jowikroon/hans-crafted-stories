@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { songs, featuredRelease, previousRelease, type Song } from "@/data/music";
 import ReleaseTimeline from "@/components/music/ReleaseTimeline";
 import ArtistRadarVisual from "@/components/music/ArtistRadarVisual";
+import ClarityStudioPreview from "@/components/music/ClarityStudioPreview";
 import "@/styles/music-neon.css";
 
 /* deterministic waveform bars, stable across SSR/CSR (no Math.random) */
@@ -256,14 +257,7 @@ const Music = () => {
             <p className="mn-hero__title" style={{ margin: 0 }}>Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</p>
             <p className="mn-hero__lede">Warm synths, human voices, house rhythms and a little funk. Listen to the public recordings and open each track for its source, available notes and release details.</p>
           </div>
-          <aside className="mn-preview" aria-label="Clarity Control V2 studio preview">
-            <span className="mn-preview__eyebrow"><span className="mn-preview__dot" />Latest studio preview</span>
-            <h2 className="mn-preview__title">Clarity Control <span>V2</span></h2>
-            <p className="mn-preview__copy">Another part of the signal. Not every detail is shown.</p>
-            <div className="mn-preview__signal" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /></div>
-            <p className="mn-preview__status">First listen in preparation</p>
-            <p className="mn-preview__fine">The full recording remains private while the final V2 version is confirmed.</p>
-          </aside>
+          <ClarityStudioPreview />
         </div>
         <div className="mn-hero__cues" role="tablist" aria-label="Filter tracks by genre">
           {genres.map((g) => {
