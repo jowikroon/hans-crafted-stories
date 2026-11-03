@@ -6,8 +6,11 @@ import AlbumPageTemplate from "@/components/music/AlbumPageTemplate";
 import { AlbumProcess } from "@/components/music/AlbumEditorialSections";
 import { useSEO } from "@/hooks/useSEO";
 import NotFound from "@/pages/NotFound";
+import { useAlbumPrivateDetails } from "@/hooks/useAlbumPrivateDetails";
+import AlbumOwnerPanel from "@/components/music/AlbumOwnerPanel";
 
 function BrandContent({ album }: { album: MusicAlbumData }) {
+  const privateAccess = useAlbumPrivateDetails(album.slug);
   const story = albumEditorial[album.slug];
   useSEO({ title: albumBrandTitle(album), description: albumBrandDescription(album), url: `https://hansvanleeuwen.com${albumBrandPath(album.slug)}`, lang: "nl", image: `https://hansvanleeuwen.com${album.backCover}`, imageAlt: `De wereld van ${albumTitle(album)}, Jowikroon`, jsonLd: albumBrandJsonLd(album) });
   return <AlbumPageTemplate album={album} section="brand">
@@ -15,6 +18,7 @@ function BrandContent({ album }: { album: MusicAlbumData }) {
     <section className="ma-origin" id="album-origin" aria-labelledby="ma-origin-title"><div><p className="ma-eyebrow">De oorsprong</p><h2 id="ma-origin-title">Eén belofte.<br />Een eigen stem.</h2></div><div>{story.paragraphs.map((p) => <p key={p}>{p}</p>)}</div></section>
     <section className="ma-brand-feelings" aria-labelledby="ma-feelings-title"><div className="ma-section-heading"><div><p className="ma-eyebrow">Wat het beeld vertelt</p><h2 id="ma-feelings-title">Een wereld die je kunt voelen.</h2></div></div><div className="ma-feelings-grid">{story.feelings.map((feeling, index) => <article key={feeling.title}><span className={`ma-feeling-light ma-feeling-light--${index + 1}`} aria-hidden="true" /><h3>{feeling.title}</h3><p>{feeling.text}</p></article>)}</div></section>
     <AlbumProcess album={album} />
+    <AlbumOwnerPanel access={privateAccess} />
     <section className="ma-brand-closing" aria-label="Terug naar de muziek"><p>{story.closing}</p><Link className="ma-button" to={albumPath(album.slug)}>Ontdek {album.title} <span aria-hidden="true">↗</span></Link></section>
   </AlbumPageTemplate>;
 }
