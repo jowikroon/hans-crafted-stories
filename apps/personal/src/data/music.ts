@@ -332,13 +332,20 @@ export const songs: Song[] = [
     embedHeight: 166,
     listenUrl: "https://soundcloud.com/jowikroon/s06-hanging-on-jowikroon-neon-master-96k-24-bit-14",
     links: { soundcloud: "https://soundcloud.com/jowikroon/s06-hanging-on-jowikroon-neon-master-96k-24-bit-14" },
-    detail: conceptDetail({
-      category: "Electronic · NEON master recording",
-      uploaded: "Oct 14, 2026",
-      length: "7:59",
-      version: "NEON master upload (labelled 96 kHz / 24-bit)",
-      note: "The public NEON master upload of Hanging On, a longer recording from the evolving NEON: The Signal Between project. This is not a confirmation of a final album release.",
-    }),
+    detail: {
+      ...conceptDetail({
+        category: "Electronic · NEON recording",
+        uploaded: "Oct 14, 2026",
+        length: "7:59",
+        version: "Existing public master",
+        note: "Hanging On keeps returning to a thought it cannot quite leave behind. A long recording from NEON: The Signal Between, with the voice and the build carrying that tension together.",
+      }),
+      prose: [
+        { type: "lead", text: "Hanging On keeps returning to a thought it cannot quite leave behind. A long recording from NEON: The Signal Between, with the voice and the build carrying that tension together." },
+        { type: "h2", id: "the-line-that-stays", text: "The line that stays" },
+        { type: "p", text: "The hook returns to the same words: “I just can't keep hanging on.” The line wants to let go. The repetition keeps it close. Across almost eight minutes, that tension becomes the shape of the song." },
+      ],
+    },
   },
   {
     title: "78 THz Texture",

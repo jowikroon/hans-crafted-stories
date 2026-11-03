@@ -19,6 +19,8 @@ import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
 import "@/styles/music-v2.css";
+import "@/styles/hanging-on.css";
+import { HangingOnProcess } from "@/components/HangingOnProcess";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 
 /** Turn a YouTube watch/Shorts/youtu.be URL into an embeddable /embed/<id> URL. */
@@ -81,7 +83,8 @@ function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
 
   const go = (id: string) => {
     setActive(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById(id)?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
   };
 
   return (
@@ -113,8 +116,9 @@ function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
 }
 
 export default function MusicSong() {
-  useEffect(() => { ensureFontCss("fonts-music-v2", FONT_CSS.musicV2); }, []);
   const { slug } = useParams<{ slug: string }>();
+  const isHangingOn = slug === "hanging-on";
+  useEffect(() => { ensureFontCss(isHangingOn ? "fonts-neon" : "fonts-music-v2", isHangingOn ? FONT_CSS.writing : FONT_CSS.musicV2); }, [isHangingOn]);
   const resolved = getSongBySlug(slug);
   // Only tracks verified public are included in music.ts.
   const song = resolved;
@@ -140,7 +144,7 @@ export default function MusicSong() {
     title: song
       ? `${song.title}: Song & Notes | Hans van Leeuwen`
       : "Song not found | Hans van Leeuwen",
-    description: song
+    description: isHangingOn ? "Hanging On by Jowikroon. Listen to the recording and follow the source comparison, peak space and frequency balance behind its next production step." : song
       ? `${song.title} by Jowikroon. ${song.provider === "spotify" ? "Official single" : "Public SoundCloud recording"} (${song.duration}). Listen, open the original source and explore the available notes for this recording.`
       : "This track could not be found.",
     image: song?.cover,
@@ -152,6 +156,15 @@ export default function MusicSong() {
       ? {
           "@context": "https://schema.org",
           "@graph": [
+            ...(isHangingOn ? [{
+              "@type": "WebPage",
+              "@id": "https://hansvanleeuwen.com/music/hanging-on#webpage",
+              url: "https://hansvanleeuwen.com/music/hanging-on",
+              name: "Hanging On: Song & Notes | Hans van Leeuwen",
+              dateModified: "2026-11-03",
+              inLanguage: "en",
+              isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
+            }] : []),
             {
               "@type": "BreadcrumbList",
               itemListElement: [
@@ -211,7 +224,7 @@ export default function MusicSong() {
   const d = song.detail;
 
   return (
-    <div className="music-v2">
+    <div className={`music-v2${isHangingOn ? " hanging-on-page" : ""}`}>
       <main className="songpage">
         <div className="wrap">
           {/* Breadcrumb */}
@@ -362,6 +375,7 @@ export default function MusicSong() {
           <SongSectionNav
             items={[
               { id: "song-notes", label: "Notes" },
+              ...(isHangingOn ? [{ id: "song-process", label: "Inside the recording" }] : []),
               ...(d.gear && d.gear.length ? [{ id: "song-gear", label: "Sounds" }] : []),
               ...(d.lyrics.length ? [{ id: "song-lyrics", label: "Lyrics" }] : []),
             ]}
@@ -404,6 +418,8 @@ export default function MusicSong() {
             </aside>
           </div>
 
+          {isHangingOn && <HangingOnProcess />}
+
           {d.lyrics.length > 0 && (
             <section className="lyrics" aria-label="Lyrics" id="song-lyrics">
               <div className="lyrics__h">Lyrics</div>
@@ -429,13 +445,13 @@ export default function MusicSong() {
           {/* Share */}
           <div className="share" style={{ maxWidth: 1040 }}>
             <span className="share__label">Share</span>
-            <a href="#" aria-label="Share on LinkedIn">
+            <a href={isHangingOn ? "https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fhansvanleeuwen.com%2Fmusic%2Fhanging-on" : "#"} aria-label="Share on LinkedIn" target={isHangingOn ? "_blank" : undefined} rel={isHangingOn ? "noopener noreferrer" : undefined}>
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 18.34V10.4H5.67v7.94h2.67zM7 9.24a1.55 1.55 0 1 0 0-3.1 1.55 1.55 0 0 0 0 3.1zm11.34 9.1v-4.36c0-2.33-1.25-3.42-2.92-3.42a2.52 2.52 0 0 0-2.28 1.25v-1.07h-2.67v7.6h2.67v-4.2c0-1.11.21-2.18 1.58-2.18 1.35 0 1.37 1.26 1.37 2.25v4.13h2.92z" /></svg>
             </a>
-            <a href="#" aria-label="Share on X">
+            <a href={isHangingOn ? "https://twitter.com/intent/tweet?url=https%3A%2F%2Fhansvanleeuwen.com%2Fmusic%2Fhanging-on&text=Hanging%20On%20by%20Jowikroon" : "#"} aria-label="Share on X" target={isHangingOn ? "_blank" : undefined} rel={isHangingOn ? "noopener noreferrer" : undefined}>
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.8l-5.3-7-6.1 7H1.7l8.2-9.4L1 2h7l4.8 6.4L18.9 2zm-2.4 18h1.7L7.6 3.8H5.8L16.5 20z" /></svg>
             </a>
-            <a href="#" aria-label="Copy link">
+            <a href={isHangingOn ? "https://hansvanleeuwen.com/music/hanging-on" : "#"} aria-label={isHangingOn ? "Permanent link to Hanging On" : "Copy link"}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" /><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" /></svg>
             </a>
           </div>
