@@ -221,3 +221,6 @@
  .ma-footer-links { flex-wrap:wrap; gap:12px 28px; }
  .ma-chapters { gap:18px; padding-bottom:28px; }
 }
+
+.ma-sleeve__owner-track .ma-sleeve__track-title { color:var(--ma-ink); opacity:1; overflow-wrap:anywhere; }
+@media(max-width:760px){.ma-private{padding:24px 18px}.ma-private .ma-section-heading{flex-wrap:wrap}.ma-guide__content{font-size:14px}}

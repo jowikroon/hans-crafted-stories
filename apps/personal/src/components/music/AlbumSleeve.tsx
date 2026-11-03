@@ -3,6 +3,7 @@ import { Link } from "@/components/LocalizedLink";
 import { albumPath, albumTitle, type MusicAlbumData } from "@/data/albums";
 import { songs } from "@/data/music";
 import { useMusicExperience } from "./MusicExperience";
+import { useAlbumPrivateDetails } from "@/hooks/useAlbumPrivateDetails";
 
 // A slow opening, then a tighter rhythm. Delays include the 440 ms cover turn.
 const TRACK_REVEAL_DELAYS = [650, 1100, 1450, 1690, 1870, 2010, 2120, 2210, 2290];
@@ -21,6 +22,7 @@ interface AlbumSleeveProps {
 /** Both faces use a public projection. Unreleased titles never enter this DOM. */
 export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false }: AlbumSleeveProps) {
   const { openSong } = useMusicExperience();
+  const { details } = useAlbumPrivateDetails(album.slug);
   const front = useRef<HTMLButtonElement>(null);
   const backButton = useRef<HTMLButtonElement>(null);
   const previousOpen = useRef(open);
@@ -64,11 +66,14 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
                 const position = index + 1;
                 const release = album.publicTracks.find((track) => track.position === position);
                 const song = release ? songs.find((item) => item.slug === release.songSlug) : undefined;
+                const privateTrack = details?.tracks.find((track) => track.position === position);
                 const delay = TRACK_REVEAL_DELAYS[index] ?? 2290 + (index - 8) * 60;
                 return <li key={position} className={`ma-sleeve__track-row${song ? " ma-sleeve__track-row--released" : " ma-sleeve__track-row--unreleased"}`} style={{ "--ma-reveal-delay": `${delay}ms` } as CSSProperties}>
                   {song ? <Link to={`/music/${song.slug}`} className="ma-sleeve__track" tabIndex={open ? 0 : -1} aria-haspopup="dialog" aria-label={`Open songpagina van ${song.title}`} onClick={(event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); openSong(song.slug, event.currentTarget); } }}>
                     <span className="ma-sleeve__index">{String(position).padStart(2, "0")}</span><span className="ma-sleeve__track-title">{song.title}</span><span className="ma-sleeve__play" aria-hidden="true">↗</span>
-                  </Link> : <div className="ma-sleeve__unreleased" aria-label={`Nummer ${position}: coming ${album.releaseYear}`}>
+                  </Link> : privateTrack ? <div className="ma-sleeve__unreleased ma-sleeve__owner-track" aria-label={`${position}. ${privateTrack.title} · Alleen voor jou`}>
+                    <span className="ma-sleeve__index">{String(position).padStart(2, "0")}</span><span className="ma-sleeve__track-title">{privateTrack.title}</span>
+                  </div> : <div className="ma-sleeve__unreleased" aria-label={`Nummer ${position}: coming ${album.releaseYear}`}>
                     <span className="ma-sleeve__index" aria-hidden="true">{String(position).padStart(2, "0")}</span><span className={`ma-blur-mark${position % 2 === 0 ? " ma-blur-mark--short" : ""}`} aria-hidden="true" />
                   </div>}
                 </li>;

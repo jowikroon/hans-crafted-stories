@@ -37,7 +37,8 @@ export function useAlbumPrivateDetails(albumSlug: string) {
       void (async () => {
         try {
           // RLS independently requires is_portal_owner(). No local/private fallback.
-          // Table is additive; schema draft must be applied before live use.
+          // The database grants SELECT only to authenticated callers, then RLS
+          // checks the verified portal owner independently of this UI gate.
           const { data, error } = await supabase.from("music_album_private_details" as never)
             .select("details").eq("album_key", albumSlug).abortSignal(controller.signal).maybeSingle();
           const details = error ? null : parseAlbumPrivateDetails((data as unknown as { details?: unknown } | null)?.details);

@@ -9,11 +9,13 @@ import AlbumPageTemplate from "@/components/music/AlbumPageTemplate";
 import AlbumEditorialSections from "@/components/music/AlbumEditorialSections";
 import { albumEditorial } from "@/data/albumEditorial";
 import NotFound from "@/pages/NotFound";
+import AlbumOwnerPanel from "@/components/music/AlbumOwnerPanel";
 import AlbumSleeve from "@/components/music/AlbumSleeve";
 import "@/styles/music-albums.css";
 
 function AlbumContent({ album }: { album: MusicAlbumData }) {
-  const { isOwner, loading, error, details } = useAlbumPrivateDetails(album.slug);
+  const privateAccess = useAlbumPrivateDetails(album.slug);
+  const { isOwner, details } = privateAccess;
   const { openSong } = useMusicExperience();
   const [sleeveOpen, setSleeveOpen] = useState(false);
   const canonical = `https://hansvanleeuwen.com${albumPath(album.slug)}`;
@@ -87,12 +89,7 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
 
         <AlbumEditorialSections album={album} />
 
-        {isOwner && (
-          <section className="ma-private" aria-labelledby="ma-private-title">
-            <div className="ma-section-heading"><div><p className="ma-eyebrow">Jouw albumruimte · privé</p><h2 id="ma-private-title">Het verhaal achter de plaat.</h2></div><span className="ma-owner-label">Alleen voor jou</span></div>
-            <div aria-live="polite">{loading ? <p>Je privédetails worden geladen…</p> : !details || error ? <p>Privédetails nog niet gekoppeld.</p> : <><p className="ma-private__story">{details.story}</p><details className="ma-guide"><summary>Open de brandguide <span aria-hidden="true">+</span></summary><div className="ma-guide__content">{details.brandGuide}</div></details></>}</div>
-          </section>
-        )}
+        <AlbumOwnerPanel access={privateAccess} />
 
     </AlbumPageTemplate>
   );
