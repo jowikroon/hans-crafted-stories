@@ -76,6 +76,8 @@ const {
   PRICING_EN,
   translations,
   songs,
+  albumBrandPath, albumBrandTitle, albumBrandDescription, albumBrandJsonLd,
+  albums, albumPath, albumTitle, albumSeoTitle, albumJsonLd, musicAlbumsTitle, musicAlbumsDescription,
   alternatesFor,
   absoluteUrl,
   OG_LOCALE,
@@ -790,16 +792,16 @@ writeLocalizedPage("/privacy", {
 });
 
 // Increment only when the music catalogue or its editorial pages substantively change.
-const MUSIC_CONTENT_UPDATED = "2026-11-01";
+const MUSIC_CONTENT_UPDATED = "2026-11-03";
 
 /* ───────────────────────────── /music (eentalig EN) ───────────────────────────── */
 {
   const route = "/music";
   const head = {
-    title: "Music: Songs & Production Notes | Hans van Leeuwen",
-    description: "Explore Jowikroon's official Spotify singles and public SoundCloud recordings, with verified track information and individual song notes.",
+    title: musicAlbumsTitle,
+    description: musicAlbumsDescription,
     canonical: `${BASE}/music`,
-    ogImageAlt: "Jowikroon original electronic songs, SoundCloud recordings and Spotify singles",
+    ogImageAlt: "NEON: The Signal Between en IETS MOOIS van Jowikroon",
   };
   const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
@@ -821,6 +823,29 @@ const MUSIC_CONTENT_UPDATED = "2026-11-01";
   const outPath = outPathFor(route);
   fs.writeFileSync(outPath, page, "utf8");
   console.log(`[prerender] ${route} -> ${outPath}`);
+}
+
+// Album and public brand pages share metadata helpers. No privileged build-time fetch.
+for (const album of albums) {
+  for (const brand of [false, true]) {
+    const route = brand ? albumBrandPath(album.slug) : albumPath(album.slug);
+    const head = {
+      title: brand ? albumBrandTitle(album) : albumSeoTitle(album),
+      description: brand ? albumBrandDescription(album) : album.description,
+      canonical: `${BASE}${route}`, image: `${BASE}${brand ? album.backCover : album.cover}`,
+      ogImageAlt: `${brand ? "De wereld van" : "Albumcover"} ${albumTitle(album)} van Jowikroon`,
+    };
+    const { html } = renderQuietly(route, null, { initialLang: "nl" });
+    let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+    page = setHead(page, head);
+    page = applyLang(page, "nl");
+    page = setHreflang(page, null);
+    page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, '<p><a href="/music">Alle muziek</a></p>'));
+    page = setJsonLd(page, brand ? albumBrandJsonLd(album) : albumJsonLd(album));
+    const outPath = outPathFor(route);
+    fs.writeFileSync(outPath, page, "utf8");
+    console.log(`[prerender] ${route} -> ${outPath}`);
+  }
 }
 
 /* ───────────────────────────── /music/<slug> — alleen publieke tracks (HAN-146, plan F.2) ───────────────────────────── */

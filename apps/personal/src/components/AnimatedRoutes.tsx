@@ -8,6 +8,8 @@ import Work from "@/pages/Work";
 import Writing from "@/pages/Writing";
 import Music from "@/pages/Music";
 import MusicSong from "@/pages/MusicSong";
+import MusicAlbum from "@/pages/MusicAlbum";
+import MusicAlbumBrand from "@/pages/MusicAlbumBrand";
 import ArtistRadar from "@/pages/ArtistRadar";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
@@ -103,6 +105,9 @@ const AnimatedRoutes = () => {
         <Route path="/blog" element={<Navigate to="/writing" replace />} />
         <Route path="/blog/:slug" element={<LegacyBlogRedirect />} />
         <Route path="/music" element={<PageTransition><Music /></PageTransition>} />
+        <Route path="/music/albums" element={<Navigate to="/music" replace />} />
+        <Route path="/music/albums/:albumSlug/brand" element={<PageTransition><MusicAlbumBrand /></PageTransition>} />
+        <Route path="/music/albums/:albumSlug" element={<PageTransition><MusicAlbum /></PageTransition>} />
         <Route path="/music/:slug" element={<PageTransition><MusicSong /></PageTransition>} />
         <Route path="/muziek/artist-radar" element={<PageTransition><ArtistRadar /></PageTransition>} />
         {LANG_PREFIXES.map((prefix) => (

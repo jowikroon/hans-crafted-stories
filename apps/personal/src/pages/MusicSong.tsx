@@ -12,7 +12,7 @@
  * /music/:slug. Navbar + Footer come from App.tsx.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
@@ -115,10 +115,14 @@ function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
   );
 }
 
-export default function MusicSong() {
-  const { slug } = useParams<{ slug: string }>();
+export default function MusicSong({ songSlug, inDialog = false, player, onOpenSong }: { songSlug?: string; inDialog?: boolean; player?: ReactNode; onOpenSong?: (slug: string, trigger?: HTMLElement) => void }) {
+  const params = useParams<{ slug: string }>();
+  const slug = songSlug ?? params.slug;
+  const Page = inDialog ? "div" : "main";
+  const Heading = inDialog ? "h2" : "h1";
   const isHangingOn = slug === "hanging-on";
-  useEffect(() => { ensureFontCss(isHangingOn ? "fonts-neon" : "fonts-music-v2", isHangingOn ? FONT_CSS.writing : FONT_CSS.musicV2); }, [isHangingOn]);
+  const useNeonFonts = isHangingOn || inDialog;
+  useEffect(() => { ensureFontCss(useNeonFonts ? "fonts-neon" : "fonts-music-v2", useNeonFonts ? FONT_CSS.writing : FONT_CSS.musicV2); }, [useNeonFonts]);
   const resolved = getSongBySlug(slug);
   // Only tracks verified public are included in music.ts.
   const song = resolved;
@@ -140,7 +144,7 @@ export default function MusicSong() {
   }, [song]);
 
   useSEO({
-    enabled: true,
+    enabled: !inDialog,
     title: song
       ? `${song.title}: Song & Notes | Hans van Leeuwen`
       : "Song not found | Hans van Leeuwen",
@@ -200,7 +204,7 @@ export default function MusicSong() {
   if (!song) {
     return (
       <div className="music-v2">
-        <main className="songpage">
+        <Page className="songpage">
           <div className="wrap">
             <nav className="crumb" aria-label="Breadcrumb" style={{ paddingTop: 40 }}>
               <Link to="/">Home</Link>
@@ -216,7 +220,7 @@ export default function MusicSong() {
               </p>
             </header>
           </div>
-        </main>
+        </Page>
       </div>
     );
   }
@@ -225,10 +229,10 @@ export default function MusicSong() {
 
   return (
     <div className={`music-v2${isHangingOn ? " hanging-on-page" : ""}`}>
-      <main className="songpage">
+      <Page className="songpage">
         <div className="wrap">
           {/* Breadcrumb */}
-          <nav className="crumb" aria-label="Breadcrumb">
+          <nav className="crumb" aria-label="Breadcrumb" hidden={inDialog}>
             <Link to="/">Home</Link>
             <ChevronRight />
             <Link to="/music">Music</Link>
@@ -249,7 +253,7 @@ export default function MusicSong() {
                 {d.category}
                 {song.concept && <span className="songhead__concept">SoundCloud recording</span>}
               </div>
-              <h1 className="songtitle">{song.title}</h1>
+              <Heading className="songtitle">{song.title}</Heading>
               <p className="songhead__by">
                 By <strong>{song.artist}</strong>, the artist alias of Hans van Leeuwen
               </p>
@@ -266,7 +270,7 @@ export default function MusicSong() {
 
           {/* Spotify player (eager — leads the page like the prototype) */}
           <div className="songplay">
-            <iframe
+            {player ?? <iframe
               title={`${song.provider === "soundcloud" ? "SoundCloud" : "Spotify"}: ${song.title}`}
               style={{ borderRadius: 14 }}
               src={song.embed}
@@ -275,7 +279,7 @@ export default function MusicSong() {
               frameBorder={0}
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy"
-            />
+            />}
           </div>
 
           {/* Official video — self-hosted only when videoFile is an absolute URL that
@@ -445,13 +449,13 @@ export default function MusicSong() {
           {/* Share */}
           <div className="share" style={{ maxWidth: 1040 }}>
             <span className="share__label">Share</span>
-            <a href={isHangingOn ? "https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fhansvanleeuwen.com%2Fmusic%2Fhanging-on" : "#"} aria-label="Share on LinkedIn" target={isHangingOn ? "_blank" : undefined} rel={isHangingOn ? "noopener noreferrer" : undefined}>
+            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://hansvanleeuwen.com/music/${song.slug}`)}`} aria-label="Share on LinkedIn" target="_blank" rel="noopener noreferrer">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 18.34V10.4H5.67v7.94h2.67zM7 9.24a1.55 1.55 0 1 0 0-3.1 1.55 1.55 0 0 0 0 3.1zm11.34 9.1v-4.36c0-2.33-1.25-3.42-2.92-3.42a2.52 2.52 0 0 0-2.28 1.25v-1.07h-2.67v7.6h2.67v-4.2c0-1.11.21-2.18 1.58-2.18 1.35 0 1.37 1.26 1.37 2.25v4.13h2.92z" /></svg>
             </a>
-            <a href={isHangingOn ? "https://twitter.com/intent/tweet?url=https%3A%2F%2Fhansvanleeuwen.com%2Fmusic%2Fhanging-on&text=Hanging%20On%20by%20Jowikroon" : "#"} aria-label="Share on X" target={isHangingOn ? "_blank" : undefined} rel={isHangingOn ? "noopener noreferrer" : undefined}>
+            <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(`https://hansvanleeuwen.com/music/${song.slug}`)}&text=${encodeURIComponent(`${song.title} by Jowikroon`)}`} aria-label="Share on X" target="_blank" rel="noopener noreferrer">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.8l-5.3-7-6.1 7H1.7l8.2-9.4L1 2h7l4.8 6.4L18.9 2zm-2.4 18h1.7L7.6 3.8H5.8L16.5 20z" /></svg>
             </a>
-            <a href={isHangingOn ? "https://hansvanleeuwen.com/music/hanging-on" : "#"} aria-label={isHangingOn ? "Permanent link to Hanging On" : "Copy link"}>
+            <a href={`https://hansvanleeuwen.com/music/${song.slug}`} aria-label={`Permanent link to ${song.title}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" /><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" /></svg>
             </a>
           </div>
@@ -462,7 +466,7 @@ export default function MusicSong() {
               <div className="more__h">More tracks</div>
               <div className="more__grid">
                 {more.map((m) => (
-                  <Link key={m.slug} to={`/music/${m.slug}`} className="ncard">
+                  <Link key={m.slug} to={`/music/${m.slug}`} className="ncard" onClick={onOpenSong ? (event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); onOpenSong(m.slug, event.currentTarget); } } : undefined}>
                     <div className="ncard__m">
                       <span className="tag">{m.genre}</span>
                       <span className="dot" />
@@ -475,7 +479,7 @@ export default function MusicSong() {
             </section>
           )}
         </div>
-      </main>
+      </Page>
     </div>
   );
 }

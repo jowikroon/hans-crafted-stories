@@ -4,6 +4,11 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/music/albums",
+      "destination": "/music",
+      "permanent": true
+    },
+    {
       "source": "/music/new-level",
       "destination": "/music",
       "permanent": true

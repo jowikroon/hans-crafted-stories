@@ -79,6 +79,10 @@ function publicMusicRoutes() {
 const STATIC_ROUTES = [
   ...LOCALIZED_ROUTES,
   { loc: `${BASE}/music`, changefreq: "monthly", priority: "0.7" },
+  { loc: `${BASE}/music/albums/neon-the-signal-between`, changefreq: "monthly", priority: "0.7" },
+  { loc: `${BASE}/music/albums/iets-moois`, changefreq: "monthly", priority: "0.7" },
+  { loc: `${BASE}/music/albums/neon-the-signal-between/brand`, changefreq: "monthly", priority: "0.6" },
+  { loc: `${BASE}/music/albums/iets-moois/brand`, changefreq: "monthly", priority: "0.6" },
   ...publicMusicRoutes(),
   { loc: `${BASE}/muziek/artist-radar`, changefreq: "weekly", priority: "0.7" },
 ];

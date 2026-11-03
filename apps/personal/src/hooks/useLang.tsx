@@ -61,6 +61,7 @@ export const LangProvider = ({ children, initialLang }: LangProviderProps) => {
 
   const lang = useMemo<Lang>(() => {
     const { lang: fromUrl, path } = parsePath(location.pathname);
+    if (location.pathname.startsWith("/music/albums/")) return "nl";
     if (fromUrl === "en" && isLocalizedRoute(path)) return "en";
     // /en/writing/<slug> is altijd de Engelse versie (optie A, 2026-10-02).
     if (article?.enRoute) return "en";
