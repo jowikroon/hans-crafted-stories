@@ -57,7 +57,7 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
         if (!privateTrack) return null;
         return <li key={position} className="ma-track ma-track--unreleased ma-track--owner"><span className="ma-track__number">{String(position).padStart(2, "0")}</span><span className="ma-track__locked" aria-hidden="true">·</span><div className="ma-track__copy"><strong>{privateTrack.title}</strong>{privateTrack.note && <span>{privateTrack.note}</span>}</div><span className="ma-track__coming">Alleen voor jou</span></li>;
       })}
-    </ol> : <div className="ma-arrival"><p>IETS MOOIS is in wording. Zodra er muziek klaar is om te delen, vind je die hier. Luister intussen naar de uitgebrachte muziek van Jowikroon.</p><Link to="/music" className="ma-button ma-button--light">Luister naar Jowikroon <span aria-hidden="true">↗</span></Link></div>}
+    </ol> : <div className="ma-arrival">{story.listeningNote && <p className="ma-arrival__invitation">{story.listeningNote}</p>}<p>IETS MOOIS is in wording. De eerste releases krijgen hier hun plek. Luister intussen naar de uitgebrachte muziek van Jowikroon.</p><Link to="/music" className="ma-button ma-button--light">Luister naar Jowikroon <span aria-hidden="true">↗</span></Link></div>}
     {publicTracks.length > 0 && <p className="ma-track-note">Een eerste kennismaking met NEON. De overige nummers verschijnen wanneer ze klaar zijn om te delen.</p>}
   </section>;
 
@@ -67,14 +67,16 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
       <figure className="ma-album-hero__art"><AlbumSleeve album={album} open={sleeveOpen} onToggle={() => setSleeveOpen((current) => !current)} onAlbumPage /><figcaption><span>{album.theme === "warm" ? "Een eigen taal. Een eigen wereld." : "The Signal Between"}</span><span>Draai de hoes om ↻</span></figcaption></figure>
       <div className="ma-album-hero__copy">
         <AlbumSignal /><p className="ma-album-hero__description">{story.intro}</p>
-        <p className="ma-release-status"><span className="ma-release-status__dot" aria-hidden="true" />Album in wording<span className="ma-release-status__year">COMING {album.releaseYear}</span></p>
-        <div className="ma-hero-actions"><a href={publicTracks.length ? "#album-tracks" : "#album-story"} className="ma-button ma-button--light">{publicTracks.length ? "Luister de eerste releases" : "Ontdek IETS MOOIS"}<span aria-hidden="true">↓</span></a><Link to={albumBrandPath(album.slug)} className="ma-hero-story">Het verhaal <span aria-hidden="true">↗</span></Link></div>
+        <p className="ma-release-status"><span className="ma-release-status__dot" aria-hidden="true" />Album in wording<span className="ma-release-status__year">VERWACHT {album.releaseYear}</span></p>
+        <div className="ma-hero-actions"><a href={publicTracks.length ? "#album-tracks" : "#album-spoor"} className="ma-button ma-button--light">{publicTracks.length ? "Luister de eerste releases" : "Volg het spoor"}<span aria-hidden="true">↓</span></a>{story.trail ? <a href="#album-tracks" className="ma-hero-story">De muziek <span aria-hidden="true">↓</span></a> : <Link to={albumBrandPath(album.slug)} className="ma-hero-story">Het verhaal <span aria-hidden="true">↗</span></Link>}</div>
       </div>
     </header>
+    {story.trail && <nav className="ma-album-index" aria-label="Op deze albumpagina"><span className="ma-eyebrow">Neem de tijd</span><a href="#album-story">De belofte</a><a href="#album-spoor">Het spoor</a><a href="#album-world">De beelden</a><a href="#album-tracks">De muziek <span aria-hidden="true">↓</span></a></nav>}
     {publicTracks.length > 0 && listening}
     <AlbumEditorialSections album={album} />
+    {story.trail && <AlbumJourney album={album} />}
     <AlbumWorld key={album.slug} album={album} />
-    <AlbumJourney album={album} />
+    {!story.trail && <AlbumJourney album={album} />}
     {publicTracks.length === 0 && listening}
     <AlbumCompanion album={album} />
     <AlbumOwnerPanel access={privateAccess} />

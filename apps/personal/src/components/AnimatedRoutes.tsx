@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, Navigate, useParams } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigationType, Navigate, useParams } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense, type ComponentType } from "react";
 import PageTransition from "./PageTransition";
@@ -10,6 +10,7 @@ import Music from "@/pages/Music";
 import MusicSong from "@/pages/MusicSong";
 import MusicAlbum from "@/pages/MusicAlbum";
 import MusicAlbumBrand from "@/pages/MusicAlbumBrand";
+import { AlbumNavigationTypeContext } from "@/components/music/albumNavigation";
 import ArtistRadar from "@/pages/ArtistRadar";
 import About from "@/pages/About";
 import BlogPostPage from "@/pages/BlogPostPage";
@@ -80,9 +81,11 @@ const LegacyBlogRedirect = () => {
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const navigationType = useNavigationType();
 
   return (
     <RouteErrorBoundary>
+    <AlbumNavigationTypeContext.Provider value={navigationType}>
     <AnimatePresence initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/portal/notes" element={<Suspense fallback={<BlogCMSFallback />}><PortalNotes /></Suspense>} />
@@ -160,6 +163,7 @@ const AnimatedRoutes = () => {
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
+    </AlbumNavigationTypeContext.Provider>
     </RouteErrorBoundary>
   );
 };
