@@ -1,24 +1,24 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useContext, useEffect, useRef, type ReactNode } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { albums, albumPath, type MusicAlbumData } from "@/data/albums";
 import { albumBrandPath } from "@/data/albumEditorial";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
+import { AlbumNavigationTypeContext } from "./albumNavigation";
 import "@/styles/music-albums.css";
 import "@/styles/music-album-world.css";
 
 /** Shared fan-facing shell. Artwork retains its own typography. */
 export default function AlbumPageTemplate({ album, section = "album", children }: { album: MusicAlbumData; section?: "album" | "brand"; children: ReactNode }) {
   const { pathname, hash } = useLocation();
-  const navigationType = useNavigationType();
+  const routeNavigationType = useNavigationType();
+  const navigationType = useContext(AlbumNavigationTypeContext) ?? routeNavigationType;
   const previousPath = useRef<string>();
   useEffect(() => { ensureFontCss("fonts-albums", FONT_CSS.writing); }, []);
   useEffect(() => {
     // Native anchors already scroll. A song dialog can clear the hash while
     // changing its query string; it must keep this album's reading position.
     if (previousPath.current === pathname) return;
-    // Apply the new route's position in this effect. Deferring it to a frame
-    // lets the outgoing page's anchor/focus position survive the transition.
     previousPath.current = pathname;
     const target = hash && document.getElementById(hash.slice(1));
     if (target) target.scrollIntoView({ behavior: "instant", block: "start" });
