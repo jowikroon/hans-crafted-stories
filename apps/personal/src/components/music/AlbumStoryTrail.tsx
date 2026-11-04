@@ -15,6 +15,14 @@ export default function AlbumStoryTrail({ steps }: { steps: StorySteps }) {
     if (moveFocus) tabs.current[index]?.focus({ preventScroll: true });
   }
 
+  function advance() {
+    const next = (selected + 1) % steps.length;
+    select(next, true);
+    // The footer can sit below the tabs on a short screen. Reveal the new
+    // reading position as well as moving keyboard focus to it.
+    tabs.current[next]?.scrollIntoView({ block: "center", behavior: "instant" });
+  }
+
   function onKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const last = steps.length - 1;
     const next = event.key === "ArrowRight" ? (index + 1) % steps.length
@@ -51,7 +59,7 @@ export default function AlbumStoryTrail({ steps }: { steps: StorySteps }) {
       </div>)}
       <div className="ma-story-trail__footer">
         <span>Niet als antwoord, maar als spoor.</span>
-        <button type="button" onClick={() => select((selected + 1) % steps.length, true)}>
+        <button type="button" onClick={advance}>
           {selected === steps.length - 1 ? "Terug naar het begin" : `Verder: ${steps[selected + 1].label.toLowerCase()}`}
           <span aria-hidden="true">{selected === steps.length - 1 ? "↺" : "→"}</span>
         </button>

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { albumEditorial } from "@/data/albumEditorial";
 import AlbumStoryTrail from "./AlbumStoryTrail";
@@ -37,13 +37,16 @@ describe("IETS MOOIS story exploration", () => {
 
   it("provides a complete reading loop without moving the user to another page", () => {
     showTrail();
+    for (const tab of screen.getAllByRole("tab")) tab.scrollIntoView = vi.fn();
     for (const label of ["De stilte", "De tegenstem", "Wat blijft"]) {
       fireEvent.click(screen.getByRole("button", { name: new RegExp(`Verder: ${label.toLowerCase()}`) }));
       expect(document.activeElement).toBe(screen.getByRole("tab", { name: label }));
       expect(screen.getByRole("tab", { name: label }).getAttribute("aria-selected")).toBe("true");
+      expect(screen.getByRole("tab", { name: label }).scrollIntoView).toHaveBeenCalledWith({ block: "center", behavior: "instant" });
     }
     fireEvent.click(screen.getByRole("button", { name: /Terug naar het begin/ }));
     expect(document.activeElement).toBe(screen.getByRole("tab", { name: "De zekerheid" }));
+    expect(screen.getByRole("tab", { name: "De zekerheid" }).scrollIntoView).toHaveBeenCalledWith({ block: "center", behavior: "instant" });
     expect(screen.getByRole("tabpanel").textContent).toContain("Ooit was weten genoeg.");
   });
 
