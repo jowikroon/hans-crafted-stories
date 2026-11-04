@@ -33,6 +33,10 @@ export default defineConfig(({ mode }) => ({
   plugins: [editSourceMap({ root: __dirname }), react(), htmlPlaceholders(), componentTagger()].filter(Boolean),
   resolve: {
     alias: {
+      // renderToString cannot resolve a lazy boundary: retain complete static song charts.
+      ...(process.env.BUILD_SSR ? {
+        "@/components/SongProductionProcessView": path.resolve(__dirname, "./src/components/SongProductionProcessView.server.tsx"),
+      } : {}),
       "@": path.resolve(__dirname, "./src"),
     },
   },

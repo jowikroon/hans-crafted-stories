@@ -1,3 +1,4 @@
+import { useId, type ReactNode } from "react";
 import data from "@/data/hangingOnAnalysis.json";
 import { hangingOnStory as story } from "@/data/hangingOnStory";
 
@@ -5,8 +6,8 @@ const violet = "var(--ho-violet)";
 const ice = "var(--ho-ice)";
 const time = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-function Timeline({ peaks = false }: { peaks?: boolean }) {
-  const id = peaks ? "peaks" : "shape";
+function Timeline({ peaks = false, prefix }: { peaks?: boolean; prefix: string }) {
+  const id = `${prefix}-${peaks ? "peaks" : "shape"}`;
   const lo = peaks ? 0 : -64;
   const hi = peaks ? 18 : -12;
   const ticks = peaks ? [0, 4, 8, 12, 16] : [-60, -48, -36, -24, -12];
@@ -23,11 +24,11 @@ function Timeline({ peaks = false }: { peaks?: boolean }) {
   </svg>;
 }
 
-function Balance() {
+function Balance({ prefix }: { prefix: string }) {
   const x = (v: number) => 155 + (v + 2) / 3 * 260;
-  return <svg className="ho-balance" viewBox="0 0 480 350" role="img" aria-labelledby="ho-balance-title" aria-describedby="ho-balance-desc">
-    <title id="ho-balance-title">Frequency balance at matched loudness</title>
-    <desc id="ho-balance-desc">Existing master minus earlier source, in decibels. Low bands are modestly higher; mid and high bands are lower. {data.bands.map(b => `${b.hz} Hz: ${b.deltaDb>0 ? "+" : ""}${b.deltaDb.toFixed(2)} dB.`).join(" ")}</desc>
+  return <svg className="ho-balance" viewBox="0 0 480 350" role="img" aria-labelledby={`${prefix}-balance-title`} aria-describedby={`${prefix}-balance-desc`}>
+    <title id={`${prefix}-balance-title`}>Frequency balance at matched loudness</title>
+    <desc id={`${prefix}-balance-desc`}>Existing master minus earlier source, in decibels. Low bands are modestly higher; mid and high bands are lower. {data.bands.map(b => `${b.hz} Hz: ${b.deltaDb>0 ? "+" : ""}${b.deltaDb.toFixed(2)} dB.`).join(" ")}</desc>
     <text x="12" y="22" fill="currentColor" fontSize="15">Frequency · Hz (k = 1,000)</text>
     {[-2,-1,0,1].map(t => <g key={t}><line x1={x(t)} x2={x(t)} y1="38" y2="301" stroke="currentColor" opacity={t===0 ? .5 : .14}/><text x={x(t)} y="325" textAnchor="middle" fill="currentColor" fontSize="12">{t>0 ? "+" : ""}{t} dB</text></g>)}
     {data.bands.map((b,i) => <g key={b.hz}>
@@ -38,22 +39,24 @@ function Balance() {
   </svg>;
 }
 
-export function HangingOnProcess() {
+export function HangingOnProcess({ sectionId = "song-process", children }: { sectionId?: string; children?: ReactNode } = {}) {
+  const prefix = `hanging-${useId().replace(/:/g, "")}`;
   const titles = ["The full recording, at equal loudness", "The space around short peaks", "Where the balance shifts"];
   const descriptions = ["Existing master and earlier source · 7:59 recording", "Median peak-to-average distance · one-second view", "Existing master minus earlier source · equal overall loudness"];
-  return <section className="ho-process" id="song-process" aria-labelledby="ho-process-title">
-    <header className="ho-process__intro"><p className="ho-eyebrow">{story.eyebrow}</p><h2 id="ho-process-title">{story.title}</h2><p>{story.intro}</p></header>
-    {story.chapters.map((chapter,i) => <section className="ho-chapter" key={chapter.id} aria-labelledby={`ho-chapter-${chapter.id}`}>
-      <div className="ho-chapter__heading"><span className="ho-chapter__number" aria-hidden="true">0{i+1}</span><div><h3 id={`ho-chapter-${chapter.id}`}>{chapter.title}</h3><p>{chapter.body}</p></div></div>
+  return <section className="ho-process" id={sectionId} aria-labelledby={`${prefix}-process-title`}>
+    <header className="ho-process__intro"><p className="ho-eyebrow">{story.eyebrow}</p><h2 id={`${prefix}-process-title`}>{story.title}</h2><p>{story.intro}</p></header>
+    {story.chapters.map((chapter,i) => <section className="ho-chapter" key={chapter.id} aria-labelledby={`${prefix}-chapter-${chapter.id}`}>
+      <div className="ho-chapter__heading"><span className="ho-chapter__number" aria-hidden="true">0{i+1}</span><div><h3 id={`${prefix}-chapter-${chapter.id}`}>{chapter.title}</h3><p>{chapter.body}</p></div></div>
       <figure className="ho-figure">
         <div className="ho-figure__heading"><h4>{titles[i]}</h4><p>{descriptions[i]}</p></div>
-        <div className="ho-chart" tabIndex={0} role="region" aria-label={`${titles[i]}. Scroll horizontally on small screens.`}>{i===2 ? <Balance/> : <Timeline peaks={i===1}/>}</div>
+        <div className="ho-chart" tabIndex={0} role="region" aria-label={`${titles[i]}. Scroll horizontally on small screens.`}>{i===2 ? <Balance prefix={prefix}/> : <Timeline peaks={i===1} prefix={prefix}/>}</div>
         {i<2 && <p className="ho-scroll-hint" aria-hidden="true">Swipe to explore the full recording →</p>}
         {i<2 && <div className="ho-legend"><span className="ho-legend__master"><i aria-hidden="true"/>Existing master</span><span className="ho-legend__source"><i aria-hidden="true"/>Earlier source</span></div>}
         <figcaption>{chapter.caption}</figcaption>
       </figure>
     </section>)}
     <p className="ho-closing">{story.closing}</p>
+    {children}
     <details className="ho-method"><summary>{story.method.title}</summary>{story.method.paragraphs.map(p => <p key={p}>{p}</p>)}<p>Timeline method: {data.aggregation} Frequency differences compare total band energy after loudness matching; they are not an EQ prescription.</p></details>
   </section>;
 }

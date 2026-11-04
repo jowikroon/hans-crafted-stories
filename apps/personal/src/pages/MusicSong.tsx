@@ -12,15 +12,16 @@
  * /music/:slug. Navbar + Footer come from App.tsx.
  */
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
+import { songPageHead, songPageJsonLd } from "@/data/songPageSeo";
 import "@/styles/music-v2.css";
 import "@/styles/hanging-on.css";
-import { HangingOnProcess } from "@/components/HangingOnProcess";
+import { SongProductionProcessView } from "@/components/SongProductionProcessView";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 
 /** Turn a YouTube watch/Shorts/youtu.be URL into an embeddable /embed/<id> URL. */
@@ -40,8 +41,8 @@ function ChevronRight() {
 }
 
 /** Renders one prose block. <strong> in `text` is author-trusted markup. */
-function ProseNode({ block }: { block: ProseBlock }) {
-  if (block.type === "h2") return <h2 id={block.id}>{block.text}</h2>;
+function ProseNode({ block, idPrefix = "" }: { block: ProseBlock; idPrefix?: string }) {
+  if (block.type === "h2") return <h2 id={block.id ? `${idPrefix}${block.id}` : undefined}>{block.text}</h2>;
   if (block.type === "callout") {
     return (
       <div className="callout">
@@ -61,11 +62,14 @@ function ProseNode({ block }: { block: ProseBlock }) {
  * spring-glided active pill (framer layoutId). Lifted to the site's animated
  * menu standard. (2026-07-05)
  */
-function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
+function SongSectionNav({ items, rootRef }: { items: { id: string; label: string }[]; rootRef: RefObject<HTMLDivElement> }) {
+  const navId = useId();
   const [active, setActive] = useState(items[0]?.id ?? "");
   useEffect(() => {
+    const root = rootRef.current;
+    if (!root || typeof IntersectionObserver === "undefined") return;
     const els = items
-      .map((it) => document.getElementById(it.id))
+      .map((it) => root.querySelector<HTMLElement>(`[id="${it.id}"]`))
       .filter((el): el is HTMLElement => !!el);
     if (els.length === 0) return;
     const io = new IntersectionObserver(
@@ -75,16 +79,16 @@ function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
         if (vis[0]) setActive((vis[0].target as HTMLElement).id);
       },
-      { rootMargin: "-45% 0px -50% 0px", threshold: [0, 0.25, 0.6, 1] },
+      { root: root.closest(".mx-modal-scroll"), rootMargin: "-45% 0px -50% 0px", threshold: [0, 0.25, 0.6, 1] },
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [items]);
+  }, [items, rootRef]);
 
   const go = (id: string) => {
     setActive(id);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    document.getElementById(id)?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+    rootRef.current?.querySelector<HTMLElement>(`[id="${id}"]`)?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
   };
 
   return (
@@ -97,11 +101,12 @@ function SongSectionNav({ items }: { items: { id: string; label: string }[] }) {
             type="button"
             className={`songnav__item${on ? " is-active" : ""}`}
             aria-current={on ? "true" : undefined}
+            aria-controls={it.id}
             onClick={() => go(it.id)}
           >
             {on && (
               <motion.span
-                layoutId="songnav-active"
+                layoutId={`${navId}-songnav-active`}
                 className="songnav__pill"
                 aria-hidden="true"
                 transition={{ type: "spring", stiffness: 480, damping: 34, mass: 0.7 }}
@@ -120,9 +125,16 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
   const slug = songSlug ?? params.slug;
   const Page = inDialog ? "div" : "main";
   const Heading = inDialog ? "h2" : "h1";
-  const isHangingOn = slug === "hanging-on";
-  const useNeonFonts = isHangingOn || inDialog;
-  useEffect(() => { ensureFontCss(useNeonFonts ? "fonts-neon" : "fonts-music-v2", useNeonFonts ? FONT_CSS.writing : FONT_CSS.musicV2); }, [useNeonFonts]);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const instanceId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const idPrefix = inDialog ? `dialog-${instanceId}-` : "";
+  const sectionIds = {
+    notes: `${idPrefix}song-notes`,
+    process: `${idPrefix}song-process`,
+    gear: `${idPrefix}song-gear`,
+    lyrics: `${idPrefix}song-lyrics`,
+  };
+  useEffect(() => { ensureFontCss("fonts-neon", FONT_CSS.writing); }, []);
   const resolved = getSongBySlug(slug);
   // Only tracks verified public are included in music.ts.
   const song = resolved;
@@ -136,74 +148,23 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
     );
   }, [song]);
 
-  // Duration "3:42" -> ISO 8601 "PT3M42S" for schema.org.
-  const isoDuration = useMemo(() => {
-    if (!song) return undefined;
-    const [m, s] = song.duration.split(":");
-    return `PT${parseInt(m, 10)}M${parseInt(s, 10)}S`;
-  }, [song]);
+  const head = song ? songPageHead(song) : null;
 
   useSEO({
     enabled: !inDialog,
-    title: song
-      ? `${song.title}: Song & Notes | Hans van Leeuwen`
-      : "Song not found | Hans van Leeuwen",
-    description: isHangingOn ? "Hanging On by Jowikroon. Listen to the recording and follow the source comparison, peak space and frequency balance behind its next production step." : song
-      ? `${song.title} by Jowikroon. ${song.provider === "spotify" ? "Official single" : "Public SoundCloud recording"} (${song.duration}). Listen, open the original source and explore the available notes for this recording.`
-      : "This track could not be found.",
-    image: song?.cover,
-    imageAlt: song ? `Cover artwork for ${song.title} by Jowikroon` : undefined,
-    url: song ? `https://hansvanleeuwen.com/music/${song.slug}` : "https://hansvanleeuwen.com/music",
+    title: head?.title ?? "Song not found | Hans van Leeuwen",
+    description: head?.description ?? "This track could not be found.",
+    image: head?.image,
+    imageAlt: head?.ogImageAlt,
+    url: head?.canonical ?? "https://hansvanleeuwen.com/music",
     type: "music.song",
     noindex: !song,
-    jsonLd: song
-      ? {
-          "@context": "https://schema.org",
-          "@graph": [
-            ...(isHangingOn ? [{
-              "@type": "WebPage",
-              "@id": "https://hansvanleeuwen.com/music/hanging-on#webpage",
-              url: "https://hansvanleeuwen.com/music/hanging-on",
-              name: "Hanging On: Song & Notes | Hans van Leeuwen",
-              dateModified: "2026-11-03",
-              inLanguage: "en",
-              isPartOf: { "@id": "https://hansvanleeuwen.com/#website" },
-            }] : []),
-            {
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                { "@type": "ListItem", position: 1, name: "Home", item: "https://hansvanleeuwen.com/" },
-                { "@type": "ListItem", position: 2, name: "Music", item: "https://hansvanleeuwen.com/music" },
-                {
-                  "@type": "ListItem",
-                  position: 3,
-                  name: song.title,
-                  item: `https://hansvanleeuwen.com/music/${song.slug}`,
-                },
-              ],
-            },
-            {
-              "@type": "MusicRecording",
-              name: song.title,
-              byArtist: { "@type": "MusicGroup", name: song.artist },
-              duration: isoDuration,
-              datePublished: song.date,
-              genre: song.genre,
-              url: `https://hansvanleeuwen.com/music/${song.slug}`,
-              recordingOf: {
-                "@type": "MusicComposition",
-                name: song.title,
-                composer: { "@type": "Person", name: "Hans van Leeuwen" },
-              },
-            },
-          ],
-        }
-      : undefined,
+    jsonLd: song ? songPageJsonLd(song) : undefined,
   });
 
   if (!song) {
     return (
-      <div className="music-v2">
+      <div className="music-v2 song-studio-page" ref={rootRef}>
         <Page className="songpage">
           <div className="wrap">
             <nav className="crumb" aria-label="Breadcrumb" style={{ paddingTop: 40 }}>
@@ -214,7 +175,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
               <span className="here" aria-current="page">Not found</span>
             </nav>
             <header className="songhead" style={{ display: "block" }}>
-              <h1 className="songtitle">Track not found</h1>
+              <Heading className="songtitle">Track not found</Heading>
               <p className="songhead__by" style={{ marginTop: 16 }}>
                 That track doesn’t exist (yet). <Link to="/music" style={{ color: "var(--accent)" }}>Back to Music</Link>.
               </p>
@@ -228,7 +189,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
   const d = song.detail;
 
   return (
-    <div className={`music-v2${isHangingOn ? " hanging-on-page" : ""}`}>
+    <div className="music-v2 song-studio-page" ref={rootRef}>
       <Page className="songpage">
         <div className="wrap">
           {/* Breadcrumb */}
@@ -371,19 +332,21 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
           </div>
 
           <SongSectionNav
+            key={song.slug}
+            rootRef={rootRef}
             items={[
-              { id: "song-notes", label: "Notes" },
-              ...(isHangingOn ? [{ id: "song-process", label: "Inside the recording" }] : []),
-              ...(d.gear && d.gear.length ? [{ id: "song-gear", label: "Sounds" }] : []),
-              ...(d.lyrics.length ? [{ id: "song-lyrics", label: "Lyrics" }] : []),
+              { id: sectionIds.notes, label: "Notes" },
+              { id: sectionIds.process, label: "Inside the recording" },
+              ...(d.gear && d.gear.length ? [{ id: sectionIds.gear, label: "Sounds" }] : []),
+              ...(d.lyrics.length ? [{ id: sectionIds.lyrics, label: "Lyrics" }] : []),
             ]}
           />
 
           {/* Production notes + aside */}
-          <div className="songbody" id="song-notes">
+          <div className="songbody" id={sectionIds.notes}>
             <article className="prose">
               {d.prose.map((block, i) => (
-                <ProseNode key={i} block={block} />
+                <ProseNode key={i} block={block} idPrefix={idPrefix} />
               ))}
             </article>
 
@@ -400,7 +363,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
                 </dl>
               </div>
               {d.gear.length > 0 && (
-                <div className="gearlist" id="song-gear">
+                <div className="gearlist" id={sectionIds.gear}>
                   <div className="specs__h">Sounds &amp; instruments</div>
                   <ul>
                     {d.gear.map((g) => (
@@ -416,10 +379,10 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
             </aside>
           </div>
 
-          {isHangingOn && <HangingOnProcess />}
+          <SongProductionProcessView song={song} sectionId={sectionIds.process} />
 
           {d.lyrics.length > 0 && (
-            <section className="lyrics" aria-label="Lyrics" id="song-lyrics">
+            <section className="lyrics" aria-label="Lyrics" id={sectionIds.lyrics}>
               <div className="lyrics__h">Lyrics</div>
               <div className="lyrics__cols">
                 {d.lyrics.map((v) => (
