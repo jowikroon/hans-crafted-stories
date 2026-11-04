@@ -61,7 +61,7 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
               <h3>{album.title}</h3>
               {album.subtitle && <p className="ma-sleeve__subtitle">{album.subtitle}</p>}
             </div>
-            <ol className="ma-sleeve__tracklist" aria-label={`Tracklist ${title}`}>
+            {!album.publicTracks.length && !details ? <p className="ma-sleeve__back-quote">Ik beloofde iets moois te maken.<span>Van mijn leven.</span></p> : <ol className="ma-sleeve__tracklist" aria-label={`Tracklist ${title}`}>
               {Array.from({ length: album.trackCount }, (_, index) => {
                 const position = index + 1;
                 const release = album.publicTracks.find((track) => track.position === position);
@@ -78,9 +78,9 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
                   </div>}
                 </li>;
               })}
-            </ol>
+            </ol>}
             {onAlbumPage
-              ? <a href="#album-tracks" className="ma-sleeve__cta" tabIndex={open ? 0 : -1}><span>{album.publicTracks.length ? "Luister de releases" : "Bekijk de tracklist"}</span><span aria-hidden="true">↓</span></a>
+              ? <a href={album.publicTracks.length ? "#album-tracks" : "#album-story"} className="ma-sleeve__cta" tabIndex={open ? 0 : -1}><span>{album.publicTracks.length ? "Luister de releases" : "Ontdek het verhaal"}</span><span aria-hidden="true">↓</span></a>
               : <Link to={albumPath(album.slug)} className="ma-sleeve__cta" tabIndex={open ? 0 : -1} aria-label={`Ontdek het album ${title}`}><span>Ontdek het album</span><span aria-hidden="true">↗</span></Link>}
           </div>
         </div>

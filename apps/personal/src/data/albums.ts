@@ -25,7 +25,7 @@ export const albums: MusicAlbumData[] = [
   {
     slug: "iets-moois", title: "IETS MOOIS", subtitle: "",
     theme: "warm", cover: "/images/albums/iets-moois-front.webp", backCover: "/images/albums/iets-moois-back.webp",
-    description: "Ontdek IETS MOOIS van Jowikroon: een eigen Nederlandstalig album met een warme, persoonlijke wereld. De nummers blijven nog even verborgen. COMING 2027.",
+    description: "IETS MOOIS, het tweede album van Jowikroon. Nederlandse woorden voor gemis, spijt, liefde en de belofte iets moois te maken. Ontdek het verhaal en de beelden.",
     trackCount: 5, releaseYear: 2027, publicTracks: [],
   },
 ];

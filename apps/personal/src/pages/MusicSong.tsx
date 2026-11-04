@@ -368,12 +368,6 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
                 <span className="pf-name">YouTube</span>
               </a>
             )}
-            {song.links?.suno && (
-              <a className="platform" href={song.links.suno} target="_blank" rel="noopener noreferrer">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a1.4 1.4 0 0 1 1.4 1.4v6.06a3.6 3.6 0 1 1-1.9-3.17V4.4A1.4 1.4 0 0 1 12 3zm-1.6 8.3a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4z"/></svg>
-                <span className="pf-name">Suno</span>
-              </a>
-            )}
           </div>
 
           <SongSectionNav
@@ -395,7 +389,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
 
             <aside className="songaside">
               <div className="specs">
-                <div className="specs__h">The session</div>
+                <div className="specs__h">{song.provider === "spotify" ? "The release" : "The recording"}</div>
                 <dl style={{ margin: 0 }}>
                   {d.session.map((s) => (
                     <div className="specrow" key={s.label}>

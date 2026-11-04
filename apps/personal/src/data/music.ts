@@ -98,7 +98,7 @@ export interface Song {
   /** Direct listen link on the host platform (Spotify or SoundCloud). */
   listenUrl: string;
   /** Optional extra platform links for the song page. */
-  links?: { spotify?: string; soundcloud?: string; youtube?: string; appleMusic?: string; suno?: string };
+  links?: { spotify?: string; soundcloud?: string; youtube?: string; appleMusic?: string };
   /** Optional self-hosted video file (served from R2 via /media/...). Preferred over videoUrl. */
   videoFile?: string;
   /** Optional YouTube watch link (official video), secondary link / fallback. */
@@ -197,29 +197,15 @@ export const songs: Song[] = [
         { label: "Host", value: "Spotify" },
         { label: "Artist", value: "Jowikroon" },
         { label: "Style", value: "French touch house · rock vocal" },
-        { label: "Lead", value: "Male vocal + gritty violin" },
         { label: "Label", value: "Jowikroon (self-released)" },
       ],
-      gear: [
-        { name: "Drum machine", note: "straight four-on-the-floor kick holding the whole track together" },
-        { name: "Bass", note: "rubbery and sidechained, so the low end breathes with every kick" },
-        { name: "Filtered disco loops", note: "the French touch backbone, opening and closing across the arrangement" },
-        { name: "Violin", note: "gritty lead line, the one raw element in an otherwise polished mix" },
-        { name: "Pads", note: "shimmering beds that keep the verses moody and spacious" },
-        { name: "Piano", note: "bright stabs that land with the chorus" },
-        { name: "Strings", note: "swells that lift the chorus over the top" },
-        { name: "Vocals", note: "rangy, emotive male lead in a stadium-rock register; chopped hooks, gang vocals and octave doubles stacked on the final chorus" },
-      ],
+      gear: [],
       prose: [
         { type: "lead", text: "Neon House of Glass is my second official single, out now on Spotify under my artist name Jowikroon." },
-        { type: "p", text: "French touch house with a rock voice on top. Press play above to listen, or open it on Spotify." },
-        { type: "h2", id: "style", text: "Sound & style" },
-        { type: "p", text: "A dance track built on filtered disco loops, a rubbery sidechained bass and a straight four-on-the-floor kick. Over that sits a male lead vocal in a rangy, emotive rock register, closer to a stadium frontman than to a club vocal, with shimmering pads underneath and a gritty violin carrying the lead line." },
-        { type: "p", text: "The verses stay moody and spacious: pads, filter, room to breathe. The choruses explode, with chopped vocal hooks, bright piano stabs and string swells arriving at once. The final chorus stacks crowd-style gang vocals and octave doubles on top for maximum festival lift." },
-        { type: "h2", id: "about", text: "What it is about" },
-        { type: "p", text: "The song sits in one gap: a thousand hearts on the screen and still nobody in the room. Every verse adds more signal, more faces, more comments, a frozen laugh in a thumbnail, and every chorus lands on the same line anyway." },
-        { type: "p", text: "That is why the track keeps getting bigger while the lyric never resolves. The bridge is the only place the polish breaks: the violin cuts through raw, and what is left over is a question instead of an answer." },
-        { type: "callout", kicker: "Out now", text: "Released as Jowikroon, the artist alias of Hans van Leeuwen." },
+        { type: "p", text: "A thousand hearts on the screen. Still nobody in the room. Faces, messages and a frozen laugh in a thumbnail gather around a voice reaching for someone on the other side." },
+        { type: "h2", id: "about", text: "When the room goes quiet" },
+        { type: "p", text: "The music reaches outward while the words keep returning to the same distance. Beneath the glow sits a question: what does it take to feel someone near?" },
+        { type: "p", text: "You might hear the thrill of being seen, the weight of an image, or a moment you recognise. The song leaves room for what you bring to it." },
       ],
       lyrics: [
         { tag: "Verse 1", lines: ["Scrolling through a thousand faces", "Every smile in a little blue frame", "I'm talking big love", "Big faith", "Big changes", "But it's all just code in my name", "My shadow on the kitchen wall", "Glows cold from a phantom call", "I'm a saint in a silent feed", "Got a thousand hearts", "Still missing what I need"] },
@@ -247,7 +233,6 @@ export const songs: Song[] = [
     links: {
       spotify: "https://open.spotify.com/track/5e5vN1pm3NUY0OQdM7uqSl",
       youtube: "https://youtube.com/shorts/95_c0K98HCY",
-      suno: "https://suno.com/@jowikroon",
     },
     videoFile: "/media/final_neon_beat_drop.mp4",
     videoUrl: "https://youtube.com/shorts/95_c0K98HCY",
@@ -265,23 +250,14 @@ export const songs: Song[] = [
         { label: "Artist", value: "Jowikroon" },
         { label: "Tempo", value: "~124 BPM" },
         { label: "Style", value: "Minimal techno · funk-house" },
-        { label: "Also on", value: "Suno" },
       ],
-      gear: [
-        { name: "Drum machine", note: "tight, punchy kick with crisp offbeat hi-hats and soft, filtered claps for a hypnotic pulse" },
-        { name: "Sub bass", note: "rounded, rubbery low end locked to the kick" },
-        { name: "Arp synth", note: "looping arpeggiated pattern with subtle, evolving variation" },
-        { name: "Piano", note: "bright, syncopated riff that adds the human \"player\" touch" },
-        { name: "Analog-style pads", note: "slow-blooming background chords that fill space without crowding the groove" },
-      ],
+      gear: [],
       prose: [
         { type: "lead", text: "Beat Drop is my first official single, out now on Spotify under my artist name Jowikroon." },
-        { type: "p", text: "An energetic electronic track with an official video. Press play above to listen, or open it on Spotify." },
-        { type: "h2", id: "style", text: "Sound & style" },
-        { type: "p", text: "Mellow, mid-tempo groove around 124 BPM, blending minimal techno with a warm, funk-infused house feel. The mix is ultra-clean and precise: a tight, punchy kick locks in with a rounded, rubbery sub bass, while crisp offbeat hi-hats and soft, filtered claps create a steady, hypnotic pulse." },
-        { type: "p", text: "Instead of dense layering, a few carefully chosen elements carry the track, an arpeggiated synth pattern loops with subtle variation, interacting with a bright, syncopated piano riff that adds a human, \"player\" touch. Analog-style pads bloom slowly in the background, filling space without crowding the groove." },
-        { type: "p", text: "The arrangement evolves through gradual filtering, muting, and reintroducing parts, with occasional restrained risers for tension. The focus stays on repetition, groove and tonal clarity, a smooth, hypnotic flow that feels both mechanical and soulful, built for understated but uplifting movement on the dancefloor." },
-        { type: "callout", kicker: "Out now", text: "Released as Jowikroon, the artist alias of Hans van Leeuwen. Also on Suno." },
+        { type: "p", text: "A clock ticks, the city lights flicker, and a new rhythm takes hold. The song stays close to that charged moment before something begins." },
+        { type: "h2", id: "about", text: "Something is starting" },
+        { type: "p", text: "Old ghosts and new lines move through the same night. There is a pull toward the dancefloor, and the feeling that a familiar world might open into something else." },
+        { type: "p", text: "A beginning can feel like excitement, release, or a little uncertainty. Listen for the moment that stays with you." },
       ],
       lyrics: [
         { tag: "Verse 1", lines: ["Clock ticks", "Time flies", "Neon whispers", "Behind my eyes", "A new sound grows", "A rhythm takes hold"] },
