@@ -10,6 +10,7 @@ export const GATED_HOSTS = [
   'lab-demo.hansvanleeuwen.com',
   'lab-notes.hansvanleeuwen.com',
   'lab-repos.hansvanleeuwen.com',
+  'obsidian.hansvanleeuwen.com',
 ] as const;
 
 export type GateLaunch = { action: string; returnPath: string };

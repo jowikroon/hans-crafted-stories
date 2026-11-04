@@ -19,6 +19,7 @@ routes = [
   { pattern = "lab-demo.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
   { pattern = "lab-notes.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
   { pattern = "lab-repos.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
+  { pattern = "obsidian.hansvanleeuwen.com/*", zone_name = "hansvanleeuwen.com" },
 ]
 
 [vars]
