@@ -17,8 +17,9 @@ function BrandContent({ album }: { album: MusicAlbumData }) {
   return <AlbumPageTemplate album={album} section="brand">
     <header className="ma-story-hero"><p className="ma-eyebrow">Het verhaal / {album.title}</p><h1>{story.heading}</h1><div className="ma-story-hero__bottom"><AlbumSignal /><p>{story.lead}</p><a href="#album-origin" className="ma-text-link">Lees het verhaal <span aria-hidden="true">↓</span></a></div></header>
     <section className="ma-origin" id="album-origin" aria-labelledby="ma-origin-title"><div><p className="ma-eyebrow">Een zin om mee te nemen</p><h2 id="ma-origin-title">Eén belofte.<br />Een eigen stem.</h2></div><div>{story.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></section>
+    {story.trail && <AlbumJourney album={album} />}
     <AlbumWorld key={album.slug} album={album} />
-    <AlbumJourney album={album} />
+    {!story.trail && <AlbumJourney album={album} />}
     <section className="ma-brand-closing" aria-label="Verder luisteren"><p lang={album.theme === "neon" ? "en" : "nl"}>{story.closing}</p><Link className="ma-button ma-button--light" to={`${albumPath(album.slug)}${album.publicTracks.length ? "#album-tracks" : ""}`}>{album.publicTracks.length ? "Luister naar NEON" : "Naar IETS MOOIS"} <span aria-hidden="true">↗</span></Link></section>
     <AlbumCompanion album={album} />
     <AlbumOwnerPanel access={privateAccess} />

@@ -16,6 +16,8 @@ export interface AlbumEditorial {
   journey: Array<{ title: string; text: string }>;
   closing: string;
   companion: string;
+  trail?: Array<{ label: string; word: string; title: string; text: string; detail: string }>;
+  listeningNote?: string;
 }
 
 export const albumEditorial: Record<string, AlbumEditorial> = {
@@ -48,15 +50,16 @@ export const albumEditorial: Record<string, AlbumEditorial> = {
     companion: "In IETS MOOIS krijgt dezelfde belofte Nederlandse woorden. Dichter bij de stem, met een eigen wereld van diep groen en warmte.",
   },
   "iets-moois": {
-    intro: "In mijn eigen taal zoek ik woorden voor wat ik met me meedraag. Gemis, spijt, liefde. En de ruimte om verder te gaan.",
+    intro: "Van de zekerheid van toen naar wat vandaag blijft. In mijn eigen taal zoek ik woorden voor gemis, twijfel en liefde. En voor wat ik terug wil geven.",
     signature: ["Ik beloofde iets moois te maken.", "Van mijn leven."],
-    essence: "Ik wil kunnen zeggen wat ik voel. Ook als ik daar nog geen antwoord op heb.",
-    heading: "Sommige woorden komen dichterbij.",
-    lead: "Een kamer. Een hand. Een zin die blijft. IETS MOOIS zoekt naar wat je meeneemt, ook als je verdergaat.",
+    essence: "Wat iemand achterlaat, kan verder leven in wat je maakt. Deze liedjes zijn mijn manier om iets terug te geven.",
+    heading: "Niet als antwoord. Maar als spoor.",
+    lead: "Van de zekerheid van een kind, door stilte en tegenspraak, naar wat blijft. IETS MOOIS geeft daar Nederlandse woorden aan. De betekenis mag open blijven.",
     paragraphs: [
-      "Deze plaat begint bij een belofte: iets moois maken van mijn leven. Een zin die ik meeneem in wat ik maak en in de keuzes van alledag.",
-      "In het Nederlands kom ik soms iets dichter bij wat ik bedoel. Gemis en liefde, spijt en blijven mogen naast elkaar bestaan. Een lied hoeft niet alles op te lossen.",
-      "Ik probeer te begrijpen wat ik voel en wie ik nu ben. Deze liedjes horen bij dat zoeken. Wat je erin hoort, mag van jou zijn.",
+      "Deze plaat begint bij een belofte: iets moois maken van mijn leven. Die zin neem ik mee in wat ik maak en in de keuzes van alledag. Muziek is een manier om iets terug te geven.",
+      "Als kind kan de wereld nog vanzelf kloppen. Later komen de vragen. Gemis, spijt en schaamte krijgen een stem, naast de liefde en de lach die er ook nog zijn. Ik laat ze naast elkaar bestaan.",
+      "In mijn eigen taal kom ik dichter bij wat ik bedoel. Soms met een gewone zin. Soms door iets even stil te laten. Een lied hoeft niet alles uit te leggen.",
+      "Het verhaal komt terug bij vandaag. Iemand toelaten. De kleinste dingen opmerken. Blijven. Ik probeer te begrijpen wie ik nu ben en wat ik daarmee wil maken. Wat je erin hoort, mag van jou zijn.",
     ],
     imageCaption: "Even stilstaan bij wat je met je meedraagt.",
     imageAlt: "Jowikroon kijkt naar zijn bril in zijn hand, tegen een diep groene achtergrond",
@@ -74,12 +77,21 @@ export const albumEditorial: Record<string, AlbumEditorial> = {
     ],
     closing: "Wat je erin hoort, mag van jou zijn.",
     companion: "NEON volgt het signaal door de nacht. Een andere wereld, met dezelfde verwondering en dezelfde belofte eronder.",
+    trail: [
+      { label: "De zekerheid", word: "toen.", title: "Ooit was weten genoeg.", text: "Er was een tijd waarin de wereld nog vanzelf leek te kloppen. Iemand wist het antwoord. Een hand was genoeg om verder te durven.", detail: "Wat van toen reist er nog met je mee?" },
+      { label: "De stilte", word: "stilte.", title: "Wat weg is, klinkt soms door.", text: "Een lege plek kan veel aanwezig maken. Ik zoek woorden voor gemis, voor spijt en voor wat je achteraf nog had willen zeggen.", detail: "Sommige zinnen blijven, ook zonder antwoord." },
+      { label: "De tegenstem", word: "twijfel.", title: "Ook twijfel heeft een stem.", text: "Soms klinkt er spot. Soms een vraag aan de hemel. Liefde en boosheid kunnen in dezelfde zin wonen. Ik laat die tegenspraak bestaan.", detail: "Er mag ook gelachen worden." },
+      { label: "Wat blijft", word: "hier.", title: "Er brandt nog licht.", text: "Het verhaal komt terug bij vandaag. Bij iemand toelaten, de kleinste dingen opmerken en iets teruggeven. De belofte krijgt vorm in wat ik doe.", detail: "Iets moois maken. Van wat er nu is." },
+    ],
+    listeningNote: "Ik denk aan een kamer na sluitingstijd. Een stem dichtbij, ruimte tussen de woorden. Hier mag iets even blijven hangen. Ook de stilte.",
   },
 };
 
 export const albumBrandPath = (slug: string) => `${albumPath(slug)}/brand`;
 export const albumBrandTitle = (album: MusicAlbumData) => `${album.title}: het verhaal en de beelden | Jowikroon`;
-export const albumBrandDescription = (album: MusicAlbumData) => `De wereld van ${albumTitle(album)} van Jowikroon. Ontdek het verhaal, de beelden en het kleine signaal dat de albums verbindt. Met ruimte voor wat jij erin hoort.`;
+export const albumBrandDescription = (album: MusicAlbumData) => album.slug === "iets-moois"
+  ? "Het verhaal achter IETS MOOIS van Jowikroon. Van de zekerheid van toen, door stilte en twijfel, naar wat blijft. Niet als antwoord, maar als spoor."
+  : `De wereld van ${albumTitle(album)} van Jowikroon. Ontdek het verhaal, de beelden en het kleine signaal dat de albums verbindt. Met ruimte voor wat jij erin hoort.`;
 export function albumBrandJsonLd(album: MusicAlbumData) {
   return { "@context": "https://schema.org", "@type": "WebPage", name: albumBrandTitle(album), description: albumBrandDescription(album), url: `https://hansvanleeuwen.com${albumBrandPath(album.slug)}`, inLanguage: "nl", about: { "@type": "MusicAlbum", "@id": `https://hansvanleeuwen.com${albumPath(album.slug)}#album`, name: albumTitle(album) } };
 }
