@@ -17,13 +17,12 @@ export default function AlbumPageTemplate({ album, section = "album", children }
     // Native anchors already scroll. A song dialog can clear the hash while
     // changing its query string; it must keep this album's reading position.
     if (previousPath.current === pathname) return;
-    const frame = requestAnimationFrame(() => {
-      previousPath.current = pathname;
-      const target = hash && document.getElementById(hash.slice(1));
-      if (target) target.scrollIntoView({ behavior: "instant", block: "start" });
-      else if (navigationType !== "POP") window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    });
-    return () => cancelAnimationFrame(frame);
+    // Apply the new route's position in this effect. Deferring it to a frame
+    // lets the outgoing page's anchor/focus position survive the transition.
+    previousPath.current = pathname;
+    const target = hash && document.getElementById(hash.slice(1));
+    if (target) target.scrollIntoView({ behavior: "instant", block: "start" });
+    else if (navigationType !== "POP") window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [pathname, hash, navigationType]);
   return <article className={`ma-page ma-page--editorial ma-theme--${album.theme}`} lang="nl">
     <div className="ma-page__inner">
