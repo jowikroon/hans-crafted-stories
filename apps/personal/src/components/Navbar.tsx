@@ -93,7 +93,8 @@ const Navbar = (_props: NavbarProps) => {
   /* /music en /music/:slug bestaan alleen in het Engels (geen NL-copy); een
      NL-knop die naar dezelfde URL wijst deed niets (i18n-audit 2026-09-22). */
   const basePathNow = parsePath(location.pathname).path;
-  const isEnglishOnly = basePathNow === "/music" || basePathNow.startsWith("/music/");
+  const isDutchAlbum = basePathNow.startsWith("/music/albums/");
+  const isEnglishOnly = !isDutchAlbum && (basePathNow === "/music" || basePathNow.startsWith("/music/"));
   const nlUnavailableTitle = "Only available in English / Alleen in het Engels beschikbaar";
   // Store eerst (client-side navigatie), dan de preload (directe load); onbekend = tonen.
   const articleHasNl = !isArticle || (storedInfo?.hasNl ?? (preloadedArticle ? hasDutchVersion(preloadedArticle) : true));
@@ -345,7 +346,7 @@ const Navbar = (_props: NavbarProps) => {
       <nav aria-label="Primary navigation" className="fixed left-0 right-0 top-0 z-50 w-full">
         {/* ─── TIER 1 — detached pill ─── */}
         <div
-          className={`mx-auto mt-3.5 grid grid-cols-[1fr_auto_1fr] items-center h-[60px] max-w-6xl rounded-[100px] border ${barPill} px-4 backdrop-blur-xl transition-shadow ${
+          className={`mx-auto mt-3.5 grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center h-[60px] max-w-6xl rounded-[100px] border ${barPill} px-4 backdrop-blur-xl transition-shadow ${
             scrolled
               ? "shadow-[0_3px_9px_-3px_rgba(20,19,15,0.18),0_20px_46px_-22px_rgba(20,19,15,0.32)]"
               : "shadow-[0_2px_6px_-3px_rgba(20,19,15,0.12),0_14px_34px_-20px_rgba(20,19,15,0.22)]"
@@ -364,7 +365,7 @@ const Navbar = (_props: NavbarProps) => {
             </Link>
 
             {/* Centre nav — plain links (Work hover dropdown removed) */}
-            <div className="hidden md:flex items-center gap-1 justify-self-center">
+            <div className="hidden lg:flex items-center gap-1 justify-self-center">
                 {siteLinks.map((l) => (
                   <SiteLink
                     key={l.to}
@@ -398,7 +399,7 @@ const Navbar = (_props: NavbarProps) => {
                   <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>NL</RouterLink>
                 )}
                 <span className={barSep}>|</span>
-                {articleHasEn ? (
+                {articleHasEn && !isDutchAlbum ? (
                   <RouterLink to={langTarget("en")} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : `${barMut} ${barHovInk}`}`}>ENG</RouterLink>
                 ) : (
                   <RouterLink to={enFallback} hrefLang="en" lang="en" rel="nofollow" title={engUnavailableTitle} data-untranslated="true" className={`px-1.5 py-0.5 rounded ${barMut} ${barHovInk}`}>ENG</RouterLink>
@@ -495,7 +496,7 @@ const Navbar = (_props: NavbarProps) => {
                 </Link>
               )}
 
-              <button onClick={() => setMobileOpen(!mobileOpen)} className={`md:hidden rounded-lg p-1.5 ${barInk}`} aria-label="Toggle menu">
+              <button onClick={() => setMobileOpen(!mobileOpen)} className={`lg:hidden rounded-lg p-1.5 ${barInk}`} aria-label="Toggle menu" aria-expanded={mobileOpen} aria-controls="site-mobile-menu">
                 {mobileOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
@@ -504,7 +505,7 @@ const Navbar = (_props: NavbarProps) => {
         {/* ═══ MOBILE MENU — floating panel under the pill ═══ */}
         <AnimatePresence>
           {mobileOpen && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ width: "calc(100% - 36px)" }} className={`mx-auto mt-2 overflow-hidden rounded-2xl border ${barDark ? "border-white/10 bg-[hsl(240,8%,9%)]" : "border-black/10 bg-[#F1ECDF]"} shadow-[0_18px_46px_-22px_rgba(20,19,15,0.4)] md:hidden`}>
+            <motion.div id="site-mobile-menu" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ width: "calc(100% - 36px)" }} className={`mx-auto mt-2 overflow-hidden rounded-2xl border ${barDark ? "border-white/10 bg-[hsl(240,8%,9%)]" : "border-black/10 bg-[#F1ECDF]"} shadow-[0_18px_46px_-22px_rgba(20,19,15,0.4)] lg:hidden`}>
               <div className="flex flex-col gap-1 px-4 py-4">
                 {/* Top-level links only — no sub-items/children in the mobile menu */}
                 {siteLinks.map((l) => {
@@ -525,7 +526,7 @@ const Navbar = (_props: NavbarProps) => {
                     <RouterLink to={langTarget("nl")} hrefLang="nl" lang="nl" onClick={() => setMobileOpen(false)} aria-current={lang === "nl" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "nl" ? `${barInk} font-semibold` : barMut}`}>NL</RouterLink>
                   )}
                   <span className={barSep}>|</span>
-                  {articleHasEn ? (
+                  {articleHasEn && !isDutchAlbum ? (
                     <RouterLink to={langTarget("en")} hrefLang="en" lang="en" onClick={() => setMobileOpen(false)} aria-current={lang === "en" ? "true" : undefined} className={`px-1.5 py-0.5 rounded ${lang === "en" ? `${barInk} font-semibold` : barMut}`}>ENG</RouterLink>
                   ) : (
                     <RouterLink to={enFallback} hrefLang="en" lang="en" rel="nofollow" title={engUnavailableTitle} data-untranslated="true" onClick={() => setMobileOpen(false)} className={`px-1.5 py-0.5 rounded ${barMut}`}>ENG</RouterLink>

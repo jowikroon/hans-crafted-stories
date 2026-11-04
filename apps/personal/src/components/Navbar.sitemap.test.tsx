@@ -101,6 +101,18 @@ describe("public links present for everyone", () => {
 });
 
 describe("sitemap integrity", () => {
+  it.each(["/music/albums/iets-moois", "/music/albums/neon-the-signal-between/brand"])("keeps Dutch album navigation truthful on %s", (path) => {
+    renderNav(path);
+    for (const link of screen.getAllByRole("link", { name: "NL" })) {
+      expect(link.getAttribute("href")).toBe(path);
+      expect(link.getAttribute("aria-current")).toBe("true");
+      expect(link.hasAttribute("data-untranslated")).toBe(false);
+    }
+    for (const link of screen.getAllByRole("link", { name: "ENG" })) {
+      expect(link.getAttribute("title")).toContain("Only available in Dutch");
+      expect(link.getAttribute("href")).not.toBe(path);
+    }
+  });
   it("Command Center label exists in both languages", () => {
     expect(translations.en.nav.commandCenter).toBe("Command Center");
     expect(translations.nl.nav.commandCenter).toBe("Command Center");
