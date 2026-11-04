@@ -75,3 +75,5 @@ export {
   localizePath,
   OG_LOCALE,
 };
+
+export { songPageHead, songPageJsonLd } from "./data/songPageSeo";

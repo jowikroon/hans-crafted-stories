@@ -76,6 +76,8 @@ const {
   PRICING_EN,
   translations,
   songs,
+  songPageHead,
+  songPageJsonLd,
   albumBrandPath, albumBrandTitle, albumBrandDescription, albumBrandJsonLd,
   albums, albumPath, albumTitle, albumSeoTitle, albumJsonLd, musicAlbumsTitle, musicAlbumsDescription,
   alternatesFor,
@@ -851,33 +853,17 @@ for (const album of albums) {
 /* ───────────────────────────── /music/<slug> — alleen publieke tracks (HAN-146, plan F.2) ───────────────────────────── */
 for (const song of songs) {
   const route = `/music/${song.slug}`;
-  const isHangingOn = song.slug === "hanging-on";
-  const contentUpdated = isHangingOn ? "2026-11-03" : MUSIC_CONTENT_UPDATED;
-  const head = {
-    // ≤60 / ≤155 tekens (SEO-run 2026-09-22: lengtes SERP-veilig houden)
-    title: `${song.title}: Song & Notes | Hans van Leeuwen`,
-    description: isHangingOn
-      ? "Hanging On by Jowikroon. Listen to the recording and follow the source comparison, peak space and frequency balance behind its next production step."
-      : `${song.title} by Jowikroon. ${song.provider === "spotify" ? "Official single" : "Public SoundCloud recording"} (${song.duration}). Listen and read verified notes on the available version.`,
-    canonical: `${BASE}${route}`,
-    image: song.cover,
-    ogImageAlt: `Cover artwork for ${song.title} by Jowikroon`,
-  };
+  const head = songPageHead(song);
   const { html } = renderQuietly(route, null, { initialLang: "en" });
   let page = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
   page = setHead(page, head);
+  page = page.replace(/<meta property="og:type" content="[^"]*"/, '<meta property="og:type" content="music.song"');
   page = applyLang(page, "en");
   page = setHreflang(page, null);
   page = replaceSsrFallbackHtml(page, buildStaticPageFallback(head, `<p><a href="/music">All songs</a></p>`));
-  page = setJsonLd(page, {
-    "@context": "https://schema.org",
-    "@graph": [
-      { "@type": "WebPage", "@id": `${head.canonical}#webpage`, url: head.canonical, name: head.title, dateModified: contentUpdated, inLanguage: "en", isPartOf: { "@id": `${BASE}/#website` } },
-      { "@type": "MusicRecording", "@id": `${head.canonical}#recording`, name: song.title, url: head.canonical, genre: song.genre, datePublished: song.date, byArtist: { "@type": "MusicGroup", name: song.artist || "Jowikroon", "@id": `${BASE}/music#artist` }, sameAs: song.listenUrl, image: song.cover },
-      WEBSITE_ENTITY,
-      PERSON_ENTITY,
-    ],
-  });
+  page = setJsonLd(page, songPageJsonLd(song));
+  // Let useSEO update this same script after hydration.
+  page = page.replace('<script type="application/ld+json">', '<script type="application/ld+json" id="page-jsonld">');
   const outPath = outPathFor(route);
   fs.writeFileSync(outPath, page, "utf8");
   console.log(`[prerender] ${route} -> ${outPath}`);
