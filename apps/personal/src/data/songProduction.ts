@@ -161,7 +161,7 @@ export const songProduction: Record<string, SongProduction> = {
     ],
     steps: [
       { title: "Find the same performance", text: "The archived master was compared with the public stream at six points across the recording. An earlier source from that performance was recovered." },
-      { title: "Compare at equal loudness", text: "For the timeline and frequency graphs, both lossless versions were matched to −18 LUFS. The summary meters below retain their measured original levels." },
+      { title: "Compare at equal loudness", text: "For the timeline and frequency graphs, both lossless versions were matched to −18 LUFS. The summary meters retain their measured original levels." },
       { title: "Keep the next choice open", text: "The source comparison guides the next listening pass. It does not announce a selected new remaster." },
     ],
     method: ["Full-mix PCM analysis dated 3 November 2026. The decoded stream true peak was also checked with 16× FIR reconstruction. Summary readings are original levels; the timeline comparison uses loudness-matched levels.", "Peak-to-loudness distance is calculated as true peak minus integrated loudness. It is an overall distance in dB, distinct from the short-window RMS crest chart and from loudness range."],
