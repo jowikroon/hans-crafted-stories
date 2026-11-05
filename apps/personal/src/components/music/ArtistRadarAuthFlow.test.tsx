@@ -41,6 +41,7 @@ vi.mock("@/lib/artistRadarAccount", () => ({
 }));
 
 beforeEach(() => {
+  vi.stubEnv("VITE_ARTIST_RADAR_NEWSLETTER_ENABLED", "false");
   mock.user = null;
   mock.sendOtp.mockReset().mockResolvedValue({ error: null });
   mock.signOut.mockReset().mockResolvedValue(undefined);
@@ -109,11 +110,12 @@ describe("Artist Radar account authentication and consent", () => {
     render(<ArtistRadarAccount />);
     await waitFor(() => expect(screen.getByRole("heading", { name: "Artiesten die ik volg" })).toBeTruthy());
     expect(screen.getByText(/Jowikroon/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Bevestigingsmail aanvragen" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Bevestigingsmail aanvragen" })).toBeNull();
     expect(mock.sendOtp).not.toHaveBeenCalled();
   });
 
   it("requires explicit newsletter consent and keeps sign-out available to the verified user", async () => {
+    vi.stubEnv("VITE_ARTIST_RADAR_NEWSLETTER_ENABLED", "true");
     mock.user = { id: "user-one", email: "fan@example.nl" };
     mock.listRadarFollows.mockResolvedValue([{
       user_id: "user-one", artist_id: "jowikroon", artist_name: "Jowikroon", genre: "Electronic", created_at: "2026-11-05T12:00:00Z",
