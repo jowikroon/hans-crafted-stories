@@ -7,7 +7,7 @@ import "@/styles/album-visual-story.css";
 
 const hero = albumVisualStory.find((image) => image.id === "toen-in-nu")!;
 
-function Artwork({ image, onReady }: { image: AlbumVisualStoryImage; onReady: () => void }) {
+function Artwork({ image, onReady, onRetry }: { image: AlbumVisualStoryImage; onReady: () => void; onRetry: () => void }) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [attempt, setAttempt] = useState(0);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -24,7 +24,7 @@ function Artwork({ image, onReady }: { image: AlbumVisualStoryImage; onReady: ()
     {status !== "error" && <img ref={imageRef} src={`${image.src}${attempt ? `?retry=${attempt}` : ""}`} width={image.width} height={image.height} alt={image.alt} decoding="async"
       onLoad={() => { setStatus("ready"); onReady(); }} onError={() => setStatus("error")} />}
     {status === "loading" && <span className="avs-artwork__status" role="status">Beeld laden…</span>}
-    {status === "error" && <div className="avs-artwork__error" role="status"><p>Dit beeld kon niet laden.</p><button type="button" onClick={() => { setAttempt((value) => value + 1); setStatus("loading"); }}>Opnieuw proberen</button><span>Je kunt ook verder naar het volgende beeld.</span></div>}
+    {status === "error" && <div className="avs-artwork__error" role="status"><p>Dit beeld kon niet laden.</p><button type="button" onClick={() => { onRetry(); setAttempt((value) => value + 1); setStatus("loading"); }}>Opnieuw proberen</button><span>Je kunt ook verder naar het volgende beeld.</span></div>}
   </div>;
 }
 
@@ -172,7 +172,7 @@ export default function AlbumVisualStory() {
           {current && <>
             <div className="avs-dialog__body" ref={body}>
               <figure className="avs-figure" ref={figure} tabIndex={-1} aria-label={`Beeld ${index + 1} van ${albumVisualStory.length}: ${current.title}`} onTouchStart={(event) => { touchStart.current = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null; }} onTouchEnd={onTouchEnd} onTouchCancel={() => { touchStart.current = null; }}>
-                <Artwork key={current.id} image={current} onReady={markReady} />
+                <Artwork key={current.id} image={current} onReady={markReady} onRetry={() => figure.current?.focus({ preventScroll: true })} />
                 <figcaption className="avs-caption"><span className="avs-caption__chapter">{chapter?.title}{current.status === "Volgordestudie" && " / Voorgestelde volgorde"}</span><h3>{current.title}</h3><p>{current.caption}</p></figcaption>
               </figure>
               <div className="avs-dialog__rail">
@@ -182,7 +182,7 @@ export default function AlbumVisualStory() {
                 </div></div>
               </div>
             </div>
-            <footer className="avs-controls"><button type="button" onClick={() => selectImage(index - 1)} disabled={index === 0} aria-label="Vorig beeld"><ArrowLeft size={20} aria-hidden="true" /><span>Vorige</span></button><p><span className="avs-counter">{String(index + 1).padStart(2, "0")}<span> / {albumVisualStory.length}</span></span><span className="avs-key-hint">← → bladeren · Esc sluiten</span></p><button type="button" onClick={() => selectImage(index + 1)} disabled={index === albumVisualStory.length - 1} aria-label="Volgend beeld"><span>Volgende</span><ArrowRight size={20} aria-hidden="true" /></button></footer>
+            <footer className="avs-controls"><button type="button" onClick={() => selectImage(index - 1)} aria-disabled={index === 0} aria-label="Vorig beeld"><ArrowLeft size={20} aria-hidden="true" /><span>Vorige</span></button><p><span className="avs-counter">{String(index + 1).padStart(2, "0")}<span> / {albumVisualStory.length}</span></span><span className="avs-key-hint">← → bladeren · Esc sluiten</span></p><button type="button" onClick={() => selectImage(index + 1)} aria-disabled={index === albumVisualStory.length - 1} aria-label="Volgend beeld"><span>Volgende</span><ArrowRight size={20} aria-hidden="true" /></button></footer>
             <p className="avs-sr-only" role="status" aria-live="polite" aria-atomic="true">Beeld {index + 1} van {albumVisualStory.length}: {current.title}.</p>
           </>}
         </Dialog.Content>

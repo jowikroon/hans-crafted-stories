@@ -112,7 +112,7 @@ describe("IETS MOOIS optional visual story", () => {
       if (position < albumVisualStory.length - 1) fireEvent.click(within(dialog()).getByRole("button", { name: "Volgend beeld" }));
     }
     expect(visited.size).toBe(15);
-    expect(within(dialog()).getByRole("button", { name: "Volgend beeld" })).toBeDisabled();
+    expect(within(dialog()).getByRole("button", { name: "Volgend beeld" })).toHaveAttribute("aria-disabled", "true");
     fireEvent.click(within(dialog()).getByRole("button", { name: "Volgend beeld" }));
     expect(currentTitle()).toBe(albumVisualStory[albumVisualStory.length - 1].title);
   });
@@ -120,7 +120,7 @@ describe("IETS MOOIS optional visual story", () => {
   it("stops at both ends and supports Arrow, Home and End with focus on the selected artwork", () => {
     const navigation = showStory();
     openChapter();
-    expect(within(dialog()).getByRole("button", { name: "Vorig beeld" })).toBeDisabled();
+    expect(within(dialog()).getByRole("button", { name: "Vorig beeld" })).toHaveAttribute("aria-disabled", "true");
     const initialUrl = navigation.url();
     fireEvent.keyDown(dialog(), { key: "ArrowLeft" });
     expect(navigation.url()).toBe(initialUrl);
@@ -142,7 +142,44 @@ describe("IETS MOOIS optional visual story", () => {
     fireEvent.keyDown(currentFigure(), { key: "Home" });
     expect(currentFigure()).toHaveFocus();
     expect(thumbnail(0)).toHaveAttribute("tabindex", "0");
-    expect(within(dialog()).getByRole("button", { name: "Vorig beeld" })).toBeDisabled();
+    expect(within(dialog()).getByRole("button", { name: "Vorig beeld" })).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it.each([
+    { control: "Vorig beeld", start: 1, end: 0 },
+    { control: "Volgend beeld", start: 13, end: 14 },
+  ])("keeps $control focusable at its boundary and ignores repeated clicks without touching history", ({ control, start, end }) => {
+    const original = `${storyPath}?campaign=boundaries#album-world`;
+    const navigation = showStory(["/music", original]);
+    openChapter();
+    fireEvent.click(thumbnail(start));
+    const button = within(dialog()).getByRole("button", { name: control });
+    expect(button).toHaveAttribute("aria-disabled", "false");
+    act(() => button.focus());
+    fireEvent.click(button);
+
+    expect(currentTitle()).toBe(albumVisualStory[end].title);
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(button).not.toBeDisabled();
+    expect(button.tabIndex).toBe(0);
+    expect(button).toHaveFocus();
+    const boundaryLocation = navigation.location();
+    const boundaryNavigationType = navigation.navigationType();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      fireEvent.click(button);
+      expect(button).toHaveFocus();
+      expect(currentTitle()).toBe(albumVisualStory[end].title);
+      // The same location object rules out even a replace of the same URL.
+      expect(navigation.location()).toBe(boundaryLocation);
+      expect(navigation.navigationType()).toBe(boundaryNavigationType);
+    }
+
+    navigation.go(-1);
+    expect(navigation.url()).toBe(original);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    navigation.go(1);
+    expect(navigation.location()).toEqual(boundaryLocation);
+    expect(currentTitle()).toBe(albumVisualStory[end].title);
   });
 
   it("returns a scrolled gallery to the artwork after rail selection while retaining focus on pinned next/previous controls", () => {
@@ -320,20 +357,29 @@ describe("IETS MOOIS optional visual story", () => {
     expect(window.history.scrollRestoration).toBe("auto");
   });
 
-  it("keeps the caption and navigation usable after an image error and retries before declaring the image ready", () => {
-    showStory();
+  it("keeps focus, caption and navigation usable when retry removes the error control and loads the image again", () => {
+    const navigation = showStory();
     openChapter();
     expect(within(dialog()).getByText("Beeld laden…")).toBeInTheDocument();
     fireEvent.error(imageFor(0));
     expect(within(dialog()).getByText("Dit beeld kon niet laden.")).toBeInTheDocument();
     expect(within(dialog()).getByText(albumVisualStory[0].caption)).toBeInTheDocument();
     expect(within(dialog()).getByRole("button", { name: "Volgend beeld" })).toBeEnabled();
-    fireEvent.click(within(dialog()).getByRole("button", { name: "Opnieuw proberen" }));
+    const retry = within(dialog()).getByRole("button", { name: "Opnieuw proberen" });
+    const locationBeforeRetry = navigation.location();
+    act(() => retry.focus());
+    expect(retry).toHaveFocus();
+    fireEvent.click(retry);
+    expect(retry).not.toBeInTheDocument();
+    expect(currentFigure()).toHaveFocus();
+    expect(currentFigure()).toHaveAccessibleName("Beeld 1 van 15: Een open blik");
+    expect(navigation.location()).toBe(locationBeforeRetry);
     expect(imageFor(0)).toHaveAttribute("src", `${albumVisualStory[0].src}?retry=1`);
     expect(within(dialog()).getByText("Beeld laden…")).toBeInTheDocument();
     fireEvent.load(imageFor(0));
     expect(within(dialog()).queryByText("Beeld laden…")).toBeNull();
     expect(within(dialog()).queryByText("Dit beeld kon niet laden.")).toBeNull();
+    expect(currentFigure()).toHaveFocus();
     fireEvent.click(within(dialog()).getByRole("button", { name: "Volgend beeld" }));
     expect(imageFor(1)).toHaveAttribute("src", albumVisualStory[1].src);
     expect(within(dialog()).getByText("Beeld laden…")).toBeInTheDocument();
