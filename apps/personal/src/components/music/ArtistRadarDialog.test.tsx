@@ -64,15 +64,18 @@ describe("Artist Radar in-page dialog integration", () => {
     expect(within(dialog()).getByText("Je persoonlijke radar is in voorbereiding")).toBeTruthy();
     expect(within(dialog()).queryByRole("textbox", { name: "Favoriete artiest" })).toBeNull();
     expect(within(dialog()).getByRole("link", { name: /Zo gaan we met je gegevens om/ })).toBeTruthy();
+    expect(within(dialog()).getByText(/Betalen doe je bij de verkoper/)).toBeTruthy();
+    expect(within(dialog()).getByRole("link", { name: /Zo gaan we met je gegevens om/ }).getAttribute("target")).toBe("_blank");
   });
 
-  it("supports keyboard-reachable navigation between account and discovery without leaving the dialog", () => {
+  it("supports keyboard-reachable navigation between account and discovery without leaving the dialog", async () => {
     render(<RadarHarness />);
     openDialog();
     activateTab(within(dialog()).getByRole("tab", { name: "Ontdek" }));
     expect(within(dialog()).getByRole("tab", { name: "Ontdek" }).getAttribute("aria-selected")).toBe("true");
     expect(dialog().querySelector('[role="tabpanel"][data-state="inactive"]')?.hasAttribute("hidden")).toBe(true);
     expect(within(dialog()).getByText(/Geruchten zijn geen bevestigde shows/)).toBeTruthy();
+    await waitFor(() => expect(within(dialog()).getByText(/Geen recent geverifieerd concertsignaal/)).toBeTruthy());
     fireEvent.click(within(dialog()).getByRole("button", { name: /Mijn radar \(binnenkort\)/ }));
     expect(within(dialog()).getByRole("tab", { name: "Mijn radar" }).getAttribute("aria-selected")).toBe("true");
   });
@@ -133,5 +136,27 @@ describe("Artist Radar in-page dialog integration", () => {
     openDialog();
     await waitFor(() => expect(within(dialog()).getByText(/AFAS Live/)).toBeTruthy());
     expect(within(dialog()).queryByRole("link", { name: /Tickets bij/ })).toBeNull();
+  });
+
+  it("offers a recoverable feed error without leaving the page or losing the artist search", async () => {
+    const invoke = vi.mocked(supabase.functions.invoke);
+    invoke.mockReset();
+    invoke.mockRejectedValueOnce(new Error("network unavailable"));
+    invoke.mockResolvedValueOnce({
+      data: { ok: true, events: [{
+        event_key: "verified-02", artist_id: "fredagain", artist_name: "Fred again..", venue: "AFAS Live", city: "Amsterdam", country: "NL",
+        event_date: "2026-12-10", sort_key: 20261210, status: "announced", urgent: false,
+      }] }, error: null,
+    });
+    render(<RadarHarness initialTab="discover" />);
+    openDialog();
+    const search = within(dialog()).getByRole("searchbox", { name: "Welke artiest wil je niet missen?" });
+    fireEvent.change(search, { target: { value: "Fred" } });
+    await waitFor(() => expect(within(dialog()).getByRole("alert")).toHaveTextContent(/tijdelijk niet beschikbaar/));
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Opnieuw proberen" }));
+    await waitFor(() => expect(within(dialog()).getByText(/AFAS Live/)).toBeTruthy());
+    expect(search).toHaveValue("Fred");
+    expect(window.location.pathname).not.toBe("/muziek/artist-radar");
+    expect(invoke).toHaveBeenCalledTimes(2);
   });
 });
