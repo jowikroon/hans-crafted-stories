@@ -90,7 +90,7 @@ export const albumEditorial: Record<string, AlbumEditorial> = {
 export const albumBrandPath = (slug: string) => `${albumPath(slug)}/brand`;
 export const albumBrandTitle = (album: MusicAlbumData) => `${album.title}: het verhaal en de beelden | Jowikroon`;
 export const albumBrandDescription = (album: MusicAlbumData) => album.slug === "iets-moois"
-  ? "Het verhaal achter IETS MOOIS van Jowikroon. Van de zekerheid van toen, door stilte en twijfel, naar wat blijft. Niet als antwoord, maar als spoor."
+  ? "Een belofte krijgt een stem in IETS MOOIS van Jowikroon. Volg het visuele verhaal van verwondering en gemis naar de keuzes van vandaag, in het Nederlands."
   : `De wereld van ${albumTitle(album)} van Jowikroon. Ontdek het verhaal, de beelden en het kleine signaal dat de albums verbindt. Met ruimte voor wat jij erin hoort.`;
 export function albumBrandJsonLd(album: MusicAlbumData) {
   return { "@context": "https://schema.org", "@type": "WebPage", name: albumBrandTitle(album), description: albumBrandDescription(album), url: `https://hansvanleeuwen.com${albumBrandPath(album.slug)}`, inLanguage: "nl", about: { "@type": "MusicAlbum", "@id": `https://hansvanleeuwen.com${albumPath(album.slug)}#album`, name: albumTitle(album) } };
