@@ -6,9 +6,14 @@
 .ma-showcase { position:relative; z-index:1; max-width:1160px; margin:0 auto; padding:40px 28px 64px; color:#f2f3ef; }
 .ma-eyebrow { margin:0 0 16px; font-family:var(--font-mono),monospace; font-size:11px; font-weight:400; letter-spacing:.12em; text-transform:uppercase; line-height:1.6; }
 .ma-showcase__intro { margin-bottom:38px; }
-.ma-showcase__intro h2 { margin:0; max-width:1040px; font-size:clamp(26px,3vw,38px); font-weight:500; line-height:1.1; letter-spacing:-.04em; }
-.ma-showcase__intro h2 span { color:#b3b5b0; }
-.ma-showcase__intro>p:last-child { margin:20px 0 0; font-size:15px; color:#b3b5b0; }
+.ma-showcase__intro h1 { margin:0; max-width:1040px; font-size:clamp(26px,3vw,38px); font-weight:500; line-height:1.1; letter-spacing:-.04em; }
+.ma-showcase__intro h1 span { color:#b3b5b0; }
+.ma-showcase__intro>p:not(.ma-eyebrow) { margin:20px 0 0; font-size:15px; color:#b3b5b0; }
+.ma-showcase__paths { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+.ma-showcase__path { display:inline-flex; justify-content:space-between; align-items:center; gap:14px; min-height:48px; padding:10px 14px; border:1px solid #ffffff3d; color:#f2f3ef; font-size:12px; text-decoration:none; transition:background 160ms ease,border-color 160ms ease; }
+.ma-showcase__path small { font:10px/1.4 var(--font-mono),monospace; color:#bfc1c1; white-space:nowrap; }
+.ma-showcase__path:hover { background:#ffffff0c; border-color:#c7a0ff; text-decoration:none; }
+.ma-showcase__path:focus-visible { outline:3px solid #c7a0ff; outline-offset:3px; }
 .ma-album-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px; align-items:start; }
 /* A sleeve is one square on either side; no description extends below its art. */
 .ma-album-card { position:relative; aspect-ratio:1; min-width:0; color:var(--ma-ink); perspective:1400px; container-type:inline-size; isolation:isolate; }
@@ -142,6 +147,9 @@
 }
 @media(max-width:540px) {
   .ma-showcase__intro { margin-bottom:26px; }
+  .ma-showcase__paths { display:grid; grid-template-columns:minmax(0,1fr); }
+  .ma-showcase__path { width:100%; flex-wrap:wrap; }
+  .ma-showcase__path small { white-space:normal; }
   .ma-album-grid { grid-template-columns:1fr; gap:28px; }
   .ma-blur-mark { width:95px; }
   .ma-album-hero { grid-template-columns:1fr; gap:30px; }

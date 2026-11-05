@@ -43,6 +43,10 @@ describe("album navigation position", () => {
     showAlbum();
     expect(scrollTo).not.toHaveBeenCalled();
   });
+  it("offers a direct music anchor on the album page", () => {
+    showAlbum();
+    expect(screen.getByRole("link", { name: /De muziek/ }).getAttribute("href")).toBe("#album-tracks");
+  });
   it("starts a newly selected album at the top", () => {
     showAlbum();
     fireEvent.click(screen.getByRole("link", { name: /NEON/ }));

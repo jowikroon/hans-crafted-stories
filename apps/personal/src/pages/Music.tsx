@@ -177,10 +177,10 @@ const MusicContent = () => {
 
       {/* hero */}
       <section className="mn-wrap mn-hero">
-        <h1 className="mn-kicker" style={{ display: "inline-flex", margin: "0 0 30px" }}><span className="mn-live" />Hans van Leeuwen Music <span className="mn-sep">/</span> Jowikroon</h1>
+        <p className="mn-kicker" style={{ display: "inline-flex", margin: "0 0 30px" }}><span className="mn-live" />Hans van Leeuwen Music <span className="mn-sep">/</span> Jowikroon</p>
         <div className="mn-hero__split">
           <div>
-            <p className="mn-hero__title" style={{ margin: 0 }}>Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</p>
+            <h2 className="mn-hero__title" style={{ margin: 0 }}>Songs for the hours <span className="lit">nobody&apos;s</span> <em>awake</em> for.</h2>
             <p className="mn-hero__lede">Warm synths, human voices, house rhythms and a little funk. Listen to the public recordings and open each track for its source, available notes and release details.</p>
           </div>
           <aside className="mn-preview" aria-label="Clarity Control V2 studio preview">
