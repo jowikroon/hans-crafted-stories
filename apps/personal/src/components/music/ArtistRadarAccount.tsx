@@ -16,6 +16,9 @@ import ArtistRadarTickets from "@/components/music/ArtistRadarTickets";
 const buttonClass = "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#C6FF34]/55 bg-[#C6FF34] px-4 py-2.5 text-sm font-semibold text-[#101307] transition hover:bg-[#E8FFA3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6FF34] disabled:cursor-not-allowed disabled:opacity-50";
 const fieldClass = "min-h-11 w-full rounded-xl border border-white/20 bg-[#111613] px-3 py-2.5 text-sm text-[#F2F3EF] placeholder:text-white/45 focus:border-[#C6FF34] focus:outline-none focus:ring-2 focus:ring-[#C6FF34]/25";
 const panelClass = "rounded-2xl border border-white/10 bg-[#121714] p-4 sm:p-5";
+// Staging has no legacy newsletter signup function. A verified account must not
+// offer a send-mail action that is guaranteed to fail, or accidentally target
+// the production newsletter when a preview inherits its URL.
 
 function shortDate(value: string) {
   const date = new Date(value);
@@ -41,6 +44,7 @@ function currentSignal(follow: RadarFollow, events: RadarPublicEvent[], countrie
 
 /** This panel deliberately works without the site owner/admin portal. */
 export default function ArtistRadarAccount() {
+  const newsletterEnabled = import.meta.env.VITE_ARTIST_RADAR_NEWSLETTER_ENABLED === "true";
   const { user, loading: authLoading, signOut } = useAuth();
   const [email, setEmail] = useState("");
   const [magicPending, setMagicPending] = useState(false);
@@ -284,7 +288,7 @@ export default function ArtistRadarAccount() {
                             <p className="mt-1 text-xs leading-relaxed text-white/60">
                               {feedLoading ? "Concertsignalen laden…" : feedError ? "Status niet beschikbaar: radarbron niet bereikbaar" : signal
                                 ? `Eerstvolgende gemelde show: ${radarStatusLabel(signal.status)} · ${signal.city} · ${signal.event_date}`
-                                : "Geen actuele show voor deze artiest in de openbare feed"}
+                                : "Geen recent geverifieerd concertsignaal voor deze artiest. Dit betekent niet dat er geen optredens zijn."}
                             </p>
                             {signal && !feedLoading && !feedError && <p className="mt-1 text-[11px] text-white/40">
                               {signal.source ? `Bron: ${signal.source} · ` : "Bron niet vermeld · "}
@@ -324,12 +328,12 @@ export default function ArtistRadarAccount() {
                 </div>
               </div>
 
-              <div className={panelClass}>
+              {newsletterEnabled && <div className={panelClass}>
                 <div className="flex items-start gap-3"><Bell size={20} className="shrink-0 text-[#C6FF34]" aria-hidden="true" /><div><h4 className="text-lg font-semibold">Wekelijkse e-mail · apart bevestigen</h4><p className="mt-1 text-sm text-white/60">Een account aanmaken stuurt geen wekelijkse mails. De bestaande mailinglijst gebruikt een aparte bevestigingsmail. Bestaande nieuwsbriefvoorkeuren zijn niet via dit account te wijzigen.</p></div></div>
                 <label className="mt-4 flex cursor-pointer items-start gap-3 text-sm text-white/75"><input type="checkbox" checked={newsletterConsent} onChange={(event) => setNewsletterConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#C6FF34]" />Ik wil een aparte aanmelding aanvragen voor maximaal één concertoverzicht per week.</label>
                 <button type="button" onClick={() => { void requestNewsletter(); }} disabled={!newsletterConsent || !follows.length || !!pendingAction} className={`${buttonClass} mt-4`}>Bevestigingsmail aanvragen</button>
                 {follows.length > 25 && <p className="mt-2 text-xs text-amber-200">De bestaande mailservice ondersteunt maximaal 25 artiesten; alleen de eerste 25 worden voor de aanvraag gebruikt.</p>}
-              </div>
+              </div>}
 
               <ArtistRadarTickets key={revision} />
 
