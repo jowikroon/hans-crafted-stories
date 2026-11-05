@@ -6,6 +6,20 @@ import type { User, Session } from "@supabase/supabase-js";
 
 export const AUTH_REDIRECT_KEY = "auth_redirect_after_login";
 
+// A saved post-login route is ordinary browser state, not an authorization
+// source. Never allow it to become an external/protocol-relative redirect.
+function safeReturnPath(raw: string): string | null {
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\") ||
+      [...raw].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127)) return null;
+  try {
+    const route = new URL(raw, window.location.origin);
+    return route.origin === window.location.origin
+      ? `${route.pathname}${route.search}${route.hash}` : null;
+  } catch {
+    return null;
+  }
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -32,11 +46,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // After sign-in, redirect to saved path (e.g. /portal)
       if (event === "SIGNED_IN" && session) {
+        // A verified Artist Radar magic link carries its own fixed callback
+        // marker, including when opened on a different device. Old portal
+        // localStorage paths must not race with that explicit destination.
+        const radarCallback = window.location.pathname === "/auth/callback" &&
+          new URLSearchParams(window.location.search).get("artist-radar") === "account";
+        if (radarCallback) {
+          localStorage.removeItem(AUTH_REDIRECT_KEY);
+          return;
+        }
         const redirectPath = localStorage.getItem(AUTH_REDIRECT_KEY);
         if (redirectPath) {
           localStorage.removeItem(AUTH_REDIRECT_KEY);
+          const safePath = safeReturnPath(redirectPath);
+          if (!safePath) return;
           // Use setTimeout to avoid navigating during render
-          setTimeout(() => navigate(redirectPath, { replace: true }), 0);
+          setTimeout(() => navigate(safePath, { replace: true }), 0);
         }
       }
     });

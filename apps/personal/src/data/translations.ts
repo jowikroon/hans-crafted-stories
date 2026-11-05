@@ -424,7 +424,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Privacy ── */
     privacy: {
       title: "Privacy Policy",
-      lastUpdated: "Last updated: October 2026",
+      lastUpdated: "Last updated: November 2026",
       sections: [
         {
           heading: "1. Who are we?",
@@ -433,6 +433,10 @@ export const translations: Record<Lang, TranslationStrings> = {
         {
           heading: "2. What data do we collect?",
           body: "When you use the contact form, we store your name, email address, the reason you chose, your message, the page you sent it from and the site language in the site's own database (Supabase, EU), so that we can reply. A notification with these details is sent to Hans via Telegram. We keep a message as long as needed to handle it and any follow-up, and delete it sooner if you ask. We also use Google Analytics 4 (GA4), managed through Google Tag Manager, for, among other things, page views, session duration, device type and how blog articles are read. GA4 receives no names or email addresses, and IP anonymization is enabled by default in GA4. We also use Ahrefs Web Analytics, loaded through Google Tag Manager, to see which pages are visited and which websites send visitors. It sets no cookies and stores no IP address: per visit it records the page address (including its query string), the referring website, browser and device type, screen size, language and an approximate location no finer than the city, which it derives from the IP address before discarding it. To count unique visitors it uses a code that changes every day, so a visit cannot be followed from one day to the next. Finally, the site keeps its own visit statistics, described in section 3.",
+        },
+        {
+          heading: "2a. Artist Radar accounts and concert emails",
+          body: "If you choose to create an Artist Radar account, Supabase Auth handles your email verification and sign-in session. We store the artists you follow, your selected countries and signal categories, and account actions such as following an artist or opening an external ticket link. These actions are not proof of a ticket purchase. Source-verified concert-status history may be shown for followed artists when it actually exists. We use this information to provide and secure the radar service; no name, address or payment details are required. A weekly concert email is a separate voluntary double-opt-in subscription: it stores your email address and chosen artists and can send confirmation or digest emails through Resend. Account creation alone does not subscribe you. Account records remain while the account is active and are subject to access, export and erasure requests by the verified account owner. Contact the address in section 1 to request an export, correction or deletion, including a separate mailing-list record. A definitive automated retention schedule for radar activity is still being established before public activation.",
         },
         {
           heading: "3. The site's own visit statistics",
@@ -449,6 +453,10 @@ export const translations: Record<Lang, TranslationStrings> = {
         {
           heading: "6. Third-party sharing",
           body: 'We share personal data only with the services this site uses. Supabase hosts the site\'s database in the EU (contact form messages and the visit statistics). Telegram delivers the notification of a new contact form message (name, email address, reason, page, language and message) to Hans, under its own <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. Google processes Google Analytics data in accordance with their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. Ahrefs processes the Ahrefs Web Analytics data described in section 2 under its own <a href="https://ahrefs.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. The site\'s own visit statistics are not shared with anyone else.',
+        },
+        {
+          heading: "6a. Artist Radar service partners and ticket links",
+          body: "Supabase in the EU hosts Artist Radar authentication and private account data. Resend is used for the separate radar confirmation and weekly email service. If you choose an official ticket link, your browser opens that seller's website, where its own privacy policy, payment terms and order handling apply. We do not process ticket payments or receive confirmed ticket orders through the current radar. For questions or a verified request concerning your radar data, use the contact email in section 1.",
         },
         {
           heading: "7. Your rights",
@@ -766,7 +774,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Privacy ── */
     privacy: {
       title: "Privacybeleid",
-      lastUpdated: "Laatst bijgewerkt: oktober 2026",
+      lastUpdated: "Laatst bijgewerkt: november 2026",
       sections: [
         {
           heading: "1. Wie zijn wij?",
@@ -775,6 +783,10 @@ export const translations: Record<Lang, TranslationStrings> = {
         {
           heading: "2. Welke gegevens verzamelen wij?",
           body: "Als je het contactformulier gebruikt, slaan we je naam, e-mailadres, de gekozen reden, je bericht, de pagina waarvandaan je het verstuurde en de taal van de site op in de eigen database van de site (Supabase, EU), zodat we je kunnen antwoorden. Een melding met deze gegevens gaat via Telegram naar Hans. We bewaren een bericht zolang dat nodig is om het af te handelen en op te volgen, en verwijderen het eerder als je daarom vraagt. Daarnaast gebruiken we Google Analytics 4 (GA4), beheerd via Google Tag Manager, voor onder andere paginaweergaven, sessieduur, apparaattype en hoe blogartikelen gelezen worden. GA4 ontvangt geen namen of e-mailadressen, en IP-anonimisering is standaard ingeschakeld in GA4. Ook gebruiken we Ahrefs Web Analytics, geladen via Google Tag Manager, om te zien welke pagina's bezocht worden en welke websites bezoekers sturen. Het plaatst geen cookies en slaat geen IP-adres op: per bezoek legt het het paginaadres vast (inclusief zoekparameters), de verwijzende website, browser en apparaattype, schermformaat, taal en een globale locatie, niet nauwkeuriger dan de stad, die het afleidt uit het IP-adres voordat het dat weggooit. Om unieke bezoekers te tellen gebruikt het een code die elke dag verandert, zodat een bezoek niet van de ene dag naar de volgende te volgen is. Tot slot houdt de site eigen bezoekstatistieken bij, zie punt 3.",
+        },
+        {
+          heading: "2a. Artist Radar-accounts en concertmails",
+          body: "Als je zelf een Artist Radar-account aanmaakt, verzorgt Supabase Auth de bevestiging van je e-mailadres en je inlogsessie. We bewaren welke artiesten je volgt, je gekozen landen en signaalrubrieken en accountacties zoals een artiest volgen of een externe ticketlink openen. Zo'n klik is geen bewijs van een ticketaankoop. Een aantoonbaar vastgelegde concertstatushistorie kan zichtbaar zijn voor gevolgde artiesten als die gegevens beschikbaar zijn. Deze gegevens zijn nodig om de radar veilig en persoonlijk te laten werken; naam, adres en betaalgegevens vragen we niet. De wekelijkse concertmail is een losse vrijwillige aanmelding met dubbele e-mailbevestiging. Daarbij bewaren we het e-mailadres en de gekozen artiesten; bevestigingen en overzichten kunnen via Resend worden verstuurd. Alleen een account aanmaken schrijft je niet in voor deze mail. Accountgegevens blijven bewaard zolang het account actief is en vallen onder verzoeken tot inzage, export, correctie en verwijdering door de geverifieerde accounteigenaar. Neem via het adres onder punt 1 contact op, ook voor afzonderlijk opgeslagen nieuwsbriefgegevens. Een definitieve automatische bewaartermijn voor radaractiviteit wordt vóór publieke activering nog vastgesteld.",
         },
         {
           heading: "3. Eigen bezoekstatistieken van de site",
@@ -791,6 +803,10 @@ export const translations: Record<Lang, TranslationStrings> = {
         {
           heading: "6. Delen met derden",
           body: 'Wij delen persoonsgegevens alleen met de diensten die deze site gebruikt. Supabase host de database van de site in de EU (contactberichten en de bezoekstatistieken). Telegram bezorgt de melding van een nieuw contactbericht (naam, e-mailadres, reden, pagina, taal en bericht) bij Hans, conform zijn eigen <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. Google verwerkt Google Analytics-data conform hun <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. Ahrefs verwerkt de Ahrefs Web Analytics-gegevens uit punt 2 conform zijn eigen <a href="https://ahrefs.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. De eigen bezoekstatistieken worden met niemand anders gedeeld.',
+        },
+        {
+          heading: "6a. Dienstverleners en ticketlinks van Artist Radar",
+          body: "Supabase in de EU verzorgt de Artist Radar-authenticatie en de privégegevens van het account. Resend wordt gebruikt voor de afzonderlijke radar-bevestigingsmails en weekoverzichten. Als je zelf een officiële ticketlink opent, ga je naar de website van de verkoper; daar gelden het privacybeleid, de betalingsvoorwaarden en de bestelafhandeling van die aanbieder. De huidige radar verwerkt zelf geen ticketbetalingen en ontvangt geen bevestigde ticketbestellingen. Vragen en geverifieerde verzoeken over je radargegevens kun je sturen naar het contactadres onder punt 1.",
         },
         {
           heading: "7. Je rechten",

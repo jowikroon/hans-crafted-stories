@@ -80,6 +80,13 @@ describe("account access", () => {
 });
 
 describe("public links present for everyone", () => {
+  it("keeps global Music navigation on the canonical /music route", () => {
+    renderNav("/music");
+    expect(document.querySelector('nav[aria-label="Primary navigation"] a[href="/music"]')).not.toBeNull();
+    // The radar is a page-local dialog; global navigation need not expose it.
+    expect(document.querySelector('nav[aria-label="Primary navigation"] a[href^="/music?artist-radar="]')).toBeNull();
+    expect(document.querySelector('a[href="/muziek/artist-radar"]')).toBeNull();
+  });
   it("shows Home / Werk / Artikelen / Over Hans on the NL URL", () => {
     authState.user = null;
     renderNav("/");
