@@ -66,15 +66,37 @@ test("an untrusted evidence link cannot activate the CTA", async () => {
   assert.equal(data.events[0].ticket, null);
 });
 
-test("old or missing source/ticket verification blocks purchase links", async () => {
+test("old or missing ticket verification blocks purchase links even for recent status reports", async () => {
   const old = new Date(Date.now() - 10 * 86400000).toISOString();
   for (const overrides of [
-    { ticket_verified_at: old }, { source_checked_at: old },
+    { ticket_verified_at: old },
     { ticket_verified_source: null }, { ticket_verified_at: null }, { official_ticket_url: null },
   ]) {
     const { data } = await run([event(overrides)]);
     assert.equal(data.events[0].ticket, null);
   }
+});
+
+test("public status requires a fresh known official-source check, independent of ticket evidence", async () => {
+  const old = new Date(Date.now() - 10 * 86400000).toISOString();
+  const future = new Date(Date.now() + 5 * 60000).toISOString();
+  for (const overrides of [
+    { source_checked_at: null },
+    { source_checked_at: old },
+    { source_checked_at: future },
+    { source_checked_at: "invalid" },
+    { source: null },
+    { source: "internal-processor-with-private-details" },
+    { source: "__proto__" },
+    { source: "constructor" },
+    { source: "toString" },
+  ]) {
+    const { data } = await run([event(overrides)]);
+    assert.deepEqual(data.events, [], JSON.stringify(overrides));
+  }
+  const { data } = await run([event()]);
+  assert.equal(data.events.length, 1);
+  assert.equal(data.events[0].source, "Concertzaal");
 });
 
 test("sold out, announced and rumor signals never expose ticket checkout links", async () => {
@@ -111,10 +133,9 @@ test("matching source event IDs dedupe the same concert, and sold-out wins a tim
   assert.equal(data.events[0].ticket, null);
 });
 
-test("opaque raw import source identifiers are not disclosed publicly", async () => {
+test("opaque raw import source identifiers are neither published nor treated as status evidence", async () => {
   const { data } = await run([event({ source: "internal-processor-with-private-details" })]);
-  assert.equal(data.events[0].source, null);
-  assert.equal(data.events[0].ticket?.seller, "Ticketmaster");
+  assert.deepEqual(data.events, []);
 });
 
 test("seed records do not surface as verified concert/ticket data", async () => {
