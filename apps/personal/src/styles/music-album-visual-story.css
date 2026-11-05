@@ -89,11 +89,22 @@
   .ma-art-dialog__close { gap:6px; padding-inline:10px; }
   .ma-art-dialog__footer { padding-inline:12px; }
   .ma-art-dialog__footer>button { gap:7px; font-size:12px; }
+  .ma-art-dialog__footer>button { min-width:48px; }
+  .ma-art-dialog__footer>button>span { display:none; }
 }
 @media(max-height:540px) and (min-width:701px) {
-  .ma-art-dialog { width:calc(100vw - 24px); max-height:calc(100vh - 24px); max-height:calc(100dvh - 24px); }
-  .ma-art-dialog__art { max-width:100%; }
-  .ma-art-dialog__figure { align-items:start; }
+  .ma-art-dialog { inset:0; width:100%; height:100vh; height:100dvh; max-height:100vh; max-height:100dvh; transform:none; border:0; border-radius:0; }
+  .ma-art-dialog__header { min-height:64px; padding:8px 20px; }
+  .ma-art-dialog__body { flex:1; }
+  .ma-art-dialog__figure { grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); padding:12px 20px; gap:24px; align-items:start; }
+  .ma-art-dialog__art { max-width:calc(100vh - 154px); max-width:calc(100dvh - 154px); }
+  .ma-art-dialog__caption { padding:0; }
+  .ma-art-dialog__principle { margin-bottom:10px; }
+  .ma-art-dialog__caption h3 { font-size:32px; margin-bottom:12px; }
+  .ma-art-dialog__copy>p:last-child { max-width:44ch; font-size:15px; line-height:1.6; }
+  .ma-art-dialog__choices { max-width:232px; margin-top:16px; }
+  .ma-art-dialog__footer { min-height:64px; padding:8px 20px; }
+  .ma-art-dialog__footer>button { min-height:46px; }
 }
 @media(prefers-reduced-motion:reduce) {
   .ma-laser-card,.ma-laser-card::after,.ma-art-dialog,.ma-art-overlay { animation:none !important; transition:none !important; scroll-behavior:auto !important; }

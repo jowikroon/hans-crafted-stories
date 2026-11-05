@@ -13,6 +13,7 @@ export default function AlbumVisualStory() {
   const requestedImage = new URLSearchParams(location.search).get("beeld");
   const requestedIndex = images.findIndex((item) => item.id === requestedImage);
   const activeIndex = requestedIndex < 0 ? null : requestedIndex;
+  const isOpen = activeIndex !== null;
   const [failedImages, setFailedImages] = useState<ReadonlySet<string>>(new Set());
   const opener = useRef<HTMLButtonElement | null>(null);
   const entryButtons = useRef<Array<HTMLButtonElement | null>>([]);
@@ -24,6 +25,17 @@ export default function AlbumVisualStory() {
   const closing = useRef(false);
   const selected = images[activeIndex ?? 0];
   const failed = failedImages.has(selected.id);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const root = document.getElementById("root");
+    if (!root) return;
+    // Also isolate background controls that mount later, such as cookie consent.
+    // The dialog is portalled beside this root, so its controls stay available.
+    const wasInert = root.hasAttribute("inert");
+    root.setAttribute("inert", "");
+    return () => { if (!wasInert) root.removeAttribute("inert"); };
+  }, [isOpen]);
 
   useEffect(() => {
     if (activeIndex !== null) {
@@ -92,7 +104,7 @@ export default function AlbumVisualStory() {
       <p>Open een beeld en kijk dichterbij.</p>
     </div>
 
-    <Dialog.Root open={activeIndex !== null} onOpenChange={(open) => { if (!open) close(); }}>
+    <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) close(); }}>
       <div className="ma-visual-story__grid">
         {images.map((item, index) => <button
           type="button"
@@ -118,7 +130,7 @@ export default function AlbumVisualStory() {
           lang="nl"
           aria-modal="true"
           onKeyDown={onKeyDown}
-          onOpenAutoFocus={(event) => { event.preventDefault(); closeButton.current?.focus(); }}
+          onOpenAutoFocus={(event) => { event.preventDefault(); closeButton.current?.focus({ preventScroll: true }); }}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
             const target = opener.current ?? entryButtons.current[lastViewed.current];

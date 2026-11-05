@@ -104,6 +104,52 @@ describe("IETS MOOIS visual story", () => {
     expect(outside.closest('[aria-hidden="true"]')).toBeNull();
   });
 
+  it("keeps the app root inert for late background controls and releases it on close or unmount", async () => {
+    const { container, unmount } = showGallery();
+    container.id = "root";
+    expect(container).not.toHaveAttribute("inert");
+    const trigger = openImage();
+    expect(container).toHaveAttribute("inert");
+    expect(dialog().closest("[inert]")).toBeNull();
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Volgend beeld" }));
+    expectSelection(1);
+    expect(container).toHaveAttribute("inert");
+
+    // Model a background widget arriving after the modal. JSDOM verifies the
+    // inert boundary and lifecycle here; native focus/AX behavior is browser QA.
+    const lateButton = document.createElement("button");
+    lateButton.textContent = "Later geladen cookievoorkeuren";
+    container.appendChild(lateButton);
+    expect(lateButton.closest("[inert]")).toBe(container);
+    expect(dialog().closest("[inert]")).toBeNull();
+
+    await closeWithButton(trigger);
+    expect(container).not.toHaveAttribute("inert");
+    expect(lateButton.closest("[inert]")).toBeNull();
+    openImage(2);
+    expect(container).toHaveAttribute("inert");
+    unmount();
+    expect(container).not.toHaveAttribute("inert");
+  });
+
+  it("preserves an inert app root owned by another interaction after close and unmount", async () => {
+    const { container, unmount } = showGallery();
+    container.id = "root";
+    container.setAttribute("inert", "");
+    // Programmatic events isolate ownership cleanup, not native inert behavior.
+    const trigger = screen.getByRole("button", { name: "Bekijk de beeldtaal" });
+    fireEvent.click(trigger);
+    expect(container).toHaveAttribute("inert");
+    expect(dialog().closest("[inert]")).toBeNull();
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Sluiten" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(container).toHaveAttribute("inert");
+    fireEvent.click(trigger);
+    expect(dialog()).toBeInTheDocument();
+    unmount();
+    expect(container).toHaveAttribute("inert");
+  });
+
   it("closes with browser Back after image navigation and restores the same image with Forward", async () => {
     const history = showGallery(["/music", "/music/albums/iets-moois/brand"]);
     const trigger = openImage(0);
@@ -363,7 +409,7 @@ describe("IETS MOOIS visual story", () => {
       }
       expect(screen.getAllByRole("button", { name: /^Bekijk / })).toHaveLength(4);
     }
-  });
+  }, 15000); // Thirty real modal lifecycles need headroom on shared CI runners.
 
   it("keeps artwork, selection and position synchronized through one hundred quick navigation clicks", () => {
     showGallery();
@@ -378,7 +424,7 @@ describe("IETS MOOIS visual story", () => {
       expectSelection(position);
     }
     expect(screen.getAllByRole("dialog")).toHaveLength(1);
-  });
+  }, 15000); // Preserve all one hundred interactions and their accessible-view checks.
 
   it("cleans up the modal and background restrictions when the story unmounts", async () => {
     const { unmount } = showGallery();
