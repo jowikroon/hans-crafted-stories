@@ -197,6 +197,14 @@
   font-weight: 600;
 }
 
+.writing-v2 .author-line {
+  max-width: 70ch;
+  margin: -14px 0 30px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--w2-ink-2);
+}
+
 .writing-v2 .proof {
   display: flex;
   gap: 36px;

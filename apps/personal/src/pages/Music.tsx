@@ -318,7 +318,7 @@ const MusicContent = () => {
         <div className="mn-footer__inner">
           <div>
             <div className="mn-footer__brand">Hans van Leeuwen</div>
-            <p className="mn-footer__note">E-commerce manager by day. Making songs by night. Listen to the releases and public recordings, with individual notes and source links. Lyrics and equipment details are added only when verified.</p>
+            <p className="mn-footer__note">I design digital experiences, write stories, and make music as Jowikroon. Different forms, the same attention to people. Here are my public releases and recordings; lyrics and equipment details are added when verified.</p>
           </div>
           <nav className="mn-footer__links" aria-label="Footer">
             <Link to="/writing">Writing</Link>

@@ -275,6 +275,12 @@ const About = () => {
           <p className="av-thread-pre">{c.thread.pre}</p>
           <p className="av-quote">{c.thread.quote}</p>
           <p className="av-thread-post">{c.thread.post}</p>
+          <p className="av-thread-echo">
+            {lang === "nl" ? "Soms krijgt diezelfde aandacht een andere vorm: " : "Sometimes that same attention takes another form: "}
+            <Link to="/music">
+              {lang === "nl" ? "de muziek die ik maak als Jowikroon" : "the music I make as Jowikroon"}
+            </Link>.
+          </p>
           <div className="av-midcta">
             <p className="av-midcta-q">{c.thread.question}</p>
             <a ref={midCtaRef} className="av-btn" href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">{c.cta}<Arrow /></a>
