@@ -41,6 +41,7 @@ const froukje = { user_id: viewer.id, artist_id: "froukje", artist_name: "Froukj
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv("VITE_ARTIST_RADAR_NEWSLETTER_ENABLED", "false");
   mock.user = null;
   mock.loading = false;
   mock.otp.mockResolvedValue({ error: null });
@@ -84,7 +85,17 @@ describe("persoonlijk Artist Radar account", () => {
     expect(await screen.findByText(/Eerstvolgende gemelde show:/)).toHaveTextContent("Aangekondigd · Utrecht · 2026-11-28");
     expect(screen.getByText("Froukje")).toBeInTheDocument();
     expect(screen.getByTestId("radar-ticket-panel")).toBeInTheDocument();
-    expect(screen.getByText(/Bestaande nieuwsbriefvoorkeuren zijn niet via dit account te wijzigen/)).toBeInTheDocument();
+    // Empty staging has no newsletter function; never offer a broken send button.
+    expect(screen.queryByRole("button", { name: "Bevestigingsmail aanvragen" })).toBeNull();
+  });
+
+  it("does not misrepresent an empty verified feed as absence of concerts", async () => {
+    mock.user = viewer;
+    mock.listFollows.mockResolvedValue([froukje]);
+    render(<ArtistRadarAccount />);
+    expect(await screen.findByText(/Geen recent geverifieerd concertsignaal/)).toHaveTextContent(
+      /Dit betekent niet dat er geen optredens zijn/,
+    );
   });
 
   it("adds and removes followed artists through private account helpers", async () => {
@@ -136,6 +147,7 @@ describe("persoonlijk Artist Radar account", () => {
   it("requires distinct explicit consent before requesting the old double-opt-in newsletter", async () => {
     mock.user = viewer;
     mock.listFollows.mockResolvedValue([froukje]);
+    vi.stubEnv("VITE_ARTIST_RADAR_NEWSLETTER_ENABLED", "true");
     vi.stubEnv("VITE_SUPABASE_URL", "https://radar-project.supabase.co");
     const post = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
     vi.stubGlobal("fetch", post);
