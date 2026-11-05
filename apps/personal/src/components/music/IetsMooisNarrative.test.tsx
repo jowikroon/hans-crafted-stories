@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { MemoryRouter, Route, Routes, useLocation, useNavigate, useNavigationType, type MemoryRouterProps } from "react-router-dom";
@@ -81,6 +82,23 @@ const openerFor = (title: string) => screen.getByRole("button", { name: `Bekijk 
 const closeGallery = () => fireEvent.click(within(dialog()).getByRole("button", { name: "Sluit het beeldverhaal" }));
 
 describe("IETS MOOIS continuous narrative and gallery integration", () => {
+  it("ends in a dark, readable invitation with a clear route to all fifteen images", () => {
+    const navigation = showStory();
+    const invitation = navigation.container.querySelector(".im-story-invitation")!;
+    const nextLink = within(invitation as HTMLElement).getByRole("link", { name: "Ontdek het beeldverhaal 15 beelden" });
+
+    expect(nextLink).toHaveAttribute("href", "#album-world");
+    expect(navigation.container.querySelector("#album-world")).not.toBeNull();
+    expect(navigation.container).toHaveTextContent("De blik, het licht, de kleine afwijking. Kies wat je raakt.");
+
+    const css = readFileSync("src/styles/iets-moois-narrative.css", "utf8");
+    const cardRule = css.match(/\.im-story-invitation\s*\{([^}]*)\}/)?.[1];
+    expect(cardRule).toContain("background:linear-gradient(115deg,#183024");
+    expect(cardRule).toContain("color:var(--im-chalk)");
+    expect(cardRule).not.toContain("#eaeade");
+    expect(css).toContain(".im-story-invitation .im-laser-link:focus-visible { outline-color:var(--im-violet); }");
+  });
+
   it("server-renders all six complete scenes without opening the gallery, with usable chapter targets", () => {
     const html = renderToString(<StaticRouter location={storyPath}><IetsMooisNarrative onOpenArtwork={vi.fn()} /></StaticRouter>);
     const staticRoot = document.createElement("div");

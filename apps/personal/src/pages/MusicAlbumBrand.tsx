@@ -24,7 +24,7 @@ function BrandContent({ album }: { album: MusicAlbumData }) {
       <AlbumWorld key={album.slug} album={album} />
       <AlbumJourney album={album} />
     </>}
-    <section className="ma-brand-closing" aria-label={hasVisualStory ? "Verder ontdekken" : "Verder luisteren"}>{!hasVisualStory && <p lang={album.theme === "neon" ? "en" : "nl"}>{story.closing}</p>}<Link className="ma-button ma-button--light" to={`${albumPath(album.slug)}${album.publicTracks.length ? "#album-tracks" : ""}`}>{album.publicTracks.length ? "Luister naar NEON" : "Naar IETS MOOIS"} <span aria-hidden="true">↗</span></Link></section>
+    <section className="ma-brand-closing" aria-label={hasVisualStory ? "Verder ontdekken" : "Verder luisteren"}>{!hasVisualStory && <p lang={album.theme === "neon" ? "en" : "nl"}>{story.closing}</p>}<Link className="ma-button ma-button--light" to={`${albumPath(album.slug)}${album.publicTracks.length ? "#album-tracks" : ""}`}>{album.publicTracks.length ? "Luister naar NEON" : "Ontdek het album"} <span aria-hidden="true">↗</span></Link></section>
     <AlbumCompanion album={album} />
     <AlbumOwnerPanel access={privateAccess} />
   </AlbumPageTemplate>;

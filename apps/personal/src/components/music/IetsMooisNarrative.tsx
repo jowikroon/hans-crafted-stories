@@ -55,7 +55,7 @@ export default function IetsMooisNarrative({ onOpenArtwork }: NarrativeProps) {
     <section className="im-story-invitation" aria-labelledby="im-invitation-title">
       <p className="ma-eyebrow">Het verhaal gaat verder bij jou</p>
       <h2 id="im-invitation-title">Wat je erin hoort,<br />mag van jou zijn.</h2>
-      <a className="im-laser-link" href="#album-world">Ontdek alle beelden <span>15 beeldstudies</span><ArrowDown size={19} aria-hidden="true" /></a>
+      <a className="im-laser-link" href="#album-world">Ontdek het beeldverhaal <span>15 beelden</span><ArrowDown size={19} aria-hidden="true" /></a>
     </section>
   </div>;
 }
