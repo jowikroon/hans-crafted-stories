@@ -127,6 +127,7 @@
   .avs-counter { font-size:12px; white-space:nowrap; }
 }
 @media(max-width:420px) {
+  .avs-cover__action { flex-wrap:wrap; }
   /* Keep both named actions inside the viewport when text is enlarged. */
   .avs-controls { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
   .avs-controls>p { grid-column:1 / -1; grid-row:1; }
