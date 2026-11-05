@@ -2,6 +2,19 @@
 
 Datum: 2026-11-05. Status: **database- en deploymenttests deels geslaagd; echte aanmelding en browser-E2E nog niet geslaagd**. Geen productie-go.
 
+## Vervolgreview op dezelfde dag: 20 gerichte agentpasses
+
+Vijf gespecialiseerde agents hebben elk vier afzonderlijke controles uitgevoerd voor Vercel, Supabase Auth, publieke feed, tickets en UX/security. Het gaat om **20 gerichte reviews**, niet om 20 volledige deploys of browser-E2E-sessies.
+
+- De Vercel-branched preview van PR #492 is `READY` en SSO-beveiligd. Het uitlezen van projectvariabelen geeft nog steeds een expliciete **403**, hoewel het gekoppelde teamlid eigenaar is. Geen alternatieve toegang geprobeerd of omgevingsvariabele veranderd.
+- Een extra broncodegrens laat de persoonlijke radar uitsluitend toe met featureflag `true` **en** de exacte goedgekeurde Supabase-staging-URL. Een uit productie geërfde URL schakelt de accountfunctie niet in. Een latere productieactivatie vereist een aparte review en codebeslissing.
+- De openbare feed toont nu uitsluitend regels met een bekende publieke bronklasse en een controle binnen zeven dagen. Null/verouderde/toekomstige/ongeldige controledatums en prototype-achtige bronkeys worden afgewezen. Deze controles bewijzen nog **geen** onafhankelijke bronverificatie door de importer; daar is aparte bewijsregistratie voor nodig.
+- De staging Edge Function is na de extra bronfilters geüpdatet tot **ACTIVE versie 2**. De bron is via de beheerconnector teruggelezen, maar een publiek HTTP-GET bleef niet uitvoerbaar via deze omgeving. Lege of ongecontroleerde records geven geen bevestigde status.
+- Fout-UX bevat een herstelknop zonder pagina-uitstap of verlies van de zoekterm; lege staten claimen alleen dat er geen *recent geverifieerd signaal* is. Een afzonderlijke `VITE_ARTIST_RADAR_NEWSLETTER_ENABLED`-flag houdt de niet-geïnstalleerde legacy mailservice standaard verborgen.
+- Hercontrole: **582/582** persoonlijke Vitest-tests (62 bestanden), **14/14** public-feed-mocks, gerichte lint **0 errors/0 warnings**, TypeScript typecheck PASS. Eén eerdere parallelle testrun faalde tijdens gelijktijdige edits; de daarna volledig herhaalde suite was groen. Dit is geen echte browser- of mailproef.
+- Volgens de officiële Supabase-documentatie kan een nieuwe projectdefault zonder custom SMTP alleen Auth-mails naar leden van het projectteam versturen. De Auth Site URL/redirect allowlist en het mailtemplate zijn via de huidige connector niet in te stellen of te verifiëren. Twee echte testinboxen of een afzonderlijke SMTP-configuratie blijven nodig.
+- De productiebron heeft 31 actieve toekomstige niet-demo-concerten, maar nog geen geverifieerde externe ticketvelden. De Ticketmaster Discovery API is een mogelijke officiële bron, maar vereist een aparte API-sleutel en een bronimport met stabiele event-ID's. Er is dus nog geen geverifieerde echte kooplink in staging.
+
 ## Grens en provenance
 
 - Code: [concept-PR #492](https://github.com/jowikroon/hans-crafted-stories/pull/492), met de beveiligingsfix op commit `03b8624e6bd82f54d6bfd54d8d47c82f701898dd`.
@@ -17,7 +30,7 @@ Datum: 2026-11-05. Status: **database- en deploymenttests deels geslaagd; echte 
 2. `20261105140000_artist_radar_accounts.sql`: volgt, voorkeuren, eigen accountactiviteit en brongebonden statushistorie met eigenaars-RLS, kolomrechten en quota.
 3. `20261105141000_artist_radar_verified_ticket_links.sql`: brongecontroleerde externe ticketlinks. **Niet** een checkout of aankooprecord.
 4. Extra staging-migratie `artist_radar_staging_revoke_account_guard_rpc`: trekt expliciete `EXECUTE`-rechten op de SECURITY DEFINER-triggerfunctie van `PUBLIC`, `anon`, `authenticated` en `service_role` in. Dezelfde fix is op PR #492 gezet; oorspronkelijke migratie hoeft op een nieuw project niet met de herstelstap te worden gevolgd.
-5. Supabase Edge Function `artist-radar-public-events`, versie 1, status `ACTIVE`, met `verify_jwt=false` voor een anonieme **uitsluitend GET**-feed. De functie filtert bekende ticketverkopers, originele bronverwijzingen en maximaal zeven dagen oude verificaties.
+5. Supabase Edge Function `artist-radar-public-events`, eerst versie 1 en na de bronreview **versie 2**, status `ACTIVE`, met `verify_jwt=false` voor een anonieme **uitsluitend GET**-feed. De functie filtert bekende ticketverkopers, bronverwijzingen en maximaal zeven dagen oude status-/ticketverificaties.
 
 ## Verifieerbare acceptatie op 5 november
 
@@ -30,7 +43,7 @@ Datum: 2026-11-05. Status: **database- en deploymenttests deels geslaagd; echte 
 | Anonieme directe concert/account-SELECT en directe trigger-RPC | **GEWEIGERD** | Effectieve rolgrants onafhankelijk gecontroleerd |
 | Supabase security advisors | GEEN WARNING/ERROR | Eén bewuste INFO: RLS op concerttabel zonder directe clientpolicy |
 | Testdata-opruiming | PASS | Na `ROLLBACK`: 0 auth.users, 0 volgers, 0 voorkeuren, 0 activiteiten, 0 historie, 0 concerten |
-| Edge Function deploy | ACTIEF | Geregistreerd als versie 1, **geen uitgevoerde HTTP-respons gevalideerd** |
+| Edge Function deploy | ACTIEF | Na bronfilters als versie 2 geregistreerd en source teruggelezen; **geen uitgevoerde HTTP-respons gevalideerd** |
 | Function HTTP GET | **NIET GETEST** | Uitvoeringsomgeving gaf `Proxy CONNECT aborted due to timeout`; registratie als ACTIVE is geen healthcheck |
 | Algemene CMS-staging safety-check | **GEBLOKKEERD** | Bewust geen lokale `.env.staging`-credentials; geen Artist Radar-browser-E2E uitgevoerd |
 | Echte mail, callback, sessievernieuwing en uitloggen | **OPEN** | Geen geconfigureerde Auth-SMTP/redirectproef met ontvangen mail en twee echte accounts |
