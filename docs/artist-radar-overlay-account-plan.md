@@ -5,6 +5,8 @@ Date: 2026-11-05
 Source baseline: `jowikroon/hans-crafted-stories@29b31fbf19bf1f12ae93314fd6b3594cc3cca41c`  
 Context: music/HVL only; HansOS GitHub vault `30eab51a1d58bb5fb6f36c3dbef14aa8bce88c0f`, source-snapshot freshness **UNKNOWN**.
 
+**Staging-update, dezelfde dag:** een onafhankelijke Supabase-testdatabase en een openbare read-only Edge Function zijn aangemaakt. Database-RLS, cross-account writes en de 100-volgersgrens zijn met rollback geverifieerd. Auth-mail, echte sessions, browser-/mobiele UX en verkoperslinks zijn nog open; de feature flag blijft UIT. Zie [de actuele staging-acceptatie](artist-radar-staging-acceptance-2026-11-05.md). De tabel met oorspronkelijke baseline hieronder blijft de historische uitgangspositie, niet de laatste QA-stand.
+
 ## Product promise
 
 Keep the visitor on `/music`: the existing animated neon Artist Radar becomes the visual doorway into a focused overlay. Explore publicly visible artist/concert signals first; require a verified account only to **save** follows and preferences. Never turn an email-digest subscription into a logged-in account merely because both use the same email address.
