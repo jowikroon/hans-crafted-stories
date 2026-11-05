@@ -61,7 +61,7 @@
 .avs-artwork-actions__status { min-height:1.6em; margin:8px 0 0; color:var(--avs-violet); font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
 .avs-artwork-actions__manual { margin-top:8px; }
 .avs-artwork-actions__manual label { display:block; margin-bottom:6px; color:var(--avs-muted); font-size:12px; line-height:1.6; }
-.avs-artwork-actions__manual input { width:100%; min-width:0; min-height:44px; padding:10px; border:1px solid var(--avs-line); border-radius:3px; color:var(--avs-paper); background:#14231a; font-family:var(--font-mono),monospace; font-size:13px; }
+.avs-artwork-actions__manual input { width:100%; min-width:0; min-height:44px; padding:10px; border:1px solid var(--avs-line); border-radius:3px; color:var(--avs-paper); background:#14231a; font-family:var(--font-mono),monospace; font-size:16px; }
 .avs-dialog__rail { display:flex; align-items:center; gap:32px; margin-top:22px; padding-top:18px; border-top:1px solid var(--avs-line); }
 .avs-chapter-select { flex-shrink:0; width:210px; }
 .avs-chapter-select label { display:block; color:var(--avs-muted); font-size:10px; line-height:1.6; margin-bottom:6px; }
@@ -146,7 +146,7 @@
 }
 @media(max-height:600px) and (orientation:landscape) {
   /* Keep the complete square clear of the fixed header, footer and body padding. */
-  .avs-artwork { width:min(100%,calc(100dvh - 210px),360px); }
+  .avs-artwork { align-self:start; width:min(100%,calc(100dvh - 210px),360px); }
   /* The error card stays in normal flow so its text and retry remain readable. */
   .avs-artwork[data-state=error] { width:min(100%,360px); aspect-ratio:auto; }
 }
