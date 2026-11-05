@@ -181,6 +181,13 @@
 .article-v2 .prose strong { color: var(--w2-ink); font-weight: 600; }
 .article-v2 .prose a { color: var(--w2-accent); overflow-wrap: anywhere; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--w2-accent) 45%, transparent); transition: text-decoration-color .15s; }
 .article-v2 .prose a:hover { text-decoration-color: var(--w2-accent); }
+.article-v2 .prose a:focus-visible,
+.article-v2 .toc a:focus-visible,
+.article-v2 .mtoc-panel a:focus-visible,
+.article-v2 .mtoc-panel button:focus-visible {
+  outline: 2px solid var(--w2-accent); outline-offset: 3px;
+}
+.article-v2 .prose h2:focus { outline: none; }
 .article-v2 .prose code { font-family: var(--w2-font-mono); font-size: 0.82em; background: rgba(28,122,72,0.09); color: #155E39; padding: 2px 7px; border-radius: 5px; }
 .dark .article-v2 .prose code { background: rgba(28,122,72,0.2); color: #62CE91; }
 .article-v2 .prose .lead { font-size: 21px; line-height: 1.6; color: var(--w2-ink); font-weight: 400; }
@@ -467,6 +474,7 @@
 }
 .article-v2 .mtoc-sheet.open { display: flex; align-items: flex-end; }
 .article-v2 .mtoc-panel {
+  position: relative;
   width: 100%; max-height: 70vh; overflow-y: auto; overscroll-behavior: contain;
   background: var(--w2-canvas); border-radius: 20px 20px 0 0;
   padding: 8px 0 calc(env(safe-area-inset-bottom, 0px) + 20px);
@@ -479,10 +487,16 @@
   margin: 6px auto 12px;
 }
 .article-v2 .mtoc-panel__hd {
-  padding: 0 24px 14px; font-family: var(--w2-font-mono);
+  padding: 0 64px 14px 24px; font-family: var(--w2-font-mono);
   font-size: 10.5px; font-weight: 600; letter-spacing: .14em;
   text-transform: uppercase; color: var(--w2-muted);
   border-bottom: 1px solid var(--w2-hair);
+}
+.article-v2 .mtoc-panel__close {
+  position: absolute; right: 18px; top: 14px;
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border: 1px solid var(--w2-hair);
+  border-radius: 50%; background: var(--w2-card); color: var(--w2-ink);
 }
 .article-v2 .mtoc-panel ol { list-style: none; margin: 0; padding: 0; }
 .article-v2 .mtoc-panel li a {

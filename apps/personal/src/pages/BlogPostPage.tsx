@@ -14,9 +14,10 @@ import hansProfile from "@/assets/hans-profile.jpg";
 import "@/styles/article-v2.css";
 import "@/styles/blog.css";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
-import { applyMaskTokens, type MaskingConfig } from "@/lib/masking";
+import { type MaskingConfig } from "@/lib/masking";
+import { escapeArticleHtml, renderArticleInline, safeArticleImageSource, type ArticleMaskContext } from "@/lib/blog/articleInline";
 import { trackBlogView, trackTocClick, trackReadDepth, trackShare, type BlogEventContext } from "@/lib/blogAnalytics";
-import ArticleStoryBridge from "@/components/ArticleStoryBridge";
+import ArticleStoryBridge, { GIVING_ARTICLE_SLUG } from "@/components/ArticleStoryBridge";
 
 /* ────────────────────────────────────────────────────────────
    BlogPostPage — article reader, redesign v2.
@@ -43,48 +44,9 @@ import ArticleStoryBridge from "@/components/ArticleStoryBridge";
    Enriches the previous renderer to also emit the design's lead / pull /
    callout blocks, and stamps H2s with id="sec-N" so the TOC can scroll-spy.
    Output trust model is unchanged — content originates from the CMS. */
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-type MaskCtx = { cfg: MaskingConfig | null | undefined; counters: Record<string, number> };
-/* Links: support every destination the CMS can produce — external https?://,
-   site-relative (/writing/…, /work/…), in-page #anchors and mailto:. Legacy
-   /blog/<slug> hrefs are normalised to /writing/<slug> (a /blog route never
-   shipped on this site). External links open in a new tab; unsafe schemes
-   (javascript: etc.) render as plain text. Bare URLs are autolinked. */
-const SAFE_HREF_RE = /^(https?:\/\/|\/(?![/\\])|#|mailto:)/i;
-const normalizeHref = (href: string): string => {
-  const h = href.trim();
-  if (h === "/blog" || h === "/blog/") return "/writing";
-  if (h.startsWith("/blog/")) return "/writing/" + h.slice("/blog/".length);
-  return h;
-};
-const anchorHtml = (rawHref: string, label: string): string | null => {
-  const href = normalizeHref(rawHref);
-  if (!SAFE_HREF_RE.test(href)) return null;
-  const attrs = /^https?:\/\//i.test(href) ? ' target="_blank" rel="noopener noreferrer"' : "";
-  return `<a href="${href.replace(/"/g, "&quot;")}"${attrs}>${label}</a>`;
-};
-const AUTOLINK_RE = /(^|[\s(])((?:https?:\/\/|www\.)[^\s<>"')]*[^\s<>"').,;:!?])/g;
-const inlineMd = (s: string, mask?: MaskCtx) => {
-  let out = esc(s);
-  if (mask) out = applyMaskTokens(out, mask.cfg, mask.counters);
-  out = out
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (m, label: string, href: string) => anchorHtml(href, label) ?? m);
-  // Autolink bare URLs, but never inside an <a>…</a> that already exists —
-  // split on anchor segments and only transform the text between them.
-  return out
-    .split(/(<a\b[^>]*>[\s\S]*?<\/a>)/g)
-    .map((seg, i) =>
-      i % 2 === 1
-        ? seg
-        : seg.replace(AUTOLINK_RE, (_m, pre: string, url: string) => {
-            const href = /^www\./i.test(url) ? `https://${url}` : url;
-            return `${pre}<a href="${href.replace(/"/g, "&quot;")}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-          })
-    )
-    .join("");
-};
+const esc = escapeArticleHtml;
+type MaskCtx = ArticleMaskContext;
+const inlineMd = renderArticleInline;
 
 interface RenderResult { html: string; headings: { id: string; text: string }[]; }
 
@@ -250,14 +212,14 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl"
     const t = lines[i].trim();
     if (t === "") { flushList(); continue; }
 
-    // Image: ![alt](url) on its own line. url may be an inline data: URI
-    // (e.g. a self-contained SVG chart) or an https: URL. Renders a figure.
-    const imgm = t.match(/^!\[([^\]]*)\]\((data:[^)]+|https?:\/\/[^)]+)\)$/);
+    // Inline Markdown images must resolve to safe network URLs. SVG/data URIs
+    // and quoted attribute breaks are intentionally unsupported in the CMS.
+    const imgm = t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
     if (imgm) {
       flushList();
       const ialt = esc(imgm[1].trim());
-      const isrc = imgm[2];
-      out.push(`<figure class="fig"><img src="${isrc}" alt="${ialt}" loading="lazy" decoding="async" />${ialt ? `<figcaption>${ialt}</figcaption>` : ""}</figure>`);
+      const isrc = safeArticleImageSource(imgm[2]);
+      if (isrc) out.push(`<figure class="fig"><img src="${esc(isrc)}" alt="${ialt}" loading="lazy" decoding="async" />${ialt ? `<figcaption>${ialt}</figcaption>` : ""}</figure>`);
       continue;
     }
 
@@ -270,7 +232,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl"
       if (out.length === 0 && !firstParaDone) continue;
       const id = `sec-${++h2Count}`;
       headings.push({ id, text });
-      out.push(`<h2 id="${id}">${esc(text)}</h2>`);
+      out.push(`<h2 id="${id}" tabindex="-1">${esc(text)}</h2>`);
       continue;
     }
 
@@ -280,7 +242,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl"
       const text = t.slice(3).trim();
       const id = `sec-${++h2Count}`;
       headings.push({ id, text });
-      out.push(`<h2 id="${id}">${esc(text)}</h2>`);
+      out.push(`<h2 id="${id}" tabindex="-1">${esc(text)}</h2>`);
       continue;
     }
     if (t.startsWith("### ")) { flushList(); out.push(`<h3>${esc(t.slice(4).trim())}</h3>`); continue; }
@@ -348,7 +310,7 @@ function renderArticle(md: string, maskingCfg?: MaskingConfig | null, lang: "nl"
       const text = boldOnly[1].trim();
       const id = `sec-${++h2Count}`;
       headings.push({ id, text });
-      out.push(`<h2 id="${id}">${esc(text)}</h2>`);
+      out.push(`<h2 id="${id}" tabindex="-1">${esc(text)}</h2>`);
       continue;
     }
 
@@ -382,6 +344,9 @@ const BlogPostPage = () => {
   const { lang } = useLang();
   const articleRef = useRef<HTMLElement>(null);
   const progRef = useRef<HTMLDivElement>(null);
+  const mtocFabRef = useRef<HTMLButtonElement>(null);
+  const mtocPanelRef = useRef<HTMLDivElement>(null);
+  const mtocCloseRef = useRef<HTMLButtonElement>(null);
   const [figHtml, setFigHtml] = useState<string | null>(null);
   const [showBtt, setShowBtt] = useState(false);
   const [mtocOpen, setMtocOpen] = useState(false);
@@ -443,14 +408,20 @@ const BlogPostPage = () => {
   const displayTitle = post ? (articleLang === "nl" && post.title_nl ? post.title_nl : post.title) : "";
   const displayExcerpt = post ? (articleLang === "nl" && post.excerpt_nl ? post.excerpt_nl : post.excerpt) : "";
   const displayContent = post ? (articleLang === "nl" && post.content_nl ? post.content_nl : post.content) : "";
+  // The legacy CMS body names the album in bold but does not provide an
+  // actual link. Linkify that existing mention on this one article only;
+  // editorial source material remains unchanged until its approved CMS edit.
+  const articleBodyWithLink = post?.slug === GIVING_ARTICLE_SLUG && articleLang === "nl"
+    ? (displayContent || "").replace("**IETS MOOIS**", "[IETS MOOIS](/music/albums/iets-moois/brand)")
+    : displayContent;
   // Header image follows the article language (EN header in og_image_en, NL in og_image/image_url).
   // Only a real per-post header is shown as hero; the site-wide profile photo is share-only.
   const heroImage = post ? getBlogPostImage(post, articleLang) : "";
   const showHero = !!post && heroImage !== DEFAULT_OG_IMAGE;
 
   const { html: bodyHtml, headings } = useMemo(
-    () => renderArticle(displayContent || "", post?.masking, articleLang),
-    [displayContent, post?.masking, articleLang]
+    () => renderArticle(articleBodyWithLink || "", post?.masking, articleLang),
+    [articleBodyWithLink, post?.masking, articleLang]
   );
   const showToc = headings.length >= 3;
 
@@ -567,10 +538,26 @@ const BlogPostPage = () => {
   useEffect(() => { setMtocOpen(false); }, [slug]);
   useEffect(() => {
     if (!mtocOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMtocOpen(false); };
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const trigger = mtocFabRef.current;
+    const raf = window.requestAnimationFrame(() => mtocCloseRef.current?.focus());
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.preventDefault(); setMtocOpen(false); return; }
+      if (e.key !== "Tab" || !mtocPanelRef.current) return;
+      const controls = Array.from(mtocPanelRef.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"));
+      if (!controls.length) { e.preventDefault(); return; }
+      const first = controls[0], last = controls[controls.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+    return () => {
+      window.cancelAnimationFrame(raf);
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+      (previouslyFocused ?? trigger)?.focus({ preventScroll: true });
+    };
   }, [mtocOpen]);
 
   /* ── Inline figure "Bekijk context" modal: open + ESC/scroll-lock ── */
@@ -596,10 +583,11 @@ const BlogPostPage = () => {
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
   }, [figHtml]);
 
-  const scrollToHeading = (e: React.MouseEvent, id: string, source: "toc" | "mtoc" = "toc") => {
-    e.preventDefault();
+  const onTocNavigate = (id: string, source: "toc" | "mtoc" = "toc") => {
+    // Keep native hash navigation for sharable section URLs and allow the
+    // destination heading to receive focus for keyboard/screen-reader readers.
     const el = articleRef.current?.querySelector<HTMLElement>(`#${id}`);
-    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 96, behavior: "smooth" });
+    if (el) window.setTimeout(() => el.focus({ preventScroll: true }), 0);
     if (analyticsCtx) {
       const idx = headings.findIndex((h) => h.id === id);
       const h = idx > -1 ? headings[idx] : null;
@@ -607,11 +595,17 @@ const BlogPostPage = () => {
     }
   };
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(currentUrl);
-      toast.success(lang === "nl" ? "Link gekopieerd" : "Link copied to clipboard");
-      if (analyticsCtx) trackShare(analyticsCtx, "copy_link");
+      try {
+        await navigator.clipboard.writeText(currentUrl);
+        toast.success(lang === "nl" ? "Link gekopieerd" : "Link copied to clipboard");
+        if (analyticsCtx) trackShare(analyticsCtx, "copy_link");
+      } catch {
+        toast.error(lang === "nl" ? "Kopiëren niet gelukt" : "Could not copy link");
+      }
+    } else {
+      toast.error(lang === "nl" ? "Kopiëren niet beschikbaar" : "Copying is unavailable");
     }
   };
 
@@ -630,8 +624,8 @@ const BlogPostPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleMtocClick = (e: React.MouseEvent, id: string) => {
-    scrollToHeading(e, id, "mtoc");
+  const handleMtocClick = (id: string) => {
+    onTocNavigate(id, "mtoc");
     setMtocOpen(false);
   };
 
@@ -656,10 +650,11 @@ const BlogPostPage = () => {
     );
   }
 
-  const dateStr = new Date(post.created_at).toLocaleDateString(lang === "nl" ? "nl-NL" : "en-US", {
+  const dateStr = new Date(post.created_at).toLocaleDateString(articleLang === "nl" ? "nl-NL" : "en-US", {
     month: "long", day: "numeric", year: "numeric",
   });
-  const catLine = post.category ? post.category : "Marketplace";
+  const categoryNl: Record<string, string> = { technology: "Technologie", business: "Ondernemerschap", strategy: "Strategie" };
+  const catLine = articleLang === "nl" ? (categoryNl[post.category] ?? post.category ?? "Marketplace") : (post.category || "Marketplace");
 
   const shareTwitter = `https://twitter.com/intent/tweet?url=${encodeURIComponent(seoUrl)}&text=${encodeURIComponent(displayTitle)}`;
   const shareLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(seoUrl)}`;
@@ -704,7 +699,7 @@ const BlogPostPage = () => {
             <span className="byline__av">H<img src={hansProfile} alt="Hans van Leeuwen" loading="lazy" decoding="async" onError={(e) => { (e.currentTarget as HTMLImageElement).remove(); }} /></span>
             <div>
               <div className="byline__n"><Link to="/about" className="underline-offset-4 hover:underline">Hans van Leeuwen</Link></div>
-              <div className="byline__r">E-commerce and Marketplace Specialist</div>
+              <div className="byline__r">{articleLang === "nl" ? "E-commerce- en marketplacespecialist" : "E-commerce and Marketplace Specialist"}</div>
             </div>
             <span className="dot" />
             <span className="byline__t">{dateStr} · {post.read_time}</span>
@@ -724,7 +719,7 @@ const BlogPostPage = () => {
               <ol>
                 {headings.map((h, i) => (
                   <li key={h.id}>
-                    <a data-toc={h.id} href={`#${h.id}`} onClick={(e) => scrollToHeading(e, h.id)}>
+                    <a data-toc={h.id} href={`#${h.id}`} onClick={() => onTocNavigate(h.id)}>
                       <span className="toc__n" aria-hidden="true"><i>{String(i + 1).padStart(2, "0")}</i><b>✓</b></span>
                       <span>{h.text}</span>
                     </a>
@@ -760,6 +755,13 @@ const BlogPostPage = () => {
                 {lang === "nl" ? svc.leadNl : svc.leadEn}{" "}
                 <Link to={svc.path} className="font-semibold underline underline-offset-4">{label}</Link>
               </p>
+              {post.slug === GIVING_ARTICLE_SLUG && (
+                <p className="mt-3 text-sm text-foreground/80">
+                  <Link to="/work" className="font-medium underline underline-offset-4">
+                    {articleLang === "nl" ? "Bekijk mijn werk" : "Explore my work"}
+                  </Link>
+                </p>
+              )}
             </aside>
           );
         })()}
@@ -782,7 +784,7 @@ const BlogPostPage = () => {
           <p>{lang === "nl"
             ? "Geen hype. Een nuchtere blik op waar je groei zit en waar je marge weglekt."
             : "No hype. A sober look at where your growth is and where margin leaks away."}</p>
-          <Link to="/about" className="cta__btn">{lang === "nl" ? "Neem contact op" : "Get in touch"} <ArrowRight size={16} /></Link>
+          <Link to="/about#contact" className="cta__btn">{lang === "nl" ? "Neem contact op" : "Get in touch"} <ArrowRight size={16} /></Link>
         </section>
 
         {/* More */}
@@ -792,6 +794,7 @@ const BlogPostPage = () => {
       {/* Mobile TOC FAB */}
       {showToc && (
         <button
+          ref={mtocFabRef}
           className="mtoc-fab"
           onClick={() => setMtocOpen(true)}
           aria-label={lang === "nl" ? "Inhoudsopgave" : "Table of contents"}
@@ -803,13 +806,14 @@ const BlogPostPage = () => {
       {/* Mobile TOC Bottom Sheet */}
       {showToc && mtocOpen && (
         <div className="mtoc-sheet open" onClick={(e) => { if (e.target === e.currentTarget) setMtocOpen(false); }}>
-          <div className="mtoc-panel" role="dialog" aria-modal="true" aria-label={lang === "nl" ? "Inhoudsopgave" : "Table of contents"}>
+          <div ref={mtocPanelRef} className="mtoc-panel" role="dialog" aria-modal="true" aria-label={lang === "nl" ? "Inhoudsopgave" : "Table of contents"}>
             <div className="mtoc-handle" />
             <div className="mtoc-panel__hd">{lang === "nl" ? "In dit artikel" : "In this article"}</div>
+            <button ref={mtocCloseRef} className="mtoc-panel__close" type="button" onClick={() => setMtocOpen(false)} aria-label={lang === "nl" ? "Sluit inhoudsopgave" : "Close table of contents"}><X size={18} /></button>
             <ol>
               {headings.map((h) => (
                 <li key={h.id}>
-                  <a href={`#${h.id}`} onClick={(e) => handleMtocClick(e, h.id)}>{h.text}</a>
+                  <a href={`#${h.id}`} onClick={() => handleMtocClick(h.id)}>{h.text}</a>
                 </li>
               ))}
             </ol>
@@ -821,6 +825,8 @@ const BlogPostPage = () => {
       <button
         className={`btt${showBtt ? " show" : ""}`}
         onClick={scrollToTop}
+        tabIndex={showBtt ? 0 : -1}
+        aria-hidden={!showBtt}
         aria-label={lang === "nl" ? "Naar boven" : "Back to top"}
       >
         <ArrowUp />
