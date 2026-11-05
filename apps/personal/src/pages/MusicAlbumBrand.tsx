@@ -17,7 +17,7 @@ function BrandContent({ album }: { album: MusicAlbumData }) {
   const hasVisualStory = album.slug === "iets-moois";
   useSEO({ title: albumBrandTitle(album), description: albumBrandDescription(album), url: `https://hansvanleeuwen.com${albumBrandPath(album.slug)}`, lang: "nl", image: `https://hansvanleeuwen.com${album.backCover}`, imageAlt: `De wereld van ${albumTitle(album)}, Jowikroon`, jsonLd: albumBrandJsonLd(album) });
   return <AlbumPageTemplate album={album} section="brand">
-    <header className="ma-story-hero"><p className="ma-eyebrow">Het verhaal / {album.title}</p><h1>{story.heading}</h1><div className="ma-story-hero__bottom"><AlbumSignal /><p>{story.lead}</p><a href={hasVisualStory ? "#album-world" : "#album-origin"} className="ma-text-link">{hasVisualStory ? "Bekijk de beelden" : "Lees het verhaal"} <span aria-hidden="true">↓</span></a></div></header>
+    <header className="ma-story-hero"><p className="ma-eyebrow">Het verhaal / {album.title}</p><h1>{story.heading}</h1><div className="ma-story-hero__bottom"><AlbumSignal /><p>{story.lead}</p><a href={hasVisualStory ? "#album-world" : "#album-origin"} className="ma-text-link">{hasVisualStory ? "Bekijk het beeldverhaal" : "Lees het verhaal"} <span aria-hidden="true">↓</span></a></div></header>
     {hasVisualStory && <AlbumVisualStory />}
     <section className="ma-origin" id="album-origin" aria-labelledby="ma-origin-title"><div><p className="ma-eyebrow">Een zin om mee te nemen</p><h2 id="ma-origin-title">Eén belofte.<br />Een eigen stem.</h2></div><div>{story.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></section>
     {story.trail && <AlbumJourney album={album} />}

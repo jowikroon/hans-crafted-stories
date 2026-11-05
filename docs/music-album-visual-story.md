@@ -2,6 +2,8 @@
 
 Implementatie- en validatieregister, 5 november 2026.
 
+> Historische versie: dit register beschrijft de oorspronkelijke vier beelden en hun uitgevoerde controles. De uitbreiding met alle vijftien beelden heeft een [afzonderlijk reviewregister](reviews/2026-11-05-iets-moois-complete-gallery.md); het bewijs hieronder blijft ongewijzigd behouden.
+
 ## Ervaring
 
 Op `/music/albums/iets-moois/brand` staan vier beeldknoppen vóór het bestaande albumverhaal. Een dunne paarse/groene lichtlijn geeft de knoppen hun neonaccent. De aangeleverde composities blijven volledig zichtbaar; de interface legt geen tekst over het artwork.
