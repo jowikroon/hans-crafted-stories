@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
@@ -70,7 +71,9 @@ describe("Jowikroon album motion contract", () => {
   });
 
   it("guards CSS flip duration, track animation and reduced-motion fallback", () => {
-    const css = readFileSync(new URL("../../styles/music-albums.css", import.meta.url), "utf8");
+    const workspacePath = resolve(process.cwd(), "src/styles/music-albums.css");
+    const repoPath = resolve(process.cwd(), "apps/personal/src/styles/music-albums.css");
+    const css = readFileSync(existsSync(workspacePath) ? workspacePath : repoPath, "utf8");
     expect(css).toMatch(/\.ma-sleeve\s*\{[^}]*transition:transform 760ms/);
     expect(css).toMatch(/\.ma-album-card\[data-open=true\] \.ma-sleeve \{ transform:rotateY\(180deg\); \}/);
     expect(css).toMatch(/\.ma-album-card\[data-open=true\] \.ma-sleeve__track-row \{ animation:ma-track-arrive 360ms/);
