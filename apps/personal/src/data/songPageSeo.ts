@@ -3,7 +3,7 @@ import type { Song } from "./music";
 const SITE_ORIGIN = "https://hansvanleeuwen.com";
 
 /** Editorial date for the shared studio template, separate from release dates. */
-export const SONG_PAGE_UPDATED = "2026-11-04";
+export const SONG_PAGE_UPDATED = "2026-11-05";
 
 /** The client and static renderer use the same song metadata. */
 export function songPageHead(song: Song) {

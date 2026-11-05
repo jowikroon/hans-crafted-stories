@@ -11,6 +11,12 @@ export interface ProductionVersion {
   bitDepth?: number;
   channels?: "Stereo";
   durationSeconds?: number;
+  processing?: {
+    sourceVersion: string;
+    operation: string;
+    savedOn: string;
+    settings: string[];
+  };
 }
 
 export interface ProductionStep {
@@ -30,7 +36,7 @@ export interface SongProduction {
 export const STUDIO_REVIEW_DATE = "2026-11-04";
 
 const studioMethod = [
-  "The studio readings were checked in Neural Analog on 4 November 2026, after the selected version finished loading. They are the service’s displayed measurements; no new processing was started for this page.",
+  "The studio readings were checked in Neural Analog on 4–5 November 2026, after the selected version finished loading. The table records the check date for each version. They are the service’s displayed measurements; no new processing was started for this page.",
   "LUFS measures overall loudness. True peak estimates the highest reconstructed peak. Loudness range describes variation across the recording. These measures describe different things and do not rate musical quality.",
   "A value above 0 dBTP indicates a reconstructed peak above digital full scale. It is a reason to check the export and playback path, not proof that every listener hears distortion.",
 ];
@@ -76,16 +82,17 @@ export const songProduction: Record<string, SongProduction> = {
   },
   "loop-in-control": {
     title: "A loop, with room to move.",
-    intro: "The same session holds an earlier source, a saved Modern master and a later stereo version. Comparing their readings shows how level and dynamic space change between those choices.",
+    intro: "The same session holds an earlier source, a saved restoration, a Modern master and a later stereo version. Comparing their readings shows how level and dynamic space change between those choices.",
     scope: studioScope,
     versions: [
       { key: "source", label: "Original source", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -17.0, truePeakDbtp: -4.1, loudnessRangeLu: 5.7, sampleRateHz: 48000, bitDepth: 16, channels: "Stereo" },
-      { key: "modern-8-1", label: "Modern master · 8.1", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -8.1, truePeakDbtp: 1.8, loudnessRangeLu: 6.5, sampleRateHz: 44100, bitDepth: 24, channels: "Stereo" },
-      { key: "stereo-12", label: "Stereo version · 12", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -14.6, truePeakDbtp: -1.1, loudnessRangeLu: 6.9, sampleRateHz: 44100, bitDepth: 24, channels: "Stereo" },
+      { key: "modern-8-1", label: "Modern master · 8.1", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -8.1, truePeakDbtp: 1.8, loudnessRangeLu: 6.5, sampleRateHz: 44100, bitDepth: 24, channels: "Stereo", processing: { sourceVersion: "Enhancement · version 8", operation: "Modern mastering", savedOn: "2026-10-27", settings: ["Target loudness: −8 LUFS", "Selected range: whole track"] } },
+      { key: "stereo-12", label: "Stereo version · 12", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -14.6, truePeakDbtp: -1.1, loudnessRangeLu: 6.9, sampleRateHz: 44100, bitDepth: 24, channels: "Stereo", processing: { sourceVersion: "Original source", operation: "Stereo treatment", savedOn: "2026-10-27", settings: ["Selected range: whole track"] } },
+      { key: "enhancement-8", label: "Enhancement · version 8", provenance: "Neural Analog Studio", measuredOn: "2026-11-05", integratedLufs: -12.3, truePeakDbtp: 0.6, loudnessRangeLu: 6.6, sampleRateHz: 44100, bitDepth: 24, channels: "Stereo", processing: { sourceVersion: "Original source", operation: "Audio restoration", savedOn: "2026-10-27", settings: ["Stereo processing: mid/side", "Selected range: whole track"] } },
     ],
     steps: [
       { title: "Start with the source", text: "The original stereo source is preserved at 48 kHz and 16-bit. It gives the session a reference to return to." },
-      { title: "Explore the versions", text: "The saved session includes Modern and Techno mastering versions, separate instrument stems and a later stereo treatment. They remain distinct versions." },
+      { title: "Follow the saved branches", text: "The Modern master names enhancement version 8 as its input. The later stereo treatment names the original source. The session therefore preserves separate processing branches." },
       { title: "Compare the space", text: "The Modern master reads louder and has a higher true peak than the earlier source. The stereo version sits at a lower overall level. Listening decides which movement best serves the song." },
     ],
     method: studioMethod,
@@ -96,26 +103,27 @@ export const songProduction: Record<string, SongProduction> = {
     scope: studioScope,
     versions: [
       { key: "source", label: "Original source", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -15.0, truePeakDbtp: -2.9, loudnessRangeLu: 5.9, sampleRateHz: 48000, bitDepth: 16, channels: "Stereo" },
-      { key: "enhancement-1", label: "Enhancement · version 1", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -14.8, truePeakDbtp: -2.0, loudnessRangeLu: 6.0, sampleRateHz: 48000, bitDepth: 24, channels: "Stereo" },
+      { key: "enhancement-1", label: "Enhancement · version 1", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -14.8, truePeakDbtp: -2.0, loudnessRangeLu: 6.0, sampleRateHz: 48000, bitDepth: 24, channels: "Stereo", processing: { sourceVersion: "Original source", operation: "Audio restoration", savedOn: "2026-10-11", settings: ["Stereo processing: mid/side", "Selected range: whole track"] } },
     ],
     steps: [
       { title: "Preserve the source", text: "The original stereo file is saved at 48 kHz and 16-bit. Its measurements form the first reference in this session." },
-      { title: "Revisit the texture", text: "A saved enhancement is available at 48 kHz and 24-bit. It is shown as its own studio version, with its own readings." },
+      { title: "Revisit the texture", text: "The saved enhancement names the original source as its input. Its restoration uses mid/side processing across the whole track, and the result is stored at 48 kHz and 24-bit." },
       { title: "Look at the difference", text: "The enhancement reads 0.2 LU louder overall, with a true peak 0.9 dB higher. Its loudness range changes from 5.9 to 6.0 LU. These differences invite a listening comparison." },
     ],
     method: studioMethod,
   },
   "with-a-grin": {
     title: "Inside the stem mix.",
-    intro: "The saved stem mix and a later enhancement offer two views of With a Grin. The measurements make the shift in level and dynamic movement visible.",
+    intro: "The saved stem mix, a denoised version and a later enhancement offer three views of With a Grin. The measurements make the shifts in level and dynamic movement visible.",
     scope: studioScope,
     versions: [
       { key: "stem-mix-source", label: "Original stem mix", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -10.7, truePeakDbtp: 0.1, loudnessRangeLu: 4.2, sampleRateHz: 96000, bitDepth: 24, channels: "Stereo" },
-      { key: "enhancement-3-1", label: "Enhancement · version 3.1", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -10.3, truePeakDbtp: 0.4, loudnessRangeLu: 3.2, sampleRateHz: 44100, bitDepth: 24, channels: "Stereo" },
+      { key: "enhancement-3-1", label: "Enhancement · version 3.1", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -10.3, truePeakDbtp: 0.4, loudnessRangeLu: 3.2, sampleRateHz: 44100, bitDepth: 24, channels: "Stereo", processing: { sourceVersion: "Denoised mix · version 3", operation: "Audio restoration", savedOn: "2026-09-27", settings: ["Stereo processing: mid/side", "Selected range: whole track"] } },
+      { key: "denoised-3", label: "Denoised mix · version 3", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -10.6, truePeakDbtp: 0.5, loudnessRangeLu: 3.4, sampleRateHz: 44100, bitDepth: 24, channels: "Stereo", processing: { sourceVersion: "Original stem mix", operation: "Denoising", savedOn: "2026-09-27", settings: ["Selected range: whole track"] } },
     ],
     steps: [
       { title: "Open the stem mix", text: "The session starts from a stereo file named With a Grin (Stem Mix), saved at 96 kHz and 24-bit." },
-      { title: "Keep the treatments separate", text: "The saved session contains enhancement, restoration and denoising versions. The comparison here uses the original import and enhancement version 3.1." },
+      { title: "Follow the saved steps", text: "Denoising version 3 names the original stem mix as its input. Enhancement version 3.1 then uses that denoised mix, with mid/side restoration across the whole track." },
       { title: "Check the movement", text: "The later version reads 0.4 LU louder overall, while its loudness range is 1.0 LU smaller. Both report a positive reconstructed true peak, which calls for a check of the export and playback path." },
     ],
     method: studioMethod,
@@ -126,7 +134,7 @@ export const songProduction: Record<string, SongProduction> = {
     scope: "These measurements belong to a historical Pressure (Remastered x2) studio candidate. The public title alias is confirmed, but this candidate’s exact relationship to That Spark’s public recording remains unconfirmed.",
     versions: [
       { key: "pressure-source", label: "Pressure candidate · source", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -12.7, truePeakDbtp: -1.2, loudnessRangeLu: 5.2, sampleRateHz: 48000, channels: "Stereo" },
-      { key: "pressure-restoration-1", label: "Pressure candidate · restoration 1", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -12.9, truePeakDbtp: -0.2, loudnessRangeLu: 5.1, sampleRateHz: 48000, bitDepth: 24, channels: "Stereo" },
+      { key: "pressure-restoration-1", label: "Pressure candidate · restoration 1", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -12.9, truePeakDbtp: -0.2, loudnessRangeLu: 5.1, sampleRateHz: 48000, bitDepth: 24, channels: "Stereo", processing: { sourceVersion: "Pressure candidate · source", operation: "High-frequency restoration", savedOn: "2026-08-03", settings: ["Stereo processing: mid/side", "Strength: medium, 8 kHz boundary", "Selected range: whole track"] } },
     ],
     steps: [
       { title: "Trace the earlier name", text: "The public recording uses That Spark as its title and retains Pressure in its address. Several studio versions share that earlier name, so the source identity remains open." },
@@ -141,7 +149,7 @@ export const songProduction: Record<string, SongProduction> = {
     scope: studioScope,
     versions: [
       { key: "restored-mix-source", label: "Restored-mix session · source", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -14.0, truePeakDbtp: -0.9, loudnessRangeLu: 9.2, sampleRateHz: 96000, bitDepth: 24, channels: "Stereo" },
-      { key: "modern-master-2", label: "Modern master · version 2", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -8.4, truePeakDbtp: 3.3, loudnessRangeLu: 8.7, sampleRateHz: 48000, bitDepth: 24, channels: "Stereo" },
+      { key: "modern-master-2", label: "Modern master · version 2", provenance: "Neural Analog Studio", measuredOn: STUDIO_REVIEW_DATE, integratedLufs: -8.4, truePeakDbtp: 3.3, loudnessRangeLu: 8.7, sampleRateHz: 48000, bitDepth: 24, channels: "Stereo", processing: { sourceVersion: "Restored-mix session · source", operation: "Modern mastering", savedOn: "2026-10-02", settings: ["Target loudness: −8 LUFS", "Selected range: whole track"] } },
     ],
     steps: [
       { title: "Keep the mix as a reference", text: "The original import in this restored-mix session is a 96 kHz, 24-bit stereo file. It provides the reference for this version comparison." },

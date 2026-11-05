@@ -1,25 +1,27 @@
 # Shared song studio template
 
-Editorial update: 4 November 2026. Applies to the nine existing public song routes on hansvanleeuwen.com.
+Editorial update: 5 November 2026. Applies to the nine existing public song routes on hansvanleeuwen.com.
 
 ## Result and scope
 
 All nine songs use the existing Hanging On page structure, palette, spacing, cover treatment, Switzer display/body typography and JetBrains Mono labels. The shared implementation handles standalone pages and the music dialog. Public catalogue identities, players, artwork, original upload dates and private-song exclusions are preserved.
 
-Each page includes three process notes, three measured-version figures and an expandable numeric table with source/date/format information. Hanging On also retains its three existing measured timeline/frequency figures. There are 27 new scalar figures across the nine pages and 30 figures in total. Seventeen version rows describe sixteen unique measurement records; the two Beat Drop pages explicitly share one inspected import.
+Each page includes three process notes, measured-version figures and an expandable numeric table with source/date/format information. Eight pages show four scalar figures: overall loudness, true peak, loudness range and calculated peak-to-loudness distance. Hanging On shows three scalar figures because no range reading was retained; it also keeps its three existing measured timeline/frequency figures. There are 35 scalar figures and 38 figures in total. Nineteen version rows describe eighteen unique measurement records; the two Beat Drop pages explicitly share one inspected import.
+
+The six pages with multiple documented versions provide an interactive reference/compared-version selector. Differences are calculated from the displayed readings, use LU for loudness differences and dB for peak differences, and retain the precision of the less precise input. A swap control reverses the comparison. Eight saved processing records show the actual named input, operation, saved date and settings in an expandable section.
 
 ## Evidence and version boundaries
 
-The selected studio readings were inspected in the authenticated Neural Analog Studio on 4 November 2026, after each selected version completed loading. These are the service's displayed readouts, not newly performed lossless measurements or independent listening judgments. No processing jobs were started for this update.
+The selected studio readings were inspected in the authenticated Neural Analog Studio on 4–5 November 2026, after each selected version completed loading. Each row records its check date. These are the service's displayed readouts, not newly performed lossless measurements or independent listening judgments. No processing jobs were started for this update.
 
 | Song page | Version records | Source and limit |
 | --- | ---: | --- |
 | Neon House of Glass | 1 | Named remastered MP3 import; not matched to the Spotify stream. |
 | Beat Drop | 1 | Named MP3 import; not matched to the Spotify stream. |
 | Beat Drop (original) | 1 | Explicitly the same inspected import as the release page; not a second measurement of the SoundCloud version. |
-| Loop in Control | 3 | Original source, Modern master 8.1, stereo version 12; distinct saved versions, not an inferred serial process chain. |
+| Loop in Control | 4 | Original source, Modern master 8.1, stereo version 12 and enhancement 8. Saved metadata explicitly links original → enhancement 8 → Modern master 8.1; the stereo version starts separately from the original. |
 | 78 THz Texture | 2 | Original source and enhancement 1; failed or reinterpretation versions excluded. |
-| With a Grin | 2 | Original stem-mix import and enhancement 3.1; public-stream identity unconfirmed. |
+| With a Grin | 3 | Original stem-mix import, enhancement 3.1 and denoising 3. Saved metadata explicitly links original → denoising 3 → enhancement 3.1; public-stream identity remains unconfirmed. |
 | That Spark | 2 | Historical Pressure (Remastered x2) candidate: source and restoration 1. The public title alias is corroborated; the selected candidate's exact relationship to the current recording is unconfirmed and visibly labelled. |
 | Beat Between Our Years | 2 | Restored-mix source and Modern master 2. Target setting is −8 LUFS; displayed result is −8.4 LUFS. No attribution to the public stream without identity evidence. |
 | Hanging On | 3 | Existing 3 November PCM comparison: earlier source, matched archive master, decoded public stream. See the original process record. |
@@ -36,10 +38,10 @@ Private project identifiers, source file identifiers, account details and source
 - `SongProductionProcess.tsx` renders native HTML/CSS meter plots, numeric tables and process notes; no chart library was added.
 - `HangingOnProcess.tsx` retains the original measured graphs and adds unique accessible IDs for coexisting page/dialog instances.
 - `MusicSong.tsx` uses the shared template and scopes scrolling/observers to its own page or dialog.
-- `songPageSeo.ts` supplies matching client/prerender metadata and music-specific structured data. The editorial date changes to 4 November; original recording upload dates do not.
+- `songPageSeo.ts` supplies matching client/prerender metadata and music-specific structured data. The current editorial date is 5 November; original recording upload dates do not change.
 - The process module loads on demand in the browser. An explicit synchronous server view preserves complete prerendered chart content. The small presentation stylesheet remains in the initial styles so static HTML is styled before scripting.
 
-## Validation record
+## Initial rollout validation — 4 November 2026
 
 Five specialist agents completed the [fifty-round ledger](song-studio-validation-2026-11-04.md): source provenance, live archive reconciliation, template audit, implementation and live studio validation. Every round records a validation and result. The final live-data audit matches all ten independently collected readouts to the public dataset; the coordinator's three Loop readings and the existing three Hanging On PCM records are separately sourced.
 
@@ -64,3 +66,17 @@ Browser checks verified the Loop in Control standalone page at a 1348-pixel cont
 The music dialog rendered the same process content in its 1063-pixel scroll area. Section navigation scrolled that container to the matching unique anchor, all three figures remained inside the dialog, and Escape closed it, removed its query parameter and restored focus to the originating song control. Hanging On rendered both its three retained source-comparison graphs and three scalar figures with the original source values.
 
 Responsive rules were inspected at the 900- and 680-pixel breakpoints, including single-column meter/step layouts and the focusable horizontal table region. A narrow device viewport was not available through the browser control surface, so no physical-device or narrow-viewport visual pass is claimed. A directional word in Hanging On's explanatory copy was removed after the preview review because the summary meters precede that note.
+
+## Additional comparison update — 5 November 2026
+
+Two additional saved-version readouts were inspected in the authenticated studio: Loop enhancement 8 (−12.3 LUFS, +0.6 dBTP, 6.6 LU; 44.1 kHz/24-bit stereo) and With a Grin denoising 3 (−10.6 LUFS, +0.5 dBTP, 3.4 LU; 44.1 kHz/24-bit stereo). Process metadata was independently checked by keyboard-focusing the intended version before reading its saved source and settings. A hover card can otherwise describe another option in the open menu.
+
+The comparison controls use native labelled selects, prevent selecting the same version on both sides, keep a stable logical keyboard order, announce updated differences, and retain independent state in a page and its dialog. Missing LRA is omitted from differences; measured true peaks above full scale stay visible. The numeric table now includes the explicitly derived peak distance.
+
+The measured cards use intrinsic grid widths; process steps and comparison controls also respond to their containing section. This supports the music dialog as well as standalone pages. Controls retain visible keyboard focus and a minimum height of 46 pixels. Chart markers retain visible system colours in forced-colour mode.
+
+Continuation validation uses passes 51–100. The requested fresh specialist sessions failed before starting with context-window errors; the continuation is coordinated directly, and failed starts are excluded from validation. The final pass ledger and release evidence accompany the dated task run.
+
+Local validation: four focused suites / 35 tests passed; the full production pipeline passed with 70-page SEO coverage, 71-page image coverage, 78 unique images and no image failures. Initial JavaScript remains 414 kB gzip against the unchanged 425 kB budget. The actual app TypeScript check retains the baseline 255 diagnostics, with zero new diagnostics and none in changed modules. Lint reports zero errors and the same 19 inherited warnings.
+
+A narrow static HTML/CSS fixture was prepared, but the browser's URL policy blocks local-file pages. No narrow-viewport browser or physical-device visual result is claimed. Deployment checks cover live standalone pages, comparison interaction, measurement/settings disclosure, and the music dialog.
