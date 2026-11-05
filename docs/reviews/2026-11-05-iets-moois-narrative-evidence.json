@@ -1,0 +1,1214 @@
+{
+  "recorded_at": "2026-11-05T10:33:31.786900+00:00",
+  "scope": "Five agents, ten scoped expert review rounds each; not fifty builds or user studies",
+  "reviewers": [
+    {
+      "name": "narrative_sources",
+      "rounds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "detailed_review_sha256": "c6ea1e82f991175f28031a48d8c774a3add530b87fcc84bb569d41a859379412"
+    },
+    {
+      "name": "visual_direction",
+      "rounds": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "detailed_review_sha256": "fcde18e0465d58abc642f119889565a065cf4292027049f35f554b5e03bb2a23"
+    },
+    {
+      "name": "ux_narrative",
+      "rounds": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "detailed_review_sha256": "cb47822ffd6193094ae2879fdfea9df6320d7c1dbcbf136f68c27d12bd40293f"
+    },
+    {
+      "name": "narrative_copy",
+      "rounds": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "detailed_review_sha256": "825c4c897535275d133de65bb8b42d4ebc20947c294df059b8a84a3586a73211"
+    },
+    {
+      "name": "interaction_review",
+      "rounds": [
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "detailed_review_sha256": "4c54acbc38e0624ef371d859fda82398b72d98dad0310c4a3030e43c3bbf1de9"
+    }
+  ],
+  "final_source": {
+    "src/components/music/AlbumVisualStory.tsx": "ab670fc5e6c5d62339b1c9df1f96cc46b9eb363e310dbdc2151dce73cbc80123",
+    "src/components/music/IetsMooisNarrative.tsx": "90475b616a456b27bbdf6128727071bfabe37947a47aa674b4046e1a2fea02cc",
+    "src/data/ietsMooisNarrative.ts": "85d495f3794487a6b8dd6a94491ccc20cf66fdcdfdf0fbb60b96c2c34f75292b",
+    "src/data/albumEditorial.ts": "067ca4735bda9eaaf5039d4a5939e1cd4037077a9b71420690561a16331181d5",
+    "src/pages/MusicAlbumBrand.tsx": "8f01114e9a6525734c0a3d58072945c971e7fce8ae9c7895c712872d3868340d",
+    "src/styles/iets-moois-narrative.css": "8956f7c7748465f2904279a263ad38c232f4d2b7aa7adb11a7b28f081903f16e"
+  },
+  "source_digest": "e89dbdf230998d0b8a607604fce2d75567a911e35207a066522408234381dd4b",
+  "tests": {
+    "full_personal": {
+      "passed": 518,
+      "files": 51,
+      "log_sha256": "9e0547a3ed4d7a313199452fbf9fa0737fbb352fb58879d80b9eeba75f6ee206"
+    },
+    "focused": {
+      "command": "npm run test --workspace=@hans/personal -- src/components/music/IetsMooisNarrative.test.tsx src/components/music/AlbumVisualStory.test.tsx src/components/music/AlbumArtworkActions.test.tsx --reporter=default --reporter=json --outputFile=/workspace/scratch/12b5a6625895/work/narrative50/interaction-tests.json",
+      "total": 57,
+      "passed": 57,
+      "failed": 0,
+      "success": true,
+      "report_sha256": "f44263d95907b3ae691660893383e523420e3db6dd80f250820e94b82ba2b9ec"
+    },
+    "app_typecheck": {
+      "command": "npx tsc --noEmit -p tsconfig.app.json --pretty false",
+      "exit_code": 2,
+      "diagnostics": 255,
+      "baseline_diagnostics": 255,
+      "all_diagnostic_lines_identical_to_baseline": true,
+      "new_task_diagnostics": [],
+      "log_sha256": "2f34177e1fb176e5075a313a995cc806d3f3fc3ee56b4273aecde32f1a32f0dd"
+    }
+  },
+  "final_build": {
+    "started_at": "2026-11-05T10:27:24.912531+00:00",
+    "source_before": {
+      "src/components/music/AlbumVisualStory.tsx": "ab670fc5e6c5d62339b1c9df1f96cc46b9eb363e310dbdc2151dce73cbc80123",
+      "src/components/music/IetsMooisNarrative.tsx": "90475b616a456b27bbdf6128727071bfabe37947a47aa674b4046e1a2fea02cc",
+      "src/data/ietsMooisNarrative.ts": "85d495f3794487a6b8dd6a94491ccc20cf66fdcdfdf0fbb60b96c2c34f75292b",
+      "src/data/albumEditorial.ts": "067ca4735bda9eaaf5039d4a5939e1cd4037077a9b71420690561a16331181d5",
+      "src/pages/MusicAlbumBrand.tsx": "8f01114e9a6525734c0a3d58072945c971e7fce8ae9c7895c712872d3868340d",
+      "src/styles/iets-moois-narrative.css": "8956f7c7748465f2904279a263ad38c232f4d2b7aa7adb11a7b28f081903f16e"
+    },
+    "completed_at": "2026-11-05T10:28:53.051544+00:00",
+    "exit_code": 0,
+    "source_after": {
+      "src/components/music/AlbumVisualStory.tsx": "ab670fc5e6c5d62339b1c9df1f96cc46b9eb363e310dbdc2151dce73cbc80123",
+      "src/components/music/IetsMooisNarrative.tsx": "90475b616a456b27bbdf6128727071bfabe37947a47aa674b4046e1a2fea02cc",
+      "src/data/ietsMooisNarrative.ts": "85d495f3794487a6b8dd6a94491ccc20cf66fdcdfdf0fbb60b96c2c34f75292b",
+      "src/data/albumEditorial.ts": "067ca4735bda9eaaf5039d4a5939e1cd4037077a9b71420690561a16331181d5",
+      "src/pages/MusicAlbumBrand.tsx": "8f01114e9a6525734c0a3d58072945c971e7fce8ae9c7895c712872d3868340d",
+      "src/styles/iets-moois-narrative.css": "8956f7c7748465f2904279a263ad38c232f4d2b7aa7adb11a7b28f081903f16e"
+    },
+    "sitemap_restored": true,
+    "temporary_review_absent": true,
+    "source_unchanged": true
+  },
+  "guards": {
+    "seo_pages": 70,
+    "seo_checks": 27,
+    "image_pages": 71,
+    "unique_images": 94,
+    "image_failures": 0,
+    "image_network_warnings": 0,
+    "eager_chunks": 17,
+    "eager_gzip_kb": 421,
+    "gzip_budget_kb": 425
+  },
+  "production_prerender": {
+    "h1_count": 1,
+    "scenes": [
+      "album-origin",
+      "album-toen",
+      "album-stilte",
+      "album-tegenstem",
+      "album-spiegeling",
+      "album-vandaag"
+    ],
+    "artwork_openers": [
+      "Bekijk beeld en ontwerp: Iets dichterbij",
+      "Bekijk beeld en ontwerp: Vooruitkijken",
+      "Bekijk beeld en ontwerp: Een beetje licht",
+      "Bekijk beeld en ontwerp: Een beetje te veel",
+      "Bekijk beeld en ontwerp: Toen in nu",
+      "Bekijk beeld en ontwerp: Nu in toen",
+      "Bekijk beeld en ontwerp: Ruimte om te blijven"
+    ],
+    "hidden_tabpanels": 0,
+    "legacy_anchors_preserved": true,
+    "html_sha256": "da3214abf00bdc5d84e8d44f017fd173233bb3bdd8b6feadb1d604b1a9598ce1"
+  },
+  "native": {
+    "previewSha": "733c38003a2317eb922e41a0040d237ddf2aa59d",
+    "checks": [
+      {
+        "case": "native-anchor-open-next-escape",
+        "before": {
+          "hash": "#album-stilte",
+          "scroll": 1799,
+          "top": 223.09375
+        },
+        "after": {
+          "dialogs": 0,
+          "focused": true,
+          "hash": "#album-stilte",
+          "scroll": 1867,
+          "top": 155.09375
+        }
+      },
+      {
+        "case": "repeat-position-stability",
+        "before": {
+          "bodyWidth": 1348,
+          "fontStatus": "loaded",
+          "height": 625.125,
+          "scroll": 1867,
+          "top": 155.09375
+        },
+        "open": {
+          "bodyWidth": 1348,
+          "fontStatus": "loaded",
+          "height": 625.125,
+          "scroll": 1867,
+          "top": 155.09375
+        },
+        "after": {
+          "bodyWidth": 1348,
+          "focused": true,
+          "fontStatus": "loaded",
+          "height": 625.125,
+          "scroll": 1867,
+          "top": 155.09375
+        }
+      },
+      {
+        "case": "anchor-keyboard-open-next-escape",
+        "before": {
+          "focused": "album-stilte",
+          "fontStatus": "loaded",
+          "height": 625.125,
+          "sceneTop": 100.4375,
+          "scroll": 1799,
+          "top": 223.09375
+        },
+        "open": {
+          "height": 625.125,
+          "scroll": 1867,
+          "top": 155.09375
+        },
+        "after": {
+          "focused": true,
+          "hash": "#album-stilte",
+          "height": 625.125,
+          "scroll": 1867,
+          "top": 155.09375
+        }
+      },
+      {
+        "case": "native-tab-enter-right-escape",
+        "before": {
+          "focused": true,
+          "hash": "#album-stilte",
+          "scroll": 1799,
+          "top": 223.09375
+        },
+        "open": {
+          "hash": "#album-stilte",
+          "scroll": 1799,
+          "top": 223.09375
+        },
+        "selection": "Iets dichterbij",
+        "after": {
+          "focused": true,
+          "hash": "#album-stilte",
+          "scroll": 1799,
+          "top": 223.09375
+        }
+      },
+      {
+        "case": "native-forward-back",
+        "forward": {
+          "title": "Iets dichterbij",
+          "url": "https://hansvanleeuwen-78idbelxh-hansvl3-4255s-projects.vercel.app/music/albums/iets-moois/brand?beeld=iets-dichterbij#album-stilte"
+        },
+        "after": {
+          "dialogs": 0,
+          "focused": true,
+          "hash": "#album-stilte",
+          "scroll": 1799,
+          "top": 223.09375
+        }
+      }
+    ]
+  },
+  "reflow": {
+    "preview_commit": "6239a4fa4a718d07e60e92f5de1160ad86ba78da",
+    "captured_at": "2026-11-05T10:24:31.383Z",
+    "cases": [
+      {
+        "size": "portrait320",
+        "textScale": "100",
+        "viewport": {
+          "width": 320,
+          "height": 568,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 305,
+          "scrollWidth": 305,
+          "scrollHeight": 7601,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 1,
+          "imagesPending": 6,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "portrait390",
+        "textScale": "100",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 375,
+          "scrollWidth": 375,
+          "scrollHeight": 7673,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 3,
+          "imagesPending": 4,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "landscape568",
+        "textScale": "100",
+        "viewport": {
+          "width": 568,
+          "height": 320,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 553,
+          "scrollWidth": 553,
+          "scrollHeight": 8984,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 3,
+          "imagesPending": 4,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "landscape844",
+        "textScale": "100",
+        "viewport": {
+          "width": 844,
+          "height": 390,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 829,
+          "scrollWidth": 829,
+          "scrollHeight": 5449,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 4,
+          "imagesPending": 3,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 370.17,
+            "height": 370.17,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 353.44,
+            "height": 353.44,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 353.44,
+            "height": 353.44,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 353.44,
+            "height": 353.44,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 366.75,
+            "height": 366.75,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 366.75,
+            "height": 366.75,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 353.44,
+            "height": 353.44,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "tablet",
+        "textScale": "100",
+        "viewport": {
+          "width": 768,
+          "height": 1024,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 753,
+          "scrollWidth": 753,
+          "scrollHeight": 5249,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 4,
+          "imagesPending": 3,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 334.69,
+            "height": 334.69,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 320.73,
+            "height": 320.73,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 320.75,
+            "height": 320.75,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 320.73,
+            "height": 320.73,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 331.78,
+            "height": 331.78,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 331.78,
+            "height": 331.78,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 320.75,
+            "height": 320.75,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "desktop",
+        "textScale": "100",
+        "viewport": {
+          "width": 1363,
+          "height": 936,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 1348,
+          "scrollWidth": 1348,
+          "scrollHeight": 7171,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 4,
+          "imagesPending": 3,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 584.48,
+            "height": 584.48,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 569.11,
+            "height": 569.11,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 569.13,
+            "height": 569.13,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 569.11,
+            "height": 569.11,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 598,
+            "height": 598,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 598,
+            "height": 598,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 569.13,
+            "height": 569.13,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "portrait320",
+        "textScale": "200",
+        "viewport": {
+          "width": 320,
+          "height": 568,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 305,
+          "scrollWidth": 305,
+          "scrollHeight": 14355,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 1,
+          "imagesPending": 6,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 281.84,
+            "height": 281.84,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 263,
+            "height": 263,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "portrait390",
+        "textScale": "200",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 375,
+          "scrollWidth": 375,
+          "scrollHeight": 13421,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 1,
+          "imagesPending": 6,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 333,
+            "height": 333,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "landscape568",
+        "textScale": "200",
+        "viewport": {
+          "width": 568,
+          "height": 320,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 553,
+          "scrollWidth": 553,
+          "scrollHeight": 12464,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 1,
+          "imagesPending": 6,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 505.56,
+            "height": 505.56,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "landscape844",
+        "textScale": "200",
+        "viewport": {
+          "width": 844,
+          "height": 390,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 829,
+          "scrollWidth": 829,
+          "scrollHeight": 8770,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 1,
+          "imagesPending": 6,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 370.17,
+            "height": 370.17,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 353.44,
+            "height": 353.44,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 353.44,
+            "height": 353.44,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 353.44,
+            "height": 353.44,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 366.75,
+            "height": 366.75,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 366.75,
+            "height": 366.75,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 353.44,
+            "height": 353.44,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "tablet",
+        "textScale": "200",
+        "viewport": {
+          "width": 768,
+          "height": 1024,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 753,
+          "scrollWidth": 753,
+          "scrollHeight": 9153,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 1,
+          "imagesPending": 6,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 334.69,
+            "height": 334.69,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 320.73,
+            "height": 320.73,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 320.75,
+            "height": 320.75,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 320.73,
+            "height": 320.73,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 331.78,
+            "height": 331.78,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 331.78,
+            "height": 331.78,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 320.75,
+            "height": 320.75,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      },
+      {
+        "size": "desktop",
+        "textScale": "200",
+        "viewport": {
+          "width": 1363,
+          "height": 936,
+          "scale": 1,
+          "dpr": 1
+        },
+        "page": {
+          "clientWidth": 1348,
+          "scrollWidth": 1348,
+          "scrollHeight": 9757,
+          "scrollY": 0,
+          "horizontalOverflow": false
+        },
+        "summary": {
+          "chaptersPresent": 6,
+          "chaptersExpected": 6,
+          "storyImages": 7,
+          "storyImagesExpected": 7,
+          "imagesReady": 1,
+          "imagesPending": 6,
+          "imagesError": 0,
+          "textIssues": 0
+        },
+        "fontStatus": "loaded",
+        "image_boxes": [
+          {
+            "width": 584.48,
+            "height": 584.48,
+            "objectFit": "contain",
+            "state": "ready"
+          },
+          {
+            "width": 569.11,
+            "height": 569.11,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 569.13,
+            "height": 569.13,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 569.11,
+            "height": 569.11,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 598,
+            "height": 598,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 598,
+            "height": 598,
+            "objectFit": "contain",
+            "state": "pending"
+          },
+          {
+            "width": 569.13,
+            "height": 569.13,
+            "objectFit": "contain",
+            "state": "pending"
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "CSS-sized Chromium review frame with actual album components",
+      "200% means authored doubled fonts, not native browser zoom or physical device",
+      "Lazy images are pending until scrolled into view"
+    ],
+    "full_trace_sha256": "f335cb07aae8c8d4a4e55b32f469d0984111f6bf799f15b3584cfb28c59fd530"
+  },
+  "focus": {
+    "capturedAt": "2026-11-05T10:25:11.486Z",
+    "previewCommit": "6239a4fa4a718d07e60e92f5de1160ad86ba78da",
+    "method": "Native Tab from the final scene artwork button to the invitation link in actual component fixture",
+    "result": {
+      "background": "rgb(20, 37, 28)",
+      "focusVisible": true,
+      "focused": true,
+      "label": "Ontdek alle beelden 15 beeldstudies",
+      "outlineColor": "rgb(93, 54, 125)",
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "panelBackground": "rgb(234, 234, 222)",
+      "rect": {
+        "height": 78,
+        "width": 283,
+        "x": 46,
+        "y": 382.875
+      },
+      "viewport": {
+        "height": 844,
+        "width": 390
+      }
+    }
+  },
+  "screenshots": [
+    {
+      "file": "iets-moois-narrative-desktop.jpg",
+      "bytes": 94968,
+      "sha256": "567892dab8fb235de59e68d3ae0d9f0014e4bdc32a37a2212534e76361aed225",
+      "origin": "iets-moois-narrative-preview-clean-hero-12b5.jpg"
+    },
+    {
+      "file": "iets-moois-narrative-spiegeling.jpg",
+      "bytes": 116519,
+      "sha256": "a6cb78be9bf56a572ff9d5fbfe228496f685573dc8f9fc4741acec5d9b572a68",
+      "origin": "iets-moois-narrative-preview-pair-final-12b5.jpg"
+    },
+    {
+      "file": "iets-moois-narrative-mobile.jpg",
+      "bytes": 60085,
+      "sha256": "13b9ea31b0bd78c915a7ec81705e2dcb6701c93390dbed7aec091a5100d1d14b",
+      "origin": "iets-moois-narrative-mobile-hero-settled-12b5.jpg"
+    },
+    {
+      "file": "iets-moois-narrative-focus.jpg",
+      "bytes": 57201,
+      "sha256": "ea5644cb67e52bce44ec59612a5d3e0693dcba137b637e5c69fa07197cb68e09",
+      "origin": "iets-moois-narrative-mobile-focus-12b5.jpg"
+    }
+  ],
+  "evidence_hashes": {
+    "build-final.log": "1bd606f71fe11bc8b3d2747b356f4e0c8045e5e17e56bd22218bd4ac5b148719",
+    "build-final-summary.json": "99efcb54c0f160a522bfadecc3b84209e62c308adeaa20aa6943811d6fa92566",
+    "interaction-tests.json": "f44263d95907b3ae691660893383e523420e3db6dd80f250820e94b82ba2b9ec",
+    "copy-visual-review-evidence.json": "e4498a91a20b4e523ba7c226f768691f4c4fe60c29ce967826cb32a153bee2d9"
+  },
+  "publication": "Verified separately after PR merge; this receipt records pre-release evidence only."
+}
