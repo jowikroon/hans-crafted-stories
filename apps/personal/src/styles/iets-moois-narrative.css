@@ -58,6 +58,7 @@
 .im-laser-link>span { color:#c4d0c6; font:400 .625rem/1.6 var(--font-mono),monospace; }
 .im-laser-link>svg { color:#c7a0ff; flex-shrink:0; margin-left:auto; }
 .im-laser-link:hover { background:#213c2c; }
+.im-story-invitation .im-laser-link:focus-visible { outline-color:#5d367d; }
 @media(max-width:960px) {
   .im-opening { column-gap:28px; }
   .im-opening h1 { font-size:clamp(2.5rem,5.5vw,4rem); }
