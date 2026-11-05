@@ -151,3 +151,21 @@ Hans never merges himself. For every PR Claude opens:
 Exceptions, where Claude reports first instead of merging: CI stays red and Claude can't fix it, a conflict where both sides change the same logic, or anything irreversible outside the repo (deleting data, payments, credentials).
 
 Never force-push to main, and never skip or disable checks to get green.
+
+
+---
+
+## Hard UX contract: JOWIKROON music album covers (Claude, Codex, OpenClaw)
+
+**Applies to `/music` and both `/music/albums/*` pages.** The music pages are not blog-post-generation requests: the n8n blog approval loop above does not replace normal source-code PR checks.
+
+Read [the canonical album-motion contract](docs/music-album-motion-contract.md) and [the artwork decision](docs/music-album-artwork-reveal.md) **before editing** `AlbumSleeve.tsx`, `AlbumShowcase.tsx` or `music-albums.css`.
+
+1. **Preserve the approved interactive sleeve.** A cover image alone is the front; clicking or tapping smoothly rotates it 180 degrees in **760 ms**, revealing the complete, uncropped back. Never convert the cover to a static link, remove the 3D transform, or overlay design-system text on the approved front artwork.
+2. **Preserve the accelerating reveal.** After the turn ends, track rows arrive at **920, 1370, 1720, 1960, 2140, 2280, 2390, 2480 and 2560 ms**, respectively, from activation. The stagger must become faster, not slower. Each row animates once per opening; reopening replays.
+3. **Both albums participate.** NEON displays the two already public songs plus anonymous unreleased slots; IETS MOOIS also animates its five anonymous slots. Never replace the IETS MOOIS list with a static quote based on the absence of public releases. Never reveal unreleased titles, private metadata, WAV links, owner content or hidden release dates.
+4. **Keep accessible alternatives.** Escape closes the sleeve and returns focus; Tab and keyboard activation reveal rows without waiting; `prefers-reduced-motion: reduce` disables motion and shows all rows immediately. Direct album navigation remains available **below** the covers as a nonanimated alternative.
+5. **Mandatory PR gate, including for Claude.** Run `npm run test:personal`, `npm run lint:personal`, `npm run typecheck --workspace=@hans/personal` and `npm run build:personal` (or confirm the same named steps passed on the exact PR commit in GitHub CI). In particular, `apps/personal/src/components/music/AlbumSleeve.test.tsx` and `AlbumShowcase.test.tsx` must pass. A failure means **do not merge**; repair the regression instead of deleting or weakening the test.
+6. **Don't misreport delivery.** A successful GitHub commit is not a live change. Verify green CI, successful merge SHA and Vercel production READY on that SHA before claiming deployment; label live browser/mobile playback separately if it was not verified. No force-push, bypassing safety checks, or false claims of parallel agents or completed rounds.
+
+This block is an owner-requested permanent product rule for future Claude and other agent changes. Changes to the motion contract itself require a deliberate, recorded product decision with updated tests and documentation.
