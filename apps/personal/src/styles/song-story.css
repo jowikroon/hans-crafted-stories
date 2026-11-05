@@ -1,0 +1,388 @@
+/* ============================================================
+   song-story.css, narrative band on the song detail page.
+   Scoped under .music-v2 so it never leaks into the rest of the site.
+   Visual language follows the NEON plates: near black field, warm
+   off white type, one restrained violet accent, generous dark space.
+   ============================================================ */
+
+.music-v2 .songstory {
+  --story-field: #0B0B0D;
+  --story-field-2: #131318;
+  --story-ink: #F2F1F5;
+  --story-ink-2: #AEADB8;
+  --story-muted: #76757F;
+  --story-spark: #9C4DFF;
+  --story-hair: rgba(242, 241, 245, .12);
+
+  max-width: 1040px;
+  margin: 64px auto 0;
+  background: var(--story-field);
+  border-radius: 22px;
+  overflow: hidden;
+  color: var(--story-ink);
+  box-shadow: 0 40px 90px -56px rgba(0, 0, 0, .8);
+  /* Clears the sticky in-page section menu, same offset as the prose headings. */
+  scroll-margin-top: 96px;
+}
+
+/* The lazy wrapper is the scroll target, so it carries the offset too. */
+.music-v2 [id$="song-story"] { scroll-margin-top: 96px; }
+
+.music-v2 .songstory__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: 44px;
+  padding: 44px;
+  align-items: start;
+}
+
+/* --- artwork ------------------------------------------------ */
+.music-v2 .songstory__art { margin: 0; position: relative; }
+
+.music-v2 .songstory__art-blur {
+  position: absolute;
+  inset: 0;
+  bottom: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px);
+  opacity: .5;
+  transform: scale(1.02);
+}
+
+.music-v2 .songstory__art img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--story-hair);
+  background: #000;
+}
+
+.music-v2 .songstory__art figcaption {
+  margin-top: 14px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--story-muted);
+  text-wrap: pretty;
+}
+
+/* --- story copy --------------------------------------------- */
+.music-v2 .songstory__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--story-spark);
+  margin: 0 0 16px;
+}
+
+.music-v2 .songstory__heading {
+  font-family: var(--font-display);
+  font-size: clamp(27px, 3.1vw, 36px);
+  line-height: 1.16;
+  letter-spacing: -.022em;
+  font-weight: 500;
+  color: var(--story-ink);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.music-v2 .songstory__p {
+  margin: 20px 0 0;
+  font-size: 17.5px;
+  line-height: 1.72;
+  color: var(--story-ink-2);
+  text-wrap: pretty;
+}
+
+.music-v2 .songstory__quote {
+  margin: 34px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.music-v2 .songstory__pulse {
+  width: 150px;
+  height: 60px;
+  object-fit: contain;
+  object-position: left center;
+  display: block;
+  margin-bottom: 2px;
+  opacity: .95;
+}
+
+.music-v2 .songstory__quote p {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.3vw, 25px);
+  line-height: 1.38;
+  letter-spacing: -.016em;
+  color: var(--story-ink);
+  text-wrap: balance;
+}
+
+.music-v2 .songstory__quote cite {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-style: normal;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--story-muted);
+}
+
+.music-v2 .songstory__place {
+  margin: 30px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--story-hair);
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--story-ink-2);
+}
+
+/* --- rail: cues + craft ------------------------------------- */
+.music-v2 .songstory__rail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 44px;
+  padding: 36px 44px 44px;
+  background: var(--story-field-2);
+  border-top: 1px solid var(--story-hair);
+}
+
+.music-v2 .songstory__sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--story-muted);
+  margin: 0 0 18px;
+}
+
+.music-v2 .songstory__cues ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+  counter-reset: cue;
+}
+
+.music-v2 .songstory__cues li {
+  counter-increment: cue;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 16px;
+  padding-left: 30px;
+  position: relative;
+  font-size: 15px;
+  line-height: 1.62;
+}
+
+.music-v2 .songstory__cues li::before {
+  content: counter(cue, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--story-spark);
+}
+
+.music-v2 .songstory__cue-at { color: var(--story-ink); font-weight: 500; }
+.music-v2 .songstory__cue-text { color: var(--story-ink-2); }
+
+.music-v2 .songstory__craft p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--story-ink-2);
+}
+
+.music-v2 .songstory__album {
+  display: block;
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--story-hair);
+  border-radius: 12px;
+  background: rgba(156, 77, 255, .06);
+  transition: border-color .2s var(--ease-out), background .2s var(--ease-out), transform .2s var(--ease-out);
+}
+
+.music-v2 .songstory__album:hover {
+  border-color: color-mix(in srgb, var(--story-spark) 55%, transparent);
+  background: rgba(156, 77, 255, .12);
+  transform: translateY(-1px);
+}
+
+.music-v2 .songstory__album-k {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--story-muted);
+  margin-bottom: 7px;
+}
+
+.music-v2 .songstory__album-t {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  color: var(--story-ink);
+}
+
+.music-v2 .songstory__album-t svg { width: 17px; height: 17px; flex: 0 0 auto; color: var(--story-spark); }
+
+.music-v2 .songstory__standalone {
+  margin-top: 22px !important;
+  font-size: 14px !important;
+  color: var(--story-muted) !important;
+}
+
+/* --- responsive --------------------------------------------- */
+@media (max-width: 900px) {
+  .music-v2 .songstory__grid,
+  .music-v2 .songstory__rail { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .music-v2 .songstory__art img { max-width: 420px; }
+  .music-v2 .songstory__art-blur { display: none; }
+}
+
+@media (max-width: 640px) {
+  .music-v2 .songstory { margin-top: 44px; border-radius: 16px; }
+  .music-v2 .songstory__grid { padding: 26px 20px; }
+  .music-v2 .songstory__rail { padding: 28px 20px 32px; }
+  .music-v2 .songstory__cues li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-v2 .songstory__album { transition: none; }
+  .music-v2 .songstory__album:hover { transform: none; }
+}
+
+/* Neutral credit row under the release/recording table. */
+.music-v2 .specs__note {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair-2);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* Placeholder while the story chunk loads. Keeps the anchor and the dark field. */
+.music-v2 .songstory--loading { padding: 44px; }
+.music-v2 .songstory--loading p {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--story-muted);
+}
+
+/* --- instruments and the Ableton Live rebuild ------------------- */
+.music-v2 .songstory__studio {
+  padding: 34px 44px 44px;
+  background: var(--story-field);
+  border-top: 1px solid var(--story-hair);
+}
+
+.music-v2 .songstory__studio-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.music-v2 .songstory__studio-head .songstory__sub { margin-bottom: 0; }
+
+.music-v2 .songstory__daw {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 7px 14px 7px 12px;
+  border: 1px solid var(--story-hair);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.music-v2 .songstory__daw-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--story-muted);
+  flex: 0 0 auto;
+}
+
+.music-v2 .songstory__daw[data-status="in-progress"] .songstory__daw-dot { background: var(--story-spark); }
+.music-v2 .songstory__daw[data-status="rebuilt"] .songstory__daw-dot { background: #4ADE80; }
+
+.music-v2 .songstory__daw-name { color: var(--story-ink); }
+.music-v2 .songstory__daw-state { color: var(--story-muted); }
+
+.music-v2 .songstory__studio-note {
+  margin: 18px 0 0;
+  max-width: 62ch;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--story-ink-2);
+}
+
+.music-v2 .songstory__instruments {
+  margin: 24px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px 36px;
+}
+
+.music-v2 .songstory__instruments > div {
+  padding-top: 14px;
+  border-top: 1px solid var(--story-hair);
+}
+
+.music-v2 .songstory__instruments dt {
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  font-weight: 500;
+  letter-spacing: -.008em;
+  color: var(--story-ink);
+}
+
+.music-v2 .songstory__instruments dd {
+  margin: 6px 0 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--story-ink-2);
+}
+
+.music-v2 .songstory__instruments-pending {
+  margin: 22px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--story-hair);
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--story-muted);
+}
+
+@media (max-width: 640px) {
+  .music-v2 .songstory__studio { padding: 28px 20px 32px; }
+  .music-v2 .songstory__instruments { grid-template-columns: minmax(0, 1fr); }
+}

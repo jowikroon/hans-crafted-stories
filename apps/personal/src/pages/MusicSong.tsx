@@ -19,6 +19,8 @@ import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
 import { songPageHead, songPageJsonLd } from "@/data/songPageSeo";
+import { getSongNarrativeMeta } from "@/data/songNarrativeMeta";
+import { SongStoryView } from "@/components/music/SongStoryView";
 import "@/styles/music-v2.css";
 import "@/styles/hanging-on.css";
 import { SongProductionProcessView } from "@/components/SongProductionProcessView";
@@ -129,6 +131,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
   const instanceId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const idPrefix = inDialog ? `dialog-${instanceId}-` : "";
   const sectionIds = {
+    story: `${idPrefix}song-story`,
     notes: `${idPrefix}song-notes`,
     process: `${idPrefix}song-process`,
     gear: `${idPrefix}song-gear`,
@@ -136,6 +139,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
   };
   useEffect(() => { ensureFontCss("fonts-neon", FONT_CSS.writing); }, []);
   const resolved = getSongBySlug(slug);
+  const narrative = getSongNarrativeMeta(slug);
   // Only tracks verified public are included in music.ts.
   const song = resolved;
 
@@ -335,12 +339,15 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
             key={song.slug}
             rootRef={rootRef}
             items={[
-              { id: sectionIds.notes, label: "Notes" },
+              ...(narrative ? [{ id: sectionIds.story, label: "The story" }] : []),
+              { id: sectionIds.notes, label: "Release notes" },
               { id: sectionIds.process, label: "Inside the recording" },
               ...(d.gear && d.gear.length ? [{ id: sectionIds.gear, label: "Sounds" }] : []),
               ...(d.lyrics.length ? [{ id: sectionIds.lyrics, label: "Lyrics" }] : []),
             ]}
           />
+
+          {narrative && <SongStoryView slug={song.slug} sectionId={sectionIds.story} title={song.title} />}
 
           {/* Production notes + aside */}
           <div className="songbody" id={sectionIds.notes}>
@@ -361,6 +368,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
                     </div>
                   ))}
                 </dl>
+                {narrative?.credits && <p className="specs__note">{narrative.credits}</p>}
               </div>
               {d.gear.length > 0 && (
                 <div className="gearlist" id={sectionIds.gear}>

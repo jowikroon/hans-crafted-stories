@@ -36,6 +36,7 @@ export default defineConfig(({ mode }) => ({
       // renderToString cannot resolve a lazy boundary: retain complete static song charts.
       ...(process.env.BUILD_SSR ? {
         "@/components/SongProductionProcessView": path.resolve(__dirname, "./src/components/SongProductionProcessView.server.tsx"),
+        "@/components/music/SongStoryView": path.resolve(__dirname, "./src/components/music/SongStoryView.server.tsx"),
       } : {}),
       "@": path.resolve(__dirname, "./src"),
     },
