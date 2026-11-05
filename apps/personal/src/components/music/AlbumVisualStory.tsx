@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type TouchEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type TouchEvent } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Expand, X } from "lucide-react";
@@ -30,7 +30,7 @@ function Artwork({ image, onReady, onRetry }: { image: AlbumVisualStoryImage; on
 }
 
 /** A single history entry keeps Browser Back as a natural way out of the gallery. */
-export default function AlbumVisualStory() {
+export default function AlbumVisualStory({ children }: { children?: (openArtwork: (id: string, opener: HTMLButtonElement) => void) => ReactNode } = {}) {
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
@@ -151,7 +151,9 @@ export default function AlbumVisualStory() {
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) selectImage(index + (dx < 0 ? 1 : -1));
   }
 
-  return <section className="avs-story" id="album-world" aria-labelledby="avs-heading">
+  return <>
+    {children?.((id, opener) => selectImage(albumVisualStory.findIndex((image) => image.id === id), { opener }))}
+    <section className="avs-story" id="album-world" aria-labelledby="avs-heading">
     <div className="ma-section-heading"><div><p className="ma-eyebrow">IETS MOOIS / Het beeldverhaal</p><h2 id="avs-heading">Eén gezicht.<br />Meer dan één verhaal.</h2></div><p className="avs-intro">Een open blik. Iets van toen. En ruimte voor wat jij erin ziet.</p></div>
     <div className="avs-story__layout">
       <button ref={fallbackTrigger} type="button" className="avs-cover" aria-haspopup="dialog" onClick={(event) => selectImage(albumVisualStory.indexOf(hero), { opener: event.currentTarget })}>
@@ -171,7 +173,7 @@ export default function AlbumVisualStory() {
             </button>;
           })}
         </div>
-        <a href="#album-origin" className="avs-reading-link">Liever eerst de woorden? <span>Lees het verhaal <ArrowDown size={15} aria-hidden="true" /></span></a>
+        <a href="#album-origin" className="avs-reading-link">{children ? "Nog even terug naar de belofte?" : "Liever eerst de woorden?"} <span>{children ? "Terug naar het begin ↑" : <>Lees het verhaal <ArrowDown size={15} aria-hidden="true" /></>}</span></a>
       </div>
     </div>
     <Dialog.Root open={!!current} onOpenChange={(open) => { if (!open) close(); }}>
@@ -217,5 +219,5 @@ export default function AlbumVisualStory() {
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  </section>;
+  </section></>;
 }

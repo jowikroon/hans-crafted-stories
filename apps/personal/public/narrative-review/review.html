@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>IETS MOOIS: tijdelijke narratief- en reflowreview</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#222;color:#eee;font:14px/1.5 system-ui,sans-serif}header{padding:12px 16px;border-bottom:1px solid #777}h1{font-size:19px;margin:0 0 7px}p{margin:0 0 8px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}button,a{display:inline-block;color:#111;background:#eee;padding:9px 12px;min-height:40px;border:1px solid #aaa;border-radius:4px;text-decoration:none;font:inherit;cursor:pointer}button[aria-pressed=true]{background:#d8baff}button:focus-visible,a:focus-visible{outline:3px solid #bf92ff;outline-offset:3px}main{padding:16px;overflow:auto}iframe{display:block;border:0;outline:1px solid #aaa;width:320px;height:568px;box-sizing:content-box;background:#080a0b}details{padding:10px 16px}pre{max-height:210px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.6 monospace}output{align-self:center}#summary{font-weight:600;color:#e1d0ff}.note{font-size:12px;color:#ccc}
+</style>
+</head>
+<body>
+<header>
+  <h1>IETS MOOIS: narratief en reflow</h1>
+  <p>Echte albumcomponenten. 200% verdubbelt uitsluitend lettergroottes; viewport, afbeeldingen, iconen, spacing en mediaqueries blijven gelijk.</p>
+  <p class="note">Tijdelijke previewcontrole. Geen native browserzoom, fysiek apparaat of volledige app. Controleer pagina-ankers, globale navigatie en browsergeschiedenis op de echte verhaalpagina.</p>
+  <nav class="controls" aria-label="Kies de tekstcase">
+    <button type="button" data-view="story100" aria-pressed="true">Verhaal 100%</button><button type="button" data-view="story200" aria-pressed="false">Verhaal 200%</button>
+    <button type="button" data-view="gallery100" aria-pressed="false">Overlay 100%</button><button type="button" data-view="gallery200" aria-pressed="false">Overlay 200%</button>
+    <button type="button" data-view="sequence100" aria-pressed="false">Volgordestudie 100%</button><button type="button" data-view="sequence200" aria-pressed="false">Volgordestudie 200%</button>
+  </nav>
+  <div class="controls" role="group" aria-label="Kies CSS-viewport">
+    <button type="button" data-size="portrait320" aria-pressed="true">320 × 568</button><button type="button" data-size="portrait390" aria-pressed="false">390 × 844</button><button type="button" data-size="landscape568" aria-pressed="false">568 × 320</button><button type="button" data-size="landscape844" aria-pressed="false">844 × 390</button><button type="button" data-size="tablet" aria-pressed="false">768 × 1024</button><button type="button" data-size="desktop" aria-pressed="false">1363 × 936</button>
+    <output id="size">320 × 568 CSS px</output>
+  </div>
+  <p id="summary" role="status">Verhaal laden…</p>
+</header>
+<details>
+  <summary>Scène in het reviewframe tonen</summary>
+  <p class="note">Deze reviewknoppen scrollen alleen het frame. Ze vervangen geen test van de echte pagina-ankers.</p>
+  <div class="controls" role="group" aria-label="Toon een scène in het reviewframe">
+    <button type="button" data-jump="belofte">Toon De belofte</button><button type="button" data-jump="toen">Toon Toen</button><button type="button" data-jump="stilte">Toon De stilte</button><button type="button" data-jump="tegenstem">Toon De tegenstem</button><button type="button" data-jump="spiegeling">Toon De spiegeling</button><button type="button" data-jump="vandaag">Toon Vandaag</button><button type="button" data-jump="beelden">Toon Alle beelden</button>
+  </div>
+</details>
+<details><summary>Read-only layoutmetingen en bronidentiteit</summary><button type="button" id="inspect">Meet layout</button><pre id="metrics">Component laden…</pre></details>
+<main><iframe id="frame" name="narrative-frame" title="IETS MOOIS albumcomponenten" sandbox="allow-scripts allow-same-origin"></iframe></main>
+<script>
+const SOURCE = Object.freeze({"head":"f0ff2674ba0f77347548fb210d474a0e170866be","sourceDigest":"5b2e76c94bd745066aeb3a4bccbfa04ca57ba15e918646d001c81e1e939707db","manifest":"/narrative-review/source-manifest.json"});
+const TRUSTED_CASES = Object.freeze({"story100":"\u003c!doctype html>\u003chtml lang=\"nl\">\u003chead>\u003cmeta charset=\"UTF-8\">\u003cmeta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\u003cmeta name=\"robots\" content=\"noindex,nofollow\">\u003ctitle>IETS MOOIS review: story, 100% tekst\u003c/title>\u003cstyle>body{margin:0;background:#080a0b}@font-face{font-family:'Switzer Fallback';src:local('Arial'),local('Helvetica Neue'),local('Helvetica'),local('Liberation Sans');size-adjust:91.2%;ascent-override:107.5%;descent-override:27.4%;line-gap-override:0%}\u003c/style>\u003clink rel=\"stylesheet\" href=\"/narrative-review/fixture-c8e3c56ba3a4.css\">\u003c/head>\u003cbody data-text-scale=\"100\">\u003cdiv id=\"root\" data-case=\"story\">\u003c/div>\u003cscript src=\"/narrative-review/fixture.iife-eb0b87164885.js\">\u003c/script>\u003c/body>\u003c/html>","story200":"\u003c!doctype html>\u003chtml lang=\"nl\">\u003chead>\u003cmeta charset=\"UTF-8\">\u003cmeta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\u003cmeta name=\"robots\" content=\"noindex,nofollow\">\u003ctitle>IETS MOOIS review: story, 200% tekst\u003c/title>\u003cstyle>body{margin:0;background:#080a0b}@font-face{font-family:'Switzer Fallback';src:local('Arial'),local('Helvetica Neue'),local('Helvetica'),local('Liberation Sans');size-adjust:91.2%;ascent-override:107.5%;descent-override:27.4%;line-gap-override:0%}\u003c/style>\u003clink rel=\"stylesheet\" href=\"/narrative-review/fixture-c8e3c56ba3a4.css\">\u003clink rel=\"stylesheet\" href=\"/narrative-review/text-200.css\">\u003c/head>\u003cbody data-text-scale=\"200\">\u003cdiv id=\"root\" data-case=\"story\">\u003c/div>\u003cscript src=\"/narrative-review/fixture.iife-eb0b87164885.js\">\u003c/script>\u003c/body>\u003c/html>","gallery100":"\u003c!doctype html>\u003chtml lang=\"nl\">\u003chead>\u003cmeta charset=\"UTF-8\">\u003cmeta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\u003cmeta name=\"robots\" content=\"noindex,nofollow\">\u003ctitle>IETS MOOIS review: gallery, 100% tekst\u003c/title>\u003cstyle>body{margin:0;background:#080a0b}@font-face{font-family:'Switzer Fallback';src:local('Arial'),local('Helvetica Neue'),local('Helvetica'),local('Liberation Sans');size-adjust:91.2%;ascent-override:107.5%;descent-override:27.4%;line-gap-override:0%}\u003c/style>\u003clink rel=\"stylesheet\" href=\"/narrative-review/fixture-c8e3c56ba3a4.css\">\u003c/head>\u003cbody data-text-scale=\"100\">\u003cdiv id=\"root\" data-case=\"gallery\">\u003c/div>\u003cscript src=\"/narrative-review/fixture.iife-eb0b87164885.js\">\u003c/script>\u003c/body>\u003c/html>","gallery200":"\u003c!doctype html>\u003chtml lang=\"nl\">\u003chead>\u003cmeta charset=\"UTF-8\">\u003cmeta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\u003cmeta name=\"robots\" content=\"noindex,nofollow\">\u003ctitle>IETS MOOIS review: gallery, 200% tekst\u003c/title>\u003cstyle>body{margin:0;background:#080a0b}@font-face{font-family:'Switzer Fallback';src:local('Arial'),local('Helvetica Neue'),local('Helvetica'),local('Liberation Sans');size-adjust:91.2%;ascent-override:107.5%;descent-override:27.4%;line-gap-override:0%}\u003c/style>\u003clink rel=\"stylesheet\" href=\"/narrative-review/fixture-c8e3c56ba3a4.css\">\u003clink rel=\"stylesheet\" href=\"/narrative-review/text-200.css\">\u003c/head>\u003cbody data-text-scale=\"200\">\u003cdiv id=\"root\" data-case=\"gallery\">\u003c/div>\u003cscript src=\"/narrative-review/fixture.iife-eb0b87164885.js\">\u003c/script>\u003c/body>\u003c/html>","sequence100":"\u003c!doctype html>\u003chtml lang=\"nl\">\u003chead>\u003cmeta charset=\"UTF-8\">\u003cmeta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\u003cmeta name=\"robots\" content=\"noindex,nofollow\">\u003ctitle>IETS MOOIS review: sequence, 100% tekst\u003c/title>\u003cstyle>body{margin:0;background:#080a0b}@font-face{font-family:'Switzer Fallback';src:local('Arial'),local('Helvetica Neue'),local('Helvetica'),local('Liberation Sans');size-adjust:91.2%;ascent-override:107.5%;descent-override:27.4%;line-gap-override:0%}\u003c/style>\u003clink rel=\"stylesheet\" href=\"/narrative-review/fixture-c8e3c56ba3a4.css\">\u003c/head>\u003cbody data-text-scale=\"100\">\u003cdiv id=\"root\" data-case=\"sequence\">\u003c/div>\u003cscript src=\"/narrative-review/fixture.iife-eb0b87164885.js\">\u003c/script>\u003c/body>\u003c/html>","sequence200":"\u003c!doctype html>\u003chtml lang=\"nl\">\u003chead>\u003cmeta charset=\"UTF-8\">\u003cmeta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\u003cmeta name=\"robots\" content=\"noindex,nofollow\">\u003ctitle>IETS MOOIS review: sequence, 200% tekst\u003c/title>\u003cstyle>body{margin:0;background:#080a0b}@font-face{font-family:'Switzer Fallback';src:local('Arial'),local('Helvetica Neue'),local('Helvetica'),local('Liberation Sans');size-adjust:91.2%;ascent-override:107.5%;descent-override:27.4%;line-gap-override:0%}\u003c/style>\u003clink rel=\"stylesheet\" href=\"/narrative-review/fixture-c8e3c56ba3a4.css\">\u003clink rel=\"stylesheet\" href=\"/narrative-review/text-200.css\">\u003c/head>\u003cbody data-text-scale=\"200\">\u003cdiv id=\"root\" data-case=\"sequence\">\u003c/div>\u003cscript src=\"/narrative-review/fixture.iife-eb0b87164885.js\">\u003c/script>\u003c/body>\u003c/html>"});
+const frame = document.getElementById('frame'), metrics = document.getElementById('metrics');
+const SIZES = Object.freeze({portrait320:[320,568],portrait390:[390,844],landscape568:[568,320],landscape844:[844,390],tablet:[768,1024],desktop:[1363,936]});
+const JUMPS = Object.freeze({belofte:'album-origin',toen:'album-toen',stilte:'album-stilte',tegenstem:'album-tegenstem',spiegeling:'album-spiegeling',vandaag:'album-vandaag',beelden:'album-world'});
+const CHAPTER_IDS = Object.freeze(['album-origin','album-toen','album-stilte','album-tegenstem','album-spiegeling','album-vandaag']);
+const rounded = number => Math.round(number * 100) / 100;
+const box = element => {if(!element)return null;const r=element.getBoundingClientRect();return{x:rounded(r.x),y:rounded(r.y),width:rounded(r.width),height:rounded(r.height),right:rounded(r.right),bottom:rounded(r.bottom)};};
+const label = element => element ? (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\s+/g,' ') : '';
+function inspect(){
+  const d=frame.contentDocument,w=frame.contentWindow;if(!d||!w||!d.getElementById('root'))return;
+  const root=d.documentElement,body=d.querySelector('.avs-dialog__body'),footer=d.querySelector('.avs-controls');
+  const textInfo=element=>{
+    if(!element)return null;
+    const rect=box(element),style=w.getComputedStyle(element),range=d.createRange();range.selectNodeContents(element);
+    const fragments=[...range.getClientRects()].filter(r=>r.width>0&&r.height>0);
+    const min=fragments.length?Math.min(...fragments.map(r=>r.left)):rect.x;
+    const max=fragments.length?Math.max(...fragments.map(r=>r.right)):rect.right;
+    return{text:label(element),...rect,fontSize:style.fontSize,lineHeight:style.lineHeight,fontFamily:style.fontFamily,clientWidth:element.clientWidth,scrollWidth:element.scrollWidth,scrollHeight:element.scrollHeight,clientHeight:element.clientHeight,textBounds:{left:rounded(min),right:rounded(max)},textOutsideBox:min<rect.x-1.5||max>rect.right+1.5,outsideViewport:rect.x< -1.5||rect.right>w.innerWidth+1.5};
+  };
+  const chapterInfo=CHAPTER_IDS.map(id=>{
+    const el=d.getElementById(id),h=el?.querySelector('h1,h2');return{id,present:!!el,title:h?.textContent.trim().replace(/\s+/g,' ')||'',...box(el),display:el?w.getComputedStyle(el).display:null,visibility:el?w.getComputedStyle(el).visibility:null};
+  });
+  const images=[...d.querySelectorAll('.im-artwork__button>img')].map(el=>({alt:el.alt,src:el.getAttribute('src'),currentSrc:el.currentSrc,loading:el.loading,state:el.complete?(el.naturalWidth>0?'ready':'error'):'pending',naturalWidth:el.naturalWidth,naturalHeight:el.naturalHeight,widthAttribute:Number(el.getAttribute('width')),heightAttribute:Number(el.getAttribute('height')),...box(el),objectFit:w.getComputedStyle(el).objectFit}));
+  const texts=[...d.querySelectorAll('.im-opening h1,.im-opening__copy>p,.im-scene h2,.im-scene__text,.im-artwork__action,.im-artwork figcaption,.im-story-invitation h2,.im-story-index a,.ma-page-nav a,.avs-laser strong,.ma-companion h2,.ma-companion h3,.ma-companion p')].map(textInfo);
+  const textIssues=texts.filter(item=>item.textOutsideBox||item.outsideViewport);
+  const active=d.activeElement,activeStyle=active?w.getComputedStyle(active):null;
+  const interactive=[...d.querySelectorAll('.im-narrative a,.im-narrative button,.avs-dialog button,.avs-dialog select')].map(el=>({tag:el.tagName,label:label(el),tabIndex:el.tabIndex,disabled:el.hasAttribute('disabled'),ariaDisabled:el.getAttribute('aria-disabled'),...box(el)}));
+  const ready=images.filter(item=>item.state==='ready').length,error=images.filter(item=>item.state==='error').length;
+  const horizontalOverflow=root.scrollWidth>root.clientWidth+1;
+  const report={source:SOURCE,case:d.getElementById('root').dataset.case,textScale:d.body.dataset.textScale,viewport:{width:w.innerWidth,height:w.innerHeight,scale:w.visualViewport?.scale,dpr:w.devicePixelRatio},page:{clientWidth:root.clientWidth,scrollWidth:root.scrollWidth,scrollHeight:root.scrollHeight,scrollY:rounded(w.scrollY),horizontalOverflow},summary:{chaptersPresent:chapterInfo.filter(item=>item.present).length,chaptersExpected:6,storyImages:images.length,storyImagesExpected:7,imagesReady:ready,imagesPending:images.length-ready-error,imagesError:error,textIssues:textIssues.length},chapters:chapterInfo,images,textIssues,texts,interactive,focused:active?{tag:active.tagName,label:label(active),...box(active),tabIndex:active.tabIndex,focusVisible:active.matches(':focus-visible'),outlineStyle:activeStyle.outlineStyle,outlineWidth:activeStyle.outlineWidth,outlineColor:activeStyle.outlineColor,inDialog:!!active.closest('.avs-dialog')}:null,dialog:box(d.querySelector('.avs-dialog')),header:box(d.querySelector('.avs-dialog__header')),dialogBody:body?{...box(body),clientWidth:body.clientWidth,scrollWidth:body.scrollWidth,clientHeight:body.clientHeight,scrollHeight:body.scrollHeight,scrollTop:body.scrollTop}:null,artwork:box(d.querySelector('.avs-artwork')),captionTitle:textInfo(d.querySelector('.avs-caption h3')),captionCopy:textInfo(d.querySelector('.avs-caption>p')),artworkActions:[...d.querySelectorAll('.avs-artwork-action')].map(textInfo),footer:footer?{...box(footer),clientWidth:footer.clientWidth,scrollWidth:footer.scrollWidth}:null,controls:[...d.querySelectorAll('.avs-controls>button')].map(textInfo),counter:textInfo(d.querySelector('.avs-counter')),close:textInfo(d.querySelector('.avs-close')),fontStatus:d.fonts.status,loadedFonts:[...d.fonts].filter(item=>item.status==='loaded').map(item=>({family:item.family,weight:item.weight}))};
+  metrics.textContent=JSON.stringify(report,null,2);
+  document.getElementById('summary').textContent=`${w.innerWidth} × ${w.innerHeight}, ${d.body.dataset.textScale}% tekst · ${report.summary.chaptersPresent}/6 scènes · ${ready}/7 beelden geladen${error?' · '+error+' beeldfouten':''} · ${horizontalOverflow?'horizontale overflow':'geen pagina-overflow'} · ${textIssues.length} tekstgrenssignalen`;
+}
+document.querySelectorAll('[data-size]').forEach(button=>button.addEventListener('click',()=>{
+  const size=SIZES[button.dataset.size];if(!size)return;
+  frame.style.width=size[0]+'px';frame.style.height=size[1]+'px';
+  document.querySelectorAll('[data-size]').forEach(other=>other.setAttribute('aria-pressed',String(other===button)));
+  document.getElementById('size').textContent=size.join(' × ')+' CSS px';requestAnimationFrame(inspect);
+}));
+document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{
+  // Only fixed build-time documents can enter srcdoc. No query, input, URL or
+  // DOM text is concatenated into markup; the switch selects a literal case.
+  switch(button.dataset.view){
+    case 'story100':frame.srcdoc=TRUSTED_CASES.story100;break;
+    case 'story200':frame.srcdoc=TRUSTED_CASES.story200;break;
+    case 'gallery100':frame.srcdoc=TRUSTED_CASES.gallery100;break;
+    case 'gallery200':frame.srcdoc=TRUSTED_CASES.gallery200;break;
+    case 'sequence100':frame.srcdoc=TRUSTED_CASES.sequence100;break;
+    case 'sequence200':frame.srcdoc=TRUSTED_CASES.sequence200;break;
+    default:return;
+  }
+  document.querySelectorAll('[data-view]').forEach(other=>other.setAttribute('aria-pressed',String(other===button)));
+}));
+document.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener('click',()=>{
+  const id=JUMPS[button.dataset.jump];if(!id)return;
+  frame.contentDocument?.getElementById(id)?.scrollIntoView({behavior:'instant',block:'start'});requestAnimationFrame(inspect);
+}));
+let observer,resizeObserver;
+frame.addEventListener('load',()=>{
+  observer?.disconnect();resizeObserver?.disconnect();const d=frame.contentDocument;if(!d)return;
+  let pending=false;const schedule=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;inspect();});};
+  observer=new MutationObserver(schedule);observer.observe(d.documentElement,{attributes:true,childList:true,subtree:true});
+  resizeObserver=new ResizeObserver(schedule);resizeObserver.observe(d.documentElement);
+  for(const event of ['focusin','scroll','load','error'])d.addEventListener(event,schedule,true);
+  d.fonts.ready.then(schedule);schedule();
+});
+document.getElementById('inspect').addEventListener('click',inspect);
+frame.srcdoc=TRUSTED_CASES.story100;
+</script>
+</body>
+</html>

@@ -1,0 +1,779 @@
+/* Authored doubled font sizes only; not native browser zoom. */
+.ma-eyebrow {
+    font-size: 22px !important
+}
+.ma-showcase__intro h2 {
+    font-size: clamp(52px,6vw,76px) !important
+}
+.ma-showcase__intro>p:last-child {
+    font-size: 30px !important
+}
+.ma-sleeve__hint {
+    font: 22px var(--font-mono),monospace !important
+}
+.ma-sleeve__edition {
+    font: clamp(14px,3.6cqw,20px)/1.2 var(--font-mono),monospace !important
+}
+.ma-sleeve__back h3 {
+    font-size: clamp(44px,14cqw,84px) !important
+}
+.ma-sleeve__subtitle {
+    font-size: clamp(20px,6cqw,32px) !important
+}
+.ma-sleeve__back .ma-sleeve__track {
+    font-size: clamp(20px,5.2cqw,30px) !important
+}
+.ma-sleeve__index {
+    font: clamp(16px,3.6cqw,20px)/1 var(--font-mono),monospace !important
+}
+.ma-sleeve__play {
+    font-size: 36px !important
+}
+.ma-sleeve__back .ma-sleeve__cta {
+    font-size: clamp(20px,4.6cqw,24px) !important
+}
+.ma-sleeve__cta>span:last-child {
+    font-size: 40px !important
+}
+.ma-sleeve__back-quote {
+    font-size: clamp(36px,10cqw,60px) !important
+}
+.ma-text-link {
+    font-size: 26px !important
+}
+.ma-text-link>span {
+    font-size: 44px !important
+}
+@container (max-width:320px) {
+    .ma-sleeve__edition {
+        font-size: 14px !important
+    }
+}
+@container (max-width:320px) {
+    .ma-sleeve__back h3 {
+        font-size: 44px !important
+    }
+}
+@container (max-width:320px) {
+    .ma-sleeve__subtitle {
+        font-size: 20px !important
+    }
+}
+@container (max-width:320px) {
+    .ma-sleeve__index {
+        font-size: 16px !important
+    }
+}
+@container (max-width:320px) {
+    .ma-sleeve__back .ma-sleeve__track {
+        font-size: 20px !important
+    }
+}
+.ma-breadcrumb {
+    font-size: 22px !important
+}
+.ma-album-nav a {
+    font-size: 24px !important
+}
+.ma-album-nav a span {
+    font-size: 20px !important
+}
+.ma-album-hero__art figcaption {
+    font-size: 18px !important
+}
+.ma-album-hero h1 {
+    font-size: clamp(84px,12vw,152px) !important
+}
+.ma-album-hero__subtitle {
+    font-size: clamp(42px,6vw,64px) !important
+}
+.ma-album-hero__description {
+    font-size: 34px !important
+}
+.ma-coming {
+    font-size: 24px !important
+}
+.ma-available {
+    font-size: 26px !important
+}
+.ma-button {
+    font-size: 26px !important
+}
+.ma-button span {
+    font-size: 40px !important
+}
+.ma-section-heading h2 {
+    font-size: clamp(52px,7.4vw,80px) !important
+}
+.ma-section-heading__count,.ma-owner-label {
+    font-size: 20px !important
+}
+.ma-track__number {
+    font-size: 22px !important
+}
+.ma-track__play {
+    font-size: 26px !important
+}
+.ma-track__play[aria-expanded=true] {
+    font-size: 50px !important
+}
+.ma-track__copy>a,.ma-track__copy>strong {
+    font-size: 34px !important
+}
+.ma-track__copy>span:not(.ma-blur-mark) {
+    font-size: 22px !important
+}
+.ma-track__duration {
+    font-size: 22px !important
+}
+.ma-track__link {
+    font-size: 24px !important
+}
+.ma-track__link span {
+    font-size: 38px !important
+}
+.ma-track__coming {
+    font-size: 20px !important
+}
+.ma-track--owner .ma-track__copy>strong {
+    font-size: 30px !important
+}
+.ma-track-note {
+    font-size: 24px !important
+}
+.ma-private__story {
+    font-size: 32px !important
+}
+.ma-guide summary {
+    font-size: 28px !important
+}
+.ma-guide__content {
+    font-size: 28px !important
+}
+.ma-album-footer p {
+    font-size: 36px !important
+}
+.ma-album-footer p span {
+    font-size: 24px !important
+}
+@media (max-width:760px) {
+    .ma-album-hero h1 {
+        font-size: 84px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-album-hero__description {
+        font-size: 28px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-album-hero__subtitle {
+        font-size: 42px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-button {
+        font-size: 24px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-album-hero h1 {
+        font-size: 112px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-album-hero__description {
+        font-size: 32px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-album-nav a {
+        font-size: 22px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-track__copy>a,.ma-track__copy>strong {
+        font-size: 28px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-track__coming {
+        font-size: 16px !important
+    }
+}
+.ma-chapters a {
+    font-size: 24px !important
+}
+.ma-essence h2,.ma-origin h2 {
+    font-size: clamp(56px,8vw,88px) !important
+}
+.ma-essence-copy {
+    font-size: clamp(40px,5.6vw,56px) !important
+}
+.ma-process-number {
+    font: 22px var(--font-mono),monospace !important
+}
+.ma-process-grid h3,.ma-feelings-grid h3 {
+    font-size: 42px !important
+}
+.ma-process-grid p,.ma-feelings-grid p {
+    font-size: 28px !important
+}
+.ma-brand-hero h1 {
+    font-size: clamp(84px,11.4vw,144px) !important
+}
+.ma-brand-lead {
+    font-size: clamp(36px,4vw,44px) !important
+}
+.ma-brand-hero figcaption {
+    font-size: 22px !important
+}
+.ma-origin p:not(.ma-eyebrow) {
+    font-size: 34px !important
+}
+.ma-brand-closing>p {
+    font-size: clamp(56px,9.2vw,108px) !important
+}
+@media (max-width:760px) {
+    .ma-guide__content {
+        font-size: 28px !important
+    }
+}
+.ma-page--editorial .ma-breadcrumb {
+    font-size: 20px !important
+}
+.ma-page--editorial .ma-chapters a {
+    font-size: 22px !important
+}
+.ma-page--editorial .ma-eyebrow {
+    font-size: 20px !important
+}
+.ma-album-hero--editorial h1 {
+    font-size: clamp(156px,21vw,292px) !important
+}
+.ma-album-hero--editorial .ma-album-hero__subtitle {
+    font-size: clamp(48px,6vw,76px) !important
+}
+.ma-album-hero--editorial .ma-album-hero__art figcaption {
+    font-size: 18px !important
+}
+.ma-album-hero--editorial .ma-album-hero__description {
+    font-size: 32px !important
+}
+.ma-release-status {
+    font: 20px/1.7 var(--font-mono),monospace !important
+}
+.ma-release-status__year {
+    font-size: 18px !important
+}
+.ma-page--editorial .ma-button {
+    font-size: 24px !important
+}
+.ma-hero-story {
+    font-size: 24px !important
+}
+.ma-page--editorial .ma-section-heading h2 {
+    font-size: clamp(60px,7vw,92px) !important
+}
+.ma-section-heading__aside {
+    font-size: 24px !important
+}
+.ma-manifesto h2 {
+    font-size: clamp(72px,9.4vw,128px) !important
+}
+.ma-manifesto__bottom p {
+    font-size: 26px !important
+}
+.ma-manifesto .ma-text-link {
+    font-size: 22px !important
+}
+.ma-world__invitation {
+    font-size: 24px !important
+}
+.ma-world__portrait figcaption {
+    font-size: 22px !important
+}
+.ma-world__tabs button {
+    font: 24px/1.4 var(--font-display),sans-serif !important
+}
+.ma-world__tabs button>span {
+    font: 18px var(--font-mono),monospace !important
+}
+.ma-world__panel h3 {
+    font-size: clamp(54px,6vw,76px) !important
+}
+.ma-world__panel p {
+    font-size: 28px !important
+}
+.ma-world__aside {
+    font-size: 22px !important
+}
+.ma-journey__number {
+    font: 22px var(--font-mono),monospace !important
+}
+.ma-journey__grid h3 {
+    font-size: 52px !important
+}
+.ma-journey__grid p {
+    font-size: 28px !important
+}
+.ma-page--editorial .ma-track__copy>button {
+    font-size: 36px !important
+}
+.ma-arrival>p {
+    font-size: 28px !important
+}
+.ma-companion__intro h2 {
+    font-size: clamp(50px,6vw,68px) !important
+}
+.ma-companion__link .ma-eyebrow {
+    font-size: 18px !important
+}
+.ma-companion__link h3 {
+    font-size: 60px !important
+}
+.ma-companion__subtitle {
+    font-size: 26px !important
+}
+.ma-companion__link p {
+    font-size: 24px !important
+}
+.ma-companion__action {
+    font-size: 22px !important
+}
+.ma-companion__action>span {
+    font-size: 44px !important
+}
+.ma-page--editorial .ma-album-footer>p {
+    font-size: 26px !important
+}
+.ma-story-hero h1 {
+    font-size: clamp(100px,15vw,200px) !important
+}
+.ma-story-hero__bottom>p {
+    font-size: 34px !important
+}
+.ma-story-hero .ma-text-link {
+    font-size: 24px !important
+}
+.ma-page--editorial .ma-origin h2 {
+    font-size: clamp(64px,7vw,88px) !important
+}
+.ma-page--editorial .ma-origin p:not(.ma-eyebrow) {
+    font-size: 32px !important
+}
+.ma-page--editorial .ma-brand-closing>p {
+    font-size: clamp(72px,11.6vw,152px) !important
+}
+@media (max-width:1000px) {
+    .ma-album-hero--editorial h1 {
+        font-size: clamp(152px,20vw,224px) !important
+    }
+}
+@media (max-width:760px) {
+    .ma-album-hero--editorial h1 {
+        font-size: clamp(144px,36vw,256px) !important
+    }
+}
+@media (max-width:760px) {
+    .ma-album-hero--editorial .ma-album-hero__subtitle {
+        font-size: 54px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-album-hero--editorial .ma-album-hero__description {
+        font-size: 32px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-manifesto h2 {
+        font-size: clamp(72px,14vw,104px) !important
+    }
+}
+@media (max-width:760px) {
+    .ma-manifesto__bottom p {
+        font-size: 24px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-world__panel h3 {
+        font-size: 64px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-journey__grid h3 {
+        font-size: 44px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-journey__grid p {
+        font-size: 26px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-story-hero h1 {
+        font-size: clamp(92px,18vw,136px) !important
+    }
+}
+@media (max-width:540px) {
+    .ma-album-hero--editorial h1 {
+        font-size: clamp(148px,40vw,200px) !important
+    }
+}
+@media (max-width:540px) {
+    .ma-album-hero--editorial .ma-album-hero__art figcaption {
+        font-size: 20px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-manifesto__bottom p {
+        font-size: 26px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-journey__grid h3 {
+        font-size: 48px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-journey__grid p {
+        font-size: 28px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-companion__link h3 {
+        font-size: 52px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-companion__link p {
+        font-size: 22px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-companion__link .ma-eyebrow {
+        font-size: 16px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-page--editorial .ma-track__copy>button {
+        font-size: 30px !important
+    }
+}
+@media (max-width:360px) {
+    .ma-companion__link h3 {
+        font-size: 46px !important
+    }
+}
+.ma-album-index a {
+    font-size: 24px !important
+}
+.ma-story-trail .ma-section-heading h2 {
+    font-size: clamp(80px,10vw,128px) !important
+}
+.ma-story-trail__tabs button {
+    font: 26px/1.5 var(--font-display),sans-serif !important
+}
+.ma-story-trail__word>span {
+    font: 18px/1.7 var(--font-mono),monospace !important
+}
+.ma-story-trail__word strong {
+    font: 500 clamp(112px,15.4vw,208px)/1 var(--font-display),sans-serif !important
+}
+.ma-story-trail__reading h3 {
+    font-size: clamp(54px,6.6vw,84px) !important
+}
+.ma-story-trail__reading>p:not(.ma-eyebrow) {
+    font-size: 30px !important
+}
+.ma-story-trail__reading .ma-story-trail__detail {
+    font-size: 24px !important
+}
+.ma-story-trail__footer>span {
+    font-size: 22px !important
+}
+.ma-story-trail__footer button {
+    font: 24px/1.5 var(--font-display),sans-serif !important
+}
+.ma-story-trail__footer button>span {
+    font-size: 40px !important
+}
+.ma-arrival>p.ma-arrival__invitation {
+    font-size: 40px !important
+}
+@media (max-width:760px) {
+    .ma-album-index a {
+        font-size: 22px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-story-trail__tabs button {
+        font-size: 22px !important
+    }
+}
+@media (max-width:760px) {
+    .ma-story-trail__word strong {
+        font-size: clamp(92px,16vw,140px) !important
+    }
+}
+@media (max-width:760px) {
+    .ma-story-trail__reading>p:not(.ma-eyebrow) {
+        font-size: 28px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-story-trail__tabs button {
+        font-size: 24px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-story-trail__word strong {
+        font-size: 128px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-story-trail__word>span {
+        font-size: 16px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-story-trail__reading h3 {
+        font-size: 60px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-story-trail__reading>p:not(.ma-eyebrow) {
+        font-size: 28px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-story-trail__footer>span {
+        font-size: 20px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-story-trail__footer button {
+        font-size: 24px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-arrival>p.ma-arrival__invitation {
+        font-size: 36px !important
+    }
+}
+.avs-intro {
+    font-size: 28px !important
+}
+.avs-cover__action {
+    font-size: 26px !important
+}
+.avs-cover__action>span:last-child {
+    font: 22px/1.6 var(--font-mono),monospace !important
+}
+.avs-entry__intro>p:last-child {
+    font-size: 30px !important
+}
+.avs-laser__index {
+    font: 18px/1.4 var(--font-mono),monospace !important
+}
+.avs-laser strong {
+    font-size: 36px !important
+}
+.avs-reading-link {
+    font-size: 22px !important
+}
+.avs-dialog__header h2 {
+    font-size: 32px !important
+}
+.avs-dialog__header p {
+    font-size: 24px !important
+}
+.avs-close {
+    font-size: 24px !important
+}
+.avs-artwork__status {
+    font-size: 24px !important
+}
+.avs-artwork__error p {
+    font-size: 32px !important
+}
+.avs-artwork__error>span {
+    font-size: 24px !important
+}
+.avs-artwork__error button {
+    font-size: 28px !important
+}
+.avs-caption__chapter {
+    font: 20px/1.7 var(--font-mono),monospace !important
+}
+.avs-caption h3 {
+    font-size: clamp(56px,6.2vw,88px) !important
+}
+.avs-caption>p {
+    font-size: 28px !important
+}
+.avs-artwork-action {
+    font-size: 24px !important
+}
+.avs-artwork-actions__status {
+    font-size: 24px !important
+}
+.avs-artwork-actions__manual label {
+    font-size: 24px !important
+}
+.avs-artwork-actions__manual input {
+    font-size: 32px !important
+}
+.avs-chapter-select label {
+    font-size: 20px !important
+}
+.avs-chapter-select select {
+    font-size: 24px !important
+}
+.avs-thumbnail-area>p {
+    font-size: 20px !important
+}
+.avs-thumbnails button>span {
+    font: 18px/1.6 var(--font-mono),monospace !important
+}
+.avs-controls>button {
+    font-size: 24px !important
+}
+.avs-counter {
+    font: 28px/1.2 var(--font-mono),monospace !important
+}
+.avs-key-hint {
+    font-size: 20px !important
+}
+@media (max-width:850px) {
+    .avs-laser strong {
+        font-size: 32px !important
+    }
+}
+@media (max-width:850px) {
+    .avs-entry__intro>p:last-child {
+        font-size: 26px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-intro {
+        font-size: 26px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-cover__action {
+        font-size: 24px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-cover__action>span:last-child {
+        font-size: 20px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-laser strong {
+        font-size: 32px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-dialog__header h2 {
+        font-size: 26px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-dialog__header p {
+        font-size: 22px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-caption__chapter {
+        font-size: 18px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-caption h3 {
+        font-size: 52px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-caption>p {
+        font-size: 26px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-counter {
+        font-size: 24px !important
+    }
+}
+.im-opening h1 {
+    font-size: clamp(5.4rem,10.4vw,9.5rem) !important
+}
+.im-opening__copy>p {
+    font-size: 2rem !important
+}
+.im-text-link {
+    font-size: 1.75rem !important
+}
+.im-artwork__action {
+    font-size: 1.5rem !important
+}
+.im-artwork figcaption {
+    font: 400 1.375rem/1.6 var(--font-mono),monospace !important
+}
+.im-story-index a {
+    font-size: 1.625rem !important
+}
+.im-story-index a>span {
+    font: 400 1.25rem/1.5 var(--font-mono),monospace !important
+}
+.im-scene__marker {
+    font: 400 1.375rem/1.6 var(--font-mono),monospace !important
+}
+.im-scene h2 {
+    font-size: clamp(4rem,8.2vw,7.5rem) !important
+}
+.im-scene__text {
+    font-size: 2.125rem !important
+}
+.im-scene__echo>span {
+    font: 400 1.25rem/1.8 var(--font-mono),monospace !important
+}
+.im-story-invitation h2 {
+    font-size: clamp(4.6rem,11.6vw,9.4rem) !important
+}
+.im-laser-link {
+    font-size: 1.75rem !important
+}
+.im-laser-link>span {
+    font: 400 1.25rem/1.6 var(--font-mono),monospace !important
+}
+@media (max-width:960px) {
+    .im-opening h1 {
+        font-size: clamp(5rem,11vw,8rem) !important
+    }
+}
+@media (max-width:760px) {
+    .im-opening h1 {
+        font-size: clamp(5.3rem,15.6vw,7.8rem) !important
+    }
+}
+@media (max-width:760px) {
+    .im-scene h2 {
+        font-size: clamp(4rem,14vw,6rem) !important
+    }
+}
+@media (max-width:760px) {
+    .im-scene__text {
+        font-size: 2rem !important
+    }
+}
+@media (max-width:360px) {
+    .im-opening h1 {
+        font-size: 5rem !important
+    }
+}
+@media (max-width:360px) {
+    .im-story-invitation h2 {
+        font-size: 4.2rem !important
+    }
+}
