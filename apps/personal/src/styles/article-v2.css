@@ -187,7 +187,7 @@
 .article-v2 .mtoc-panel button:focus-visible {
   outline: 2px solid var(--w2-accent); outline-offset: 3px;
 }
-.article-v2 .prose h2:focus { outline: none; }
+.article-v2 .prose h2:focus-visible { outline: 2px solid var(--w2-accent); outline-offset: 6px; }
 .article-v2 .prose code { font-family: var(--w2-font-mono); font-size: 0.82em; background: rgba(28,122,72,0.09); color: #155E39; padding: 2px 7px; border-radius: 5px; }
 .dark .article-v2 .prose code { background: rgba(28,122,72,0.2); color: #62CE91; }
 .article-v2 .prose .lead { font-size: 21px; line-height: 1.6; color: var(--w2-ink); font-weight: 400; }
