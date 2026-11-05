@@ -161,7 +161,7 @@ export default function AlbumVisualStory({ children }: { children?: (openArtwork
         <span className="avs-cover__action"><span><Expand size={17} aria-hidden="true" />Open het beeldverhaal</span><span>{albumVisualStory.length} beelden <ArrowUpRight size={19} aria-hidden="true" /></span></span>
       </button>
       <div className="avs-entry">
-        <div className="avs-entry__intro"><p className="ma-eyebrow">Begin waar je iets herkent</p><p>De blik, het licht, de kleine afwijking. Vier ingangen in de wereld van de plaat.</p></div>
+        <div className="avs-entry__intro"><p className="ma-eyebrow">Begin waar je iets herkent</p><p>De blik, het licht, de kleine afwijking. Kies wat je raakt.</p></div>
         <div className="avs-lasers" role="group" aria-label="Kies een ingang in het beeldverhaal">
           {albumVisualChapters.map((item, chapterIndex) => {
             const cover = albumVisualStory.find((image) => image.id === item.coverId)!;
