@@ -4,14 +4,15 @@ import * as Tabs from "@radix-ui/react-tabs";
 import ArtistRadarVisual from "@/components/music/ArtistRadarVisual";
 import ArtistRadarAccount from "@/components/music/ArtistRadarAccount";
 import { RADAR_ARTISTS, searchRadarArtists, type RadarArtist } from "@/lib/artistRadarCatalog";
+import { artistRadarAccountsAllowed } from "@/lib/artistRadarStagingGate";
 import { verifiedTicketOffer, type RadarTicketEvent } from "@/lib/artistRadarTickets";
 import { supabase } from "@/integrations/supabase/client";
 import "@/styles/artist-radar-dialog.css";
 
-// Preview builds currently inherit the production Supabase URL. Keep all
-// account actions unavailable until an isolated staging backend is verified.
-// The public, read-only discovery radar remains useful without registration.
-const accountEnabled = import.meta.env.VITE_ARTIST_RADAR_ACCOUNTS_ENABLED === "true";
+const accountEnabled = artistRadarAccountsAllowed(
+  import.meta.env.VITE_ARTIST_RADAR_ACCOUNTS_ENABLED,
+  import.meta.env.VITE_SUPABASE_URL,
+);
 
 export type ArtistRadarTab = "account" | "discover";
 
@@ -102,11 +103,14 @@ function RadarDiscovery({ onOpenAccount }: { onOpenAccount: () => void }) {
   const [events, setEvents] = useState<PublicRadarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedError, setFeedError] = useState(false);
+  const [feedAttempt, setFeedAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
     const load = async () => {
+      setLoading(true);
+      setFeedError(false);
       try {
         const { data, error } = await supabase.functions.invoke<PublicRadarFeed>("artist-radar-public-events", {
           method: "GET", signal: controller.signal,
@@ -122,7 +126,7 @@ function RadarDiscovery({ onOpenAccount }: { onOpenAccount: () => void }) {
     };
     void load();
     return () => { cancelled = true; controller.abort(); };
-  }, []);
+  }, [feedAttempt]);
 
   const artists = useMemo(() => {
     const known = new Set(RADAR_ARTISTS.map((artist) => artist.id));
@@ -195,8 +199,11 @@ function RadarDiscovery({ onOpenAccount }: { onOpenAccount: () => void }) {
           {selected && <button type="button" onClick={() => setSelected(null)} aria-label="Wis artiestfilter">Wis filter</button>}
         </div>
         {loading && <p role="status" className="ard-signals__note">Openbare concertsignalen ophalen…</p>}
-        {feedError && <p role="status" className="ard-signals__warning">De publieke concertfeed is tijdelijk niet beschikbaar. Je kunt artiesten blijven zoeken, maar actuele statussen kunnen niet worden getoond.</p>}
-        {!loading && !feedError && signals.length === 0 && <p role="status" className="ard-signals__note">Voor deze selectie zijn geen toekomstige concertmeldingen in de publieke bron beschikbaar. Dit betekent niet dat er geen concerten zijn.</p>}
+        {feedError && <div className="ard-signals__warning">
+          <p role="alert">De publieke concertfeed is tijdelijk niet beschikbaar. Je kunt artiesten blijven zoeken, maar actuele statussen kunnen niet worden getoond.</p>
+          <button type="button" className="mt-3 min-h-11 rounded-lg border border-[#C6FF34]/60 px-3 text-sm text-[#C6FF34] hover:bg-[#C6FF34]/10" onClick={() => setFeedAttempt((attempt) => attempt + 1)}>Opnieuw proberen</button>
+        </div>}
+        {!loading && !feedError && signals.length === 0 && <p role="status" className="ard-signals__note">Geen recent geverifieerd concertsignaal voor deze selectie. Dit betekent niet dat er geen concerten zijn.</p>}
         {!loading && !feedError && signals.map((event) => {
           const ticketOffer = eventTicketOffer(event);
           return (
@@ -296,8 +303,8 @@ export default function ArtistRadarDialog({
                     {accountEnabled ? <ArtistRadarAccount /> : (
                       <div className="ard-account__disabled" role="status">
                         <h3>Je persoonlijke radar is in voorbereiding</h3>
-                        <p>Artiesten ontdekken en actuele bronmeldingen bekijken kan al. Het aanmaken van een account, bewaren van voorkeuren en bestellen van tickets wordt pas vrijgegeven na een veilige proef met e-mail, sessies en gegevensbescherming.</p>
-                        <a href="/privacy">Zo gaan we met je gegevens om</a>
+                        <p>Artiesten ontdekken en actuele bronmeldingen bekijken kan al. Een account maken, voorkeuren bewaren en officiële ticketlinks vanuit je account openen kan pas na een veilige proef met e-mail, sessies en gegevensbescherming. Betalen doe je bij de verkoper.</p>
+                        <a href="/privacy" target="_blank" rel="noopener noreferrer">Zo gaan we met je gegevens om</a>
                       </div>
                     )}
                   </div>}
