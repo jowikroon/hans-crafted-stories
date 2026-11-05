@@ -99,6 +99,21 @@ function verifiedTicketLink(row: ConcertRow, now: number) {
   }
 }
 
+function hasRecentKnownSourceCheck(row: ConcertRow, now: number): boolean {
+  // The status itself is an importer's assertion, not evidence. A public
+  // status requires a known official-source class and a recent check. This
+  // does not replace importer-side citation review; it prevents an old or
+  // unlabelled row from silently becoming a fresh public claim.
+  const kind = String(row.source ?? "").toLowerCase().trim();
+  // A plain object inherits names like `constructor` and `__proto__`; only
+  // explicitly configured source keys may pass the public evidence gate.
+  if (!Object.prototype.hasOwnProperty.call(PUBLIC_SOURCE_LABELS, kind) ||
+      !row.source_checked_at) return false;
+  const checked = Date.parse(row.source_checked_at);
+  return Number.isFinite(checked) && checked <= now &&
+    now - checked <= TICKET_LINK_MAX_AGE_MS;
+}
+
 function dedupeIdentity(row: ConcertRow): string {
   const external = String(row.source_event_id ?? "").trim();
   if (external) return ["official", row.source ?? "unknown", row.artist_id, external]
@@ -143,12 +158,14 @@ Deno.serve(async (req: Request) => {
 
     // Prefer stable source event IDs; without one retain distinct DB rows.
     const deduped = new Map<string, ConcertRow>();
+    const now = Date.now();
     // On an exact update-time tie, avoid claiming tickets remain available when sold out.
     const priority: Record<string, number> = { sold_out: 4, available: 3, announced: 2, rumored: 1 };
     for (const row of data ?? []) {
       // Legacy seeded demo records are not source-verified concerts and must never appear in public alerts.
       if (row.source === "seed") continue;
       if (!VALID_STATES.has(row.status) || !["NL", "BE"].includes(row.country)) continue;
+      if (!hasRecentKnownSourceCheck(row, now)) continue;
       const key = dedupeIdentity(row);
       const prev = deduped.get(key);
       if (!prev || String(row.updated_at ?? "") > String(prev.updated_at ?? "") ||
@@ -156,7 +173,6 @@ Deno.serve(async (req: Request) => {
         deduped.set(key, row);
       }
     }
-    const now = Date.now();
     const events = [...deduped.values()].slice(0, 150).map((row) => ({
       // Stable immutable database identity, even if a venue's spelling changes.
       event_key: row.id,
