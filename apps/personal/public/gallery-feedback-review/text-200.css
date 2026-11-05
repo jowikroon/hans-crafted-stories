@@ -1,0 +1,181 @@
+/* Authored 200% text stress case; not native browser zoom. */
+.ma-eyebrow {
+    font-size: 22px !important
+}
+.ma-section-heading h2 {
+    font-size: clamp(52px,7.4vw,80px) !important
+}
+.ma-section-heading__count {
+    font-size: 20px !important
+}
+.ma-origin p:not(.ma-eyebrow) {
+    font-size: 34px !important
+}
+.ma-page--editorial .ma-eyebrow {
+    font-size: 20px !important
+}
+.ma-page--editorial .ma-section-heading h2 {
+    font-size: clamp(60px,7vw,92px) !important
+}
+.ma-section-heading__aside {
+    font-size: 24px !important
+}
+.ma-companion__link .ma-eyebrow {
+    font-size: 18px !important
+}
+.ma-page--editorial .ma-origin p:not(.ma-eyebrow) {
+    font-size: 32px !important
+}
+@media (max-width:540px) {
+    .ma-companion__link .ma-eyebrow {
+        font-size: 16px !important
+    }
+}
+.ma-story-trail .ma-section-heading h2 {
+    font-size: clamp(80px,10vw,128px) !important
+}
+.ma-story-trail__reading>p:not(.ma-eyebrow) {
+    font-size: 30px !important
+}
+@media (max-width:760px) {
+    .ma-story-trail__reading>p:not(.ma-eyebrow) {
+        font-size: 28px !important
+    }
+}
+@media (max-width:540px) {
+    .ma-story-trail__reading>p:not(.ma-eyebrow) {
+        font-size: 28px !important
+    }
+}
+.avs-intro {
+    font-size: 28px !important
+}
+.avs-cover__action {
+    font-size: 26px !important
+}
+.avs-cover__action>span:last-child {
+    font: 22px/1.6 var(--font-mono),monospace !important
+}
+.avs-entry__intro>p:last-child {
+    font-size: 30px !important
+}
+.avs-laser__index {
+    font: 18px/1.4 var(--font-mono),monospace !important
+}
+.avs-laser strong {
+    font-size: 36px !important
+}
+.avs-reading-link {
+    font-size: 22px !important
+}
+.avs-dialog__header h2 {
+    font-size: 32px !important
+}
+.avs-dialog__header p {
+    font-size: 24px !important
+}
+.avs-close {
+    font-size: 24px !important
+}
+.avs-artwork__status {
+    font-size: 24px !important
+}
+.avs-artwork__error p {
+    font-size: 32px !important
+}
+.avs-artwork__error>span {
+    font-size: 24px !important
+}
+.avs-artwork__error button {
+    font-size: 28px !important
+}
+.avs-caption__chapter {
+    font: 20px/1.7 var(--font-mono),monospace !important
+}
+.avs-caption h3 {
+    font-size: clamp(56px,6.2vw,88px) !important
+}
+.avs-caption>p {
+    font-size: 28px !important
+}
+.avs-chapter-select label {
+    font-size: 20px !important
+}
+.avs-chapter-select select {
+    font-size: 24px !important
+}
+.avs-thumbnail-area>p {
+    font-size: 20px !important
+}
+.avs-thumbnails button>span {
+    font: 18px/1.6 var(--font-mono),monospace !important
+}
+.avs-controls>button {
+    font-size: 24px !important
+}
+.avs-counter {
+    font: 28px/1.2 var(--font-mono),monospace !important
+}
+.avs-key-hint {
+    font-size: 20px !important
+}
+@media (max-width:850px) {
+    .avs-laser strong {
+        font-size: 32px !important
+    }
+}
+@media (max-width:850px) {
+    .avs-entry__intro>p:last-child {
+        font-size: 26px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-intro {
+        font-size: 26px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-cover__action {
+        font-size: 24px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-cover__action>span:last-child {
+        font-size: 20px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-laser strong {
+        font-size: 32px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-dialog__header h2 {
+        font-size: 26px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-dialog__header p {
+        font-size: 22px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-caption__chapter {
+        font-size: 18px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-caption h3 {
+        font-size: 52px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-caption>p {
+        font-size: 26px !important
+    }
+}
+@media (max-width:620px) {
+    .avs-counter {
+        font-size: 24px !important
+    }
+}

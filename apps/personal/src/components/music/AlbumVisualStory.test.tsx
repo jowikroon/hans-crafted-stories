@@ -64,6 +64,11 @@ const imageFor = (position: number) => within(dialog()).getByRole("img", { name:
 const closeGallery = () => fireEvent.click(within(dialog()).getByRole("button", { name: "Sluit het beeldverhaal" }));
 const thumbnail = (position: number) => within(dialog()).getByRole("button", { name: `Beeld ${position + 1}: ${albumVisualStory[position].title}` });
 
+function primaryPointerDown(element: HTMLElement) {
+  // jsdom has no native PointerEvent; supply the real primary-pointer fields.
+  fireEvent(element, Object.assign(new MouseEvent("pointerdown", { bubbles: true, button: 0 }), { isPrimary: true }));
+}
+
 describe("IETS MOOIS optional visual story", () => {
   it("keeps the gallery unmounted until requested, with only the hero and four entry previews on the page", () => {
     const { container } = showStory();
@@ -243,6 +248,7 @@ describe("IETS MOOIS optional visual story", () => {
     scrollBody.scrollTop = 520;
     const chapterSelect = within(dialog()).getByRole("combobox", { name: "Ontdek een ander hoofdstuk" });
     act(() => chapterSelect.focus());
+    primaryPointerDown(chapterSelect);
     fireEvent.change(chapterSelect, { target: { value: "speelruimte" } });
     expect(currentTitle()).toBe("Een beetje te veel");
     expect(scrollBody.scrollTop).toBe(0);
@@ -277,6 +283,36 @@ describe("IETS MOOIS optional visual story", () => {
     expect(currentTitle()).toBe("Een open blik");
     expect(scrollBody.scrollTop).toBe(0);
     expect(currentFigure()).toHaveFocus();
+  });
+
+  it("keeps native chapter keyboard and assistive changes focused and in view across repeated choices", () => {
+    showStory();
+    openChapter();
+    const scrollBody = dialog().querySelector<HTMLElement>(".avs-dialog__body")!;
+    const select = within(dialog()).getByRole("combobox", { name: "Ontdek een ander hoofdstuk" });
+    act(() => select.focus());
+    scrollBody.scrollTop = 440;
+    for (const value of ["toen-nu", "speelruimte", "volgorde", "blik"]) {
+      fireEvent.keyDown(select, { key: "ArrowDown" });
+      fireEvent.change(select, { target: { value } });
+      expect(select).toHaveFocus();
+      expect(select).toHaveValue(value);
+      expect(scrollBody.scrollTop).toBe(440);
+    }
+
+    // An earlier pointer interaction cannot hijack a later keyboard/AT choice.
+    primaryPointerDown(select);
+    fireEvent.keyDown(select, { key: "Home" });
+    fireEvent.change(select, { target: { value: "speelruimte" } });
+    expect(select).toHaveFocus();
+    expect(scrollBody.scrollTop).toBe(440);
+    fireEvent.change(select, { target: { value: "toen-nu" } });
+    expect(select).toHaveFocus();
+    expect(scrollBody.scrollTop).toBe(440);
+    // No custom Enter/Space action replaces the native select's own behavior.
+    fireEvent.keyDown(select, { key: "Enter" });
+    fireEvent.keyDown(select, { key: " " });
+    expect(select).toHaveFocus();
   });
 
   it("leaves chapter-select keys and modified browser shortcuts alone while allowing chapter and thumbnail selection", () => {
@@ -442,6 +478,33 @@ describe("IETS MOOIS optional visual story", () => {
     showStory([`${storyPath}?beeld=een-open-blik`]);
     await waitFor(() => expect(within(dialog()).queryByText("Beeld laden…")).toBeNull());
     expect(imageFor(0)).toBeInTheDocument();
+  });
+
+  it.each([
+    { key: "ArrowLeft", destination: 6 },
+    { key: "ArrowRight", destination: 8 },
+    { key: "Home", destination: 0 },
+    { key: "End", destination: 14 },
+  ])("keeps meaningful focus when $key removes a focused image recovery button", ({ key, destination }) => {
+    showStory([`${storyPath}?beeld=wat-meereist`]);
+    fireEvent.error(imageFor(7));
+    const retry = within(dialog()).getByRole("button", { name: "Opnieuw proberen" });
+    act(() => retry.focus());
+    fireEvent.keyDown(retry, { key });
+    expect(retry).not.toBeInTheDocument();
+    expect(currentTitle()).toBe(albumVisualStory[destination].title);
+    expect(currentFigure()).toHaveFocus();
+    expect(currentFigure()).toHaveAccessibleName(`Beeld ${destination + 1} van 15: ${albumVisualStory[destination].title}`);
+  });
+
+  it("gives a usable alternative when the last artwork fails and next is unavailable", () => {
+    showStory([`${storyPath}?beeld=volgordestudie-03`]);
+    fireEvent.error(imageFor(14));
+    expect(within(dialog()).getByText("Je kunt ook een ander beeld kiezen.")).toBeInTheDocument();
+    expect(within(dialog()).getByRole("button", { name: "Volgend beeld" })).toHaveAttribute("aria-disabled", "true");
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Vorig beeld" }));
+    expect(currentTitle()).toBe(albumVisualStory[13].title);
+    expect(within(dialog()).queryByText("Dit beeld kon niet laden.")).toBeNull();
   });
 
   it("contains programmatic focus and loops Tab only at the modal boundaries", () => {

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Album: authored tekstvergroting en reflow</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#222;color:#eee;font:14px/1.5 system-ui,sans-serif}header{padding:12px 16px;background:#222;border-bottom:1px solid #777}h1{font-size:19px;margin:0 0 7px}p{margin:0 0 10px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}button,a{display:inline-block;color:#111;background:#eee;padding:9px 12px;min-height:40px;border:1px solid #aaa;border-radius:4px;text-decoration:none;font:inherit;cursor:pointer}button[aria-pressed=true]{background:#d8baff}button:focus-visible,a:focus-visible{outline:3px solid #bf92ff;outline-offset:3px}main{padding:16px;overflow:auto}iframe{display:block;border:0;outline:1px solid #aaa;width:320px;height:568px;box-sizing:content-box;background:#080a0b}details{padding:10px 16px}pre{max-height:250px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.6 monospace}
+</style>
+</head>
+<body>
+<header>
+  <h1>200% tekst: authored reflow-stresscase</h1>
+  <p>Echte component; alleen lettergroottes zijn in de 200%-cases verdubbeld. Afmetingen, iconen, mediaqueries en spacing blijven gelijk. Geen native browserzoom, OS-tekstinstelling, volledig appscherm of fysiek apparaat.</p>
+  <nav class="controls" aria-label="Kies de tekstcase">
+    <button type="button" data-view="gallery100">Overlay 100%</button><button type="button" data-view="gallery200">Overlay 200%</button>
+    <button type="button" data-view="sequence200">Volgordestudie 200%</button><button type="button" data-view="error200">Fout op beeld 15 / 200%</button>
+    <button type="button" data-view="story100">Story 100%</button><button type="button" data-view="story200">Story 200%</button>
+  </nav>
+  <div class="controls" aria-label="Kies CSS-viewport">
+    <button type="button" data-size="portrait320" aria-pressed="true">320 × 568</button><button type="button" data-size="portrait390" aria-pressed="false">390 × 844</button><button type="button" data-size="landscape568" aria-pressed="false">568 × 320</button><button type="button" data-size="landscape844" aria-pressed="false">844 × 390</button><button type="button" data-size="tablet" aria-pressed="false">768 × 1024</button><button type="button" data-size="desktop" aria-pressed="false">1363 × 936</button><button type="button" id="inspect">Meet layout</button>
+    <output id="size">320 × 568 CSS px</output>
+  </div>
+</header>
+<details open><summary>Read-only layoutmetingen</summary><pre id="metrics">Component laden…</pre></details>
+<main><iframe id="frame" name="gallery-frame" title="Geïsoleerde albumcomponent" src="./gallery-100.html" sandbox="allow-scripts allow-same-origin"></iframe></main>
+<script>
+const SOURCE = {"head":"d1a1067916f49886e80ed0676f4cd5f1cb1af4ad","hashes":{"src/components/music/AlbumVisualStory.tsx":"82c66064b2fba97a1b02b6cb408ae74936149b7ec6e08fa16871678c64a2753e","src/data/albumVisualStory.ts":"39b437b11fdf5ce177972844f03504b92bfc60a38740187ff35054518f7fac51","src/styles/album-visual-story.css":"d1fba022c93ff0f64065f45ce6efdbb5bd07708ab8e0f047fb857669788a7080","src/index.css":"18830f35b8a7cc7514bbfd468a476fb8021fa6133444f7c4136c5113e96cdcbb","src/styles/music-albums.css":"a9778f1a6466b0e640eb89d375b89d549c5beb42b60afe90691eac8113515444","src/styles/music-album-world.css":"25a947bc222e9f07fe405c33d1e5e139c8d91ce01da7632582a1d0796aedee3e"}};
+const frame = document.getElementById('frame'), metrics = document.getElementById('metrics');
+const SIZES = { portrait320:[320,568], portrait390:[390,844], landscape568:[568,320], landscape844:[844,390], tablet:[768,1024], desktop:[1363,936] };
+const box = element => { if(!element)return null; const r=element.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom}; };
+function inspect(){
+  const d=frame.contentDocument,w=frame.contentWindow;if(!d||!w)return;
+  const body=d.querySelector('.avs-dialog__body'),footer=d.querySelector('.avs-controls'),root=d.documentElement;
+  const textInfo=element=>element?{text:element.textContent.trim(),...box(element),clientWidth:element.clientWidth,scrollWidth:element.scrollWidth,fontSize:w.getComputedStyle(element).fontSize,lineHeight:w.getComputedStyle(element).lineHeight}:null;
+  metrics.textContent=JSON.stringify({source:SOURCE,case:d.getElementById('root')?.dataset.case,textScale:d.body.dataset.textScale,viewport:{width:w.innerWidth,height:w.innerHeight,scale:w.visualViewport?.scale,dpr:w.devicePixelRatio},page:{clientWidth:root.clientWidth,scrollWidth:root.scrollWidth},dialog:box(d.querySelector('.avs-dialog')),header:box(d.querySelector('.avs-dialog__header')),body:body?{...box(body),scrollWidth:body.scrollWidth,clientWidth:body.clientWidth,scrollHeight:body.scrollHeight,clientHeight:body.clientHeight,scrollTop:body.scrollTop}:null,artwork:box(d.querySelector('.avs-artwork')),caption:textInfo(d.querySelector('.avs-caption')),captionTitle:textInfo(d.querySelector('.avs-caption h3')),captionCopy:textInfo(d.querySelector('.avs-caption>p')),footer:footer?{...box(footer),scrollWidth:footer.scrollWidth,clientWidth:footer.clientWidth}:null,controls:[...d.querySelectorAll('.avs-controls>button')].map(textInfo),counter:textInfo(d.querySelector('.avs-counter')),close:textInfo(d.querySelector('.avs-close')),retry:textInfo(d.querySelector('.avs-artwork__error button')),chapterLabels:[...d.querySelectorAll('.avs-laser strong')].map(textInfo),focused:textInfo(d.activeElement),fontStatus:d.fonts.status},null,2);
+}
+document.querySelectorAll('[data-size]').forEach(button=>button.addEventListener('click',()=>{
+  const size=SIZES[button.dataset.size];if(!size)return;
+  frame.style.width=size[0]+'px';frame.style.height=size[1]+'px';
+  document.querySelectorAll('[data-size]').forEach(other=>other.setAttribute('aria-pressed',String(other===button)));
+  document.getElementById('size').textContent=size.join(' × ')+' CSS px';requestAnimationFrame(inspect);
+}));
+document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{
+  // Every destination is a literal same-folder fixture file, never DOM text or a query URL.
+  switch(button.dataset.view){
+    case 'gallery100':frame.src='./gallery-100.html';break;
+    case 'gallery200':frame.src='./gallery-200.html';break;
+    case 'sequence200':frame.src='./sequence-200.html';break;
+    case 'error200':frame.src='./error-200.html';break;
+    case 'story100':frame.src='./story-100.html';break;
+    case 'story200':frame.src='./story-200.html';break;
+  }
+}));
+let observer,resizeObserver;
+frame.addEventListener('load',()=>{
+  observer?.disconnect();resizeObserver?.disconnect();const d=frame.contentDocument;if(!d)return;
+  let pending=false;const schedule=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;inspect();});};
+  observer=new MutationObserver(schedule);observer.observe(d.documentElement,{attributes:true,childList:true,subtree:true});
+  resizeObserver=new ResizeObserver(schedule);resizeObserver.observe(d.documentElement);
+  for(const event of ['focusin','scroll','load','error'])d.addEventListener(event,schedule,true);
+  d.fonts.ready.then(schedule);schedule();
+});
+document.getElementById('inspect').addEventListener('click',inspect);
+</script>
+</body>
+</html>
