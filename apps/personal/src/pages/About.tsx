@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { ChevronRight, MapPin } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { ObfuscatedMailto } from "@/components/ObfuscatedMailto";
@@ -8,6 +9,7 @@ import { useLang } from "@/hooks/useLang";
 import { translations } from "@/data/translations";
 import { useSEO } from "@/hooks/useSEO";
 import { ABOUT, CALENDLY_URL, LINKEDIN_URL } from "@/data/aboutPage";
+import { getAboutSectionFromHash } from "@/lib/aboutHash";
 import "@/styles/about-v2.css";
 
 // Official company and institution destinations. Historic names keep their wording;
@@ -96,6 +98,7 @@ const SectionHead = ({ id, children }: { id: string; children: React.ReactNode }
 );
 
 const About = () => {
+  const location = useLocation();
   const { lang } = useLang();
   const t = translations[lang];
   const c = ABOUT[lang];
@@ -104,6 +107,18 @@ const About = () => {
   const midCtaRef = useRef<HTMLAnchorElement>(null);
   const contactRef = useRef<HTMLElement>(null);
   const [stickyOn, setStickyOn] = useState(false);
+
+  // React Router changes /about#contact without a document reload, so the
+  // browser's initial native hash jump can occur before About has mounted.
+  // Resolve known anchors after render, including arrivals from blog CTAs.
+  useEffect(() => {
+    const id = getAboutSectionFromHash(location.hash);
+    if (!id) return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "auto", block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [location.hash]);
 
   // Mobile sticky CTA: only between the CTA after "De rode draad" and the contact section.
   useEffect(() => {
