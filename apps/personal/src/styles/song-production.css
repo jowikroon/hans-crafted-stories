@@ -1,4 +1,5 @@
 /* Measured-version cards extend the shared Hanging On studio template. */
+.song-studio-page .ho-process { container: studio-process / inline-size; }
 .song-studio-page .sp-process-steps { list-style: none; margin: 44px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
 .song-studio-page .sp-process-steps li { border-top: 1px solid var(--hair); padding-top: 20px; }
 .song-studio-page .sp-process-steps li > span { display: block; margin-bottom: 18px; color: var(--accent); font: 12px var(--font-mono); letter-spacing: .08em; }
@@ -9,7 +10,8 @@
 .song-studio-page .sp-measurements__heading .ho-eyebrow { margin-bottom: 14px; }
 .song-studio-page .sp-measurements__heading h3 { color: var(--ink); font: 600 clamp(26px, 3.3vw, 38px)/1.15 var(--font-display); letter-spacing: -.03em; margin: 0 0 16px; }
 .song-studio-page .sp-measurements__heading > p:last-child { color: var(--ink-2); font-size: 14px; line-height: 1.8; margin: 0; }
-.song-studio-page .sp-meters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.song-studio-page .sp-meters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 16px; }
+.song-studio-page .sp-meters--four { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
 .song-studio-page .sp-meter { margin: 0; min-width: 0; padding: 24px 22px 20px; border: 1px solid rgba(156, 77, 255, .23); border-radius: 18px; background: linear-gradient(140deg, rgba(156, 77, 255, .06), transparent 60%), #0d0d12; }
 .song-studio-page .sp-meter__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .song-studio-page .sp-meter__heading h4 { color: var(--ink); font: 600 16px/1.35 var(--font-display); margin: 0; letter-spacing: -.015em; }
@@ -25,6 +27,35 @@
 .song-studio-page .sp-meter__zero { position: absolute; width: 1px; height: 12px; top: -4px; background: var(--ho-ice); }
 .song-studio-page .sp-meter__axis { display: flex; justify-content: space-between; margin-top: 12px; color: var(--muted); font: 10px/1.6 var(--font-mono); }
 .song-studio-page .sp-meter figcaption { color: var(--muted); border-top: 1px solid var(--hair); font-size: 11px; line-height: 1.7; margin-top: 20px; padding-top: 14px; }
+.song-studio-page .sp-comparison { margin-top: 28px; padding: 28px; border: 1px solid var(--hair); border-radius: 18px; background: var(--paper-2); }
+.song-studio-page .sp-comparison__heading h4 { color: var(--ink); font: 600 23px/1.25 var(--font-display); letter-spacing: -.025em; margin: 0 0 12px; }
+.song-studio-page .sp-comparison__heading p { max-width: 720px; color: var(--ink-2); font-size: 13px; line-height: 1.8; margin: 0; }
+.song-studio-page .sp-comparison__controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) auto; align-items: end; gap: 16px; margin-top: 24px; }
+.song-studio-page .sp-comparison__controls > div { min-width: 0; }
+.song-studio-page .sp-comparison label { display: block; color: var(--muted); font: 11px/1.6 var(--font-mono); margin-bottom: 8px; }
+.song-studio-page .sp-comparison select { display: block; width: 100%; min-width: 0; min-height: 46px; padding: 12px 32px 12px 12px; border: 1px solid var(--hair); border-radius: 9px; color: var(--ink); background-color: var(--paper); font: 13px/1.5 var(--font-body); text-overflow: ellipsis; }
+.song-studio-page .sp-comparison__swap { min-height: 46px; border: 1px solid var(--hair); border-radius: 9px; padding: 12px 14px; color: var(--ho-ice); background: transparent; font: 12px/1.5 var(--font-body); cursor: pointer; }
+.song-studio-page .sp-comparison__swap:hover { border-color: var(--ho-ice); }
+.song-studio-page .sp-comparison__swap > span { margin-left: 6px; }
+.song-studio-page .sp-comparison__pair { color: var(--ink-2); font-size: 12px; line-height: 1.8; margin: 24px 0 16px; overflow-wrap: anywhere; }
+.song-studio-page .sp-comparison__pair strong { font-weight: 500; color: var(--ink); }
+.song-studio-page .sp-differences { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 12px; margin: 0; }
+.song-studio-page .sp-differences > div { min-width: 0; padding: 18px 16px; border: 1px solid var(--hair); border-radius: 10px; background: var(--paper); }
+.song-studio-page .sp-differences dt { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.song-studio-page .sp-differences dd { margin: 10px 0 0; color: var(--ho-violet); font: 500 28px/1.2 var(--font-mono); }
+.song-studio-page .sp-differences dd small { color: var(--ink-2); font-size: 11px; }
+.song-studio-page .sp-comparison__note { color: var(--muted); font-size: 11px; line-height: 1.8; margin: 20px 0 0; }
+.song-studio-page .sp-processing > .sp-processing__list { max-width: none; }
+.song-studio-page .sp-processing__list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.song-studio-page .sp-processing__list > li { min-width: 0; padding: 22px; border: 1px solid var(--hair); border-radius: 12px; background: var(--paper-2); }
+.song-studio-page .sp-processing__list h4 { color: var(--ink); font: 600 16px/1.4 var(--font-display); margin: 0 0 8px; }
+.song-studio-page .sp-processing__list p { color: var(--ho-ice); font-size: 12px; margin: 0 0 20px; }
+.song-studio-page .sp-processing__list dl { margin: 0; }
+.song-studio-page .sp-processing__list dl > div + div { margin-top: 12px; }
+.song-studio-page .sp-processing__list dt { font: 10px/1.6 var(--font-mono); color: var(--muted); margin-bottom: 3px; }
+.song-studio-page .sp-processing__list dd { margin: 0; color: var(--ink-2); font-size: 13px; overflow-wrap: anywhere; }
+.song-studio-page .sp-processing__list ul { margin: 18px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 12px; }
+.song-studio-page .sp-processing__list ul li + li { margin-top: 5px; }
 .song-studio-page .sp-table-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-color: #514364 #111116; }
 .song-studio-page .sp-table { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.6; color: var(--ink-2); text-align: left; }
 .song-studio-page .sp-table caption { text-align: left; color: var(--ink); font-size: 13px; margin: 0 0 18px; }
@@ -35,15 +66,27 @@
 .song-studio-page .sp-table small { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; font-weight: 400; }
 .song-studio-page .sp-version-details > .sp-table-scroll { max-width: 100%; }
 .song-studio-page .sp-evidence-note { border-left: 2px solid var(--hair); margin: 32px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; line-height: 1.75; }
-@media (max-width: 900px) {
-  .song-studio-page .sp-meters { grid-template-columns: minmax(0, 1fr); }
+@container studio-process (max-width: 760px) {
+  .song-studio-page .sp-comparison__controls { grid-template-columns: minmax(0, 1fr); }
+  .song-studio-page .sp-comparison__swap { justify-self: start; }
   .song-studio-page .sp-meter__description { min-height: 0; }
-  .song-studio-page .sp-meter { padding: 24px; }
 }
-@media (max-width: 680px) {
+@container studio-process (max-width: 680px) {
   .song-studio-page .sp-process-steps { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .song-studio-page .sp-process-steps li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 14px; }
   .song-studio-page .sp-process-steps li > span { margin-top: 4px; }
+}
+@media (max-width: 680px) {
+  .song-studio-page .sp-process-steps { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .song-studio-page .sp-comparison__controls { grid-template-columns: minmax(0, 1fr); }
+  .song-studio-page .sp-comparison__swap { justify-self: start; }
+  .song-studio-page .sp-meter__description { min-height: 0; }
   .song-studio-page .sp-meter { padding: 22px 18px; }
   .song-studio-page .sp-meter__label { font-size: 13px; }
+  .song-studio-page .sp-comparison { padding: 24px 18px; }
+}
+@media (forced-colors: active) {
+  .song-studio-page .sp-meter__fill, .song-studio-page .sp-meter__point { background: CanvasText; }
+  .song-studio-page .sp-meter__zero { background: Highlight; }
+  .song-studio-page .sp-meter__track { border-bottom: 1px solid CanvasText; }
 }

@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import type { Song } from "@/data/music";
 import { recordingNotes, songProduction, type ProductionVersion, type SongProduction } from "@/data/songProduction";
 import { HangingOnProcess } from "@/components/HangingOnProcess";
@@ -43,20 +43,63 @@ function VersionTable({ data }: { data: SongProduction }) {
   return <details className="ho-method sp-version-details">
     <summary>Versions &amp; measurement notes</summary>
     <div className="sp-table-scroll" tabIndex={0} role="region" aria-label="Version measurements. Scroll horizontally on small screens.">
-      <table className="sp-table"><caption>Exact readings and the version they describe</caption><thead><tr><th scope="col">Version</th><th scope="col">LUFS</th><th scope="col">True peak</th><th scope="col">Range</th><th scope="col">File format</th></tr></thead>
-        <tbody>{data.versions.map((version) => <tr key={version.key}><th scope="row">{version.label}<small>{version.provenance} · {formatDate(version.measuredOn)}</small></th><td>{number(version.integratedLufs, readingDigits(version))}</td><td>{number(version.truePeakDbtp, readingDigits(version))} dBTP</td><td>{version.loudnessRangeLu === undefined ? "Not recorded" : `${number(version.loudnessRangeLu)} LU`}</td><td>{[version.sampleRateHz === undefined ? null : `${version.sampleRateHz / 1000} kHz`, version.bitDepth === undefined ? null : `${version.bitDepth}-bit`, version.channels].filter(Boolean).join(" · ") || "Not recorded"}</td></tr>)}</tbody>
+      <table className="sp-table"><caption>Measured readings and calculated peak distance for each version</caption><thead><tr><th scope="col">Version</th><th scope="col">LUFS</th><th scope="col">True peak</th><th scope="col">Range</th><th scope="col">Peak distance</th><th scope="col">File format</th></tr></thead>
+        <tbody>{data.versions.map((version) => <tr key={version.key}><th scope="row">{version.label}<small>{version.provenance} · {formatDate(version.measuredOn)}</small></th><td>{number(version.integratedLufs, readingDigits(version))}</td><td>{number(version.truePeakDbtp, readingDigits(version))} dBTP</td><td>{version.loudnessRangeLu === undefined ? "Not recorded" : `${number(version.loudnessRangeLu, readingDigits(version))} LU`}</td><td>{number(version.truePeakDbtp - version.integratedLufs, readingDigits(version))} dB</td><td>{[version.sampleRateHz === undefined ? null : `${version.sampleRateHz / 1000} kHz`, version.bitDepth === undefined ? null : `${version.bitDepth}-bit`, version.channels].filter(Boolean).join(" · ") || "Not recorded"}</td></tr>)}</tbody>
       </table>
     </div>
     {data.method.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
   </details>;
 }
 
+function VersionComparison({ versions, id }: { versions: ProductionVersion[]; id: string }) {
+  const [[referenceKey, comparedKey], setPair] = useState([versions[0].key, versions[1].key]);
+  const reference = versions.find((version) => version.key === referenceKey)!;
+  const compared = versions.find((version) => version.key === comparedKey)!;
+  // A difference must not imply more precision than either of its input readings.
+  const digits = Math.min(readingDigits(reference), readingDigits(compared));
+  const differences = meters.flatMap((meter) => {
+    const from = meter.value(reference);
+    const to = meter.value(compared);
+    if (from === undefined || to === undefined) return [];
+    const value = Number((to - from).toFixed(digits));
+    return [{ key: meter.key, title: meter.title, value, unit: meter.key === "loudness" ? "LU" : meter.key === "true-peak" ? "dB" : meter.unit }];
+  });
+  return <section className="sp-comparison" aria-labelledby={`${id}-comparison-title`}>
+    <div className="sp-comparison__heading"><h4 id={`${id}-comparison-title`}>Compare two versions.</h4><p id={`${id}-comparison-help`}>Choose a reference and another saved version. Each difference is the compared version minus the reference, calculated from the displayed readings.</p></div>
+    <div className="sp-comparison__controls">
+      <div><label htmlFor={`${id}-reference`}>Reference version</label><select id={`${id}-reference`} value={referenceKey} aria-describedby={`${id}-comparison-help`} aria-controls={`${id}-differences`} onChange={(event) => setPair([event.target.value, comparedKey])}>{versions.map((version) => <option key={version.key} value={version.key} disabled={version.key === comparedKey}>{version.label}</option>)}</select></div>
+      <div><label htmlFor={`${id}-compared`}>Compared version</label><select id={`${id}-compared`} value={comparedKey} aria-describedby={`${id}-comparison-help`} aria-controls={`${id}-differences`} onChange={(event) => setPair([referenceKey, event.target.value])}>{versions.map((version) => <option key={version.key} value={version.key} disabled={version.key === referenceKey}>{version.label}</option>)}</select></div>
+      <button className="sp-comparison__swap" type="button" onClick={() => setPair([comparedKey, referenceKey])} aria-controls={`${id}-differences`}>Swap versions <span aria-hidden="true">↔</span></button>
+    </div>
+    <div id={`${id}-differences`} role="status" aria-live="polite" aria-atomic="true">
+      <p className="sp-comparison__pair"><strong>{compared.label}</strong> compared with <strong>{reference.label}</strong></p>
+      <dl className="sp-differences">{differences.map((difference) => <div key={difference.key}><dt>{difference.title}</dt><dd><span>{difference.value > 0 ? "+" : ""}{number(difference.value, digits)}</span> <small>{difference.unit}</small></dd></div>)}</dl>
+    </div>
+    <p className="sp-comparison__note">Positive means a higher reading; negative means a lower reading. Peak distance is true peak minus overall loudness. These differences describe the named versions, without rating their sound.</p>
+  </section>;
+}
+
+function SavedProcessing({ versions }: { versions: ProductionVersion[] }) {
+  const processed = versions.filter((version) => version.processing !== undefined);
+  if (!processed.length) return null;
+  return <details className="ho-method sp-processing">
+    <summary>Saved processing settings</summary>
+    <p>Each entry names the input and settings recorded for that saved version. Separate entries may belong to different branches of the session.</p>
+    <ul className="sp-processing__list">{processed.map((version) => {
+      const processing = version.processing!;
+      return <li key={version.key}><h4>{version.label}</h4><p>{processing.operation}</p><dl><div><dt>Source version</dt><dd>{processing.sourceVersion}</dd></div><div><dt>Saved</dt><dd><time dateTime={processing.savedOn}>{formatDate(processing.savedOn)}</time></dd></div></dl><ul>{processing.settings.map((setting) => <li key={setting}>{setting}</li>)}</ul></li>;
+    })}</ul>
+  </details>;
+}
+
 export function ProductionMetrics({ data, id }: { data: SongProduction; id: string }) {
   const hasRange = data.versions.some((v) => v.loudnessRangeLu !== undefined);
-  const selectedMeters = meters.filter((meter) => hasRange ? meter.key !== "peak-distance" : meter.key !== "range");
+  const selectedMeters = meters.filter((meter) => hasRange || meter.key !== "range");
   return <div className="sp-measurements">
     <div className="sp-measurements__heading"><p className="ho-eyebrow">Measured versions</p><h3>The recording, in numbers.</h3><p>{data.scope}</p></div>
-    <div className="sp-meters">{selectedMeters.map((meter) => <MetricFigure key={meter.key} meter={meter} versions={data.versions} id={`${id}-${meter.key}`}/>)}</div>
+    <div className={`sp-meters${selectedMeters.length === 4 ? " sp-meters--four" : ""}`}>{selectedMeters.map((meter) => <MetricFigure key={meter.key} meter={meter} versions={data.versions} id={`${id}-${meter.key}`}/>)}</div>
+    {data.versions.length > 1 && <VersionComparison key={data.title} versions={data.versions} id={id}/>}
+    <SavedProcessing versions={data.versions}/>
     <VersionTable data={data}/>
   </div>;
 }
