@@ -13,8 +13,9 @@
  * so this page renders its own neon footer.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,7 +25,13 @@ import ReleaseTimeline from "@/components/music/ReleaseTimeline";
 import ArtistRadarVisual from "@/components/music/ArtistRadarVisual";
 import AlbumShowcase from "@/components/music/AlbumShowcase";
 import "@/styles/music-neon.css";
+import "@/styles/artist-radar-dialog.css";
 import MusicExperience, { PlaySongButton, SongPageButton, SongPlayerSlot, useMusicExperience } from "@/components/music/MusicExperience";
+
+// Account, ticket components and their dependencies are loaded only when the
+// radar opens. Keep the large music page inside its existing eager JS budget.
+const loadArtistRadarDialog = () => import("@/components/music/ArtistRadarDialog");
+const ArtistRadarDialog = lazy(loadArtistRadarDialog);
 
 /* deterministic waveform bars, stable across SSR/CSR (no Math.random) */
 function waveBars(key: string, n: number): number[] {
@@ -87,6 +94,40 @@ function TrackRow({ song, index }: { song: Song; index: number }) {
 const MusicContent = () => {
   const { stop } = useMusicExperience();
   const { user } = useAuth();
+  const [params, setParams] = useSearchParams();
+  // Keep the radar addressable for email sign-in returns and browser Back, but
+  // never navigate away from /music. The old query alias is read-only.
+  const radarParam = params.get("artist-radar") ?? params.get("radar");
+  const radarRequested = radarParam === "account" || radarParam === "discover" || radarParam === "1";
+  const radarOpen = radarRequested && !params.has("song");
+  const radarInitialTab = radarParam === "discover" ? "discover" : "account";
+  const radarTrigger = useRef<HTMLElement | null>(null);
+  const radarPushed = useRef(false);
+
+  const openRadar = (trigger: HTMLElement) => {
+    if (radarOpen) return;
+    stop();
+    void loadArtistRadarDialog();
+    radarTrigger.current = trigger;
+    const next = new URLSearchParams(params);
+    next.delete("radar");
+    next.delete("song");
+    next.set("artist-radar", "discover");
+    radarPushed.current = true;
+    setParams(next, { preventScrollReset: true });
+  };
+
+  const closeRadar = () => {
+    if (radarPushed.current) {
+      radarPushed.current = false;
+      window.history.back();
+      return;
+    }
+    const next = new URLSearchParams(params);
+    next.delete("artist-radar");
+    next.delete("radar");
+    setParams(next, { replace: true, preventScrollReset: true });
+  };
   // The catalogue includes only verified public tracks. Private and follower-only
   // SoundCloud recordings must never enter the public listing or schema.
   const visibleSongs = songs;
@@ -280,23 +321,23 @@ const MusicContent = () => {
         <p className="mn-slabel" style={{ marginTop: "clamp(54px,8vh,90px)" }}><span className="n">03</span> Artist Radar</p>
         <div className="mn-release">
           <div className="mn-release__body">
-            <span className="mn-release__kicker"><span className="mn-live" />Free alert service</span>
-            <h2 className="mn-release__title">Never miss a show from your favorite artist</h2>
-            <p className="mn-release__sub">Pick your favorite artists for a weekly email digest of concert news, announcements, and ticket availability in the Netherlands and Belgium.</p>
+            <span className="mn-release__kicker"><span className="mn-live" />Nederlandstalige Artist Radar · NL/BE</span>
+            <h2 className="mn-release__title">Jouw favoriete artiesten, één radar.</h2>
+            <p className="mn-release__sub">Verken de beschikbare concertsignalen in Nederland en België. Bewaar artiesten, rubrieken en je eigen accountgeschiedenis na e-mailverificatie. Wekelijkse e-mails zijn een aparte keuze.</p>
             <div className="mn-release__meta">
-              <span className="mn-chip">Rumors</span>
-              <span className="mn-chip">Announcements</span>
-              <span className="mn-chip">Ticket sales NL/BE</span>
+              <span className="mn-chip">Geruchten</span>
+              <span className="mn-chip">Aankondigingen</span>
+              <span className="mn-chip">Ticketinformatie NL/BE</span>
             </div>
             <div className="mn-release__cta-row">
-              <Link to="/muziek/artist-radar" className="mn-release__cta" data-cursor aria-label="Open the Artist Radar and put artists on your radar">
-                <RadarIcon /> Put artists on your radar
-              </Link>
+              <button type="button" className="mn-release__cta" data-cursor aria-label="Verken de Artist Radar in een venster" aria-haspopup="dialog" aria-expanded={radarOpen} onPointerEnter={() => { void loadArtistRadarDialog(); }} onFocus={() => { void loadArtistRadarDialog(); }} onClick={(event) => openRadar(event.currentTarget)}>
+                <RadarIcon /> Open Artist Radar
+              </button>
             </div>
           </div>
-          <div className="mn-release__player mn-radar-visual" aria-hidden="true">
-            <ArtistRadarVisual />
-          </div>
+          <button type="button" className="mn-release__player mn-radar-visual mn-radar-launch" aria-label="Open de geanimeerde Artist Radar" aria-haspopup="dialog" aria-expanded={radarOpen} onClick={(event) => openRadar(event.currentTarget)}>
+            <ArtistRadarVisual active={!radarOpen} />
+          </button>
         </div>
       </section>
 
@@ -323,7 +364,7 @@ const MusicContent = () => {
           <nav className="mn-footer__links" aria-label="Footer">
             <Link to="/writing">Writing</Link>
             <Link to="/music">Music</Link>
-            <Link to="/muziek/artist-radar">Artist Radar</Link>
+            <button type="button" aria-haspopup="dialog" aria-expanded={radarOpen} onClick={(event) => openRadar(event.currentTarget)}>Artist Radar</button>
             <Link to="/about">About</Link>
             <a href="https://open.spotify.com/album/7gHaf9f1kcQaOtg9sMzPlo" target="_blank" rel="noopener noreferrer">Spotify</a>
           </nav>
@@ -333,6 +374,9 @@ const MusicContent = () => {
           <span>Jowikroon · Music &amp; stories</span>
         </div>
       </footer>
+      {radarOpen && <Suspense fallback={<div className="ard-loading" role="status">Artist Radar openen…</div>}>
+        <ArtistRadarDialog open={radarOpen} onClose={closeRadar} initialTab={radarInitialTab} returnFocusTo={radarTrigger} />
+      </Suspense>}
     </div>
   );
 };

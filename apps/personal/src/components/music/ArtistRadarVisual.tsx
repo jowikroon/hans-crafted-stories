@@ -2,7 +2,7 @@
 // "Artist Radar Clean" file, ported 1:1 (markup + rAF logic) and recoloured
 // onto the music page's neon-green palette (.music-neon tokens). Purely
 // decorative: no state, no form. Used on /music, section 03 Artist Radar.
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 // Palette: everything that was copper/cyan/red in the design maps onto the
 // site's single neon green. "Hot" ramps go white -> pale lime -> neon -> dark.
@@ -31,6 +31,7 @@ const STYLE = `
 .arv *{box-sizing:border-box}
 @keyframes arv-sweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .arv .arv-spin{animation:arv-sweep 60s linear infinite;transform-origin:50% 50%}
+.arv[data-active="false"] .arv-spin{animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.arv .arv-spin{animation:none}}
 `;
 
@@ -336,18 +337,42 @@ function startAnim(root: HTMLElement): () => void {
   return () => cancelAnimationFrame(raf);
 }
 
-export default function ArtistRadarVisual() {
+export default function ArtistRadarVisual({ active = true }: { active?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
+  const suffix = useId().replace(/[^a-zA-Z0-9_-]/g, "-");
+  // Two instances exist while the on-page modal is open. SVG URL fragments
+  // must not resolve to the first instance's gradient definitions.
+  const markup = useMemo(() => MARKUP
+    .replaceAll("arvBeatGlow", `arvBeatGlow-${suffix}`)
+    .replaceAll("arvEcgFade", `arvEcgFade-${suffix}`), [suffix]);
+  const [inView, setInView] = useState(true);
+  const [pageVisible, setPageVisible] = useState(() => typeof document === "undefined" || !document.hidden);
+
   useEffect(() => {
     const root = ref.current;
-    if (!root) return;
+    if (!root || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { rootMargin: "80px" });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const update = () => setPageVisible(!document.hidden);
+    document.addEventListener("visibilitychange", update);
+    return () => document.removeEventListener("visibilitychange", update);
+  }, []);
+
+  const shouldAnimate = active && inView && pageVisible;
+  useEffect(() => {
+    const root = ref.current;
+    if (!root || !shouldAnimate) return;
     if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     return startAnim(root);
-  }, []);
+  }, [shouldAnimate]);
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: STYLE }} />
-      <div className="arv" ref={ref} aria-hidden="true" dangerouslySetInnerHTML={{ __html: MARKUP }} />
+      <div className="arv" ref={ref} aria-hidden="true" data-active={shouldAnimate ? "true" : "false"} dangerouslySetInnerHTML={{ __html: markup }} />
     </>
   );
 }

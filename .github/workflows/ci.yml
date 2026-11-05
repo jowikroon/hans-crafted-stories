@@ -27,6 +27,8 @@ jobs:
             relevant:
               - 'apps/personal/**'
               - 'packages/**'
+              - 'supabase/functions/artist-radar-*/**'
+              - 'supabase/migrations/*artist_radar*.sql'
               - 'package.json'
               - 'package-lock.json'
 
@@ -47,6 +49,9 @@ jobs:
 
       - run: npm run test:personal
       - run: npm run test:artist-radar-signup --workspace=@hans/personal
+        if: steps.changes.outputs.relevant == 'true'
+
+      - run: npm run test:artist-radar-public-events --workspace=@hans/personal
         if: steps.changes.outputs.relevant == 'true'
 
       - run: npm run test:soundcloud --workspace=@hans/personal

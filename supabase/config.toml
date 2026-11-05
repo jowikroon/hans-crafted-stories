@@ -1,5 +1,10 @@
 project_id = "oejeojzaakfhculcoqdh"
 
+# Public read-only concerts feed; the handler allows GET/OPTIONS only and
+# returns no subscriber emails, sessions or private account records.
+[functions.artist-radar-public-events]
+verify_jwt = false
+
 [functions.site-audit]
 verify_jwt = false
 
