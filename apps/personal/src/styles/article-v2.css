@@ -216,6 +216,55 @@
 }
 .article-v2 .prose .callout p { font-size: 17px; line-height: 1.65; color: var(--w2-ink-2); margin: 0; }
 
+/* ───────────────── ONE-ESSAY STORY CONNECTION ───────────────── */
+.article-v2 .story-bridge {
+  max-width: 680px;
+  margin: 50px auto 0;
+  padding: 22px 0 4px 24px;
+  border-left: 2px solid var(--w2-hair);
+  color: var(--w2-ink-2);
+}
+.article-v2 .story-bridge__eyebrow {
+  margin: 0 0 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--w2-muted);
+}
+.article-v2 .story-bridge__thought {
+  margin: 0 0 12px;
+  max-width: 60ch;
+  font-size: 17px;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.article-v2 .story-bridge__link {
+  color: var(--w2-ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.article-v2 .story-bridge__link:hover { text-decoration-thickness: 2px; }
+.article-v2 .story-bridge__link:focus-visible,
+.article-v2 .story-bridge__source a:focus-visible {
+  outline: 2px solid var(--w2-ink);
+  outline-offset: 4px;
+}
+.article-v2 .story-bridge__source {
+  margin: 22px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--w2-muted);
+}
+.article-v2 .story-bridge__source a {
+  color: var(--w2-ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ───────────────── TAGS / SHARE / CTA ───────────────── */
 .article-v2 .atags { display: flex; flex-wrap: wrap; gap: 8px; max-width: 680px; margin: 56px auto 0; }
 .article-v2 .atag {

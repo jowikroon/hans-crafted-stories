@@ -305,6 +305,11 @@ const WritingV2 = () => {
               </>
             )}
           </p>
+          <p className="author-line">
+            {lang === "nl"
+              ? "Ik schrijf op wat ik tegenkom, wat werkt en wat ik zelf nog niet zeker weet."
+              : "I write about what I run into, what works, and what I am still trying to figure out."}
+          </p>
           <div className="proof">
             <div className="proof__item">
               <span className="proof__stat">Amazon NL</span>

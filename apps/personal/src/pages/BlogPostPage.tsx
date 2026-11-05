@@ -16,6 +16,7 @@ import "@/styles/blog.css";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 import { applyMaskTokens, type MaskingConfig } from "@/lib/masking";
 import { trackBlogView, trackTocClick, trackReadDepth, trackShare, type BlogEventContext } from "@/lib/blogAnalytics";
+import ArticleStoryBridge from "@/components/ArticleStoryBridge";
 
 /* ────────────────────────────────────────────────────────────
    BlogPostPage — article reader, redesign v2.
@@ -736,6 +737,8 @@ const BlogPostPage = () => {
           )}
           <div className="prose" key={`prose-${lang}-${bodyHtml.length}`} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
         </div>
+
+        <ArticleStoryBridge slug={post.slug} articleLang={articleLang} />
 
         {/* Tags — link to the filtered /writing index */}
         {post.tags.length > 0 && (

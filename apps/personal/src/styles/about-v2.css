@@ -78,6 +78,10 @@
 .av-thread-pre{margin:20px 0 8px;font-size:18px;line-height:30px;color:var(--mut)}
 .av-quote{text-wrap:balance;margin:0 0 20px;font-size:32px;line-height:40px;font-weight:500;letter-spacing:-.015em;max-width:22ch;color:var(--ink)}
 .av-thread-post{margin:0;font-size:18px;line-height:30px;color:var(--mut)}
+.av-thread-echo{margin:18px 0 0;font-size:16px;line-height:27px;color:var(--mut)}
+.av-thread-echo a{color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.av-thread-echo a:hover{text-decoration-thickness:2px}
+.av-thread-echo a:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
 .av-midcta{margin-top:48px;padding-top:32px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 24px}
 .av-midcta-q{margin:0;font-size:20px;line-height:28px;font-weight:600}
 /* roles */
