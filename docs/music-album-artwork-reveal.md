@@ -1,3 +1,5 @@
+> **2026-11-05 active update:** The current permanent album motion rule is in [music-album-motion-contract.md](music-album-motion-contract.md): 760 ms cover flip, accelerating rows beginning at 920 ms, and five animated anonymous IETS MOOIS slots. The 440 ms times below document the original 3 November implementation and are superseded. Future Claude/Codex updates must keep the active contract and its CI tests green.
+
 # Final artwork and editable track reveal
 
 Implemented locally on 3 November 2026 for the music shelf and both album pages.
