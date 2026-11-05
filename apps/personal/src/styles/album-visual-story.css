@@ -52,6 +52,16 @@
 .avs-caption__chapter { display:block; margin-bottom:22px; color:var(--avs-violet); font:10px/1.7 var(--font-mono),monospace; letter-spacing:.08em; }
 .avs-caption h3 { max-width:14ch; margin:0 0 20px; font-size:clamp(28px,3.1vw,44px); font-weight:500; line-height:1.08; letter-spacing:-.045em; overflow-wrap:anywhere; }
 .avs-caption>p { max-width:34ch; color:var(--avs-muted); font-size:14px; line-height:1.85; margin:0; }
+.avs-artwork-actions { margin-top:24px; min-width:0; }
+.avs-artwork-actions__buttons { display:flex; flex-wrap:wrap; gap:8px; }
+.avs-artwork-action { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:44px; max-width:100%; padding:9px 10px; border:1px solid var(--avs-line); border-radius:3px; color:var(--avs-paper); background:transparent; text-decoration:none; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.avs-artwork-action svg { flex-shrink:0; color:var(--avs-violet); }
+.avs-artwork-action:hover { border-color:var(--avs-violet); background:#ffffff08; }
+.avs-artwork-action[aria-disabled=true] { opacity:.65; cursor:wait; }
+.avs-artwork-actions__status { min-height:1.6em; margin:8px 0 0; color:var(--avs-violet); font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+.avs-artwork-actions__manual { margin-top:8px; }
+.avs-artwork-actions__manual label { display:block; margin-bottom:6px; color:var(--avs-muted); font-size:12px; line-height:1.6; }
+.avs-artwork-actions__manual input { width:100%; min-width:0; min-height:44px; padding:10px; border:1px solid var(--avs-line); border-radius:3px; color:var(--avs-paper); background:#14231a; font-family:var(--font-mono),monospace; font-size:16px; }
 .avs-dialog__rail { display:flex; align-items:center; gap:32px; margin-top:22px; padding-top:18px; border-top:1px solid var(--avs-line); }
 .avs-chapter-select { flex-shrink:0; width:210px; }
 .avs-chapter-select label { display:block; color:var(--avs-muted); font-size:10px; line-height:1.6; margin-bottom:6px; }
@@ -136,7 +146,7 @@
 }
 @media(max-height:600px) and (orientation:landscape) {
   /* Keep the complete square clear of the fixed header, footer and body padding. */
-  .avs-artwork { width:min(100%,calc(100dvh - 210px),360px); }
+  .avs-artwork { align-self:start; width:min(100%,calc(100dvh - 210px),360px); }
   /* The error card stays in normal flow so its text and retry remain readable. */
   .avs-artwork[data-state=error] { width:min(100%,360px); aspect-ratio:auto; }
 }

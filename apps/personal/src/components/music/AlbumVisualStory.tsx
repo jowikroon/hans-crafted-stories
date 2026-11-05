@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Expand, X } from "lucide-react";
 import { albumVisualChapters, albumVisualStory, resolveAlbumVisualStoryId, type AlbumVisualStoryImage } from "@/data/albumVisualStory";
+import AlbumArtworkActions from "./AlbumArtworkActions";
 import "@/styles/album-visual-story.css";
 
 const hero = albumVisualStory.find((image) => image.id === "toen-in-nu")!;
@@ -136,9 +137,9 @@ export default function AlbumVisualStory() {
     if (next === undefined) return;
     event.preventDefault();
     if (next === index) return;
-    // Artwork recovery controls disappear with the selected image. Keep their
+    // Artwork recovery and sharing controls disappear with the selected image. Keep their
     // keyboard navigation on the persistent, named figure rather than the dialog.
-    selectImage(next, { focusArtwork: !!(event.target as HTMLElement).closest("[data-gallery-thumbnail], .avs-artwork") });
+    selectImage(next, { focusArtwork: !!(event.target as HTMLElement).closest("[data-gallery-thumbnail], .avs-artwork, .avs-artwork-actions") });
   }
 
   function onTouchEnd(event: TouchEvent<HTMLElement>) {
@@ -188,9 +189,9 @@ export default function AlbumVisualStory() {
           <header className="avs-dialog__header"><div><Dialog.Title>IETS MOOIS</Dialog.Title><Dialog.Description>Het album in beelden</Dialog.Description></div><Dialog.Close ref={closeButton} type="button" className="avs-close" aria-label="Sluit het beeldverhaal"><span>Sluiten</span><X size={21} aria-hidden="true" /></Dialog.Close></header>
           {current && <>
             <div className="avs-dialog__body" ref={body}>
-              <figure className="avs-figure" ref={figure} tabIndex={-1} aria-label={`Beeld ${index + 1} van ${albumVisualStory.length}: ${current.title}`} onTouchStart={(event) => { touchStart.current = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null; }} onTouchEnd={onTouchEnd} onTouchCancel={() => { touchStart.current = null; }}>
+              <figure className="avs-figure" ref={figure} tabIndex={-1} aria-label={`Beeld ${index + 1} van ${albumVisualStory.length}: ${current.title}`} onTouchStart={(event) => { touchStart.current = event.touches.length === 1 && !(event.target as HTMLElement).closest(".avs-artwork-actions") ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null; }} onTouchEnd={onTouchEnd} onTouchCancel={() => { touchStart.current = null; }}>
                 <Artwork key={current.id} image={current} onReady={markReady} onRetry={() => figure.current?.focus({ preventScroll: true })} />
-                <figcaption className="avs-caption"><span className="avs-caption__chapter">{chapter?.title}{current.status === "Volgordestudie" && " / Voorgestelde volgorde"}</span><h3>{current.title}</h3><p>{current.caption}</p></figcaption>
+                <figcaption className="avs-caption"><span className="avs-caption__chapter">{chapter?.title}{current.status === "Volgordestudie" && " / Voorgestelde volgorde"}</span><h3>{current.title}</h3><p>{current.caption}</p><AlbumArtworkActions key={current.id} image={current} /></figcaption>
               </figure>
               <div className="avs-dialog__rail">
                 <div className="avs-chapter-select"><label htmlFor="avs-chapter">Ontdek een ander hoofdstuk</label><select id="avs-chapter" value={current.chapter}
