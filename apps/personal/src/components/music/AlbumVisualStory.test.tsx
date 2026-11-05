@@ -82,7 +82,7 @@ describe("IETS MOOIS optional visual story", () => {
       ["De blik", "Een open blik"],
       ["Toen en nu", "Toen in nu"],
       ["Speelruimte", "Een beetje te veel"],
-      ["Volgordestudies", "Volgordestudie · 01"],
+      ["De volgorde", "Volgordestudie · 01"],
     ];
     for (const [entrance, title] of entrances) {
       const opener = openChapter(entrance);
@@ -92,6 +92,53 @@ describe("IETS MOOIS optional visual story", () => {
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
       await waitFor(() => expect(opener).toHaveFocus());
     }
+  });
+
+  it("keeps the app root inert for late background controls and releases it on close or unmount", async () => {
+    const { container, unmount } = showStory();
+    container.id = "root";
+    expect(container).not.toHaveAttribute("inert");
+    const opener = openChapter();
+    expect(container).toHaveAttribute("inert");
+    expect(dialog().closest("[inert]")).toBeNull();
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Volgend beeld" }));
+    expect(currentTitle()).toBe(albumVisualStory[1].title);
+    expect(container).toHaveAttribute("inert");
+
+    // JSDOM verifies the inert boundary and lifecycle, not native focus/AX behavior.
+    const lateButton = document.createElement("button");
+    lateButton.textContent = "Later geladen cookievoorkeuren";
+    container.appendChild(lateButton);
+    expect(lateButton.closest("[inert]")).toBe(container);
+    expect(dialog().closest("[inert]")).toBeNull();
+
+    closeGallery();
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(opener).toHaveFocus());
+    expect(container).not.toHaveAttribute("inert");
+    expect(lateButton.closest("[inert]")).toBeNull();
+    openChapter("Speelruimte");
+    expect(container).toHaveAttribute("inert");
+    unmount();
+    expect(container).not.toHaveAttribute("inert");
+  });
+
+  it("preserves an inert app root owned by another interaction after close and unmount", async () => {
+    const { container, unmount } = showStory();
+    container.id = "root";
+    container.setAttribute("inert", "");
+    // Programmatic events isolate ownership cleanup, not native inert behavior.
+    const opener = screen.getByRole("button", { name: /Speelruimte$/ });
+    fireEvent.click(opener);
+    expect(container).toHaveAttribute("inert");
+    expect(dialog().closest("[inert]")).toBeNull();
+    closeGallery();
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(container).toHaveAttribute("inert");
+    fireEvent.click(opener);
+    expect(dialog()).toBeInTheDocument();
+    unmount();
+    expect(container).toHaveAttribute("inert");
   });
 
   it("lets the reader reach all 15 unique supplied images and keeps the caption short", () => {

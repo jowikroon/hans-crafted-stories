@@ -88,6 +88,17 @@ export default function AlbumVisualStory() {
   useEffect(() => { closing.current = false; }, [location.key]);
   useEffect(() => {
     if (!isOpen) return;
+    const root = document.getElementById("root");
+    if (!root) return;
+    // Also isolate background controls that mount later, such as cookie consent.
+    // The dialog is portalled beside this root, so its controls stay available.
+    const wasInert = root.hasAttribute("inert");
+    root.setAttribute("inert", "");
+    return () => { if (!wasInert) root.removeAttribute("inert"); };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
     const previous = window.history.scrollRestoration;
     window.history.scrollRestoration = "manual";
     return () => { window.history.scrollRestoration = previous; };

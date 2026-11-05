@@ -126,8 +126,13 @@
   .avs-key-hint { display:none; }
   .avs-counter { font-size:12px; white-space:nowrap; }
 }
+@media(max-height:600px) and (orientation:landscape) {
+  /* Keep the complete square clear of the fixed header, footer and body padding. */
+  .avs-artwork { width:min(100%,calc(100dvh - 210px),360px); }
+  /* The error card stays in normal flow so its text and retry remain readable. */
+  .avs-artwork[data-state=error] { width:min(100%,360px); aspect-ratio:auto; }
+}
 @media(max-height:600px) and (min-width:621px) {
-  .avs-artwork { width:min(100%,360px); }
   .avs-dialog__header { min-height:60px; padding-block:8px; }
   .avs-controls { min-height:64px; padding-block:8px; }
 }

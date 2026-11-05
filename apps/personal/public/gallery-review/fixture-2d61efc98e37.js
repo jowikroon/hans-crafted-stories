@@ -7701,7 +7701,7 @@ For more information, see https://radix-ui.com/primitives/docs/components/${t.do
 	},
 	{
 		id: "volgorde",
-		title: "Volgordestudies",
+		title: "De volgorde",
 		intro: "Schetsen van de hoes, met voorgestelde trackvolgordes.",
 		coverId: "volgordestudie-01"
 	}
@@ -7989,6 +7989,14 @@ function xi() {
 	(0, T.useEffect)(() => {
 		g.current = !1;
 	}, [e.key]), (0, T.useEffect)(() => {
+		if (!a) return;
+		let e = document.getElementById("root");
+		if (!e) return;
+		let t = e.hasAttribute("inert");
+		return e.setAttribute("inert", ""), () => {
+			t || e.removeAttribute("inert");
+		};
+	}, [a]), (0, T.useEffect)(() => {
 		if (!a) return;
 		let e = window.history.scrollRestoration;
 		return window.history.scrollRestoration = "manual", () => {

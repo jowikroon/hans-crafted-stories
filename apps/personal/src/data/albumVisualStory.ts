@@ -25,7 +25,7 @@ export const albumVisualChapters: readonly AlbumVisualChapter[] = [
   { id: "blik", title: "De blik", intro: "Een open blik, warm licht en ruimte om even te blijven.", coverId: "een-open-blik" },
   { id: "toen-nu", title: "Toen en nu", intro: "Twee leeftijden vinden elkaar in een kleine spiegeling.", coverId: "toen-in-nu" },
   { id: "speelruimte", title: "Speelruimte", intro: "Naast de ernst mag ook iets onverwachts bestaan.", coverId: "een-beetje-te-veel" },
-  { id: "volgorde", title: "Volgordestudies", intro: "Schetsen van de hoes, met voorgestelde trackvolgordes.", coverId: "volgordestudie-01" },
+  { id: "volgorde", title: "De volgorde", intro: "Schetsen van de hoes, met voorgestelde trackvolgordes.", coverId: "volgordestudie-01" },
 ];
 
 /** Preserve links from the earlier four-image story without changing their history entry. */
