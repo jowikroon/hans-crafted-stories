@@ -8,6 +8,7 @@ Datum: 2026-11-05. Status: **database- en deploymenttests deels geslaagd; echte 
 - Afzonderlijke Supabase-projectnaam `jowikroon-artist-radar-staging-20261105`, ref `wwgmgqxchamvbhaxjezq`, regio `eu-central-1`, URL `https://wwgmgqxchamvbhaxjezq.supabase.co`. Het productieproject `pesfakewujjwkyybwaom` is niet aangepast.
 - De eerste, mislukte ontwikkelbranch op productieproject liep vast bij migratie 13 van 328 (ontbrekende historische tabel `public.seo_news_digest`). Deze lege branch is verwijderd en de verwijdering gecontroleerd.
 - Gebruiker heeft een nieuw standalone project tegen de bevestigde prijs van ongeveer $10 per maand, plus variabel gebruik, voor **30 dagen** goedgekeurd. Op of rond **2026-12-05**: afzonderlijk beoordelen of verwijderen; niet stilzwijgend blijven betalen of automatisch gegevens vernietigen.
+- Een eenmalige evaluatieherinnering kon niet worden ingepland: het account heeft 15/15 actieve automatiseringen. Er is geen bestaande taak overschreven; **5 december blijft dus een handmatige vervolgdatum**.
 - Geen productiedata, echte klantmails, betaalgegevens of credentials zijn naar staging gekopieerd.
 
 ## Wat is geïnstalleerd
@@ -31,6 +32,7 @@ Datum: 2026-11-05. Status: **database- en deploymenttests deels geslaagd; echte 
 | Testdata-opruiming | PASS | Na `ROLLBACK`: 0 auth.users, 0 volgers, 0 voorkeuren, 0 activiteiten, 0 historie, 0 concerten |
 | Edge Function deploy | ACTIEF | Geregistreerd als versie 1, **geen uitgevoerde HTTP-respons gevalideerd** |
 | Function HTTP GET | **NIET GETEST** | Uitvoeringsomgeving gaf `Proxy CONNECT aborted due to timeout`; registratie als ACTIVE is geen healthcheck |
+| Algemene CMS-staging safety-check | **GEBLOKKEERD** | Bewust geen lokale `.env.staging`-credentials; geen Artist Radar-browser-E2E uitgevoerd |
 | Echte mail, callback, sessievernieuwing en uitloggen | **OPEN** | Geen geconfigureerde Auth-SMTP/redirectproef met ontvangen mail en twee echte accounts |
 | Mobiel, schermlezer, toetsenbord, 200% zoom | **OPEN** | Alleen offline tests; browser-extensie niet gekoppeld aan deze sessie |
 | Officiële verkoperlinks | **OPEN** | Lege brontabel, dus geen echt onafhankelijk geverifieerde ticket-CTA |
