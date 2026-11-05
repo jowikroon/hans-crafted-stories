@@ -5,8 +5,10 @@ import { songs } from "@/data/music";
 import { useMusicExperience } from "./MusicExperience";
 import { useAlbumPrivateDetails } from "@/hooks/useAlbumPrivateDetails";
 
-// A slow opening, then a tighter rhythm. Delays include the 440 ms cover turn.
-const TRACK_REVEAL_DELAYS = [650, 1100, 1450, 1690, 1870, 2010, 2120, 2210, 2290];
+// Motion contract: turn completes in 760ms; the first row starts after it settles.
+// Intervals then compress: 450, 350, 240, 180, 140, 110, 90, 80ms.
+// Keep this synchronized with music-albums.css and AlbumSleeve.test.tsx.
+const TRACK_REVEAL_DELAYS = [920, 1370, 1720, 1960, 2140, 2280, 2390, 2480, 2560];
 
 function TurnIcon() {
   return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M19 8a8 8 0 1 0 1 8M19 3v5h-5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
@@ -61,13 +63,13 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
               <h3>{album.title}</h3>
               {album.subtitle && <p className="ma-sleeve__subtitle">{album.subtitle}</p>}
             </div>
-            {!album.publicTracks.length && !details ? <p className="ma-sleeve__back-quote">Ik beloofde iets moois te maken.<span>Van mijn leven.</span></p> : <ol className="ma-sleeve__tracklist" aria-label={`Tracklist ${title}`}>
+            <ol className="ma-sleeve__tracklist" aria-label={`Tracklist ${title}`}>
               {Array.from({ length: album.trackCount }, (_, index) => {
                 const position = index + 1;
                 const release = album.publicTracks.find((track) => track.position === position);
                 const song = release ? songs.find((item) => item.slug === release.songSlug) : undefined;
                 const privateTrack = details?.tracks.find((track) => track.position === position);
-                const delay = TRACK_REVEAL_DELAYS[index] ?? 2290 + (index - 8) * 60;
+                const delay = TRACK_REVEAL_DELAYS[index] ?? TRACK_REVEAL_DELAYS[TRACK_REVEAL_DELAYS.length - 1] + (index - TRACK_REVEAL_DELAYS.length + 1) * 60;
                 return <li key={position} className={`ma-sleeve__track-row${song ? " ma-sleeve__track-row--released" : " ma-sleeve__track-row--unreleased"}`} style={{ "--ma-reveal-delay": `${delay}ms` } as CSSProperties}>
                   {song ? <Link to={`/music/${song.slug}`} className="ma-sleeve__track" tabIndex={open ? 0 : -1} aria-haspopup="dialog" aria-label={`Open songpagina van ${song.title}`} onClick={(event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); openSong(song.slug, event.currentTarget); } }}>
                     <span className="ma-sleeve__index">{String(position).padStart(2, "0")}</span><span className="ma-sleeve__track-title">{song.title}</span><span className="ma-sleeve__play" aria-hidden="true">↗</span>
@@ -78,7 +80,7 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
                   </div>}
                 </li>;
               })}
-            </ol>}
+            </ol>
             {onAlbumPage
               ? <a href={album.publicTracks.length ? "#album-tracks" : "#album-story"} className="ma-sleeve__cta" tabIndex={open ? 0 : -1}><span>{album.publicTracks.length ? "Luister de releases" : "Ontdek het verhaal"}</span><span aria-hidden="true">↓</span></a>
               : <Link to={albumPath(album.slug)} className="ma-sleeve__cta" tabIndex={open ? 0 : -1} aria-label={`Ontdek het album ${title}`}><span>Ontdek het album</span><span aria-hidden="true">↗</span></Link>}

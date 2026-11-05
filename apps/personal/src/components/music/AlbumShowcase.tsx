@@ -14,6 +14,12 @@ export default function AlbumShowcase() {
         <p className="ma-eyebrow">Jowikroon / Albums</p>
         <h1 id="ma-albums-heading">Twee albums. <span>Eén verlangen naar connectie.</span></h1>
         <p>Pak een hoes. Draai ’m om. Ontdek wat erachter zit.</p>
+      </div>
+      <div className="ma-album-grid">
+        {albums.map((album) => <AlbumSleeve key={album.slug} album={album} open={openAlbum === album.slug} onToggle={() => setOpenAlbum((current) => current === album.slug ? null : album.slug)} />)}
+      </div>
+      <div className="ma-showcase__direct">
+        <p>Liever direct naar een album of de muziek?</p>
         <nav className="ma-showcase__paths" aria-label="Direct naar albums en nummers">
           {albums.map((album) => (
             <Link key={album.slug} to={albumPath(album.slug)} className="ma-showcase__path">
@@ -25,9 +31,6 @@ export default function AlbumShowcase() {
             <span>Alle nummers</span><small>Spotify + SoundCloud ↓</small>
           </a>
         </nav>
-      </div>
-      <div className="ma-album-grid">
-        {albums.map((album) => <AlbumSleeve key={album.slug} album={album} open={openAlbum === album.slug} onToggle={() => setOpenAlbum((current) => current === album.slug ? null : album.slug)} />)}
       </div>
     </section>
   );

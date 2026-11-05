@@ -14,6 +14,10 @@ describe("music album discovery", () => {
     expect(screen.getByRole("link", { name: /NEON.*2 openbare singles/ }).getAttribute("href")).toBe("/music/albums/neon-the-signal-between");
     expect(screen.getByRole("link", { name: /IETS MOOIS.*In ontwikkeling/ }).getAttribute("href")).toBe("/music/albums/iets-moois");
     expect(screen.getByRole("link", { name: /Alle nummers/ }).getAttribute("href")).toBe("#songs");
-    expect(screen.getAllByTestId("album-sleeve")).toHaveLength(2);
+    const sleeves = screen.getAllByTestId("album-sleeve");
+    expect(sleeves).toHaveLength(2);
+    const quickLinks = screen.getByRole("navigation", { name: "Direct naar albums en nummers" });
+    // The artwork interaction must appear before the optional direct links.
+    expect(sleeves[1].compareDocumentPosition(quickLinks) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
