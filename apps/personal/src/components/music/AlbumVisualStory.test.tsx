@@ -6,6 +6,7 @@ import AlbumVisualStory from "./AlbumVisualStory";
 
 const storyPath = "/music/albums/iets-moois/brand";
 const scrollRestorationDescriptor = Object.getOwnPropertyDescriptor(window.history, "scrollRestoration");
+const clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, "clipboard");
 
 beforeEach(() => {
   vi.spyOn(window, "scrollBy").mockImplementation(() => undefined);
@@ -19,6 +20,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
   if (scrollRestorationDescriptor) Object.defineProperty(window.history, "scrollRestoration", scrollRestorationDescriptor);
   else Reflect.deleteProperty(window.history, "scrollRestoration");
+  if (clipboardDescriptor) Object.defineProperty(navigator, "clipboard", clipboardDescriptor);
+  else Reflect.deleteProperty(navigator, "clipboard");
 });
 
 function showStory(initialEntries: MemoryRouterProps["initialEntries"] = [storyPath]) {
@@ -505,6 +508,55 @@ describe("IETS MOOIS optional visual story", () => {
     fireEvent.click(within(dialog()).getByRole("button", { name: "Vorig beeld" }));
     expect(currentTitle()).toBe(albumVisualStory[13].title);
     expect(within(dialog()).queryByText("Dit beeld kon niet laden.")).toBeNull();
+  });
+
+  it.each([
+    { key: "ArrowLeft", destination: 6, role: "link", name: /Bekijk groot/ },
+    { key: "ArrowRight", destination: 8, role: "button", name: /Kopieer beeldlink/ },
+    { key: "Home", destination: 0, role: "button", name: /Kopieer beeldlink/ },
+    { key: "End", destination: 14, role: "link", name: /Bekijk groot/ },
+  ])("keeps meaningful focus when $key removes a focused artwork action", ({ key, destination, role, name }) => {
+    showStory([`${storyPath}?beeld=wat-meereist`]);
+    const action = within(dialog()).getByRole(role, { name });
+    act(() => action.focus());
+    fireEvent.keyDown(action, { key });
+    expect(action).not.toBeInTheDocument();
+    expect(currentTitle()).toBe(albumVisualStory[destination].title);
+    expect(currentFigure()).toHaveFocus();
+    expect(currentFigure()).toHaveAccessibleName(`Beeld ${destination + 1} van 15: ${albumVisualStory[destination].title}`);
+  });
+
+  it("resets copy feedback and both artwork destinations when the selected image changes", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    showStory([`${storyPath}?campaign=release&beeld=een-open-blik#album-origin`]);
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Kopieer beeldlink" }));
+    await waitFor(() => expect(within(dialog()).getByText("Link gekopieerd.")).toBeInTheDocument());
+    expect(writeText).toHaveBeenLastCalledWith(`https://hansvanleeuwen.com${storyPath}?beeld=een-open-blik#album-world`);
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Volgend beeld" }));
+    expect(within(dialog()).queryByText("Link gekopieerd.")).toBeNull();
+    expect(within(dialog()).getByRole("link", { name: /Bekijk groot: Ruimte om te blijven/ })).toHaveAttribute("href", albumVisualStory[1].src);
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Kopieer beeldlink" }));
+    await waitFor(() => expect(within(dialog()).getByText("Link gekopieerd.")).toBeInTheDocument());
+    expect(writeText).toHaveBeenLastCalledWith(`https://hansvanleeuwen.com${storyPath}?beeld=ruimte-om-te-blijven#album-world`);
+  });
+
+  it("preserves manual link selection during text-editing keys and horizontal touch selection", async () => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+    showStory([`${storyPath}?beeld=wat-meereist`]);
+    const copy = within(dialog()).getByRole("button", { name: "Kopieer beeldlink" });
+    act(() => copy.focus());
+    fireEvent.click(copy);
+    const input = await within(dialog()).findByRole("textbox", { name: "Beeldlink" });
+    expect(input).toHaveFocus();
+    for (const key of ["ArrowLeft", "ArrowRight", "Home", "End"]) fireEvent.keyDown(input, { key });
+    fireEvent.touchStart(input, { touches: [{ clientX: 220, clientY: 100 }], changedTouches: [{ clientX: 220, clientY: 100 }] });
+    fireEvent.touchEnd(input, { touches: [], changedTouches: [{ clientX: 50, clientY: 100 }] });
+    expect(currentTitle()).toBe("Wat meereist");
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue(`https://hansvanleeuwen.com${storyPath}?beeld=wat-meereist#album-world`);
+    fireEvent.keyDown(input, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 
   it("contains programmatic focus and loops Tab only at the modal boundaries", () => {
