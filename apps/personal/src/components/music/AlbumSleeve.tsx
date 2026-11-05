@@ -69,7 +69,7 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
                 const release = album.publicTracks.find((track) => track.position === position);
                 const song = release ? songs.find((item) => item.slug === release.songSlug) : undefined;
                 const privateTrack = details?.tracks.find((track) => track.position === position);
-                const delay = TRACK_REVEAL_DELAYS[index] ?? 2290 + (index - 8) * 60;
+                const delay = TRACK_REVEAL_DELAYS[index] ?? TRACK_REVEAL_DELAYS[TRACK_REVEAL_DELAYS.length - 1] + (index - TRACK_REVEAL_DELAYS.length + 1) * 60;
                 return <li key={position} className={`ma-sleeve__track-row${song ? " ma-sleeve__track-row--released" : " ma-sleeve__track-row--unreleased"}`} style={{ "--ma-reveal-delay": `${delay}ms` } as CSSProperties}>
                   {song ? <Link to={`/music/${song.slug}`} className="ma-sleeve__track" tabIndex={open ? 0 : -1} aria-haspopup="dialog" aria-label={`Open songpagina van ${song.title}`} onClick={(event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); openSong(song.slug, event.currentTarget); } }}>
                     <span className="ma-sleeve__index">{String(position).padStart(2, "0")}</span><span className="ma-sleeve__track-title">{song.title}</span><span className="ma-sleeve__play" aria-hidden="true">↗</span>
