@@ -1,6 +1,10 @@
 # IETS MOOIS: review van het complete beeldverhaal
 
-Datum: 5 november 2026. Status: **preflight afgerond**. Definitieve CI, productiemerge en livecontrole staan nog open; het publicatiebewijs wordt bijgehouden in [PR #485](https://github.com/jowikroon/hans-crafted-stories/pull/485).
+## Publicatie-aanvulling, 5 november 2026
+
+Deze versie is gepubliceerd via [PR #485](https://github.com/jowikroon/hans-crafted-stories/pull/485), productiecommit `d1a1067916f49886e80ed0676f4cd5f1cb1af4ad`. De Vercel-productiedeployment `dpl_HD2DSipJ96PxyT5UG8WVwqjVeaz6` was READY op de exacte commit; alle zeven productiechecks slaagden. De controle om 03:11 CET bevestigde op het publieke domein alle vijftien volledig geladen beelden, focusherstel en browser Terug/Vooruit. Daarmee zijn ook de hieronder historisch open gelaten eindcontroles afgerond. Het volledige releasebewijs staat in de Release-sectie van de PR.
+
+Het register hieronder is het oorspronkelijke **preflightcheckpoint** van 5 november 2026. Open/deels-statussen beschrijven uitsluitend dat eerdere moment, vóór merge en publicatie; de historische controlebevindingen blijven behouden.
 
 De uitbreiding presenteert alle 15 verschillende aangeleverde beelden via vier hoofdstukken, neonknoppen en één overlay. Ieder beeld krijgt maximaal twee korte Nederlandse zinnen. Drie afbeeldingen met liedtitels blijven herkenbaar als volgordestudies.
 

@@ -24,7 +24,7 @@ function Artwork({ image, onReady, onRetry }: { image: AlbumVisualStoryImage; on
     {status !== "error" && <img ref={imageRef} src={`${image.src}${attempt ? `?retry=${attempt}` : ""}`} width={image.width} height={image.height} alt={image.alt} decoding="async"
       onLoad={() => { setStatus("ready"); onReady(); }} onError={() => setStatus("error")} />}
     {status === "loading" && <span className="avs-artwork__status" role="status">Beeld laden…</span>}
-    {status === "error" && <div className="avs-artwork__error" role="status"><p>Dit beeld kon niet laden.</p><button type="button" onClick={() => { onRetry(); setAttempt((value) => value + 1); setStatus("loading"); }}>Opnieuw proberen</button><span>Je kunt ook verder naar het volgende beeld.</span></div>}
+    {status === "error" && <div className="avs-artwork__error" role="status"><p>Dit beeld kon niet laden.</p><button type="button" onClick={() => { onRetry(); setAttempt((value) => value + 1); setStatus("loading"); }}>Opnieuw proberen</button><span>Je kunt ook een ander beeld kiezen.</span></div>}
   </div>;
 }
 
@@ -49,18 +49,21 @@ export default function AlbumVisualStory() {
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const closing = useRef(false);
   const moveArtworkFocus = useRef(false);
+  const preserveArtworkPosition = useRef(false);
+  const pointerChapterChoice = useRef(false);
   const [readyId, setReadyId] = useState<string | null>(null);
   const markReady = useCallback(() => setReadyId(current?.id ?? null), [current?.id]);
 
-  function selectImage(next: number, opener?: HTMLButtonElement, focusArtwork = false) {
+  function selectImage(next: number, { opener, focusArtwork = false, preservePosition = false }: { opener?: HTMLButtonElement; focusArtwork?: boolean; preservePosition?: boolean } = {}) {
     const image = albumVisualStory[next];
     if (!image) return;
     if (next === index) {
       if (focusArtwork) figure.current?.focus({ preventScroll: true });
-      if (body.current) body.current.scrollTop = 0;
+      if (!preservePosition && body.current) body.current.scrollTop = 0;
       return;
     }
     moveArtworkFocus.current = focusArtwork;
+    preserveArtworkPosition.current = preservePosition;
     const search = new URLSearchParams(location.search);
     search.set("beeld", image.id);
     if (opener) {
@@ -108,7 +111,8 @@ export default function AlbumVisualStory() {
     if (!current) return;
     const thumb = thumbs.current[index];
     if (moveArtworkFocus.current) { figure.current?.focus({ preventScroll: true }); moveArtworkFocus.current = false; }
-    if (body.current) body.current.scrollTop = 0;
+    if (!preserveArtworkPosition.current && body.current) body.current.scrollTop = 0;
+    preserveArtworkPosition.current = false;
     // Move only the horizontal strip, never the page or the artwork above it.
     if (thumb && strip.current) {
       const button = thumb.getBoundingClientRect();
@@ -132,7 +136,9 @@ export default function AlbumVisualStory() {
     if (next === undefined) return;
     event.preventDefault();
     if (next === index) return;
-    selectImage(next, undefined, !!(event.target as HTMLElement).closest("[data-gallery-thumbnail]"));
+    // Artwork recovery controls disappear with the selected image. Keep their
+    // keyboard navigation on the persistent, named figure rather than the dialog.
+    selectImage(next, { focusArtwork: !!(event.target as HTMLElement).closest("[data-gallery-thumbnail], .avs-artwork") });
   }
 
   function onTouchEnd(event: TouchEvent<HTMLElement>) {
@@ -147,7 +153,7 @@ export default function AlbumVisualStory() {
   return <section className="avs-story" id="album-world" aria-labelledby="avs-heading">
     <div className="ma-section-heading"><div><p className="ma-eyebrow">IETS MOOIS / Het beeldverhaal</p><h2 id="avs-heading">Eén gezicht.<br />Meer dan één verhaal.</h2></div><p className="avs-intro">Een open blik. Iets van toen. En ruimte voor wat jij erin ziet.</p></div>
     <div className="avs-story__layout">
-      <button ref={fallbackTrigger} type="button" className="avs-cover" aria-haspopup="dialog" onClick={(event) => selectImage(albumVisualStory.indexOf(hero), event.currentTarget)}>
+      <button ref={fallbackTrigger} type="button" className="avs-cover" aria-haspopup="dialog" onClick={(event) => selectImage(albumVisualStory.indexOf(hero), { opener: event.currentTarget })}>
         <img src={hero.src} width={hero.width} height={hero.height} alt="Jowikroon kijkt over zijn bril. In het glas kijkt een kind terug." loading="lazy" decoding="async" />
         <span className="avs-cover__action"><span><Expand size={17} aria-hidden="true" />Open het beeldverhaal</span><span>{albumVisualStory.length} beelden <ArrowUpRight size={19} aria-hidden="true" /></span></span>
       </button>
@@ -157,7 +163,7 @@ export default function AlbumVisualStory() {
           {albumVisualChapters.map((item, chapterIndex) => {
             const cover = albumVisualStory.find((image) => image.id === item.coverId)!;
             const count = albumVisualStory.filter((image) => image.chapter === item.id).length;
-            return <button key={item.id} type="button" className="avs-laser" aria-haspopup="dialog" onClick={(event) => selectImage(albumVisualStory.indexOf(cover), event.currentTarget)}>
+            return <button key={item.id} type="button" className="avs-laser" aria-haspopup="dialog" onClick={(event) => selectImage(albumVisualStory.indexOf(cover), { opener: event.currentTarget })}>
               <img src={cover.thumbnail} width={64} height={64} alt="" loading="lazy" decoding="async" />
               <span className="avs-laser__copy"><span className="avs-laser__index">0{chapterIndex + 1} / {count} beelden</span><strong>{item.title}</strong></span>
               <ArrowUpRight size={20} className="avs-laser__arrow" aria-hidden="true" />
@@ -187,9 +193,20 @@ export default function AlbumVisualStory() {
                 <figcaption className="avs-caption"><span className="avs-caption__chapter">{chapter?.title}{current.status === "Volgordestudie" && " / Voorgestelde volgorde"}</span><h3>{current.title}</h3><p>{current.caption}</p></figcaption>
               </figure>
               <div className="avs-dialog__rail">
-                <div className="avs-chapter-select"><label htmlFor="avs-chapter">Ontdek een ander hoofdstuk</label><select id="avs-chapter" value={current.chapter} onChange={(event) => { const next = albumVisualStory.findIndex((image) => image.chapter === event.target.value); selectImage(next, undefined, true); }}>{albumVisualChapters.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></div>
+                <div className="avs-chapter-select"><label htmlFor="avs-chapter">Ontdek een ander hoofdstuk</label><select id="avs-chapter" value={current.chapter}
+                  onPointerDown={(event) => { pointerChapterChoice.current = event.isPrimary && event.button === 0; }}
+                  onKeyDown={() => { pointerChapterChoice.current = false; }}
+                  onBlur={() => { pointerChapterChoice.current = false; }}
+                  onChange={(event) => {
+                    const next = albumVisualStory.findIndex((image) => image.chapter === event.target.value);
+                    const revealArtwork = pointerChapterChoice.current;
+                    pointerChapterChoice.current = false;
+                    // Native select arrows can change the value before a commit.
+                    // Keyboard and assistive technology keep their focus/position.
+                    selectImage(next, { focusArtwork: revealArtwork, preservePosition: !revealArtwork });
+                  }}>{albumVisualChapters.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></div>
                 <div className="avs-thumbnail-area"><p>Alle {albumVisualStory.length} beelden</p><div className="avs-thumbnails" ref={strip} role="group" aria-label={`Kies uit alle ${albumVisualStory.length} beelden`}>
-                  {albumVisualStory.map((image, position) => <button type="button" key={image.id} data-gallery-thumbnail={image.id} ref={(element) => { thumbs.current[position] = element; }} tabIndex={position === index ? 0 : -1} aria-label={`Beeld ${position + 1}: ${image.title}`} aria-current={position === index ? "true" : undefined} onClick={() => selectImage(position, undefined, true)}><img src={image.thumbnail} width={60} height={60} alt="" loading="lazy" decoding="async" /><span aria-hidden="true">{String(position + 1).padStart(2, "0")}</span></button>)}
+                  {albumVisualStory.map((image, position) => <button type="button" key={image.id} data-gallery-thumbnail={image.id} ref={(element) => { thumbs.current[position] = element; }} tabIndex={position === index ? 0 : -1} aria-label={`Beeld ${position + 1}: ${image.title}`} aria-current={position === index ? "true" : undefined} onClick={() => selectImage(position, { focusArtwork: true })}><img src={image.thumbnail} width={60} height={60} alt="" loading="lazy" decoding="async" /><span aria-hidden="true">{String(position + 1).padStart(2, "0")}</span></button>)}
                 </div></div>
               </div>
             </div>

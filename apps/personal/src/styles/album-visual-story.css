@@ -50,7 +50,7 @@
 .avs-artwork__error>span { font-size:12px; line-height:1.7; color:var(--avs-muted); }
 .avs-artwork__error button { min-height:44px; padding:10px 16px; color:#11241a; background:var(--avs-paper); border:0; border-radius:3px; font-size:14px; }
 .avs-caption__chapter { display:block; margin-bottom:22px; color:var(--avs-violet); font:10px/1.7 var(--font-mono),monospace; letter-spacing:.08em; }
-.avs-caption h3 { max-width:14ch; margin:0 0 20px; font-size:clamp(28px,3.1vw,44px); font-weight:500; line-height:1.08; letter-spacing:-.045em; }
+.avs-caption h3 { max-width:14ch; margin:0 0 20px; font-size:clamp(28px,3.1vw,44px); font-weight:500; line-height:1.08; letter-spacing:-.045em; overflow-wrap:anywhere; }
 .avs-caption>p { max-width:34ch; color:var(--avs-muted); font-size:14px; line-height:1.85; margin:0; }
 .avs-dialog__rail { display:flex; align-items:center; gap:32px; margin-top:22px; padding-top:18px; border-top:1px solid var(--avs-line); }
 .avs-chapter-select { flex-shrink:0; width:210px; }
@@ -125,6 +125,14 @@
   .avs-controls>button { min-width:96px; padding:10px 12px; gap:8px; }
   .avs-key-hint { display:none; }
   .avs-counter { font-size:12px; white-space:nowrap; }
+}
+@media(max-width:420px) {
+  .avs-cover__action { flex-wrap:wrap; }
+  /* Keep both named actions inside the viewport when text is enlarged. */
+  .avs-controls { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
+  .avs-controls>p { grid-column:1 / -1; grid-row:1; }
+  .avs-controls>button { min-width:0; padding-inline:6px; }
+  .avs-controls>button svg { display:none; }
 }
 @media(max-height:600px) and (orientation:landscape) {
   /* Keep the complete square clear of the fixed header, footer and body padding. */
