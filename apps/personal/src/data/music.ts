@@ -51,6 +51,18 @@ export interface ProseBlock {
   text: string;
 }
 
+/** An artistic reading of a song, not a factual account of its creation. */
+export interface SongStory {
+  /** The emotional tension this text invites a listener to explore. */
+  emotion: string;
+  /** Confession, listener's recognition, and the larger thought, in that order. */
+  i: string;
+  you: string;
+  it: string;
+  /** One short poetic afterthought. */
+  subline: string;
+}
+
 export interface SongDetail {
   /** Category line above the title, e.g. "Lo-fi · Single". */
   category: string;
@@ -60,6 +72,8 @@ export interface SongDetail {
   session: SessionSpec[];
   /** Gear & instruments list. */
   gear: GearItem[];
+  /** Interpretive triptych, kept separate from verified song facts and lyrics. */
+  story: SongStory;
   /** Production-notes prose, in order. */
   prose: ProseBlock[];
   /** Lyrics, grouped into sections. */
@@ -143,7 +157,7 @@ function scEmbed(trackUrl: string): string {
 }
 
 /** Source-grounded public SoundCloud metadata, without invented gear or lyrics. */
-function conceptDetail(opts: { category: string; uploaded: string; length: string; note: string; version?: string }): SongDetail {
+function conceptDetail(opts: { category: string; uploaded: string; length: string; note: string; story: SongStory; version?: string }): SongDetail {
   return {
     category: opts.category,
     facts: [
@@ -159,6 +173,7 @@ function conceptDetail(opts: { category: string; uploaded: string; length: strin
       { label: "Artist", value: "Jowikroon" },
     ],
     gear: [],
+    story: opts.story,
     prose: [
       { type: "lead", text: opts.note },
       { type: "p", text: "The date above is the public SoundCloud upload date, not necessarily the composition, mastering or official release date." },
@@ -200,6 +215,13 @@ export const songs: Song[] = [
         { label: "Label", value: "Jowikroon (self-released)" },
       ],
       gear: [],
+      story: {
+        emotion: "Feeling seen without feeling close",
+        i: "I had a thousand ways to be seen and still couldn't feel close.",
+        you: "You can hear everyone cheering and still wish for one person to stay.",
+        it: "It asks whether attention can ever stand in for connection.",
+        subline: "Everyone can see. Nobody knows.",
+      },
       prose: [
         { type: "lead", text: "Neon House of Glass is my second official single, out now on Spotify under my artist name Jowikroon." },
         { type: "p", text: "A thousand hearts on the screen. Still nobody in the room. Faces, messages and a frozen laugh in a thumbnail gather around a voice reaching for someone on the other side." },
@@ -252,6 +274,13 @@ export const songs: Song[] = [
         { label: "Style", value: "Minimal techno · funk-house" },
       ],
       gear: [],
+      story: {
+        emotion: "The instant we belong",
+        i: "I carried the rhythm alone until I was ready to let it go.",
+        you: "You stop being a stranger when everyone lands on the same beat.",
+        it: "It is the instant when waiting becomes a shared beginning.",
+        subline: "One second. Everyone together.",
+      },
       prose: [
         { type: "lead", text: "Beat Drop is my first official single, out now on Spotify under my artist name Jowikroon." },
         { type: "p", text: "A clock ticks, the city lights flicker, and a new rhythm takes hold. The song stays close to that charged moment before something begins." },
@@ -290,6 +319,13 @@ export const songs: Song[] = [
       uploaded: "Oct 27, 2026",
       length: "2:20",
       note: "I can stay inside a loop and still end up somewhere else. A familiar phrase returns, but each pass makes room for a new movement or a detail I missed before.",
+      story: {
+        emotion: "Repetition becoming choice",
+        i: "I mistook returning for standing still.",
+        you: "You notice the change only when the same moment comes back.",
+        it: "It circles until repetition becomes a choice.",
+        subline: "Again. Not the same.",
+      },
     }),
   },
   {
@@ -315,6 +351,13 @@ export const songs: Song[] = [
         length: "7:59",
         version: "Existing public master",
         note: "Hanging On keeps returning to a thought it cannot quite leave behind. A long recording from NEON: The Signal Between, with the voice and the build carrying that tension together.",
+        story: {
+          emotion: "The cost of holding on",
+          i: "I stayed long after hope stopped helping.",
+          you: "You know letting go can hurt more than holding on.",
+          it: "It keeps asking for an ending, then starts again.",
+          subline: "Not yet. Almost.",
+        },
       }),
       prose: [
         { type: "lead", text: "Hanging On keeps returning to a thought it cannot quite leave behind. A long recording from NEON: The Signal Between, with the voice and the build carrying that tension together." },
@@ -344,6 +387,13 @@ export const songs: Song[] = [
       uploaded: "Oct 11, 2026",
       length: "2:38",
       note: "An instrumental electronic texture study outside the current NEON album narrative. The frequency in the title is a creative image, not a technical measurement of this recording.",
+      story: {
+        emotion: "Curiosity without an answer",
+        i: "I listened for something I couldn't explain.",
+        you: "You feel the shift before you find the words.",
+        it: "It leaves room for a meaning you do not have to name.",
+        subline: "A feeling without a label.",
+      },
     }),
   },
   {
@@ -368,6 +418,13 @@ export const songs: Song[] = [
       length: "2:44",
       version: "SoundCloud original mix",
       note: "This public SoundCloud upload is a version of Beat Drop. The official single was released on Spotify on May 28, 2026; this SoundCloud upload appeared later on September 28.",
+      story: {
+        emotion: "Remembering the first leap",
+        i: "I return to the same turning point.",
+        you: "You enter a familiar rush by another door.",
+        it: "It makes a familiar beginning feel undecided again.",
+        subline: "Same pulse. Another way in.",
+      },
     }),
   },
   {
@@ -392,6 +449,13 @@ export const songs: Song[] = [
       length: "4:11",
       version: "Stem-mix upload",
       note: "With a Grin, shared publicly in a stem-mix version. This upload documents one recording without presenting it as a definitive album master.",
+      story: {
+        emotion: "Humor in the face of doubt",
+        i: "I let a grin say what I couldn't.",
+        you: "You wonder whether a smile means relief or disguise.",
+        it: "It holds lightness and uncertainty in the same moment.",
+        subline: "Not every smile explains itself.",
+      },
     }),
   },
   {
@@ -415,6 +479,13 @@ export const songs: Song[] = [
       uploaded: "Jul 12, 2026",
       length: "3:09",
       note: "A small spark can be enough to feel movement again. This track leaves that first flicker room to breathe before turning it into a larger story.",
+      story: {
+        emotion: "The fragile return of hope",
+        i: "I needed one reason to begin, not a miracle.",
+        you: "You feel hope returning before you dare call it hope.",
+        it: "It treats a small start as enough.",
+        subline: "The first yes is quiet.",
+      },
     }),
   },
   {
@@ -438,6 +509,13 @@ export const songs: Song[] = [
       uploaded: "Jun 13, 2026",
       length: "4:26",
       note: "An early Jowikroon recording from the public SoundCloud timeline. This page documents the available version without assuming it is a finished album master.",
+      story: {
+        emotion: "Connection across time",
+        i: "I kept what time couldn't carry with me.",
+        you: "You find a familiar feeling across the years.",
+        it: "It lets time pass without breaking the connection.",
+        subline: "Years apart. Still in time.",
+      },
     }),
   },
 ];

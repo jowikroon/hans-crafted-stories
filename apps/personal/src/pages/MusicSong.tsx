@@ -331,6 +331,27 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
             )}
           </div>
 
+          {/* An interpretive entry point to the feeling, not a claim about the artist's biography. */}
+          <section className="songstory" aria-labelledby={`${idPrefix}song-story-heading`}>
+            <header className="songstory__intro">
+              <p className="songstory__eyebrow">Behind the feeling</p>
+              <h2 id={`${idPrefix}song-story-heading`}>{d.story.emotion}</h2>
+            </header>
+            <div className="songstory__triptych">
+              {([
+                ["I", d.story.i],
+                ["You", d.story.you],
+                ["It", d.story.it],
+              ] as const).map(([perspective, line]) => (
+                <div className="songstory__voice" key={perspective}>
+                  <h3 className="songstory__speaker">{perspective}</h3>
+                  <p>{line}</p>
+                </div>
+              ))}
+            </div>
+            <p className="songstory__subline">{d.story.subline}</p>
+          </section>
+
           <SongSectionNav
             key={song.slug}
             rootRef={rootRef}
