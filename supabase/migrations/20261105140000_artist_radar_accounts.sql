@@ -65,7 +65,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-REVOKE ALL ON FUNCTION public.artist_radar_account_write_guard() FROM PUBLIC;
+-- Supabase can grant EXECUTE directly to anon/authenticated/service_role as
+-- default privileges; revoking PUBLIC alone leaves an RPC-exposed definer.
+-- Triggers continue using the owner-owned function without a client EXECUTE grant.
+REVOKE ALL ON FUNCTION public.artist_radar_account_write_guard()
+  FROM PUBLIC, anon, authenticated, service_role;
 DROP TRIGGER IF EXISTS artist_radar_follows_guard ON public.artist_radar_follows;
 CREATE TRIGGER artist_radar_follows_guard BEFORE INSERT ON public.artist_radar_follows
   FOR EACH ROW EXECUTE FUNCTION public.artist_radar_account_write_guard();
