@@ -1,0 +1,19 @@
+import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import AlbumShowcase from "./AlbumShowcase";
+
+vi.mock("@/components/music/AlbumSleeve", () => ({
+  default: ({ album }: { album: { slug: string } }) => <div data-testid="album-sleeve">{album.slug}</div>,
+}));
+
+describe("music album discovery", () => {
+  it("provides one primary heading and direct routes without flipping artwork", () => {
+    render(<MemoryRouter><AlbumShowcase /></MemoryRouter>);
+    expect(screen.getByRole("heading", { level: 1, name: /Twee albums/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /NEON.*2 openbare singles/ }).getAttribute("href")).toBe("/music/albums/neon-the-signal-between");
+    expect(screen.getByRole("link", { name: /IETS MOOIS.*In ontwikkeling/ }).getAttribute("href")).toBe("/music/albums/iets-moois");
+    expect(screen.getByRole("link", { name: /Alle nummers/ }).getAttribute("href")).toBe("#songs");
+    expect(screen.getAllByTestId("album-sleeve")).toHaveLength(2);
+  });
+});
