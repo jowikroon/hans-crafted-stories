@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "head": "733c38003a2317eb922e41a0040d237ddf2aa59d",
-  "sourceDigest": "7d0d7af50fb00ae3678a9329c59cd74791ac702aaec47ea10410d11d2d19ad5f",
+  "head": "df5c630756b95009c34cffd95e92d39849af634a",
+  "sourceDigest": "e89dbdf230998d0b8a607604fce2d75567a911e35207a066522408234381dd4b",
   "sourceHashes": {
     "postcss.config.js": "e32657baf631d7c5f4dc67b4b2ee0ec8e7d5b3c41860e09cddce7c0377cd80bc",
     "src/components/LocalizedLink.tsx": "4615b8f35782a11bd4420f142120eb08c019d6f1a085714856d350e0f317d489",
@@ -25,7 +25,7 @@
     "src/lib/seo/blogPostHead.ts": "65e2fd7ba339e3a8b3fc88c6ee93f319dc1248f39bcb3f115e42f718fd59d123",
     "src/pages/MusicAlbumBrand.tsx": "8f01114e9a6525734c0a3d58072945c971e7fce8ae9c7895c712872d3868340d",
     "src/styles/album-visual-story.css": "911801bb055322f6968187b26ebe3d637ab0154f61fd85bcd561920e8122c53d",
-    "src/styles/iets-moois-narrative.css": "251d154ec87752e68d26946b99427b827c54a1ab794055fa729b14001224db71",
+    "src/styles/iets-moois-narrative.css": "8956f7c7748465f2904279a263ad38c232f4d2b7aa7adb11a7b28f081903f16e",
     "src/styles/music-album-world.css": "25a947bc222e9f07fe405c33d1e5e139c8d91ce01da7632582a1d0796aedee3e",
     "src/styles/music-albums.css": "a9778f1a6466b0e640eb89d375b89d549c5beb42b60afe90691eac8113515444",
     "tailwind.config.ts": "9abcb9b40a56c140ef1f13dfd08d439e1bab503a29326ef6d11f3f54e6c43488"
