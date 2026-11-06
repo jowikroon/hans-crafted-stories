@@ -5,17 +5,18 @@
  * controlled site-wide by the edit-overlay's activeRadarId (persisted in
  * page_overrides with element_key RADAR_SETTING_KEY). Default: 'clean'.
  *
- * The COMPONENTS map (not a switch/if-chain) is important: Rollup treats
- * dictionary property reads as opaque, so all three imports stay in the bundle
- * even when the string key only becomes known at runtime.
+ * Keep the default Clean variant server-renderable. Alternative designs
+ * are loaded only when chosen, preserving the public-page JS budget.
  */
+import { lazy, Suspense, type ComponentType } from "react";
 import { useEditOverlay } from "@/components/edit-overlay/EditOverlayProvider";
 import { DEFAULT_RADAR_ID, radarVariantById } from "@/lib/radar-variants";
 import RadarClean from "./RadarClean";
-import RadarMaster from "./RadarMaster";
-import RadarCompass from "./RadarCompass";
 
-const COMPONENTS: Record<string, () => JSX.Element> = {
+const RadarMaster = lazy(() => import("./RadarMaster"));
+const RadarCompass = lazy(() => import("./RadarCompass"));
+
+const COMPONENTS: Record<string, ComponentType> = {
   clean: RadarClean,
   master: RadarMaster,
   compass: RadarCompass,
@@ -26,5 +27,5 @@ export default function ArtistRadar() {
   const chosen = radarVariantById(activeRadarId || DEFAULT_RADAR_ID);
   const id = chosen.status === "live" ? chosen.id : DEFAULT_RADAR_ID;
   const Radar = COMPONENTS[id] ?? RadarClean;
-  return <Radar />;
+  return <Suspense fallback={<RadarClean />}><Radar /></Suspense>;
 }

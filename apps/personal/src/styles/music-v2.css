@@ -22,7 +22,7 @@
   --paper-2: #F3F1EC;
   --ink: #17150F;
   --ink-2: #46443C;
-  --muted: #8A877C;
+  --muted: #706C62;
   --hair: rgba(23, 21, 15, .10);
   --hair-2: rgba(23, 21, 15, .06);
   --card: #FFFFFF;
@@ -141,8 +141,9 @@
   padding: 22px 0; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); margin-top: 28px;
 }
 .music-v2 .share__label { font-size: 13px; font-weight: 600; color: var(--ink); margin-right: auto; }
-.music-v2 .share a { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--hair); display: grid; place-items: center; color: var(--ink-2); transition: all .16s ease; }
+.music-v2 .share a { width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--hair); display: grid; place-items: center; color: var(--ink-2); transition: all .16s ease; }
 .music-v2 .share a:hover { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.music-v2 .share a:focus-visible, .music-v2 .ncard:focus-visible, .music-v2 .platform:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .music-v2 .share svg { width: 17px; height: 17px; }
 
 .music-v2 .more { max-width: 1040px; margin: 72px auto 0; padding-top: 40px; border-top: 1px solid var(--hair); }
@@ -376,6 +377,7 @@
 .music-v2 .songnav {
   position: sticky; top: 84px; z-index: 20;
   display: inline-flex; gap: 4px;
+  max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain;
   margin: 8px 0 26px;
   padding: 5px;
   border-radius: 999px;
@@ -387,7 +389,7 @@
 .music-v2 .songnav__item {
   position: relative; isolation: isolate;
   appearance: none; border: 0; cursor: pointer;
-  padding: 8px 16px; border-radius: 999px;
+  min-height: 44px; flex: 0 0 auto; padding: 8px 16px; border-radius: 999px;
   font-family: var(--font-body, inherit);
   font-size: 13px; font-weight: 650; letter-spacing: .01em;
   color: color-mix(in srgb, var(--ink, #57534E) 62%, transparent);
@@ -406,6 +408,56 @@
   box-shadow: 0 8px 22px -12px color-mix(in srgb, var(--accent) 85%, #000);
 }
 .music-v2 .songnav__label { position: relative; z-index: 1; }
+
+/* NEON recordings belong to the ink-and-violet album world, without
+   changing the warm/general public music catalogue or its layout. */
+.music-v2.song-studio-page--neon {
+  --paper: #090A0F;
+  --paper-2: #14131C;
+  --ink: #F7F5FB;
+  --ink-2: #D5CFDF;
+  --muted: #B8B2C4;
+  --hair: rgba(226, 211, 245, .16);
+  --hair-2: rgba(226, 211, 245, .08);
+  --card: #16131D;
+  --accent: #AF73FF;
+  --accent-ink: #130A20;
+  background: radial-gradient(ellipse at 4% 0%, rgba(125, 59, 204, .13), transparent 33%), var(--paper);
+}
+.music-v2 .songhead__album-link,
+.music-v2 .neon-triptych__album-link {
+  display: inline-flex; align-items: center; gap: 11px;
+  color: var(--accent); font-size: 13px; font-weight: 600;
+  text-underline-offset: 4px;
+}
+.music-v2 .songhead__album-link { margin-top: 24px; }
+.music-v2 .songhead__album-link:hover,
+.music-v2 .neon-triptych__album-link:hover { text-decoration: underline; }
+.music-v2 .songhead__album-link:focus-visible,
+.music-v2 .neon-triptych__album-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; border-radius: 3px; }
+.music-v2 .neon-triptych { margin: 52px 0 8px; padding: 8px 0 0; }
+.music-v2 .prose .neon-triptych__kicker {
+  color: var(--accent); font-family: var(--font-mono); font-size: 11px;
+  font-weight: 600; letter-spacing: .15em; text-transform: uppercase;
+}
+.music-v2 .prose .neon-triptych h2 { margin-top: 15px; font-size: clamp(23px, 2.4vw, 30px); }
+.music-v2 .neon-triptych__lines {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(18px, 2.2vw, 38px); margin: 32px 0 25px;
+}
+.music-v2 .neon-triptych__line > span {
+  color: var(--accent); display: block; margin-bottom: 11px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+}
+.music-v2 .prose .neon-triptych__line p {
+  color: var(--ink); font-family: var(--font-display); font-size: clamp(17px, 1.7vw, 20px);
+  line-height: 1.55; text-wrap: pretty;
+}
+@media (max-width: 620px) {
+  .music-v2 .neon-triptych__lines { grid-template-columns: 1fr; gap: 26px; }
+  .music-v2 .songnav { display: flex; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .music-v2 .songnav__item,

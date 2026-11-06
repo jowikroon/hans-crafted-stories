@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { albums, albumJsonLd, albumPath, getAlbum } from "./albums";
+import { albums, albumJsonLd, albumPath, getAlbum, publicAlbumForSong } from "./albums";
 import { songs } from "./music";
 import { ietsMooisPreviews } from "./ietsMooisPreviews";
 
@@ -68,5 +68,18 @@ describe("public album announcements", () => {
     const schema = albumJsonLd(getAlbum("iets-moois")!);
     expect(schema.track).toEqual([]);
     expect(JSON.stringify(schema)).not.toMatch(/secret_token|soundcloud:tracks/);
+  });
+  it("links only announced NEON singles to their canonical recording entities", () => {
+    const neon = getAlbum("neon-the-signal-between")!;
+    const schema = albumJsonLd(neon);
+    expect(schema.track.map(({ "@id": id }) => id)).toEqual([
+      "https://hansvanleeuwen.com/music/beat-drop#recording",
+      "https://hansvanleeuwen.com/music/neon-house-of-glass#recording",
+    ]);
+    expect(schema.track[1].sameAs).toBe(songs.find((song) => song.slug === "neon-house-of-glass")?.links?.spotify);
+    expect(publicAlbumForSong("beat-drop")).toBe(neon);
+    expect(publicAlbumForSong("neon-house-of-glass")).toBe(neon);
+    expect(publicAlbumForSong("hanging-on")).toBeUndefined();
+    expect(publicAlbumForSong("that-spark")).toBeUndefined();
   });
 });

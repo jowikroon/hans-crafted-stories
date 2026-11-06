@@ -123,4 +123,51 @@ describe("Shared song studio template", () => {
     expect(document.querySelector('meta[name="robots"]')).toHaveAttribute("content", "noindex,nofollow");
     expect(document.querySelector('link[rel="canonical"]')).toBeNull();
   });
+
+  it.each([
+    { slug: "beat-drop", cover: "/images/music/beat-drop-cover.jpg", storyTitle: "Before the city moves", meta: "city moving as one", sibling: "Neon House of Glass" },
+    { slug: "neon-house-of-glass", cover: "/images/music/neon-house-of-glass-cover.jpg", storyTitle: "The distance behind the glow", meta: "thousand hearts", sibling: "Beat Drop" },
+  ])("gives the official NEON song $slug its artwork, narrative and album association", ({ slug, cover, storyTitle, meta, sibling }) => {
+    const song = songs.find((entry) => entry.slug === slug)!;
+    const { container } = render(<MemoryRouter><MusicSong songSlug={slug} /></MemoryRouter>);
+    const hero = container.querySelector<HTMLImageElement>(".songhead__art img")!;
+    expect(hero).toHaveAttribute("src", cover);
+    expect(hero).toHaveAttribute("alt", song.coverAlt);
+    expect(hero).toHaveAttribute("width", "640");
+    expect(hero).toHaveAttribute("height", "640");
+    expect(container.querySelector(".cover-fallback")).toHaveAttribute("aria-hidden", "true");
+    expect(document.querySelector('meta[property="og:image"]')).toHaveAttribute("content", `https://hansvanleeuwen.com${cover}`);
+    expect(document.querySelector('meta[name="twitter:image"]')).toHaveAttribute("content", `https://hansvanleeuwen.com${cover}`);
+    expect(document.querySelector('meta[property="og:image:alt"]')).toHaveAttribute("content", song.coverAlt);
+    expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toContain(meta);
+    expect(screen.getByRole("heading", { name: storyTitle })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "NEON" })).toHaveAttribute("href", "/music/albums/neon-the-signal-between");
+    expect(screen.getByRole("heading", { name: "Continue through NEON" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: new RegExp(sibling) })).toHaveAttribute("href", `/music/${sibling === "Beat Drop" ? "beat-drop" : "neon-house-of-glass"}`);
+    const recording = songPageJsonLd(song)["@graph"].find((node) => node["@type"] === "MusicRecording")!;
+    expect(recording).toHaveProperty("inAlbum.@id", "https://hansvanleeuwen.com/music/albums/neon-the-signal-between#album");
+    expect(recording).toHaveProperty("sameAs", song.links?.spotify);
+  });
+
+  it("keeps a failed cover readable without exposing a duplicate screenreader title", () => {
+    const { container } = render(<MemoryRouter><MusicSong songSlug="beat-drop" /></MemoryRouter>);
+    expect(screen.queryByRole("img", { name: /could not be loaded/i })).not.toBeInTheDocument();
+    fireEvent.error(container.querySelector(".songhead__art img")!);
+    expect(container.querySelector(".songhead__art img")).toBeNull();
+    expect(screen.getByRole("img", { name: "Artwork for Beat Drop could not be loaded" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Beat Drop", level: 1 })).toBeInTheDocument();
+  });
+
+  it("keeps NEON-adjacent public concepts distinct from unannounced album slots", () => {
+    for (const slug of ["hanging-on", "that-spark"]) {
+      const song = songs.find((entry) => entry.slug === slug)!;
+      const head = songPageHead(song);
+      expect(head.description).not.toContain("Private");
+      expect(head.ogImageAlt).toBe(song.coverAlt);
+      const recording = songPageJsonLd(song)["@graph"].find((node) => node["@type"] === "MusicRecording")!;
+      expect(recording).not.toHaveProperty("inAlbum");
+      expect(song.detail.storyTriptych?.i).toBeTruthy();
+    }
+    expect(songs.some((song) => song.slug === "pressure" || song.slug === "new-level")).toBe(false);
+  });
 });
