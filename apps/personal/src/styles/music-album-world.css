@@ -45,15 +45,37 @@
 .ma-hero-story { display:inline-flex; align-items:center; justify-content:space-between; gap:26px; min-height:44px; color:var(--ma-ink); font-size:12px; text-decoration:none; }
 .ma-page--editorial .ma-section-heading h2 { font-weight:500; font-size:clamp(30px,3.5vw,46px); letter-spacing:-.04em; line-height:1.1; max-width:18ch; }
 .ma-section-heading__aside { max-width:190px; margin:0; color:var(--ma-muted); font-size:12px; line-height:1.6; }
-.ma-manifesto { margin-top:110px; display:grid; grid-template-columns:160px minmax(0,1fr); gap:36px; background:#eeeee6; color:#162c23; padding:60px; scroll-margin-top:110px; }
+.ma-manifesto {
+  margin-top:110px;
+  display:grid;
+  grid-template-columns:160px minmax(0,1fr);
+  gap:36px;
+  /* The manifesto stays in the album's night, with one quiet signal of light. */
+  background:
+    radial-gradient(ellipse 75% 110% at 105% 0%,#9c4dff1a 0%,transparent 72%),
+    linear-gradient(135deg,#111318 0%,#13151b 60%,#191521 100%);
+  color:#f2f3ef;
+  padding:60px;
+  scroll-margin-top:110px;
+}
+.ma-page--editorial.ma-theme--warm .ma-manifesto {
+  background:
+    radial-gradient(ellipse 55% 95% at 100% 100%,#6b39412e 0%,transparent 72%),
+    radial-gradient(ellipse 85% 95% at 0% 0%,#31594518 0%,transparent 70%),
+    linear-gradient(135deg,#14271e 0%,#17271f 58%,#1e2120 100%);
+  color:#f2ebdd;
+}
 .ma-manifesto__meta { display:flex; flex-direction:column; justify-content:space-between; gap:40px; }
-.ma-page--editorial .ma-manifesto .ma-eyebrow { color:#46574e; }
+.ma-page--editorial .ma-manifesto .ma-eyebrow { color:#c7a0ff; }
+.ma-page--editorial.ma-theme--warm .ma-manifesto .ma-eyebrow { color:#cfa48d; }
 .ma-manifesto h2 { margin:0; font-size:clamp(36px,4.7vw,64px); font-weight:500; letter-spacing:-.05em; line-height:1.09; }
 .ma-manifesto h2>span { display:block; }
-.ma-manifesto h2>span:last-child { color:#59685e; }
+.ma-manifesto h2>span:last-child { color:#bbc0c6; }
+.ma-page--editorial.ma-theme--warm .ma-manifesto h2>span:last-child { color:#b5c7b8; }
 .ma-manifesto__bottom { display:grid; grid-template-columns:1fr 1fr; gap:36px; margin-top:34px; align-items:end; }
 .ma-manifesto__bottom p { font-size:13px; line-height:1.8; max-width:270px; margin:0; }
-.ma-manifesto .ma-text-link { border-color:#162c2340; font-size:11px; padding-top:14px; gap:20px; line-height:1.5; }
+.ma-manifesto .ma-text-link { border-color:#bbc0c653; font-size:11px; padding-top:14px; gap:20px; line-height:1.5; }
+.ma-page--editorial.ma-theme--warm .ma-manifesto .ma-text-link { border-color:#b5c7b853; }
 .ma-world { margin-top:110px; scroll-margin-top:110px; }
 .ma-world__invitation { color:var(--ma-muted); font-size:12px; }
 .ma-world__layout { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:clamp(32px,6vw,80px); margin-top:36px; align-items:center; }
