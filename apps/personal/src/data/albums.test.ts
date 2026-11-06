@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { albums, albumJsonLd, albumPath, getAlbum, publicAlbumForSong } from "./albums";
 import { songs } from "./music";
 import { ietsMooisPreviews } from "./ietsMooisPreviews";
+import { neonPreviews } from "./neonPreviews";
 
 describe("public album announcements", () => {
   it("exposes the two album identities without publishing development content", () => {
@@ -81,5 +82,32 @@ describe("public album announcements", () => {
     expect(publicAlbumForSong("neon-house-of-glass")).toBe(neon);
     expect(publicAlbumForSong("hanging-on")).toBeUndefined();
     expect(publicAlbumForSong("that-spark")).toBeUndefined();
+  });
+
+  it("pins only four NEON Official private website previews without altering published singles", () => {
+    const neon = getAlbum("neon-the-signal-between")!;
+    expect(neon.trackCount).toBe(9);
+    expect(neon.publicTracks).toEqual([
+      { position: 2, songSlug: "beat-drop" },
+      { position: 4, songSlug: "neon-house-of-glass" },
+    ]);
+    expect(neonPreviews.map(({ position, title, soundcloudTrackId }) => ({ position, title, soundcloudTrackId }))).toEqual([
+      { position: 1, title: "New Level", soundcloudTrackId: 2419106895 },
+      { position: 2, title: "Beat Drop", soundcloudTrackId: 2419106883 },
+      { position: 3, title: "Neon House of Glass", soundcloudTrackId: 2419106874 },
+      { position: 4, title: "Pressure", soundcloudTrackId: 2419106871 },
+    ]);
+    for (const preview of neonPreviews) {
+      const player = new URL(preview.embed);
+      const recording = new URL(player.searchParams.get("url")!);
+      expect(player.host).toBe("w.soundcloud.com");
+      expect(player.searchParams.get("color")).toBe("#9c4dff");
+      expect(recording.pathname).toContain(String(preview.soundcloudTrackId));
+      expect(recording.searchParams.get("secret_token")).toMatch(/^s-/);
+      expect(player.searchParams.get("auto_play")).toBe("false");
+    }
+    const schema = albumJsonLd(neon);
+    expect(schema.track).toHaveLength(2);
+    expect(JSON.stringify(schema)).not.toMatch(/secret_token|soundcloud:tracks/);
   });
 });

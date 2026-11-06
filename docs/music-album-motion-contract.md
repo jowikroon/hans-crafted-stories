@@ -11,7 +11,7 @@ Governance: `AGENTS.md` and `CLAUDE.md` protect these behaviors across future co
 3. After the turn settles, individual HTML track rows fade in and lift softly, initially slowly and then more quickly. No autoplay, sound or infinite loop.
 4. The animation restarts for every newly opened sleeve. At most one sleeve is open at a time on `/music`.
 5. Direct links to NEON, IETS MOOIS and the public recording list stay **below** the covers as a clear nonanimated alternative. Do not make the user perform the flip to reach an album.
-6. NEON: two verified released tracks at positions 02 and 04, remaining positions anonymous. IETS MOOIS: **12 songs are planned**, four separately authorized website previews appear on the album page, but the square back cover deliberately keeps **five anonymous animated teaser positions**. Do not confuse previews with official singles, expose slots 5-12, or substitute the animated teaser with a static quote. This updates the 2026-11-05 five-total-slot assumption by Hans's explicit decision on 2026-11-06.
+6. NEON: two verified released tracks at positions 02 and 04, other square-sleeve positions anonymous. Its album page separately offers four individually selected private `NEON Official` website previews; their playlist order is not the definitive LP order. IETS MOOIS: **12 songs are planned**, four separately authorized website previews appear on the album page, but the square back cover deliberately keeps **five anonymous animated teaser positions**. Do not confuse previews with official singles, expose the remaining unapproved private content, or substitute the animated teaser with a static quote. Both four-track groups were separately approved by Hans on 2026-11-06.
 7. The reader can press Escape to close and restore focus, use Tab or keyboard activation without waiting for animation, and use reduced-motion to see everything immediately.
 
 ## Timing, relative to activation
@@ -61,7 +61,7 @@ This register describes code-level review lenses; it is **not** a claim of twent
 | 12 | Accessibility | Reduced-motion shows every row immediately |
 | 13 | Privacy | No unreleased track names exposed to public DOM |
 | 14 | Privacy | IETS MOOIS sleeve uses five anonymous teaser positions; album page has four authorized listening previews and eight undisclosed positions |
-| 15 | Privacy | NEON only links the two confirmed public tracks |
+| 15 | Privacy | NEON sleeve links only two official tracks; its separate album-page preview section loads only four approved SoundCloud recordings after a click |
 | 16 | Privacy | No change to private owner detail policies |
 | 17 | Engineering | Branch-scoped source changes and exact commit |
 | 18 | Engineering | Vitest motion contract passes |
@@ -73,6 +73,9 @@ Static code review, unit tests, GitHub CI and Vercel production deployment valid
 
 ## Website-preview decision, 2026-11-06
 Hans selected the first four recordings from his private SoundCloud playlist `NEON | NL Signals` for public listening on the IETS MOOIS album page, keeping the eventual album at 12 planned songs. Website previews are neither distributed releases nor definitive masters. The fourth selection, *Hypnotisch*, is marked as a nonfinal working version in its SoundCloud description and must visibly carry that caveat. Playback is loaded on request for four individual tracks only. Private SoundCloud embed URLs are shareable when used publicly; this is a visibility decision, not website-only access control. The remaining eight album slots stay anonymous. The approved album artwork and the 760ms sleeve motion remain unchanged.
+
+## Separate NEON website-preview approval, 2026-11-06
+Hans then explicitly agreed to publishing the first four individual recordings from the eight-track private `NEON Official` SoundCloud playlist on the NEON album page and within GitHub source: New Level, Beat Drop, Neon House of Glass and Pressure. Their order identifies the **playlist selection only**; the NEON album still has nine planned positions, with only Beat Drop (02) and Neon House of Glass (04) confirmed released singles. These private-master previews are shareable to anyone who has their links, are not full public-profile SoundCloud releases, and must not be marked as additional official singles. Their players load on visitor action, not page load. The other four private tracks are not approved for public embedding, and no new public song detail pages or sleeve titles are implied.
 
 ## How to handle a future regression
 Reproduce against the current deployed SHA; verify correct album route, style loaded, reduced-motion OS setting and whether the album's `data-open` state changes. Check that `.ma-sleeve` transforms and the track rows use `--ma-reveal-delay`. Update implementation **and a failing regression test**, run CI and release, then verify deployment. Preserve approved artwork and historical source files. Log cause, fix, checks and limitations in HansOS.

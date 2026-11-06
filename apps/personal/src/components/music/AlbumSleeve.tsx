@@ -84,7 +84,7 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
               })}
             </ol>
             {onAlbumPage
-              ? <a href={album.slug === "iets-moois" || album.publicTracks.length ? "#album-tracks" : "#album-story"} className="ma-sleeve__cta" tabIndex={open ? 0 : -1}><span>{album.slug === "iets-moois" ? "Luister de eerste vier" : album.publicTracks.length ? "Luister de releases" : "Ontdek het verhaal"}</span><span aria-hidden="true">↓</span></a>
+              ? <a href={album.slug === "iets-moois" || album.publicTracks.length ? "#album-tracks" : "#album-story"} className="ma-sleeve__cta" tabIndex={open ? 0 : -1}><span>{album.slug === "iets-moois" || album.slug === "neon-the-signal-between" ? "Luister de eerste vier" : album.publicTracks.length ? "Luister de releases" : "Ontdek het verhaal"}</span><span aria-hidden="true">↓</span></a>
               : <Link to={albumPath(album.slug)} className="ma-sleeve__cta" tabIndex={open ? 0 : -1} aria-label={`Ontdek het album ${title}`}><span>Ontdek het album</span><span aria-hidden="true">↗</span></Link>}
           </div>
         </div>

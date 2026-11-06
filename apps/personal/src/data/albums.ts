@@ -18,7 +18,7 @@ export const albums: MusicAlbumData[] = [
   {
     slug: "neon-the-signal-between", title: "NEON", subtitle: "The Signal Between",
     theme: "neon", cover: "/images/albums/neon-front.webp", backCover: "/images/albums/neon-back.webp",
-    description: "Van afstand naar connectie. Ontdek NEON: The Signal Between van Jowikroon en luister naar Beat Drop en Neon House of Glass. Album in ontwikkeling voor 2027.",
+    description: "Van afstand naar connectie. NEON: The Signal Between van Jowikroon heeft negen geplande nummers. Luister hier naar vier privé-SoundCloud-previews en de officieel uitgebrachte singles Beat Drop en Neon House of Glass. Album in ontwikkeling voor 2027.",
     trackCount: 9, releaseYear: 2027,
     publicTracks: [{ position: 2, songSlug: "beat-drop" }, { position: 4, songSlug: "neon-house-of-glass" }],
   },
