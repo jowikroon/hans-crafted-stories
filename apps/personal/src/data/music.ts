@@ -142,8 +142,14 @@ function scEmbed(trackUrl: string): string {
   return `https://w.soundcloud.com/player/?url=${u}&color=%231C6B45&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false`;
 }
 
-/** Source-grounded public SoundCloud metadata, without invented gear or lyrics. */
-function conceptDetail(opts: { category: string; uploaded: string; length: string; note: string; version?: string }): SongDetail {
+/**
+ * Source-grounded public SoundCloud metadata, without invented gear or lyrics.
+ *
+ * Release facts only. The reading of each song moved to the story section
+ * (src/data/songNarrative.ts) on 5 November 2026, so this block no longer
+ * opens with an interpretive lead that repeated it.
+ */
+function conceptDetail(opts: { category: string; uploaded: string; length: string; version?: string }): SongDetail {
   return {
     category: opts.category,
     facts: [
@@ -160,7 +166,6 @@ function conceptDetail(opts: { category: string; uploaded: string; length: strin
     ],
     gear: [],
     prose: [
-      { type: "lead", text: opts.note },
       { type: "p", text: "The date above is the public SoundCloud upload date, not necessarily the composition, mastering or official release date." },
       { type: "callout", kicker: "Listen", text: "Play this SoundCloud recording above or open its source page. Instrument and lyric details appear only when verified." },
     ],
@@ -202,10 +207,7 @@ export const songs: Song[] = [
       gear: [],
       prose: [
         { type: "lead", text: "Neon House of Glass is my second official single, out now on Spotify under my artist name Jowikroon." },
-        { type: "p", text: "A thousand hearts on the screen. Still nobody in the room. Faces, messages and a frozen laugh in a thumbnail gather around a voice reaching for someone on the other side." },
-        { type: "h2", id: "about", text: "When the room goes quiet" },
-        { type: "p", text: "The music reaches outward while the words keep returning to the same distance. Beneath the glow sits a question: what does it take to feel someone near?" },
-        { type: "p", text: "You might hear the thrill of being seen, the weight of an image, or a moment you recognise. The song leaves room for what you bring to it." },
+        { type: "callout", kicker: "Listen", text: "Play the official release above, or open it on Spotify. The reading of the song is in the story section on this page." },
       ],
       lyrics: [
         { tag: "Verse 1", lines: ["Scrolling through a thousand faces", "Every smile in a little blue frame", "I'm talking big love", "Big faith", "Big changes", "But it's all just code in my name", "My shadow on the kitchen wall", "Glows cold from a phantom call", "I'm a saint in a silent feed", "Got a thousand hearts", "Still missing what I need"] },
@@ -254,10 +256,7 @@ export const songs: Song[] = [
       gear: [],
       prose: [
         { type: "lead", text: "Beat Drop is my first official single, out now on Spotify under my artist name Jowikroon." },
-        { type: "p", text: "A clock ticks, the city lights flicker, and a new rhythm takes hold. The song stays close to that charged moment before something begins." },
-        { type: "h2", id: "about", text: "Something is starting" },
-        { type: "p", text: "Old ghosts and new lines move through the same night. There is a pull toward the dancefloor, and the feeling that a familiar world might open into something else." },
-        { type: "p", text: "A beginning can feel like excitement, release, or a little uncertainty. Listen for the moment that stays with you." },
+        { type: "callout", kicker: "Listen", text: "Play the official release above, or open it on Spotify. The reading of the song is in the story section on this page." },
       ],
       lyrics: [
         { tag: "Verse 1", lines: ["Clock ticks", "Time flies", "Neon whispers", "Behind my eyes", "A new sound grows", "A rhythm takes hold"] },
@@ -289,7 +288,6 @@ export const songs: Song[] = [
       category: "Electronic · SoundCloud recording",
       uploaded: "Oct 27, 2026",
       length: "2:20",
-      note: "I can stay inside a loop and still end up somewhere else. A familiar phrase returns, but each pass makes room for a new movement or a detail I missed before.",
     }),
   },
   {
@@ -308,20 +306,12 @@ export const songs: Song[] = [
     embedHeight: 166,
     listenUrl: "https://soundcloud.com/jowikroon/s06-hanging-on-jowikroon-neon-master-96k-24-bit-14",
     links: { soundcloud: "https://soundcloud.com/jowikroon/s06-hanging-on-jowikroon-neon-master-96k-24-bit-14" },
-    detail: {
-      ...conceptDetail({
-        category: "Electronic · NEON recording",
-        uploaded: "Oct 14, 2026",
-        length: "7:59",
-        version: "Existing public master",
-        note: "Hanging On keeps returning to a thought it cannot quite leave behind. A long recording from NEON: The Signal Between, with the voice and the build carrying that tension together.",
-      }),
-      prose: [
-        { type: "lead", text: "Hanging On keeps returning to a thought it cannot quite leave behind. A long recording from NEON: The Signal Between, with the voice and the build carrying that tension together." },
-        { type: "h2", id: "the-line-that-stays", text: "The line that stays" },
-        { type: "p", text: "The hook returns to the same words: “I just can't keep hanging on.” The line wants to let go. The repetition keeps it close. Across almost eight minutes, that tension becomes the shape of the song." },
-      ],
-    },
+    detail: conceptDetail({
+      category: "Electronic · NEON recording",
+      uploaded: "Oct 14, 2026",
+      length: "7:59",
+      version: "Existing public master",
+    }),
   },
   {
     title: "78 THz Texture",
@@ -343,7 +333,6 @@ export const songs: Song[] = [
       category: "Electronic · Instrumental study",
       uploaded: "Oct 11, 2026",
       length: "2:38",
-      note: "An instrumental electronic texture study outside the current NEON album narrative. The frequency in the title is a creative image, not a technical measurement of this recording.",
     }),
   },
   {
@@ -367,7 +356,6 @@ export const songs: Song[] = [
       uploaded: "Sep 28, 2026",
       length: "2:44",
       version: "SoundCloud original mix",
-      note: "This public SoundCloud upload is a version of Beat Drop. The official single was released on Spotify on May 28, 2026; this SoundCloud upload appeared later on September 28.",
     }),
   },
   {
@@ -391,7 +379,6 @@ export const songs: Song[] = [
       uploaded: "Sep 27, 2026",
       length: "4:11",
       version: "Stem-mix upload",
-      note: "With a Grin, shared publicly in a stem-mix version. This upload documents one recording without presenting it as a definitive album master.",
     }),
   },
   {
@@ -414,7 +401,6 @@ export const songs: Song[] = [
       category: "Electronic · NEON recording",
       uploaded: "Jul 12, 2026",
       length: "3:09",
-      note: "A small spark can be enough to feel movement again. This track leaves that first flicker room to breathe before turning it into a larger story.",
     }),
   },
   {
@@ -437,7 +423,6 @@ export const songs: Song[] = [
       category: "Electronic · SoundCloud recording",
       uploaded: "Jun 13, 2026",
       length: "4:26",
-      note: "An early Jowikroon recording from the public SoundCloud timeline. This page documents the available version without assuming it is a finished album master.",
     }),
   },
 ];

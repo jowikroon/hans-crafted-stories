@@ -1,4 +1,5 @@
 import type { Song } from "./music";
+import { getSongNarrativeMeta } from "./songNarrativeMeta";
 
 const SITE_ORIGIN = "https://hansvanleeuwen.com";
 
@@ -7,14 +8,20 @@ export const SONG_PAGE_UPDATED = "2026-11-05";
 
 /** The client and static renderer use the same song metadata. */
 export function songPageHead(song: Song) {
+  const narrative = getSongNarrativeMeta(song.slug);
+  const narrativeHeading = narrative?.heading;
   return {
     title: `${song.title}: Song & Notes | Hans van Leeuwen`,
     description: song.slug === "hanging-on"
       ? "Hanging On by Jowikroon. Listen to the recording and follow the source comparison, peak space and frequency balance behind its next production step."
-      : `${song.title} by Jowikroon. ${song.provider === "spotify" ? "Official single" : "Public recording"} (${song.duration}). Listen and explore the story and studio process.`,
+      : narrativeHeading
+        ? `${song.title} by Jowikroon. ${narrativeHeading}. Listen to the ${song.provider === "spotify" ? "single" : "recording"} and read the story behind it.`
+        : `${song.title} by Jowikroon. ${song.provider === "spotify" ? "Official single" : "Public recording"} (${song.duration}). Listen and explore the story and studio process.`,
     canonical: `${SITE_ORIGIN}/music/${song.slug}`,
-    image: song.cover,
-    ogImageAlt: `Cover artwork for ${song.title} by Jowikroon`,
+    // Prefer the artist's own 1200px plate for sharing; fall back to the
+    // platform cover when a song has no narrative artwork yet.
+    image: narrative ? `${SITE_ORIGIN}${narrative.artSrc}` : song.cover,
+    ogImageAlt: narrative?.artAlt ?? `Cover artwork for ${song.title} by Jowikroon`,
   };
 }
 

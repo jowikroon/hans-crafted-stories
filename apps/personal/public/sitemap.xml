@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <url><loc>https://hansvanleeuwen.com/music/albums/neon-the-signal-between</loc><lastmod>2026-11-03</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://hansvanleeuwen.com/music/albums/iets-moois</loc><lastmod>2026-11-03</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url>
     <loc>https://hansvanleeuwen.com/</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/" />
@@ -13,7 +11,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/" />
@@ -22,7 +20,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/work</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/work" />
@@ -31,7 +29,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/work</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/work" />
@@ -40,7 +38,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/about</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/about" />
@@ -49,7 +47,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/about</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/about" />
@@ -148,7 +146,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/rates</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/rates" />
@@ -157,7 +155,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/rates</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/rates" />
@@ -166,7 +164,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/privacy</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/privacy" />
@@ -175,7 +173,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/privacy</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/privacy" />
@@ -184,7 +182,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/writing</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing" />
@@ -193,7 +191,7 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/en/writing</loc>
-    <lastmod>2026-10-14</lastmod>
+    <lastmod>2026-11-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing" />
@@ -202,9 +200,165 @@
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/music</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/albums/neon-the-signal-between</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/albums/iets-moois</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/albums/neon-the-signal-between/brand</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/albums/iets-moois/brand</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/78-thz-texture</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/beat-between-our-years</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/beat-drop</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/beat-drop-original</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/hanging-on</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/loop-in-control</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/neon-house-of-glass</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/that-spark</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/music/with-a-grin</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/muziek/artist-radar</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/het-onverwachte-rendement-van-geven-een-les-in-e-commerce-relaties-ccfs3w</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing/het-onverwachte-rendement-van-geven-een-les-in-e-commerce-relaties-ccfs3w" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/en/writing/het-onverwachte-rendement-van-geven-een-les-in-e-commerce-relaties-ccfs3w" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/writing/het-onverwachte-rendement-van-geven-een-les-in-e-commerce-relaties-ccfs3w" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/en/writing/het-onverwachte-rendement-van-geven-een-les-in-e-commerce-relaties-ccfs3w</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing/het-onverwachte-rendement-van-geven-een-les-in-e-commerce-relaties-ccfs3w" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/en/writing/het-onverwachte-rendement-van-geven-een-les-in-e-commerce-relaties-ccfs3w" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/writing/het-onverwachte-rendement-van-geven-een-les-in-e-commerce-relaties-ccfs3w" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/je-huwelijk-is-geen-finishlijn-het-is-de-startlijn-ook-voor-je-busines-sd8qzt</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing/je-huwelijk-is-geen-finishlijn-het-is-de-startlijn-ook-voor-je-busines-sd8qzt" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/en/writing/je-huwelijk-is-geen-finishlijn-het-is-de-startlijn-ook-voor-je-busines-sd8qzt" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/writing/je-huwelijk-is-geen-finishlijn-het-is-de-startlijn-ook-voor-je-busines-sd8qzt" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/en/writing/je-huwelijk-is-geen-finishlijn-het-is-de-startlijn-ook-voor-je-busines-sd8qzt</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing/je-huwelijk-is-geen-finishlijn-het-is-de-startlijn-ook-voor-je-busines-sd8qzt" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/en/writing/je-huwelijk-is-geen-finishlijn-het-is-de-startlijn-ook-voor-je-busines-sd8qzt" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/writing/je-huwelijk-is-geen-finishlijn-het-is-de-startlijn-ook-voor-je-busines-sd8qzt" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/de-kracht-van-focus-waarom-multitasking-je-e-commerce-business-vertraa-rqgvah</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing/de-kracht-van-focus-waarom-multitasking-je-e-commerce-business-vertraa-rqgvah" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/en/writing/de-kracht-van-focus-waarom-multitasking-je-e-commerce-business-vertraa-rqgvah" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/writing/de-kracht-van-focus-waarom-multitasking-je-e-commerce-business-vertraa-rqgvah" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/en/writing/de-kracht-van-focus-waarom-multitasking-je-e-commerce-business-vertraa-rqgvah</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing/de-kracht-van-focus-waarom-multitasking-je-e-commerce-business-vertraa-rqgvah" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/en/writing/de-kracht-van-focus-waarom-multitasking-je-e-commerce-business-vertraa-rqgvah" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/writing/de-kracht-van-focus-waarom-multitasking-je-e-commerce-business-vertraa-rqgvah" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/writing/machine-speed-aanvallen-de-nieuwe-realiteit-voor-e-commerce-security-0ljfd6</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing/machine-speed-aanvallen-de-nieuwe-realiteit-voor-e-commerce-security-0ljfd6" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/en/writing/machine-speed-aanvallen-de-nieuwe-realiteit-voor-e-commerce-security-0ljfd6" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/writing/machine-speed-aanvallen-de-nieuwe-realiteit-voor-e-commerce-security-0ljfd6" />
+  </url>
+  <url>
+    <loc>https://hansvanleeuwen.com/en/writing/machine-speed-aanvallen-de-nieuwe-realiteit-voor-e-commerce-security-0ljfd6</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://hansvanleeuwen.com/writing/machine-speed-aanvallen-de-nieuwe-realiteit-voor-e-commerce-security-0ljfd6" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/en/writing/machine-speed-aanvallen-de-nieuwe-realiteit-voor-e-commerce-security-0ljfd6" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/writing/machine-speed-aanvallen-de-nieuwe-realiteit-voor-e-commerce-security-0ljfd6" />
   </url>
   <url>
     <loc>https://hansvanleeuwen.com/writing/tragic-mistake-anthropic-leaks-claude-s-source-code</loc>
@@ -440,6 +594,4 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://hansvanleeuwen.com/en/writing/designing-with-llms" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://hansvanleeuwen.com/writing/designing-with-llms" />
   </url>
-  <url><loc>https://hansvanleeuwen.com/music/albums/neon-the-signal-between/brand</loc><lastmod>2026-11-03</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://hansvanleeuwen.com/music/albums/iets-moois/brand</loc><lastmod>2026-11-03</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 </urlset>
