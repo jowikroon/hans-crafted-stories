@@ -424,7 +424,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Privacy ── */
     privacy: {
       title: "Privacy Policy",
-      lastUpdated: "Last updated: October 2026",
+      lastUpdated: "Last updated: November 2026",
       sections: [
         {
           heading: "1. Who are we?",
@@ -451,11 +451,15 @@ export const translations: Record<Lang, TranslationStrings> = {
           body: 'We share personal data only with the services this site uses. Supabase hosts the site\'s database in the EU (contact form messages and the visit statistics). Telegram delivers the notification of a new contact form message (name, email address, reason, page, language and message) to Hans, under its own <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. Google processes Google Analytics data in accordance with their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. Ahrefs processes the Ahrefs Web Analytics data described in section 2 under its own <a href="https://ahrefs.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacy policy</a>. The site\'s own visit statistics are not shared with anyone else.',
         },
         {
-          heading: "7. Your rights",
+          heading: "7. Embedded music players",
+          body: 'Music pages can load players from SoundCloud or Spotify when you choose to play a recording. Those services may process usage data and use cookies according to their own policies. SoundCloud listening embeds are only loaded after you press a play button on the IETS MOOIS album page. Learn more in the <a href="https://soundcloud.com/pages/cookies" target="_blank" rel="noopener noreferrer" class="text-primary underline">SoundCloud Cookie Policy</a> and <a href="https://www.spotify.com/legal/privacy-policy/" target="_blank" rel="noopener noreferrer" class="text-primary underline">Spotify Privacy Policy</a>.',
+        },
+        {
+          heading: "8. Your rights",
           body: 'Under the GDPR, you have the right to access, rectify and delete your personal data, and to object to its processing. For a contact form message, email <a href="mailto:hansvl3@gmail.com" class="text-primary underline">hansvl3@gmail.com</a> and we will show, correct or delete it. The visit statistics are not stored under your name, so we cannot look them up by name. If you sent the contact form and also want to see or delete the statistics of that visit, say so and we will handle them together with your message. You can also lodge a complaint with the Dutch Data Protection Authority (Autoriteit Persoonsgegevens).',
         },
         {
-          heading: "8. Changes",
+          heading: "9. Changes",
           body: "This privacy policy may be updated. The most recent version is always available on this page.",
         },
       ],
@@ -766,7 +770,7 @@ export const translations: Record<Lang, TranslationStrings> = {
     /* ── Privacy ── */
     privacy: {
       title: "Privacybeleid",
-      lastUpdated: "Laatst bijgewerkt: oktober 2026",
+      lastUpdated: "Laatst bijgewerkt: november 2026",
       sections: [
         {
           heading: "1. Wie zijn wij?",
@@ -793,11 +797,15 @@ export const translations: Record<Lang, TranslationStrings> = {
           body: 'Wij delen persoonsgegevens alleen met de diensten die deze site gebruikt. Supabase host de database van de site in de EU (contactberichten en de bezoekstatistieken). Telegram bezorgt de melding van een nieuw contactbericht (naam, e-mailadres, reden, pagina, taal en bericht) bij Hans, conform zijn eigen <a href="https://telegram.org/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. Google verwerkt Google Analytics-data conform hun <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. Ahrefs verwerkt de Ahrefs Web Analytics-gegevens uit punt 2 conform zijn eigen <a href="https://ahrefs.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid</a>. De eigen bezoekstatistieken worden met niemand anders gedeeld.',
         },
         {
-          heading: "7. Je rechten",
+          heading: "7. Ingesloten muziekspelers",
+          body: 'Muziekpagina\'s kunnen een speler van SoundCloud of Spotify laden zodra je ervoor kiest een opname af te spelen. Deze diensten kunnen gebruiksgegevens verwerken en cookies gebruiken volgens hun eigen beleid. Op de albumpagina IETS MOOIS wordt een SoundCloud-speler pas geladen nadat je op afspelen klikt. Lees het <a href="https://soundcloud.com/pages/cookies" target="_blank" rel="noopener noreferrer" class="text-primary underline">cookiebeleid van SoundCloud</a> en het <a href="https://www.spotify.com/legal/privacy-policy/" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid van Spotify</a>.',
+        },
+        {
+          heading: "8. Je rechten",
           body: 'Op grond van de AVG heb je recht op inzage, rectificatie en verwijdering van je persoonsgegevens, en kun je bezwaar maken tegen de verwerking. Voor een contactbericht mail je naar <a href="mailto:hansvl3@gmail.com" class="text-primary underline">hansvl3@gmail.com</a>; we laten het je dan zien, passen het aan of verwijderen het. De bezoekstatistieken staan niet op je naam, dus we kunnen ze niet op naam opzoeken. Heb je het contactformulier verstuurd en wil je ook de statistieken van dat bezoek inzien of laten verwijderen, zeg dat dan; we behandelen ze samen met je bericht. Je kunt ook een klacht indienen bij de Autoriteit Persoonsgegevens.',
         },
         {
-          heading: "8. Wijzigingen",
+          heading: "9. Wijzigingen",
           body: "Dit privacybeleid kan worden bijgewerkt. De meest recente versie is altijd beschikbaar op deze pagina.",
         },
       ],

@@ -40,9 +40,10 @@ describe("Jowikroon album motion contract", () => {
     expect(screen.getByRole("link", { name: /Open songpagina van Neon House of Glass/ })).toBeTruthy();
   });
 
-  it("also animates five anonymous, unreleased IETS MOOIS positions", () => {
+  it("keeps the five-slot sleeve teaser while the IETS MOOIS album plans twelve", () => {
     const { rows, container, card } = openSleeve("iets-moois");
     expect(card.getAttribute("data-open")).toBe("true");
+    expect(getAlbum("iets-moois")?.trackCount).toBe(12);
     expect(rows).toHaveLength(5);
     expect(container.querySelectorAll(".ma-blur-mark")).toHaveLength(5);
     expect(container.querySelectorAll(".ma-sleeve__back-quote")).toHaveLength(0);

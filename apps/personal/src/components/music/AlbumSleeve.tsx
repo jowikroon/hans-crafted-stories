@@ -31,6 +31,8 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
   const [instantReveal, setInstantReveal] = useState(false);
   const title = albumTitle(album);
   const backId = `album-back-${album.slug}`;
+  // The square sleeve previews five anonymous slots; the album page shows all 12.
+  const sleeveTrackCount = album.slug === "iets-moois" ? Math.min(album.trackCount, 5) : album.trackCount;
 
   useEffect(() => {
     if (previousOpen.current === open) return;
@@ -64,7 +66,7 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
               {album.subtitle && <p className="ma-sleeve__subtitle">{album.subtitle}</p>}
             </div>
             <ol className="ma-sleeve__tracklist" aria-label={`Tracklist ${title}`}>
-              {Array.from({ length: album.trackCount }, (_, index) => {
+              {Array.from({ length: sleeveTrackCount }, (_, index) => {
                 const position = index + 1;
                 const release = album.publicTracks.find((track) => track.position === position);
                 const song = release ? songs.find((item) => item.slug === release.songSlug) : undefined;
@@ -82,7 +84,7 @@ export default function AlbumSleeve({ album, open, onToggle, onAlbumPage = false
               })}
             </ol>
             {onAlbumPage
-              ? <a href={album.publicTracks.length ? "#album-tracks" : "#album-story"} className="ma-sleeve__cta" tabIndex={open ? 0 : -1}><span>{album.publicTracks.length ? "Luister de releases" : "Ontdek het verhaal"}</span><span aria-hidden="true">↓</span></a>
+              ? <a href={album.slug === "iets-moois" || album.publicTracks.length ? "#album-tracks" : "#album-story"} className="ma-sleeve__cta" tabIndex={open ? 0 : -1}><span>{album.slug === "iets-moois" ? "Luister de eerste vier" : album.publicTracks.length ? "Luister de releases" : "Ontdek het verhaal"}</span><span aria-hidden="true">↓</span></a>
               : <Link to={albumPath(album.slug)} className="ma-sleeve__cta" tabIndex={open ? 0 : -1} aria-label={`Ontdek het album ${title}`}><span>Ontdek het album</span><span aria-hidden="true">↗</span></Link>}
           </div>
         </div>

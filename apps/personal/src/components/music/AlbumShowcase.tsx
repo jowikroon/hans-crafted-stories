@@ -24,7 +24,7 @@ export default function AlbumShowcase() {
           {albums.map((album) => (
             <Link key={album.slug} to={albumPath(album.slug)} className="ma-showcase__path">
               <span>{album.subtitle ? `${album.title}: ${album.subtitle}` : album.title}</span>
-              <small>{album.publicTracks.length ? `${album.publicTracks.length} openbare singles` : "In ontwikkeling"}</small>
+              <small>{album.slug === "iets-moois" ? "4 van 12 te beluisteren" : album.publicTracks.length ? `${album.publicTracks.length} openbare singles` : "In ontwikkeling"}</small>
             </Link>
           ))}
           <a href="#songs" className="ma-showcase__path">
