@@ -20,6 +20,7 @@ import { logoById } from "@/lib/logos";
 import { useActiveLogo, useLogoMotion } from "@/contexts/LogoContext";
 import { useNavMenu } from "@/contexts/NavMenuContext";
 import { useTheme } from "@/hooks/useTheme";
+import { shouldUseDarkNav } from "@/lib/navBarTheme";
 import MusicProductionMenu, { MUSIC_PRODUCTION_LINKS } from "./MusicProductionMenu";
 import { useHoverDisclosure } from "@/hooks/useHoverDisclosure";
 
@@ -160,9 +161,9 @@ const Navbar = (_props: NavbarProps) => {
       location.pathname.startsWith(p)
     );
 
-  /* Bar theme — follows the global dark toggle so header items stay visible in
-     dark designs, but stays light on always-light backend surfaces. */
-  const barDark = siteTheme === "dark" && !isLightSurface;
+  /* Music and album pages use dark artwork, independently of the general site
+     preference. Other pages still follow that preference; backends stay light. */
+  const barDark = shouldUseDarkNav(basePathNow, siteTheme, isLightSurface);
   const barInk = barDark ? "text-[#F5F1E6]" : "text-[#15140F]";
   const barMut = barDark ? "text-[#B4AE9F]" : "text-[#7E7A6F]";
   const barHovInk = barDark ? "hover:text-white" : "hover:text-[#15140F]";
@@ -261,7 +262,7 @@ const Navbar = (_props: NavbarProps) => {
   };
   const closeProfile = profileDisclosure.close;
 
-  const musicItemCls = "block px-4 py-2.5 text-sm text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60 rounded-lg transition-colors dark:text-[#C9BFB0] dark:hover:text-white dark:hover:bg-white/5";
+  const musicItemCls = `block px-4 py-2.5 text-sm rounded-lg transition-colors ${barDark ? "text-[#C9BFB0] hover:text-white hover:bg-white/5" : "text-[#4B4842] hover:text-[#15140F] hover:bg-[#E5DFCE]/60"}`;
   const MusicNav = ({ label }: { label: string }) => (
     <div
       className="relative"
@@ -290,7 +291,7 @@ const Navbar = (_props: NavbarProps) => {
               variants={musicListV}
               initial="hidden"
               animate="show"
-              className="p-1.5 rounded-xl border border-black/10 bg-[#FBF8F0] shadow-[0_18px_46px_-22px_rgba(20,19,15,0.45)] dark:border-white/10 dark:bg-[hsl(40,8%,9%)]"
+              className={`p-1.5 rounded-xl border shadow-[0_18px_46px_-22px_rgba(20,19,15,0.45)] ${barDark ? "border-white/10 bg-[hsl(40,8%,9%)]" : "border-black/10 bg-[#FBF8F0]"}`}
             >
               <motion.div variants={musicItemV}>
                 <Link role="menuitem" to="/muziek/artist-radar" onClick={() => setMusicOpen(false)} className={musicItemCls}>Artist Radar</Link>
