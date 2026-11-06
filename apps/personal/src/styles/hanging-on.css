@@ -52,7 +52,7 @@
 .song-studio-page .platform { background: transparent; border-color: var(--hair); font-size: 13px; }
 .song-studio-page .platform:hover { background: var(--paper-2); }
 .song-studio-page .songnav { max-width: 100%; margin-top: 32px; border-color: var(--hair); }
-.song-studio-page .songnav__item { min-height: 40px; }
+.song-studio-page .songnav__item { min-height: 44px; }
 .song-studio-page .songbody { margin-top: 36px; }
 .song-studio-page .songbody .prose { color: var(--ink-2); font-size: 16px; line-height: 1.8; }
 .song-studio-page .songbody .prose :is(h2, h3, h4, strong) { color: var(--ink); }

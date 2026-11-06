@@ -1,0 +1,208 @@
+/* One continuous, high-contrast story layer. Scoped to public song pages. */
+.music-v2 .songstory-anchor {
+  max-width: 1040px;
+  margin: clamp(42px, 5.5vw, 76px) auto 0;
+  scroll-margin-top: 156px;
+}
+
+.music-v2 .songstory {
+  --story-paper: #f2f0f5;
+  --story-muted: #a5a1af;
+  --story-violet: #b88aff;
+  --story-surface: #0b0b10;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  container-type: inline-size;
+  padding: clamp(30px, 5vw, 64px) clamp(22px, 4.8vw, 58px);
+  color: var(--story-paper);
+  font-family: 'Switzer', system-ui, sans-serif;
+  background: radial-gradient(ellipse at 84% 12%, rgba(112, 60, 180, .14), transparent 47%),
+    radial-gradient(ellipse at 5% 90%, rgba(186, 125, 64, .07), transparent 50%),
+    var(--story-surface);
+  border-radius: 12px;
+}
+
+.music-v2 .songstory[data-world="standalone"] {
+  background: radial-gradient(ellipse at 80% 10%, rgba(140, 117, 161, .13), transparent 50%),
+    radial-gradient(ellipse at 4% 92%, rgba(194, 147, 78, .06), transparent 50%),
+    #0b0b10;
+}
+
+.music-v2 .songstory::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: clamp(22px, 4.8vw, 58px);
+  width: min(150px, 35%);
+  height: 2px;
+  background: linear-gradient(90deg, #b88aff, rgba(184, 138, 255, 0));
+  pointer-events: none;
+}
+
+.music-v2 .songstory__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 330px);
+  gap: clamp(30px, 4vw, 58px);
+  align-items: center;
+}
+
+.music-v2 .songstory__opening { min-width: 0; }
+.music-v2 .songstory__eyebrow,
+.music-v2 .songstory__emotion,
+.music-v2 .songstory__figure figcaption,
+.music-v2 .songstory__source-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.65;
+  letter-spacing: .055em;
+  color: var(--story-muted);
+}
+.music-v2 .songstory__eyebrow {
+  text-transform: uppercase;
+  margin: 0 0 22px;
+}
+.music-v2 .songstory__eyebrow span { padding: 0 8px; color: var(--story-violet); }
+.music-v2 .songstory__heading {
+  max-width: 15ch;
+  color: var(--story-paper);
+  margin: 0;
+  font-family: 'Switzer', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -.047em;
+  font-size: clamp(32px, 4.4vw, 58px);
+  line-height: 1.06;
+  text-wrap: balance;
+}
+.music-v2 .songstory__subline {
+  margin: 24px 0 8px;
+  color: #d6c4f0;
+  font-size: clamp(18px, 2.2vw, 24px);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+}
+.music-v2 .songstory__emotion {
+  margin: 0;
+  color: var(--story-muted);
+}
+.music-v2 .songstory__triptych {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(14px, 2vw, 24px);
+  margin-top: clamp(28px, 4vw, 46px);
+}
+.music-v2 .songstory__perspective { min-width: 0; }
+.music-v2 .songstory__perspective h3 {
+  margin: 0 0 9px;
+  color: var(--story-violet);
+  font: 600 12px/1.45 'JetBrains Mono', monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.music-v2 .songstory__perspective p {
+  margin: 0;
+  color: var(--story-paper);
+  font: 400 clamp(15px, 1.45vw, 17px)/1.6 'Switzer', system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+.music-v2 .songstory__figure {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.music-v2 .songstory__figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 3px;
+}
+.music-v2 .songstory__figure figcaption {
+  margin: 10px 0 0;
+  font-size: 10px;
+}
+
+.music-v2 .songstory__continuation {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  gap: clamp(30px, 5.5vw, 76px);
+  align-items: start;
+  margin-top: clamp(34px, 5vw, 60px);
+  padding-top: clamp(20px, 3vw, 34px);
+  background: linear-gradient(to right, rgba(184, 138, 255, .38), transparent 80%) top left / 100% 1px no-repeat;
+}
+.music-v2 .songstory__prose p {
+  color: #ddd9e5;
+  font: 400 clamp(16px, 1.7vw, 18px)/1.78 'Switzer', system-ui, sans-serif;
+  margin: 0 0 18px;
+}
+.music-v2 .songstory__album-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  color: #e3d2ff;
+  font: 600 13px/1.4 'Switzer', system-ui, sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  margin-top: 6px;
+}
+.music-v2 .songstory__album-link:focus-visible {
+  outline: 2px solid #cfadff;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.music-v2 .songstory__listen-head img {
+  width: 118px;
+  height: 22px;
+  object-fit: contain;
+  object-position: left;
+  display: block;
+  margin-bottom: 14px;
+}
+.music-v2 .songstory__listen h3 {
+  margin: 0 0 14px;
+  color: var(--story-paper);
+  font: 600 21px/1.2 'Switzer', system-ui, sans-serif;
+  letter-spacing: -.025em;
+}
+.music-v2 .songstory__listen ol {
+  list-style: decimal;
+  padding: 0 0 0 22px;
+  margin: 0;
+  color: #d8d2df;
+}
+.music-v2 .songstory__listen li {
+  font: 400 15px/1.65 'Switzer', system-ui, sans-serif;
+  padding-left: 6px;
+  margin-bottom: 12px;
+}
+.music-v2 .songstory__listen li::marker { color: var(--story-violet); font-family: 'JetBrains Mono', monospace; }
+.music-v2 .songstory__source-note { margin: 22px 0 0; font-size: 10px; letter-spacing: 0; }
+.music-v2 .songstory--loading { min-height: 130px; display: flex; align-items: center; }
+.music-v2 .songstory--loading p { color: var(--story-muted); margin: 0; }
+
+/* Container, not viewport, governs a song dialog on a wide desktop screen. */
+@container (max-width: 780px) {
+  .music-v2 .songstory__intro,
+  .music-v2 .songstory__continuation { grid-template-columns: minmax(0, 1fr); }
+  .music-v2 .songstory__figure { max-width: 390px; margin: 2px auto 0; }
+  .music-v2 .songstory__heading { max-width: 18ch; }
+}
+@container (max-width: 610px) {
+  .music-v2 .songstory__triptych { grid-template-columns: minmax(0, 1fr); gap: 19px; }
+  .music-v2 .songstory__heading { font-size: clamp(30px, 7.5vw, 44px); }
+  .music-v2 .songstory__figure { max-width: 330px; }
+  .music-v2 .songstory__continuation { gap: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-v2 .songstory *, .music-v2 .songstory *::before, .music-v2 .songstory *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

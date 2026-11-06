@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import MusicSong from "./MusicSong";
 import { songs } from "@/data/music";
+import { getSongNarrative } from "@/data/songNarrative";
 import { songPageHead, songPageJsonLd } from "@/data/songPageSeo";
 import { FONT_CSS } from "@/lib/fontCss";
 
@@ -127,7 +128,7 @@ describe("Shared song studio template", () => {
   it.each([
     { slug: "beat-drop", cover: "/images/music/beat-drop-cover.jpg", storyTitle: "Before the city moves", meta: "city moving as one", sibling: "Neon House of Glass" },
     { slug: "neon-house-of-glass", cover: "/images/music/neon-house-of-glass-cover.jpg", storyTitle: "The distance behind the glow", meta: "thousand hearts", sibling: "Beat Drop" },
-  ])("gives the official NEON song $slug its artwork, narrative and album association", ({ slug, cover, storyTitle, meta, sibling }) => {
+  ])("gives the official NEON song $slug its artwork, narrative and album association", async ({ slug, cover, storyTitle, meta, sibling }) => {
     const song = songs.find((entry) => entry.slug === slug)!;
     const { container } = render(<MemoryRouter><MusicSong songSlug={slug} /></MemoryRouter>);
     const hero = container.querySelector<HTMLImageElement>(".songhead__art img")!;
@@ -140,7 +141,7 @@ describe("Shared song studio template", () => {
     expect(document.querySelector('meta[name="twitter:image"]')).toHaveAttribute("content", `https://hansvanleeuwen.com${cover}`);
     expect(document.querySelector('meta[property="og:image:alt"]')).toHaveAttribute("content", song.coverAlt);
     expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toContain(meta);
-    expect(screen.getByRole("heading", { name: storyTitle })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: storyTitle })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "NEON" })).toHaveAttribute("href", "/music/albums/neon-the-signal-between");
     expect(screen.getByRole("heading", { name: "Continue through NEON" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: new RegExp(sibling) })).toHaveAttribute("href", `/music/${sibling === "Beat Drop" ? "beat-drop" : "neon-house-of-glass"}`);
@@ -166,8 +167,50 @@ describe("Shared song studio template", () => {
       expect(head.ogImageAlt).toBe(song.coverAlt);
       const recording = songPageJsonLd(song)["@graph"].find((node) => node["@type"] === "MusicRecording")!;
       expect(recording).not.toHaveProperty("inAlbum");
-      expect(song.detail.storyTriptych?.i).toBeTruthy();
+      expect(getSongNarrative(slug)?.triptych.i).toBeTruthy();
     }
     expect(songs.some((song) => song.slug === "pressure" || song.slug === "new-level")).toBe(false);
+  });
+
+  it.each(songs)("shows one coherent story for $title without a second inline triptych", async (song) => {
+    const story = getSongNarrative(song.slug)!;
+    const { container } = render(<MemoryRouter><MusicSong songSlug={song.slug} /></MemoryRouter>);
+    const nav = screen.getByRole("button", { name: "The story" });
+    expect(nav).toHaveAttribute("aria-controls", "song-story");
+    const section = container.querySelector<HTMLElement>("#song-story")!;
+    expect(section).toBeInTheDocument();
+    await within(section).findByRole("heading", { name: story.heading });
+    expect(container.querySelectorAll(".songstory:not(.songstory--loading)")).toHaveLength(1);
+    expect(container.querySelector(".neon-triptych")).toBeNull();
+    for (const label of ["I", "You", "It"]) {
+      expect(within(section).getByRole("heading", { level: 3, name: label })).toBeInTheDocument();
+    }
+    expect(within(section).getByText(story.subline)).toBeInTheDocument();
+    expect(within(section).getByRole("img", { name: story.art.alt })).toBeInTheDocument();
+    expect(within(section).getByRole("heading", { name: "Listen for yourself" })).toBeInTheDocument();
+    if (["beat-drop", "neon-house-of-glass"].includes(song.slug)) {
+      expect(within(section).getByRole("link", { name: /Explore the NEON album/ })).toBeInTheDocument();
+    } else {
+      expect(within(section).queryByRole("link", { name: /Explore the NEON album/ })).toBeNull();
+    }
+  });
+
+  it("keeps separate, keyboard-addressable story targets in a song dialog", async () => {
+    const { container } = render(
+      <MemoryRouter>
+        <MusicSong songSlug="hanging-on" />
+        <div className="mx-song-modal"><div className="mx-modal-scroll"><MusicSong songSlug="hanging-on" inDialog /></div></div>
+      </MemoryRouter>,
+    );
+    const controls = screen.getAllByRole("button", { name: "The story" });
+    expect(controls).toHaveLength(2);
+    const targets = controls.map((control) => container.querySelector<HTMLElement>(`[id="${control.getAttribute("aria-controls")}"]`)!);
+    await within(targets[0]).findByRole("heading", { name: "The space before letting go" });
+    await within(targets[1]).findByRole("heading", { name: "The space before letting go" });
+    expect(targets[0].id).not.toBe(targets[1].id);
+    const ids = Array.from(container.querySelectorAll("[id]"), (element) => element.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    fireEvent.click(controls[1]);
+    expect(scrollCalls.at(-1)?.element).toBe(targets[1]);
   });
 });

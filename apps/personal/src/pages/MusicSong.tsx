@@ -23,6 +23,7 @@ import { songPageHead, songPageJsonLd } from "@/data/songPageSeo";
 import "@/styles/music-v2.css";
 import "@/styles/hanging-on.css";
 import { SongProductionProcessView } from "@/components/SongProductionProcessView";
+import { SongStoryView } from "@/components/music/SongStoryView";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 
 /** Turn a YouTube watch/Shorts/youtu.be URL into an embeddable /embed/<id> URL. */
@@ -131,6 +132,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
   const instanceId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const idPrefix = inDialog ? `dialog-${instanceId}-` : "";
   const sectionIds = {
+    story: `${idPrefix}song-story`,
     notes: `${idPrefix}song-notes`,
     process: `${idPrefix}song-process`,
     gear: `${idPrefix}song-gear`,
@@ -346,12 +348,16 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
             key={song.slug}
             rootRef={rootRef}
             items={[
-              { id: sectionIds.notes, label: "Notes" },
+              { id: sectionIds.story, label: "The story" },
+              { id: sectionIds.notes, label: "Release notes" },
               { id: sectionIds.process, label: "Inside the recording" },
               ...(d.gear && d.gear.length ? [{ id: sectionIds.gear, label: "Sounds" }] : []),
               ...(d.lyrics.length ? [{ id: sectionIds.lyrics, label: "Lyrics" }] : []),
             ]}
           />
+
+          {/* One poetic reading, with its own art, separate from sourced facts. */}
+          <SongStoryView slug={song.slug} sectionId={sectionIds.story} title={song.title} />
 
           {/* Production notes + aside */}
           <div className="songbody" id={sectionIds.notes}>
@@ -359,15 +365,6 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
               {d.prose.map((block, i) => (
                 <ProseNode key={i} block={block} idPrefix={idPrefix} />
               ))}
-              {d.storyTriptych && <section className="neon-triptych" aria-labelledby={`${idPrefix}neon-story-title`}>
-                <p className="neon-triptych__kicker">A scene from NEON</p>
-                <h2 id={`${idPrefix}neon-story-title`}>{d.storyTriptych.title}</h2>
-                <div className="neon-triptych__lines">
-                  {([["I", d.storyTriptych.i], ["You", d.storyTriptych.you], ["It", d.storyTriptych.it]] as const).map(([label, line]) =>
-                    <div className="neon-triptych__line" key={label}><span>{label}</span><p>{line}</p></div>)}
-                </div>
-                <Link className="neon-triptych__album-link" to={albumPath("neon-the-signal-between")}>Follow the signal through NEON <span aria-hidden="true">↗</span></Link>
-              </section>}
             </article>
 
             <aside className="songaside">
