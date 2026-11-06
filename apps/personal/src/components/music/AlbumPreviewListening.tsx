@@ -19,7 +19,8 @@ export default function AlbumPreviewListening({ tracks, totalTracks, ownerTracks
   const triggers = useRef<Map<number, HTMLButtonElement>>(new Map());
   const neon = album === "neon";
 
-  useEffect(() => () => { control.current?.pause(); }, []);
+  // MusicPlayer owns widget teardown. Pausing here during route unmount can
+  // postMessage to an iframe React has already detached.
   useEffect(() => {
     if (!stopForOtherAudio) return;
     control.current?.pause();

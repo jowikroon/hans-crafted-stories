@@ -105,9 +105,15 @@ export default function MusicPlayer({ song, onStatus, control }: {
         const api = await soundcloud();
         if (cancelled) return;
         const widget = api.Widget(frame);
-        control.current = widget;
+        const safeControl: Controller = {
+          play: () => { if (frame.isConnected && frame.contentWindow) widget.play(); },
+          // SoundCloud's pause() posts to the iframe window. After React route
+          // teardown that window can be null even while a controller survives.
+          pause: () => { if (frame.isConnected && frame.contentWindow) widget.pause(); },
+        };
+        control.current = safeControl;
         const events = api.Widget.Events;
-        widget.bind(events.READY, () => { if (!cancelled) { report("ready"); widget.play(); } });
+        widget.bind(events.READY, () => { if (!cancelled) { report("ready"); safeControl.play(); } });
         widget.bind(events.PLAY, () => report("playing"));
         widget.bind(events.PAUSE, () => report("paused"));
         widget.bind(events.FINISH, () => report("paused"));
