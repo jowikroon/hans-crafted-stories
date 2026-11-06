@@ -11,7 +11,7 @@ Governance: `AGENTS.md` and `CLAUDE.md` protect these behaviors across future co
 3. After the turn settles, individual HTML track rows fade in and lift softly, initially slowly and then more quickly. No autoplay, sound or infinite loop.
 4. The animation restarts for every newly opened sleeve. At most one sleeve is open at a time on `/music`.
 5. Direct links to NEON, IETS MOOIS and the public recording list stay **below** the covers as a clear nonanimated alternative. Do not make the user perform the flip to reach an album.
-6. NEON: two verified released tracks at positions 02 and 04, remaining positions anonymous. IETS MOOIS: **five anonymous positions must animate**, even without publicly released tracks. Do not substitute the tracklist with a static quote.
+6. NEON: two verified released tracks at positions 02 and 04, remaining positions anonymous. IETS MOOIS: **12 songs are planned**, four separately authorized website previews appear on the album page, but the square back cover deliberately keeps **five anonymous animated teaser positions**. Do not confuse previews with official singles, expose slots 5-12, or substitute the animated teaser with a static quote. This updates the 2026-11-05 five-total-slot assumption by Hans's explicit decision on 2026-11-06.
 7. The reader can press Escape to close and restore focus, use Tab or keyboard activation without waiting for animation, and use reduced-motion to see everything immediately.
 
 ## Timing, relative to activation
@@ -34,7 +34,8 @@ The `Build personal` job in the existing CI invokes `npm run test:personal`, `np
 
 The tests in `apps/personal/src/components/music/AlbumSleeve.test.tsx` enforce:
 - NEON nine rows with fixed timing sequence and decreasing intervals.
-- Five anonymous IETS MOOIS rows, never hidden by a static quote.
+- Five anonymous IETS MOOIS sleeve rows despite its 12 planned album positions, never hidden by a static quote.
+- Four separately pinned SoundCloud website previews, with no full private-playlist embed or official release claims.
 - Each opening restarts and Escape closes.
 - Keyboard activation and Tab bypass waiting.
 - The real CSS 760 ms 3D turn, the 360 ms row entrance and reduced-motion fallback.
@@ -59,7 +60,7 @@ This register describes code-level review lenses; it is **not** a claim of twent
 | 11 | Accessibility | Keyboard and Tab never wait on hidden rows |
 | 12 | Accessibility | Reduced-motion shows every row immediately |
 | 13 | Privacy | No unreleased track names exposed to public DOM |
-| 14 | Privacy | IETS MOOIS uses five anonymous placeholder positions |
+| 14 | Privacy | IETS MOOIS sleeve uses five anonymous teaser positions; album page has four authorized listening previews and eight undisclosed positions |
 | 15 | Privacy | NEON only links the two confirmed public tracks |
 | 16 | Privacy | No change to private owner detail policies |
 | 17 | Engineering | Branch-scoped source changes and exact commit |
@@ -69,6 +70,9 @@ This register describes code-level review lenses; it is **not** a claim of twent
 
 ## Verification boundaries
 Static code review, unit tests, GitHub CI and Vercel production deployment validate different things; none alone proves what every visitor sees. Browser interaction including physical touch, real reduced-motion settings and screenshots must be reported only when actually performed. User-provided screenshots are evidence of a specific session, not proof of what a GitHub deploy did.
+
+## Website-preview decision, 2026-11-06
+Hans selected the first four recordings from his private SoundCloud playlist `NEON | NL Signals` for public listening on the IETS MOOIS album page, keeping the eventual album at 12 planned songs. Website previews are neither distributed releases nor definitive masters. The fourth selection, *Hypnotisch*, is marked as a nonfinal working version in its SoundCloud description and must visibly carry that caveat. Playback is loaded on request for four individual tracks only. Private SoundCloud embed URLs are shareable when used publicly; this is a visibility decision, not website-only access control. The remaining eight album slots stay anonymous. The approved album artwork and the 760ms sleeve motion remain unchanged.
 
 ## How to handle a future regression
 Reproduce against the current deployed SHA; verify correct album route, style loaded, reduced-motion OS setting and whether the album's `data-open` state changes. Check that `.ma-sleeve` transforms and the track rows use `--ma-reveal-delay`. Update implementation **and a failing regression test**, run CI and release, then verify deployment. Preserve approved artwork and historical source files. Log cause, fix, checks and limitations in HansOS.

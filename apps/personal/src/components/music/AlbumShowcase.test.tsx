@@ -12,7 +12,7 @@ describe("music album discovery", () => {
     render(<MemoryRouter><AlbumShowcase /></MemoryRouter>);
     expect(screen.getByRole("heading", { level: 1, name: /Twee albums/ })).toBeTruthy();
     expect(screen.getByRole("link", { name: /NEON.*2 openbare singles/ }).getAttribute("href")).toBe("/music/albums/neon-the-signal-between");
-    expect(screen.getByRole("link", { name: /IETS MOOIS.*In ontwikkeling/ }).getAttribute("href")).toBe("/music/albums/iets-moois");
+    expect(screen.getByRole("link", { name: /IETS MOOIS.*4 van 12 te beluisteren/ }).getAttribute("href")).toBe("/music/albums/iets-moois");
     expect(screen.getByRole("link", { name: /Alle nummers/ }).getAttribute("href")).toBe("#songs");
     const sleeves = screen.getAllByTestId("album-sleeve");
     expect(sleeves).toHaveLength(2);

@@ -5,8 +5,8 @@ This file is for Claude, Codex, OpenClaw and other coding agents working on this
 ## JOWIKROON music / album interaction (protected)
 - Source of truth: `docs/music-album-motion-contract.md` and `docs/music-album-artwork-reveal.md`.
 - Do not silently replace the two interactive album sleeves with static covers, rearrange the approved artwork, remove the flip transform, flatten the accelerating track reveal, or hide the reveal on IETS MOOIS.
-- For regular motion settings: 760 ms 3D flip, then 9 ordered row timings beginning at 920 ms and accelerating. A five-row IETS MOOIS reveal uses the same start of the sequence.
-- Public NEON titles are public; unreleased titles and owner-only album data must not enter the public DOM. IETS MOOIS slots remain anonymous.
+- For regular motion settings: 760 ms 3D flip, then 9 ordered row timings beginning at 920 ms and accelerating. The five-row IETS MOOIS sleeve teaser uses the same start of the sequence; its album page separately shows 12 planned positions.
+- Public NEON titles are public. As of 2026-11-06, Hans explicitly approved only the first four private SoundCloud recordings as IETS MOOIS **website previews**. These four names/embeds may appear publicly, but they are not official singles. The remaining eight planned titles and owner-only album data must not enter the public DOM; the sleeve's five teaser slots stay anonymous.
 - Keyboard, Escape focus restoration, reduced motion, mobile/touch and a direct link below the artwork are mandatory.
 - `apps/personal/src/components/music/AlbumSleeve.test.tsx` is a hard guard: keep it green, or stop and repair it. Do not weaken or remove it to make CI pass.
 

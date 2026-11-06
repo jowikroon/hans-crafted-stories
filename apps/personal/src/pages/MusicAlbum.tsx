@@ -12,6 +12,7 @@ import AlbumEditorialSections, { AlbumJourney } from "@/components/music/AlbumEd
 import AlbumWorld, { AlbumCompanion, AlbumSignal } from "@/components/music/AlbumWorld";
 import AlbumOwnerPanel from "@/components/music/AlbumOwnerPanel";
 import AlbumSleeve from "@/components/music/AlbumSleeve";
+import IetsMooisPreviews from "@/components/music/IetsMooisPreviews";
 import NotFound from "@/pages/NotFound";
 
 function AlbumContent({ album }: { album: MusicAlbumData }) {
@@ -20,6 +21,7 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
   const { openSong } = useMusicExperience();
   const [sleeveOpen, setSleeveOpen] = useState(false);
   const story = albumEditorial[album.slug];
+  const isIetsMoois = album.slug === "iets-moois";
   const publicTracks = album.publicTracks.flatMap(({ position, songSlug }) => {
     const song = songs.find((item) => item.slug === songSlug);
     return song ? [{ position, song }] : [];
@@ -34,11 +36,14 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
   });
 
   const showPrivateTracks = isOwner && details !== null;
+  const hasListening = isIetsMoois || publicTracks.length > 0;
   const positions = showPrivateTracks
     ? Array.from({ length: album.trackCount }, (_, index) => index + 1)
     : publicTracks.map(({ position }) => position);
 
-  const listening = <section className={`ma-track-section${publicTracks.length ? "" : " ma-track-section--awaiting"}`} id="album-tracks" aria-labelledby="ma-tracks-title">
+  const listening = isIetsMoois
+    ? <IetsMooisPreviews totalTracks={album.trackCount} ownerTracks={showPrivateTracks ? details.tracks : undefined} />
+    : <section className={`ma-track-section${publicTracks.length ? "" : " ma-track-section--awaiting"}`} id="album-tracks" aria-labelledby="ma-tracks-title">
     <div className="ma-section-heading"><div><p className="ma-eyebrow">{publicTracks.length ? "Luister alvast" : "De muziek"}</p><h2 id="ma-tracks-title">{publicTracks.length ? "Het begint met luisteren." : "De muziek krijgt haar moment."}</h2></div>{publicTracks.length > 0 && <span className="ma-section-heading__count">{publicTracks.length} uitgebrachte singles</span>}</div>
     {positions.length > 0 ? <ol className="ma-tracklist">
       {positions.map((position) => {
@@ -68,16 +73,16 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
       <div className="ma-album-hero__copy">
         <AlbumSignal /><p className="ma-album-hero__description">{story.intro}</p>
         <p className="ma-release-status"><span className="ma-release-status__dot" aria-hidden="true" />Album in wording<span className="ma-release-status__year">VERWACHT {album.releaseYear}</span></p>
-        <div className="ma-hero-actions"><a href={publicTracks.length ? "#album-tracks" : "#album-spoor"} className="ma-button ma-button--light">{publicTracks.length ? "Luister de eerste releases" : "Volg het spoor"}<span aria-hidden="true">↓</span></a>{story.trail ? <a href="#album-tracks" className="ma-hero-story">De muziek <span aria-hidden="true">↓</span></a> : <Link to={albumBrandPath(album.slug)} className="ma-hero-story">Het verhaal <span aria-hidden="true">↗</span></Link>}</div>
+        <div className="ma-hero-actions"><a href={hasListening ? "#album-tracks" : "#album-spoor"} className="ma-button ma-button--light">{isIetsMoois ? "Luister de eerste vier" : publicTracks.length ? "Luister de eerste releases" : "Volg het spoor"}<span aria-hidden="true">↓</span></a>{story.trail ? <a href="#album-tracks" className="ma-hero-story">De muziek <span aria-hidden="true">↓</span></a> : <Link to={albumBrandPath(album.slug)} className="ma-hero-story">Het verhaal <span aria-hidden="true">↗</span></Link>}</div>
       </div>
     </header>
     {story.trail && <nav className="ma-album-index" aria-label="Op deze albumpagina"><span className="ma-eyebrow">Neem de tijd</span><a href="#album-story">De belofte</a><a href="#album-spoor">Het spoor</a><a href="#album-world">De beelden</a><a href="#album-tracks">De muziek <span aria-hidden="true">↓</span></a></nav>}
-    {publicTracks.length > 0 && listening}
+    {hasListening && listening}
     <AlbumEditorialSections album={album} />
     {story.trail && <AlbumJourney album={album} />}
     <AlbumWorld key={album.slug} album={album} />
     {!story.trail && <AlbumJourney album={album} />}
-    {publicTracks.length === 0 && listening}
+    {!hasListening && listening}
     <AlbumCompanion album={album} />
     <AlbumOwnerPanel access={privateAccess} />
   </AlbumPageTemplate>;

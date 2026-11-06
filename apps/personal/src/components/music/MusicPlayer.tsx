@@ -49,7 +49,7 @@ function soundcloud(): Promise<NonNullable<PlayerWindow["SC"]>> {
 
 /** A single mounted widget owns audio. UI state follows provider events, never clicks. */
 export default function MusicPlayer({ song, onStatus, control }: {
-  song: Song;
+  song: Pick<Song, "title" | "provider" | "embed">;
   onStatus: (status: PlaybackStatus) => void;
   control: React.MutableRefObject<Controller | null>;
 }) {
