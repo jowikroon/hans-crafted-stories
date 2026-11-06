@@ -11,6 +11,7 @@ import { useAlbumPrivateDetails } from "@/hooks/useAlbumPrivateDetails";
 import AlbumOwnerPanel from "@/components/music/AlbumOwnerPanel";
 import AlbumVisualStory from "@/components/music/AlbumVisualStory";
 import IetsMooisNarrative from "@/components/music/IetsMooisNarrative";
+import NeonNarrative from "@/components/music/NeonNarrative";
 
 function BrandContent({ album }: { album: MusicAlbumData }) {
   const privateAccess = useAlbumPrivateDetails(album.slug);
@@ -19,8 +20,10 @@ function BrandContent({ album }: { album: MusicAlbumData }) {
   useSEO({ title: albumBrandTitle(album), description: albumBrandDescription(album), url: `https://hansvanleeuwen.com${albumBrandPath(album.slug)}`, lang: "nl", image: `https://hansvanleeuwen.com${album.backCover}`, imageAlt: `De wereld van ${albumTitle(album)}, Jowikroon`, jsonLd: albumBrandJsonLd(album) });
   return <AlbumPageTemplate album={album} section="brand">
     {hasVisualStory ? <AlbumVisualStory>{(openArtwork) => <IetsMooisNarrative onOpenArtwork={openArtwork} />}</AlbumVisualStory> : <>
+      {album.slug === "neon-the-signal-between" ? <NeonNarrative /> : <>
       <header className="ma-story-hero"><p className="ma-eyebrow">Het verhaal / {album.title}</p><h1>{story.heading}</h1><div className="ma-story-hero__bottom"><AlbumSignal /><p>{story.lead}</p><a href="#album-origin" className="ma-text-link">Lees het verhaal <span aria-hidden="true">↓</span></a></div></header>
       <section className="ma-origin" id="album-origin" aria-labelledby="ma-origin-title"><div><p className="ma-eyebrow">Een zin om mee te nemen</p><h2 id="ma-origin-title">Eén belofte.<br />Een eigen stem.</h2></div><div>{story.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></section>
+      </>}
       <AlbumWorld key={album.slug} album={album} />
       <AlbumJourney album={album} />
     </>}
