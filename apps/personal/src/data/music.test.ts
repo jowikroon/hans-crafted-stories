@@ -52,4 +52,22 @@ describe("Jowikroon public music catalogue", () => {
     }
   });
 
+  it("gives every public recording its own complete, concise emotional triptych", () => {
+    const stories = songs.map((song) => song.detail.story);
+    expect(new Set(stories.map((story) => story.emotion)).size).toBe(songs.length);
+    expect(new Set(stories.map((story) => story.subline)).size).toBe(songs.length);
+
+    for (const story of stories) {
+      for (const part of [story.emotion, story.i, story.you, story.it, story.subline]) {
+        expect(part.trim()).toBe(part);
+        expect(part.length).toBeGreaterThan(8);
+        expect(part).not.toMatch(/[<>\u2014]/); // No markup or em dashes in public narrative copy.
+      }
+      expect(story.i).toMatch(/^I\b/);
+      expect(story.you).toMatch(/^You\b/);
+      expect(story.it).toMatch(/^It\b/);
+      expect(story.subline.split(/\s+/).length).toBeLessThanOrEqual(12);
+    }
+  });
+
 });

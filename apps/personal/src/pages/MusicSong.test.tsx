@@ -50,6 +50,15 @@ describe("Shared song studio template", () => {
     expect(within(page).getByRole("heading", { level: 1, name: song.title })).toBeInTheDocument();
     const playerTitle = `${song.provider === "soundcloud" ? "SoundCloud" : "Spotify"}: ${song.title}`;
     expect(within(page).getByTitle(playerTitle)).toHaveAttribute("src", song.embed);
+    const story = page.querySelector<HTMLElement>(".songstory")!;
+    expect(story).toBeInTheDocument();
+    expect(within(story).getByRole("heading", { level: 2, name: song.detail.story.emotion })).toBeInTheDocument();
+    expect(within(story).getByText(song.detail.story.subline)).toBeInTheDocument();
+    expect(Array.from(story.querySelectorAll(".songstory__speaker"), (node) => node.textContent)).toEqual(["I", "You", "It"]);
+    expect(Array.from(story.querySelectorAll(".songstory__voice p"), (node) => node.textContent)).toEqual([
+      song.detail.story.i, song.detail.story.you, song.detail.story.it,
+    ]);
+    expect(page.querySelector(".songstory")?.compareDocumentPosition(page.querySelector(".songbody")!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     const processControl = within(page).getByRole("button", { name: "Inside the recording" });
     expect(processControl).toHaveAttribute("aria-controls", "song-process");
     const processAnchor = page.querySelector<HTMLElement>("#song-process")!;
@@ -98,6 +107,10 @@ describe("Shared song studio template", () => {
     expect(within(modal).getByRole("heading", { level: 2, name: "Hanging On" })).toBeInTheDocument();
     expect(within(modal).getByTestId("dialog-player")).toBeInTheDocument();
     expect(modal.querySelector("iframe")).toBeNull();
+    const dialogStory = modal.querySelector<HTMLElement>(".songstory")!;
+    expect(dialogStory).toBeInTheDocument();
+    expect(within(dialogStory).getByText(songs.find((song) => song.slug === "hanging-on")!.detail.story.subline)).toBeInTheDocument();
+    expect(dialogStory.querySelector("h2")?.id).toMatch(/^dialog-.*-song-story-heading$/);
     expect(observationRoots).toContain(container.querySelector(".mx-modal-scroll"));
 
     fireEvent.click(controls[1]);
