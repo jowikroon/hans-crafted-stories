@@ -4,7 +4,7 @@ Datum: 2026-11-06. Scope: uitsluitend de negen bestaande openbare `/music/:slug`
 
 ## Bronnen en uitgangspunt
 
-- Integratiebasis: `main` commit `b4bf080b382bfec1c9b7c8c9c1d958b44f2552d5` (PR #511 inbegrepen).
+- Integratiebasis: `main` commit `937a0423115b6b6f599772fc38c44335453da56c` (PR #511 en #512 inbegrepen). De code is na de review herbaseerd op deze commit.
 - PR #493 `07ea6865e40e11dc5e703ded63646b4ca90930d6`: compacte I / You / It, 519 lokale tests gerapporteerd, nog draft.
 - PR #495 `162600022941eeb8496db1522e02b80b0465b410`: lang narratief, artwork, nav en productieclaims, 524 lokale tests gerapporteerd, nog open.
 - PR #507 zit al op `main` en leverde vier bestaande `storyTriptych`-teksten, officiële beelden en nieuwste SEO-albumgates.
