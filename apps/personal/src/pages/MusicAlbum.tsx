@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import MusicExperience, { PlaySongButton, SongPageButton, SongPlayerSlot, useMusicExperience } from "@/components/music/MusicExperience";
@@ -15,6 +15,9 @@ import AlbumSleeve from "@/components/music/AlbumSleeve";
 import IetsMooisPreviews from "@/components/music/IetsMooisPreviews";
 import NotFound from "@/pages/NotFound";
 
+// The four private-master widgets are only needed on the NEON album route.
+const NeonPreviews = lazy(() => import("@/components/music/NeonPreviews"));
+
 function AlbumContent({ album }: { album: MusicAlbumData }) {
   const privateAccess = useAlbumPrivateDetails(album.slug);
   const { isOwner, details } = privateAccess;
@@ -22,6 +25,7 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
   const [sleeveOpen, setSleeveOpen] = useState(false);
   const story = albumEditorial[album.slug];
   const isIetsMoois = album.slug === "iets-moois";
+  const isNeon = album.slug === "neon-the-signal-between";
   const publicTracks = album.publicTracks.flatMap(({ position, songSlug }) => {
     const song = songs.find((item) => item.slug === songSlug);
     return song ? [{ position, song }] : [];
@@ -36,15 +40,15 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
   });
 
   const showPrivateTracks = isOwner && details !== null;
-  const hasListening = isIetsMoois || publicTracks.length > 0;
-  const positions = showPrivateTracks
+  const hasListening = isIetsMoois || isNeon || publicTracks.length > 0;
+  const positions = showPrivateTracks && !isNeon
     ? Array.from({ length: album.trackCount }, (_, index) => index + 1)
     : publicTracks.map(({ position }) => position);
 
   const listening = isIetsMoois
     ? <IetsMooisPreviews totalTracks={album.trackCount} ownerTracks={showPrivateTracks ? details.tracks : undefined} />
-    : <section className={`ma-track-section${publicTracks.length ? "" : " ma-track-section--awaiting"}`} id="album-tracks" aria-labelledby="ma-tracks-title">
-    <div className="ma-section-heading"><div><p className="ma-eyebrow">{publicTracks.length ? "Luister alvast" : "De muziek"}</p><h2 id="ma-tracks-title">{publicTracks.length ? "Het begint met luisteren." : "De muziek krijgt haar moment."}</h2></div>{publicTracks.length > 0 && <span className="ma-section-heading__count">{publicTracks.length} uitgebrachte singles</span>}</div>
+    : <section className={`ma-track-section${publicTracks.length ? "" : " ma-track-section--awaiting"}`} id={isNeon ? "album-releases" : "album-tracks"} aria-labelledby={isNeon ? "ma-releases-title" : "ma-tracks-title"}>
+    <div className="ma-section-heading"><div><p className="ma-eyebrow">{isNeon ? "Officieel uitgebracht" : publicTracks.length ? "Luister alvast" : "De muziek"}</p><h2 id={isNeon ? "ma-releases-title" : "ma-tracks-title"}>{isNeon ? "De singles op Spotify." : publicTracks.length ? "Het begint met luisteren." : "De muziek krijgt haar moment."}</h2></div>{publicTracks.length > 0 && <span className="ma-section-heading__count">{publicTracks.length} uitgebrachte singles</span>}</div>
     {positions.length > 0 ? <ol className="ma-tracklist">
       {positions.map((position) => {
         const released = publicTracks.find((track) => track.position === position);
@@ -63,7 +67,7 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
         return <li key={position} className="ma-track ma-track--unreleased ma-track--owner"><span className="ma-track__number">{String(position).padStart(2, "0")}</span><span className="ma-track__locked" aria-hidden="true">·</span><div className="ma-track__copy"><strong>{privateTrack.title}</strong>{privateTrack.note && <span>{privateTrack.note}</span>}</div><span className="ma-track__coming">Alleen voor jou</span></li>;
       })}
     </ol> : <div className="ma-arrival">{story.listeningNote && <p className="ma-arrival__invitation">{story.listeningNote}</p>}<p>IETS MOOIS is in wording. De eerste releases krijgen hier hun plek. Luister intussen naar de uitgebrachte muziek van Jowikroon.</p><Link to="/music" className="ma-button ma-button--light">Luister naar Jowikroon <span aria-hidden="true">↗</span></Link></div>}
-    {publicTracks.length > 0 && <p className="ma-track-note">Een eerste kennismaking met NEON. De overige nummers verschijnen wanneer ze klaar zijn om te delen.</p>}
+    {publicTracks.length > 0 && <p className="ma-track-note">{isNeon ? "Dit zijn de twee officiële Spotify-singles. De vier privémasters hierboven zijn afzonderlijke websitepreviews." : "Een eerste kennismaking met NEON. De overige nummers verschijnen wanneer ze klaar zijn om te delen."}</p>}
   </section>;
 
   return <AlbumPageTemplate album={album}>
@@ -73,11 +77,11 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
       <div className="ma-album-hero__copy">
         <AlbumSignal /><p className="ma-album-hero__description">{story.intro}</p>
         <p className="ma-release-status"><span className="ma-release-status__dot" aria-hidden="true" />Album in wording<span className="ma-release-status__year">VERWACHT {album.releaseYear}</span></p>
-        <div className="ma-hero-actions"><a href={hasListening ? "#album-tracks" : "#album-spoor"} className="ma-button ma-button--light">{isIetsMoois ? "Luister de eerste vier" : publicTracks.length ? "Luister de eerste releases" : "Volg het spoor"}<span aria-hidden="true">↓</span></a>{story.trail ? <a href="#album-tracks" className="ma-hero-story">De muziek <span aria-hidden="true">↓</span></a> : <Link to={albumBrandPath(album.slug)} className="ma-hero-story">Het verhaal <span aria-hidden="true">↗</span></Link>}</div>
+        <div className="ma-hero-actions"><a href={hasListening ? "#album-tracks" : "#album-spoor"} className="ma-button ma-button--light">{isIetsMoois || isNeon ? "Luister de eerste vier" : publicTracks.length ? "Luister de eerste releases" : "Volg het spoor"}<span aria-hidden="true">↓</span></a>{story.trail ? <a href="#album-tracks" className="ma-hero-story">De muziek <span aria-hidden="true">↓</span></a> : <Link to={albumBrandPath(album.slug)} className="ma-hero-story">Het verhaal <span aria-hidden="true">↗</span></Link>}</div>
       </div>
     </header>
     {story.trail && <nav className="ma-album-index" aria-label="Op deze albumpagina"><span className="ma-eyebrow">Neem de tijd</span><a href="#album-story">De belofte</a><a href="#album-spoor">Het spoor</a><a href="#album-world">De beelden</a><a href="#album-tracks">De muziek <span aria-hidden="true">↓</span></a></nav>}
-    {hasListening && listening}
+    {hasListening && (isNeon ? <><Suspense fallback={<section id="album-tracks" className="ma-track-section" aria-busy="true"><p className="ma-eyebrow">NEON Official</p><p>De luisterselectie wordt geladen…</p></section>}><NeonPreviews totalTracks={album.trackCount} /></Suspense>{listening}</> : listening)}
     <AlbumEditorialSections album={album} />
     {story.trail && <AlbumJourney album={album} />}
     <AlbumWorld key={album.slug} album={album} />

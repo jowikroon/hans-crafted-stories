@@ -452,7 +452,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "7. Embedded music players",
-          body: 'Music pages can load players from SoundCloud or Spotify when you choose to play a recording. Those services may process usage data and use cookies according to their own policies. SoundCloud listening embeds are only loaded after you press a play button on the IETS MOOIS album page. Learn more in the <a href="https://soundcloud.com/pages/cookies" target="_blank" rel="noopener noreferrer" class="text-primary underline">SoundCloud Cookie Policy</a> and <a href="https://www.spotify.com/legal/privacy-policy/" target="_blank" rel="noopener noreferrer" class="text-primary underline">Spotify Privacy Policy</a>.',
+          body: 'Music pages can load players from SoundCloud or Spotify when you choose to play a recording. Those services may process usage data and use cookies according to their own policies. SoundCloud listening embeds are only loaded after you press a play button on the NEON or IETS MOOIS album page. Learn more in the <a href="https://soundcloud.com/pages/cookies" target="_blank" rel="noopener noreferrer" class="text-primary underline">SoundCloud Cookie Policy</a> and <a href="https://www.spotify.com/legal/privacy-policy/" target="_blank" rel="noopener noreferrer" class="text-primary underline">Spotify Privacy Policy</a>.',
         },
         {
           heading: "8. Your rights",
@@ -798,7 +798,7 @@ export const translations: Record<Lang, TranslationStrings> = {
         },
         {
           heading: "7. Ingesloten muziekspelers",
-          body: 'Muziekpagina\'s kunnen een speler van SoundCloud of Spotify laden zodra je ervoor kiest een opname af te spelen. Deze diensten kunnen gebruiksgegevens verwerken en cookies gebruiken volgens hun eigen beleid. Op de albumpagina IETS MOOIS wordt een SoundCloud-speler pas geladen nadat je op afspelen klikt. Lees het <a href="https://soundcloud.com/pages/cookies" target="_blank" rel="noopener noreferrer" class="text-primary underline">cookiebeleid van SoundCloud</a> en het <a href="https://www.spotify.com/legal/privacy-policy/" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid van Spotify</a>.',
+          body: 'Muziekpagina\'s kunnen een speler van SoundCloud of Spotify laden zodra je ervoor kiest een opname af te spelen. Deze diensten kunnen gebruiksgegevens verwerken en cookies gebruiken volgens hun eigen beleid. Op de albumpagina\'s NEON en IETS MOOIS wordt een SoundCloud-speler pas geladen nadat je op afspelen klikt. Lees het <a href="https://soundcloud.com/pages/cookies" target="_blank" rel="noopener noreferrer" class="text-primary underline">cookiebeleid van SoundCloud</a> en het <a href="https://www.spotify.com/legal/privacy-policy/" target="_blank" rel="noopener noreferrer" class="text-primary underline">privacybeleid van Spotify</a>.',
         },
         {
           heading: "8. Je rechten",
