@@ -51,7 +51,8 @@ const Navbar = (_props: NavbarProps) => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
   const t = translations[lang].nav;
-  const logoSrc = logoById(useActiveLogo()).src;
+  const selectedLogo = logoById(useActiveLogo());
+  const logoSrc = selectedLogo.src;
   const logoMotion = useLogoMotion();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -361,7 +362,7 @@ const Navbar = (_props: NavbarProps) => {
                 alt="Hans van Leeuwen, Freelance E-commerce Manager"
                 width={30}
                 height={30}
-                className={`h-[30px] w-[30px] rounded-md object-contain${logoMotion ? " transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" : ""}`}
+                className={`h-[30px] w-[30px] rounded-md object-contain${barDark && selectedLogo.id === "h-monogram" ? " brightness-0 invert" : ""}${logoMotion ? " transition-transform duration-300 group-hover:-translate-y-px group-hover:scale-105" : ""}`}
               />
             </Link>
 
