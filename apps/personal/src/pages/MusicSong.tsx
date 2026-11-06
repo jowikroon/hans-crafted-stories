@@ -18,6 +18,7 @@ import { useParams } from "react-router-dom";
 import { Link } from "@/components/LocalizedLink";
 import { useSEO } from "@/hooks/useSEO";
 import { getSongBySlug, songs, type ProseBlock } from "@/data/music";
+import { albumPath, publicAlbumForSong } from "@/data/albums";
 import { songPageHead, songPageJsonLd } from "@/data/songPageSeo";
 import "@/styles/music-v2.css";
 import "@/styles/hanging-on.css";
@@ -126,6 +127,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
   const Page = inDialog ? "div" : "main";
   const Heading = inDialog ? "h2" : "h1";
   const rootRef = useRef<HTMLDivElement>(null);
+  const [failedCoverSlug, setFailedCoverSlug] = useState<string | null>(null);
   const instanceId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const idPrefix = inDialog ? `dialog-${instanceId}-` : "";
   const sectionIds = {
@@ -138,15 +140,22 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
   const resolved = getSongBySlug(slug);
   // Only tracks verified public are included in music.ts.
   const song = resolved;
+  const publicAlbum = song ? publicAlbumForSong(song.slug) : undefined;
+  const neonRecording = Boolean(publicAlbum || song?.detail.category.includes("NEON recording"));
 
-  // Two "More tracks" picks = the next songs after this one (wraps around).
+  // Official NEON songs recommend their actual released sibling, never a
+  // random adjacent entry from the general public SoundCloud catalogue.
   const more = useMemo(() => {
     if (!song) return [];
+    if (publicAlbum) return publicAlbum.publicTracks
+      .filter(({ songSlug: publicSlug }) => publicSlug !== song.slug)
+      .map(({ songSlug: publicSlug }) => getSongBySlug(publicSlug))
+      .filter((candidate): candidate is NonNullable<typeof candidate> => Boolean(candidate));
     const idx = songs.findIndex((s) => s.slug === song.slug);
     return [songs[(idx + 1) % songs.length], songs[(idx + 2) % songs.length]].filter(
       (s) => s.slug !== song.slug,
     );
-  }, [song]);
+  }, [song, publicAlbum]);
 
   const head = song ? songPageHead(song) : null;
 
@@ -189,7 +198,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
   const d = song.detail;
 
   return (
-    <div className="music-v2 song-studio-page" ref={rootRef}>
+    <div className={`music-v2 song-studio-page${neonRecording ? " song-studio-page--neon" : ""}`} ref={rootRef}>
       <Page className="songpage">
         <div className="wrap">
           {/* Breadcrumb */}
@@ -198,16 +207,17 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
             <ChevronRight />
             <Link to="/music">Music</Link>
             <ChevronRight />
+            {publicAlbum && <><Link to={albumPath(publicAlbum.slug)}>NEON</Link><ChevronRight /></>}
             <span className="here" aria-current="page">{song.title}</span>
           </nav>
 
           {/* Song header */}
           <header className="songhead">
             <div className="songhead__art">
-              <div className="cover-fallback">
+              <div className="cover-fallback" role={failedCoverSlug === song.slug ? "img" : undefined} aria-label={failedCoverSlug === song.slug ? `Artwork for ${song.title} could not be loaded` : undefined} aria-hidden={failedCoverSlug === song.slug ? undefined : true}>
                 <span style={{ fontSize: 22 }}>{song.title}</span>
               </div>
-              <img src={song.cover} alt={`Cover art, ${song.title}`} />
+              {failedCoverSlug !== song.slug && <img src={song.cover} alt={song.coverAlt ?? `Cover artwork for ${song.title} by Jowikroon`} width={640} height={640} decoding="async" fetchPriority="high" onError={() => setFailedCoverSlug(song.slug)} />}
             </div>
             <div className="songhead__info">
               <div className="songhead__cat">
@@ -226,6 +236,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
                   </div>
                 ))}
               </div>
+              {neonRecording && <Link className="songhead__album-link" to={albumPath("neon-the-signal-between")}>{publicAlbum ? "Part of the NEON story" : "Explore the world of NEON"}<span aria-hidden="true">↗</span></Link>}
             </div>
           </header>
 
@@ -348,6 +359,15 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
               {d.prose.map((block, i) => (
                 <ProseNode key={i} block={block} idPrefix={idPrefix} />
               ))}
+              {d.storyTriptych && <section className="neon-triptych" aria-labelledby={`${idPrefix}neon-story-title`}>
+                <p className="neon-triptych__kicker">A scene from NEON</p>
+                <h2 id={`${idPrefix}neon-story-title`}>{d.storyTriptych.title}</h2>
+                <div className="neon-triptych__lines">
+                  {([["I", d.storyTriptych.i], ["You", d.storyTriptych.you], ["It", d.storyTriptych.it]] as const).map(([label, line]) =>
+                    <div className="neon-triptych__line" key={label}><span>{label}</span><p>{line}</p></div>)}
+                </div>
+                <Link className="neon-triptych__album-link" to={albumPath("neon-the-signal-between")}>Follow the signal through NEON <span aria-hidden="true">↗</span></Link>
+              </section>}
             </article>
 
             <aside className="songaside">
@@ -383,7 +403,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
 
           {d.lyrics.length > 0 && (
             <section className="lyrics" aria-label="Lyrics" id={sectionIds.lyrics}>
-              <div className="lyrics__h">Lyrics</div>
+              <h2 className="lyrics__h">Lyrics</h2>
               <div className="lyrics__cols">
                 {d.lyrics.map((v) => (
                   <div className="lyrics__v" key={v.tag}>
@@ -417,10 +437,10 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
             </a>
           </div>
 
-          {/* More tracks */}
-          {more.length > 0 && (
+          {/* More public recordings, or the two official NEON singles in context. */}
+          {(more.length > 0 || publicAlbum) && (
             <section className="more">
-              <div className="more__h">More tracks</div>
+              <h2 className="more__h">{publicAlbum ? "Continue through NEON" : "Other public recordings"}</h2>
               <div className="more__grid">
                 {more.map((m) => (
                   <Link key={m.slug} to={`/music/${m.slug}`} className="ncard" onClick={onOpenSong ? (event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); onOpenSong(m.slug, event.currentTarget); } } : undefined}>
@@ -432,6 +452,7 @@ export default function MusicSong({ songSlug, inDialog = false, player, onOpenSo
                     <div className="ncard__t">{m.title}</div>
                   </Link>
                 ))}
+                {publicAlbum && <Link to={albumPath(publicAlbum.slug)} className="ncard"><div className="ncard__m"><span className="tag">Album in progress</span></div><div className="ncard__t">NEON: The Signal Between</div></Link>}
               </div>
             </section>
           )}

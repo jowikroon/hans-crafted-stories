@@ -32,6 +32,8 @@ export const albums: MusicAlbumData[] = [
 
 export const albumPath = (slug: string) => `/music/albums/${slug}`;
 export const getAlbum = (slug: string | undefined) => albums.find((album) => album.slug === slug);
+/** Publicly disclosed song-to-album association; never infer it from playlist order. */
+export const publicAlbumForSong = (songSlug: string) => albums.find((album) => album.publicTracks.some((track) => track.songSlug === songSlug));
 export const albumTitle = (album: MusicAlbumData) => album.subtitle ? `${album.title}: ${album.subtitle}` : album.title;
 export const albumSeoTitle = (album: MusicAlbumData) => `${albumTitle(album)} | Jowikroon`;
 export const musicAlbumsTitle = "NEON & IETS MOOIS: Jowikroon | Hans van Leeuwen";
@@ -49,7 +51,7 @@ export function albumJsonLd(album: MusicAlbumData) {
     // The development slot count is not a confirmed final released track count.
     track: album.publicTracks.flatMap(({ songSlug }) => {
       const song = songs.find((item) => item.slug === songSlug);
-      return song ? [{ "@type": "MusicRecording", name: song.title, url: `https://hansvanleeuwen.com/music/${song.slug}`, sameAs: song.listenUrl }] : [];
+      return song ? [{ "@type": "MusicRecording", "@id": `https://hansvanleeuwen.com/music/${song.slug}#recording`, name: song.title, url: `https://hansvanleeuwen.com/music/${song.slug}`, sameAs: song.links?.spotify ?? song.listenUrl }] : [];
     }),
   };
 }

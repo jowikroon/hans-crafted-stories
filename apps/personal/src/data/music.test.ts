@@ -34,6 +34,17 @@ describe("Jowikroon public music catalogue", () => {
     expect(featuredRelease.kicker).toBe("Latest official release");
     expect(songs.find((song) => song.slug === "beat-drop-original")?.date).toBe("2026-09-28");
   });
+  it("pins the two verified official NEON covers without confusing public concepts with private masters", () => {
+    const beatDrop = songs.find((song) => song.slug === "beat-drop")!;
+    const house = songs.find((song) => song.slug === "neon-house-of-glass")!;
+    expect(beatDrop.cover).toBe("/images/music/beat-drop-cover.jpg");
+    expect(house.cover).toBe("/images/music/neon-house-of-glass-cover.jpg");
+    expect(beatDrop.coverAlt).toMatch(/finger.*violet spark/i);
+    expect(house.coverAlt).toMatch(/glass room.*shoreline/i);
+    expect(beatDrop.cover).not.toBe(house.cover);
+    expect(songs.find((song) => song.slug === "hanging-on")?.coverAlt).toMatch(/album artwork/i);
+    expect(songs.find((song) => song.slug === "that-spark")?.coverAlt).toMatch(/hand to the chest/i);
+  });
   it("keeps the displayed dates consistent with official releases and SoundCloud uploads", () => {
     for (const song of songs) {
       const label = song.provider === "spotify" ? "Released" : "Uploaded";
