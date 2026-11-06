@@ -160,11 +160,11 @@
   .im-door-art { height:175px; }
   .im-cipher { padding:65px 12px; }
   .im-cipher__plate { padding:13px; border-radius:17px; }
-  .im-cipher__eyebrow { font-size:.59rem; margin:4px 4px 15px; }
+  .im-cipher__eyebrow { font-size:.6875rem; margin:4px 4px 15px; }
   .im-cipher__grid { gap:7px; }
   .im-cipher__card { min-height:146px; padding:9px 3px; border-radius:9px; }
   .im-cipher__card strong { font-size:clamp(2.7rem,10vw,4.6rem); }
-  .im-cipher__card>span { font-size:.7rem; }
+  .im-cipher__card>span { font-size:.75rem; }
   .im-cipher__answer { font-size:clamp(4.3rem,18vw,7.5rem); }
   .im-cipher__meaning { margin-top:30px; }
   .im-album-bridge { padding-top:100px; }
@@ -174,8 +174,6 @@
   .im-opening h1 { font-size:3.8rem; }
   .im-opening__quote { font-size:1.9rem; }
   .im-cipher__card strong { font-size:2.8rem; }
-  .im-cipher__card>span { font-size:.65rem; }
-  .im-cipher__eyebrow { font-size:.53rem; }
 }
 @media(prefers-reduced-motion:reduce) {
   .im-narrative *,.im-narrative *::before,.im-narrative *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
