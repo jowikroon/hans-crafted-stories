@@ -173,7 +173,7 @@ export default function AlbumVisualStory({ children }: { children?: (openArtwork
             </button>;
           })}
         </div>
-        <a href="#album-origin" className="avs-reading-link">{children ? "Nog even terug naar de belofte?" : "Liever eerst de woorden?"} <span>{children ? "Terug naar het begin ↑" : <>Lees het verhaal <ArrowDown size={15} aria-hidden="true" /></>}</span></a>
+        <a href="#album-origin" className="avs-reading-link">{children ? "Nog even terug naar de vijf woorden?" : "Liever eerst de woorden?"} <span>{children ? "Terug naar het begin ↑" : <>Lees het verhaal <ArrowDown size={15} aria-hidden="true" /></>}</span></a>
       </div>
     </div>
     <Dialog.Root open={!!current} onOpenChange={(open) => { if (!open) close(); }}>

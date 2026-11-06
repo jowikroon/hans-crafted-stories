@@ -9,12 +9,12 @@ import AlbumVisualStory from "./AlbumVisualStory";
 import IetsMooisNarrative from "./IetsMooisNarrative";
 
 const storyPath = "/music/albums/iets-moois/brand";
-const sceneIds = ["album-origin", "album-toen", "album-stilte", "album-tegenstem", "album-spiegeling", "album-vandaag"];
+const sceneIds = ["album-origin", "album-toen", "album-tegenstem", "album-stilte", "album-tempo", "album-spiegeling", "album-vandaag", "album-code"];
 const sceneImages = [
   ["Iets dichterbij", "iets-dichterbij"],
   ["Vooruitkijken", "vooruitkijken"],
-  ["Een beetje licht", "een-beetje-licht"],
   ["Een beetje te veel", "een-beetje-te-veel"],
+  ["Een beetje licht", "een-beetje-licht"],
   ["Toen in nu", "toen-in-nu"],
   ["Nu in toen", "nu-in-toen"],
   ["Ruimte om te blijven", "ruimte-om-te-blijven"],
@@ -81,7 +81,7 @@ const openerFor = (title: string) => screen.getByRole("button", { name: `Bekijk 
 const closeGallery = () => fireEvent.click(within(dialog()).getByRole("button", { name: "Sluit het beeldverhaal" }));
 
 describe("IETS MOOIS continuous narrative and gallery integration", () => {
-  it("server-renders all six complete scenes without opening the gallery, with usable chapter targets", () => {
+  it("server-renders the eight story chapters, the exact last words and the symbolic NEON reveal without hiding content", () => {
     const html = renderToString(<StaticRouter location={storyPath}><IetsMooisNarrative onOpenArtwork={vi.fn()} /></StaticRouter>);
     const staticRoot = document.createElement("div");
     staticRoot.innerHTML = html;
@@ -94,6 +94,14 @@ describe("IETS MOOIS continuous narrative and gallery integration", () => {
     expect(staticRoot.querySelector("#album-spoor")).not.toBeNull();
     expect(staticRoot.querySelector('[role="dialog"]')).toBeNull();
     expect(narrative.querySelector('[hidden], [role="tab"], [role="tabpanel"]')).toBeNull();
+    expect(narrative.textContent).toContain("Maak er iets moois van.");
+    expect(narrative.textContent).toContain("Zijn laatste woorden");
+    expect(narrative.textContent).toContain("gevoelens die daar allang zaten");
+    expect(narrative.textContent).toContain("Niet verbergen. Niet alles tegelijk.");
+    expect(narrative.textContent).toContain("3 = ON");
+    expect(narrative.textContent).toContain("geen definitieve volgorde van de nummers");
+    expect(narrative.textContent).toContain("En ik ben");
+    expect(narrative.textContent).not.toContain("Ik beloofde iets moois te maken");
 
     for (const id of sceneIds) {
       const scene = narrative.querySelector(`#${id}`)!;
@@ -104,7 +112,11 @@ describe("IETS MOOIS continuous narrative and gallery integration", () => {
       expect(scene.closest('[hidden], [aria-hidden="true"]')).toBeNull();
     }
 
-    const images = Array.from(narrative.querySelectorAll("img"));
+    expect(narrative.querySelectorAll(".im-cipher__card")).toHaveLength(3);
+    expect(narrative.querySelectorAll(".im-door-art span")).toHaveLength(7);
+    expect(narrative.querySelectorAll(".im-album-bridge__albums a")).toHaveLength(2);
+
+    const images = Array.from(narrative.querySelectorAll(".im-artwork img"));
     expect(images).toHaveLength(7);
     expect(images.map((image) => image.getAttribute("src"))).toEqual(sceneImages.map(([, id]) => `/images/music/iets-moois-story/${id}.webp`));
     expect(images.filter((image) => image.getAttribute("loading") === "eager")).toHaveLength(1);
@@ -113,6 +125,7 @@ describe("IETS MOOIS continuous narrative and gallery integration", () => {
       expect(image).toHaveAttribute("height", "1254");
       expect(image.alt.trim()).toBeTruthy();
     }
+    expect(narrative.querySelectorAll(".im-album-bridge__albums img")).toHaveLength(2);
   });
 
   it("opens the matching artwork from every scene and returns to that exact scene button", async () => {
