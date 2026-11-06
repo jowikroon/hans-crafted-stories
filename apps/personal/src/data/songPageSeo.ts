@@ -23,6 +23,26 @@ const neonStoryMeta: Record<string, { title: string; description: string }> = {
     title: "That Spark: A NEON Recording | Jowikroon",
     description: "That Spark by Jowikroon. A small violet glow, a first flicker and the possibility of movement. Listen to the public NEON SoundCloud recording.",
   },
+  "beat-drop-original": {
+    title: "Beat Drop (original): Another Public Version | Jowikroon",
+    description: "Beat Drop (original) by Jowikroon. Explore the public SoundCloud version alongside the official single, without confusing upload dates with recording dates.",
+  },
+  "beat-between-our-years": {
+    title: "Beat Between Our Years: Across Time | Jowikroon",
+    description: "Beat Between Our Years by Jowikroon. A public SoundCloud recording about the space where years and shared feeling meet. Listen and explore its story.",
+  },
+  "loop-in-control": {
+    title: "Loop in Control: Another Way Around | Jowikroon",
+    description: "Loop in Control by Jowikroon. A public electronic recording that treats repetition as a place for change, with listening prompts and version-specific studio notes.",
+  },
+  "78-thz-texture": {
+    title: "78 THz Texture: An Instrumental Study | Jowikroon",
+    description: "78 THz Texture by Jowikroon. Explore an instrumental study of sound and feeling. The title is a creative image, not a measured frequency claim.",
+  },
+  "with-a-grin": {
+    title: "With a Grin: A Public Working Version | Jowikroon",
+    description: "With a Grin by Jowikroon. A public SoundCloud stem-mix-labelled recording, pairing humour with uncertainty. Hear the version and explore its story.",
+  },
 };
 
 /** The client and static renderer use the same song metadata. */

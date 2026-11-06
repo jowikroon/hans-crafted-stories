@@ -62,8 +62,6 @@ export interface SongDetail {
   gear: GearItem[];
   /** Production-notes prose, in order. */
   prose: ProseBlock[];
-  /** An editorial reading, not a lyric transcription or a finished LP running order. */
-  storyTriptych?: { title: string; i: string; you: string; it: string };
   /** Lyrics, grouped into sections. */
   lyrics: LyricSection[];
   /** Footnote under the lyrics (placeholder disclaimer in the prototype). */
@@ -207,17 +205,7 @@ export const songs: Song[] = [
       gear: [],
       prose: [
         { type: "lead", text: "Neon House of Glass is my second official single, out now on Spotify under my artist name Jowikroon." },
-        { type: "p", text: "A thousand hearts on the screen. Still nobody in the room. Faces, messages and a frozen laugh in a thumbnail gather around a voice reaching for someone on the other side." },
-        { type: "h2", id: "about", text: "When the room goes quiet" },
-        { type: "p", text: "The music reaches outward while the words keep returning to the same distance. Beneath the glow sits a question: what does it take to feel someone near?" },
-        { type: "p", text: "You might hear the thrill of being seen, the weight of an image, or a moment you recognise. The song leaves room for what you bring to it." },
       ],
-      storyTriptych: {
-        title: "The distance behind the glow",
-        i: "I can see a thousand hearts. The room is still quiet.",
-        you: "You are right there on the screen, and somehow out of reach.",
-        it: "A house made of glass holds the light, but cannot bring us closer on its own.",
-      },
       lyrics: [
         { tag: "Verse 1", lines: ["Scrolling through a thousand faces", "Every smile in a little blue frame", "I'm talking big love", "Big faith", "Big changes", "But it's all just code in my name", "My shadow on the kitchen wall", "Glows cold from a phantom call", "I'm a saint in a silent feed", "Got a thousand hearts", "Still missing what I need"] },
         { tag: "Chorus", lines: ["I live in a neon house of glass", "Where the echoes dance and the real ones pass", "I raise my hands to a pixel sky", "But I still can't feel you", "Still can't feel you", "I'm screaming your name through a fiber wire", "While the crowd goes wild in a slow-burn fire", "I'm a king of the lonely", "Wired and high", "And I still can't feel you", "Still can't feel you"] },
@@ -266,17 +254,7 @@ export const songs: Song[] = [
       gear: [],
       prose: [
         { type: "lead", text: "Beat Drop is my first official single, out now on Spotify under my artist name Jowikroon." },
-        { type: "p", text: "A clock ticks, the city lights flicker, and a new rhythm takes hold. The song stays close to that charged moment before something begins." },
-        { type: "h2", id: "about", text: "Something is starting" },
-        { type: "p", text: "Old ghosts and new lines move through the same night. There is a pull toward the dancefloor, and the feeling that a familiar world might open into something else." },
-        { type: "p", text: "A beginning can feel like excitement, release, or a little uncertainty. Listen for the moment that stays with you." },
       ],
-      storyTriptych: {
-        title: "Before the city moves",
-        i: "I wore one song out alone.",
-        you: "You fall into a city moving as one.",
-        it: "It arrives exactly when the count says.",
-      },
       lyrics: [
         { tag: "Verse 1", lines: ["Clock ticks", "Time flies", "Neon whispers", "Behind my eyes", "A new sound grows", "A rhythm takes hold"] },
         { tag: "Pre-Chorus", lines: ["Something's coming", "Can you feel it now", "Static in the airwaves", "Sweat upon your brow"] },
@@ -336,16 +314,8 @@ export const songs: Song[] = [
         note: "Hanging On keeps returning to a thought it cannot quite leave behind. A long recording from NEON: The Signal Between, with the voice and the build carrying that tension together.",
       }),
       prose: [
-        { type: "lead", text: "Hanging On keeps returning to a thought it cannot quite leave behind. A long recording from NEON: The Signal Between, with the voice and the build carrying that tension together." },
-        { type: "h2", id: "the-line-that-stays", text: "The line that stays" },
-        { type: "p", text: "The hook returns to the same words: “I just can't keep hanging on.” The line wants to let go. The repetition keeps it close. Across almost eight minutes, that tension becomes the shape of the song." },
+        { type: "lead", text: "Hanging On is a public NEON-related SoundCloud recording. Its linked version was uploaded on October 14, 2026 and runs 7:59." },
       ],
-      storyTriptych: {
-        title: "The space before letting go",
-        i: "I say I cannot keep hanging on.",
-        you: "You hear the words return before the decision can settle.",
-        it: "The repetition holds the feeling a little longer than the sentence.",
-      },
     },
   },
   {
@@ -443,12 +413,6 @@ export const songs: Song[] = [
         length: "3:09",
         note: "A small spark can be enough to feel movement again. This track leaves that first flicker room to breathe before turning it into a larger story.",
       }),
-      storyTriptych: {
-        title: "The smallest light",
-        i: "I notice a flicker before I know what it means.",
-        you: "You might see a signal where someone else sees a shadow.",
-        it: "The light is small. The next step is still open.",
-      },
     },
   },
   {
