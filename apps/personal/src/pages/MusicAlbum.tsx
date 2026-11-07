@@ -77,7 +77,7 @@ function AlbumContent({ album }: { album: MusicAlbumData }) {
       <div className="ma-album-hero__copy">
         <AlbumSignal /><p className="ma-album-hero__description">{story.intro}</p>
         <p className="ma-release-status"><span className="ma-release-status__dot" aria-hidden="true" />Album in wording<span className="ma-release-status__year">VERWACHT {album.releaseYear}</span></p>
-        <div className="ma-hero-actions"><a href={hasListening ? "#album-tracks" : "#album-spoor"} className="ma-button ma-button--light">{isIetsMoois || isNeon ? "Luister de eerste vier" : publicTracks.length ? "Luister de eerste releases" : "Volg het spoor"}<span aria-hidden="true">↓</span></a><Link to={albumBrandPath(album.slug)} className="ma-hero-story">Het verhaal <span aria-hidden="true">↗</span></Link></div>
+        <div className="ma-hero-actions"><a href={hasListening ? "#album-tracks" : "#album-spoor"} className="ma-button ma-button--light">{isIetsMoois || isNeon ? "Luister de eerste vier" : publicTracks.length ? "Luister de eerste releases" : "Volg het spoor"}<span aria-hidden="true">↓</span></a><Link to={albumBrandPath(album.slug)} className="ma-hero-story">{isNeon ? "Lees de negen scènes" : "Het verhaal"} <span aria-hidden="true">↗</span></Link></div>
       </div>
     </header>
     {story.trail && <nav className="ma-album-index" aria-label="Op deze albumpagina"><span className="ma-eyebrow">Neem de tijd</span><a href="#album-story">De belofte</a><a href="#album-spoor">Het spoor</a><a href="#album-world">De beelden</a><a href="#album-tracks">De muziek <span aria-hidden="true">↓</span></a></nav>}

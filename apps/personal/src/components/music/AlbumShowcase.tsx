@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { albums, albumPath } from "@/data/albums";
+import { albumBrandPath } from "@/data/albumEditorial";
 import { Link } from "@/components/LocalizedLink";
 import { ensureFontCss, FONT_CSS } from "@/lib/fontCss";
 import AlbumSleeve from "@/components/music/AlbumSleeve";
@@ -27,6 +28,9 @@ export default function AlbumShowcase() {
               <small>{album.slug === "iets-moois" ? "4 van 12 te beluisteren" : album.slug === "neon-the-signal-between" ? "4 previews · 2 singles" : album.publicTracks.length ? `${album.publicTracks.length} openbare singles` : "In ontwikkeling"}</small>
             </Link>
           ))}
+          <Link to={albumBrandPath("neon-the-signal-between")} className="ma-showcase__path">
+            <span>Het verhaal achter NEON</span><small>9 scènes</small>
+          </Link>
           <a href="#songs" className="ma-showcase__path">
             <span>Alle nummers</span><small>Spotify + SoundCloud ↓</small>
           </a>
